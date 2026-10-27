@@ -57,3 +57,22 @@ Only categories 3 and 5 are listed, in general terms.
     expired Tier-0, DEFER/NO-GO recommendations and rubber-stamp-only items, with a show-all toggle
     and a hidden count), and a freshness tier that sorts recently updated items to the top of their
     group.
+
+---
+
+## AEF analysis per extension point (2026-10-27, against bleeding-edge be.37)
+
+Each candidate below was checked against today's code. The test for each: does it let a consumer stop editing a vendored file, without letting project code weaken a framework gate?
+
+| # | Extension point | What exists today | Verdict | Why |
+|---|---|---|---|---|
+| 1 | Blueprint registration (#1) | `web/blueprints/__init__.py` imports a fixed list ("import it here and append"); there is no hook | **GO** | Project blueprints are project code, already trusted. A declared list (config key, or a `web/blueprints_local/` package discovered after the core list) removes a patch every upgrade reverts. Low risk: it adds routes and relaxes nothing |
+| 2 | Navigation entries (#25-#27) | `NAV_GROUPS` is a literal in `web/shared.py:137` | **GO, together with 1** | Same declaration as 1: items appended to an existing group, or a new group. Display only |
+| 3 | CSRF exemption (#9, #10) | `csrf_protect()` in `web/app.py:193` exempts health, `/search/` JSON and `designer_api.*`, each hard-coded upstream with a task id (T-409, T-2529) | **NO as a self-declared contract. GO only as an operator-owned allowlist** (IW-2) | It relaxes a gate. A blueprint that can declare itself exempt is a project agent weakening security by writing code. Proposal: a committed allowlist of endpoint names in project config, each entry naming its auth mechanism (Bearer / custom header) and a task id. `fw audit` lists every exemption, and changing the list is an operator action, like baseline adds. Needs the operator's ruling |
+| 4 | Post-decision hook on approvals (#8, #5's route) | `decide_approval()` (`web/blueprints/approvals.py:1160`) is the "unfakeable surface" that writes the approval token | **GO, notification only** | Emit an event after the decision is durably recorded: append a line to a project-readable events file, or call a project hook script with the decision as data, after the write. The hook can never change, block or forge a decision; its failure is logged, never fatal |
+| 5 | Reviewer-brief addendum (#29) | Reviewer prompt = fixed preamble + the judge's brief; the caller cannot steer it (T-3580 rounds 8-9). Project config committed at the reviewed revision is loaded only as part of the reviewed diff | **NO-GO for now** | A project-supplied addendum is text the producer controls inside the reviewer's prompt, which is exactly what T-3580 removed. Stripping project-defined fields from criterion text could hide what is being judged. Revisit only with a design that keeps the addendum outside producer control |
+| 6 | Project-local gate patterns (new, from 055's T-640/T-641) | None. 055 edited its vendored `check-tier0.sh` to add a tmux-kill rule, and a backtick in that edit killed every agent on .107 for 6 h on 2026-10-26 | **GO, tightening only** | A committed project file of extra block patterns, read by the gate as data, never executed. It can only ADD refusals, never remove one. Validated at load: regex compiles, no empty pattern. This would have made 055's local edit unnecessary |
+
+**Not in T-4649's scope.** ring20's category-5 list consists of general fixes, not extension points, so each gets its own build task where still open. #28/#30 (API optional-dependency guards) is already T-4657.
+
+**Sequencing if GO:** 1+2 (one task), 6, 4, then 3 after the operator's IW-2 ruling. 5 is not built.

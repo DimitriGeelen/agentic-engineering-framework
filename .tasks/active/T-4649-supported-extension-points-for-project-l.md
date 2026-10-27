@@ -18,7 +18,7 @@ components: []
 related_tasks: []
 origin: {kind: "peer", source: "proxmox-ring20-management", ref: "83c8790d"}
 created: 2026-10-22T14:14:29Z
-last_update: 2026-10-22T19:28:24Z
+last_update: 2026-10-27T10:58:02Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,14 +86,14 @@ cost_estimate_proposed:
 -->
 
 - **IW-1: Which of ring20's 9 "needs an extension point" patches warrant a supported framework extension point (blueprints, nav, CSRF-exempt declaration, post-approval hook, reviewer-brief addendum), and which should stay project-local?**
-  confidence: 1
-  disposition:
-  rationale: ring20 triage recorded in docs/reports/T-4649-ring20-patch-triage.md (sidecar 02db28da)
+  confidence: 2
+  disposition: answered
+  rationale: per-point analysis in docs/reports/T-4649-ring20-patch-triage.md §AEF analysis. GO: blueprint registration + nav (1, 2), notification-only post-decision hook (4), and tightening-only project gate patterns (6, new, from 055's T-640 outage). CSRF (3) only as an operator-owned allowlist (see IW-2). NO-GO: reviewer-brief addendum (5), which conflicts with T-3580's fixed reviewer prompt. Category-5 items are separate fixes, not extension points
 
 - **IW-2: Does a CSRF-exemption declaration (relaxing a gate) belong in an extension contract at all, or only behind an operator-signed allowlist?**
-  confidence: 1
-  disposition:
-  rationale: ring20 patches #9, #10
+  confidence: 2
+  disposition: answered
+  rationale: not as a self-declared contract (a blueprint declaring itself exempt is project code weakening a gate). Only as a committed, operator-owned allowlist naming each endpoint, its auth mechanism and a task id, listed by fw audit, with list changes as an operator action. Proposed; the operator rules on it at decide time (ring20 patches #9, #10)
 
 ## Exploration Plan
 
@@ -155,9 +155,21 @@ cost_estimate_proposed:
 
 ## Recommendation
 
-**Recommendation:** GO
+**Recommendation:** GO, scoped: build extension points 1+2 (blueprints + nav), 6 (tightening-only project gate patterns) and 4 (notification-only post-decision hook). Point 3 (CSRF) only as an operator-owned allowlist, and only if the operator agrees to that shape. NO-GO on 5 (reviewer-brief addendum).
 
-**Rationale:** ring20 carries 27 in-file patches across 22 vendored files and had to roll back be.2 because upgrade would overwrite them (also their G-187); today the only supported extension points are BOUNDARY_EXTRA_READ_PATHS, .fwvendor-preserve.yaml (whole-file keep) and project hooks in .claude/settings.json (kept by upgrade, T-3833), none of which can add to or narrow a framework hook's decision. A declared extension point removes the patch-and-lose cycle for every consumer.
+**Rationale:** ring20 carries 27 in-file patches across 22 vendored files and had to roll back be.2 because upgrade would overwrite them (their G-187). Today's only supported extension points are BOUNDARY_EXTRA_READ_PATHS, .fwvendor-preserve.yaml (whole-file keep) and project hooks in .claude/settings.json (kept by upgrade, T-3833). None of them can add a page or add to a framework gate. On 2026-10-26, 055's local edit of a vendored gate killed every agent on one host for about 6 h. The point-by-point analysis splits what is safe to open from what is not:
+- **Points 1, 2, 4 and 6** add routes or display, only observe a decision, or can only tighten a gate. So they are safe to open.
+- **Point 3** relaxes a gate. It is acceptable only behind an allowlist the operator owns.
+- **Point 5** puts producer-controlled text into the reviewer's prompt, undoing T-3580. So it is not built.
+
+**Evidence:**
+- docs/reports/T-4649-ring20-patch-triage.md §AEF analysis: per-point table with today's code (web/blueprints/__init__.py, web/shared.py:137 NAV_GROUPS, web/app.py:193 csrf_protect, web/blueprints/approvals.py:1160 decide_approval, T-3580 reviewer prompt)
+- ring20 triage (msg 02db28da): 9 "needs an extension point" patches out of 37
+- 055 T-640/T-641 and AEF T-4782: the vendored-gate edit that caused the 2026-10-26 outage
+
+**Dialogue Log:**
+- 2026-10-26: operator said "t4649, go" in chat. Not recorded: the questions were still open.
+- 2026-10-27: operator: "4649 is not ready !!!", then "let's work on it". The agent found IW-1/IW-2 undisposed and the GO resting on the problem, not on an answer. It did the per-point analysis above and narrowed the recommendation.
 
 ## Decisions
 
