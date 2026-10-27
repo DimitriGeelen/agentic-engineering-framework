@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4787: fw note promote puts the whole, unescaped observation text into name:
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T23:38:49Z
+# ============================================================================
+
+task_id: T-4787
+task_name: "fw note promote puts the whole, unescaped observation text into name:"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-26T23:02:56Z
+completed: 2026-10-27T23:38:14Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-10-28T00:31:18+01:00
+last_commit: 2026-10-28T00:31:18+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw note promote reads the inbox as YAML, gives a short name, keeps the full text in description and Context; create-task writes name: JSON-quoted; repair T-4785..T-4792
+
+# Key outcomes
+outcomes:
+  - 'Reproduce first: a bats test promotes an observation whose text holds a double quote, a single quote, a colon and a newline, and shows the task file''s frontmatter does not parse or the name is the raw text; it fails before the fix'
+  - 'The name is a short summary (first sentence, at most about 120 characters, without YAML-like prefixes such as `text:`); the full observation text goes into the task''s Context (and description), quoted safely'
+  - 'Every frontmatter string the verb writes is YAML-safe; the created file parses with yaml.safe_load in the test'
+  - 'Repair the eight already-promoted tasks T-4785..T-4792: short names and their observation text in Context (Edit tool on each task file, not a shell write); their frontmatter parses'
+  - 'Existing promote/note tests stay green; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-28 — where to escape the name'
+    chose: 'escape in create-task.sh, writing `name:` as `json.dumps(name)` (a JSON string is a valid YAML double-quoted scalar) in all three write paths. Promote additionally reads the inbox with yaml.safe_load.'
+    rationale: 'every caller of create-task, not only promote, can pass a backslash; fixing it at the writer covers them all with one line per path.'
+    alternatives_rejected: ['sanitising the name inside promote only (leaves `fw task create --name ''a\d''` broken); a new escape helper (json.dumps already does exactly this).']
+  - decision: '2026-10-28 — short-name rule'
+    chose: 'whitespace-collapsed first sentence (split at `.`/`!`/`?` + space), cut at 120 characters on a word boundary with "…". The full text goes into description (after "Promoted from observation OBS-NNN: ") and as a `>` quote under `## Context`.'
+    alternatives_rejected: ['truncating at a fixed width without a sentence split (gives mid-clause names even for short first sentences). For the eight repaired tasks I wrote the names by hand, because the mechanical rule gives long names for observations whose first sentence runs past 120 characters.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/observe/observe.sh'
+  - '.agentic-framework/agents/task-create/create-task.sh'
+  - '.tasks/active/T-4785-concurrent-workers-broad-git-add-swept-a.md'
+  - '.tasks/active/T-4786---text-structural-gap-found-while-recove.md'
+  - '.tasks/active/T-4787-fw-note-promote-copies-the-whole-observa.md'
+  - '.tasks/active/T-4788---text-obs-python3--c-write-forms-skip-t.md'
+  - '.tasks/active/T-4790-sidecar-consult-to-cacc73ea32b121dd999-a.md'
+  - '.tasks/active/T-4791-autonomous-worker-failure-mode-caught-by.md'
+  - '.tasks/active/T-4792---text-t-2834-leaves-one-leg-of-the-same.md'
+  - 'agents/observe/observe.sh'
+  - 'agents/task-create/create-task.sh'
+  - 'tests/unit/t4787_note_promote_name.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T00:31:18'
+    action: 'T-4787: fw note promote reads the inbox as YAML, gives a short name, keeps the full text in description and Context; create-task writes name: JSON-quoted; repair T-4785..T-4792'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1475 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1475
+  commits: 2
+  files_changed: 15
+  lines_added: 420
+  lines_removed: 99
+  footprint_refreshed_at: '2026-10-27T23:39:21Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4787-fw-note-promote-copies-the-whole-observa.md
+generated_by: context-agent-hybrid
