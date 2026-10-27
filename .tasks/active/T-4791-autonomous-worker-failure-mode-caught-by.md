@@ -111,10 +111,10 @@ The need: a task whose own commits changed vendored paths cannot reach work-comp
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: a bats test builds a temp framework repo, commits a change to a vendored path (e.g. lib/x.sh) under task T-A without syncing .agentic-framework/, and shows `fw task update T-A --status work-completed` succeeds; it fails before the fix
-- [ ] The close path runs the equivalent of `bin/fw vendor self --check --task T-A` (only the task's own changed files) when the task's commits touched vendored paths, and refuses with the exact fix command when they are out of sync; it passes untouched when no vendored path changed, and in a consumer project (no self-vendor)
-- [ ] The refusal names a bypass consistent with the other close gates (operator-only `--skip-*` with --reason, or a logged env var), per CLAUDE.md §Hook Bypass Contract Parity
-- [ ] Existing update-task close tests stay green; vendor in sync
+- [x] Reproduce first: a bats test builds a temp framework repo, commits a change to a vendored path (e.g. lib/x.sh) under task T-A without syncing .agentic-framework/, and shows `fw task update T-A --status work-completed` succeeds; it fails before the fix
+- [x] The close path runs the equivalent of `bin/fw vendor self --check --task T-A` (only the task's own changed files) when the task's commits touched vendored paths, and refuses with the exact fix command when they are out of sync; it passes untouched when no vendored path changed, and in a consumer project (no self-vendor)
+- [x] The refusal names a bypass consistent with the other close gates (operator-only `--skip-*` with --reason, or a logged env var), per CLAUDE.md §Hook Bypass Contract Parity
+- [x] Existing update-task close tests stay green; vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -321,6 +321,14 @@ bin/fw vendor self --check --task T-4791
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** T-3412's worker edited three vendored sources (lib/inception.sh, agents/context/check-active-task.sh, agents/task-create/create-task.sh), never ran `fw vendor self`, and closed green; only the pre-push self-vendor gate caught the stale `.agentic-framework/` copy later.
+
+**Root cause:** the close path in agents/task-create/update-task.sh (the `work-completed` gate sequence, P-011 at `run_verification_commands`) had no vendor check of its own. The only check at close was whatever the author wrote under `## Verification`, so the sync rule (OBS-250, T-3236) depended on the author knowing it.
+
+**Why structurally allowed:** P-011 is author-controlled: it runs only the lines written in the task. A rule the author does not know produces a green close, not a red one. The vendor rule lived in CLAUDE.md prose and the template's comment hint. The deterministic check (`fw vendor self --check --task`, T-4419) already existed, but no gate called it.
+
+**Prevention:** `check_vendor_sync` in update-task.sh runs on every `work-completed` close (and on the partial-complete finalization) in the framework repo. When the task's own commits touched a path outside `.tasks/`, `.context/`, `.agentic-framework/`, `docs/` and `tests/`, it calls `bin/fw vendor self --check --task <id>` and refuses on drift, naming the fix command and the files. tests/unit/t4791_close_requires_vendor_sync.bats pins it (11 tests; the refusal tests fail against HEAD's update-task.sh).
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -384,6 +392,19 @@ bin/fw vendor self --check --task T-4791
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-28 — how the close gate decides drift
+- **Chose:** call `bin/fw vendor self --check --task <id>` itself, behind a cheap `git log` pre-filter (same commit grep as `--check --task`) that skips the gate when the task's commits touched only `.tasks/`, `.context/`, `.agentic-framework/`, `docs/` or `tests/`.
+- **Why:** one definition of "vendored" and "this task's files" (T-4419 scoping, which also names other workers' drift as in flight). The check costs about 5 s, so the pre-filter keeps docs-only and task-file-only closes fast.
+- **Rejected:** re-implementing the vendored-class list in update-task.sh, which would drift from lib/upgrade.sh. Also rejected: deriving required lines into `## Verification` (OBS-452's candidate), which still leaves the gate dependent on the task file's text.
+
+### 2026-10-28 — bypass shape
+- **Chose:** `--skip-vendor-sync "reason"` and `FW_SKIP_VENDOR_SYNC=1`, both logged Tier-2 and both refused under CLAUDECODE=1 without `--i-am-human`, mirroring `--skip-reviewer-severe` (T-4197).
+- **Why:** the gate is called by direct `fw task update` and by wrappers, so it needs both a flag and an env var (Hook Bypass Contract Parity). An agent has no reason to waive it, because the fix is one command.
+- **Rejected:** an agent-usable reason-only flag, which would reopen the OBS-452 hole for autonomous workers.
+
+### 2026-10-28 — neighbouring tests
+- 64 update-task close bats files run: 484 ok, 6 not ok. The same 6 fail on a pristine `git archive HEAD` tree with and without this change (lib_review T-1492 ×2, t3445 delegation ×3, episodic corpus parse ×1), so they predate it.
 
 ## Decision
 

@@ -160,8 +160,8 @@ _t4094_note_move_source() {
 # (--skip-render-review under T-3557 until T-3580 lands) or whose gate guards an
 # artefact's shape rather than a criterion or ownership. Table: T-3586 task file.
 # Env-var bypasses (FW_*) are unchanged: they have no reason surface.
-_BYPASS_AGENT_REFUSED=" --skip-acceptance-criteria --skip-verification --skip-sovereignty --skip-human-ownership --skip-rca --skip-recommendation --skip-inception-decision --skip-self-deferral --skip-reviewer-severe "
-_BYPASS_REASON_REQUIRED=" --skip-acceptance-criteria --skip-verification --skip-sovereignty --skip-human-ownership --skip-rca --skip-recommendation --skip-inception-decision --skip-render-review --skip-evolution --skip-disposition-gate --skip-inception-scope-trace --skip-register-requirements --skip-self-deferral --skip-reviewer-severe "
+_BYPASS_AGENT_REFUSED=" --skip-acceptance-criteria --skip-verification --skip-sovereignty --skip-human-ownership --skip-rca --skip-recommendation --skip-inception-decision --skip-self-deferral --skip-reviewer-severe --skip-vendor-sync "
+_BYPASS_REASON_REQUIRED=" --skip-acceptance-criteria --skip-verification --skip-sovereignty --skip-human-ownership --skip-rca --skip-recommendation --skip-inception-decision --skip-render-review --skip-evolution --skip-disposition-gate --skip-inception-scope-trace --skip-register-requirements --skip-self-deferral --skip-reviewer-severe --skip-vendor-sync "
 enforce_bypass_policy() {
     local flag="$1" reason="$2"
     case "$_BYPASS_REASON_REQUIRED" in *" $flag "*) ;; *) return 0 ;; esac
@@ -1205,6 +1205,79 @@ check_reviewer_severe() {
     exit 1
 }
 
+# Vendor-sync gate (T-4791, OBS-452)
+# A task whose own commits changed a vendored source (bin/fw, lib/, agents/, policy/,
+# web/, tools/, .tasks/templates/, root data files) cannot close while the copy under
+# .agentic-framework/ is out of sync. P-011 runs only the lines the author wrote, so a
+# worker that never heard of `fw vendor self` closed green (T-3412) and only pre-push
+# caught it. The verdict is `fw vendor self --check --task <id>` itself (T-4419): it
+# scopes to the task's commits and names other workers' drift as in flight, not ours.
+# Framework repo only: a consumer (or the vendored copy running) has no self-vendor.
+# Bypass: --skip-vendor-sync "reason" or FW_SKIP_VENDOR_SYNC=1, logged Tier-2; both
+# refused under CLAUDECODE=1 without --i-am-human (the fix is one command).
+check_vendor_sync() {
+    [ "$NEW_STATUS" = "work-completed" ] || return 0
+    [ -d "$FRAMEWORK_ROOT/.agentic-framework/lib" ] || return 0
+    [ "$(cd "$FRAMEWORK_ROOT" && pwd -P)" = "$(cd "$PROJECT_ROOT" && pwd -P)" ] || return 0
+    [ -x "$FRAMEWORK_ROOT/bin/fw" ] || [ -f "$FRAMEWORK_ROOT/bin/fw" ] || return 0
+    # Cheap pre-filter (the check costs seconds): skip when the task's commits touched
+    # nothing outside paths that are never vendored. Same commit grep as --check --task.
+    local _paths
+    _paths=$(git -C "$FRAMEWORK_ROOT" log --format= --name-only -E \
+        --grep="^(T-[0-9]+[, ]+)*${TASK_ID}([^0-9]|\$)" 2>/dev/null | sort -u \
+        | grep -vE '^(\.tasks/(active|completed)/|\.context/|\.agentic-framework/|docs/|tests/)' || true)
+    [ -n "$_paths" ] || return 0
+    local out rc=0
+    out=$(FRAMEWORK_ROOT="$FRAMEWORK_ROOT" PROJECT_ROOT="$PROJECT_ROOT" \
+        bash "$FRAMEWORK_ROOT/bin/fw" vendor self --check --task "$TASK_ID" 2>&1) || rc=$?
+    [ "$rc" -eq 0 ] && return 0
+    if [ "$rc" -ne 1 ]; then
+        echo -e "${YELLOW}WARNING: vendor-sync gate could not run (exit $rc) — not enforced on this close (T-4791)${NC}" >&2
+        printf '%s\n' "$out" | tail -5 | sed 's/^/  /' >&2
+        return 0
+    fi
+    if [ "$SKIP_VENDOR_SYNC" = true ]; then
+        echo -e "${YELLOW}WARNING: vendored copy out of sync (--skip-vendor-sync bypass)${NC}"
+        log_gate_bypass "--skip-vendor-sync" "check_vendor_sync"
+        return 0
+    fi
+    if [ "${FW_SKIP_VENDOR_SYNC:-0}" = "1" ]; then
+        if [ "${CLAUDECODE:-}" = "1" ] && [ "$I_AM_HUMAN" != true ]; then
+            echo -e "${RED}ERROR: FW_SKIP_VENDOR_SYNC=1 is refused in an agent session (CLAUDECODE=1) — T-3586, T-4791${NC}" >&2
+            echo "  The fix is one command: cd $PROJECT_ROOT && bin/fw vendor self" >&2
+            exit 1
+        fi
+        echo -e "${YELLOW}WARNING: vendored copy out of sync (FW_SKIP_VENDOR_SYNC=1 bypass)${NC}"
+        log_gate_bypass "FW_SKIP_VENDOR_SYNC" "check_vendor_sync"
+        return 0
+    fi
+    echo -e "${RED}ERROR: Cannot complete — this task changed vendored files and .agentic-framework/ is out of sync.${NC}" >&2
+    echo "" >&2
+    echo "T-4791 (OBS-250, T-3236): sync BEFORE work-completed; after close no task can run it." >&2
+    echo "" >&2
+    printf '%s\n' "$out" | grep "would sync" | sed -e 's/\x1b\[[0-9;]*m//g' -e 's/^ */  /' >&2
+    # Hint only (the verdict above is the check's): this task's files whose copy differs.
+    local _p
+    while IFS= read -r _p; do
+        [ -f "$FRAMEWORK_ROOT/$_p" ] || continue
+        case "$_p" in
+            bin/fw|lib/*|agents/*|policy/*|web/*|tools/*|.tasks/templates/*) ;;
+            *) [ -f "$FRAMEWORK_ROOT/.agentic-framework/$_p" ] || continue ;;
+        esac
+        cmp -s "$FRAMEWORK_ROOT/$_p" "$FRAMEWORK_ROOT/.agentic-framework/$_p" 2>/dev/null \
+            || echo "    $_p" >&2
+    done <<< "$_paths"
+    echo "" >&2
+    echo "To resolve:" >&2
+    echo "  cd $PROJECT_ROOT && bin/fw vendor self && bin/fw vendor self --check --task $TASK_ID" >&2
+    echo "  (a new file: FW_VENDOR_ONLY=\"path1 path2\" bin/fw vendor self), commit, and retry." >&2
+    echo "" >&2
+    echo "Operator override (Tier-2 logged, refused under CLAUDECODE=1 without --i-am-human):" >&2
+    echo "  --skip-vendor-sync \"reason\"   (direct fw task update)" >&2
+    echo "  FW_SKIP_VENDOR_SYNC=1 <cmd>     (env-var for git hooks / wrappers)" >&2
+    exit 1
+}
+
 # Disposition-completeness gate (T-2190, T-2186 Slice 4)
 # Inception tasks must dispose every declared question in the ## Open Questions
 # body section. Each question gets answered / dissolved / deferred with cited
@@ -1902,6 +1975,8 @@ fi
 SKIP_SELF_DEFERRAL=false  # T-3694: flag only, no env-var form
 # T-4197: severe-reviewer-finding gate (--skip-reviewer-severe "reason" / FW_SKIP_REVIEWER_SEVERE=1)
 SKIP_REVIEWER_SEVERE=false
+# T-4791: vendor-sync close gate (--skip-vendor-sync "reason" / FW_SKIP_VENDOR_SYNC=1)
+SKIP_VENDOR_SYNC=false
 # T-2190: disposition-completeness gate (--skip-disposition-gate / FW_SKIP_DISPOSITION_GATE=1)
 SKIP_DISPOSITION_GATE=false
 if [ "${FW_SKIP_DISPOSITION_GATE:-0}" = "1" ]; then
@@ -1942,6 +2017,13 @@ while [[ $# -gt 0 ]]; do
         --skip-self-deferral) SKIP_SELF_DEFERRAL=true; shift ;;
         --skip-reviewer-severe)
             SKIP_REVIEWER_SEVERE=true
+            if [ -n "${2:-}" ] && [[ "${2:-}" != --* ]] && [[ "${2:-}" != T-* ]]; then
+                REASON="${REASON:-$2}"
+                shift
+            fi
+            shift ;;
+        --skip-vendor-sync)
+            SKIP_VENDOR_SYNC=true
             if [ -n "${2:-}" ] && [[ "${2:-}" != --* ]] && [[ "${2:-}" != T-* ]]; then
                 REASON="${REASON:-$2}"
                 shift
@@ -1988,6 +2070,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-evolution             Bypass Evolution-log gate for arc-tagged builds (T-1718)" >&2
             echo "  --skip-register-requirements \"...\"  Bypass design-conformance register gate (T-3691)" >&2
             echo "  --skip-self-deferral         Bypass self-deferral gate (T-3694; operator only, needs --reason)" >&2
+            echo "  --skip-vendor-sync \"...\"     Bypass vendor-sync gate (T-4791; operator only)" >&2
             echo "  --skip-reviewer-severe \"...\" Bypass severe reviewer-finding gate (T-4197; operator only)" >&2
             echo "  --skip-inception-decision    Bypass inception decision gate (T-1626, G-052)" >&2
             echo "  --skip-inception-scope-trace \"...\"  Bypass GO-scope trace gate (T-1984, G-066)" >&2
@@ -2211,6 +2294,8 @@ if [ -n "$NEW_STATUS" ]; then
                 run_verification_commands
                 _T4681_FINALIZING=0
                 unset FW_TASK_UPDATE_IN_CLOSE
+                # T-4791: same for the vendor-sync gate.
+                check_vendor_sync
                 DEST="$TASKS_DIR/completed/$(basename "$TASK_FILE")"
                 # T-1523: use `git mv` when tracked so both rename sides land
                 # in the index together — avoids leaving the active/* deletion
@@ -2481,6 +2566,12 @@ PY
             export FW_TASK_UPDATE_IN_CLOSE="$TASK_ID"
             run_verification_commands
             unset FW_TASK_UPDATE_IN_CLOSE
+        fi
+
+        # === Vendor-sync Gate (T-4791, OBS-452) ===
+        # The task's own vendored changes must be synced into .agentic-framework/.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            check_vendor_sync
         fi
 
         # === Recommendation Gate (T-679 / T-1529) ===
