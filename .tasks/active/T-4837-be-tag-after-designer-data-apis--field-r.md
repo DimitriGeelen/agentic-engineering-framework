@@ -89,9 +89,9 @@ Cut the next v1.8.15 be-tag after the designer data APIs (T-4830, T-4831, T-4832
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Fast unit suite run with 0 new reds; `bin/fw audit --section structure` shows Fail: 0 and "0 new"
-- [ ] bleeding-edge pushed and `bin/fw release be-tag --push` cut the tag; tag name recorded in ## Updates
-- [ ] 832 and greenfield told the tag, the task ids and the config key via `bin/fw sidecar send`
+- [x] Fast unit suite run with 0 new reds; `bin/fw audit --section structure` shows Fail: 0 and "0 new"
+- [x] bleeding-edge pushed and `bin/fw release be-tag --push` cut the tag; tag name recorded in ## Updates
+- [x] 832 and greenfield told the tag, the task ids and the config key via `bin/fw sidecar send`
 - [x] docs/reports/field-test-v1.8.15-results.md has a section with the verdicts since T-4804, one row per project and build
 
 ### Human
@@ -374,3 +374,7 @@ Cut the next v1.8.15 be-tag after the designer data APIs (T-4830, T-4831, T-4832
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4837-be-tag-after-designer-data-apis--field-r.md
 - **Context:** Initial task creation
+
+### 2026-10-27 — be-tag cut
+- Tag: **v1.8.15-be.42** at 43ec3686a. Fast unit suite: 9 baselined reds, 0 new, 0 expired (9 files per-file timeout, same set as earlier tags); structure audit Fail: 0.
+- Announced to 832-Workflow-designer (conversation designer-data-api, msg 8c940d5c) and dimitri-mint-dev (dmd-greenfield-orchestrator, msg 2171a561).
