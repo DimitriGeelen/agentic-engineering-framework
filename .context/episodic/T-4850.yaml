@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4850: be-tag be.46: field follow-ups T-4825..T-4828, T-4807, T-4809, plus T-4846, T-4847
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T23:09:13Z
+# ============================================================================
+
+task_id: T-4850
+task_name: "be-tag be.46: field follow-ups T-4825..T-4828, T-4807, T-4809, plus T-4846, T-4847"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-27T22:52:37Z
+completed: 2026-10-27T23:08:53Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-27T23:53:27+01:00
+last_commit: 2026-10-28T00:08:41+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ACs, Verification. be.46 cut and announced; ACs ticked
+
+# Key outcomes
+outcomes:
+  - 'Fast unit suite with 0 new reds; `bin/fw audit --section structure` Fail: 0'
+  - 'bleeding-edge pushed and `bin/fw release be-tag --push` cut the tag (v1.8.15-be.46)'
+  - '055, TermLink and 1409 told the tag and their task ids (msgs 8b607d98, 45619697, 42441647)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4850-be-tag-be46-field-follow-ups-t-4825t-482.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T23:53:27'
+    action: 'T-4850: ACs, Verification'
+  - time: '2026-10-28T00:08:41'
+    action: 'T-4850: be.46 cut and announced; ACs ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 16
+  commits: 3
+  files_changed: 4
+  lines_added: 474
+  lines_removed: 7
+  footprint_refreshed_at: '2026-10-27T23:09:26Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4850-be-tag-be46-field-follow-ups-t-4825t-482.md
+generated_by: context-agent-hybrid

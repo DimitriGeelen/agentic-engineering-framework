@@ -50423,3 +50423,21 @@ scan_id: R-5c4d6bca
 task_id: T-4809
 payload:
   task_file: .tasks/active/T-4809-loop-ledger-records-start-armed-when-con.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T23:08:56Z'
+scan_id: R-a5d564eb
+task_id: T-4850
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T23:08:56Z'
+scan_id: R-a5d564eb
+task_id: T-4850
+payload:
+  task_file: .tasks/active/T-4850-be-tag-be46-field-follow-ups-t-4825t-482.md

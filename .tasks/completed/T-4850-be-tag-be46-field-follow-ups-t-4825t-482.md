@@ -5,10 +5,10 @@ name: "be-tag be.46: field follow-ups T-4825..T-4828, T-4807, T-4809, plus T-484
 description: >
   be-tag be.46: field follow-ups T-4825..T-4828, T-4807, T-4809, plus T-4846, T-4847
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -39,8 +39,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T22:52:37Z
-last_update: '2026-10-27T23:00:51Z'
-date_finished:
+last_update: 2026-10-27T23:08:53Z
+date_finished: 2026-10-27T23:08:53Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -376,3 +376,22 @@ git ls-remote --tags origin | grep -q "$(git tag --contains 0ed4899c8 | grep '^v
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4850-be-tag-be46-field-follow-ups-t-4825t-482.md
 - **Context:** Initial task creation
+
+### 2026-10-27T23:08:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a5d564eb
+- **Timestamp:** 2026-10-27T23:08:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `git tag --contains 0ed4899c8 | grep -q "^v1.8.15-be."`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `git ls-remote --tags origin | grep -q "$(git tag --contains 0ed4899c8 | grep '^v1.8.15-be.' | head -1)"`
