@@ -267,7 +267,9 @@ def report(target, before_file, wrote_file=None):
     print("")
     print("  Files this upgrade created or changed (not committed yet):")
     for name in plain:
-        state = "new" if found[name][0] == "??" else "modified"
+        st = found[name][0]
+        # T-4823: a removal the upgrade journalled (git add stages it too)
+        state = "new" if st == "??" else "deleted" if "D" in st else "modified"
         print(f"    {state:<9} {name}")
     add = list(plain)
     if vendored:

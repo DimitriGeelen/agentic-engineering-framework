@@ -1018,6 +1018,11 @@ _t4672_sync_designer() {
 #     (FRAMEWORK_ROOT/vendor/designer/ keeps every released build), so a file
 #     the user wrote or edited under a designer-like name is never touched.
 # Everything else is listed with the command that removes it, and kept.
+# T-4823: except a TRACKED build that is byte-identical to the published one
+# and unchanged against HEAD: it is removed and journalled (_t4697_wrote), so
+# the T-4692 commit list's git add line stages its removal together with the
+# new build. Kept, it sat outside that line and got committed next to the new
+# one (055 be.37). A tracked build with local changes is still kept.
 #
 # Inputs: $1 target dir, $2 pinned rel path, $3 pin source root, $4 dry_run
 # Return: 0 always (advisory).
@@ -1041,8 +1046,16 @@ _t4736_prune_root_designer() {
         if git -C "$target_dir" ls-files --error-unmatch -- "$_rel_f" >/dev/null 2>&1; then
             _tracked=1
         fi
-        if [ "$_tracked" -eq 1 ]; then
+        if [ "$_tracked" -eq 1 ] && { [ "$_known" -eq 0 ] || ! git -C "$target_dir" diff --quiet HEAD -- "$_rel_f" 2>/dev/null; }; then
             echo -e "  ${YELLOW}KEPT${NC}  superseded designer build $_rel_f is tracked in git — remove it with: ${BOLD}cd $target_dir && git rm $_rel_f${NC}"
+        elif [ "$_tracked" -eq 1 ] && [ "$dry_run" = true ]; then
+            echo -e "  ${CYAN}WOULD REMOVE${NC}  superseded designer build $_rel_f (tracked, identical to the published AEF build; the commit list stages the removal)"
+        elif [ "$_tracked" -eq 1 ]; then
+            # T-4823: journalled, so the commit list's one git add line stages
+            # the removal next to the new build (055 be.37).
+            rm -f "$_f"
+            _t4697_wrote "$_rel_f"
+            echo -e "  ${GREEN}REMOVED${NC}  superseded designer build $_rel_f (tracked, identical to the published AEF build; stage it with the git add line below)"
         elif [ "$_known" -eq 0 ]; then
             echo -e "  ${YELLOW}KEPT${NC}  $_rel_f does not match any published AEF build — remove it by hand if it is not yours: ${BOLD}rm $target_dir/$_rel_f${NC}"
         elif [ "$dry_run" = true ]; then

@@ -8,7 +8,9 @@
 #
 # Rule under test: delete a superseded root build only when it is untracked in
 # the consumer's git AND byte-identical to the same-named build in the framework
-# source's vendor/designer/. Tracked or unknown builds are listed and kept.
+# source's vendor/designer/. Tracked or unknown builds are listed and kept —
+# except (T-4823) a tracked published build unchanged against HEAD, which is
+# removed so the commit list's git add line stages the removal.
 
 load ../test_helper
 
@@ -87,14 +89,26 @@ _root_build() {
     [ ! -e "$PROJ/vendor/designer/aef-workflow-designer-0.8.0.html" ]
 }
 
-@test "tracked old build is listed with git rm and kept" {
+@test "tracked old build with local changes is listed with git rm and kept" {
+    _root_build 0.8.0 'DESIGNER-BUILD-0.8.0'
+    git -C "$PROJ" add vendor/designer/aef-workflow-designer-0.8.0.html
+    git -C "$PROJ" commit -qm "track old designer"
+    chmod u+w "$PROJ/vendor/designer/aef-workflow-designer-0.8.0.html"
+    printf 'local edit' >> "$PROJ/vendor/designer/aef-workflow-designer-0.8.0.html"
+    run _t4672_sync_designer "$PROJ" false
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"KEPT"*"aef-workflow-designer-0.8.0.html"*"git rm vendor/designer/aef-workflow-designer-0.8.0.html"* ]]
+    [ -f "$PROJ/vendor/designer/aef-workflow-designer-0.8.0.html" ]
+}
+
+@test "T-4823: tracked, unchanged, published old build is removed for the commit list" {
     _root_build 0.8.0 'DESIGNER-BUILD-0.8.0'
     git -C "$PROJ" add vendor/designer/aef-workflow-designer-0.8.0.html
     git -C "$PROJ" commit -qm "track old designer"
     run _t4672_sync_designer "$PROJ" false
     [ "$status" -eq 0 ]
-    [[ "$output" == *"KEPT"*"aef-workflow-designer-0.8.0.html"*"tracked in git"*"git rm vendor/designer/aef-workflow-designer-0.8.0.html"* ]]
-    [ -f "$PROJ/vendor/designer/aef-workflow-designer-0.8.0.html" ]
+    [[ "$output" == *"REMOVED"*"aef-workflow-designer-0.8.0.html"* ]]
+    [ ! -e "$PROJ/vendor/designer/aef-workflow-designer-0.8.0.html" ]
 }
 
 @test "unknown file with a designer-like name is listed and kept" {
