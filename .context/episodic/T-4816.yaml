@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4816: Human-AC tick guard ignores git's -- end-of-options marker (refuses read-only git log -- \"$f\" as a possible --output)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T13:05:50Z
+# ============================================================================
+
+task_id: T-4816
+task_name: "Human-AC tick guard ignores git's -- end-of-options marker (refuses read-only git log -- \"$f\" as a possible --output)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T11:29:44Z
+completed: 2026-10-27T13:04:47Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T13:29:07+01:00
+last_commit: 2026-10-27T13:29:07+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  tick guard honours git's bare -- (setup_revisions cuts argv there): words after it are pathspecs, not a possible --output; -L/--decorate-refs value still fails closed; regression bats; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'A failing bats case first: feeding the guard (agents/context/check-human-ac-tick.*) the Bash payload `git log --oneline -1 -- "$f"` (f a .tasks path) is refused with "an expanded argument may be --output"'
+  - 'After a bare `--` in a git command, operands are treated as pathspecs: an expansion there can no longer become `--output`, so the command passes. An unresolvable expansion BEFORE `--` (e.g. `git show --stat $c`, `git diff $c~1 HEAD`) is still refused, and so is a real `--output` to a .tasks path'
+  - 'New tests in tests/unit/t4816_tick_guard_dashdash.bats; the existing tick-guard tests (t3695* and siblings) stay green; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — which `--` ends the options'
+    chose: 'the first literal `--` word ends the scan, unless the word before it is `-L` (or a short cluster ending in L) or `--decorate-refs[-exclude]`, the cmd_log_init parse_options options that take a separate value and would eat `--` before setup_revisions sees it.'
+    rationale: 'this matches git''s own argv handling. The exception keeps `git log -L -- $o` failing closed.'
+    alternatives_rejected: ['honouring every `--` (a value-taking option could consume it and `--output` would follow); stopping only when nothing after `--` starts with `-` (still refuses the field idiom whenever `$f` is unresolved).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - '.tasks/active/T-4816-human-ac-tick-guard-ignores-gits----end-.md'
+  - 'lib/shell_write_scan.py'
+  - 'tests/unit/t4816_tick_guard_dashdash.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T13:29:07'
+    action: 'T-4816: tick guard honours git''s bare -- (setup_revisions cuts argv there): words after it are pathspecs, not a possible --output; -L/--decorate-refs value still fails closed; regression bats; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 95 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 95
+  commits: 2
+  files_changed: 6
+  lines_added: 577
+  lines_removed: 7
+  footprint_refreshed_at: '2026-10-27T13:08:37Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4816-human-ac-tick-guard-ignores-gits----end-.md
+generated_by: context-agent-hybrid
