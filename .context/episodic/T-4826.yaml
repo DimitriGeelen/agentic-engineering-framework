@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4826: fw doctor Watchtower smoke check judges too early right after a restart (warm-up gives a false endpoint failure)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T22:47:51Z
+# ============================================================================
+
+task_id: T-4826
+task_name: "fw doctor Watchtower smoke check judges too early right after a restart (warm-up gives a false endpoint failure)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T13:25:36Z
+completed: 2026-10-27T22:47:31Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T23:34:52+01:00
+last_commit: 2026-10-27T23:37:34+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  smoke test re-probes a failed route once (bounded) before reporting it. vendor sync of web/smoke_test.py; Agent ACs ticked
+
+# Key outcomes
+outcomes:
+  - 'Reproduce first: locate the smoke check in fw doctor and show (test with a stub server that fails the first request to an endpoint, then succeeds) that it reports a failure; it fails before the fix'
+  - 'A failed endpoint is retried once after a short bounded wait (or the check waits, bounded, for the first good health answer) before it is reported; a persistently failing endpoint is still reported'
+  - 'The whole smoke check stays bounded in time (state the bound in a comment); existing doctor tests stay green'
+  - 'Vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — where the retry lives'
+    chose: 'retry failed routes once inside `web/smoke_test.py` (one pass over the failures, after a 2 s pause, capped by a 60 s budget).'
+    rationale: 'the smoke test owns the per-route verdict and is also used by `fw audit`; the fix applies everywhere it runs and keeps `bin/fw` untouched (shared lane).'
+    alternatives_rejected: ['(a) re-running the whole smoke test from `bin/fw` on failure — doubles a 76-126 s check; (b) a longer fixed sleep before probing — slows every doctor run and still misjudges a route that is slower than the sleep.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/smoke_test.py'
+  - '.tasks/active/T-4826-fw-doctor-watchtower-smoke-check-judges-.md'
+  - 'tests/unit/t4826_doctor_smoke_warmup.bats'
+  - 'web/smoke_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T23:34:52'
+    action: 'T-4826: smoke test re-probes a failed route once (bounded) before reporting it'
+  - time: '2026-10-27T23:37:34'
+    action: 'T-4826: vendor sync of web/smoke_test.py; Agent ACs ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 561 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 561
+  commits: 3
+  files_changed: 7
+  lines_added: 363
+  lines_removed: 75
+  footprint_refreshed_at: '2026-10-27T22:48:07Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4826-fw-doctor-watchtower-smoke-check-judges-.md
+generated_by: context-agent-hybrid
