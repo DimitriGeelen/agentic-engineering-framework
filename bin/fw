@@ -4921,7 +4921,25 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
         _resolver_units=$(systemctl list-unit-files --no-legend resolver-loop.timer 2>/dev/null || true)
     fi
     if [[ "$_resolver_units" == resolver-loop.timer* ]]; then
+        # T-4819: the unit is host-wide; the project it dispatches for is the
+        # service's WorkingDirectory (deploy/resolver-loop.service). Claim it as
+        # this project's loop only when that is PROJECT_ROOT (realpath-compared).
+        local _resolver_wd="" _resolver_state="inactive" _resolver_self=""
+        _resolver_wd=$(systemctl show -p WorkingDirectory resolver-loop.service 2>/dev/null || true)
+        _resolver_wd="${_resolver_wd#WorkingDirectory=}"
+        _resolver_wd="${_resolver_wd%%$'\n'*}"
         if systemctl is-active --quiet resolver-loop.timer 2>/dev/null; then
+            _resolver_state="active"
+        fi
+        if [ -n "$_resolver_wd" ] && [ -n "${PROJECT_ROOT:-}" ] \
+            && [ "$(realpath -m -- "$_resolver_wd" 2>/dev/null)" = "$(realpath -m -- "$PROJECT_ROOT" 2>/dev/null)" ]; then
+            _resolver_self=1
+        fi
+        if [ -z "$_resolver_wd" ]; then
+            echo -e "  ${CYAN}INFO${NC}  systemd resolver-loop.timer is $_resolver_state, but resolver-loop.service has no WorkingDirectory — cannot attribute it to this project"
+        elif [ -z "$_resolver_self" ]; then
+            echo -e "  ${CYAN}INFO${NC}  another project's resolver loop ($_resolver_wd): resolver-loop.timer is $_resolver_state — not this project's"
+        elif [ "$_resolver_state" = "active" ]; then
             echo -e "  ${GREEN}LIVE${NC}  systemd resolver-loop.timer is active — dispatching unattended every 30m"
         else
             echo -e "  ${CYAN}INFO${NC}  systemd resolver-loop.timer is installed but inactive"

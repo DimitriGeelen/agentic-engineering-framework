@@ -32,6 +32,8 @@ case "\$1" in
         fi
         exit $1 ;;
     is-active) exit $3 ;;
+    # T-4819: the unit belongs to this project (WorkingDirectory = PROJECT_ROOT).
+    show) echo "WorkingDirectory=$BATS_TEST_TMPDIR"; exit 0 ;;
 esac
 exit 1
 EOF
@@ -42,7 +44,7 @@ _run_block() {
     local block
     block="$(_block)"
     [ -n "$block" ]
-    run env PATH="$1" /bin/bash -c "_section() { GREEN=''; CYAN=''; NC=''
+    run env PATH="$1" PROJECT_ROOT="$BATS_TEST_TMPDIR" /bin/bash -c "_section() { GREEN=''; CYAN=''; NC=''
 $block
 }; _section"
 }
