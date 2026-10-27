@@ -424,6 +424,33 @@ ring20 went from be.25 straight to be.31 (0cd951409) and the upgrade was clean: 
   - TermLink recorded T-4773 against its T-3591, and T-4778 against T-3592.
   - 1409 will measure T-4797 from be.32.
 
+### be.31 – be.35 — 832, TermLink, ring20, AEF itself (recorded 2026-10-27, T-4804)
+
+| Fix | Project | Tip | Verdict | Msg |
+|---|---|---|---|---|
+| T-4777 | 832 | be.31 | **WORKS**: their nested-sandbox test (_t630, sandboxes inside the repo with no .git), run without their GIT_CEILING_DIRECTORIES guard, staged 0 paths in the enclosing repo (be.8: 6) | d340e318 |
+| T-4795 | 832 | be.31 | **WORKS**: `fw designer` reports 0.30.0 present, sha256 matches the pin | d340e318 |
+| T-4799 | ring20 | be.33 | **WORKS**: CC-21 refused-before-start runs via the equivalent route and CC-10 is split. Runner: 19 pass, 4 n/a, 2 fail (CC-15/CC-19, waiting on v0.3.4), 0 not-implemented. A mutant adapter fails 18 | e9a2e72e |
+
+**Upgrades:**
+- **832, be.8 → be.31 in one step** (full clone of the tag):
+  - 412 vendored paths; `.fwvendor-preserve` kept their local files; TermLink settings and crontab intact;
+  - `fw doctor`: the same warning set before and after, no failures;
+  - Watchtower `/`, `/designer/app` and `/api/health` return 200;
+  - core tier 211/0, after 832 updated two of its own guards that still pointed at `/designer`. T-4716 moved the gallery to `/designer/corpus`, and `/designer` now redirects to `/designer/app?browse=1`;
+  - 37 local fixes re-applied: 34 clean, 3 three-way. 832 keeps its own `designer_landing.html` over T-4715's.
+- **TermLink, be.25 → be.27 → be.28 → be.31** (msg 26c85299): each step was rehearsed and then run for real, rc 0. Preserved merges were clean (handover.sh with T-4774; inject.py with T-4773 and T-4781), their own edits intact, the CLAUDE.md project part identical, `fw doctor` rc 0, and the full guard layer PASS. T-4778, T-4773, T-4781 and T-4783 are present.
+- **ring20, be.31 → be.33** (msg e9a2e72e): clean (doctor FAIL 2 before and after, patches preserved, suites green).
+
+**AEF's own conformance (T-4802, be.35):** `lib/dispatch_records.py`, the §6.2 local backend, runs AEF's vectors at 22 pass, 3 n/a (CC-11/12 answer_channel, CC-17 registry_epoch), 0 fail. A mutant that reports `paused` as `succeeded` fails CC-16 and CC-19. All three parties now run the suite mechanically. Vector gap found: the hand-backs omit `commission`, filed as T-4803.
+
+**Still unexercised, and who reports:**
+- **832:** T-4779 (at their next release), T-4768 (at their next CLI decide), T-4781 (after their operator relaunches claude-fw).
+- **TermLink:** T-4778 and T-4773 (live, at their next reviewer run and next replayed doorbell).
+- **1409:** T-4797 (timing).
+- **dimitri-mint-dev:** T-4781 (separate servers after a relaunch).
+- **The contract:** wc v0.3.4 waits for adoption by the AEF operator and TermLink's operator (their T-3484).
+
 ## Full-suite comparison (HEAD eee888e61 vs v1.8.14)
 
 **Method, and what it does not cover.** T-4345 ran the whole unit corpus on two scratch trees side by side (jobs=6
