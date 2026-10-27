@@ -275,7 +275,7 @@ def test_reference_backend_passes_all_cc16_variants_by_real_path(doc):
         assert r["status"] == "pass", r
         assert "equivalent" not in r["variants"][0]
         results.append(r)
-    assert len(results) == 7
+    assert len(results) == 8   # T-4818 added handback-absent-commission
 
 
 # ── T-4803: hand-backs carry commission, so outcome rule 1 is exercised by the suite ──
@@ -293,8 +293,8 @@ def test_every_handback_carries_its_dispatch_commission(doc):
             if not isinstance(hb, dict):
                 continue  # `absent` by design
             seen += 1
-            if _vec(doc, "CC-16") is vec and hb["commission"] != did:
-                continue  # the wrong-commission fixture, checked below
+            if _vec(doc, "CC-16") is vec and hb.get("commission") != did:
+                continue  # the wrong- and absent-commission fixtures, checked below
             assert hb.get("commission") == did, (vec["id"], name, hb)
     assert seen >= 25
 
@@ -304,6 +304,15 @@ def test_cc16_wrong_commission_variant_is_malformed(doc):
     hb = var["given"]["evidence"]["E1"]["handback"]
     did = _vec(doc, "CC-16")["given"]["dispatch"]["dispatch_id"]
     assert hb["commission"] != did and hb["nonce"] == "n1" and hb["attempt"] == 1
+    assert var["then"]["final"]["A1"]["outcome"] == "handback-malformed"
+    assert "requires" not in var
+
+
+def test_cc16_absent_commission_variant_is_malformed(doc):
+    """T-4818: step (3) of the T-4803 sequence, after TermLink (T-3600) and ring20 confirmed."""
+    var = next(v for v in _vec(doc, "CC-16")["variants"] if v["name"] == "handback-absent-commission")
+    hb = var["given"]["evidence"]["E1"]["handback"]
+    assert "commission" not in hb and hb["nonce"] == "n1" and hb["attempt"] == 1
     assert var["then"]["final"]["A1"]["outcome"] == "handback-malformed"
     assert "requires" not in var
 

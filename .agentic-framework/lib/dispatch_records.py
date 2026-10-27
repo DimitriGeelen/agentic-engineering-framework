@@ -826,12 +826,12 @@ class _Adapter:
         """A vector evidence entry as the supervisor would persist it: a signed completion (§6.5).
 
         The vectors' hand-backs carry `commission` (T-4803), and it is passed through as
-        given, so a wrong one reaches outcome rule 1. A hand-back without it (an older copy
-        of the vectors) gets the dispatch id filled in, as a real one would carry it
-        (T-4802 Decisions)."""
+        given, so a wrong or missing one reaches outcome rule 1. Nothing is filled in: an
+        adapter that corrects its input hides the case it is meant to judge (T-4818; ring20
+        hit exactly that with handback-wrong-commission)."""
         hb = ev.get("handback")
         if isinstance(hb, dict):
-            hb = {"commission": did, **hb}
+            hb = dict(hb)
             hb["nonce"] = self._sym(hb.get("nonce"))
         else:
             hb = None
