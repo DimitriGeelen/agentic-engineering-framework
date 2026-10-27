@@ -49793,3 +49793,129 @@ scan_id: R-62bcedab
 task_id: T-4818
 payload:
   task_file: .tasks/active/T-4818-conformance-vectors-step-3-absent-commis.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T12:26:46Z'
+scan_id: R-d212789a
+task_id: T-4815
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T12:26:46Z'
+scan_id: R-d212789a
+task_id: T-4815
+payload:
+  task_file: .tasks/active/T-4815-reviewer-counts-the-task-templates-comme.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T12:56:15Z'
+scan_id: R-66224df2
+task_id: T-4813
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T12:56:15Z'
+scan_id: R-66224df2
+task_id: T-4813
+payload:
+  task_file: .tasks/active/T-4813-fw-doctor-hook-path-validation-false-fai.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T12:56:57Z'
+scan_id: R-186a5a9d
+task_id: T-4819
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T12:56:57Z'
+scan_id: R-186a5a9d
+task_id: T-4819
+payload:
+  task_file: .tasks/active/T-4819-fw-doctor-reports-another-projects-resol.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T13:03:58Z'
+scan_id: R-3faaf75b
+task_id: T-4814
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T13:03:58Z'
+scan_id: R-3faaf75b
+task_id: T-4814
+payload:
+  task_file: .tasks/active/T-4814-fw-upgrade-leaves-upstream-files-untrack.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T13:05:31Z'
+scan_id: R-30330215
+task_id: T-4816
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T13:05:31Z'
+scan_id: R-30330215
+task_id: T-4816
+payload:
+  task_file: .tasks/active/T-4816-human-ac-tick-guard-ignores-gits----end-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T13:06:25Z'
+scan_id: R-aded0059
+task_id: T-4817
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T13:06:25Z'
+scan_id: R-aded0059
+task_id: T-4817
+payload:
+  task_file: .tasks/active/T-4817-human-ac-tick-guard-parses-the-contents-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T13:07:22Z'
+scan_id: R-4e236c0f
+task_id: T-4815
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T13:07:22Z'
+scan_id: R-4e236c0f
+task_id: T-4815
+payload:
+  task_file: .tasks/active/T-4815-reviewer-counts-the-task-templates-comme.md

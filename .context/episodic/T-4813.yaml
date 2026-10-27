@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4813: fw doctor 'Hook path validation' false FAIL on quoted mid-word paths and bash -c hooks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T12:56:31Z
+# ============================================================================
+
+task_id: T-4813
+task_name: "fw doctor 'Hook path validation' false FAIL on quoted mid-word paths and bash -c hooks"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T11:27:36Z
+completed: 2026-10-27T12:54:58Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T13:30:19+01:00
+last_commit: 2026-10-27T13:30:19+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  doctor Hook path validation tokenises with shlex, skips bash/sh -c (and python -c/-m, node -e) inline code, names each broken path and advises fw upgrade only for framework hooks; regression bats t4813
+
+# Key outcomes
+outcomes:
+  - 'A failing bats case first: a settings.json with the two ring20 hook commands (`"$CLAUDE_PROJECT_DIR"/scripts/x.sh` with an existing script, and `bash -c ''[ -n "$(find …)" ] && python3 …''`) makes `fw doctor` print FAIL Hook path validation'
+  - 'bin/fw''s hook-path check tokenises with shlex.split, expands $CLAUDE_PROJECT_DIR to the project root, and does no file check for `bash -c` / `sh -c` inline scripts; both commands are then OK, while a genuinely missing script path still FAILs'
+  - 'The FAIL line''s advice names what would fix that hook (a missing file) and no longer suggests `fw upgrade` for a path upgrade cannot fix'
+  - 'New tests in tests/unit/t4813_doctor_hook_paths.bats; sibling doctor tests green; vendor in sync (t4056 3/3 green; doctor_hook_counters 10-12 red before and after — baselined in .context/audits/unit-suite/baseline.yaml, caused by the Hook config check on a fixture without agents/, not this change)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — Fix Check 6''s parser in place vs share the Hook config tokeniser'
+    chose: 'shlex.split plus explicit inline-code flags (bash/sh any short flag containing c; python -c/-m; node -e/-p) inside Check 6.'
+    rationale: 'minimal change fixing both reported shapes; Check 6 counts whole commands with no segment notion, so lifting the T-4708 segment walker in changes its semantics inside a fragile python-in-double-quoted-bash block.'
+    alternatives_rejected: ['one shared python module for both checks — right long-term, but a refactor beyond this field bug (open T-4086 touches the other check''s -c handling).']
+  - decision: '2026-10-27 — What the FAIL advises'
+    chose: 'print each broken path; advise `fw upgrade` only when a framework hook (bare fw / vendored bin/fw) is broken, otherwise "create the script or fix the hook in .claude/settings.json".'
+    alternatives_rejected: ['dropping the upgrade advice entirely — it is correct for a missing vendored fw.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.tasks/active/T-4813-fw-doctor-hook-path-validation-false-fai.md'
+  - 'bin/fw'
+  - 'tests/unit/t4813_doctor_hook_paths.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T13:30:19'
+    action: 'T-4813: doctor Hook path validation tokenises with shlex, skips bash/sh -c (and python -c/-m, node -e) inline code, names each broken path and advises fw upgrade only for framework hooks; regression bats t4813'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 87 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 87
+  commits: 2
+  files_changed: 7
+  lines_added: 823
+  lines_removed: 25
+  footprint_refreshed_at: '2026-10-27T13:08:19Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4813-fw-doctor-hook-path-validation-false-fai.md
+generated_by: context-agent-hybrid
