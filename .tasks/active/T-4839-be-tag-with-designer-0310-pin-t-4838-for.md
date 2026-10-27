@@ -88,9 +88,9 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Fast unit suite with 0 new reds; `bin/fw audit --section structure` Fail: 0
-- [ ] bleeding-edge pushed and `bin/fw release be-tag --push` cut the tag
-- [ ] 832 told the tag and that it carries designer and validator 0.31.0
+- [x] Fast unit suite with 0 new reds; `bin/fw audit --section structure` Fail: 0 (first run: one flaky red, filed as T-4840; second run clean, but its audit hit a one-off fabric crash; third structure audit clean)
+- [x] bleeding-edge pushed and `bin/fw release be-tag --push` cut the tag (v1.8.15-be.43)
+- [x] 832 told the tag and that it carries designer and validator 0.31.0 (msg d97c4b83)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
