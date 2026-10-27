@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4809: Loop ledger records 'start armed' when continuous mode is not armed; audit G-099 then reports ARMED
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T22:50:55Z
+# ============================================================================
+
+task_id: T-4809
+task_name: "Loop ledger records 'start armed' when continuous mode is not armed; audit G-099 then reports ARMED"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T11:02:21Z
+completed: 2026-10-27T22:50:25Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T23:37:52+01:00
+last_commit: 2026-10-27T23:37:52+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  audit G-099 check skips never-armed/disarmed sessions (doctor T-4358 parity); regression test
+
+# Key outcomes
+outcomes:
+  - 'Reproduce first in AEF (1409 reported it, not yet reproduced here): drive the claude-fw loop start path with continuous mode not armed and show the ledger line says armed; a bats test pins it. If it does NOT reproduce, record the evidence in ## Decisions, ask 1409 for their exact ledger line and version, and stop'
+  - 'When it reproduces: the ledger''s start record carries the real armed state (from .continuous-mode.yaml / the turn driver), and audit''s G-099 check reads it correctly'
+  - 'Existing continuous-run and G-099 tests stay green; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — fix the reader (audit), not the ledger''s reason field'
+    chose: 'keep `start armed` in the ledger; make audit''s G-099 check apply the same never-armed / disarmed exemption as `fw doctor` (T-4358), keyed on the turn driver''s live reason.'
+    rationale: 'the ledger already carries the real state (`armed=yes|no` in detail, pinned by test 5); `reason=armed` is read as "supervisor started" by doctor, t3206, t3213, t3209, t4118 and by consumer ledgers already on disk. Keying on the live state (not the start line''s `armed=no`) also keeps the WARN when an operator armed mid-session and the run then lapsed.'
+    alternatives_rejected: ['(a) renaming the reason (e.g. `supervised`) when unarmed: breaks every reader and existing ledgers, and does not fix iterate events; (b) suppressing on `armed=no` in the start detail: would hide the armed-mid-session-then-lapsed drift G-099 exists for.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.tasks/active/T-4809-loop-ledger-records-start-armed-when-con.md'
+  - 'agents/audit/audit.sh'
+  - 'tests/unit/t4809_loop_ledger_armed_state.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T23:37:52'
+    action: 'T-4809: audit G-099 check skips never-armed/disarmed sessions (doctor T-4358 parity); regression test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 708 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 708
+  commits: 3
+  files_changed: 12
+  lines_added: 2365
+  lines_removed: 16
+  footprint_refreshed_at: '2026-10-27T22:51:06Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4809-loop-ledger-records-start-armed-when-con.md
+generated_by: context-agent-hybrid

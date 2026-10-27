@@ -7,12 +7,12 @@ description: >
   armed' even when armed=no, so audit's G-099 check reports the wrapper last recorded
   ARMED. Reported by 1409, not yet reproduced in AEF; reproduce first.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug]
-components: []
+components: [agents/audit/audit.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T11:02:21Z
-last_update: '2026-10-27T22:45:23Z'
-date_finished:
+last_update: 2026-10-27T22:50:25Z
+date_finished: 2026-10-27T22:50:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -395,3 +395,15 @@ bin/fw vendor self --check --task T-4809
 
 ### 2026-10-27T22:31:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-27T22:50:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5c4d6bca
+- **Timestamp:** 2026-10-27T22:50:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
