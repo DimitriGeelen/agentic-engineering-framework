@@ -451,6 +451,26 @@ ring20 went from be.25 straight to be.31 (0cd951409) and the upgrade was clean: 
 - **dimitri-mint-dev:** T-4781 (separate servers after a relaunch).
 - **The contract:** wc v0.3.4 waits for adoption by the AEF operator and TermLink's operator (their T-3484).
 
+### be.37 – be.41 — ring20, TermLink, 832, 055, dimitri-mint-dev (recorded 2026-10-27, T-4837)
+
+One row per project and build. A blank Msg means the id was not kept in the session notes; the verdict is from the project's own report.
+
+| Project | Tip | Verdict | Msg |
+|---|---|---|---|
+| ring20 | be.37 | Full pass: 15 **WORKS**, 2 **FAILS**. Both FAILS were fixed in T-4813, T-4814, T-4816 and T-4817 and re-tested at be.40 (next row) | |
+| ring20 | be.40 | **WORKS**: T-4813, T-4814, T-4816, T-4817. Worker-contract conformance: 20 pass, 4 n/a, 0 fail (be.33: 19 pass, 2 fail) | |
+| TermLink | be.39 | Full report, no regressions; worker-contract vectors 17 pass | |
+| 832 | be.37 | Part 1 of their pass, no FAILS | |
+| 832 | be.38 | **WORKS** E (dispatch spawn, wait, collect) and F (verdict ledger and apply). V-20261027-cb560298 closed GREEN-DEGRADED and ticked exactly one AC. Two findings, filed separately: (a) T-4775 is partial: the worker binary and version line exists only for claude workers; (b) an opencode review seat whose temp dir is outside its export exits 0 with no verdict, recorded only as "incomplete" | 36c65b40 |
+| 055 | be.37 | Two reports. Their T-4820 premise was later corrected by 055: the trigger was their own breach of their rule PL-045, not an AEF defect | |
+| dimitri-mint-dev | be.41 | Partial, all **WORKS**: A, B, C, D, H; T-4797 (0.25 s); T-4819. Their operator approved the upgrade in that session. Still to report: G, T-4781 and the T-4812 re-check, after a relaunch | |
+
+**Still unexercised, and who reports:**
+- **1409:** upgrade after their workers rest; T-4806 needs their Dauerlauf armed; T-4797 timing.
+- **dimitri-mint-dev:** G, T-4781, T-4812 re-check (after relaunch).
+- **055:** E, F, G.
+- **832 and greenfield:** the designer data APIs (T-4830, T-4831, T-4832, T-4836) at the be-tag cut by T-4837.
+
 ## Full-suite comparison (HEAD eee888e61 vs v1.8.14)
 
 **Method, and what it does not cover.** T-4345 ran the whole unit corpus on two scratch trees side by side (jobs=6
