@@ -24,7 +24,8 @@ then, and that string is named in the case result. A declared route whose result
 fails ("equivalent route taken silently"), as does an "equivalent" on a variant offering none.
 On a declared route that names what ran, a step's `expect_equivalent:` replaces its `expect`
 and the variant's `then.admissible_histories_equivalent:` replaces `admissible_histories`
-(T-4796); everywhere else the plain expect and histories apply.
+(T-4796), and `then.final_equivalent:` replaces `final` (T-4800); everywhere else the plain
+expect, histories and final apply. In a final, `A2: null` means the attempt must not exist.
 
 Until that module exists every vector is reported `not-implemented` with what is
 missing. A vector is reported `pass` only after its steps ran and every expect and
@@ -179,8 +180,15 @@ def check_step(adapter, step: dict, route: str | None = None, offered: str | Non
 
 def check_then(before: dict, after: dict, then: dict, equivalent: bool = False) -> None:
     attempts = after.get("attempts") or {}
-    for key, want in (then.get("final") or {}).items():
+    final = then.get("final") or {}
+    if equivalent and "final_equivalent" in then:
+        final = then["final_equivalent"] or {}
+    for key, want in final.items():
         got = attempts.get(key)
+        if want is None:
+            if got is not None:
+                raise Mismatch(f"final: attempt {key} must not exist, got {got}")
+            continue
         if got is None:
             raise Mismatch(f"final: attempt {key} missing")
         for field, value in want.items():
@@ -201,8 +209,8 @@ def check_then(before: dict, after: dict, then: dict, equivalent: bool = False) 
             raise Mismatch(f"fields of {key} changed")
     if then.get("record_unchanged") and before.get("attempts") != attempts:
         raise Mismatch("record changed")
-    handled = {"final", "admissible_histories", "admissible_histories_equivalent", "history_unchanged",
-               "fields_unchanged", "record_unchanged"}
+    handled = {"final", "final_equivalent", "admissible_histories", "admissible_histories_equivalent",
+               "history_unchanged", "fields_unchanged", "record_unchanged"}
     for key, value in then.items():
         if key in handled:
             continue

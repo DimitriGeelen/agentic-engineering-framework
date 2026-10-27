@@ -2,7 +2,7 @@
 """Schema check for the shared worker-contract conformance vectors (T-4520).
 
 Validates vectors.yaml against the structure its header describes and against the
-contract's fixed sets (spec v0.3.3): every case CC-01..CC-25 present exactly once,
+contract's fixed sets (spec v0.3.4 draft): every case CC-01..CC-25 present exactly once,
 fence_reject reasons from §3.3, the N2 applicability rule from §6.6, steps naming
 ops/writers/transitions from the file's own vocabulary, and no paths into one
 backend's tree (the file is shared with TermLink and ring20).
@@ -25,7 +25,10 @@ DEFAULT_PATH = HERE / "vectors.yaml"
 REQUIRED_IDS = [f"CC-{i:02d}" for i in range(1, 26)]
 # §3.3 fence_reject reasons — fixed by the spec, not by the file.
 FENCE_REASONS = {"stale_attempt", "bad_nonce", "bad_credential", "stale_gen",
-                 "cas_mismatch", "forbidden_transition", "done_conflict"}
+                 "cas_mismatch", "forbidden_transition", "done_conflict",
+                 "dispatch_closed"}  # v0.3.4 draft (T-4800): T1 on a closed dispatch, §4.7
+# T-4800: a reason only a backend's optional behaviour produces; accepted on an equivalent route only.
+EQUIVALENT_ONLY_REASONS = {"dispatch_closed"}
 # §6.6 N2: n/a only when the case's subject is one of these capabilities.
 NA_CAPABILITIES = {"answer_channel", "registry_epoch", "caller_chosen_ids"}
 STATES = {"dispatched", "running", "done", "lost", "unknown"}
@@ -142,8 +145,9 @@ class Checker:
         for k, step in enumerate(vec.get("steps") or []):
             if isinstance(step, dict) and "expect_equivalent" in step:
                 self.err(f"{where}/steps[{k}]", "expect_equivalent belongs on a variant step")
-        if isinstance(then, dict) and "admissible_histories_equivalent" in then:
-            self.err(where, "admissible_histories_equivalent belongs on a variant then")
+        for key in ("admissible_histories_equivalent", "final_equivalent"):
+            if isinstance(then, dict) and key in then:
+                self.err(where, f"{key} belongs on a variant then")
         if variants is None:
             if isinstance(then, dict) and "judged_by" in then:
                 self.err(where, "then.judged_by: variants, but the vector has no variants")
@@ -192,6 +196,10 @@ class Checker:
                 self.err(vw, "admissible_histories_equivalent on a variant that offers no equivalent")
             self._check_histories(vw, then["admissible_histories_equivalent"],
                                   "admissible_histories_equivalent")
+        if isinstance(then, dict) and "final_equivalent" in then:
+            if not offers:
+                self.err(vw, "final_equivalent on a variant that offers no equivalent")
+            self._check_final(vw, then["final_equivalent"], "final_equivalent")
 
     def _check_applicability(self, where: str, app) -> None:
         if not isinstance(app, dict):
@@ -260,6 +268,9 @@ class Checker:
                 self.err(sw, "expect_equivalent is not offered on concurrent")
             else:
                 self._check_expect(sw, step["expect_equivalent"])
+        if self._reasons(step["expect"]) & EQUIVALENT_ONLY_REASONS:
+            self.err(sw, "dispatch_closed belongs only in an expect_equivalent (a backend that "
+                         "keeps dispatches open is judged on the plain expect)")
         if op == "concurrent":
             inner = (step.get("args") or {}).get("step")
             count = (step.get("args") or {}).get("count")
@@ -276,6 +287,15 @@ class Checker:
                 self._check_expect(sw, e)
             return
         self._check_expect(sw, step["expect"])
+
+    def _reasons(self, exp) -> set:
+        """Every fence_reject reason an expect (or any nested any_of/concurrent part) names."""
+        if isinstance(exp, dict):
+            own = {exp["fence_reject"]} if isinstance(exp.get("fence_reject"), str) else set()
+            return own.union(*(self._reasons(v) for v in exp.values()))
+        if isinstance(exp, list):
+            return set().union(*(self._reasons(v) for v in exp))
+        return set()
 
     def _check_expect(self, sw: str, exp) -> None:
         if not isinstance(exp, dict) or not exp:
@@ -318,10 +338,28 @@ class Checker:
             self.err(where, "judged_by belongs only on a vector with variants")
         if required and not ({"final", "admissible_histories", "dispatch_count"} & set(then)):
             self.err(where, "then needs final, admissible_histories or dispatch_count")
-        for key, attempt in (then.get("final") or {}).items():
+        self._check_final(where, then.get("final"), "final")
+        for key in then:
+            if key.startswith("final") and key not in ("final", "final_equivalent"):
+                self.err(where, f"unknown key '{key}'")
+        for key in then:
+            if key.startswith("admissible_histories") and key not in (
+                    "admissible_histories", "admissible_histories_equivalent"):
+                self.err(where, f"unknown key '{key}'")
+        if then.get("admissible_histories") is not None:
+            self._check_histories(where, then["admissible_histories"], "admissible_histories")
+
+    def _check_final(self, where: str, final, name: str) -> None:
+        if final is not None and not isinstance(final, dict):
+            self.err(where, f"{name} must map attempt -> fields")
+            return
+        for key, attempt in (final or {}).items():
             if not re.fullmatch(r"A\d+", str(key)):
-                self.err(where, f"final key '{key}' is not an attempt (A1, A2, …)")
+                self.err(where, f"{name} key '{key}' is not an attempt (A1, A2, …)")
+            if attempt is None:  # T-4800: null = the attempt must not exist
+                continue
             if not isinstance(attempt, dict):
+                self.err(where, f"{name} {key} must be a mapping or null")
                 continue
             state = attempt.get("state")
             states = state.get("any_of") if isinstance(state, dict) else [state]
@@ -335,12 +373,6 @@ class Checker:
                 self.err(where, f"I2: final {key} has an outcome but state is not done")
             if state == "done" and "outcome" in attempt and outcome is None:
                 self.err(where, f"I2: final {key} is done with a null outcome")
-        for key in then:
-            if key.startswith("admissible_histories") and key not in (
-                    "admissible_histories", "admissible_histories_equivalent"):
-                self.err(where, f"unknown key '{key}'")
-        if then.get("admissible_histories") is not None:
-            self._check_histories(where, then["admissible_histories"], "admissible_histories")
 
     def _check_histories(self, where: str, hist, name: str) -> None:
         if not isinstance(hist, dict):

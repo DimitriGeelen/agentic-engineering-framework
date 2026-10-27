@@ -397,3 +397,141 @@ def test_equivalent_alternates_are_validated(doc):
     bad = copy.deepcopy(doc)
     _vec(bad, "CC-02")["steps"][0]["expect_equivalent"] = {"no_transition": True}
     assert any("expect_equivalent belongs on a variant step" in e for e in _errors(bad))
+
+
+# ── v0.3.4 draft: dispatch_closed on CC-15 / CC-19 (T-4800) ───────────────
+CLOSED_ROUTES = [("CC-15", "allocate-after-resolve"), ("CC-19", "next-attempt")]
+
+
+class ClosingAdapter:
+    """Answers like a backend that closes a dispatch once its last attempt is terminal
+    (§4.7): every step as expected, except the final allocate, which gets `allocate_answer`
+    (default fence_reject(dispatch_closed)). The record has no A2 unless `has_a2`."""
+
+    def __init__(self, vid, variant, declare=True, report=True,
+                 allocate_answer=None, has_a2=False):
+        self.capabilities = set()
+        self.equivalent_routes = {f"{vid}/{variant}"} if declare else set()
+        self.report = report
+        self.allocate_answer = allocate_answer or {"fence_reject": "dispatch_closed"}
+        self.has_a2 = has_a2
+        self.terminal = False
+
+    def reset(self, given):
+        self.terminal = False
+
+    def apply(self, step):
+        exp = step["expect"]
+        exp = exp["any_of"][0] if "any_of" in exp else exp
+        if step["op"] == "allocate" and self.terminal:
+            result = dict(self.allocate_answer)
+        else:
+            result = dict(exp)
+        if step["op"] in ("resolve", "complete") and "accepted" in exp:
+            self.terminal = True
+        if self.report:
+            result["equivalent"] = "dispatch closed once the last attempt was terminal (§4.7)"
+        return result
+
+    def snapshot(self):
+        a1 = {"state": "lost", "outcome": None, "history": ["unknown", "lost"]} if self.cc15 else \
+             {"state": "done", "outcome": "paused", "history": ["running", "done"]}
+        attempts = {"A1": a1}
+        if self.has_a2:
+            attempts["A2"] = {"state": "dispatched", "outcome": None, "history": ["dispatched"]}
+        return {"attempts": attempts, "operator_notices": 1 if self.cc15 else 0}
+
+
+def _closing(doc, vid, name, **kw):
+    vec = _variant(doc, vid, name)
+    adapter = ClosingAdapter(vid, name, **kw)
+    adapter.cc15 = vid == "CC-15"
+    return vec, adapter
+
+
+def test_v034_vocabulary_and_spec_marker(doc):
+    assert "dispatch_closed" in doc["vocabulary"]["fence_reasons"]
+    assert "dispatch_closed" in check_vectors.FENCE_REASONS
+    assert doc["contract_version"] == "wc/0.3"
+    for vid, name in CLOSED_ROUTES:
+        var = _variant(doc, vid, name)["variants"][0]
+        alloc = next(s for s in var["steps"] if s["op"] == "allocate")
+        assert alloc["expect"]["accepted"] == "T1"
+        assert alloc["expect_equivalent"] == {"fence_reject": "dispatch_closed"}
+        assert var["then"]["final_equivalent"]["A2"] is None
+        assert "A2" in var["then"]["final"]
+
+
+def test_closed_route_declared_passes_cc15_and_cc19(doc):
+    for vid, name in CLOSED_ROUTES:
+        vec, adapter = _closing(doc, vid, name)
+        r = run_local.run_vector(vec, adapter, "ring20")
+        assert r["status"] == "pass", r
+        assert "closed" in r["variants"][0]["equivalent"]
+
+
+def test_hub_that_keeps_dispatches_open_still_passes_plain_path(doc):
+    for vid, name in CLOSED_ROUTES:
+        vec = _variant(doc, vid, name)
+        r = run_local.run_vector(vec, ScriptedAdapter(set(), vec["variants"][0]["then"]), "hub")
+        assert r["status"] == "pass", r
+        assert "equivalent" not in r["variants"][0]
+
+
+def test_undeclared_dispatch_closed_fails(doc):
+    for vid, name in CLOSED_ROUTES:
+        for report in (False, True):
+            vec, adapter = _closing(doc, vid, name, declare=False, report=report)
+            r = run_local.run_vector(vec, adapter, "hub")
+            assert r["status"] == "fail", r
+            assert "dispatch_closed" in r["variants"][0]["reason"]
+
+
+def test_declared_closed_route_taken_silently_fails(doc):
+    for vid, name in CLOSED_ROUTES:
+        vec, adapter = _closing(doc, vid, name, report=False)
+        r = run_local.run_vector(vec, adapter, "ring20")
+        assert r["status"] == "fail"
+        assert "taken silently" in r["variants"][0]["reason"]
+
+
+def test_cas_mismatch_fails_on_both_paths(doc):
+    cas = {"fence_reject": "cas_mismatch"}
+    for vid, name in CLOSED_ROUTES:
+        for declare in (True, False):
+            vec, adapter = _closing(doc, vid, name, declare=declare, report=declare,
+                                    allocate_answer=cas)
+            r = run_local.run_vector(vec, adapter, "x")
+            assert r["status"] == "fail", (vid, declare, r)
+            assert "cas_mismatch" in r["variants"][0]["reason"]
+
+
+def test_closed_route_with_an_a2_fails(doc):
+    for vid, name in CLOSED_ROUTES:
+        vec, adapter = _closing(doc, vid, name, has_a2=True)
+        r = run_local.run_vector(vec, adapter, "ring20")
+        assert r["status"] == "fail"
+        assert "A2 must not exist" in r["variants"][0]["reason"]
+
+
+def test_dispatch_closed_and_final_equivalent_are_validated(doc):
+    bad = copy.deepcopy(doc)
+    alloc = next(s for s in _vec(bad, "CC-19")["variants"][0]["steps"] if s["op"] == "allocate")
+    alloc["expect"] = {"fence_reject": "dispatch_closed"}
+    assert any("dispatch_closed belongs only in an expect_equivalent" in e for e in _errors(bad))
+    bad = copy.deepcopy(doc)
+    _vec(bad, "CC-02")["steps"][1]["expect"] = {"any_of": [{"fence_reject": "dispatch_closed"},
+                                                          {"no_transition": True}]}
+    assert any("dispatch_closed belongs only in an expect_equivalent" in e for e in _errors(bad))
+    bad = copy.deepcopy(doc)
+    del _vec(bad, "CC-19")["variants"][0]["equivalent"]
+    assert any("final_equivalent on a variant that offers no equivalent" in e for e in _errors(bad))
+    bad = copy.deepcopy(doc)
+    _vec(bad, "CC-02")["then"]["final_equivalent"] = {"A1": None}
+    assert any("final_equivalent belongs on a variant then" in e for e in _errors(bad))
+    bad = copy.deepcopy(doc)
+    _vec(bad, "CC-15")["variants"][0]["then"]["final_equivalnt"] = {"A1": None}
+    assert any("unknown key 'final_equivalnt'" in e for e in _errors(bad))
+    bad = copy.deepcopy(doc)
+    _vec(bad, "CC-15")["variants"][0]["then"]["final_equivalent"]["A2"] = "gone"
+    assert any("must be a mapping or null" in e for e in _errors(bad))

@@ -2,7 +2,7 @@
 #
 # Data only. One entry per conformance case of §9 of the shared worker contract
 # ("Shared dispatched-worker contract — transition table and conformance spec",
-# v0.3.3, contract_version wc/0.3). Every backend that claims conformance (hub,
+# DRAFT v0.3.4 pending adoption, contract_version wc/0.3). Every backend that claims conformance (hub,
 # local, any external backend per §6.6) runs these vectors through its own adapter.
 # Ownership and how to contribute: README.md beside this file.
 #
@@ -29,17 +29,24 @@
 # never n/a; a backend lacking the capability the case is phrased in runs it with
 # its own equivalent (`equivalent`). Only `subject: capability` cases whose subject
 # is the answer channel, registry_epoch or caller-chosen ids may be n/a.
+#
+# Equivalent route keys (T-4793, T-4796, T-4800), read only on a route the backend
+# declares in its adapter and names in every step result: `expect_equivalent` replaces
+# a variant step's expect; `admissible_histories_equivalent` and `final_equivalent`
+# replace the variant's histories and final. `fence_reject: dispatch_closed` (v0.3.4,
+# a backend that closes a dispatch, §4.7) appears only in an expect_equivalent, so a
+# backend that keeps dispatches open is judged on the plain path unchanged.
 
 schema: wc-conformance/1
 contract_version: wc/0.3
-spec: shared-worker-contract-transitions v0.3.3
+spec: shared-worker-contract-transitions v0.3.4 (draft, pending adoption)
 
 vocabulary:
   states: [dispatched, running, done, lost, unknown]
   outcomes: [succeeded, failed, refused, handback-malformed, paused]
   transitions: [T1, T2, T3, T3b, T-RECLAIM, T4, T5, T6, T6b, T7a, T7b, T7c, T7d, T8]
   writers: [hub, supervisor, reconciler, operator, worker, dispatcher, consumer]
-  fence_reasons: [stale_attempt, bad_nonce, bad_credential, stale_gen, cas_mismatch, forbidden_transition, done_conflict]
+  fence_reasons: [stale_attempt, bad_nonce, bad_credential, stale_gen, cas_mismatch, forbidden_transition, done_conflict, dispatch_closed]
   errors: [id_taken, malformed_id]
   refusals:
     not_finished_work: a consumer (review verdict, pass-rate, landing) refuses a paused or attested done (§3.3)
@@ -970,17 +977,29 @@ vectors:
         attempt: 1
         args: {as: lost, reason: host reimaged, session: operator, via: host_cli}
         expect: {accepted: T7d, notices: 1, values: {logged_actor: true, logged_reason: host reimaged}}
-      - op: allocate
-        writer: dispatcher
-        expect: {accepted: T1, bind: {nonce: n2, credential: c2}}
-    then:
-      final:
-        A1: {state: lost, outcome: null}
-        A2: {state: dispatched, outcome: null}
-      operator_notices: 1
-      admissible_histories:
-        A1: [[unknown, lost]]
-        A2: [[dispatched]]
+    then: {judged_by: variants}
+    variants:
+      - name: allocate-after-resolve
+        # T-4800 (v0.3.4 draft): a backend that closes the dispatch once A1 is lost answers dispatch_closed.
+        equivalent: a backend that closes a dispatch once its last attempt is terminal (§4.7) answers the allocate fence_reject(dispatch_closed) and no A2 exists
+        steps:
+          - op: allocate
+            writer: dispatcher
+            expect: {accepted: T1, bind: {nonce: n2, credential: c2}}
+            expect_equivalent: {fence_reject: dispatch_closed}
+        then:
+          final:
+            A1: {state: lost, outcome: null}
+            A2: {state: dispatched, outcome: null}
+          final_equivalent:
+            A1: {state: lost, outcome: null}
+            A2: null
+          operator_notices: 1
+          admissible_histories:
+            A1: [[unknown, lost]]
+            A2: [[dispatched]]
+          admissible_histories_equivalent:
+            A1: [[unknown, lost]]
 
   - id: CC-16
     title: Outcome derivation
@@ -1153,13 +1172,22 @@ vectors:
     then: {judged_by: variants}
     variants:
       - name: next-attempt
+        # T-4800 (v0.3.4 draft): a backend that closes the dispatch after the paused end answers dispatch_closed.
+        equivalent: a backend that closes a dispatch once its last attempt is terminal (§4.7) answers the allocate fence_reject(dispatch_closed), no A2 exists, and the closed paused dispatch is not resolved work (§8.4)
         steps:
-          - {op: allocate, writer: dispatcher, expect: {accepted: T1, bind: {nonce: n2, credential: c2}}}
+          - op: allocate
+            writer: dispatcher
+            expect: {accepted: T1, bind: {nonce: n2, credential: c2}}
+            expect_equivalent: {fence_reject: dispatch_closed}
         then:
           final:
             A1: {state: done, outcome: paused}
             A2: {state: dispatched, outcome: null}
+          final_equivalent:
+            A1: {state: done, outcome: paused}
+            A2: null
           admissible_histories: {A1: [[running, done]], A2: [[dispatched]]}
+          admissible_histories_equivalent: {A1: [[running, done]]}
       - name: re-dispatch
         steps:
           - {op: create, writer: dispatcher, args: {retry_of_dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA19}, expect: {accepted: T1}}

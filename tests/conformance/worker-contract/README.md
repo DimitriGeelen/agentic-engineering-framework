@@ -1,7 +1,7 @@
 # Shared worker-contract conformance vectors
 
 `vectors.yaml` is the **single** conformance vector file for the shared dispatched-worker
-contract (spec v0.3.3, `contract_version: wc/0.3`, §9 cases CC-01..CC-25). AEF owns it, as
+contract (spec v0.3.3; v0.3.4 draft pending adoption, `contract_version: wc/0.3`, §9 cases CC-01..CC-25). AEF owns it, as
 agreed with TermLink and ring20. Every backend that claims conformance (TermLink's `hub`, AEF's
 `local`, any external backend such as `ring20`) runs these same vectors through its own adapter.
 The file is data only and names no backend's paths.
@@ -49,3 +49,8 @@ instead. Adapter contract:
 - on that declared, named route a variant step's `expect_equivalent:` replaces its `expect`, and the
   variant's `then.admissible_histories_equivalent:` replaces `admissible_histories` (T-4796, CC-08).
   Everywhere else the plain expect and histories apply, so a hub that departs from them still fails.
+- likewise the variant's `then.final_equivalent:` replaces `final` on that route (T-4800); in a final,
+  `A2: null` means the attempt must not exist. CC-15 `allocate-after-resolve` and CC-19 `next-attempt`
+  use it for a backend that closes a dispatch (spec v0.3.4 draft, §4.7): its allocate answers
+  `fence_reject(dispatch_closed)` and no A2 exists. `dispatch_closed` is accepted only in an
+  `expect_equivalent`, so a backend that keeps dispatches open is judged on the plain `accepted: T1`.

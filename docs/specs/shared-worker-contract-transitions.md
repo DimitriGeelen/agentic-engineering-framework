@@ -1,7 +1,33 @@
 # Shared dispatched-worker contract — transition table and conformance spec
 
-**Status:** DRAFT v0.3.3 for agreement by TermLink, ring20 and AEF. TermLink AGREES to v0.3.x: the six changes marked "TermLink re-agreement" in `docs/reports/T-4439-reviews/ring20-v0.2-answers.md` (v0.3) and v0.3.1 [termlink v0.3 agree]; v0.3.3 words in its hub credential carrier. ring20: SIGN-WITH-NOTES on v0.3, signing conditions N1-N3 and notes N4-N6 worded in here; v0.3.1 is the version ring20 signs; v0.3.2 is editorial only. **Task:** T-4439 (slice 1 of T-4435, GO 2026-10-20).
+**Status:** DRAFT v0.3.4 pending adoption (AEF operator; TermLink operator via their T-3484; ring20). v0.3.4 is proposed, not adopted: until all three adopt it, v0.3.3 is the agreed text. v0.3.3 history: v0.3.3 was for agreement by TermLink, ring20 and AEF. TermLink AGREES to v0.3.x: the six changes marked "TermLink re-agreement" in `docs/reports/T-4439-reviews/ring20-v0.2-answers.md` (v0.3) and v0.3.1 [termlink v0.3 agree]; v0.3.3 words in its hub credential carrier. ring20: SIGN-WITH-NOTES on v0.3, signing conditions N1-N3 and notes N4-N6 worded in here; v0.3.1 is the version ring20 signs; v0.3.2 is editorial only. **Task:** T-4439 (slice 1 of T-4435, GO 2026-10-20).
 **Contract version field value:** `wc/0.3` (see §2; a patch revision does not change it). **Rule:** no implementation starts before this table is agreed.
+
+## Changelog v0.3.3 → v0.3.4
+
+Sources: **[ring20 closure]** = ring20 msgs 59742ea8, e93a0367 and 4b03810f (their mechanical runner on be.31: a
+dispatch closed after a resolve-as-lost or a paused end answers a later allocate with a refusal, so CC-15 and CC-19
+fail on a step the spec never asked a backend to support; and their T-2544 adapter derives `refused` before the
+hand-back check); **[termlink 14d0100a]** = TermLink's implementation-side reply: no objection to either item, its
+hub never closes a dispatch and already orders refusal first (`worker_contract.rs:605-628`); formal adoption is by
+TermLink's operator through their T-3484. **DRAFT for adoption:** nothing here is in force until the AEF operator,
+TermLink's operator and ring20 adopt it. The version field stays `wc/0.3` (§2: a patch revision does not change it):
+item 1 states the order every implementation and the CC-16/CC-21 vectors already use, and item 2 adds an optional
+backend behaviour that a backend which never closes a dispatch does not see.
+
+1. **Refusal before rule 1 (§3.3 outcome derivation):** rule 1 (hand-back missing or malformed →
+   `handback-malformed`) applies to a worker that ran. A run.sh or supervisor refusal yields `refused` through rule 2
+   even with the hand-back absent, because a refused worker never ran and so never owed one. The rules keep their
+   numbers, so every "rule N" reference (CC-16, §3.3 backend stop, CC-25) still holds. Clarification: it matches
+   TermLink's `worker_contract.rs:605-628`, ring20 T-2544 and the AEF vectors CC-16 `supervisor-refusal` and CC-21
+   `refused-before-start`. [ring20 closure] [termlink 14d0100a]
+2. **Dispatch closure (§2, §3.3 T1 and `fence_reject`, §4.7, §8.4, CC-15, CC-19):** a backend MAY close a dispatch
+   once its last attempt is terminal (`done` or `lost`), recorded at dispatch level with actor, reason and ts. A T1 on
+   a closed dispatch is `fence_reject(dispatch_closed)`, a new reason on the closed list. CC-15 and CC-19 accept
+   either T1 (A2) or `fence_reject(dispatch_closed)`; in the vectors the closed answer is accepted only on a declared
+   equivalent route. Closing changes no attempt, and a closed dispatch whose last attempt is `paused` is never counted
+   as resolved or finished work. A backend that never closes a dispatch (TermLink's hub) is unaffected and stays
+   conformant unchanged. [ring20 closure] [termlink 14d0100a]
 
 ## Changelog v0.3.2 → v0.3.3
 
@@ -191,6 +217,7 @@ dispatch_id: D-<ulid>             # caller-chosen (well-formed, unused) or backe
 backend: hub | local | <external name>   # chosen at dispatch creation, immutable (§6.4); external = §6.6 [ring20 v0.2 review §1]
 task_id: T-XXXX                   # optional, audit
 retry_of_dispatch_id: D-<ulid>|null   # dispatch-level link, preserved verbatim (§8.4); NOT an attempt
+closed: {actor, reason, ts}|null  # OPTIONAL, v0.3.4: set once when a backend closes the dispatch (§4.7); never cleared
 dispatcher:                       # recorded at spawn, immutable [C5, claude Q3 cond.1]
   project_agent: <sidecar agent id>       # per project; routing doorbell only
   session: claude-master-<PID>            # the durable TermLink PTY session; the routing identity
@@ -328,7 +355,7 @@ rejected (never merged). `fence_reject` is defined after the table.
 
 | # | From → To | Writer | Required evidence | CAS expected-prior | Precedence / notes |
 |---|---|---|---|---|---|
-| T1 | ∅ → `dispatched` | hub | dispatcher identity; prior attempt (if any) is terminal; backend allocates `attempt` and `nonce` atomically | no attempt exists, or last attempt state ∈ {done, lost} (an operator-resolved `unknown` is `lost` or `done` after T7d) | allocation is the only place attempts are minted (§4) |
+| T1 | ∅ → `dispatched` | hub | dispatcher identity; prior attempt (if any) is terminal; backend allocates `attempt` and `nonce` atomically | no attempt exists, or last attempt state ∈ {done, lost} (an operator-resolved `unknown` is `lost` or `done` after T7d); and the dispatch is not closed (§4.7) | allocation is the only place attempts are minted (§4). On a closed dispatch: `fence_reject(dispatch_closed)` [v0.3.4] |
 | T2 | `dispatched` → `running` | supervisor | echo of `nonce`; session binding confirmed; `supervisor_gen` claimed | `dispatched` | sets `deadline_running` |
 | T3 | `running` → `done{outcome}` | supervisor, or reconciler when the supervisor is gone | agent child exited; `exit_code` read **after** exit; hand-back parsed and hash computed; `evidence_digest` | `running` | the single normal completion path; `outcome` derived by rule below. A reconciler submits the same fenced local evidence when the supervisor died, for instance inside `G`; so `running → done` is a valid history [ring20 v0.2 review §12] |
 | T3b | `dispatched` → `done{outcome}` | supervisor, or reconciler when the supervisor is gone | as T3 (worker died/refused before T2 landed, e.g. run.sh `exit 3`) | `dispatched` | covers fast-fail without a spurious `lost` |
@@ -362,9 +389,11 @@ changes `outcome`/`result` of a `done` attempt (a `done` with a *different* `evi
 `done_conflict`, logged, and surfaced to the operator — it is evidence of a bug or forgery, not a race).
 
 **`outcome` derivation (T3/T3b/T5/T7b/T7d), evaluated in order** [claude Q1, codex Q1, §6.2.7]:
-1. hand-back missing/unparseable/`commission`≠ (the dispatch id; for an external backend equal modulo the `<backend>:`
-   prefix), `attempt`≠, `nonce`≠, or hash cannot be bound → `handback-malformed` [ring20 v0.3 check N4];
-2. run.sh refusal path (e.g. `exit 3`) → `refused`;
+1. for a worker that ran: hand-back missing/unparseable/`commission`≠ (the dispatch id; for an external backend
+   equal modulo the `<backend>:` prefix), `attempt`≠, `nonce`≠, or hash cannot be bound → `handback-malformed`
+   [ring20 v0.3 check N4];
+2. run.sh or supervisor refusal path (e.g. `exit 3`) → `refused`, even with the hand-back absent: a refused worker
+   never ran, so rule 1 does not apply to it [v0.3.4];
 3. `exit_code != 0` or hand-back `status: failed` → `failed`;
 3b. hand-back `status: paused` with `exit_code == 0` → `paused`;
 4. otherwise → `succeeded`.
@@ -377,7 +406,10 @@ count it as finished work. The dispatch continues through attempt N+1 or a re-di
 lifecycle) returned for any write where: the write is a running-path write (T2, T-RECLAIM, a `questions` append or
 an answer ack) naming an attempt that is not the current attempt; the nonce does not match; the credential is
 missing or wrong; the `supervisor_gen` is stale; or the expected prior state does not match. It carries `reason ∈
-{stale_attempt, bad_nonce, bad_credential, stale_gen, cas_mismatch, forbidden_transition, done_conflict}`.
+{stale_attempt, bad_nonce, bad_credential, stale_gen, cas_mismatch, forbidden_transition, done_conflict,
+dispatch_closed}`. `dispatch_closed` (v0.3.4) is the answer to a T1 on a dispatch the backend has closed (§4.7); a
+backend that never closes a dispatch never returns it. Unlike `cas_mismatch` it is final: no later state of the
+dispatch admits a T1.
 **The fence is per attempt, not per dispatch** [ring20 v0.2 review §4]: a write is checked against *its own
 attempt's* nonce and state. Therefore (a) a completion (T3/T3b) naming an attempt that is `lost` or `unknown` is
 processed as T5/T7b, and the CAS check applies to the transition actually taken, not to `running`; (b) T5, T7b and T8 on
@@ -461,6 +493,16 @@ across `claude -c`. It is the **routing** identity. `claude_session_id` is audit
 disappears, dispatcher ownership transfers to the named successor recorded by `fw worker adopt <dispatch_id>
 --to <session>`; until adopted, questions and bounces surface in the project operator queue. [C5, claude Q3 cond.1,
 codex Q3 cond.1]
+
+4.7 **Dispatch closure (optional, v0.3.4).** A backend MAY close a dispatch once its last attempt is terminal (`done`
+or `lost`; an `unknown` is resolved through T7d first). Closing is a dispatch-level fact, not a transition: it sets
+`closed: {actor, reason, ts}` once, in the same atomic step that checks the last attempt is terminal, appends nothing
+to any attempt's `history` and changes no attempt's `state`, `outcome` or `result`. It is never undone. After it, a
+T1 is `fence_reject(dispatch_closed)`; T5, T7b and T8 on an existing attempt are unaffected (closure is not a fence on
+late evidence, §3.3 precedence). A closed dispatch is continued, if at all, only by a new dispatch naming it in
+`retry_of_dispatch_id` (§8.4). A backend that never closes a dispatch (the hub keeps them open) is conformant
+unchanged, and the cases that allocate after a terminal attempt (CC-15, CC-19) accept either answer.
+[ring20 closure] [termlink 14d0100a]
 
 ---
 
@@ -622,7 +664,9 @@ final `error` that can later become `counted` is non-conforming. [ring20 v0.2 re
 8.4 **`retry_of_dispatch_id` is preserved.** It stays a **dispatch-level** field (a re-dispatch after a pause
 *resolves* the paused dispatch in the pause queue; T-3960 2a). An `attempt` is a retry *within* a dispatch. An attempt
 ending `outcome: paused` is continued by attempt N+1 or by a re-dispatch naming it in `retry_of_dispatch_id`.
-Conflating the two would silently deflate the pause queue. [claude Q3, opencode Q3] A backend that also writes a
+Conflating the two would silently deflate the pause queue. [claude Q3, opencode Q3] Closing a dispatch (§4.7) is
+neither: a closed dispatch whose last attempt is `paused` is **never counted as resolved work**. It stays in the pause
+queue until a re-dispatch names it, and consumers refuse its `paused` attempt as not finished work, as before. [v0.3.4] A backend that also writes a
 per-attempt row in the AEF dispatch ledger (ring20: `parent_dispatch_id` = the commission id) may keep doing so after
 Phase B or stop; either is conforming. Such a row is a dispatch in the ledger, linked by `attempt_dispatch_ref`, not a
 contract attempt. [ring20 v0.2 review §7]
@@ -750,7 +794,9 @@ limits of §6.6: `n/a` only for a capability it does not offer, never for a §3 
 ### CC-15 Unknown resolution by operator
 - **Given** A1 `unknown`, no evidence, no confirmation.
 - **When** `fw worker resolve D A1 --as lost --reason "host reimaged"` is run on the hub host.
-- **Then** `unknown → lost` (T7d), logged with actor and reason; only then may T1 allocate A2. The same call from an
+- **Then** `unknown → lost` (T7d), logged with actor and reason; only then may T1 allocate A2. A backend that closes
+  the dispatch after the resolve (§4.7) answers that allocate `fence_reject(dispatch_closed)` instead, and no A2
+  exists; either answer passes (v0.3.4). The same call from an
   agent session via a remote RPC is not available (no signed operator identity); from an agent session on the hub host
   it is refused without an explicit recorded override (speed bump); every resolve posts the operator notice. [ring20 v0.2 review §S2]
 
@@ -779,7 +825,9 @@ limits of §6.6: `n/a` only for a capability it does not offer, never for a §3 
 - **Given** A1 `running`, hand-back `status: paused`, exit 0.
 - **When** T3 finalises it.
 - **Then** `done{paused}`; a review verdict naming `(D, A1, result)` is refused as not finished work; A2 may be
-  allocated (T1) or a re-dispatch naming `retry_of_dispatch_id = D`.
+  allocated (T1) or a re-dispatch naming `retry_of_dispatch_id = D`. A backend that closes the dispatch after the
+  paused end (§4.7) answers the allocate `fence_reject(dispatch_closed)` and no A2 exists; either answer passes, the
+  re-dispatch is accepted either way, and the closed dispatch is not counted as resolved work (§8.4) (v0.3.4).
 
 ### CC-20 Lost attempt seen alive
 - **Given** A1 `lost`.
