@@ -24,23 +24,7 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
-bvp_scores_proposed:
-  - ts: '2026-10-27T09:25:36Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 2
-      D2: 2
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 2
-      F3: 2
-      F1: 2
-      F2: 2
-    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
-      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
-      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
-    rubric_sha: e4a00f38e801
+bvp_scores_proposed: []
 cost_estimate_proposed:
   - ts: '2026-10-27T09:30:20Z'
     estimator: bvp-estimator-v1-heuristic
@@ -51,6 +35,22 @@ cost_estimate_proposed:
     rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
       (workflow:inception); effort=6 (lines=136,acs=4)
     rubric_sha: e4a00f38e801
+bvp_scores:
+  D1: 3
+  D2: 3
+  D3: 1
+  D4: 3
+  F-RECALL: 0
+  F-AUTONOMY: 1
+  F3: 0
+  F1: 0
+  F2: 1
+confirmed_by: root
+confirmed_at: '2026-10-27T09:37:30Z'
+confirmed_via: agent
+bvp_scores_stamp:
+  digest: a7cd0bbe8ff7681e
+  by: agent
 ---
 
 # T-4801: Local reference backend so AEF can run its own worker-contract conformance vectors
