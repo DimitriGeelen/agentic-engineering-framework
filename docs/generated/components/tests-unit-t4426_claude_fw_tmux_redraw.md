@@ -9,7 +9,7 @@
 T-4426 (ring20-dashboard proposal): after a mouse-wheel scroll into tmux copy mode, on attach
 and on resize, Claude Code's screen stays cluttered until Ctrl+L. claude-fw's tmux chain now
 sets three hooks that send C-l to the wrapped session's pane. They are scoped to that session
-(or its window), never -g: the fw-agents server also carries dispatch workers.
+(or its window), never -g: the project's fw-agents-<id> server (T-4781) also carries dispatch workers.
 The static leg runs the real claude-fw with a fake tmux that records its argv. The live leg
 takes the set-hook groups from that recorded argv and replays them on a throwaway tmux server
 with a unique -L name, so it exercises the hook strings claude-fw emits, not a copy of them.
