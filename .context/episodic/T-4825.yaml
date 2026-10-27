@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4825: Focus-drift gate reads a task id inside a fw sidecar send --body as the action target and refuses the send
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T22:45:53Z
+# ============================================================================
+
+task_id: T-4825
+task_name: "Focus-drift gate reads a task id inside a fw sidecar send --body as the action target and refuses the send"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T13:25:36Z
+completed: 2026-10-27T22:45:13Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T23:37:16+01:00
+last_commit: 2026-10-27T23:38:22+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  focus-drift gate reads a sidecar --body value as data via T-4817's lexer (_blank_data_args); regression bats; RCA. vendor AC ticked — check clean, invariants green
+
+# Key outcomes
+outcomes:
+  - 'Reproduce first: tests/unit/t4825_focus_drift_body_is_data.bats runs the focus-drift gate on `fw sidecar send --body ''<text quoting a command shape that names T-9999>''` under focus T-1001; tests 1-4 failed (refused) on the unfixed code'
+  - 'After the fix the --body value is data for the focus-drift gate, reusing T-4817''s lexer (`_blank_data_args`); the sends pass (tests 1-4 green)'
+  - 'A task id as a real target still triggers the gate (`bin/fw task update T-9999 --status issues`, a command chained after the send, `--body` on a non-sidecar verb: tests 5-7); existing focus-drift tests stay green'
+  - 'Vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — reproduction shape'
+    chose: 'test bodies that quote a command shape (`bin/fw task update T-9999 …`, `git commit -m "T-9999: …"`, `fw context add-learning --task T-9999`, the `''\''''` quoting), not the AC''s literal `--body ''see T-9999''`.'
+    rationale: 'a bare mention matches none of the three drift patterns; the unfixed gate already passed it. Only command-shaped bodies reproduce the field report.'
+    alternatives_rejected: ['a red test on `see T-9999` — it would not have failed before the fix.']
+  - decision: '2026-10-27 — where to blank'
+    chose: 'call `lib/shell_write_scan.py:_blank_data_args` from `_fw_extract_drift_target`, only when the command contains both `sidecar` and `--body` (keeps the python call off every other Bash command); on lexer failure keep the original text, so the gate errs toward refusing.'
+    alternatives_rejected: ['a bash-side strip of `--body ''…''` — cannot handle `''\''''`, `$''…''` or `--body=`, and a second parser would drift from T-4817''s.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.tasks/active/T-4825-focus-drift-gate-reads-a-task-id-inside-.md'
+  - 'agents/context/check-active-task.sh'
+  - 'tests/unit/t4825_focus_drift_body_is_data.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T23:37:16'
+    action: 'T-4825: focus-drift gate reads a sidecar --body value as data via T-4817''s lexer (_blank_data_args); regression bats; RCA'
+  - time: '2026-10-27T23:38:22'
+    action: 'T-4825: vendor AC ticked — check clean, invariants green'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 559 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 559
+  commits: 3
+  files_changed: 7
+  lines_added: 313
+  lines_removed: 16
+  footprint_refreshed_at: '2026-10-27T22:46:05Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4825-focus-drift-gate-reads-a-task-id-inside-.md
+generated_by: context-agent-hybrid

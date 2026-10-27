@@ -50297,3 +50297,39 @@ scan_id: R-d1811e38
 task_id: T-4847
 payload:
   task_file: .tasks/active/T-4847-fw-config-set-rewrites-unrelated-folded-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T22:25:33Z'
+scan_id: R-0fdedfea
+task_id: T-4846
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T22:25:33Z'
+scan_id: R-0fdedfea
+task_id: T-4846
+payload:
+  task_file: .tasks/active/T-4846-interrupted-unit-suite-runs-leave-bats-r.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T22:45:36Z'
+scan_id: R-36a995d7
+task_id: T-4825
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T22:45:36Z'
+scan_id: R-36a995d7
+task_id: T-4825
+payload:
+  task_file: .tasks/active/T-4825-focus-drift-gate-reads-a-task-id-inside-.md
