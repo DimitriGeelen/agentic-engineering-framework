@@ -470,19 +470,35 @@ _bash_gate_reason() {
     # No write pattern: the refusal came from recognition, not modification. Name the
     # segment that was not recognised — with a chained command that is the one datum
     # that turns "why is my read blocked?" into a one-second answer.
-    local _seg _bad=""
+    local _seg _op _s _bad=""
     if type _fw_chain_split &>/dev/null && type _fw_single_command_is_safe &>/dev/null; then
+        # T-4827: judge each segment in the context the verdict used
+        # (is_bash_safe_command): the git cwd starts at the payload cwd and follows
+        # the chain's cd. Without it every git segment failed here and the first
+        # one was named, sending the reader to file an allowlist gap that does
+        # not exist.
+        local _FW_GIT_CWD _FW_LIT_VARS=" "
+        _FW_GIT_CWD="$(_fw_initial_git_cwd 2>/dev/null)"
         # T-3223: `-d ''` — _fw_chain_split emits NUL-terminated segments, so a
         # quoted argument containing a newline stays one segment. Reading this
         # as lines is what made a multi-line commit message report five prose
         # fragments as "not on the read-only allowlist".
-        while IFS= read -r -d '' _seg; do
+        while IFS= read -r -d '' _seg && IFS= read -r -d '' _op; do
             [[ "$_seg" =~ ^[[:space:]]*$ ]] && continue
-            if ! _fw_single_command_is_safe "$_seg"; then
-                _bad=$(printf '%s' "$_seg" | sed 's/^[[:space:]]*//' | head -c 60)
+            # T-4827: loop keywords are grammar, not commands (T-4396). Judge the
+            # command a `do`/`while`/`until` carries; a `for` header or `done`
+            # names nothing — if the loop as a whole is refused, the reason is
+            # its shape, which the fallback message below states.
+            _s="${_seg#"${_seg%%[![:space:]]*}"}"
+            while [[ "$_s" =~ ^(do|while|until)[[:space:]]+(.*)$ ]]; do _s="${BASH_REMATCH[2]}"; done
+            [[ "$_s" =~ ^(for|done|do|while|until)([[:space:]]|$) ]] && continue
+            if ! _fw_single_command_is_safe "$_s" 2>/dev/null; then
+                _bad=$(printf '%s' "$_s" | head -c 60)
                 break
             fi
-        done < <(_fw_chain_split "$BASH_CMD")
+            type _fw_advance_cwd &>/dev/null && _fw_advance_cwd "$_s" "$_op" 2>/dev/null
+            type _fw_note_literal_vars &>/dev/null && _fw_note_literal_vars "$_s" "$_op" 2>/dev/null
+        done < <(_fw_chain_split "$BASH_CMD" ops)
     fi
 
     if [ -n "$_bad" ]; then

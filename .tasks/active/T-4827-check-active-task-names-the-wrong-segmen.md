@@ -1,10 +1,20 @@
 ---
 id: T-4827
-name: "check-active-task names the wrong segment as 'not on the read-only allowlist' (git segments checked without the git-cwd context)"
+name: "check-active-task names the wrong segment as 'not on the read-only allowlist'
+  (git segments checked without the git-cwd context)"
 description: >
-  TermLink be.39 field test C3 (msg 829aeb6d): with focus empty, the block for 'git status --short | head -30; echo ---; git log --oneline -5; …; fw runme pending' says '"git status --short " is not on the read-only allowlist', but is_bash_safe_command('git status --short') returns safe. Cause (their diagnosis): the culprit-naming loop in agents/context/check-active-task.sh (~452-465) calls _fw_single_command_is_safe per chain segment without the git-cwd state (_FW_PAYLOAD_CWD, PROJECT_ROOT) the full check sets up, so every git segment fails there. The decision is right; the named culprit is wrong, which sends the reader to file a non-existent allowlist gap. Fix: name the culprit with the same context the decision used; regression bats on their exact command.
+  TermLink be.39 field test C3 (msg 829aeb6d): with focus empty, the block for 'git
+  status --short | head -30; echo ---; git log --oneline -5; …; fw runme pending'
+  says '"git status --short " is not on the read-only allowlist', but is_bash_safe_command('git
+  status --short') returns safe. Cause (their diagnosis): the culprit-naming loop
+  in agents/context/check-active-task.sh (~452-465) calls _fw_single_command_is_safe
+  per chain segment without the git-cwd state (_FW_PAYLOAD_CWD, PROJECT_ROOT) the
+  full check sets up, so every git segment fails there. The decision is right; the
+  named culprit is wrong, which sends the reader to file a non-existent allowlist
+  gap. Fix: name the culprit with the same context the decision used; regression bats
+  on their exact command.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T13:45:59Z
-last_update: 2026-10-27T13:45:59Z
-date_finished: null
+last_update: '2026-10-27T22:38:52Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-27T22:38:52Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4827: check-active-task names the wrong segment as 'not on the read-only allowlist' (git segments checked without the git-cwd context)
@@ -61,10 +88,10 @@ See description. The need: when check-active-task refuses a compound command, th
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: a bats test sends the reported compound command (git status/log segments plus one non-allowlisted segment) with empty focus, and shows the block names a git segment that is_bash_safe_command accepts; it fails before the fix
-- [ ] The culprit-naming loop (~452-465) checks each segment with the same context the verdict used (including the git-cwd context), so it names the real non-safe segment
-- [ ] When every segment is individually safe but the whole is refused for another reason (write pattern), the message says that reason instead of naming a safe segment
-- [ ] Existing check-active-task tests stay green; vendor in sync
+- [x] Reproduce first: a bats test sends the reported compound command (git status/log segments plus one non-allowlisted segment) with empty focus, and shows the block names a git segment that is_bash_safe_command accepts; it fails before the fix
+- [x] The culprit-naming loop (~452-465) checks each segment with the same context the verdict used (including the git-cwd context), so it names the real non-safe segment
+- [x] When every segment is individually safe but the whole is refused for another reason (write pattern), the message says that reason instead of naming a safe segment
+- [x] Existing check-active-task tests stay green; vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -114,7 +141,8 @@ See description. The need: when check-active-task refuses a compound command, th
 
 ## Verification
 
-timeout 900 bats tests/unit/t4827_culprit_segment_naming.bats
+timeout 900 bats tests/unit/t4827_culprit_segment_naming.bats > /tmp/.t4827.out 2>&1 && ! grep -q "^not ok" /tmp/.t4827.out
+test "$(grep -c '# skip' /tmp/.t4827.out)" -eq 0
 bin/fw vendor self --check --task T-4827
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -269,6 +297,14 @@ bin/fw vendor self --check --task T-4827
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** with focus empty, the block for `git status --short | head -30; echo ---; git log --oneline -5; …; fw runme pending` said `"git status --short " is not on the read-only allowlist`, although `is_bash_safe_command 'git status --short'` is safe. Reproduced in `tests/unit/t4827_culprit_segment_naming.bats` test 2 (failed before the fix, named the git segment).
+
+**Root cause:** `_bash_gate_reason` (agents/context/check-active-task.sh, the culprit loop at ~474-485 before the fix) called `_fw_single_command_is_safe` per segment with `_FW_GIT_CWD` unset. The verdict path (`is_bash_safe_command`, agents/context/lib/safe-commands.sh:276-323) first sets a local `_FW_GIT_CWD` from `_fw_initial_git_cwd` (payload cwd) and advances it past each `cd` with `_fw_advance_cwd`; the git arm refuses when the cwd is unknown. So in the naming loop every git segment failed and the first one was named. The loop also judged loop keywords (`for …`, `do …`, `done`) as commands, so a loop refused for its shape named its own `for` header.
+
+**Why structurally allowed:** the explainer re-implements the verdict's per-segment walk instead of sharing it, and when T-4343/T-4409 added git-cwd state to the verdict walk, the copy in the message path was not updated. The T-3096 message tests use non-git segments (`cat f; ./deploy.sh; ls`), so nothing exercised a git segment in the explainer.
+
+**Prevention:** the new bats runs the field command end-to-end through the hook with a payload cwd and asserts the named culprit is the non-safe segment and never a git read; a control asserts the same git segment alone is allowed, so the two paths are pinned to agree. A loop-shape case pins that no safe segment is named when only the whole is refused.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -333,6 +369,11 @@ bin/fw vendor self --check --task T-4827
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-27 — how the explainer gets the verdict's context
+- **Chose:** set up the same locals in `_bash_gate_reason` (`_FW_GIT_CWD` from `_fw_initial_git_cwd`, advanced per segment by `_fw_advance_cwd` with the chain operator; `_FW_LIT_VARS`), and skip loop keyword headers, judging the command a `do`/`while`/`until` carries.
+- **Why:** minimal, inside check-active-task.sh only (lib/safe-commands.sh is shared with other lanes); mirrors `_commit_shape_hint`, which already does the same setup in this file.
+- **Rejected:** a new "first unsafe segment" helper in safe-commands.sh shared by verdict and message — cleaner single source, but a larger change to a security predicate's file for a message fix.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -349,3 +390,6 @@ bin/fw vendor self --check --task T-4827
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4827-check-active-task-names-the-wrong-segmen.md
 - **Context:** Initial task creation
+
+### 2026-10-27T22:38:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
