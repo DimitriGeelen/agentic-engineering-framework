@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4843: Worker binary and version recorded only for claude workers (T-4775 partial): codex, opencode and other kinds leave no version
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T21:36:12Z
+# ============================================================================
+
+task_id: T-4843
+task_name: "Worker binary and version recorded only for claude workers (T-4775 partial): codex, opencode and other kinds leave no version"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T20:47:23Z
+completed: 2026-10-27T21:33:45Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T21:48:36+01:00
+last_commit: 2026-10-27T22:06:55+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — worker binary/version recorded only for claude (832 msg 36c65b40); ACs, Verification. every worker kind records its binary and version (stderr.log + meta.json) via one run.sh helper. vendor termlink.sh; ACs ticked
+
+# Key outcomes
+outcomes:
+  - 'Reproduce first: a test dispatches (or drives run.sh for) a non-claude worker kind with a stub binary that prints a version, and shows stderr.log and meta.json carry no binary/version line; it fails before the fix'
+  - 'Every worker kind (claude, codex, opencode, ollama-loop and any other kind run.sh launches) writes `worker binary: <path> (<version>)` to stderr.log before launch, using one shared helper rather than per-branch copies'
+  - 'meta.json gains keys for the resolved worker binary path and its version line; a binary whose --version fails or hangs records that (bounded by the existing 20 s timeout), never blocks the launch'
+  - 'Review-seat signing is not disturbed: the T-3580/T-4835 seat tests stay green (grep tests/unit for review_seat, t4835, t3580)'
+  - 'Vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — where the version is captured, and what "version" means for ollama-loop'
+    chose: 'record in run.sh at launch time (stderr line + jq update of meta.json keys `worker_bin` / `worker_version`), writing `--version` output to a file rather than a pipe; for ollama-loop the "version" is the interpreter''s `python3 --version` plus the loop script''s sha256 prefix, passed to the helper as an override.'
+    rationale: 'run.sh is where the binary that actually runs is known (PATH is constructed there); a file redirect means a `--version` that leaves a child holding stdout cannot hold the launch past the 20 s timeout; the loop script has no `--version` flag and is run by python3.'
+    alternatives_rejected: ['writing the keys at dispatch time in cmd_dispatch (resolves on the caller''s PATH, not the worker''s — the exact T-4775 blind spot); calling `ollama-tool-loop.py --version` (no such flag; argparse would exit 2 and record nothing useful).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.tasks/active/T-4843-worker-binary-and-version-recorded-only-.md'
+  - 'agents/termlink/termlink.sh'
+  - 'tests/unit/t4843_worker_binary_every_kind.bats'
+  - 'tests/unit/t4843_worker_binary_every_kind_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T21:48:36'
+    action: 'T-4843: file — worker binary/version recorded only for claude (832 msg 36c65b40); ACs, Verification'
+  - time: '2026-10-27T21:56:53'
+    action: 'T-4843: every worker kind records its binary and version (stderr.log + meta.json) via one run.sh helper'
+  - time: '2026-10-27T22:06:55'
+    action: 'T-4843: vendor termlink.sh; ACs ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 46 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, termlink, dispatch]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 46
+  commits: 4
+  files_changed: 8
+  lines_added: 852
+  lines_removed: 16
+  footprint_refreshed_at: '2026-10-27T21:36:38Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4843-worker-binary-and-version-recorded-only-.md
+generated_by: context-agent-hybrid
