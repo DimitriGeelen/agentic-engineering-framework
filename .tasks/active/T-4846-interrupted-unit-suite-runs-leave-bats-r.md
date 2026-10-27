@@ -102,7 +102,7 @@ The need: AEF's own test runs do not accumulate on the /tmp tmpfs when they are 
 - [x] The P-011 Verification runner and `fw test` run under a TMPDIR they own (`aef-<label>-<pid>-XXXXXX`, lib/tmp-hygiene.sh) and remove it when done, so a killed bats run leaves nothing at the temp root; a dir orphaned by a SIGKILLed parent is swept by the next run (bounded: only AEF-named dirs whose owner pid is dead, and top-level `bats-run-*` dirs older than 24 h owned by this uid; either only when no process holds a cwd or fd inside; nothing else in /tmp is touched)
 - [x] `fw doctor` and the structure audit WARN (never FAIL) when the filesystem holding $TMPDIR is above TMP_USE_WARN_PCT (registry key, default 85), naming the largest top-level entries
 - [x] tests/unit/t4846_tmp_hygiene.bats covers the kill case, the sweep's boundaries and the threshold WARN; t4215/t4526 temp tests and tests/lint/config-registry-parity.bats stay green
-- [ ] Vendor in sync
+- [x] Vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
