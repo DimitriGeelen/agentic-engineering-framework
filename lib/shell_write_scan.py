@@ -1471,7 +1471,8 @@ def _script_form(verb: str, seg_text: str, ctx: _Ctx) -> None:
 # T-4499: argument values that are a message, not shell. `_tokens` turns every backtick
 # into a command break and `_substitutions` reads `$(...)`/`` `...` `` even inside single
 # quotes, so a peer message quoting `git log --output="$F"` was scanned as a git command.
-# Only a SINGLE-quoted value is data: in double quotes bash runs the substitutions itself.
+# The value's text is data however it is quoted (T-4817); a substitution bash runs in it
+# (unquoted or in double quotes) is not, and stays scanned.
 _DATA_ARGS = {("sidecar", "send"): {"--body"}}
 _FW_VERB = re.compile(r"^(?:\S*/)?fw$")
 
@@ -1518,13 +1519,14 @@ def _top_words(s: str) -> list[list[tuple[int, int, str]]]:
     return [seg for seg in segs if seg]
 
 
-def _blank_data_args(command: str) -> str:
-    """`command` with the interior of each single-quoted data argument (_DATA_ARGS) blanked."""
+def _blank_data_args(command: str) -> tuple[str, bool]:
+    """`command` with each data argument (_DATA_ARGS) blanked, except the substitutions bash
+    runs; plus whether any such substitution was kept."""
     try:
         segs = _top_words(command)
     except ParseError:
-        return command
-    spans = []
+        return command, False
+    spans, live = [], False
     for seg in segs:
         k = 0
         while k < len(seg) and re.match(r"^[A-Za-z_][A-Za-z0-9_]*=", seg[k][2]):
@@ -1544,10 +1546,21 @@ def _blank_data_args(command: str) -> str:
                 continue
             else:
                 a, b, w = seg[j + 1]
-            # exactly one single-quoted string, nothing attached
-            if len(w) >= 2 and w[0] == "'" and w.find("'", 1) == len(w) - 1:
-                spans.append((a + 1, b - 1))
-    return _blank(command, spans)
+            # T-4817: the word as bash reads it, not its shape. Every quoting of the text
+            # ('…', '…'\''…', $'…', "…\`…\`…") is data; only a substitution bash runs is
+            # kept, delimiters included, so it is still scanned as a command.
+            try:
+                _, subs = _lex_spans(w)
+            except ParseError:
+                continue
+            p, live = a, live or bool(subs)
+            for x, y in sorted(subs):
+                x, y = x - (2 if w[x - 1] == "(" else 1), y + 1
+                if a + x >= p:
+                    spans.append((p, a + x))
+                p = max(p, a + y)
+            spans.append((p, b))
+    return _blank(command, spans), live
 
 
 def scan(command: str, cwd: str | None = None, project_root: str | None = None) -> list[Hit]:
@@ -1556,9 +1569,13 @@ def scan(command: str, cwd: str | None = None, project_root: str | None = None) 
     `project_root` (T-4336): when given, a `.tasks` target provably outside it is not a
     guarded write. Without it every `.tasks` target is guarded, as before.
     """
-    command = _blank_data_args(command)
+    original = command
+    command, live = _blank_data_args(command)
     guarded = _guarded_within(os.path.realpath(project_root)) if project_root else None
-    ctx = _Ctx(cwd=cwd, mentions=mentions_guarded(command), guarded=guarded)
+    # T-4817: a substitution bash runs inside a message keeps the message's guarded
+    # mention as its context (its $F may be that path), as before the message was blanked
+    mentions = mentions_guarded(command) or (live and mentions_guarded(original))
+    ctx = _Ctx(cwd=cwd, mentions=mentions, guarded=guarded)
     unlexed = "command does not tokenise (unbalanced quote) and names a guarded path"
     try:
         # T-4763: the lexer's reading, when the text lexes. It knows `'```'` is literal;
