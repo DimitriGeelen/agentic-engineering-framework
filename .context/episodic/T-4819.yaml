@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4819: fw doctor reports another project's resolver-loop.timer as this project's (no WorkingDirectory check)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T12:57:13Z
+# ============================================================================
+
+task_id: T-4819
+task_name: "fw doctor reports another project's resolver-loop.timer as this project's (no WorkingDirectory check)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T12:14:59Z
+completed: 2026-10-27T12:56:51Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T13:34:24+01:00
+last_commit: 2026-10-27T13:34:48+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  doctor attributes resolver-loop.timer by the service's WorkingDirectory (realpath vs PROJECT_ROOT); another project's loop or an unset WorkingDirectory is INFO, never LIVE; regression bats t4819, t4357 stub declares owner. vendor sync bin/fw
+
+# Key outcomes
+outcomes:
+  - 'A failing bats case first: with a fake systemctl reporting an active resolver-loop.timer whose service WorkingDirectory is another directory, `fw doctor` in this project prints LIVE "dispatching unattended every 30m"'
+  - 'bin/fw (~4876) reads the unit''s WorkingDirectory (systemctl show) and reports LIVE only when it equals PROJECT_ROOT (realpath-compared); a unit for another directory is an INFO line naming that directory; not-installed and inactive keep today''s wording'
+  - 'New tests in tests/unit/t4819_doctor_resolver_owner.bats using a fake systemctl on PATH; the existing T-4357 tests stay green; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — unit with no WorkingDirectory'
+    chose: 'INFO "has no WorkingDirectory — cannot attribute it to this project", never LIVE.'
+    rationale: 'an unattributable loop is not evidence it dispatches for this project; the shipped unit always sets WorkingDirectory, so this only fires for hand-written units.'
+    alternatives_rejected: ['falling back to today''s LIVE wording (re-creates the false claim the field report is about).']
+  - decision: '2026-10-27 — t4357 stub change'
+    chose: 'give t4357''s stub a `show` reply naming PROJECT_ROOT as owner, rather than keep LIVE reachable without an owner.'
+    rationale: 'the old stub''s "unit listed and active" now means "owner unknown"; its controls intend "this project''s unit".'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.tasks/active/T-4819-fw-doctor-reports-another-projects-resol.md'
+  - 'bin/fw'
+  - 'tests/unit/t4357_doctor_resolver_timer_presence.bats'
+  - 'tests/unit/t4819_doctor_resolver_owner.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T13:34:24'
+    action: 'T-4819: doctor attributes resolver-loop.timer by the service''s WorkingDirectory (realpath vs PROJECT_ROOT); another project''s loop or an unset WorkingDirectory is INFO, never LIVE; regression bats t4819, t4357 stub declares owner'
+  - time: '2026-10-27T13:34:48'
+    action: 'T-4819: vendor sync bin/fw'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 41 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 41
+  commits: 3
+  files_changed: 7
+  lines_added: 634
+  lines_removed: 6
+  footprint_refreshed_at: '2026-10-27T13:08:25Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4819-fw-doctor-reports-another-projects-resol.md
+generated_by: context-agent-hybrid
