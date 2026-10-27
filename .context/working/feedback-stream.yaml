@@ -49659,3 +49659,21 @@ scan_id: R-120dcd97
 task_id: T-4804
 payload:
   task_file: .tasks/active/T-4804-v1815-report-record-be31-be35-field-verd.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T10:30:43Z'
+scan_id: R-725b126b
+task_id: T-4805
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T10:30:43Z'
+scan_id: R-725b126b
+task_id: T-4805
+payload:
+  task_file: .tasks/active/T-4805-conformance-runner-judge-shared-base-ste.md
