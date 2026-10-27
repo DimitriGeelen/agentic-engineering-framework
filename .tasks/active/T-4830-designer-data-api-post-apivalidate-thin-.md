@@ -14,7 +14,7 @@ description: >
   tests test_t955_validate_endpoint.py and test_t961_designer_validate_reach.py pointed
   at AEF.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T15:26:50Z
-last_update: '2026-10-27T15:30:44Z'
+last_update: 2026-10-27T15:40:15Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,11 +99,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] First find out where 832 ships tools/validate-workflow.py (designer release tag, authoring kit, or not yet) and record it in ## Decisions. If it is not shipped with a release, stop after recording the finding and say so in the task Updates (do not copy it from 832's working tree; the project boundary applies), so the parent can ask 832
-- [ ] The validator is pinned like the designer build: a recorded sha256 in policy/designer-pin.yaml (or a sibling entry), installed by `fw designer sync --from-tag`, and verified against the pin before use
-- [ ] web/blueprints/designer_api.py serves POST /api/validate per the T-1300 contract: {bpmn} gives 200 {ok, findings:[{severity, rule, location, message}], errors, warnings}; empty input gives 400; a missing, unpinned or failing-to-import validator gives 503 (never an empty findings list); an unexpected failure gives 500. AEF adds no rules of its own
-- [ ] The designer's POST passes the CSRF guard the way POST /api/save does (same-origin JSON, no token); a cross-origin or form POST is still refused
-- [ ] Tests in tests/web/test_t4830_validate.py (valid map, map with findings, empty input, validator absent gives 503, CSRF behaviour); existing designer_api tests stay green; Watchtower restarted and `bin/fw watchtower current` OK; vendor in sync
+- [x] First find out where 832 ships tools/validate-workflow.py (designer release tag, authoring kit, or not yet) and record it in ## Decisions. If it is not shipped with a release, stop after recording the finding and say so in the task Updates (do not copy it from 832's working tree; the project boundary applies), so the parent can ask 832
+- [x] The validator is pinned like the designer build: a recorded sha256 in policy/designer-pin.yaml (or a sibling entry), installed by `fw designer sync --from-tag`, and verified against the pin before use
+- [x] web/blueprints/designer_api.py serves POST /api/validate per the T-1300 contract: {bpmn} gives 200 {ok, findings:[{severity, rule, location, message}], errors, warnings}; empty input gives 400; a missing, unpinned or failing-to-import validator gives 503 (never an empty findings list); an unexpected failure gives 500. AEF adds no rules of its own
+- [x] The designer's POST passes the CSRF guard the way POST /api/save does (same-origin JSON, no token); a cross-origin or form POST is still refused
+- [x] Tests in tests/web/test_t4830_validate.py (valid map, map with findings, empty input, validator absent gives 503, CSRF behaviour); existing designer_api tests stay green; Watchtower restarted and `bin/fw watchtower current` OK; vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -162,7 +162,8 @@ bvp_scores_proposed:
 
 python3 -m pytest -q tests/web/test_t4830_validate.py
 bin/fw watchtower current
-bin/fw vendor self --check
+bin/fw vendor self --check --task T-4830
+grep -q '^validator_sha256:' policy/designer-pin.yaml
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -369,16 +370,23 @@ bin/fw vendor self --check
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** POST /api/validate is live and is a thin wrapper over 832's own released validator, pinned and sha256-checked; AEF adds no rules. Check no longer hits the 403.
+**Evidence:**
+- 832 ships the validator at tag designer-v0.30.0 (dist/aef-authoring-kit-0.30.0/validate-workflow.py); `fw designer sync --from-tag` now verifies it against the kit SHA256SUMS, the MANIFEST kit_sha256 and the pin, and installs it read-only.
+- tests/web/test_t4830_validate.py: 23 passed with the existing designer_api tests (98 passed across all files naming designer_api). Clean map gives zero findings, a broken one gives E-XML-STRUCTURE, empty input 400, absent/unpinned/mismatched validator 503, form POST 415, cross-origin 403.
+- Live: a JSON POST to the running Watchtower returns findings; a form POST returns 415; `bin/fw watchtower current` OK.
+- Open: consumer projects' `.agentic-framework/vendor/designer/` carries only the designer HTML (lib/upgrade.sh copies one file), so a consumer answers 503 until upgrade.sh also copies the pinned validator. Honest, not silent, but a follow-up.
+- Your check: http://192.168.10.107:3000/designer/app (press Check on a map); review at http://192.168.10.107:3000/review/T-4830
+
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-10-27 — Where 832 ships the validator, and how it is pinned
+- **Finding (AC 1):** 832 DOES ship `validate-workflow.py` with each designer release. At annotated tag `designer-v0.30.0` (the pinned tag, fetched read-only from `source_origin`) it is `dist/aef-authoring-kit-0.30.0/validate-workflow.py`, 109553 bytes, sha256 `d721a8b0a641f5a8ac37f744f972095354f0f1e7d3647fb29fe083c96d4840ba`. The kit's `SHA256SUMS` at the same tag lists that sha, and `dist/MANIFEST.yaml` at the tag carries `kit_sha256` (66f0c3ba...) for SHA256SUMS itself. Nothing was taken from 832's working tree.
+- **Chose:** pin `validator_*` keys in `policy/designer-pin.yaml`; `fw designer sync --from-tag` also fetches the validator at the tag, checks it against the kit SHA256SUMS at that tag (itself checked against MANIFEST `kit_sha256`) AND the pin, and installs it read-only at `vendor/designer/validate-workflow-<ver>.py`. The route loads it by path (importlib), re-verifying the sha against the pin on first use; absent, mismatched or failing to import gives 503.
+- **Why:** same two-anchor discipline as the designer build; AEF holds no rules.
+- **Rejected:** copying from 832's tree (project boundary); `pip`/subprocess (in-process `run_xml` is stdlib and cheaper).
+- **CSRF:** `web/app.py` already exempts every `designer_api.*` endpoint, so the designer's token-less POST passes. The route itself refuses a non-JSON body (form POST) with 415 and a cross-origin `Origin` with 403, so the exemption is not a hole for this route.
 
 ## Decision
 
@@ -396,3 +404,6 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4830-designer-data-api-post-apivalidate-thin-.md
 - **Context:** Initial task creation
+
+### 2026-10-27T15:39:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

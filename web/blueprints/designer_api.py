@@ -33,6 +33,8 @@ Store (runtime data plane; NOT the vendored build, which stays read-only):
 gracefully when it is absent, so saved maps work without it.
 """
 
+import hashlib
+import importlib.util
 import json
 import re
 import shutil
@@ -42,6 +44,9 @@ import uuid as _uuid
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+from urllib.parse import urlsplit
+
+import yaml
 from flask import Blueprint, Response, jsonify, request
 
 from web.designer_registry import (
@@ -325,6 +330,80 @@ def instances():
         "instances": insts,
         "refusals": refusals,
     })
+
+
+# T-4830 (T-4737 GO): POST /api/validate, a thin wrapper over 832's validate-workflow.py
+# run_xml(), pinned beside the designer build (policy/designer-pin.yaml validator_*, installed
+# and sha256-checked by `fw designer sync --from-tag`). AEF adds no rules: every finding is
+# 832's. Unavailable (absent, unpinned, sha mismatch, import failure) is 503, never an empty
+# findings list, so Check cannot read "could not run" as "clean".
+_PIN_FILE = FRAMEWORK_ROOT / "policy" / "designer-pin.yaml"
+_VALIDATOR_CACHE = {}
+
+
+def _load_validator():
+    """Return (module, None) or (None, reason). Verified against the pin on each file change."""
+    try:
+        pin = yaml.safe_load(_PIN_FILE.read_text()) or {}
+    except (OSError, yaml.YAMLError) as e:
+        return None, f"designer pin unreadable: {e}"
+    rel, want = pin.get("validator_path"), pin.get("validator_sha256")
+    if not rel or not want:
+        return None, "validator not pinned (policy/designer-pin.yaml has no validator_*)"
+    path = FRAMEWORK_ROOT / str(rel)
+    try:
+        data = path.read_bytes()
+    except OSError:
+        return None, "pinned validator not installed (run: fw designer sync --from-tag)"
+    got = hashlib.sha256(data).hexdigest()
+    if got != str(want):
+        return None, "pinned validator sha256 mismatch (run: fw designer sync --from-tag)"
+    cached = _VALIDATOR_CACHE.get(got)
+    if cached:
+        return cached, None
+    try:
+        spec = importlib.util.spec_from_file_location("aef_pinned_validate_workflow", path)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        if not callable(getattr(mod, "run_xml", None)):
+            return None, "pinned validator has no run_xml()"
+    except Exception as e:  # a foreign module: any import failure is 'unavailable'
+        return None, f"pinned validator failed to import: {e}"
+    _VALIDATOR_CACHE.clear()
+    _VALIDATOR_CACHE[got] = mod
+    return mod, None
+
+
+@bp.route("/api/validate", methods=["POST"])
+def validate():
+    # web/app.py exempts designer_api.* from the token CSRF (the vendored client sends none), so
+    # this route holds the same-origin JSON line itself: a form post or a foreign Origin is refused.
+    origin = request.headers.get("Origin")
+    if origin and urlsplit(origin).netloc != request.host:
+        return _err("cross-origin request refused", 403)
+    if not request.is_json:
+        return _err("Content-Type must be application/json", 415)
+    data = request.get_json(silent=True)
+    bpmn = data.get("bpmn") if isinstance(data, dict) else None
+    if not isinstance(bpmn, str) or not bpmn.strip():
+        return _err("missing bpmn")
+    mod, why = _load_validator()
+    if mod is None:
+        return _err(f"validator unavailable: {why}", 503)
+    try:
+        found = mod.run_xml(bpmn)
+        findings = [
+            {"severity": str(f.severity), "rule": str(f.rule),
+             "location": str(f.location), "message": str(f.message)}
+            for f in found
+        ]
+    except Exception as e:
+        print(f"designer-api: validate failed: {e}", file=sys.stderr)
+        return _err(f"validation failed: {e}", 500)
+    errors = sum(1 for f in findings if f["severity"] == "ERROR")
+    warnings = sum(1 for f in findings if f["severity"] == "WARN")
+    return jsonify({"ok": errors == 0, "findings": findings,
+                    "errors": errors, "warnings": warnings})
 
 
 @bp.route("/api/save", methods=["POST"])
