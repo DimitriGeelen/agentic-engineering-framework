@@ -142,6 +142,10 @@ Cut the next v1.8.15 be-tag after the designer data APIs (T-4830, T-4831, T-4832
 
 ## Verification
 
+git rev-parse -q --verify refs/tags/v1.8.15-be.42
+git ls-remote --tags origin v1.8.15-be.42 | grep -q v1.8.15-be.42
+grep -q "be.37 – be.41 — ring20, TermLink, 832, 055, dimitri-mint-dev" docs/reports/field-test-v1.8.15-results.md
+
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
