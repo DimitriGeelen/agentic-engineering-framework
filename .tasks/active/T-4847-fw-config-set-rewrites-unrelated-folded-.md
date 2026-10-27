@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T21:29:46Z
-last_update: 2026-10-27T22:00:45Z
+last_update: 2026-10-27T22:20:18Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -165,6 +165,7 @@ See description. The need: `fw config set KEY VALUE` changes the one line for KE
 ## Verification
 
 timeout 900 bats tests/unit/t4847_config_set_preserves_lines.bats
+timeout 900 bats tests/unit/t3735_config_set_no_fold.bats
 bin/fw vendor self --check --task T-4847
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -395,6 +396,10 @@ bin/fw vendor self --check --task T-4847
 - **Chose:** edit flat (top-level) keys line by line: replace the key line plus its continuation lines (indented, blank, or top-level `- ` items; trailing blank/comment lines left in place), or append one line. The value is rendered with `yaml.safe_dump({key: value})` so quoting is correct. Dotted keys keep the ruamel round-trip.
 - **Why:** every key `fw config set` writes in practice is flat; a line edit is the only way to promise byte-identical other lines. safe_dump quotes only what needs it, and the result reads back through both the grep reader in `lib/config.sh` and `yaml.safe_load`.
 - **Rejected:** tuning ruamel (it cannot round-trip a wrapped plain scalar); rewriting nested keys line-wise too (needs a YAML-aware editor; the nested path is rare and was not reported).
+
+### 2026-10-27 — parent review: the T-3735 heal-on-write is gone (accepted, follow-up filed)
+- **Found:** before this change every `fw config set` re-dumped the file at width 4096 (T-3735), which as a side effect unfolded an `upstream_repo` folded by an older `set`. That unfolding is what 832 saw as the "rewrite". The line-wise edit never folds anything, but it also no longer heals a file that is still folded, and `lib/update.sh` reads a folded `upstream_repo` as empty.
+- **Chose:** keep the line-wise edit (832's need: set changes only its own key) and fix the reader instead, as its own task, so a folded value reads correctly however it got there. The parent also updated `tests/unit/t3735_config_set_no_fold.bats` test 2, which asserted the fallback dumper's warning on a flat key: it now drives the fallback through a dotted key and still checks the long value on a flat set.
 
 ### 2026-10-27 — inline comment on the replaced key line
 - **Chose:** drop it; the whole key line is replaced.

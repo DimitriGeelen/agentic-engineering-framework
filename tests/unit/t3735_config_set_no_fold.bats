@@ -40,9 +40,15 @@ _update_reader() {
     # Shadow ruamel so the fallback branch runs.
     mkdir -p "$TEST_DIR/shim/ruamel"
     printf 'raise ImportError("hidden for T-3735")\n' > "$TEST_DIR/shim/ruamel/__init__.py"
-    PYTHONPATH="$TEST_DIR/shim" run _cfg set CONTEXT_WINDOW 900000
+    # T-4847: a flat key is now edited line-wise and never reaches the YAML dumper, so the
+    # fallback dumper is exercised through a dotted (nested) key, which still round-trips.
+    PYTHONPATH="$TEST_DIR/shim" run _cfg set watchtower.port 3009
     [ "$status" -eq 0 ]
     [[ "$output" == *"ruamel.yaml not installed"* ]]
+    [ "$(_update_reader)" = "$LONG_URL" ]
+    # ...and a flat key set under the same shadowing keeps the long value intact too.
+    PYTHONPATH="$TEST_DIR/shim" run _cfg set CONTEXT_WINDOW 900000
+    [ "$status" -eq 0 ]
     grep -q '^CONTEXT_WINDOW: 900000$' "$TEST_DIR/.framework.yaml"
     [ "$(_update_reader)" = "$LONG_URL" ]
 }
