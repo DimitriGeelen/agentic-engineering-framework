@@ -1741,6 +1741,20 @@ run_verification_commands() {
     echo "Running $verify_total verification command(s)..."
     echo ""
 
+    # T-4846: verification lines run bats, pytest and mktemp under a TMPDIR this
+    # gate owns, removed after the loop. A line killed mid-run (bats SIGKILLed by
+    # a worker's time limit) used to leave bats-run-* in the shared /tmp (2.6 GB on
+    # 2026-10-27); now it stays in aef-verify-<pid>-*, which the next gate run or
+    # `fw test` sweeps once this pid is gone.
+    local _verify_tmp="" _verify_tmp_env=""
+    if [ -f "$FRAMEWORK_ROOT/lib/tmp-hygiene.sh" ]; then
+        # shellcheck source=/dev/null
+        source "$FRAMEWORK_ROOT/lib/tmp-hygiene.sh"
+        fw_tmp_sweep >/dev/null 2>&1 || true
+        _verify_tmp=$(fw_tmp_own_dir verify 2>/dev/null) || _verify_tmp=""
+        [ -n "$_verify_tmp" ] && _verify_tmp_env="export TMPDIR=$(printf '%q' "$_verify_tmp") BATS_TMPDIR=$(printf '%q' "$_verify_tmp");"
+    fi
+
     while IFS= read -r cmd; do
         cmd=$(echo "$cmd" | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
         [ -z "$cmd" ] && continue
@@ -1775,7 +1789,7 @@ run_verification_commands() {
         # in a vendored copy by 577-CashWeb-integration (their G-072).
         local _close_locks_cmd
         _close_locks_cmd=$(type keylock_subshell_close_cmd >/dev/null 2>&1 && keylock_subshell_close_cmd || true)
-        if (unset TASKS_DIR CONTEXT_DIR _FW_PATHS_LOADED; eval "$_close_locks_cmd"; cd "$PROJECT_ROOT" && eval "$cmd") > /tmp/verify-$$.out 2>&1 < /dev/null; then
+        if (unset TASKS_DIR CONTEXT_DIR _FW_PATHS_LOADED; eval "$_close_locks_cmd"; eval "$_verify_tmp_env"; cd "$PROJECT_ROOT" && eval "$cmd") > /tmp/verify-$$.out 2>&1 < /dev/null; then
             echo -e "  ${GREEN}PASS${NC}: $display_cmd"
             verify_pass=$((verify_pass + 1))
         else
@@ -1787,6 +1801,7 @@ run_verification_commands() {
         fi
         rm -f /tmp/verify-$$.out
     done <<< "$verify_cmds"
+    [ -n "$_verify_tmp" ] && rm -rf -- "$_verify_tmp"
 
     echo ""
 

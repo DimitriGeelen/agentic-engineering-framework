@@ -1,0 +1,21 @@
+id: lib/tmp-hygiene.sh
+name: tmp-hygiene
+type: script
+subsystem: framework-core
+location: lib/tmp-hygiene.sh
+tags: []
+
+purpose: "lib/tmp-hygiene.sh - owned temp dirs for AEF test runs, a bounded orphan sweep, and a fullness verdict for the temp filesystem (T-4846)"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-27
+created_by: unknown

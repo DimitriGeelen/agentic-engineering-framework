@@ -3358,6 +3358,28 @@ if ! fw_is_linked_worktree "$PROJECT_ROOT" && [ -f "$_wt_cur_pid_f" ] \
     fi
 fi
 
+# T-4846: /tmp here is a 32 GB RAM tmpfs shared by every project on the host. It
+# filled to 0 MB on 2026-10-27 (killed bats runs left bats-run-* trees there) and
+# writes failed quietly, Watchtower's restart among them. WARN only: host state,
+# often not ours. One df per run; du only when over, bounded by a timeout.
+if [ -f "$FRAMEWORK_ROOT/lib/tmp-hygiene.sh" ]; then
+    # shellcheck source=/dev/null
+    . "$FRAMEWORK_ROOT/lib/tmp-hygiene.sh"
+    _tu_pct="$(fw_config TMP_USE_WARN_PCT 2>/dev/null)"
+    case "${_tu_pct:-}" in ''|*[!0-9]*) _tu_pct=85 ;; esac
+    _tu_out=$(fw_tmp_usage_verdict "${TMPDIR:-/tmp}" "$_tu_pct") && _tu_rc=0 || _tu_rc=$?
+    IFS=$'\t' read -r _tu_v _tu_use _tu_mnt _tu_top <<< "$_tu_out"
+    if [ "$_tu_rc" -eq 1 ]; then
+        warn "Temp filesystem $_tu_mnt is ${_tu_use}% full (over TMP_USE_WARN_PCT=$_tu_pct)" \
+             "largest: $_tu_top — a full tmpfs fails writes quietly (T-4846)" \
+             "Remove finished scratch there; AEF's own orphans (aef-bats-*, aef-verify-*, old bats-run-*) are swept by the next fw test run"
+    elif [ "$_tu_rc" -eq 2 ]; then
+        warn "Temp filesystem check could not run" "$_tu_use" "Check: df -Pk \"\${TMPDIR:-/tmp}\""
+    else
+        pass "Temp filesystem $_tu_mnt is ${_tu_use}% full (under TMP_USE_WARN_PCT=$_tu_pct)"
+    fi
+fi
+
 # T-4637 (T-4635 RCA): long-lived agent processes (claude-fw, Watchtower, the
 # TermLink hub, tmux servers) in a session-*.scope of a user without linger are
 # SIGKILLed when systemd force-tears that slice down under load — six workers and

@@ -3950,6 +3950,27 @@ else:
         fi
     fi
 
+    # T-4846: /tmp here is a RAM tmpfs shared by every project on the host; it
+    # filled to 0 MB and writes failed quietly. One df; du only when over.
+    if [ -f "$FRAMEWORK_ROOT/lib/tmp-hygiene.sh" ]; then
+        source "$FRAMEWORK_ROOT/lib/tmp-hygiene.sh"
+        _tu_pct="$(fw_config TMP_USE_WARN_PCT)"
+        case "${_tu_pct:-}" in ''|*[!0-9]*) _tu_pct=85 ;; esac
+        _tu_out=$(fw_tmp_usage_verdict "${TMPDIR:-/tmp}" "$_tu_pct") && _tu_rc=0 || _tu_rc=$?
+        IFS=$'\t' read -r _tu_v _tu_use _tu_mnt _tu_top <<< "$_tu_out"
+        if [ "$_tu_rc" -eq 1 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  [host] temp filesystem $_tu_mnt is ${_tu_use}% full (over TMP_USE_WARN_PCT=$_tu_pct) — largest: $_tu_top"
+            echo "         A full tmpfs fails writes quietly; remove finished scratch (AEF orphans: fw test sweeps aef-bats-*/aef-verify-*/old bats-run-*)"
+            warnings=$((warnings + 1))
+            host_warnings=$((host_warnings + 1))
+        elif [ "$_tu_rc" -eq 2 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  temp filesystem check could not run (${_tu_use})"
+            warnings=$((warnings + 1))
+        else
+            echo -e "  ${GREEN}OK${NC}  temp filesystem $_tu_mnt is ${_tu_use}% full (under TMP_USE_WARN_PCT=$_tu_pct)"
+        fi
+    fi
+
     _doctor_phase "Watchtower smoke test"  # T-3452
     # Check: Watchtower smoke test (T-486) — run if server is reachable
     # Use _watchtower_url for port detection (T-1154: no hardcoded 3000)
@@ -11539,6 +11560,22 @@ PYPREDICT
         ;;
     test)
         _test_exit=0
+
+        # T-4846: every leg below runs bats/pytest under a TMPDIR this process
+        # owns and removes on exit. A bats run killed mid-file never removes its
+        # bats-run-* dir; under the caller's TMPDIR that was the shared /tmp tmpfs
+        # (2.6 GB left on 2026-10-27). Orphans of earlier killed runs are swept first.
+        if [ -f "$FRAMEWORK_ROOT/lib/tmp-hygiene.sh" ]; then
+            # shellcheck source=/dev/null
+            source "$FRAMEWORK_ROOT/lib/tmp-hygiene.sh"
+            fw_tmp_sweep >/dev/null 2>&1 || true
+            if _fw_test_tmp=$(fw_tmp_own_dir bats 2>/dev/null); then
+                trap 'rm -rf -- "$_fw_test_tmp"' EXIT
+                trap 'rm -rf -- "$_fw_test_tmp"; trap - TERM; kill -TERM $$' TERM
+                trap 'rm -rf -- "$_fw_test_tmp"; trap - INT; kill -INT $$' INT
+                export TMPDIR="$_fw_test_tmp" BATS_TMPDIR="$_fw_test_tmp"
+            fi
+        fi
 
         case "${1:-all}" in
             --lint|lint)

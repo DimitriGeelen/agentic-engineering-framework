@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T21:22:53Z
-last_update: 2026-10-27T21:57:03Z
+last_update: 2026-10-27T22:00:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,10 +98,10 @@ The need: AEF's own test runs do not accumulate on the /tmp tmpfs when they are 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce: show which AEF entry point leaves /tmp/bats-run-* when killed (start it, SIGKILL or SIGTERM it mid-run, list /tmp), at least for the Verification gate's command runner in agents/task-create/update-task.sh
-- [ ] AEF-run verification and `fw test` give bats a TMPDIR they own and remove on exit, so a killed run leaves nothing at /tmp top level; an orphaned dir from a killed parent is swept by the next run or by a bounded sweep (only bats-run-* dirs with no open files and older than a threshold, never other projects' entries)
-- [ ] `fw doctor` and the structure audit WARN when the temp filesystem holding $TMPDIR is above a configurable use threshold (default e.g. 85%), naming the largest top-level entries; WARN only, never FAIL
-- [ ] Tests (bats) for the kill case and for the threshold WARN; existing unit-suite tmp-leftover tests (T-4215, T-4526) stay green
+- [x] Reproduce: a `bats` run SIGKILLed mid-test leaves `bats-run-*` at the top of its TMPDIR (reproduced 2026-10-27: `bats-run-sFaDiU` left after a process-group SIGKILL); the P-011 runner (agents/task-create/update-task.sh) and `fw test` passed the caller's TMPDIR (normally /tmp) straight to bats
+- [x] The P-011 Verification runner and `fw test` run under a TMPDIR they own (`aef-<label>-<pid>-XXXXXX`, lib/tmp-hygiene.sh) and remove it when done, so a killed bats run leaves nothing at the temp root; a dir orphaned by a SIGKILLed parent is swept by the next run (bounded: only AEF-named dirs whose owner pid is dead, and top-level `bats-run-*` dirs older than 24 h owned by this uid; either only when no process holds a cwd or fd inside; nothing else in /tmp is touched)
+- [x] `fw doctor` and the structure audit WARN (never FAIL) when the filesystem holding $TMPDIR is above TMP_USE_WARN_PCT (registry key, default 85), naming the largest top-level entries
+- [x] tests/unit/t4846_tmp_hygiene.bats covers the kill case, the sweep's boundaries and the threshold WARN; t4215/t4526 temp tests and tests/lint/config-registry-parity.bats stay green
 - [ ] Vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
@@ -152,7 +152,9 @@ The need: AEF's own test runs do not accumulate on the /tmp tmpfs when they are 
 
 ## Verification
 
-timeout 900 bats tests/unit/t4846_tmp_hygiene.bats
+timeout 900 bats tests/unit/t4846_tmp_hygiene.bats > /tmp/.t4846.out 2>&1 && ! grep -q "^not ok" /tmp/.t4846.out && test "$(grep -c '# skip' /tmp/.t4846.out)" -eq 0
+timeout 900 bats tests/unit/t4215_unit_suite_file_tmpdir.bats tests/unit/t4526_tmp_leftovers.bats tests/lint/config-registry-parity.bats > /tmp/.t4846b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4846b.out
+bash -n bin/fw && bash -n lib/tmp-hygiene.sh && bash -n agents/task-create/update-task.sh
 bin/fw vendor self --check --task T-4846
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -293,6 +295,14 @@ bin/fw vendor self --check --task T-4846
 
 ## RCA
 
+**Symptom:** 2026-10-27 /tmp (32 GB tmpfs) reached 0 MB free around 22:05; Watchtower's restart and other writes failed. AEF's share included /tmp/bats-run-HtbaWS (2.6 GB, from a run killed at 14:32) and /tmp/bats-run-uEFGh6.
+
+**Root cause:** bats creates its run dir `bats-run-XXXXXX` under `$TMPDIR` and removes it only from its own EXIT handler, which a SIGKILL never reaches (reproduced: `bats a.bats b.bats` killed by process group left `bats-run-sFaDiU`). The unit suite already confines this (T-4215, agents/audit/unit-suite.sh:268, per-file TMPDIR under $RESULTS), but the other AEF entry points that run bats handed it the caller's TMPDIR, i.e. the shared /tmp: the P-011 gate runs each Verification line with `eval "$cmd"` and no TMPDIR of its own (agents/task-create/update-task.sh:1777), and `fw test unit|integration|governance|invariants|all` call bare `bats` (bin/fw:11640-11833). Workers and the parent run those at every close and every invariants check, and those are the processes that get killed.
+
+**Why structurally allowed:** T-4215/T-4526 fixed and measured temp hygiene for the unit suite only; nothing measured the other runners, nothing swept an orphan, and nothing looked at how full the tmpfs was, so a full /tmp surfaced only as unrelated write failures.
+
+**Prevention:** lib/tmp-hygiene.sh gives the gate and `fw test` an owned TMPDIR plus a bounded sweep of orphans at the next run; `fw doctor` and the structure audit WARN above TMP_USE_WARN_PCT naming the largest entries; tests/unit/t4846_tmp_hygiene.bats pins the kill case, the sweep boundary (foreign entries, live owners and young bats-run dirs are left alone) and the WARN.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -361,6 +371,11 @@ bin/fw vendor self --check --task T-4846
 -->
 
 ## Decisions
+
+### 2026-10-27 — where the owned TMPDIR lives, and what the sweep may touch
+- **Chose:** the owned dir stays under the caller's $TMPDIR, named `aef-<label>-<pid>-XXXXXX`; the sweep removes AEF-named dirs whose owner pid is dead, and top-level `bats-run-*` only when older than 24 h, owned by this uid; in both cases only when no process holds a cwd or fd inside. Nothing else.
+- **Why:** moving test temp onto the repo disk changes paths that many tests and hooks reason about (boundary hook, git-status checks), a far wider change than this bug. A named dir with the owner pid makes orphans attributable, which bare `bats-run-*` dirs are not. bats removes its run dir on every clean exit, so a 24 h-old unreferenced one is debris whoever made it; /tmp is shared with other projects, so the bar for touching unnamed entries is kept high.
+- **Rejected:** sweeping every `bats-run-*` regardless of age (could hit another project's live run between tests); pointing TMPDIR at `.context/` (scope, above).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
