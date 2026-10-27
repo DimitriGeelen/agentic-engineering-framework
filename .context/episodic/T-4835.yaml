@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4835: Review seats void their own green verdict when Python writes __pycache__ into the export (run seats with PYTHONDONTWRITEBYTECODE=1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T16:41:44Z
+# ============================================================================
+
+task_id: T-4835
+task_name: "Review seats void their own green verdict when Python writes __pycache__ into the export (run seats with PYTHONDONTWRITEBYTECODE=1)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T15:33:27Z
+completed: 2026-10-27T16:41:03Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T16:50:03+01:00
+last_commit: 2026-10-27T16:51:20+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  review seats run with PYTHONDONTWRITEBYTECODE=1 in signed env (no false T-3986 void on __pycache__); fingerprint stays strict. vendor sync verdict_ledger.py. tick Agent ACs
+
+# Key outcomes
+outcomes:
+  - 'A failing test first: in the review-seat runtime (agents/termlink/termlink.sh run.sh heredoc, _tree_fp ~1842 / T-3986 check ~1877), a seat that runs `python3` importing a module from the export writes __pycache__/*.pyc and the run is voided as "modified the export it reviewed"'
+  - 'Every review seat (claude, codex, opencode, antigravity) is launched with PYTHONDONTWRITEBYTECODE=1 in its signed env (env.json), so a Python corroboration run leaves the tree fingerprint unchanged; the fingerprint itself stays strict (no exclusions added)'
+  - 'A seat that edits or adds a real file in the export is still voided (negative control); the env change is visible in the signed env and checked at complete like the rest'
+  - 'New tests in tests/unit/t4835_review_seat_pycache.bats (fakes only, no real model call); existing review-dispatch tests (t3580*, t3986*) stay green; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — where to set the env var'
+    chose: 'add PYTHONDONTWRITEBYTECODE=1 to env.json in cmd_dispatch (review task_type), so it is signed and exported to all seats by run.sh.'
+    rationale: 'keeps _tree_fp strict (operator instruction); the env is already data-signed.'
+    alternatives_rejected: ['excluding __pycache__/*.pyc from the fingerprint (weakens T-3986). Antigravity runs via sudo, which drops the environment; wrapping in `env` would change the operator-approved sudo command line, so it is left unchanged (open).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.tasks/active/T-4835-review-seats-void-their-own-green-verdic.md'
+  - 'agents/termlink/termlink.sh'
+  - 'lib/verdict_ledger.py'
+  - 'tests/unit/t4835_review_seat_pycache.bats'
+  - 'tests/unit/t4835_review_seat_pycache_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T16:50:03'
+    action: 'T-4835: review seats run with PYTHONDONTWRITEBYTECODE=1 in signed env (no false T-3986 void on __pycache__); fingerprint stays strict'
+  - time: '2026-10-27T16:50:53'
+    action: 'T-4835: vendor sync verdict_ledger.py'
+  - time: '2026-10-27T16:51:20'
+    action: 'T-4835: tick Agent ACs'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 67 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 67
+  commits: 4
+  files_changed: 10
+  lines_added: 403
+  lines_removed: 23
+  footprint_refreshed_at: '2026-10-27T16:41:55Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4835-review-seats-void-their-own-green-verdic.md
+generated_by: context-agent-hybrid

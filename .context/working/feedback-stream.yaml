@@ -50009,3 +50009,93 @@ scan_id: R-a6a8df27
 task_id: T-4823
 payload:
   task_file: .tasks/active/T-4823-fw-upgrade-writes-the-new-pinned-designe.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T16:34:00Z'
+scan_id: R-02d41c3b
+task_id: T-4836
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T16:34:00Z'
+scan_id: R-02d41c3b
+task_id: T-4836
+payload:
+  task_file: .tasks/active/T-4836-consumers-never-receive-the-pinned-desig.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T16:36:22Z'
+scan_id: R-ddfd3de3
+task_id: T-4832
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T16:36:22Z'
+scan_id: R-ddfd3de3
+task_id: T-4832
+payload:
+  task_file: .tasks/active/T-4832-designer-data-api-get-apifield-catalog-p.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T16:38:12Z'
+scan_id: R-2782218a
+task_id: T-4831
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T16:38:12Z'
+scan_id: R-2782218a
+task_id: T-4831
+payload:
+  task_file: .tasks/active/T-4831-designer-data-api-get-apiinstances-live-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T16:39:13Z'
+scan_id: R-3dc4a94f
+task_id: T-4830
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T16:39:13Z'
+scan_id: R-3dc4a94f
+task_id: T-4830
+payload:
+  task_file: .tasks/active/T-4830-designer-data-api-post-apivalidate-thin-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T16:41:25Z'
+scan_id: R-f9eaf4f5
+task_id: T-4835
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T16:41:25Z'
+scan_id: R-f9eaf4f5
+task_id: T-4835
+payload:
+  task_file: .tasks/active/T-4835-review-seats-void-their-own-green-verdic.md
