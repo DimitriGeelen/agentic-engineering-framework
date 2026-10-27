@@ -12,10 +12,10 @@ description: >
   on a RAM tmpfs by default. Also: fw doctor/audit could warn when /tmp is near full,
   since a full tmpfs fails quietly.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, unit-suite]
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T21:22:53Z
-last_update: '2026-10-27T21:30:43Z'
+last_update: 2026-10-27T21:57:03Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,16 +91,20 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Correction to the description, found before dispatch: the unit suite already confines bats/pytest temp to a per-file TMPDIR under its own results dir and removes it on EXIT (T-4215, agents/audit/unit-suite.sh ~201-268). The 2.6 GB leftover was a top-level /tmp/bats-run-* dir, bats's own run dir, which a multi-file `bats` invocation OUTSIDE the suite creates (task Verification via update-task.sh, `fw test`, worker test runs) and leaves behind when that process is killed. A second one (/tmp/bats-run-uEFGh6) existed at 22:4x.
+
+The need: AEF's own test runs do not accumulate on the /tmp tmpfs when they are interrupted, and a nearly full /tmp is visible before writes start failing.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduce: show which AEF entry point leaves /tmp/bats-run-* when killed (start it, SIGKILL or SIGTERM it mid-run, list /tmp), at least for the Verification gate's command runner in agents/task-create/update-task.sh
+- [ ] AEF-run verification and `fw test` give bats a TMPDIR they own and remove on exit, so a killed run leaves nothing at /tmp top level; an orphaned dir from a killed parent is swept by the next run or by a bounded sweep (only bats-run-* dirs with no open files and older than a threshold, never other projects' entries)
+- [ ] `fw doctor` and the structure audit WARN when the temp filesystem holding $TMPDIR is above a configurable use threshold (default e.g. 85%), naming the largest top-level entries; WARN only, never FAIL
+- [ ] Tests (bats) for the kill case and for the threshold WARN; existing unit-suite tmp-leftover tests (T-4215, T-4526) stay green
+- [ ] Vendor in sync
 
-### Human
+<!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -147,6 +151,9 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 900 bats tests/unit/t4846_tmp_hygiene.bats
+bin/fw vendor self --check --task T-4846
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -380,3 +387,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4846-interrupted-unit-suite-runs-leave-bats-r.md
 - **Context:** Initial task creation
+
+### 2026-10-27T21:57:03Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
