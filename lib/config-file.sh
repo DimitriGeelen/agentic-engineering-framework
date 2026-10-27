@@ -175,50 +175,100 @@ except ValueError:
         elif value.lower() in ('false', 'no'):
             value = False
 
-try:
-    from ruamel.yaml import YAML
-    yaml = YAML()
-    yaml.preserve_quotes = True
-    # T-3735: the default width (80) folds a long scalar onto a continuation
-    # line; line-wise shell readers (lib/update.sh grep+sed on upstream_repo)
-    # then read ''. Keep every scalar on its own key line.
-    yaml.width = 4096
-except ImportError:
-    # Fallback to PyYAML (no comment preservation)
-    import yaml as pyyaml
-
-    class FallbackYAML:
-        def load(self, f):
-            return pyyaml.safe_load(f)
-        def dump(self, data, f):
-            pyyaml.dump(data, f, default_flow_style=False, sort_keys=False, width=4096)
-
-    yaml = FallbackYAML()
-    print("WARNING: ruamel.yaml not installed — comments may not be preserved", file=sys.stderr)
-
-with open(yaml_file, 'r') as f:
-    data = yaml.load(f)
-
-if data is None:
-    data = {}
-
-# Handle dot-notation (e.g., watchtower.port → data['watchtower']['port'])
-parts = key.split('.')
-current = data
-for part in parts[:-1]:
-    if part not in current or not isinstance(current[part], dict):
-        current[part] = {}
-    current = current[part]
-
-current[parts[-1]] = value
-
-# T-100191: same-dir temp + os.replace — a kill mid-dump must not truncate
-# the live config (L-493 non-atomic-YAML-write class).
 import os
-tmp_path = yaml_file + '.tmp'
-with open(tmp_path, 'w') as f:
-    yaml.dump(data, f)
-os.replace(tmp_path, yaml_file)
+import re
+
+
+def _roundtrip_set(yaml_file, key, value):
+    """Dotted keys: ruamel round-trip (nested mapping edit)."""
+    try:
+        from ruamel.yaml import YAML
+        yaml = YAML()
+        yaml.preserve_quotes = True
+        # T-3735: the default width (80) folds a long scalar onto a continuation
+        # line; line-wise shell readers (lib/update.sh grep+sed on upstream_repo)
+        # then read ''. Keep every scalar on its own key line.
+        yaml.width = 4096
+    except ImportError:
+        # Fallback to PyYAML (no comment preservation)
+        import yaml as pyyaml
+
+        class FallbackYAML:
+            def load(self, f):
+                return pyyaml.safe_load(f)
+            def dump(self, data, f):
+                pyyaml.dump(data, f, default_flow_style=False, sort_keys=False, width=4096)
+
+        yaml = FallbackYAML()
+        print("WARNING: ruamel.yaml not installed — comments may not be preserved", file=sys.stderr)
+
+    with open(yaml_file, 'r') as f:
+        data = yaml.load(f)
+
+    if data is None:
+        data = {}
+
+    # Handle dot-notation (e.g., watchtower.port → data['watchtower']['port'])
+    parts = key.split('.')
+    current = data
+    for part in parts[:-1]:
+        if part not in current or not isinstance(current[part], dict):
+            current[part] = {}
+        current = current[part]
+
+    current[parts[-1]] = value
+
+    # T-100191: same-dir temp + os.replace — a kill mid-dump must not truncate
+    # the live config (L-493 non-atomic-YAML-write class).
+    tmp_path = yaml_file + '.tmp'
+    with open(tmp_path, 'w') as f:
+        yaml.dump(data, f)
+    os.replace(tmp_path, yaml_file)
+
+
+def _line_set(yaml_file, key, value):
+    """T-4847: a flat key is edited in place. A load + re-dump rewrote every
+    other line it could not round-trip — a plain scalar wrapped onto a
+    continuation line came back collapsed (832, be.43). Only KEY's own lines
+    change: its key line plus any continuation lines, or one appended line."""
+    import yaml as pyyaml
+    rendered = pyyaml.safe_dump({key: value}, default_flow_style=False,
+                                sort_keys=False, allow_unicode=True,
+                                width=float('inf'))
+    with open(yaml_file, 'r') as f:
+        lines = f.read().splitlines(keepends=True)
+    key_re = re.compile(r'^' + re.escape(key) + r'[ \t]*:([ \t]|$)')
+    start = next((n for n, l in enumerate(lines) if key_re.match(l)), None)
+    if start is None:
+        if lines and not lines[-1].endswith('\n'):
+            lines[-1] += '\n'
+            rendered = rendered.rstrip('\n')
+        lines.append(rendered)
+    else:
+        # The value runs on while lines are indented, blank, or top-level
+        # sequence items; trailing blank/comment lines stay with what follows.
+        end = start + 1
+        while end < len(lines) and (not lines[end].strip()
+                                    or lines[end][0] in ' \t'
+                                    or re.match(r'-([ \t]|$)', lines[end])):
+            end += 1
+        while end > start + 1 and (not lines[end - 1].strip()
+                                   or lines[end - 1].lstrip().startswith('#')):
+            end -= 1
+        if not lines[end - 1].endswith('\n'):
+            rendered = rendered.rstrip('\n')
+        lines[start:end] = [rendered]
+    # T-100191: same-dir temp + os.replace (L-493 non-atomic-YAML-write class).
+    tmp_path = yaml_file + '.tmp'
+    with open(tmp_path, 'w') as f:
+        f.writelines(lines)
+    os.replace(tmp_path, yaml_file)
+
+
+if '.' in key:
+    _roundtrip_set(yaml_file, key, value)
+else:
+    _line_set(yaml_file, key, value)
 
 print(f"Set {key} = {value}")
 

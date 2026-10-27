@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T21:29:46Z
-last_update: '2026-10-27T21:58:56Z'
+last_update: 2026-10-27T22:00:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -110,9 +110,9 @@ See description. The need: `fw config set KEY VALUE` changes the one line for KE
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: a bats test builds a .framework.yaml with a folded scalar (e.g. a long `upstream_repo: >-` value), a comment and a quoted value, runs `fw config set` on an unrelated key, and shows the other lines change; it fails before the fix
-- [ ] After the fix, setting an existing key changes only that key's line(s); setting a new key appends it; every other line is byte-identical (diff shows only the intended change)
-- [ ] The set value still reads back correctly through `fw config get` and lib/config.sh's resolution, including values that need YAML quoting
+- [x] Reproduce first: a bats test builds a .framework.yaml with a folded scalar (e.g. a long `upstream_repo: >-` value), a comment and a quoted value, runs `fw config set` on an unrelated key, and shows the other lines change; it fails before the fix
+- [x] After the fix, setting an existing key changes only that key's line(s); setting a new key appends it; every other line is byte-identical (diff shows only the intended change)
+- [x] The set value still reads back correctly through `fw config get` and lib/config.sh's resolution, including values that need YAML quoting
 - [ ] Existing config tests stay green (grep tests/unit for config set / fw_config) and tests/lint/config-registry-parity.bats
 - [ ] Vendor in sync
 
@@ -319,6 +319,14 @@ bin/fw vendor self --check --task T-4847
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** `fw config set DESIGNER_FIELD_CATALOG …` on 832 also rewrote the `upstream_repo:` line of `.framework.yaml`, joining its continuation line onto the key line — a diff in a tracked file the operator never meant to touch.
+
+**Root cause:** `lib/config-file.sh` `_config_set` (the PYSET heredoc) loaded the whole file with ruamel.yaml and re-dumped it with `width = 4096` (T-3735). ruamel round-trips comments and block scalars (`>-`, `|`) but not a plain scalar wrapped onto an indented continuation line: it reads it as one string and dumps it on one line. So every `set` normalised every such line in the file, whatever the key. Reproduced in `tests/unit/t4847_config_set_preserves_lines.bats` (7/9 red against the old code).
+
+**Why structurally allowed:** the existing config tests (`lib_config_file.bats`, `t3924_config_key_case.bats`) asserted that the target key was written and read back, never that the rest of the file was unchanged; their fixtures were two short lines with nothing for a re-dump to change. T-3735 widened the dump on purpose so long values stay on the key line, which made the collapse look intended.
+
+**Prevention:** the new bats file diffs the whole file before and after `set` on a fixture with a wrapped plain scalar, a `>-` block, comments, a quoted value and a nested map, and requires the diff to be exactly the target key's lines. Flat keys are now edited in place, so a re-dump never touches them.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -382,6 +390,15 @@ bin/fw vendor self --check --task T-4847
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-27 — how to stop set from rewriting other lines
+- **Chose:** edit flat (top-level) keys line by line: replace the key line plus its continuation lines (indented, blank, or top-level `- ` items; trailing blank/comment lines left in place), or append one line. The value is rendered with `yaml.safe_dump({key: value})` so quoting is correct. Dotted keys keep the ruamel round-trip.
+- **Why:** every key `fw config set` writes in practice is flat; a line edit is the only way to promise byte-identical other lines. safe_dump quotes only what needs it, and the result reads back through both the grep reader in `lib/config.sh` and `yaml.safe_load`.
+- **Rejected:** tuning ruamel (it cannot round-trip a wrapped plain scalar); rewriting nested keys line-wise too (needs a YAML-aware editor; the nested path is rare and was not reported).
+
+### 2026-10-27 — inline comment on the replaced key line
+- **Chose:** drop it; the whole key line is replaced.
+- **Why:** the grep reader in `lib/config.sh` `_fw_config_file_val` does not strip `# comment`, so a kept comment would be read as part of the value (`3009   # c`). Replacing the line means `fw_config` reads what was set.
 
 ## Decision
 
