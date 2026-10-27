@@ -84,7 +84,7 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] A failing bats case first: an upgrade that installs a new pinned designer build into a consumer prints a git add hint that omits the new build (and the removed old one)
 - [x] The upgrade's git add hint (and any staging it does itself) includes the designer build it installed and the removal of the build it replaced, consistent with how other upgraded files are handled
-- [ ] tests/unit/upgrade_fresh_machine_simulation.bats stays green; new tests in tests/unit/t4823_upgrade_stages_designer.bats; vendor in sync
+- [x] tests/unit/upgrade_fresh_machine_simulation.bats stays green; new tests in tests/unit/t4823_upgrade_stages_designer.bats; vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
