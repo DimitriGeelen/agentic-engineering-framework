@@ -89,10 +89,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A failing test first: a consumer CLAUDE.md generated from lib/templates/claude-project.md (fw init, and the governance refresh fw upgrade runs) contains no Worktree Policy
-- [ ] lib/templates/claude-project.md carries a condensed Worktree Policy section: opt-in only; no worktree unless the operator explicitly instructed one, in this session, in their own words; the situation table (ordinary work → main checkout; parallel edits → serialise; major work → may suggest once; operator says use one → use it, land on the dev branch); "cleaner in isolation" and "the dispatch protocol says to" are not instructions. Wording consistent with AEF's own CLAUDE.md §Worktree Policy
-- [ ] The governance refresh delivers the section to an existing consumer on `fw upgrade` without duplicating it on a second run (T-4821 idempotence), and the consumer's project-specific sections stay intact
-- [ ] tests/unit/upgrade_fresh_machine_simulation.bats stays green; new tests in tests/unit/t4833_template_worktree_policy.bats; vendor in sync
+- [x] A failing test first: a consumer CLAUDE.md generated from lib/templates/claude-project.md (fw init, and the governance refresh fw upgrade runs) contains no Worktree Policy
+- [x] lib/templates/claude-project.md carries a condensed Worktree Policy section: opt-in only; no worktree unless the operator explicitly instructed one, in this session, in their own words; the situation table (ordinary work → main checkout; parallel edits → serialise; major work → may suggest once; operator says use one → use it, land on the dev branch); "cleaner in isolation" and "the dispatch protocol says to" are not instructions. Wording consistent with AEF's own CLAUDE.md §Worktree Policy
+- [x] The governance refresh delivers the section to an existing consumer on `fw upgrade` without duplicating it on a second run (T-4821 idempotence), and the consumer's project-specific sections stay intact
+- [x] tests/unit/upgrade_fresh_machine_simulation.bats stays green; new tests in tests/unit/t4833_template_worktree_policy.bats; vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
