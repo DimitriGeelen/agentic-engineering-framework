@@ -4,12 +4,12 @@ name: "Conformance vectors step 3: absent-commission fixture; AEF adapter stops 
 description: >
   Step (3) of the commission sequence (T-4803), confirmed by TermLink (msg 18d08e40, their T-3600 803cce11e: absent commission -> handback-malformed; be.37 vectors 17 pass / 0 fail) and ring20 (msg 5889b512: absent is malformed, adapter passes an absent key through). Add CC-16 variant handback-absent-commission (hand-back valid but with no commission key -> done{handback-malformed}, no requires). AEF's adapter in lib/dispatch_records.py currently fills in commission when a vector hand-back lacks it (T-4802/T-4803); every vector now carries it, so remove the fill-in (pass an absent key through, as ring20 does), or the new fixture would be silently corrected. TermLink pins one AEF commit in scripts/run-wc-vectors.sh: tell them the commit to move to.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/dispatch_records.py, tests/conformance/worker-contract/vectors.yaml, tests/unit/test_worker_contract_vectors.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T11:57:22Z
-last_update: 2026-10-27T11:57:22Z
-date_finished: null
+last_update: 2026-10-27T11:59:14Z
+date_finished: 2026-10-27T11:59:14Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -352,3 +352,27 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4818-conformance-vectors-step-3-absent-commis.md
 - **Context:** Initial task creation
+
+### 2026-10-27T11:59:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-62bcedab
+- **Timestamp:** 2026-10-27T11:59:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — lib/dispatch_records.py `_materialise` passes the hand-back through as given (no commission fill-in), so the absent case reaches outcome rule 1 (`commission != dispatch_id` -> malformed)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/dispatch_records.py in: lib/dispatch_records.py `_materialise` passes the hand-back through as given (no commission fill-in), so the absent case reaches outcome rule 1 (`comm`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `python3 tests/conformance/worker-contract/run_local.py | grep -qE "CC-16 +pass"`

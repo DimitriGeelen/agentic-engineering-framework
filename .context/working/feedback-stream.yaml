@@ -49775,3 +49775,21 @@ scan_id: R-ecae97a0
 task_id: T-4812
 payload:
   task_file: .tasks/active/T-4812-closed-record-append-route-refused-on-it.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T11:59:29Z'
+scan_id: R-62bcedab
+task_id: T-4818
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T11:59:29Z'
+scan_id: R-62bcedab
+task_id: T-4818
+payload:
+  task_file: .tasks/active/T-4818-conformance-vectors-step-3-absent-commis.md
