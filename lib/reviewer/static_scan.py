@@ -786,6 +786,25 @@ _HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
 def _blank_html_comments(text: str) -> str:
     return _HTML_COMMENT_RE.sub(lambda m: "\n" * m.group(0).count("\n"), text)
 
+
+# T-4815: a comment holding an AC bullet or a heading is example/template text
+# (default.md's `### Human` guidance) and must never be parsed as an AC or a
+# subhead. A comment without either is an author note — it may carry an
+# opt-out marker (`<!-- review-link-homework-ok -->`) that detectors read, so
+# it is kept verbatim.
+_COMMENT_STRUCTURE_RE = re.compile(r"^\s*(?:-\s*\[[ xX]\]|#{2,}\s+\S)", re.MULTILINE)
+
+
+def _blank_structural_html_comments(text: str) -> str:
+    return _HTML_COMMENT_RE.sub(
+        lambda m: (
+            "\n" * m.group(0).count("\n")
+            if _COMMENT_STRUCTURE_RE.search(m.group(0)[4:])
+            else m.group(0)
+        ),
+        text,
+    )
+
 # T-2177: suppress when the line carries a real output assertion on the same
 # logical command. A `--dry-run` followed by `| grep -q PAT` or `&& test -f X`
 # is simulation-with-check, not skip-as-pass. Empirical FP: T-2072 line 9
@@ -2876,7 +2895,12 @@ def scan_task(
     overrides: list | None = None,
 ) -> Verdict:
     meta, body = parse_task_file(task_path)
-    ac_section = extract_section(body, "Acceptance Criteria") or ""
+    # T-4815: blank AC-bearing `<!-- … -->` blocks once, here, so no detector
+    # reads the template's commented-out example ACs as real ones (T-2156
+    # covered only _parse_agent_acs). Marker-only comments are kept.
+    ac_section = _blank_structural_html_comments(
+        extract_section(body, "Acceptance Criteria") or ""
+    )
     verif_section = extract_section(body, "Verification") or ""
 
     findings: list[Finding] = []
