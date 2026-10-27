@@ -1297,7 +1297,12 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
             # too: over-expanding only adds candidates); a $ or backtick means the word
             # is not known from the text; a glob is matched against the cwd.
             words = []
-            for a in rest[1:]:
+            for k, a in enumerate(rest[1:], 1):
+                # T-4816: setup_revisions() cuts argv at the first bare `--`; every word
+                # after it is a pathspec and cannot become --output. Unless a log option
+                # that takes a separate value (-L, --decorate-refs[-exclude]) eats it.
+                if a == "--" and not re.match(r"^(-[^-]*L|--decorate-refs[a-z-]*)$", rest[k - 1]):
+                    break
                 if "$" in a or "`" in a:
                     _check_target(UNRESOLVED, ctx, f"git {sub} (an expanded argument may be --output)")
                     lit = re.split(r"[$`]", a, 1)[0]   # T-4487: may this word be --output[=…]?
