@@ -50117,3 +50117,21 @@ scan_id: R-c9481691
 task_id: T-4833
 payload:
   task_file: .tasks/active/T-4833-consumer-claudemd-template-carries-the-w.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T16:56:08Z'
+scan_id: R-093e1fa7
+task_id: T-4837
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T16:56:08Z'
+scan_id: R-093e1fa7
+task_id: T-4837
+payload:
+  task_file: .tasks/active/T-4837-be-tag-after-designer-data-apis--field-r.md

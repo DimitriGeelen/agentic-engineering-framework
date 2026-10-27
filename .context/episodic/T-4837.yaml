@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4837: be-tag after designer data APIs + field report verdicts since T-4804
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T16:56:19Z
+# ============================================================================
+
+task_id: T-4837
+task_name: "be-tag after designer data APIs + field report verdicts since T-4804"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-27T16:43:43Z
+completed: 2026-10-27T16:56:07Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T17:44:28+01:00
+last_commit: 2026-10-27T17:56:05+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ACs (be-tag round + field report). field report — verdicts be.37..be.41 (ring20, TermLink, 832, 055, dimitri-mint-dev). be.42 cut and announced; ACs ticked. Verification (tag local + remote, report section)
+
+# Key outcomes
+outcomes:
+  - 'Fast unit suite run with 0 new reds; `bin/fw audit --section structure` shows Fail: 0 and "0 new"'
+  - 'bleeding-edge pushed and `bin/fw release be-tag --push` cut the tag; tag name recorded in ## Updates'
+  - '832 and greenfield told the tag, the task ids and the config key via `bin/fw sidecar send`'
+  - 'docs/reports/field-test-v1.8.15-results.md has a section with the verdicts since T-4804, one row per project and build'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4837-be-tag-after-designer-data-apis--field-r.md'
+  - 'docs/reports/field-test-v1.8.15-results.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T17:44:28'
+    action: 'T-4837: ACs (be-tag round + field report)'
+  - time: '2026-10-27T17:45:01'
+    action: 'T-4837: field report — verdicts be.37..be.41 (ring20, TermLink, 832, 055, dimitri-mint-dev)'
+  - time: '2026-10-27T17:55:50'
+    action: 'T-4837: be.42 cut and announced; ACs ticked'
+  - time: '2026-10-27T17:56:05'
+    action: 'T-4837: Verification (tag local + remote, report section)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12
+  commits: 5
+  files_changed: 5
+  lines_added: 504
+  lines_removed: 7
+  footprint_refreshed_at: '2026-10-27T16:56:30Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4837-be-tag-after-designer-data-apis--field-r.md
+generated_by: context-agent-hybrid

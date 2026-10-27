@@ -4,10 +4,10 @@ name: "be-tag after designer data APIs + field report verdicts since T-4804"
 description: >
   be-tag after designer data APIs + field report verdicts since T-4804
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T16:43:43Z
-last_update: '2026-10-27T16:45:53Z'
-date_finished:
+last_update: 2026-10-27T16:56:07Z
+date_finished: 2026-10-27T16:56:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -382,3 +382,20 @@ grep -q "be.37 – be.41 — ring20, TermLink, 832, 055, dimitri-mint-dev" docs/
 ### 2026-10-27 — be-tag cut
 - Tag: **v1.8.15-be.42** at 43ec3686a. Fast unit suite: 9 baselined reds, 0 new, 0 expired (9 files per-file timeout, same set as earlier tags); structure audit Fail: 0.
 - Announced to 832-Workflow-designer (conversation designer-data-api, msg 8c940d5c) and dimitri-mint-dev (dmd-greenfield-orchestrator, msg 2171a561).
+
+### 2026-10-27T16:56:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-093e1fa7
+- **Timestamp:** 2026-10-27T16:56:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `git ls-remote --tags origin v1.8.15-be.42 | grep -q v1.8.15-be.42`
