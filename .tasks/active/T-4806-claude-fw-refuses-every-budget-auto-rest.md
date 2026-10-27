@@ -93,7 +93,7 @@ bvp_scores_proposed:
 - [x] `fw continuous disarm` (lib/continuous-mode.sh ~531) records the operator's disarm as disarmed_at + disarmed_reason and no longer writes last_terminated_reason. Real bounds (iteration/hour ceilings, human gates, injector terminations) still write last_terminated_reason
 - [x] bin/claude-fw applies the terminated check (~1583) only when the run was armed (enabled true, or the loop recorded it armed for this run). A plain budget auto-restart of a non-continuous session is never refused by a stale termination. When it does refuse, it also calls fw_notify, so an unattended refusal is not silent
 - [x] Existing state files with a disarm-written last_terminated_reason ('disarmed by operator at …') stop blocking: the check ignores that exact disarm form, or `fw continuous status` / doctor names it with the one-line fix. Record the choice in ## Decisions
-- [ ] Sibling continuous-mode and claude-fw tests stay green (grep tests/unit for continuous / claude_fw / terminated); new tests in tests/unit/t4806_disarm_not_a_bound.bats; vendor in sync
+- [x] Sibling continuous-mode and claude-fw tests stay green (grep tests/unit for continuous / claude_fw / terminated); new tests in tests/unit/t4806_disarm_not_a_bound.bats; vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -145,7 +145,7 @@ bvp_scores_proposed:
 
 timeout 600 bats tests/unit/t4806_disarm_not_a_bound.bats > /tmp/.t4806.out 2>&1 && ! grep -q "^not ok" /tmp/.t4806.out
 test "$(grep -c '# skip' /tmp/.t4806.out)" -eq 0
-timeout 900 bats tests/unit/t3243_supervisor_restart_policy.bats tests/unit/t3253_preflight_brake.bats tests/unit/t3225_continuous_arm.bats tests/unit/continuous_mode_disarm.bats > /tmp/.t4806s.out 2>&1 && ! grep -q "^not ok" /tmp/.t4806s.out
+env -u FW_DISPATCHED_WORKER timeout 900 bats tests/unit/t3243_supervisor_restart_policy.bats tests/unit/t3253_preflight_brake.bats tests/unit/t3225_continuous_arm.bats tests/unit/continuous_mode_disarm.bats > /tmp/.t4806sib.out 2>&1 && ! grep -q "^not ok" /tmp/.t4806sib.out
 bash -n bin/claude-fw && bash -n lib/continuous-mode.sh
 bin/fw vendor self --check --task T-4806
 
