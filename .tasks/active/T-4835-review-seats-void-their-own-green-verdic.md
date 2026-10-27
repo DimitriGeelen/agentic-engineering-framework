@@ -1,10 +1,21 @@
 ---
 id: T-4835
-name: "Review seats void their own green verdict when Python writes __pycache__ into the export (run seats with PYTHONDONTWRITEBYTECODE=1)"
+name: "Review seats void their own green verdict when Python writes __pycache__ into
+  the export (run seats with PYTHONDONTWRITEBYTECODE=1)"
 description: >
-  832 field test F on be.38 (msg 5c3e261c): fw reviewer judge T-1303 --criterion 1 at rung 5: claude-code green, codex green, opencode voided with 'FATAL: the opencode reviewer modified the export it reviewed (T-3986)'. The seat disclosed it: its corroboration run executed a Python test, which loaded tools/validate-workflow.py and wrote the gitignored tools/__pycache__/*.pyc into the export. agents/termlink/termlink.sh _tree_fp (~1842) hashes every file under the export, so any new .pyc trips the T-3986 check (~1877). False void, repeats whenever a seat corroborates by running Python. Fix (keeps the fingerprint strict): launch every review seat (claude, codex, opencode, antigravity) with PYTHONDONTWRITEBYTECODE=1 in its signed env; regression test: a seat that runs python on an exported module leaves the tree fingerprint unchanged; a seat that edits a file still voids.
+  832 field test F on be.38 (msg 5c3e261c): fw reviewer judge T-1303 --criterion 1
+  at rung 5: claude-code green, codex green, opencode voided with 'FATAL: the opencode
+  reviewer modified the export it reviewed (T-3986)'. The seat disclosed it: its corroboration
+  run executed a Python test, which loaded tools/validate-workflow.py and wrote the
+  gitignored tools/__pycache__/*.pyc into the export. agents/termlink/termlink.sh
+  _tree_fp (~1842) hashes every file under the export, so any new .pyc trips the T-3986
+  check (~1877). False void, repeats whenever a seat corroborates by running Python.
+  Fix (keeps the fingerprint strict): launch every review seat (claude, codex, opencode,
+  antigravity) with PYTHONDONTWRITEBYTECODE=1 in its signed env; regression test:
+  a seat that runs python on an exported module leaves the tree fingerprint unchanged;
+  a seat that edits a file still voids.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T15:33:27Z
-last_update: 2026-10-27T15:33:27Z
-date_finished: null
+last_update: 2026-10-27T15:44:24Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-27T15:43:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4835: Review seats void their own green verdict when Python writes __pycache__ into the export (run seats with PYTHONDONTWRITEBYTECODE=1)
@@ -62,8 +90,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A failing test first: in the review-seat runtime (agents/termlink/termlink.sh run.sh heredoc, _tree_fp ~1842 / T-3986 check ~1877), a seat that runs `python3` importing a module from the export writes __pycache__/*.pyc and the run is voided as "modified the export it reviewed"
+- [ ] Every review seat (claude, codex, opencode, antigravity) is launched with PYTHONDONTWRITEBYTECODE=1 in its signed env (env.json), so a Python corroboration run leaves the tree fingerprint unchanged; the fingerprint itself stays strict (no exclusions added)
+- [ ] A seat that edits or adds a real file in the export is still voided (negative control); the env change is visible in the signed env and checked at complete like the rest
+- [ ] New tests in tests/unit/t4835_review_seat_pycache.bats (fakes only, no real model call); existing review-dispatch tests (t3580*, t3986*) stay green; vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -112,6 +142,9 @@ date_finished: null
 -->
 
 ## Verification
+
+out=$(timeout 900 bats tests/unit/t4835_review_seat_pycache.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bin/fw vendor self --check --task T-4835
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -251,6 +284,11 @@ date_finished: null
 
 ## RCA
 
+**Symptom:** 832 field test F (be.38): `fw reviewer judge T-1303 --criterion 1` at rung 5 — opencode seat voided with "the opencode reviewer modified the export it reviewed (T-3986)" although the seat only ran a Python corroboration test.
+**Root cause:** the seat's Python imported tools/validate-workflow.py and wrote gitignored tools/__pycache__/*.pyc into the disposable export; `_tree_fp` (agents/termlink/termlink.sh:1842) hashes every file, so the post-run check (termlink.sh:1877) fires. The review-seat signed env (env.json built at termlink.sh:~1462) carried no PYTHONDONTWRITEBYTECODE.
+**Why structurally allowed:** the T-3986 fingerprint was tested only with a seat that deliberately touches a file; no case modelled a benign interpreter side-effect.
+**Prevention:** env.json for every review dispatch now gets PYTHONDONTWRITEBYTECODE=1 (signed, hash-checked at start/complete); tests/unit/t4835 pins that a python-running seat leaves the fingerprint unchanged while a file-editing seat still voids. Fingerprint left strict.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -320,6 +358,11 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-27 — where to set the env var
+- **Chose:** add PYTHONDONTWRITEBYTECODE=1 to env.json in cmd_dispatch (review task_type), so it is signed and exported to all seats by run.sh.
+- **Why:** keeps _tree_fp strict (operator instruction); the env is already data-signed.
+- **Rejected:** excluding __pycache__/*.pyc from the fingerprint (weakens T-3986). Antigravity runs via sudo, which drops the environment; wrapping in `env` would change the operator-approved sudo command line, so it is left unchanged (open).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -345,3 +388,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4835-review-seats-void-their-own-green-verdic.md
 - **Context:** Initial task creation
+
+### 2026-10-27T15:43:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

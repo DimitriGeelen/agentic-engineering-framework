@@ -1453,14 +1453,15 @@ $prompt"
     # T-3580 round 8 (codex 1): a REVIEW worker's environment is data, not shell. The env.sh
     # built above (our own %q output) is turned into env.json — later assignments win, as they
     # did when sourced — and removed. The ledger signs env.json's hash at registration, refuses
-    # a review wdir holding an env.sh, and run.sh loads the pairs through `verdict_ledger.py
+    # a review wdir holding an env.sh (T-4835: PYTHONDONTWRITEBYTECODE=1 is added for every seat so
+    # Python it runs does not write .pyc into the export and trip the T-3986 fingerprint), and run.sh loads the pairs through `verdict_ledger.py
     # review-env` and exports each one literally: no value is ever evaluated by a shell.
     if [ "$task_type" = "review" ]; then
         local -a _env_keys=()
         mapfile -t _env_keys < <(sed -n 's/^export \([A-Z_][A-Z0-9_]*\)=.*/\1/p' "$wdir/env.sh" | awk '!seen[$0]++')
         env -i PATH="$PATH" bash -c 'set -e; . "$1"; shift; for k in "$@"; do printf "%s=%s\0" "$k" "${!k}"; done' \
             _ "$wdir/env.sh" "${_env_keys[@]}" \
-            | python3 -c 'import json,sys; d=dict(r.split("=",1) for r in sys.stdin.read().split("\0") if r); json.dump(d, open(sys.argv[1],"w"), sort_keys=True)' "$wdir/env.json" \
+            | python3 -c 'import json,sys; d=dict(r.split("=",1) for r in sys.stdin.read().split("\0") if r); d["PYTHONDONTWRITEBYTECODE"]="1"; json.dump(d, open(sys.argv[1],"w"), sort_keys=True)' "$wdir/env.json" \
             || die "review dispatch: cannot write the worker environment as data"
         rm -f "$wdir/env.sh"
     fi
