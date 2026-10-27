@@ -181,3 +181,11 @@ def test_gzip_when_accepted_plain_otherwise(client, project):
     assert plain.headers.get("Content-Encoding") is None
     assert "Accept-Encoding" in plain.headers["Vary"]
     assert len(gz.data) < len(plain.data) / 5
+
+
+def test_gzip_refused_with_zero_quality(client, project):
+    _write(project, _catalog(3))
+    _configure(project, "catalog.json")
+    resp = client.get("/api/field-catalog", headers={"Accept-Encoding": "gzip;q=0, identity"})
+    assert resp.status_code == 200
+    assert resp.headers.get("Content-Encoding") is None

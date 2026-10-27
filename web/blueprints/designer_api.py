@@ -249,7 +249,7 @@ def field_catalog():
     body = json.dumps({"ok": True, "catalog": payload}, ensure_ascii=False).encode("utf-8")
     resp = Response(body, mimetype="application/json")
     resp.headers["Vary"] = "Accept-Encoding"
-    if "gzip" in request.accept_encodings:
+    if request.accept_encodings.quality("gzip") > 0:  # "gzip;q=0" means no
         resp.set_data(gzip.compress(body, compresslevel=6))
         resp.headers["Content-Encoding"] = "gzip"
     resp.headers["Cache-Control"] = "no-store"
