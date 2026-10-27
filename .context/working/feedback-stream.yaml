@@ -49919,3 +49919,21 @@ scan_id: R-4e236c0f
 task_id: T-4815
 payload:
   task_file: .tasks/active/T-4815-reviewer-counts-the-task-templates-comme.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T13:42:07Z'
+scan_id: R-ec6cfa8f
+task_id: T-4824
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T13:42:07Z'
+scan_id: R-ec6cfa8f
+task_id: T-4824
+payload:
+  task_file: .tasks/active/T-4824-upstream-055s-t-483-un-ticking-a-human-a.md

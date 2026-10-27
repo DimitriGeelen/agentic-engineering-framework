@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4824: Upstream 055's T-483: un-ticking a Human AC resolves the matching human-tick audit finding
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T13:42:28Z
+# ============================================================================
+
+task_id: T-4824
+task_name: "Upstream 055's T-483: un-ticking a Human AC resolves the matching human-tick audit finding"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T13:20:37Z
+completed: 2026-10-27T13:41:37Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T14:29:34+01:00
+last_commit: 2026-10-27T14:40:22+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  record 055's T-483 patch as received (sidecar c00f8e5f). an un-ticked Human tick resolves its audit finding (055's T-483, adapted, fail-closed)
+
+# Key outcomes
+outcomes:
+  - 'A failing test first: in a scratch git repo, an agent-made ### Human tick that is later un-ticked still makes `lib/human_ac_ticks.py audit` FAIL on the old commit (the only exit today is the operator''s ack of a tick they did not make)'
+  - '055''s patch (docs/reports/T-4824/received-055-t483.md; peer data, review it, do not paste blindly) is adapted to bleeding-edge: a finding resolves only when EVERY box carrying that criterion, in every file of the task, is unticked at the audited revision; a tick that still stands still FAILs; if git cannot answer, the finding is kept (fail closed); a criterion that was removed or renamed keeps its finding'
+  - 'The pending NOTE lines for uncommitted ledger rows (T-4769) are filtered the same way, or the gap is recorded in ## Decisions with why not'
+  - 'Tests (055''s test adapted, plus the "identical unticked copy above a standing tick" case): tests/unit/test_t4824_human_tick_untick.py; the existing human_ac_ticks tests stay green; `fw audit` still FAILs a standing unprovenanced tick; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — how to adapt 055''s patch'
+    chose: 'a single `ls-tree -z` of `.tasks/` at `rev`, with blobs read through the scan''s existing `_BlobReader` and only for the task ids that have findings or pending notes. The result is a `(task, full key)` set. The full key is added to each finding, because `criterion` is truncated to 100 characters and two criteria could share a prefix.'
+    rationale: 'this keeps the same scope as the scan, which only reads `.tasks/` (diff-tree `-- .tasks`). It is one process instead of 055''s ls-tree plus a `git show` per finding. Any failure returns an empty set, so every finding is kept.'
+    alternatives_rejected: ['055''s per-finding check, which was correct but forked per finding. Judging the working tree instead of `rev` was also rejected: the audit''s verdict must be one every checkout of that commit agrees on.']
+  - decision: '2026-10-27 — pending NOTE lines (T-4769)'
+    chose: 'filter them with the same set, so a NOTE for a tick that is now unticked is dropped (055''s known cosmetic gap, closed). The verdict (rc) is unchanged.'
+  - decision: '2026-10-27 — t3695 "moved tick" assertion changed from 2 findings to 1'
+    chose: 'the pre-ticked Desktop criterion is unticked when its tick moves to Mobile, so its finding now resolves. The Mobile tick stands and still FAILs, and the test now asserts that Mobile is the one reported. - **Known residual:** a criterion an agent ticked, un-ticked and the operator later re-ticked in Watchtower brings the old agent finding back while the re-tick stands. That is no worse than before this change (it always FAILed), and it fails closed.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/human_ac_ticks.py'
+  - '.tasks/active/T-4824-upstream-055s-t-483-un-ticking-a-human-a.md'
+  - 'docs/reports/T-4824/received-055-t483.md'
+  - 'lib/human_ac_ticks.py'
+  - 'tests/unit/t3695_human_ac_tick_bash.bats'
+  - 'tests/unit/test_t4824_human_tick_untick.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T14:29:34'
+    action: 'T-4824: record 055''s T-483 patch as received (sidecar c00f8e5f)'
+  - time: '2026-10-27T14:40:22'
+    action: 'T-4824: an un-ticked Human tick resolves its audit finding (055''s T-483, adapted, fail-closed)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 21 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 21
+  commits: 3
+  files_changed: 9
+  lines_added: 924
+  lines_removed: 15
+  footprint_refreshed_at: '2026-10-27T13:45:20Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4824-upstream-055s-t-483-un-ticking-a-human-a.md
+generated_by: context-agent-hybrid
