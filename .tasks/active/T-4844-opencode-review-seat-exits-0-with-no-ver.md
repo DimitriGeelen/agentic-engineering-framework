@@ -12,7 +12,7 @@ description: >
   outside the export); (2) a seat that exits 0 without a verdict is recorded loudly
   (named reason in the run record and stderr), not only as 'incomplete'.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T20:47:23Z
-last_update: '2026-10-27T21:01:10Z'
+last_update: 2026-10-27T21:08:21Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -151,6 +151,9 @@ See description. Two needs (832): an opencode review seat can actually work in i
 ## Verification
 
 timeout 900 bats tests/unit/t4844_opencode_seat_tmp.bats
+grep -q 'OPENCODE_CONFIG_CONTENT' lib/verdict_ledger.py
+grep -q 'opencode-seat-config' agents/termlink/termlink.sh
+grep -q 'no-verdict' lib/reviewer/judge_cli.py
 bin/fw vendor self --check --task T-4844
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -305,6 +308,14 @@ bin/fw vendor self --check --task T-4844
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** 832 be.38 test F — the opencode review seat exited 0, printed no verdict, and the dispatch was recorded only as close_state `incomplete` (the generic "worker exited 0 but its task is still started-work" state), which says nothing about why.
+
+**Root cause:** `agents/termlink/termlink.sh:1896` launches opencode with `cwd=$TREE` (the export) and `TMPDIR=$SEAT_TMP` (`$WDIR/tmp`, :1874), which lies outside the export. opencode 1.18.31's built-in `plan` agent carries `external_directory "*" → ask` (`opencode debug agent plan`), and in headless `opencode run` an `ask` is auto-rejected, so every tool call touching TMPDIR was refused (only `$TMPDIR/opencode/*` is allowed by default, not TMPDIR itself). Codex got `--add-dir "$SEAT_TMP"` (:1888) when T-3986 added SEAT_TMP; opencode got the TMPDIR but no allowance. Second gap: run.sh's close-state block (:2045-2070) has no notion of a review seat's outcome, so a seat that exits 0 with zero verdicts falls into `incomplete` (the reviewed task is started-work), and `judge_cli._unavailable_reason` reported a bare `exit 0`.
+
+**Why structurally allowed:** the T-3986 tests checked that SEAT_TMP exists and is writable on disk, and that codex's command line names it; the opencode stub (tests/unit/t3582_harness_kinds_test.py `_OPENCODE`) never modelled opencode's permission engine, so a seat that could not use its temp dir looked identical to one that could. No record distinguished "exited 0 with a verdict" from "exited 0 with none".
+
+**Prevention:** tests/unit/t4844_opencode_seat_tmp_test.py — a stub that applies opencode's external_directory rule (refuses outside-export paths unless OPENCODE_CONFIG_CONTENT allows them), a check against the real installed opencode that the seat config adds exactly one allowance and leaves `"*" → ask`, a ledger check refusing an env.json whose opencode config names anything but the seat's own tmp, and a no-verdict test end-to-end through run.sh into `fw reviewer judge`'s reason.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -369,6 +380,16 @@ bin/fw vendor self --check --task T-4844
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-27 — how to grant opencode's plan agent SEAT_TMP
+- **Chose:** `OPENCODE_CONFIG_CONTENT={"agent":{"plan":{"permission":{"external_directory":{"<SEAT_TMP>":"allow","<SEAT_TMP>/*":"allow"}}}}}`, written by cmd_dispatch into the review seat's signed env.json (opencode kind only), built by one function (`verdict_ledger.opencode_seat_config`), and checked by the ledger's env check to equal exactly that value for the registered wdir. Verified on the installed opencode 1.18.31: `opencode debug agent plan` with this env shows the two new allow rules appended after the built-in ones, with `external_directory "*" → ask` and `edit "*" → deny` unchanged.
+- **Why:** opencode's documented config env scopes a permission to a single path pattern, so the allowance can name SEAT_TMP and nothing else; going through env.json keeps it inside the signed launch inputs like PYTHONDONTWRITEBYTECODE (T-4835).
+- **Rejected:** `--auto` (auto-approves every non-denied permission, any directory); `OPENCODE_CONFIG=<file>` (a second launch input the ledger would have to hash separately); an `edit` allowance for SEAT_TMP (not needed: the seat writes temp files through bash, and keeping the plan agent's edit deny intact keeps the change minimal).
+
+### 2026-10-27 — where "no verdict" is recorded
+- **Chose:** a signed `seat_state` field in the runtime completion (`verdict` / `no-verdict` / `failed`), a `NO-VERDICT:` line in stderr.log, close_state `no-verdict` for a review dispatch in that state (counted as a failure in the route cache), and `judge_cli._unavailable_reason` returning `no-verdict (exit 0)` (or `no-verdict: <cause>` when a known cause is in the logs).
+- **Why:** the completion is the record the ledger already trusts; close_state `incomplete` keeps its meaning (a non-review worker that did not close its task).
+- **Rejected:** reusing `incomplete` with a sub-reason (conflates two different failures in the route-cache sidecar).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -385,3 +406,6 @@ bin/fw vendor self --check --task T-4844
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4844-opencode-review-seat-exits-0-with-no-ver.md
 - **Context:** Initial task creation
+
+### 2026-10-27T21:08:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

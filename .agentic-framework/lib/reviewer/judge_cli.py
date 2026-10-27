@@ -836,6 +836,10 @@ def _unavailable_reason(dispatch_id: str) -> str:
     limit = ("usage limit" if "usage limit" in text else
              "rate limit" if ("rate limit" in text or "429" in text) else
              "tool permission auto-denied (headless)" if "auto-denied" in text else "")
+    # T-4844: the runtime names a seat that exited 0 and left no verdict (completion seat_state,
+    # close_state); say `no-verdict`, keeping any known cause beside it.
+    if code == "0" and _no_verdict(w):
+        return f"no-verdict: {limit} (exit 0)" if limit else "no-verdict (exit 0)"
     if limit and code:
         return f"{limit} (exit {code})"
     if limit:
@@ -846,6 +850,19 @@ def _unavailable_reason(dispatch_id: str) -> str:
         err = _stream_error(w / "result.jsonl")
         return f"exit {code}: {err}" if err else f"exit {code}"
     return "no completion"
+
+
+def _no_verdict(w: Path) -> bool:
+    """True when the runtime recorded this seat as no-verdict (T-4844)."""
+    try:
+        if json.loads((w / "completion.json").read_text()).get("seat_state") == "no-verdict":
+            return True
+    except (OSError, ValueError, AttributeError):
+        pass
+    try:
+        return (w / "close_state").read_text().strip() == "no-verdict"
+    except OSError:
+        return False
 
 
 def _stream_error(path: Path) -> str:

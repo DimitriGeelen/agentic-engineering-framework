@@ -494,7 +494,18 @@ _RUNTIME_ENV_KEYS = ("FW_SIDECAR_AGENT_ID", "FW_REVIEW_REVISION", "FW_REVIEW_WOR
                      "FW_DISPATCHED_WORKER",   # T-3959: written by the dispatcher for every worker
                      "FW_SESSION_SCOPED_FOCUS", "FW_FOCUS_SESSION_KEY",
                      "GIT_AUTHOR_NAME", "GIT_AUTHOR_EMAIL", "GIT_COMMITTER_NAME", "GIT_COMMITTER_EMAIL",
-                     "PYTHONDONTWRITEBYTECODE")   # T-4835: a seat's Python must not write .pyc into its export
+                     "PYTHONDONTWRITEBYTECODE",   # T-4835: a seat's Python must not write .pyc into its export
+                     "OPENCODE_CONFIG_CONTENT")   # T-4844: the opencode seat's SEAT_TMP allowance (exact value)
+
+
+def opencode_seat_config(seat_tmp: str) -> str:
+    """(T-4844) The opencode review seat's config: its built-in `plan` agent may use SEAT_TMP (the
+    seat's TMPDIR, outside the export) and nothing else outside the export. opencode's plan agent
+    has `external_directory "*" -> ask`, and headless `opencode run` rejects every ask; this appends
+    one allowance for exactly that path (verified: `opencode debug agent plan`)."""
+    t = str(seat_tmp).rstrip("/")
+    return json.dumps({"agent": {"plan": {"permission": {"external_directory": {
+        t: "allow", t + "/*": "allow"}}}}}, sort_keys=True, separators=(",", ":"))
 
 
 def brief_digest(text: str) -> str:
@@ -579,6 +590,12 @@ def _env_fault(wdir: Path) -> str:
             return (f"env.json sets {key!r}, which a review worker may not take from its caller — it "
                     f"takes no environment from its caller; only the dispatcher's own keys "
                     f"({', '.join(_RUNTIME_ENV_KEYS)}) may appear")
+    # T-4844: the opencode allowance may name this worker directory's own tmp and nothing else.
+    oc = data.get("OPENCODE_CONFIG_CONTENT")
+    if oc is not None and oc not in {opencode_seat_config(str(Path(wdir) / "tmp")),
+                                     opencode_seat_config(str(Path(wdir).resolve() / "tmp"))}:
+        return (f"env.json sets OPENCODE_CONFIG_CONTENT to something other than the seat's own "
+                f"SEAT_TMP allowance ({Path(wdir) / 'tmp'}) — the seat may write nothing else")
     return ""
 
 
@@ -1513,6 +1530,8 @@ def complete(dispatch_id: str, *, wdir: str, exit_code: int, session: str = "",
             "worker_kind": kind, "worker_session": _worker_session(Path(here)),
             "result_sha256": _result_sha(Path(here)), "revision": drec.get("revision", ""),
             "verdicts": verdicts, "consults": _consult_traffic(did),
+            # T-4844: a seat that exits 0 and leaves no verdict says so, by name.
+            "seat_state": ("verdict" if verdicts else "no-verdict" if written == 0 else "failed"),
             "inputs": _input_hashes(Path(here)), "epoch": now, "ts": _now()}
     body["sig"] = _sign_row(_dispatch_key(root), body)
     _append(COMPLETIONS, body, root)
@@ -4048,6 +4067,10 @@ def _cli(argv: list[str] | None = None) -> int:
                          "is launched with: the fixed review preamble and the brief")
     rp_.add_argument("--brief-file", required=True)
 
+    oc_ = sub.add_parser("opencode-seat-config", help="(dispatcher, T-4844) print the opencode "
+                         "review seat's OPENCODE_CONFIG_CONTENT: SEAT_TMP allowed, nothing else")
+    oc_.add_argument("--seat-tmp", required=True)
+
     re_ = sub.add_parser("review-env", help="(run.sh) print the verified review-worker environment "
                          "as NUL-delimited KEY=VALUE records, then a final __FW_ENV_END__ record")
     re_.add_argument("--dispatch-id", required=True)
@@ -4204,6 +4227,9 @@ def _cli(argv: list[str] | None = None) -> int:
             return 1
         print(json.dumps(out))
         return 0 if out["recorded"] and not out.get("commit_error") else 1
+    if args.cmd == "opencode-seat-config":
+        print(opencode_seat_config(args.seat_tmp))
+        return 0
     if args.cmd == "review-prompt":
         sys.stdout.write(review_prompt(Path(args.brief_file).read_text()))
         return 0

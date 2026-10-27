@@ -212,7 +212,8 @@ close_state = sys.argv[5] if len(sys.argv) > 5 else ""
 task = sys.argv[6] if len(sys.argv) > 6 else ""
 key = f"{model}:{task_type}"
 incomplete = (close_state == "incomplete")
-ok = (exit_code == "0") and not incomplete
+# T-4844: a review seat that exited 0 with no verdict did not succeed either.
+ok = (exit_code == "0") and not incomplete and close_state != "no-verdict"
 
 # T-3440 sidecar: the outcome VALUE, uncollapsed, in a file only we read.
 if close_state:
@@ -1402,6 +1403,13 @@ $prompt"
         printf 'export FW_REVIEW_REVISION=%q\n' "$review_revision" >> "$wdir/env.sh"
         # Round 8 (N1): marks a review worker, so the sidecar-inbox prompt hook stays silent in it.
         printf 'export FW_REVIEW_WORKER=%q\n' "1" >> "$wdir/env.sh"
+        # T-4844: opencode's plan agent refuses every path outside the export (headless `ask` =
+        # reject), SEAT_TMP ($wdir/tmp, its TMPDIR) included. One allowance, that path only; the
+        # ledger refuses any other value of this key.
+        if [ "$worker_kind" = "opencode" ]; then
+            printf 'export OPENCODE_CONFIG_CONTENT=%q\n' \
+                "$(python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" opencode-seat-config --seat-tmp "$wdir/tmp")" >> "$wdir/env.sh"
+        fi
     fi
 
     # T-3038 (OBS-291): give every dispatched worker its own focus file.
@@ -2067,8 +2075,18 @@ if [ -n "$CLOSE_TASK" ] && [ "${EXIT_CODE:-1}" = "0" ]; then
         done
     fi
 fi
+# T-4844: a review seat that exited 0 and left no verdict (the runtime's signed completion says
+# seat_state no-verdict) is `no-verdict`, not `incomplete`: a reviewer never closes the task.
+if [ "$TASK_TYPE" = "review" ] && [ "${EXIT_CODE:-1}" = "0" ] && \
+    [ "$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("seat_state",""))' "$WDIR/completion.json" 2>/dev/null)" = "no-verdict" ]; then
+    CLOSE_STATE="no-verdict"
+    echo "NO-VERDICT: the ${WORKER_KIND:-claude} review seat exited 0 and left no verdict — nothing it judged counts" >> "$WDIR/stderr.log"
+fi
 [ -f "$WDIR/timed_out" ] && CLOSE_STATE="timeout"
 echo "$CLOSE_STATE" > "$WDIR/close_state"
+if [ "$CLOSE_STATE" = "no-verdict" ]; then
+    echo "WARNING: review seat exited 0 with no verdict (no-verdict)"
+fi
 if [ "$CLOSE_STATE" = "incomplete" ]; then
     echo "WARNING: worker exited 0 but $CLOSE_TASK is still started-work — close not run"
 fi
@@ -2223,6 +2241,8 @@ cmd_result() {
         [ -f "$wdir/task" ] && ct=$(cat "$wdir/task" 2>/dev/null)
         if [ "$cs" = "incomplete" ]; then
             echo -e "${YELLOW}WARN${NC}  close_state: incomplete — ${ct:-the dispatched task} is still started-work (worker exited 0, close not run)"
+        elif [ "$cs" = "no-verdict" ]; then
+            echo -e "${YELLOW}WARN${NC}  close_state: no-verdict — the review seat exited 0 and left no verdict (T-4844)"
         elif [ "$cs" != "n/a" ]; then
             echo "close_state: $cs${ct:+ ($ct)}"
         fi
