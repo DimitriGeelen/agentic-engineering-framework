@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4822: fw upgrade in a linked worktree regenerates the tracked cron file with worktree paths, and needs FW_REEXEC_DEPTH=1 (be.21 items 1-2, still open)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T14:59:06Z
+# ============================================================================
+
+task_id: T-4822
+task_name: "fw upgrade in a linked worktree regenerates the tracked cron file with worktree paths, and needs FW_REEXEC_DEPTH=1 (be.21 items 1-2, still open)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T13:20:36Z
+completed: 2026-10-27T14:52:43Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T15:23:57+01:00
+last_commit: 2026-10-27T15:23:57+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw upgrade in a linked worktree runs the release it was handed (no T-3111 redirect for upgrade) and fw cron generate renders the main checkout's paths (cron_project_root); doctor/audit dry-runs share the root; regression bats t4822; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Failing bats cases first, in a temp consumer repo with a linked worktree: (a) `fw upgrade` run inside the worktree without FW_REEXEC_DEPTH=1 fails or loops; (b) the regenerated tracked cron file (.context/cron/agentic-audit.crontab) carries the worktree''s paths'
+  - 'Upgrade in a linked worktree works without the env workaround, and cron generation always writes the main checkout''s path (git common dir), so the tracked file is the same whichever checkout regenerated it'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats stays green; new tests in tests/unit/t4822_upgrade_in_worktree.bats (temp repos only, never this repo''s worktrees); the cron registry/doctor sync line from CLAUDE.md §Cron-touching tasks is in ## Verification if cron generator code changes; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — where to stop the redirect for upgrade'
+    chose: '`upgrade` never redirects (`bin/fw:_fw_reexec_authority`), which generalises T-4661. `lib/upgrade.sh` also passes `FW_REEXEC_DEPTH=1` to its own `cron generate` child.'
+    rationale: 'upgrade chooses its source by the binary invoked (a worktree checkout, a tag clone, or the auto-clone temp copy). The redirect can only swap in the main checkout''s older code, which is the wrong release in every one of those shapes.'
+    alternatives_rejected: ['setting `FW_REEXEC_DEPTH=1` only on the auto-clone handoff. It misses 055''s tag-clone shape, where the operator''s own invocation is redirected before upgrade.sh runs.']
+  - decision: '2026-10-27 — which root the crontab names'
+    chose: 'render with the main checkout (the parent of the git common dir, only when that dir is named `.git`), and write to the current checkout''s file.'
+    rationale: 'the file is tracked, so it has to be byte-identical whichever checkout regenerates it. The cron jobs have to outlive the worktree too.'
+    alternatives_rejected: ['skipping generate in a worktree. The upgrade''s renderer refresh (T-4555) would then never reach a worktree-based upgrade, and the merge would carry a stale file.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/cron-registry.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.tasks/active/T-4822-fw-upgrade-in-a-linked-worktree-regenera.md'
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - 'lib/cron-registry.sh'
+  - 'lib/upgrade.sh'
+  - 'tests/unit/t4822_upgrade_in_worktree.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T15:23:57'
+    action: 'T-4822: fw upgrade in a linked worktree runs the release it was handed (no T-3111 redirect for upgrade) and fw cron generate renders the main checkout''s paths (cron_project_root); doctor/audit dry-runs share the root; regression bats t4822; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 92 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 92
+  commits: 2
+  files_changed: 12
+  lines_added: 737
+  lines_removed: 33
+  footprint_refreshed_at: '2026-10-27T15:00:40Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4822-fw-upgrade-in-a-linked-worktree-regenera.md
+generated_by: context-agent-hybrid
