@@ -6,16 +6,16 @@ description: >
   Inception: Local reference backend so AEF can run its own worker-contract conformance
   vectors
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-27T09:24:50Z
-last_update: '2026-10-27T09:30:20Z'
-date_finished:
+last_update: 2026-10-27T09:41:43Z
+date_finished: 2026-10-27T09:41:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -110,15 +110,15 @@ AEF wrote and owns the shared dispatched-worker contract (wc/0.3.x) and its conf
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -179,7 +179,11 @@ The research changed the question. T-4435 (GO 2026-10-20) already decided AEF bu
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The research changed the question. T-4435 (GO 2026-10-20) already decided AEF builds a local backend with the same CAS semantics, run against the same conformance suite (condition 3), with no implementation until the transition table was agreed (condition 1). That precondition is now met: spec v0.3.3 is agreed and the vectors run mechanically against ring20. Spec §6 already designs the store: one JSON file per dispatch, flock + CAS on every write, and a local liveness probe for `lost`. Option A builds only `lib/dispatch_records.py` and its `conformance_adapter()`, judged by the existing vectors. It changes nothing in fw termlink dispatch. Shadow-writing from real dispatches (B) and moving the completion authority (C) stay later decisions, as T-4435 condition 4 requires (shadow mode before switch-over).
+
+**Date**: 2026-10-27T09:41:42Z
 
 ## Updates
 
@@ -188,3 +192,33 @@ The research changed the question. T-4435 (GO 2026-10-20) already decided AEF bu
 
 ### 2026-10-27T09:25:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-27T09:41:42Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The research changed the question. T-4435 (GO 2026-10-20) already decided AEF builds a local backend with the same CAS semantics, run against the same conformance suite (condition 3), with no implementation until the transition table was agreed (condition 1). That precondition is now met: spec v0.3.3 is agreed and the vectors run mechanically against ring20. Spec §6 already designs the store: one JSON file per dispatch, flock + CAS on every write, and a local liveness probe for `lost`. Option A builds only `lib/dispatch_records.py` and its `conformance_adapter()`, judged by the existing vectors. It changes nothing in fw termlink dispatch. Shadow-writing from real dispatches (B) and moving the completion authority (C) stay later decisions, as T-4435 condition 4 requires (shadow mode before switch-over).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ff7ebe13
+- **Timestamp:** 2026-10-27T09:41:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-3a79a447
+- **Timestamp:** 2026-10-27T09:41:44Z
+- **Overall:** CONTRADICTED
+- **Claims:** 2
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `lib/dispatch_records.py` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `T-4435` | task | ✓ pass |
+
+### 2026-10-27T09:41:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
