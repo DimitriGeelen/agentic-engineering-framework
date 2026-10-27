@@ -85,7 +85,7 @@ See description. The need: `fw doctor` run right after a Watchtower restart repo
 - [x] Reproduce first: locate the smoke check in fw doctor and show (test with a stub server that fails the first request to an endpoint, then succeeds) that it reports a failure; it fails before the fix
 - [x] A failed endpoint is retried once after a short bounded wait (or the check waits, bounded, for the first good health answer) before it is reported; a persistently failing endpoint is still reported
 - [x] The whole smoke check stays bounded in time (state the bound in a comment); existing doctor tests stay green
-- [ ] Vendor in sync
+- [x] Vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
