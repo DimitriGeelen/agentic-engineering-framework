@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4814: fw upgrade leaves *.upstream files untracked with no keep/merge/delete guidance
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T13:04:26Z
+# ============================================================================
+
+task_id: T-4814
+task_name: "fw upgrade leaves *.upstream files untracked with no keep/merge/delete guidance"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T11:27:36Z
+completed: 2026-10-27T12:57:34Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T13:53:53+01:00
+last_commit: 2026-10-27T13:53:53+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw upgrade summary names every .upstream it KEPT/PRESERVED with a diff -u line and keep/take/merge actions (re-runs included); git add line omits *.upstream and says so; regression bats t4814; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'A failing bats case first (in the upgrade_fresh_machine_simulation style): an upgrade that writes a `<file>.upstream` beside a locally modified file prints no line naming it or saying what to do'
+  - 'The upgrade summary lists every `.upstream` file it wrote this run, each with a one-line action (diff it; keep yours and delete the .upstream, take upstream, or merge). The printed `git add` hint either names them or says they are deliberately left untracked'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats stays green (CLAUDE.md consumer-facing command hygiene); new tests in tests/unit/t4814_upgrade_upstream_guidance.bats; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — name the .upstream files, or add them to git add?'
+    chose: 'keep `*.upstream` out of the `git add` line, say so there, and list each one in a separate summary block with its `diff -u` command and the keep/take/merge actions.'
+    rationale: 'an `.upstream` is a comparison copy the operator resolves and deletes; committing it records a stale template that the next upgrade rewrites. The list comes from `_uts_report`''s live KEPT/PRESERVED lines, not the dirty-path diff, so a re-run still names an unresolved one.'
+    alternatives_rejected: ['naming them in `git add` (invites a commit of a transient file); deriving the list from the T-4697 journal (it records `<file>.upstream` for UPDATED/CREATED too, so it would name files this run did not write).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/lib/upgrade_commit_list.py'
+  - '.tasks/active/T-4814-fw-upgrade-leaves-upstream-files-untrack.md'
+  - 'lib/upgrade.sh'
+  - 'lib/upgrade_commit_list.py'
+  - 'tests/unit/t4814_upgrade_upstream_guidance.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T13:53:53'
+    action: 'T-4814: fw upgrade summary names every .upstream it KEPT/PRESERVED with a diff -u line and keep/take/merge actions (re-runs included); git add line omits *.upstream and says so; regression bats t4814; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 89 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 89
+  commits: 2
+  files_changed: 8
+  lines_added: 653
+  lines_removed: 11
+  footprint_refreshed_at: '2026-10-27T13:08:32Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4814-fw-upgrade-leaves-upstream-files-untrack.md
+generated_by: context-agent-hybrid
