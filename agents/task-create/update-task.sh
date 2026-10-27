@@ -2774,6 +2774,10 @@ fi
 _sed_i "s/^last_update:.*/last_update: $TIMESTAMP/" "$TASK_FILE"
 
 # Append update entry
+# T-4812: the entry goes at the END OF ## Updates, not at end of file. The close
+# writes '## Reviewer Verdict' after ## Updates, so an EOF append left the last
+# Updates entry outside the section and the T-4285 closed-record gate refused its
+# own documented append route. No ## Updates section → EOF append, as before.
 if [ ${#CHANGES[@]} -gt 0 ]; then
     {
         echo ""
@@ -2784,7 +2788,7 @@ if [ ${#CHANGES[@]} -gt 0 ]; then
         if [ -n "$REASON" ]; then
             echo "- **Reason:** $REASON"
         fi
-    } >> "$TASK_FILE"
+    } | python3 "$FRAMEWORK_ROOT/lib/task_updates.py" append "$TASK_FILE"
 fi
 
 # === BVP Estimator Trigger (T-1922) ===

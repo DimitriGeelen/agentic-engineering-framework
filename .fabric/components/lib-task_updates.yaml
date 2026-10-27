@@ -1,0 +1,21 @@
+id: lib/task_updates.py
+name: task_updates
+type: script
+subsystem: framework-core
+location: lib/task_updates.py
+tags: []
+
+purpose: "Insert a dated entry at the end of a task file's ## Updates section (T-4812)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-27
+created_by: unknown

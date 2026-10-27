@@ -869,8 +869,8 @@ PYDECIDE
     # Human ACs added between preflight and now.
     tick_inception_decide_acs "$task_file"
 
-    # Add update entry
-    cat >> "$task_file" << EOF
+    # Add update entry — inside ## Updates, not at end of file (T-4812)
+    python3 "$FRAMEWORK_ROOT/lib/task_updates.py" append "$task_file" << EOF
 
 ### $timestamp — inception-decision [inception-workflow]
 - **Action:** Recorded inception decision
