@@ -265,14 +265,16 @@ fi
 
 generate_id() {
     local gap_threshold="${FW_ID_QUARANTINE_GAP:-1000}"
-    local ids=() f id d
+    local ids=() f d
     shopt -s nullglob
     while IFS= read -r d; do
         for f in "$d"/active/T-*.md "$d"/completed/T-*.md; do
             [ -f "$f" ] || continue
-            id=$(basename "$f" | grep -oE '^T-[0-9]+' | grep -oE '[0-9]+')
-            # Use 10# to force base-10 interpretation (avoids octal issues with 008, 009)
-            [ -n "$id" ] && ids+=("$((10#$id))")
+            # T-4797: parse in bash, no subprocess per file (3 forks x every file x every
+            # corpus view took minutes per create on 1409). Only a leading T-<digits> counts;
+            # 10# forces base 10 (avoids octal issues with 008, 009).
+            f="${f##*/}"
+            [[ "$f" =~ ^T-([0-9]+) ]] && ids+=("$((10#${BASH_REMATCH[1]}))")
         done
     done < <(fw_task_view_dirs)
     shopt -u nullglob
