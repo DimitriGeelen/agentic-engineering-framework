@@ -1,0 +1,109 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4789: Pre-push audit-failure refusal does not name the failing check and reads like the lock message
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T23:49:24Z
+# ============================================================================
+
+task_id: T-4789
+task_name: "Pre-push audit-failure refusal does not name the failing check and reads like the lock message"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-26T23:03:29Z
+completed: 2026-10-27T23:48:13Z
+duration_days: 1
+updates_count: 4
+first_commit: 2026-10-28T00:22:22+01:00
+last_commit: 2026-10-28T00:47:16+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pre-push FAIL refusal names each failing check and its evidence. regenerate framework hook-lines catalogue for the new pre-push lines. Agent ACs ticked, Decisions recorded (file also carries T-4787's retitle). delegate (D-626) — reviewer-judged close-readiness criterion added. reviewer verdict. commit the vendored hooks.sh (synced but left out of 61a9c4a70; found by the independent reviewer)
+
+# Key outcomes
+outcomes:
+  - 'Reproduce first: a bats test drives the pre-push hook with an audit that FAILs one named check and shows the refusal does not name the check; it fails before the fix'
+  - 'The refusal lists each FAIL check name (and its first evidence line, cut short) directly above or below the refusal line; the lock-held refusal says the lock is held and by what, and does not look like an audit failure'
+  - 'The hook text changes go through the repo''s own hook sources and their digest files (agents/git/lib/*hook-lines*, tools/gen-*hook*), so `fw git install-hooks` and its integrity checks stay consistent; existing pre-push and hook-digest tests stay green'
+  - 'Vendor in sync'
+  - '[REVIEW] Close-readiness: the work meets its Agent criteria and the Verification section passes (T-4789, reviewer-judged, T-4156)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-28 — where the failing-check names come from'
+    chose: 'the hook reads the `[FAIL]` titles, first `Evidence:` line and `Scope: worktree` tag back out of the audit output it already captures (`$_t3126_out`), strips ANSI, truncates evidence to 140 chars, caps the list at 10.'
+    rationale: 'stays inside the hook sources (this task''s component); works with any audit that prints the long-standing `[FAIL]` block format, including older vendored audits; when nothing parses it falls back to the old "Fix the issues above" line, so it never says less than before.'
+    alternatives_rejected: ['a new machine line in agents/audit/audit.sh (e.g. `AUDIT-SCOPE-REF: <title>`) — cleaner contract, but edits another component and would not help consumers whose vendored audit predates it.']
+  - decision: '2026-10-28 — lock-held message'
+    chose: 'no change. The lock branch already says "audit COULD NOT RUN … This is not an audit failure" and names the holder (T-4542); the test pins that it never prints "audit has FAILURES" or a failing-check list.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.context/reviews/evidence/T-4789/AC1-judge-t-4789-r3-00056e0e9860.md'
+  - '.context/reviews/evidence/T-4789/AC1-judge-t-4789-r3-07db70d90b21.md'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-4789-obs-the-pre-push-audit-failure-message-i.md'
+  - 'agents/git/lib/framework-hook-lines.txt'
+  - 'agents/git/lib/hooks.sh'
+  - 'tests/unit/t4789_prepush_names_failing_checks.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T00:22:22'
+    action: 'T-4789: pre-push FAIL refusal names each failing check and its evidence'
+  - time: '2026-10-28T00:22:54'
+    action: 'T-4789: regenerate framework hook-lines catalogue for the new pre-push lines'
+  - time: '2026-10-28T00:24:54'
+    action: 'T-4789: Agent ACs ticked, Decisions recorded (file also carries T-4787''s retitle)'
+  - time: '2026-10-28T00:36:38'
+    action: 'T-4789: delegate (D-626) — reviewer-judged close-readiness criterion added'
+  - time: '2026-10-28T00:42:19'
+    action: 'T-4789: reviewer verdict'
+  - time: '2026-10-28T00:43:12'
+    action: 'T-4789: commit the vendored hooks.sh (synced but left out of 61a9c4a70; found by the independent reviewer)'
+  - time: '2026-10-28T00:47:16'
+    action: 'T-4789: reviewer verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 1484 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1484
+  commits: 9
+  files_changed: 18
+  lines_added: 540
+  lines_removed: 40
+  footprint_refreshed_at: '2026-10-27T23:50:36Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4789-obs-the-pre-push-audit-failure-message-i.md
+generated_by: context-agent-hybrid

@@ -50477,3 +50477,21 @@ scan_id: R-b59d2e34
 task_id: T-4787
 payload:
   task_file: .tasks/active/T-4787-fw-note-promote-copies-the-whole-observa.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T23:48:44Z'
+scan_id: R-c4caa770
+task_id: T-4789
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T23:48:44Z'
+scan_id: R-c4caa770
+task_id: T-4789
+payload:
+  task_file: .tasks/active/T-4789-obs-the-pre-push-audit-failure-message-i.md
