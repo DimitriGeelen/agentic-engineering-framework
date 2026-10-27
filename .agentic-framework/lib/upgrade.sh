@@ -2384,9 +2384,12 @@ CRONREGEOF
             # T-3835: $FRAMEWORK_ROOT may be the temp upstream clone; generate
             # resolves the consumer's durable fw itself and refuses a temp one.
             # Its refusal is shown, not swallowed.
+            # T-4822: FW_REEXEC_DEPTH=1 — this fw IS the release being installed.
+            # With target_dir a linked worktree, the T-3111 redirect would hand
+            # generate to the main checkout's older fw and its older renderer.
             local _cg_out
             _t4697_wrote "$_cg_src"
-            if _cg_out=$(cd "$target_dir" && PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/bin/fw" cron generate 2>&1); then
+            if _cg_out=$(cd "$target_dir" && PROJECT_ROOT="$target_dir" FW_REEXEC_DEPTH=1 "$FRAMEWORK_ROOT/bin/fw" cron generate 2>&1); then
                 if [ "$_cs_added" -gt 0 ]; then
                     echo -e "  ${GREEN}OK${NC}  Cron source regenerated — run 'fw cron install' to deploy"
                 elif [ "$(cat "$_cg_src" 2>/dev/null)" != "$_cg_before" ]; then

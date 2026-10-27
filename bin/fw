@@ -466,11 +466,12 @@ _fw_reexec_authority() {
     # beside the clone). Redirecting moved FRAMEWORK_ROOT to the main clone, so
     # upgrade synced the clone's code and pinned the clone's HEAD instead of the
     # tag's. The binary that was invoked is the version to install; leave it be.
-    if [ "${1:-}" = "upgrade" ] && [ -f "$FW_BIN_DIR/../lib/worktree-identity.sh" ]; then
-        # shellcheck source=/dev/null
-        source "$FW_BIN_DIR/../lib/worktree-identity.sh" 2>/dev/null \
-            && fw_is_linked_worktree "$FW_BIN_DIR" && return 0
-    fi
+    # T-4822: and not only from a worktree's binary. Upgrade picks its source by
+    # the binary invoked (a tag clone, or the auto-clone's temp copy handed
+    # PROJECT_ROOT=<worktree> by lib/upgrade.sh), so redirecting it to the
+    # authority always installs the main checkout's OLD code into the worktree.
+    # 055 needed FW_REEXEC_DEPTH=1 for every worktree upgrade (be.21 item 1).
+    [ "${1:-}" = "upgrade" ] && return 0
 
     # Both libs are sourceable-and-side-effect-free by contract; lib/paths.sh is
     # not (it resolves and exports paths on source), which is why the predicate
@@ -4830,7 +4831,7 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
         if [ -f "$cron_source" ]; then
             local _cron_dry_run
             # T-4259: render with the fw path generate writes (cron_fw_path).
-            _cron_dry_run=$(python3 "$FRAMEWORK_ROOT/lib/cron_dry_run.py" "$PROJECT_ROOT" "$cron_registry" "$(cron_fw_path "$FRAMEWORK_ROOT" "$PROJECT_ROOT")" 2>/dev/null || echo "__SKIP__")
+            _cron_dry_run=$(python3 "$FRAMEWORK_ROOT/lib/cron_dry_run.py" "$(cron_project_root "$PROJECT_ROOT" 2>/dev/null || echo "$PROJECT_ROOT")" "$cron_registry" "$(cron_fw_path "$FRAMEWORK_ROOT" "$PROJECT_ROOT")" 2>/dev/null || echo "__SKIP__")
             if [ "$_cron_dry_run" != "__SKIP__" ] && [ -n "$_cron_dry_run" ]; then
                 local _cron_on_disk
                 _cron_on_disk=$(cat "$cron_source" 2>/dev/null)
@@ -7241,10 +7242,14 @@ EOF
                 # with the same path.
                 source "$FRAMEWORK_ROOT/lib/cron-registry.sh"
                 _cron_fw=$(cron_fw_path "$FRAMEWORK_ROOT" "$PROJECT_ROOT")
-                FW_CRON_FW_PATH="$_cron_fw" FW_CRON_LIB_DIR="$FRAMEWORK_ROOT/lib" python3 -c "
+                # T-4822: lines name the main checkout even when generated in a
+                # linked worktree; the file is still written to THIS checkout.
+                _cron_proj=$(cron_project_root "$PROJECT_ROOT" 2>/dev/null) || _cron_proj="$PROJECT_ROOT"
+                FW_CRON_FW_PATH="$_cron_fw" FW_CRON_LIB_DIR="$FRAMEWORK_ROOT/lib" \
+                    FW_CRON_WRITE_ROOT="$PROJECT_ROOT" python3 -c "
 import yaml, os, re, sys, tempfile
 
-project_root = '$PROJECT_ROOT'
+project_root = '$_cron_proj'
 fw_path = os.environ['FW_CRON_FW_PATH']
 # T-4351: per-project schedule (staggered reindex minute, interval knob)
 sys.path.insert(0, os.environ['FW_CRON_LIB_DIR'])
@@ -7312,7 +7317,8 @@ cron_source = os.path.join(project_root, '.context', 'cron', 'agentic-audit.cron
 cron_install = f'/etc/cron.d/agentic-audit-{slug}'
 # T-3160: 'fw cron install --dry-run' renders into a scratch file so the
 # git-tracked source is never written; the header still names the real source.
-cron_out = os.environ.get('FW_CRON_GENERATE_OUT') or cron_source
+cron_out = os.environ.get('FW_CRON_GENERATE_OUT') or os.path.join(
+    os.environ['FW_CRON_WRITE_ROOT'], '.context', 'cron', 'agentic-audit.crontab')
 
 lines = [
     f'# Agentic Engineering Framework — Scheduled Jobs (managed by cron-registry.yaml)',

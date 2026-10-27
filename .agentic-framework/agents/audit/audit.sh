@@ -3107,7 +3107,7 @@ elif [ -f "$_cron_registry" ]; then
     if [ -f "$_cron_source" ]; then
         # T-4259: render with the fw path generate writes (cron_fw_path,
         # lib/cron-registry.sh — sourced by the job-count test above).
-        _cron_dry_run=$(python3 "$FRAMEWORK_ROOT/lib/cron_dry_run.py" "$PROJECT_ROOT" "$_cron_registry" "$(cron_fw_path "$FRAMEWORK_ROOT" "$PROJECT_ROOT")" 2>/dev/null || echo "__SKIP__")
+        _cron_dry_run=$(python3 "$FRAMEWORK_ROOT/lib/cron_dry_run.py" "$(cron_project_root "$PROJECT_ROOT" 2>/dev/null || echo "$PROJECT_ROOT")" "$_cron_registry" "$(cron_fw_path "$FRAMEWORK_ROOT" "$PROJECT_ROOT")" 2>/dev/null || echo "__SKIP__")
         if [ "$_cron_dry_run" != "__SKIP__" ] && [ -n "$_cron_dry_run" ]; then
             _cron_on_disk=$(cat "$_cron_source" 2>/dev/null)
             if [ "$_cron_dry_run" != "$_cron_on_disk" ]; then

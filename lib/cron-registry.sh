@@ -82,6 +82,31 @@ cron_install_target() {
     echo "${FW_CRON_INSTALL_DIR:-/etc/cron.d}/agentic-audit-${slug}"
 }
 
+# cron_project_root <project_root>
+#
+# T-4822: the project root a generated crontab NAMES. The source file is
+# git-tracked, so a linked worktree that regenerates it must render the main
+# checkout's path (parent of the git common dir) — otherwise the worktree's
+# paths ride the merge into the main checkout and every cron line cds into a
+# directory that is torn down with the worktree (055, be.21 item 2). Not a
+# linked worktree, or a main repo that is bare (common dir not named .git):
+# the project root unchanged. ONE definition for `fw cron generate` and the
+# doctor/audit registry→generated dry-runs, like cron_fw_path below.
+cron_project_root() {
+    local pr="$1" gd gcd
+    gd=$(git -C "$pr" rev-parse --git-dir 2>/dev/null) || { echo "$pr"; return 0; }
+    gcd=$(git -C "$pr" rev-parse --git-common-dir 2>/dev/null) || { echo "$pr"; return 0; }
+    case "$gd" in /*) ;; *) gd="$pr/$gd" ;; esac
+    case "$gcd" in /*) ;; *) gcd="$pr/$gcd" ;; esac
+    gd=$(readlink -f "$gd" 2>/dev/null || echo "$gd")
+    gcd=$(readlink -f "$gcd" 2>/dev/null || echo "$gcd")
+    if [ "$gd" != "$gcd" ] && [ "$(basename "$gcd")" = ".git" ] && [ -d "$(dirname "$gcd")" ]; then
+        dirname "$gcd"
+    else
+        echo "$pr"
+    fi
+}
+
 # cron_fw_path <framework_root> <project_root>
 #
 # T-4259: the fw path a generated cron line names. T-3835: it must outlive the
@@ -92,12 +117,21 @@ cron_install_target() {
 # other than the vendored copy (inherited from the shell, or the framework
 # repo's fw run against a consumer) reported "edited but not generated" on a
 # registry nobody edited.
+#
+# T-4822: a path inside a linked worktree is rebased onto the main checkout
+# (cron_project_root), so the line survives the worktree and does not change
+# with the checkout that regenerated it.
 cron_fw_path() {
-    local fr="$1" pr="$2"
+    local fr="$1" pr="$2" fw main
     if [ "$(cd "$fr" 2>/dev/null && pwd -P)" != "$(cd "$pr" 2>/dev/null && pwd -P)" ] \
         && [ -x "$pr/.agentic-framework/bin/fw" ]; then
-        echo "$pr/.agentic-framework/bin/fw"
+        fw="$pr/.agentic-framework/bin/fw"
     else
-        echo "$fr/bin/fw"
+        fw="$fr/bin/fw"
     fi
+    main=$(cron_project_root "$pr")
+    case "$fw" in
+        "$pr"/*) [ "$main" != "$pr" ] && fw="$main/${fw#"$pr"/}" ;;
+    esac
+    echo "$fw"
 }
