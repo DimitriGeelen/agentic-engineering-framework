@@ -4,12 +4,12 @@ name: "create-task generate_id forks 3 processes per task file per corpus view (
 description: >
   1409-sprind field report (msg a32a4114, be.28): agents/task-create/create-task.sh generate_id() runs id=$(basename "$f" | grep -oE '^T-[0-9]+' | grep -oE '[0-9]+') for every task file in every corpus view (fw_task_view_dirs counts each worktree): 48,078 files in 28 views = ~144,000 fork/exec per fw task create, measured 1-2 min per task under load (12-25 on 24 cores); 1409's 12 arcs x 13 tasks take ~4.5 h. Fix: parse in pure bash (${f##*/} + [[ =~ ^T-([0-9]+) ]] + 10#), same semantics (leading ^T-<n> only).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/task-create/create-task.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T00:00:09Z
-last_update: 2026-10-27T00:00:09Z
-date_finished: null
+last_update: 2026-10-27T00:02:58Z
+date_finished: 2026-10-27T00:02:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -62,8 +62,8 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] generate_id() in agents/task-create/create-task.sh parses each task file's id in pure bash (`${f##*/}`, `[[ =~ ^T-([0-9]+) ]]`, `10#`), with no subprocess per file; the semantics are unchanged (only a leading `T-<digits>` counts; zero-padded ids parse in base 10)
-- [ ] The existing id tests stay green: t100202_id_quarantine, t4189_task_id_highwater, task_id_race; vendor in sync
+- [x] generate_id() in agents/task-create/create-task.sh parses each task file's id in pure bash (`${f##*/}`, `[[ =~ ^T-([0-9]+) ]]`, `10#`), with no subprocess per file; the semantics are unchanged (only a leading `T-<digits>` counts; zero-padded ids parse in base 10)
+- [x] The existing id tests stay green: t100202_id_quarantine, t4189_task_id_highwater, task_id_race; vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -349,3 +349,25 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4797-create-task-generateid-forks-3-processes.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-28723cef
+- **Timestamp:** 2026-10-27T00:03:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `! sed -n '/^generate_id()/,/^}/p' agents/task-create/create-task.sh | grep -q 'basename "\$f" | grep'`
+
+### 2026-10-27T00:02:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
