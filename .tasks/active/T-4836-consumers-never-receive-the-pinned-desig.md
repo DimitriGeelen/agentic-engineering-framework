@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T15:57:56Z
-last_update: '2026-10-27T15:58:59Z'
+last_update: 2026-10-27T16:16:01Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,12 +90,12 @@ import writes `vendor/designer/__pycache__/` beside the pinned file.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw vendor` copies the pin's `validator_path` beside `vendored_path` into the vendored copy (when the pin declares one), and `fw upgrade` delivers it the same way
-- [ ] `fw designer install` installs the validator from FRAMEWORK_ROOT to PROJECT_ROOT with the same sha256-vs-pin refusal as the build (mismatch refused, absent source names the cause)
-- [ ] `_load_validator` resolves PROJECT_ROOT/validator_path first, then FRAMEWORK_ROOT/validator_path, and still refuses on sha256 mismatch (503)
-- [ ] Loading the validator writes no `__pycache__` anywhere under vendor/ (e.g. `sys.dont_write_bytecode` held around exec_module, restored afterwards)
-- [ ] A test builds a synthetic consumer (vendored copy separate from the project root, no validator in PROJECT_ROOT) and gets 200 with findings from POST /api/validate after vendor+install; a second test shows 503 when the vendored file's sha does not match the pin
-- [ ] tests/unit/upgrade_fresh_machine_simulation.bats stays green (consumer-facing command hygiene, T-1633)
+- [x] `fw vendor` copies the pin's `validator_path` beside `vendored_path` into the vendored copy (when the pin declares one), and `fw upgrade` delivers it the same way
+- [x] `fw designer install` installs the validator from FRAMEWORK_ROOT to PROJECT_ROOT with the same sha256-vs-pin refusal as the build (mismatch refused, absent source names the cause)
+- [x] `_load_validator` resolves PROJECT_ROOT/validator_path first, then FRAMEWORK_ROOT/validator_path, and still refuses on sha256 mismatch (503)
+- [x] Loading the validator writes no `__pycache__` anywhere under vendor/ (e.g. `sys.dont_write_bytecode` held around exec_module, restored afterwards)
+- [x] A test builds a synthetic consumer (vendored copy separate from the project root, no validator in PROJECT_ROOT) and gets 200 with findings from POST /api/validate after vendor+install; a second test shows 503 when the vendored file's sha does not match the pin
+- [x] tests/unit/upgrade_fresh_machine_simulation.bats stays green (consumer-facing command hygiene, T-1633)
 
 ### Human
 - [ ] [REVIEW] The designer's Check button still reports 832's findings after this change
@@ -288,8 +288,10 @@ import writes `vendor/designer/__pycache__/` beside the pinned file.
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
-python3 -m pytest -q tests/web/test_t4830_validate.py
-bats tests/unit/upgrade_fresh_machine_simulation.bats
+python3 -m pytest -q tests/web/test_t4830_validate.py tests/web/test_t4836_consumer_validator.py > /tmp/.t4836-py 2>&1 && grep -q passed /tmp/.t4836-py
+timeout 600 bats tests/unit/t4836_validator_delivery.bats > /tmp/.t4836-b 2>&1 && ! grep -q "^not ok" /tmp/.t4836-b
+test "$(grep -c '# skip' /tmp/.t4836-b)" -eq 0
+timeout 900 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4836-f 2>&1 && ! grep -q "^not ok" /tmp/.t4836-f
 test -z "$(find vendor/designer .agentic-framework/vendor/designer -name __pycache__ 2>/dev/null)"
 bin/fw vendor self --check --task T-4836
 bin/fw watchtower current
@@ -299,7 +301,8 @@ bin/fw watchtower current
 **Symptom:** POST /api/validate answers 503 "pinned validator not installed" in every consumer project; only the framework repo has the file.
 **Root cause:** T-4830 added a second pinned artefact (validator_path) but the delivery path (fw vendor carve-out, fw designer install, upgrade) knows only the one pinned build (vendored_path), and the loader reads FRAMEWORK_ROOT where install writes PROJECT_ROOT.
 **Why structurally allowed:** T-4830's tests ran in the framework repo, where FRAMEWORK_ROOT == PROJECT_ROOT and the file sync wrote is present; no test exercised a consumer layout.
-**Prevention:** the synthetic-consumer test in this task's ACs; the delivery code reads every pinned path from the pin rather than naming one key.
+**Prevention:** tests/web/test_t4836_consumer_validator.py builds a real consumer (`fw vendor` into a scratch project, `fw designer install` from the vendored copy) and POSTs to /api/validate; tests/unit/t4836_validator_delivery.bats covers vendor, dry-run, install accept/mismatch/absent/no-key, vendor self and the upgrade re-install. The delivery code iterates one list of pin keys (`_DESIGNER_PIN_PATH_KEYS` in lib/upgrade.sh, the same pair in bin/fw do_vendor) instead of naming vendored_path alone.
+**Reproduction (2026-10-27):** `bin/fw vendor --target <scratch>` shipped `vendor/designer/aef-workflow-designer-0.30.0.html` only. Root cause confirmed at bin/fw do_vendor (the T-3064 carve-out read `^vendored_path:` alone), agents/designer/designer.sh `do_install` (build only), lib/upgrade.sh `_self_vendor_designer` and `_t4672_sync_designer` (build only), and web/blueprints/designer_api.py `_load_validator` (`FRAMEWORK_ROOT / rel` only, no bytecode guard). Found while fixing: do_vendor's git-visibility manifest listed the carve-out from the single variable `$_vd_rel`, so it now records every delivered pinned path.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -369,6 +372,20 @@ bin/fw watchtower current
 -->
 
 ## Decisions
+
+### 2026-10-27 — which pin keys are delivered
+- **Chose:** an explicit key list, `vendored_path validator_path` (bin/fw do_vendor loop; `_DESIGNER_PIN_PATH_KEYS` + `_designer_pin_path` in lib/upgrade.sh). File names always come from the pin, and superseded siblings are pruned by the pinned name's stem (`<stem>-*.<ext>`), so no file name is hard-coded.
+- **Why:** adding a new pinned file means adding one word to the list, and nothing the pin names on 832's side (source_*, protocol) can be copied by accident.
+- **Rejected:** every `^[a-z_]+_path:` key (would silently pick up any future key that is not meant to be delivered); a validator-only copy of the build block (two carve-outs to keep in step).
+
+### 2026-10-27 — loader: first copy present wins, mismatch refused
+- **Chose:** `_load_validator` checks the first existing file out of PROJECT_ROOT/validator_path and FRAMEWORK_ROOT/validator_path. A sha256 mismatch on that file is 503, never a fall-through to the other copy.
+- **Why:** a stale or tampered installed copy should fail loudly (Reliability); `fw upgrade` re-installs, so a current consumer's two copies agree.
+- **Rejected:** "first copy that verifies" (it would hide a corrupt installed copy behind the vendored one).
+
+### 2026-10-27 — validator problems fail `fw designer install`
+- **Chose:** absent vendored validator → rc 5, mismatch → rc 1, after the build has installed; a pin without validator_path is skipped with rc 0.
+- **Why:** the AC asks for the build's refusal semantics; init and upgrade print the install output, so the operator sees which file is missing.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

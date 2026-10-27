@@ -858,14 +858,28 @@ _self_vendor_version() {
 # Output:  the relative artifact path, or nothing when the key is absent
 # Return:  0 always (absence is a valid answer, not an error)
 _designer_pin_vendored_path() {
-    local _dpv_pin="$1" _dpv_line
-    _dpv_line="$(grep -E '^vendored_path:' "$_dpv_pin" 2>/dev/null | head -1 || true)"
+    _designer_pin_path "$1" vendored_path
+}
+
+# T-4836: the same read for any *_path key of the pin. validator_path (T-4830)
+# names 832's validator, delivered beside the build by every path below.
+#
+# Inputs:  $1 — path to a designer-pin.yaml; $2 — key (vendored_path | validator_path)
+# Output:  the relative path, or nothing when the key is absent
+# Return:  0 always
+_designer_pin_path() {
+    local _dpv_pin="$1" _dpv_key="$2" _dpv_line
+    _dpv_line="$(grep -E "^${_dpv_key}:" "$_dpv_pin" 2>/dev/null | head -1 || true)"
     [ -n "$_dpv_line" ] || return 0
-    _dpv_line="${_dpv_line#vendored_path:}"
+    _dpv_line="${_dpv_line#"${_dpv_key}":}"
     _dpv_line="${_dpv_line%%#*}"
     printf '%s' "$_dpv_line" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^"//' -e 's/"$//'
     return 0
 }
+
+# T-4836: the pin keys whose files are delivered (vendored, self-vendored,
+# installed). One list, so a new pinned file is one word here.
+_DESIGNER_PIN_PATH_KEYS="vendored_path validator_path"
 
 # T-3064 (A2/A5): self-vendor the SINGLE PINNED Workflow Designer build from
 # FRAMEWORK_ROOT/vendor/designer/<pinned> into .agentic-framework/vendor/designer/.
@@ -901,59 +915,69 @@ _self_vendor_designer() {
     # nested .agentic-framework/, so this is the early exit there.
     [ -d "$_self_vendor" ] || return 0
     [ -f "$_svd_pin" ] || return 0
-    local _svd_rel
-    _svd_rel="$(_designer_pin_vendored_path "$_svd_pin")"
-    [ -n "$_svd_rel" ] || return 0
-    local _svd_src="$FRAMEWORK_ROOT/$_svd_rel"
-    local _svd_dst="$_self_vendor/$_svd_rel"
-    # No source artifact: nothing to sync, and NOT this helper's job to report it.
-    # `fw doctor` already WARNs on pinned-but-absent (T-3064 A1) at the surface an
-    # operator reads; a second voice here would fire on every vendor run.
-    [ -f "$_svd_src" ] || return 0
-    _sv_scope_skip "$_svd_src" "$_svd_dst" && return 0   # T-4419
-
-    local _svd_updated=0 _svd_pruned=0 _svd_dir _svd_old
-    _svd_dir="$(dirname "$_svd_dst")"
-
-    if [ ! -f "$_svd_dst" ] || ! cmp -s "$_svd_src" "$_svd_dst"; then
-        if [ "$dry_run" != true ]; then
-            [ -d "$_svd_dir" ] || mkdir -p "$_svd_dir"
-            # rm first: the vendored copy is installed 0444 (never edited in
-            # place, same contract as `fw designer sync`), so cp over it fails.
-            rm -f "$_svd_dst"
-            cp "$_svd_src" "$_svd_dst"
-            chmod 0444 "$_svd_dst"
+    # T-4836: one pass per pinned file (build, then validator).
+    local _svd_key _svd_rel _svd_src _svd_dst _svd_updated _svd_pruned _svd_dir _svd_old _svd_base _svd_what
+    for _svd_key in $_DESIGNER_PIN_PATH_KEYS; do
+        _svd_rel="$(_designer_pin_path "$_svd_pin" "$_svd_key")"
+        [ -n "$_svd_rel" ] || continue
+        _svd_src="$FRAMEWORK_ROOT/$_svd_rel"
+        _svd_dst="$_self_vendor/$_svd_rel"
+        # No source file: nothing to sync, and NOT this helper's job to report it.
+        # `fw doctor` already WARNs on pinned-but-absent (T-3064 A1) at the surface an
+        # operator reads; a second voice here would fire on every vendor run.
+        [ -f "$_svd_src" ] || continue
+        if _sv_scope_skip "$_svd_src" "$_svd_dst"; then   # T-4419
+            continue
         fi
-        _svd_updated=1
-    fi
 
-    # Prune superseded builds so a pin bump does not leave the old artifact
-    # behind — a vendored tree that accumulates one ~900 KB build per release is
-    # the directory-vendoring outcome arriving slowly.
-    if [ -d "$_svd_dir" ]; then
-        for _svd_old in "$_svd_dir"/aef-workflow-designer-*.html; do
-            [ -f "$_svd_old" ] || continue
-            # `[ a = b ] && continue` would be an AND-list evaluating to 1 on the
-            # common (non-matching) branch, and this file is sourced into bin/fw's
-            # `set -e` — which would abort the whole vendor run on the first
-            # superseded build it found. Explicit if, deliberately.
-            if [ "$_svd_old" = "$_svd_dst" ]; then
-                continue
+        _svd_updated=0
+        _svd_pruned=0
+        _svd_dir="$(dirname "$_svd_dst")"
+
+        if [ ! -f "$_svd_dst" ] || ! cmp -s "$_svd_src" "$_svd_dst"; then
+            if [ "$dry_run" != true ]; then
+                [ -d "$_svd_dir" ] || mkdir -p "$_svd_dir"
+                # rm first: the vendored copy is installed 0444 (never edited in
+                # place, same contract as `fw designer sync`), so cp over it fails.
+                rm -f "$_svd_dst"
+                cp "$_svd_src" "$_svd_dst"
+                chmod 0444 "$_svd_dst"
             fi
-            [ "$dry_run" = true ] || rm -f "$_svd_old"
-            _svd_pruned=$((_svd_pruned + 1))
-        done
-    fi
-
-    if [ "$_svd_updated" -gt 0 ] || [ "$_svd_pruned" -gt 0 ]; then
-        local _svd_what="$_svd_updated file(s)"
-        [ "$_svd_pruned" -gt 0 ] && _svd_what="$_svd_what + $_svd_pruned superseded"
-        if [ "$dry_run" = true ]; then
-            echo -e "  ${GREEN}Self-vendor:${NC} would sync $_svd_what to .agentic-framework/$(dirname "$_svd_rel")/"
-        else
-            echo -e "  ${GREEN}Self-vendor:${NC} synced $_svd_what to .agentic-framework/$(dirname "$_svd_rel")/"
+            _svd_updated=1
         fi
-    fi
+
+        # Prune superseded versions so a pin bump does not leave the old file
+        # behind — a vendored tree that accumulates one ~900 KB build per release is
+        # the directory-vendoring outcome arriving slowly. Siblings share the pinned
+        # name up to its version: <stem>-<version>.<ext>.
+        _svd_base="$(basename "$_svd_rel")"
+        if [ -d "$_svd_dir" ]; then
+            for _svd_old in "$_svd_dir/${_svd_base%%-[0-9]*}"-*."${_svd_base##*.}"; do
+                [ -f "$_svd_old" ] || continue
+                # `[ a = b ] && continue` would be an AND-list evaluating to 1 on the
+                # common (non-matching) branch, and this file is sourced into bin/fw's
+                # `set -e` — which would abort the whole vendor run on the first
+                # superseded build it found. Explicit if, deliberately.
+                if [ "$_svd_old" = "$_svd_dst" ]; then
+                    continue
+                fi
+                [ "$dry_run" = true ] || rm -f "$_svd_old"
+                _svd_pruned=$((_svd_pruned + 1))
+            done
+        fi
+
+        if [ "$_svd_updated" -gt 0 ] || [ "$_svd_pruned" -gt 0 ]; then
+            _svd_what="$_svd_updated file(s)"
+            if [ "$_svd_pruned" -gt 0 ]; then
+                _svd_what="$_svd_what + $_svd_pruned superseded"
+            fi
+            if [ "$dry_run" = true ]; then
+                echo -e "  ${GREEN}Self-vendor:${NC} would sync $_svd_what to .agentic-framework/$(dirname "$_svd_rel")/"
+            else
+                echo -e "  ${GREEN}Self-vendor:${NC} synced $_svd_what to .agentic-framework/$(dirname "$_svd_rel")/"
+            fi
+        fi
+    done
     return 0
 }
 
@@ -988,7 +1012,17 @@ _t4672_sync_designer() {
         if [ -f "$_f" ]; then _installed=1; break; fi
     done
     [ "$_installed" -eq 1 ] || return 0
+    # T-4836: current only when the validator (if pinned) is installed too — every
+    # consumer upgraded before T-4836 has the build and no validator.
+    local vrel _current=0
+    vrel="$(_designer_pin_path "$src_root/policy/designer-pin.yaml" validator_path)"
     if [ -f "$target_dir/$rel" ] && [ -f "$src_root/$rel" ] && cmp -s "$target_dir/$rel" "$src_root/$rel"; then
+        _current=1
+        if [ -n "$vrel" ] && [ -f "$src_root/$vrel" ] && ! cmp -s "$target_dir/$vrel" "$src_root/$vrel" 2>/dev/null; then
+            _current=0
+        fi
+    fi
+    if [ "$_current" -eq 1 ]; then
         _t4736_prune_root_designer "$target_dir" "$rel" "$src_root" "$dry_run"
         return 0
     fi

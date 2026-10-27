@@ -206,7 +206,9 @@ fw_vendor_check_visibility() {
     # T-3832: two vendored artefacts are easy to lose to a consumer .gitignore
     # and fail far from vendoring when they are — name them outright.
     local _pin_hidden _dist_hidden
-    _pin_hidden=$(printf '%s\n' "$ignored_paths" | grep -E "^$rel/vendor/designer/aef-workflow-designer-[^/]*\.html$" || true)
+    # T-4836: any file in vendor/designer/ — fw vendor ships only the pin's files there
+    # (the build and, since T-4830, the validator POST /api/validate runs).
+    _pin_hidden=$(printf '%s\n' "$ignored_paths" | grep -E "^$rel/vendor/designer/[^/]+$" || true)
     _dist_hidden=$(printf '%s\n' "$ignored_paths" | grep -cE "^$rel/lib/ts/dist/[^/]*\.js$" || true)
     if [ -n "$_pin_hidden" ] || [ "${_dist_hidden:-0}" -gt 0 ]; then
         echo "" >&2

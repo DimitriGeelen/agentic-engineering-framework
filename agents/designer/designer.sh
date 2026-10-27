@@ -200,7 +200,8 @@ do_install() {
 
     if [ -f "$vpath" ] && [ "$(_sha256 "$vpath")" = "$expected" ]; then
         echo "${_c_grn}✓ designer already installed${_c_off} $(_pin_get version) → ${rel} (sha256 matches pin)"
-        return 0
+        _install_validator
+        return $?
     fi
 
     src="${FRAMEWORK_ROOT:-$PROJECT_ROOT}/$rel"
@@ -216,7 +217,45 @@ do_install() {
     fi
 
     # Same verification path as the delivered-artifact flow (A3).
-    do_sync --from "$src"
+    do_sync --from "$src" || return $?
+    _install_validator
+}
+
+# T-4836: install the pinned validator (validator_path, T-4830) beside the build, from
+# the vendored copy, with the build's rules: sha256 against the pin (validator_sha256),
+# refuse on mismatch, read-only, loud and non-zero when the vendored file is absent.
+# Without it POST /api/validate answers 503 in every consumer. A pin that declares no
+# validator skips this. Exit codes as do_install: 0 · 1 mismatch · 3 pin incomplete · 5 absent.
+_install_validator() {
+    local rel expected dest src actual
+    rel="$(_pin_get validator_path || true)"
+    [ -n "$rel" ] || return 0
+    expected="$(_pin_get validator_sha256 || true)"
+    [ -n "$expected" ] || { echo "${_c_red}pin has validator_path but no validator_sha256 — refusing to install an unverifiable validator${_c_off}" >&2; return 3; }
+    dest="$PROJECT_ROOT/$rel"
+    if [ -f "$dest" ] && [ "$(_sha256 "$dest")" = "$expected" ]; then
+        echo "${_c_grn}✓ validator already installed${_c_off} → ${rel} (sha256 matches pin)"
+        return 0
+    fi
+    src="${FRAMEWORK_ROOT:-$PROJECT_ROOT}/$rel"
+    if [ ! -f "$src" ]; then
+        echo "${_c_yel}validator NOT installed${_c_off} — the pin names ${rel}, but no vendored validator is present at:" >&2
+        echo "  ${src}" >&2
+        echo "  → this framework copy was vendored before the validator shipped with it." >&2
+        echo "  → refresh it (fw upgrade), or in the framework repo: fw designer sync --from-tag" >&2
+        return 5
+    fi
+    actual="$(_sha256 "$src")"
+    if [ "$actual" != "$expected" ]; then
+        echo "${_c_red}validator sha256 MISMATCH — refusing to install an unpinned validator${_c_off}" >&2
+        echo "  expected (pin): $expected" >&2
+        echo "  actual  (file): $actual" >&2
+        return 1
+    fi
+    mkdir -p "$(dirname "$dest")"
+    rm -f "$dest" 2>/dev/null || true
+    install -m 0444 "$src" "$dest" 2>/dev/null || { cp -f "$src" "$dest" && chmod 0444 "$dest"; }
+    echo "${_c_grn}✓ installed${_c_off} validator → ${rel} (sha256 verified, read-only)"
 }
 
 # T-4830: pull 832's validator at the same tag and verify it three ways: kit SHA256SUMS

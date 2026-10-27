@@ -334,7 +334,8 @@ def instances():
 
 # T-4830 (T-4737 GO): POST /api/validate, a thin wrapper over 832's validate-workflow.py
 # run_xml(), pinned beside the designer build (policy/designer-pin.yaml validator_*, installed
-# and sha256-checked by `fw designer sync --from-tag`). AEF adds no rules: every finding is
+# and sha256-checked by `fw designer sync --from-tag`, shipped by `fw vendor`, installed into a
+# consumer by `fw designer install`). AEF adds no rules: every finding is
 # 832's. Unavailable (absent, unpinned, sha mismatch, import failure) is 503, never an empty
 # findings list, so Check cannot read "could not run" as "clean".
 _PIN_FILE = FRAMEWORK_ROOT / "policy" / "designer-pin.yaml"
@@ -350,11 +351,16 @@ def _load_validator():
     rel, want = pin.get("validator_path"), pin.get("validator_sha256")
     if not rel or not want:
         return None, "validator not pinned (policy/designer-pin.yaml has no validator_*)"
-    path = FRAMEWORK_ROOT / str(rel)
+    # T-4836: the installed copy (PROJECT_ROOT, written by `fw designer install`) first, then the
+    # vendored one (FRAMEWORK_ROOT, shipped by `fw vendor`). In this repo the two are the same file.
+    # The first copy present is the one checked: a mismatched copy is refused, never skipped.
+    path = next((p for p in (PROJECT_ROOT / str(rel), FRAMEWORK_ROOT / str(rel)) if p.is_file()), None)
+    if path is None:
+        return None, f"pinned validator not installed: {rel} (run: fw designer install)"
     try:
         data = path.read_bytes()
-    except OSError:
-        return None, "pinned validator not installed (run: fw designer sync --from-tag)"
+    except OSError as e:
+        return None, f"pinned validator unreadable: {e}"
     got = hashlib.sha256(data).hexdigest()
     if got != str(want):
         return None, "pinned validator sha256 mismatch (run: fw designer sync --from-tag)"
@@ -364,7 +370,12 @@ def _load_validator():
     try:
         spec = importlib.util.spec_from_file_location("aef_pinned_validate_workflow", path)
         mod = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(mod)
+        # T-4836: no __pycache__ beside the read-only pinned file (vendor/ is a delivered tree).
+        saved, sys.dont_write_bytecode = sys.dont_write_bytecode, True
+        try:
+            spec.loader.exec_module(mod)
+        finally:
+            sys.dont_write_bytecode = saved
         if not callable(getattr(mod, "run_xml", None)):
             return None, "pinned validator has no run_xml()"
     except Exception as e:  # a foreign module: any import failure is 'unavailable'

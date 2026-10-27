@@ -957,15 +957,22 @@ do_vendor() {
         # T-3064: also not in includes[] — one file out of vendor/designer/,
         # named by the pin. Listed for the same reason FRAMEWORK.md is: a dry run
         # that omits a real run's writes is a dry run nobody can plan from.
+        # T-4836: and the pinned validator beside it (validator_path), same rule.
         if [ -f "$vendor_source/policy/designer-pin.yaml" ]; then
-            local _vdd_line _vdd_rel
-            _vdd_line="$(grep -E '^vendored_path:' "$vendor_source/policy/designer-pin.yaml" 2>/dev/null | head -1 || true)"
-            _vdd_rel="${_vdd_line#vendored_path:}"
-            _vdd_rel="${_vdd_rel%%#*}"
-            _vdd_rel="$(printf '%s' "$_vdd_rel" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^"//' -e 's/"$//')"
-            if [ -n "$_vdd_rel" ] && [ -f "$vendor_source/$_vdd_rel" ]; then
-                echo -e "  ${GREEN}+${NC} $_vdd_rel (pinned designer build)"
-            fi
+            local _vdd_key _vdd_line _vdd_rel
+            for _vdd_key in vendored_path validator_path; do
+                _vdd_line="$(grep -E "^${_vdd_key}:" "$vendor_source/policy/designer-pin.yaml" 2>/dev/null | head -1 || true)"
+                _vdd_rel="${_vdd_line#"${_vdd_key}":}"
+                _vdd_rel="${_vdd_rel%%#*}"
+                _vdd_rel="$(printf '%s' "$_vdd_rel" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^"//' -e 's/"$//')"
+                if [ -n "$_vdd_rel" ] && [ -f "$vendor_source/$_vdd_rel" ]; then
+                    if [ "$_vdd_key" = vendored_path ]; then
+                        echo -e "  ${GREEN}+${NC} $_vdd_rel (pinned designer build)"
+                    else
+                        echo -e "  ${GREEN}+${NC} $_vdd_rel (pinned designer validator)"
+                    fi
+                fi
+            done
         fi
         echo ""
         echo "Would exclude: .git, .context, .tasks/{active,completed}, .fabric, install.sh"
@@ -1068,42 +1075,56 @@ do_vendor() {
     # true` here would fail SILENTLY on a fresh machine and take the designer
     # with it — reintroducing, in the fix, the exact class this task exists to
     # close. Reading one YAML scalar two ways is the cheaper risk.
+    #
+    # T-4836: the same carve-out for every pinned file, read key by key from the
+    # pin: vendored_path (the build) and validator_path (832's validator, T-4830,
+    # which POST /api/validate runs). Shipping the build alone left every consumer
+    # answering 503 on Check. A pin without validator_path skips that key.
     local _vd_pin="$vendor_source/policy/designer-pin.yaml"
+    local -a _vd_rels=()   # every pinned file copied — the visibility manifest below lists them
     if [ -f "$_vd_pin" ]; then
-        local _vd_line _vd_rel
-        _vd_line="$(grep -E '^vendored_path:' "$_vd_pin" 2>/dev/null | head -1 || true)"
-        _vd_rel="${_vd_line#vendored_path:}"
-        _vd_rel="${_vd_rel%%#*}"
-        _vd_rel="$(printf '%s' "$_vd_rel" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^"//' -e 's/"$//')"
-        if [ -n "$_vd_rel" ] && [ -f "$vendor_source/$_vd_rel" ]; then
-            mkdir -p "$(dirname "$dest/$_vd_rel")"
-            # T-4740: copy only when missing or different, so a no-op re-vendor
-            # leaves the build's mtime alone.
-            if [ ! -f "$dest/$_vd_rel" ] || ! cmp -s "$vendor_source/$_vd_rel" "$dest/$_vd_rel"; then
-                # rm first: the vendored copy is 0444 (never edited in place — same
-                # contract `fw designer sync` installs under), so cp over it fails.
-                rm -f "$dest/$_vd_rel"
-                cp "$vendor_source/$_vd_rel" "$dest/$_vd_rel"
+        local _vd_key _vd_line _vd_rel _vd_what _vd_base _vd_old
+        for _vd_key in vendored_path validator_path; do
+            _vd_rel=""
+            _vd_line="$(grep -E "^${_vd_key}:" "$_vd_pin" 2>/dev/null | head -1 || true)"
+            _vd_rel="${_vd_line#"${_vd_key}":}"
+            _vd_rel="${_vd_rel%%#*}"
+            _vd_rel="$(printf '%s' "$_vd_rel" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^"//' -e 's/"$//')"
+            _vd_what="pinned designer validator"
+            if [ "$_vd_key" = vendored_path ]; then
+                _vd_what="pinned designer build"
             fi
-            chmod 0444 "$dest/$_vd_rel"
-            echo -e "  ${GREEN}✓${NC} $_vd_rel (pinned designer build)"
-            # Drop superseded builds. The copy above adds the pinned build;
-            # nothing removes the one it replaced, so a consumer re-vendored
-            # across a pin bump would carry both (~900 KB each) with only one of
-            # them named by the pin. Mirrors the prune in
-            # lib/upgrade.sh:_self_vendor_designer, for the same reason.
-            local _vd_old
-            for _vd_old in "$(dirname "$dest/$_vd_rel")"/aef-workflow-designer-*.html; do
-                [ -f "$_vd_old" ] || continue
-                if [ "$_vd_old" = "$dest/$_vd_rel" ]; then
-                    continue
+            if [ -n "$_vd_rel" ] && [ -f "$vendor_source/$_vd_rel" ]; then
+                mkdir -p "$(dirname "$dest/$_vd_rel")"
+                # T-4740: copy only when missing or different, so a no-op re-vendor
+                # leaves the file's mtime alone.
+                if [ ! -f "$dest/$_vd_rel" ] || ! cmp -s "$vendor_source/$_vd_rel" "$dest/$_vd_rel"; then
+                    # rm first: the vendored copy is 0444 (never edited in place — same
+                    # contract `fw designer sync` installs under), so cp over it fails.
+                    rm -f "$dest/$_vd_rel"
+                    cp "$vendor_source/$_vd_rel" "$dest/$_vd_rel"
                 fi
-                rm -f "$_vd_old"
-                echo -e "  ${GREEN}✓${NC} pruned superseded designer build $(basename "$_vd_old")"
-            done
-        elif [ -n "$_vd_rel" ]; then
-            echo -e "  ${YELLOW}⊘${NC} $_vd_rel (pinned designer build absent at source — run: fw designer sync --from-tag)"
-        fi
+                chmod 0444 "$dest/$_vd_rel"
+                _vd_rels+=("$_vd_rel")
+                echo -e "  ${GREEN}✓${NC} $_vd_rel ($_vd_what)"
+                # Drop superseded versions. The copy above adds the pinned file;
+                # nothing removes the one it replaced, so a consumer re-vendored
+                # across a pin bump would carry both with only one of them named by
+                # the pin. Mirrors the prune in lib/upgrade.sh:_self_vendor_designer.
+                # Siblings share the pinned name up to its version: <stem>-<ver>.<ext>.
+                _vd_base="$(basename "$_vd_rel")"
+                for _vd_old in "$(dirname "$dest/$_vd_rel")/${_vd_base%%-[0-9]*}"-*."${_vd_base##*.}"; do
+                    [ -f "$_vd_old" ] || continue
+                    if [ "$_vd_old" = "$dest/$_vd_rel" ]; then
+                        continue
+                    fi
+                    rm -f "$_vd_old"
+                    echo -e "  ${GREEN}✓${NC} pruned superseded designer file $(basename "$_vd_old")"
+                done
+            elif [ -n "$_vd_rel" ]; then
+                echo -e "  ${YELLOW}⊘${NC} $_vd_rel ($_vd_what absent at source — run: fw designer sync --from-tag)"
+            fi
+        done
     fi
 
     # Create VERSION file (T-4740: only when it differs)
@@ -1266,7 +1287,9 @@ UPSTREAM
                     printf '%s\n' "$_vis_item"
                 fi
             done
-            if [ -n "${_vd_rel:-}" ] && [ -f "$dest/$_vd_rel" ]; then printf '%s\n' "$_vd_rel"; fi
+            for _vis_item in ${_vd_rels[@]+"${_vd_rels[@]}"}; do
+                if [ -f "$dest/$_vis_item" ]; then printf '%s\n' "$_vis_item"; fi
+            done
             printf '%s\n' VERSION .fw-not-a-project .gitignore FRAMEWORK.md
             if [ -n "${_vendor_origin:-}" ] && [ -f "$dest/.upstream" ]; then printf '%s\n' .upstream; fi
             if [ -f "$dest/.fw-vendor-stamp.json" ]; then printf '%s\n' .fw-vendor-stamp.json; fi
