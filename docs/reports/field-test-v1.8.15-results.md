@@ -465,8 +465,18 @@ One row per project and build. A blank Msg means the id was not kept in the sess
 | 055 | be.37 | Two reports. Their T-4820 premise was later corrected by 055: the trigger was their own breach of their rule PL-045, not an AEF defect | |
 | dimitri-mint-dev | be.41 | Partial, all **WORKS**: A, B, C, D, H; T-4797 (0.25 s); T-4819. Their operator approved the upgrade in that session. Still to report: G, T-4781 and the T-4812 re-check, after a relaunch | |
 
+**Later the same evening (recorded by T-4848):**
+
+| Project | Tip | Verdict | Msg |
+|---|---|---|---|
+| 832 | be.43 | **WORKS**: GET /api/field-catalog (T-4832): 200 with the file byte-for-byte, gzip when accepted, 422 on a duplicated ref, 404 on a missing file or unset key | ac944d99 |
+| 832 | be.43 | **WORKS**: GET /api/instances (T-4831): 404 unknown template, 200 NO-INSTANCES on a map in their store | c3ec2249 |
+| 832 | be.43 | **FAILS**: POST /api/validate (T-4830): answered ok:false on a successful check of a map with errors, so the designer showed "could not check". Fixed in T-4845 (ok:true on every 200) | c3ec2249 |
+| 832 | be.43 | **WORKS**: T-4836 (the validator reaches a consumer project) and T-4838 (validator 0.31.0, E-XML-IO-MATCH-MISSING reported) | c3ec2249 |
+| dimitri-mint-dev | be.41 | **WORKS**: D, task close in 4.0 s with 0 files staged outside .tasks/.context (T-4777); T-4812 re-check, the status entry lands inside ## Updates and the append Edit is accepted first time | d812cf90 |
+
 **Still unexercised, and who reports:**
-- **1409:** upgrade after their workers rest; T-4806 needs their Dauerlauf armed; T-4797 timing.
+- **1409:** upgrade to be.44 or later after their workers rest, then the create-time re-measure at about 20 worktrees (T-4797, T-4841); T-4806 needs their Dauerlauf armed.
 - **dimitri-mint-dev:** G, T-4781, T-4812 re-check (after relaunch).
 - **055:** E, F, G.
 - **832 and greenfield:** the designer data APIs (T-4830, T-4831, T-4832, T-4836) at the be-tag cut by T-4837.
