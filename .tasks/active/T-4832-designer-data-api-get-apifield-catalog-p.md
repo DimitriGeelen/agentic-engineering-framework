@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T15:26:51Z
-last_update: '2026-10-27T15:45:22Z'
+last_update: 2026-10-27T15:59:32Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -153,7 +153,7 @@ cost_estimate_proposed:
 
 - [ ] [REVIEW] The ref picker is useful with a real catalog
   **Steps:**
-  1. Set DESIGNER_FIELD_CATALOG in this project's .framework.yaml to a test catalog (the agent provides one with ~1,300 rows), then open http://192.168.10.107:3000/designer/app
+  1. Open http://192.168.10.107:3000/designer/app (the agent has already set DESIGNER_FIELD_CATALOG to the 1,301-row sample docs/examples/designer-field-catalog-sample.json)
   2. Open a map, open a step's io editor, and type into the ref field
   **Expected:** the picker appears, finds attributes as you type, and choosing one fills the ref; without the key set the editor looks exactly as before
   **If not:** Note what you typed and what you saw; the agent checks /api/field-catalog and reports to 832 if it is designer-side
@@ -371,6 +371,14 @@ bin/fw vendor self --check --task T-4832
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+**Rationale:** GET /api/field-catalog is built to the design in docs/reports/T-4832-field-catalog-design.md (832's measurements plus the independent Codex review). The parent reviewed the worker's diff; the one defect it found (a client sending `gzip;q=0` still got gzip) is fixed and pinned by a test. The setting is already on in this project, pointing at a 1,301-row sample catalog, so the review needs no setup: open the designer and type into a ref field.
+**Evidence:**
+- 17 tests pass in tests/web/test_t4832_field_catalog.py: unset key, missing file, 1,300-row catalog preserved, missing or duplicate ref, wrong version, oversized file, path escaping the root, gzip vs plain, gzip;q=0
+- Live: `/api/field-catalog` answers 200, 11 KB gzipped, from the restarted Watchtower (`bin/fw watchtower current` OK)
+- Config key DESIGNER_FIELD_CATALOG (+ _MAX_BYTES, default 10 MiB) registered in lib/config.sh and shown on /config
+- Sample catalog: docs/examples/designer-field-catalog-sample.json (AEF Task/Dispatch/Verdict fields plus synthetic CRM/ERP rows); turn it off with `bin/fw config set DESIGNER_FIELD_CATALOG ""`
 
 ## Decisions
 
