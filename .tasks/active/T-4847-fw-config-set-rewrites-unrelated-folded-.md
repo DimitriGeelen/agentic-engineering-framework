@@ -113,8 +113,8 @@ See description. The need: `fw config set KEY VALUE` changes the one line for KE
 - [x] Reproduce first: a bats test builds a .framework.yaml with a folded scalar (e.g. a long `upstream_repo: >-` value), a comment and a quoted value, runs `fw config set` on an unrelated key, and shows the other lines change; it fails before the fix
 - [x] After the fix, setting an existing key changes only that key's line(s); setting a new key appends it; every other line is byte-identical (diff shows only the intended change)
 - [x] The set value still reads back correctly through `fw config get` and lib/config.sh's resolution, including values that need YAML quoting
-- [ ] Existing config tests stay green (grep tests/unit for config set / fw_config) and tests/lint/config-registry-parity.bats
-- [ ] Vendor in sync
+- [x] Existing config tests stay green (grep tests/unit for config set / fw_config) and tests/lint/config-registry-parity.bats
+- [x] Vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
