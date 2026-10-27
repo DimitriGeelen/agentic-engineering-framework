@@ -2075,6 +2075,12 @@ $project_owned"
 
         if [ "$current_governance" = "$governance_tail" ]; then
             echo -e "  ${GREEN}OK${NC}  Already up to date"
+            # T-4821: a backup identical to CLAUDE.md holds nothing to recover.
+            if [ "$dry_run" != true ] && [ -f "${project_claude}.bak" ] \
+                && cmp -s "$project_claude" "${project_claude}.bak"; then
+                rm -f "${project_claude}.bak"
+                echo -e "  ${GREEN}REMOVED${NC}  CLAUDE.md.bak (identical to CLAUDE.md)"
+            fi
         else
             changes=$((changes + 1))
             if [ "$dry_run" = true ]; then
@@ -2088,8 +2094,15 @@ $project_owned"
                 # Write combined file, fix any leftover placeholders
                 project_header="${project_header//__PROJECT_NAME__/$project_name}"
                 printf '%s\n%s\n' "$project_header" "$governance_tail" > "$project_claude"
-                _t4697_wrote "$project_claude" "${project_claude}.bak"
-                echo -e "  ${GREEN}UPDATED${NC}  Governance sections refreshed from framework template. Backup: CLAUDE.md.bak"
+                if cmp -s "$project_claude" "${project_claude}.bak"; then
+                    # T-4821: the rewrite produced the same bytes; keep no backup of them.
+                    rm -f "${project_claude}.bak"
+                    _t4697_wrote "$project_claude"
+                    echo -e "  ${GREEN}OK${NC}  Already up to date (rewrite changed no byte)"
+                else
+                    _t4697_wrote "$project_claude" "${project_claude}.bak"
+                    echo -e "  ${GREEN}UPDATED${NC}  Governance sections refreshed from framework template. Backup: CLAUDE.md.bak"
+                fi
                 if [ -n "$project_owned" ]; then
                     local _po_kept
                     _po_kept=$(printf '%s\n' "$project_owned" \

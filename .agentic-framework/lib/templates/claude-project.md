@@ -469,7 +469,6 @@ Each component has a YAML card in `.fabric/components/` with: id, name, type, su
 - Prefer `git log --oneline -5` over `git log -5`
 
 ### Work Proposal Rule
-- **Before proposing the next unit of work, check context budget** (`checkpoint.sh status`)
 - **Before proposing the next unit of work, check context budget** (`checkpoint.sh budget`: band and free tokens)
 - Green: proceed normally; spawn workers
 - Amber: propose only small, bounded tasks and small workers; commit first
