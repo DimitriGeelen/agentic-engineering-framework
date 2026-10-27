@@ -49597,3 +49597,29 @@ scan_id: R-50b12e43
 task_id: T-4800
 payload:
   task_file: .tasks/active/T-4800-draft-wc-v034-dispatchclosed-and-refusal.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T09:41:44Z'
+scan_id: R-ff7ebe13
+task_id: T-4801
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T09:41:44Z'
+scan_id: R-ff7ebe13
+task_id: T-4801
+payload:
+  task_file: .tasks/active/T-4801-local-reference-backend-so-aef-can-run-i.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-10-27T09:41:44Z'
+scan_id: RC-3a79a447
+task_id: T-4801
+payload:
+  overall: CONTRADICTED
+  claim_count: 2
