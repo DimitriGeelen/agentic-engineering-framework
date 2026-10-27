@@ -95,10 +95,10 @@ See description. The need (832): after any dispatch, whichever worker kind ran, 
 
 ### Agent
 - [x] Reproduce first: a test dispatches (or drives run.sh for) a non-claude worker kind with a stub binary that prints a version, and shows stderr.log and meta.json carry no binary/version line; it fails before the fix
-- [ ] Every worker kind (claude, codex, opencode, ollama-loop and any other kind run.sh launches) writes `worker binary: <path> (<version>)` to stderr.log before launch, using one shared helper rather than per-branch copies
-- [ ] meta.json gains keys for the resolved worker binary path and its version line; a binary whose --version fails or hangs records that (bounded by the existing 20 s timeout), never blocks the launch
-- [ ] Review-seat signing is not disturbed: the T-3580/T-4835 seat tests stay green (grep tests/unit for review_seat, t4835, t3580)
-- [ ] Vendor in sync
+- [x] Every worker kind (claude, codex, opencode, ollama-loop and any other kind run.sh launches) writes `worker binary: <path> (<version>)` to stderr.log before launch, using one shared helper rather than per-branch copies
+- [x] meta.json gains keys for the resolved worker binary path and its version line; a binary whose --version fails or hangs records that (bounded by the existing 20 s timeout), never blocks the launch
+- [x] Review-seat signing is not disturbed: the T-3580/T-4835 seat tests stay green (grep tests/unit for review_seat, t4835, t3580)
+- [x] Vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
