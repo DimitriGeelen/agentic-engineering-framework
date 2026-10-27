@@ -1,7 +1,6 @@
 ---
 id: T-4788
-name: "  text: 'OBS: python3 -c write forms skip the Bash task gate entirely. is_bash_safe_command
-  safe-lists"
+name: "python3 -c write forms skip the Bash task gate entirely"
 description: >
   Promoted from observation OBS-200
 
@@ -80,11 +79,13 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4788:   text: 'OBS: python3 -c write forms skip the Bash task gate entirely. is_bash_safe_command safe-lists
+# T-4788: python3 -c write forms skip the Bash task gate entirely
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Source: observation OBS-200 (.context/inbox.yaml):
+
+> OBS: python3 -c write forms skip the Bash task gate entirely. is_bash_safe_command safe-lists 'python3 -c' behind a TEXTUAL write-indicator deny-list (open(...,'w' | .write( | shutil. | os.(rename|remove|unlink|makedirs|system)). Three common write idioms match none of it and also carry no shell redirect, so has_bash_write_pattern returns false too — both predicates pass and check-active-task.sh exits 0 before the no-active-task check, the task-is-active check, G-020 and the T-1730 focus-drift gate. MEASURED against the real hook in a sandbox with current_task: null — pathlib.Path(x).write_text(), .write_bytes(), and os.replace() all returned rc=0; the redirect control returned rc=2, so the harness demonstrably reaches and fires the gate. Note os.replace is the framework's OWN documented atomic-write idiom (T-100191, L-493), so this is not an exotic form. Same family as OBS-184/185 (chain-splitting) and the Tier 0 scope boundary: a textual predicate over a command string cannot see semantics. Failure direction here is the DANGEROUS one — false negative, gates skipped, no audit trail. Deny-list is unclosable by enumeration; the fix direction is to stop safe-listing an interpreter, or require -c scripts to be write-free by construction rather than by pattern.
 
 ## Acceptance Criteria
 

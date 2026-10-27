@@ -1,19 +1,10 @@
 ---
 id: T-4787
-name: "fw note promote copies the whole observation text into name: and does not escape
-  it: OBS-482 contained a double-quoted phrase, so T-3442's frontmatter is unparseable
-  YAML (yaml error at line 2, fw bvp estimate fails, every reader of the file breaks)
-  from the moment the verb created it. Two defects: (1) name: must be a short summary
-  (first sentence or 120 chars) with the full text in description:/Context, (2) any
-  string written to frontmatter must be YAML-escaped (L-370 already says this for
-  generated YAML). Also: promote sets owner: human human (agents/observe/observe.sh:344)
-  by design, which puts every promoted task behind the human-owned-task boundary —
-  correct as a Sovereign default, but worth stating in the promote output so the agent
-  does not plan work on it."
+name: "fw note promote puts the whole, unescaped observation text into name:"
 description: >
   Promoted from observation OBS-484
 
-status: captured
+status: started-work
 workflow_type: build
 owner:
 horizon: now
@@ -47,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-26T23:02:56Z
-last_update: '2026-10-26T23:15:35Z'
+last_update: 2026-10-27T23:13:38Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,9 +79,13 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4787: fw note promote copies the whole observation text into name: and does not escape it: OBS-482 contained a double-quoted phrase, so T-3442's frontmatter is unparseable YAML (yaml error at line 2, fw bvp estimate fails, every reader of the file breaks) from the moment the verb created it. Two defects: (1) name: must be a short summary (first sentence or 120 chars) with the full text in description:/Context, (2) any string written to frontmatter must be YAML-escaped (L-370 already says this for generated YAML). Also: promote sets owner: human (agents/observe/observe.sh:344) by design, which puts every promoted task behind the human-owned-task boundary — correct as a Sovereign default, but worth stating in the promote output so the agent does not plan work on it.
+# T-4787: fw note promote puts the whole, unescaped observation text into name:
 
 ## Context
+
+Observation text (OBS-484):
+
+> fw note promote copies the whole observation text into name: and does not escape it: OBS-482 contained a double-quoted phrase, so T-3442's frontmatter is unparseable YAML (yaml error at line 2, fw bvp estimate fails, every reader of the file breaks) from the moment the verb created it. Two defects: (1) name: must be a short summary (first sentence or 120 chars) with the full text in description:/Context, (2) any string written to frontmatter must be YAML-escaped (L-370 already says this for generated YAML). Also: promote sets owner: human (agents/observe/observe.sh:344) by design, which puts every promoted task behind the human-owned-task boundary — correct as a Sovereign default, but worth stating in the promote output so the agent does not plan work on it.
 
 Source: observation OBS-484 (.context/inbox.yaml). `fw note promote` copies the whole observation text into the task's `name:` and does not escape it; a double quote in the text made T-3442's frontmatter unparseable. Still live: T-4785..T-4792, promoted on 2026-10-27, carry raw text such as `"  text: 'Structural gap found ...` as their names, and their descriptions say only "Promoted from observation OBS-NNN".
 
@@ -99,11 +94,11 @@ The need: a promoted task has a short readable name, the full observation text w
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: a bats test promotes an observation whose text holds a double quote, a single quote, a colon and a newline, and shows the task file's frontmatter does not parse or the name is the raw text; it fails before the fix
-- [ ] The name is a short summary (first sentence, at most about 120 characters, without YAML-like prefixes such as `text:`); the full observation text goes into the task's Context (and description), quoted safely
-- [ ] Every frontmatter string the verb writes is YAML-safe; the created file parses with yaml.safe_load in the test
-- [ ] Repair the eight already-promoted tasks T-4785..T-4792: short names and their observation text in Context (Edit tool on each task file, not a shell write); their frontmatter parses
-- [ ] Existing promote/note tests stay green; vendor in sync
+- [x] Reproduce first: a bats test promotes an observation whose text holds a double quote, a single quote, a colon and a newline, and shows the task file's frontmatter does not parse or the name is the raw text; it fails before the fix
+- [x] The name is a short summary (first sentence, at most about 120 characters, without YAML-like prefixes such as `text:`); the full observation text goes into the task's Context (and description), quoted safely
+- [x] Every frontmatter string the verb writes is YAML-safe; the created file parses with yaml.safe_load in the test
+- [x] Repair the eight already-promoted tasks T-4785..T-4792: short names and their observation text in Context (Edit tool on each task file, not a shell write); their frontmatter parses
+- [x] Existing promote/note tests stay green; vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -153,7 +148,8 @@ The need: a promoted task has a short readable name, the full observation text w
 
 ## Verification
 
-timeout 900 bats tests/unit/t4787_note_promote_name.bats
+timeout 900 bats tests/unit/t4787_note_promote_name.bats > .context/working/.t4787-v.out 2>&1 && ! grep -q "^not ok" .context/working/.t4787-v.out
+test "$(grep -c '# skip' .context/working/.t4787-v.out)" -eq 0
 python3 -c "import yaml,glob; [yaml.safe_load(open(f).read().split('---')[1]) for t in range(4785,4793) for f in glob.glob(f'.tasks/active/T-{t}-*.md')]"
 bin/fw vendor self --check --task T-4787
 
@@ -309,6 +305,14 @@ bin/fw vendor self --check --task T-4787
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** promoted tasks carried the whole observation as `name:`; some were named by the raw first inbox line (`  text: 'Structural gap ...`, T-4786/T-4788/T-4792); T-3442's frontmatter did not parse; the description said only "Promoted from observation OBS-NNN", so the full text was nowhere in the task.
+
+**Root cause:** two places. (1) `agents/observe/observe.sh` `do_promote` read the text with `grep -A1 "id: $obs_id" | grep 'text:' | sed 's/.*text: "//;s/"$//'`, which understands only a one-line double-quoted `text:`. After the inbox was re-serialised (single-quoted, wrapped at ~100 columns) the sed matched nothing and returned the indented first physical line, `text:` prefix and quote included. It then passed that text unchanged as `--name`, and the description got only the id. (2) `agents/task-create/create-task.sh` wrote `name: "` + name.replace('"', '\\"') + `"`, which escapes double quotes but not backslashes (a `\d` is an unknown-escape ScannerError), and its inline fallback template wrote `name: "$NAME"` with no escaping at all.
+
+**Why structurally allowed:** the only promote tests (observe.bats, t3646) used one-line ASCII fixtures with no quotes, colons, backslashes or wrapping, and none parsed the created task's frontmatter. The capture side was hardened for the same class (T-2456, L-370), but the promote side was never covered.
+
+**Prevention:** `tests/unit/t4787_note_promote_name.bats` promotes a wrapped single-quoted entry (with `"`, `''` and `:`) and a double-quoted entry with a backslash, then parses the resulting frontmatter with yaml.safe_load. It also asserts a short single-line name, the full text in both description and `## Context`, and the human-owner notice. It fails 3/4 (or 4/4) on the old code.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -373,6 +377,15 @@ bin/fw vendor self --check --task T-4787
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-28 — where to escape the name
+- **Chose:** escape in create-task.sh, writing `name:` as `json.dumps(name)` (a JSON string is a valid YAML double-quoted scalar) in all three write paths. Promote additionally reads the inbox with yaml.safe_load.
+- **Why:** every caller of create-task, not only promote, can pass a backslash; fixing it at the writer covers them all with one line per path.
+- **Rejected:** sanitising the name inside promote only (leaves `fw task create --name 'a\d'` broken); a new escape helper (json.dumps already does exactly this).
+
+### 2026-10-28 — short-name rule
+- **Chose:** whitespace-collapsed first sentence (split at `.`/`!`/`?` + space), cut at 120 characters on a word boundary with "…". The full text goes into description (after "Promoted from observation OBS-NNN: ") and as a `>` quote under `## Context`.
+- **Rejected:** truncating at a fixed width without a sentence split (gives mid-clause names even for short first sentences). For the eight repaired tasks I wrote the names by hand, because the mechanical rule gives long names for observations whose first sentence runs past 120 characters.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -389,3 +402,6 @@ bin/fw vendor self --check --task T-4787
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4787-fw-note-promote-copies-the-whole-observa.md
 - **Context:** Initial task creation
+
+### 2026-10-27T23:13:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -1,7 +1,6 @@
 ---
 id: T-4792
-name: "  text: 'T-2834 leaves one leg of the same class open, measured and deliberate:
-  command substitution."
+name: "Bash task gate judges a command substitution by its outer command only (open leg of T-2834)"
 description: >
   Promoted from observation OBS-185
 
@@ -80,11 +79,13 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4792:   text: 'T-2834 leaves one leg of the same class open, measured and deliberate: command substitution.
+# T-4792: Bash task gate judges a command substitution by its outer command only (open leg of T-2834)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Source: observation OBS-185 (.context/inbox.yaml):
+
+> T-2834 leaves one leg of the same class open, measured and deliberate: command substitution. is_bash_safe_command now splits on chain operators, but treats dollar-paren and backticks as ordinary text, so an unsafe command nested inside a safe one is judged by the outer command alone. Measured with no active task (scratchpad/obs180/probe7.sh): 'echo $(bash deploy.sh)', 'echo $(git commit -m B:x)', 'echo backtick-bash-deploy.sh-backtick' and 'ls $(python3 mutate.py)' are all ALLOWED. Not fixed in T-2834 because the obvious fix -- treat substitution contents as another segment -- also blocks the framework's own documented verification idiom 'curl -sf "$(bin/fw watchtower url)/page"' (fw watchtower is not on the allowlist) and 'cd $(git rev-parse --show-toplevel)', both currently allowed. That would deny service precisely in the no-active-task recovery state where friction hurts most. Fixing this properly needs the allowlist widened to cover the read-only fw/git verbs used inside substitutions FIRST, then substitution-aware splitting -- in that order, or the fix regresses everyday use. Severity lower than the chain leg (OBS-184): substitution nesting is a shape agents rarely produce by accident, whereas A-and-B is ubiquitous. Cited by name in the safe-commands.sh design comment, so this note is load-bearing documentation, not just a backlog item.
 
 ## Acceptance Criteria
 

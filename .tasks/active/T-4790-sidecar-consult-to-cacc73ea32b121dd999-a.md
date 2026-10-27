@@ -1,9 +1,6 @@
 ---
 id: T-4790
-name: "sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/w4531
-  unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation consult-w4531,
-  client_msg_id dc094f4a-051a-4115-adc0-669707cefa48). Re-posts and inbox nudges have
-  not produced a reply."
+name: "Sidecar consult to w4531 unanswered after 12 attempts on the retry ladder"
 description: >
   Promoted from observation OBS-604
 
@@ -82,11 +79,13 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4790: sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/w4531 unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation consult-w4531, client_msg_id dc094f4a-051a-4115-adc0-669707cefa48). Re-posts and inbox nudges have not produced a reply.
+# T-4790: Sidecar consult to w4531 unanswered after 12 attempts on the retry ladder
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Source: observation OBS-604 (.context/inbox.yaml):
+
+> sidecar consult to cacc73ea32b121dd/999-Agentic-Engineering-Framework/w4531 unanswered after 12 attempt(s) on the retry ladder (rung 5, conversation consult-w4531, client_msg_id dc094f4a-051a-4115-adc0-669707cefa48). Re-posts and inbox nudges have not produced a reply.
 
 ## Acceptance Criteria
 

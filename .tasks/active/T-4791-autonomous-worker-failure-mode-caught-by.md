@@ -1,27 +1,10 @@
 ---
 id: T-4791
-name: "AUTONOMOUS-WORKER FAILURE MODE, caught by a second rail: the SEQ-T3411 round-1
-  procAsFit worker (T-3412) edited three vendored paths (lib/inception.sh, agents/context/check-active-task.sh,
-  agents/task-create/create-task.sh) and never ran 'fw vendor self'. It closed GREEN
-  — P-011 3/3 passed — because its Verification block contained zero occurrences of
-  'vendor'. CLAUDE.md requires 'bin/fw vendor self --check' in Verification for exactly
-  those paths and requires the sync BEFORE work-completed (OBS-250, T-3236); the worker
-  did not know or did not apply it. The structural point: P-011 is AUTHOR-CONTROLLED
-  by construction — it runs only the lines the author thought to write — so a rule
-  an autonomous worker does not know produces a green close rather than a red one,
-  and its handback reports success. This is the L-291 toolchain-build lesson in a
-  new costume (the gate is only as complete as the author's memory). Two rails did
-  work: the pre-push self-vendor gate (T-2240/T-3125) caught it and named the exact
-  fix, which is defence-in-depth behaving correctly. Candidate structural fix, NOT
-  done here: have the close gate DERIVE the required verification lines from the task's
-  actual git diff (touched a vendored path -> require the vendor check; touched *.py
-  -> require a test run) instead of trusting the author to remember. That converts
-  an author-memory dependency into a deterministic check, which is the framework's
-  own REFACTOR thesis. Remediated under T-3414."
+name: "A task that changed vendored paths closes green without the vendor sync check"
 description: >
   Promoted from observation OBS-452
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: now
@@ -55,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-26T23:04:20Z
-last_update: '2026-10-26T23:15:35Z'
+last_update: '2026-10-27T23:14:48Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,11 +77,32 @@ bvp_scores_proposed:
       D4=2 (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-27T23:14:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=2 (body:env-class-handled); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4791: AUTONOMOUS-WORKER FAILURE MODE, caught by a second rail: the SEQ-T3411 round-1 procAsFit worker (T-3412) edited three vendored paths (lib/inception.sh, agents/context/check-active-task.sh, agents/task-create/create-task.sh) and never ran 'fw vendor self'. It closed GREEN — P-011 3/3 passed — because its Verification block contained zero occurrences of 'vendor'. CLAUDE.md requires 'bin/fw vendor self --check' in Verification for exactly those paths and requires the sync BEFORE work-completed (OBS-250, T-3236); the worker did not know or did not apply it. The structural point: P-011 is AUTHOR-CONTROLLED by construction — it runs only the lines the author thought to write — so a rule an autonomous worker does not know produces a green close rather than a red one, and its handback reports success. This is the L-291 toolchain-build lesson in a new costume (the gate is only as complete as the author's memory). Two rails did work: the pre-push self-vendor gate (T-2240/T-3125) caught it and named the exact fix, which is defence-in-depth behaving correctly. Candidate structural fix, NOT done here: have the close gate DERIVE the required verification lines from the task's actual git diff (touched a vendored path -> require the vendor check; touched *.py -> require a test run) instead of trusting the author to remember. That converts an author-memory dependency into a deterministic check, which is the framework's own REFACTOR thesis. Remediated under T-3414.
+# T-4791: A task that changed vendored paths closes green without the vendor sync check
 
 ## Context
+
+Observation text (OBS-452):
+
+> AUTONOMOUS-WORKER FAILURE MODE, caught by a second rail: the SEQ-T3411 round-1 procAsFit worker (T-3412) edited three vendored paths (lib/inception.sh, agents/context/check-active-task.sh, agents/task-create/create-task.sh) and never ran 'fw vendor self'. It closed GREEN — P-011 3/3 passed — because its Verification block contained zero occurrences of 'vendor'. CLAUDE.md requires 'bin/fw vendor self --check' in Verification for exactly those paths and requires the sync BEFORE work-completed (OBS-250, T-3236); the worker did not know or did not apply it. The structural point: P-011 is AUTHOR-CONTROLLED by construction — it runs only the lines the author thought to write — so a rule an autonomous worker does not know produces a green close rather than a red one, and its handback reports success. This is the L-291 toolchain-build lesson in a new costume (the gate is only as complete as the author's memory). Two rails did work: the pre-push self-vendor gate (T-2240/T-3125) caught it and named the exact fix, which is defence-in-depth behaving correctly. Candidate structural fix, NOT done here: have the close gate DERIVE the required verification lines from the task's actual git diff (touched a vendored path -> require the vendor check; touched *.py -> require a test run) instead of trusting the author to remember. That converts an author-memory dependency into a deterministic check, which is the framework's own REFACTOR thesis. Remediated under T-3414.
 
 Source: observation OBS-452 (.context/inbox.yaml). A worker edited vendored paths (lib/, agents/) and closed its task green without running `fw vendor self`, because its own Verification block never mentioned vendor. A second rail caught it later. Checked 2026-10-28: the pre-push audit FAILs on self-vendor drift (agents/audit/audit.sh ~3755), so drift cannot reach origin, and the task template recommends `bin/fw vendor self --check --task T-XXXX`; but agents/task-create/update-task.sh's close path never checks it, so a close is still green with the copy out of sync.
 
@@ -160,7 +164,9 @@ The need: a task whose own commits changed vendored paths cannot reach work-comp
 
 ## Verification
 
-timeout 900 bats tests/unit/t4791_close_requires_vendor_sync.bats
+timeout 900 bats tests/unit/t4791_close_requires_vendor_sync.bats > /tmp/.t4791.out 2>&1 && ! grep -q "^not ok" /tmp/.t4791.out && grep -q "^ok 11 " /tmp/.t4791.out
+test "$(grep -c '# skip' /tmp/.t4791.out)" -eq 0
+grep -q "check_vendor_sync$" agents/task-create/update-task.sh
 bin/fw vendor self --check --task T-4791
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -395,3 +401,6 @@ bin/fw vendor self --check --task T-4791
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4791-autonomous-worker-failure-mode-caught-by.md
 - **Context:** Initial task creation
+
+### 2026-10-27T23:14:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

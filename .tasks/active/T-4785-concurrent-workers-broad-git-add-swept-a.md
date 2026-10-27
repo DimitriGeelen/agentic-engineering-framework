@@ -1,14 +1,6 @@
 ---
 id: T-4785
-name: "Concurrent worker's broad git-add swept another worker's context records into
-  its own close commit: T-3429's close (32119079a, 2026-09-22 18:16:34Z) contains
-  D-614/D-615/D-616 and OBS-476, all authored by the T-3437 worker minutes earlier.
-  The records survive and name T-3437 in their own content, but git history attributes
-  them to T-3429, so Updates-mining by T-XXX (P-002) will trace them to the wrong
-  task. Parallel dispatch stanzas tell workers to stage by name and never git add
-  -A/-u; nothing enforces it, and shared append-only state (.context/project/decisions.yaml,
-  .context/inbox.yaml) is the converging write-set the framework writes on every task's
-  behalf (CLAUDE.md Execution Model item 4)."
+name: "A concurrent worker's broad git add swept another worker's context records into its own close commit"
 description: >
   Promoted from observation OBS-477
 
@@ -87,11 +79,13 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4785: Concurrent worker's broad git-add swept another worker's context records into its own close commit: T-3429's close (32119079a, 2026-09-22 18:16:34Z) contains D-614/D-615/D-616 and OBS-476, all authored by the T-3437 worker minutes earlier. The records survive and name T-3437 in their own content, but git history attributes them to T-3429, so Updates-mining by T-XXX (P-002) will trace them to the wrong task. Parallel dispatch stanzas tell workers to stage by name and never git add -A/-u; nothing enforces it, and shared append-only state (.context/project/decisions.yaml, .context/inbox.yaml) is the converging write-set the framework writes on every task's behalf (CLAUDE.md Execution Model item 4).
+# T-4785: A concurrent worker's broad git add swept another worker's context records into its own close commit
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Source: observation OBS-477 (.context/inbox.yaml):
+
+> Concurrent worker's broad git-add swept another worker's context records into its own close commit: T-3429's close (32119079a, 2026-09-22 18:16:34Z) contains D-614/D-615/D-616 and OBS-476, all authored by the T-3437 worker minutes earlier. The records survive and name T-3437 in their own content, but git history attributes them to T-3429, so Updates-mining by T-XXX (P-002) will trace them to the wrong task. Parallel dispatch stanzas tell workers to stage by name and never git add -A/-u; nothing enforces it, and shared append-only state (.context/project/decisions.yaml, .context/inbox.yaml) is the converging write-set the framework writes on every task's behalf (CLAUDE.md Execution Model item 4).
 
 ## Acceptance Criteria
 

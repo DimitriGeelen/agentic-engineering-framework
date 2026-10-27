@@ -506,7 +506,7 @@ if [ "$WORKFLOW_TYPE" = "inception" ] && [ -n "$INCEPTION_TEMPLATE" ]; then
     TC_OWNER="$OWNER" TC_TAGS_YAML="$TAGS_YAML" TC_RELATED_YAML="$RELATED_YAML" \
     TC_TIMESTAMP="$TIMESTAMP" TC_FILEPATH="$FILEPATH" \
     python3 -c "
-import sys, os
+import sys, os, json  # T-4787: json.dumps is a valid YAML double-quoted scalar (escapes \ as well as \")
 e = os.environ
 with open(e['TC_TEMPLATE']) as f:
     t = f.read()
@@ -523,7 +523,7 @@ def indent_block(s):
     # separators, and padding them to the indent width leaves trailing spaces.
     return '\n'.join(('  ' + ln) if ln.strip() else '' for ln in s.split('\n'))
 t = t.replace('id: T-XXX', 'id: ' + e['TC_TASK_ID'])
-t = t.replace('name:', 'name: \"' + name.replace('\"', '\\\\\"') + '\"', 1)
+t = t.replace('name:', 'name: ' + json.dumps(name, ensure_ascii=False), 1)
 t = t.replace('description: >', 'description: >\n' + indent_block(desc), 1)
 t = t.replace('status: captured', 'status: ' + e['TC_STATUS'])
 t = t.replace('horizon: now', 'horizon: ' + e['TC_HORIZON'])
@@ -543,7 +543,7 @@ elif [ -n "$DEFAULT_TEMPLATE" ]; then
     TC_HORIZON="$HORIZON" TC_OWNER="$OWNER" TC_TAGS_YAML="$TAGS_YAML" \
     TC_RELATED_YAML="$RELATED_YAML" TC_TIMESTAMP="$TIMESTAMP" TC_FILEPATH="$FILEPATH" \
     python3 -c "
-import sys, os
+import sys, os, json  # T-4787: json.dumps is a valid YAML double-quoted scalar (escapes \ as well as \")
 e = os.environ
 with open(e['TC_TEMPLATE']) as f:
     t = f.read()
@@ -560,7 +560,7 @@ def indent_block(s):
     # separators, and padding them to the indent width leaves trailing spaces.
     return '\n'.join(('  ' + ln) if ln.strip() else '' for ln in s.split('\n'))
 t = t.replace('id: T-XXX', 'id: ' + e['TC_TASK_ID'])
-t = t.replace('name:', 'name: \"' + name.replace('\"', '\\\\\"') + '\"', 1)
+t = t.replace('name:', 'name: ' + json.dumps(name, ensure_ascii=False), 1)
 t = t.replace('description: >', 'description: >\n' + indent_block(desc), 1)
 t = t.replace('status: captured', 'status: ' + e['TC_STATUS'])
 t = t.replace('workflow_type:', 'workflow_type: ' + e['TC_WORKFLOW_TYPE'], 1)
@@ -580,10 +580,12 @@ else
     # T-2778: indent every line of the description, not just the first — see indent_block()
     # above for why the single-indent form corrupts multi-paragraph descriptions.
     DESCRIPTION_INDENTED=$(printf '%s\n' "$DESCRIPTION" | awk '{ if (length($0)) print "  " $0; else print "" }')
+    # T-4787: quote the name as JSON (a valid YAML double-quoted scalar), not raw.
+    NAME_YAML=$(python3 -c 'import json, sys; print(json.dumps(sys.argv[1], ensure_ascii=False))' "$NAME")
     cat > "$FILEPATH" << EOF
 ---
 id: $TASK_ID
-name: "$NAME"
+name: $NAME_YAML
 description: >
 $DESCRIPTION_INDENTED
 status: $STATUS

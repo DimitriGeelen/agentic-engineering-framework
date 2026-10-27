@@ -364,9 +364,17 @@ do_promote() {
     ensure_inbox
 
     local text
-    # Pipeline tolerant of empty matches (set -euo pipefail otherwise kills
-    # the script silently when the observation doesn't exist — T-1458).
-    text=$(grep -A1 "id: $obs_id" "$INBOX_FILE" 2>/dev/null | grep 'text:' | sed 's/.*text: "//;s/"$//' || true)
+    # T-4787: read the entry with a YAML parser. The old `grep -A1 | sed` reader
+    # only understood a one-line double-quoted text:, so a re-serialised inbox
+    # (single-quoted, wrapped) produced names like "  text: 'Structural gap ...".
+    # Tolerant of a missing id (set -euo pipefail would kill silently — T-1458).
+    text=$(python3 -c '
+import sys, yaml
+data = yaml.safe_load(open(sys.argv[1])) or {}
+for o in data.get("observations") or []:
+    if isinstance(o, dict) and o.get("id") == sys.argv[2]:
+        print(str(o.get("text") or "").strip())
+        break' "$INBOX_FILE" "$obs_id" 2>/dev/null || true)
 
     if [ -z "$text" ]; then
         echo -e "${RED}Observation $obs_id not found${NC}" >&2
@@ -395,18 +403,47 @@ do_promote() {
     echo -e "${YELLOW}Promoting $obs_id to task (type: $task_type)...${NC}"
     echo ""
 
+    # T-4787: name is a one-line summary (first sentence, at most 120 chars); the
+    # full text goes into description and ## Context, where a reader looks for it.
+    local name
+    name=$(python3 -c '
+import re, sys
+t = " ".join(sys.argv[1].split())
+s = re.split(r"(?<=[.!?])\s", t, maxsplit=1)[0]
+if len(s) > 120:
+    s = s[:120].rsplit(" ", 1)[0].rstrip(",;:") + "…"
+print(s)' "$text")
+
     # Create task
-    PROJECT_ROOT="$PROJECT_ROOT" "$FRAMEWORK_ROOT/agents/task-create/create-task.sh" \
-        --name "$text" \
-        --description "Promoted from observation $obs_id" \
+    local out
+    out=$(PROJECT_ROOT="$PROJECT_ROOT" "$FRAMEWORK_ROOT/agents/task-create/create-task.sh" \
+        --name "$name" \
+        --description "Promoted from observation $obs_id: $text" \
         --type "$task_type" \
-        --owner human
+        --owner human)
+    printf '%s\n' "$out"
+
+    local task_file
+    task_file=$(printf '%s\n' "$out" | sed -n 's/^File: *//p' | tail -1)
+    if [ -n "$task_file" ] && [ -f "$task_file" ]; then
+        python3 -c '
+import sys
+path, obs, text = sys.argv[1:4]
+t = open(path).read()
+quoted = "\n".join("> " + ln if ln else ">" for ln in text.split("\n"))
+block = "## Context\n\nSource: observation %s (.context/inbox.yaml):\n\n%s\n" % (obs, quoted)
+if "## Context\n" in t:
+    t = t.replace("## Context\n", block, 1)
+open(path, "w").write(t)' "$task_file" "$obs_id" "$text"
+    fi
 
     # Mark as promoted
     _sed_i "/id: $obs_id/,/promoted_to:/{s/status: pending/status: promoted/;s/promoted_to: null/promoted_to: task/}" "$INBOX_FILE"
 
     echo ""
     echo -e "${GREEN}$obs_id promoted to task${NC}"
+    echo "  The task is owner: human (Sovereign default). Do not plan agent work on it"
+    echo "  until the operator hands it over: fw task update T-XXX --owner agent"
 }
 
 do_dismiss() {

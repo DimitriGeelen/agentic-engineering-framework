@@ -1,7 +1,6 @@
 ---
 id: T-4786
-name: "  text: 'Structural gap found while recovering T-2821: a TermLink worker closed
-  the task (--status work-completed"
+name: "A worker closed its task but died before committing; nothing detects the uncommitted deliverable"
 description: >
   Promoted from observation OBS-176
 
@@ -80,11 +79,13 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4786:   text: 'Structural gap found while recovering T-2821: a TermLink worker closed the task (--status work-completed
+# T-4786: A worker closed its task but died before committing; nothing detects the uncommitted deliverable
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Source: observation OBS-176 (.context/inbox.yaml):
+
+> Structural gap found while recovering T-2821: a TermLink worker closed the task (--status work-completed passed P-010/P-011) but died before committing, leaving the entire deliverable (lib/init.sh bootstrap block + tests/unit/init_head_bootstrap.bats) uncommitted on disk with the task in completed/. Two holes: (1) nothing detects 'task work-completed but its referenced deliverable is uncommitted/untracked' — the close gate runs verification, not git state; (2) the task cannot be reopened, since update-task.sh has no work-completed -> issues|started-work transition, so recovery requires either a new task or hand-moving the file out of completed/. Sibling of the T-2036 post-completion focus deadlock.
 
 ## Acceptance Criteria
 
