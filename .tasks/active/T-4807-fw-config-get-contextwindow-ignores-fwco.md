@@ -1,10 +1,14 @@
 ---
 id: T-4807
-name: "fw config get CONTEXT_WINDOW ignores FW_CONTEXT_WINDOW (env tier skipped; budget gate honours it)"
+name: "fw config get CONTEXT_WINDOW ignores FW_CONTEXT_WINDOW (env tier skipped; budget
+  gate honours it)"
 description: >
-  1409 dauerlauf-1 pickup F8 (msg ab944308): verified 2026-10-27, FW_CONTEXT_WINDOW=500000 bin/fw config get CONTEXT_WINDOW prints 975000 (the .framework.yaml value). Config resolution is CLI > FW_* env > .framework.yaml > default (CLAUDE.md §Configuration), and budget-gate.sh does honour the env, so config get and the gate disagree.
+  1409 dauerlauf-1 pickup F8 (msg ab944308): verified 2026-10-27, FW_CONTEXT_WINDOW=500000
+  bin/fw config get CONTEXT_WINDOW prints 975000 (the .framework.yaml value). Config
+  resolution is CLI > FW_* env > .framework.yaml > default (CLAUDE.md §Configuration),
+  and budget-gate.sh does honour the env, so config get and the gate disagree.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T11:02:19Z
-last_update: 2026-10-27T11:02:19Z
-date_finished: null
+last_update: '2026-10-27T22:38:25Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-27T22:38:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 3
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=3 (body:portability-abstraction); F-RECALL=0 (no-signal); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4807: fw config get CONTEXT_WINDOW ignores FW_CONTEXT_WINDOW (env tier skipped; budget gate honours it)
@@ -61,9 +83,9 @@ See description. The need: `fw config get KEY` answers what the rest of the fram
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: a bats test sets FW_CONTEXT_WINDOW=500000 with 975000 in a temp project's .framework.yaml and shows `fw config get CONTEXT_WINDOW` prints 975000; it fails before the fix
-- [ ] `fw config get` honours the FW_* env tier for every registry key (not only CONTEXT_WINDOW), matching lib/config.sh fw_config and the budget gate
-- [ ] If `fw config get` has a mode that deliberately reads the file only (e.g. for `set` round-trips), it is explicit and named; the default answers the effective value
+- [x] Reproduce first: a bats test sets FW_CONTEXT_WINDOW=500000 with 975000 in a temp project's .framework.yaml and shows `fw config get CONTEXT_WINDOW` prints 975000; it fails before the fix
+- [x] `fw config get` honours the FW_* env tier for every registry key (not only CONTEXT_WINDOW), matching lib/config.sh fw_config and the budget gate
+- [x] If `fw config get` has a mode that deliberately reads the file only (e.g. for `set` round-trips), it is explicit and named; the default answers the effective value
 - [ ] Existing config tests and tests/lint/config-registry-parity.bats stay green; vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
@@ -269,6 +291,14 @@ bin/fw vendor self --check --task T-4807
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** `FW_CONTEXT_WINDOW=500000 bin/fw config get CONTEXT_WINDOW` printed 975000 (the `.framework.yaml` value) while the budget gate, via `fw_config`, used 500000.
+
+**Root cause:** `_config_get` (lib/config-file.sh:290) read only the YAML file; it was written as the file half of `fw config set/get` (T-889/T-896) and never adopted the env tier that `fw_config` (lib/config.sh:97-103) applies before the file. Two resolvers for one key, one of them skipping a tier.
+
+**Why structurally allowed:** the config tests pinned each resolver on its own (`lib_config.bats` for `fw_config`, `lib_config_file.bats` for get/set) and none compared the two answers with an env var set; the help text called the file value "a config value", so the divergence looked like the contract.
+
+**Prevention:** `tests/unit/t4807_config_get_env_tier.bats` asserts get equals `fw_config` with the env tier set, for any registry key in any case, and pins `--file` as the only file-only path.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -333,6 +363,11 @@ bin/fw vendor self --check --task T-4807
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-27 — scope of the env tier in `fw config get`
+- **Chose:** env tier for registry keys only (the canonical `FW_<KEY>` that `fw_config` reads), plus an explicit `--file` flag for the stored value. A key absent from both env and file still exits 1, as before.
+- **Why:** matches exactly what `fw_config` and the budget gate consume; keeps the exit-1 "not set" contract that `continuous-driver.sh` and existing tests rely on.
+- **Rejected:** (a) also answering the registry default — changes the exit-1 contract callers use to detect "unset"; (b) env lookup for dotted / non-registry keys — `fw_config` never reads those from env, so get would invent a tier nothing else honours.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -349,3 +384,6 @@ bin/fw vendor self --check --task T-4807
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4807-fw-config-get-contextwindow-ignores-fwco.md
 - **Context:** Initial task creation
+
+### 2026-10-27T22:38:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

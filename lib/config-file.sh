@@ -68,7 +68,8 @@ _config_help() {
     echo "  fw config set KEY VALUE    Set a config value (dot-notation for nesting)"
     echo "                             Registry keys are matched case-insensitively and"
     echo "                             written in canonical case; unknown keys need --force"
-    echo "  fw config get KEY          Get a config value"
+    echo "  fw config get KEY          Get the effective value (FW_KEY env, then file)"
+    echo "  fw config get --file KEY   Get the value stored in the file only"
     echo "  fw config list             Show all custom settings"
     echo "  fw config overrides        Show all non-default settings (env + file)"
     echo ""
@@ -288,10 +289,17 @@ PYSET
 }
 
 _config_get() {
+    # T-4807: --file reads .framework.yaml only; the default answers the
+    # effective value, as fw_config resolves it (FW_* env before the file).
+    local file_only=0
+    if [ "${1:-}" = "--file" ]; then
+        file_only=1
+        shift
+    fi
     local key="${1:-}"
 
     if [ -z "$key" ]; then
-        echo -e "${RED:-}Usage: fw config get KEY${NC:-}" >&2
+        echo -e "${RED:-}Usage: fw config get [--file] KEY${NC:-}" >&2
         exit 1
     fi
 
@@ -302,6 +310,14 @@ _config_get() {
         local canon
         canon="$(fw_config_canonical_key "$key")"
         [ -n "$canon" ] && key="$canon"
+        # T-4807: env tier for registry keys, the same FW_<KEY> fw_config reads.
+        if [ -n "$canon" ] && [ "$file_only" -eq 0 ]; then
+            local env_var="FW_${canon}"
+            if [ -n "${!env_var:-}" ]; then
+                echo "${!env_var}"
+                return 0
+            fi
+        fi
     fi
 
     # T-2365 (T-2158 S3): keys under `continuous-mode.` read from the
