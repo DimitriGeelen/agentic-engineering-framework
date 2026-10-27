@@ -369,9 +369,16 @@ termlink_start() {
     local _fwp
     _fwp=$(_fw_project_tag)
 
+    # T-4811: the tmux backend starts the session on a tmux server that does not inherit
+    # our env, so the exported TERMLINK_IDENTITY_FILE (T-4454) never reached the register
+    # process and it signed with the HOST key. Hand it over explicitly.
+    local _tlenv=()
+    [ -n "${TERMLINK_IDENTITY_FILE:-}" ] && _tlenv=(--env "TERMLINK_IDENTITY_FILE=$TERMLINK_IDENTITY_FILE")
+
     # Spawn a persistent shell session that survives claude restarts
     termlink spawn --name "$TERMLINK_SESSION" \
         --tags "master,claude,framework${_fwp:+,$_fwp}" \
+        ${_tlenv[@]+"${_tlenv[@]}"} \
         --backend auto --shell \
         --wait --wait-timeout 15 2>/dev/null || {
         echo "claude-fw: TermLink spawn failed. Falling back to direct mode."

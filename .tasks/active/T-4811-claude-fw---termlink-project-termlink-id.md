@@ -90,7 +90,7 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] A failing bats case first: with TERMLINK_IDENTITY_FILE resolved to an existing project key, the `termlink spawn` call claude-fw makes (a recording fake termlink on PATH) carries no `--env TERMLINK_IDENTITY_FILE=…`
 - [x] bin/claude-fw passes `--env TERMLINK_IDENTITY_FILE=<path>` to `termlink spawn` whenever _cfw_rail_identity exported it; with no project key the spawn call is unchanged
-- [ ] Sibling claude-fw termlink tests stay green (grep tests/unit for termlink spawn / t4454); new tests in tests/unit/t4811_spawn_identity_env.bats; no real termlink or tmux is started by the tests; vendor in sync
+- [x] Sibling claude-fw termlink tests stay green (grep tests/unit for termlink spawn / t4454); new tests in tests/unit/t4811_spawn_identity_env.bats; no real termlink or tmux is started by the tests; vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
