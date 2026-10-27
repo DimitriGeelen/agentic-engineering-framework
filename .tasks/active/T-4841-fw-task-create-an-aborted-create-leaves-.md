@@ -92,14 +92,23 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+See description. The need, in 1409's words: an aborted create must release the lock. How is open; the likely shape is a lock held only around id allocation plus writing the task file, on a fd that no child inherits.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduce first: a bats test starts `fw task create` (or create-task.sh) in a temp project, kills only the parent with SIGTERM while a child it spawned is still running, and shows a second create then blocks on (or times out at) task-id-allocation; this test fails before the fix
+- [ ] After the fix the same test passes: once the parent is gone, a second create acquires the lock without waiting for the orphaned child
+- [ ] No child the create spawns holds the lock fd (closed before spawning, or the lock is released before the post-file-write steps that spawn children)
+- [ ] Id uniqueness holds: tests/unit/task_id_race.bats, t4189_task_id_highwater and t100202_id_quarantine stay green; parallel creates still never reuse an id
+- [ ] Vendor in sync
+
+## RCA
+
+**Symptom:** a `fw task create` killed by timeout left child processes holding .context/locks/task-id-allocation.lock; later creates waited until 1409's worker ended those children by hand.
+**Root cause:** create-task.sh takes the lock with flock on a shell fd near its start and releases it only in the EXIT trap. Every child process inherits the open fd, and flock locks belong to the open file description, so a child that outlives its parent keeps the lock.
+**Why structurally allowed:** the lock tests (task_id_race) cover concurrent creates that finish, never a create killed mid-run while a child is still alive.
+**Prevention:** the kill-parent-keep-child bats case from the ACs.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -148,6 +157,10 @@ cost_estimate_proposed:
 -->
 
 ## Verification
+
+timeout 900 bats tests/unit/t4841_create_lock_on_abort.bats
+timeout 900 bats tests/unit/task_id_race.bats tests/unit/t4189_task_id_highwater.bats tests/unit/t100202_id_quarantine.bats
+bin/fw vendor self --check --task T-4841
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -285,21 +298,6 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
 
 ## Evolution
 
