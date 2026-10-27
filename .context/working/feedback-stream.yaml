@@ -49579,3 +49579,21 @@ scan_id: R-950b5a60
 task_id: T-4799
 payload:
   task_file: .tasks/active/T-4799-conformance-vectors-cc-21-refused-before.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T08:55:02Z'
+scan_id: R-50b12e43
+task_id: T-4800
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T08:55:02Z'
+scan_id: R-50b12e43
+task_id: T-4800
+payload:
+  task_file: .tasks/active/T-4800-draft-wc-v034-dispatchclosed-and-refusal.md

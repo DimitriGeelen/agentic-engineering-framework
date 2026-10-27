@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4800: Draft wc v0.3.4: dispatch_closed and refusal-before-rule-1 (spec text + vectors), for operator adoption
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T08:55:14Z
+# ============================================================================
+
+task_id: T-4800
+task_name: "Draft wc v0.3.4: dispatch_closed and refusal-before-rule-1 (spec text + vectors), for operator adoption"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T08:45:18Z
+completed: 2026-10-27T08:54:51Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-27T09:53:20+01:00
+last_commit: 2026-10-27T09:54:50+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  draft wc v0.3.4 — refusal before rule 1, optional dispatch closure + fence_reject(dispatch_closed); CC-15/CC-19 closed route via final_equivalent. §4.7 — linking a re-dispatch to a closed dispatch is a MAY (ring20 re-commissions without the link); unlinked, the closed dispatch stays unresolved
+
+# Key outcomes
+outcomes:
+  - 'docs/specs/shared-worker-contract-transitions.md: the status line reads DRAFT v0.3.4 pending adoption (AEF operator; TermLink operator via their T-3484; ring20). A new "Changelog v0.3.3 → v0.3.4" section sits above v0.3.2 → v0.3.3 and lists both items with their sources (ring20 59742ea8, e93a0367, 4b03810f; TermLink 14d0100a). The contract version field stays `wc/0.3` (patch revision rule, §2), and the changelog says so'
+  - '(A) The §3.3 outcome derivation says rule 1 applies to a worker that ran, and a refusal path (rule 2) yields `refused` even with hand-back absent. The rule list stays numbered as today, so CC-16 and every other reference to "rule N" still holds'
+  - '(B) The spec adds: a backend may close a dispatch once its last attempt is terminal (done or lost), recorded at dispatch level with actor, reason and ts; the T1 row''s precondition names "dispatch not closed"; `dispatch_closed` is added to the fence_reject reason list with its definition; a closed paused dispatch is never counted as resolved work (§8.4 / CC-19). The §9 CC-15 and CC-19 Then clauses accept either T1 (A2) or `fence_reject(dispatch_closed)`. A hub that never closes dispatches stays conformant unchanged'
+  - 'vectors.yaml: the header comment says v0.3.4; `fence_reasons` gains `dispatch_closed`; CC-15 and CC-19''s allocate step accepts the closed-dispatch answer only through the T-4793/T-4796 equivalent route (`equivalent:` text plus `expect_equivalent: {fence_reject: dispatch_closed}`, and a final without A2 for that route, adding a `final_equivalent`-style key to run_local.py/check_vectors.py if needed, with the same declare-and-name rule). The plain path still requires `accepted: T1`, so a hub answering dispatch_closed (or cas_mismatch) without declaring the route FAILs'
+  - 'Tests: check_vectors.py OK; check_mapping.py still validates the ring20 fixture; tests/unit/test_worker_contract_vectors.py green, with new cases: the declared closed route passes CC-15/CC-19; an undeclared dispatch_closed fails; cas_mismatch fails on both paths'
+  - 'A short summary of the spec diff is written to docs/reports/T-4800-wc-v034-draft.md (what changed, why, sources), ready to send to TermLink''s operator'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — how a vector says "A2 must not exist" on the closed route'
+    chose: 'a variant-level `then.final_equivalent` (replaces `final` on a declared route) where `A2: null` means the attempt must not exist; runner and checker both enforce it.'
+    rationale: 'the runner only checks the attempts a final lists, so omitting A2 would let a backend that answers dispatch_closed but still mints A2 pass.'
+    alternatives_rejected: ['omitting A2 from the equivalent final (does not assert closure); a new `absent_attempts:` then key (a second mechanism next to final, for one fact).']
+  - decision: '2026-10-27 — where dispatch_closed may appear in vectors'
+    chose: 'check_vectors refuses `fence_reject: dispatch_closed` in any plain `expect` (including any_of); only `expect_equivalent` may name it.'
+    rationale: 'closure is optional (§4.7). If a plain expect ever named it, a hub that keeps dispatches open would be non-conformant by construction.'
+    alternatives_rejected: ['allowing it in a plain `any_of` with T1 (this would accept dispatch_closed from a backend that never declared the route, and the AC forbids that).']
+  - decision: '2026-10-27 — CC-15 structure'
+    chose: 'split CC-15 so its final allocate sits in a single variant, `allocate-after-resolve`. The shared steps keep the cas_mismatch allocate and the three resolves.'
+    rationale: 'equivalent alternates are per variant by T-4796 design, and CC-15 had none.'
+    alternatives_rejected: ['allowing vector-level expect_equivalent (T-4796 refuses that on purpose, because a vector-level alternate is either inert or shared by every route).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4800-draft-wc-v034-dispatchclosed-and-refusal.md'
+  - 'docs/reports/T-4800-wc-v034-draft.md'
+  - 'docs/specs/shared-worker-contract-transitions.md'
+  - 'tests/conformance/worker-contract/README.md'
+  - 'tests/conformance/worker-contract/check_vectors.py'
+  - 'tests/conformance/worker-contract/run_local.py'
+  - 'tests/conformance/worker-contract/vectors.yaml'
+  - 'tests/unit/test_worker_contract_vectors.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T09:53:20'
+    action: 'T-4800: draft wc v0.3.4 — refusal before rule 1, optional dispatch closure + fence_reject(dispatch_closed); CC-15/CC-19 closed route via final_equivalent'
+  - time: '2026-10-27T09:54:50'
+    action: 'T-4800: §4.7 — linking a re-dispatch to a closed dispatch is a MAY (ring20 re-commissions without the link); unlinked, the closed dispatch stays unresolved'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 9
+  commits: 3
+  files_changed: 11
+  lines_added: 926
+  lines_removed: 48
+  footprint_refreshed_at: '2026-10-27T08:55:38Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4800-draft-wc-v034-dispatchclosed-and-refusal.md
+generated_by: context-agent-hybrid
