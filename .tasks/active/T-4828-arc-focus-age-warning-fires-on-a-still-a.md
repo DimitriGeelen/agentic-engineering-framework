@@ -85,7 +85,7 @@ See description. The need: the handover's arc-focus AGE warning fires only when 
 ### Agent
 - [x] Reproduce first: a bats test builds a repo whose arc focus was set more than the limit ago but whose arc tasks have commits inside the window, and shows the AGE warning fires; it fails before the fix
 - [x] AGE is suppressed (or downgraded to an INFO line) when the focused arc has its own task commits within the window, using the same measure DRIFT uses (T-4774); an old focus on a quiet arc still warns
-- [ ] Existing T-4774 handover tests stay green; vendor in sync
+- [x] Existing T-4774 handover tests stay green; vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
