@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4833: Consumer CLAUDE.md template carries the Worktree Policy (opt-in only, operator's explicit instruction)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T16:43:22Z
+# ============================================================================
+
+task_id: T-4833
+task_name: "Consumer CLAUDE.md template carries the Worktree Policy (opt-in only, operator's explicit instruction)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-27T15:30:31Z
+completed: 2026-10-27T16:42:26Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T16:52:48+01:00
+last_commit: 2026-10-27T16:53:52+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  consumer CLAUDE.md template carries the Worktree Policy (opt-in only); bats pins template, refresh and idempotence. tick Agent ACs
+
+# Key outcomes
+outcomes:
+  - 'A failing test first: a consumer CLAUDE.md generated from lib/templates/claude-project.md (fw init, and the governance refresh fw upgrade runs) contains no Worktree Policy'
+  - 'lib/templates/claude-project.md carries a condensed Worktree Policy section: opt-in only; no worktree unless the operator explicitly instructed one, in this session, in their own words; the situation table (ordinary work → main checkout; parallel edits → serialise; major work → may suggest once; operator says use one → use it, land on the dev branch); "cleaner in isolation" and "the dispatch protocol says to" are not instructions. Wording consistent with AEF''s own CLAUDE.md §Worktree Policy'
+  - 'The governance refresh delivers the section to an existing consumer on `fw upgrade` without duplicating it on a second run (T-4821 idempotence), and the consumer''s project-specific sections stay intact'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats stays green; new tests in tests/unit/t4833_template_worktree_policy.bats; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/templates/claude-project.md'
+  - '.tasks/active/T-4833-consumer-claudemd-template-carries-the-w.md'
+  - 'lib/templates/claude-project.md'
+  - 'tests/unit/t4833_template_worktree_policy.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T16:52:48'
+    action: 'T-4833: consumer CLAUDE.md template carries the Worktree Policy (opt-in only); bats pins template, refresh and idempotence'
+  - time: '2026-10-27T16:53:52'
+    action: 'T-4833: tick Agent ACs'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 71 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 71
+  commits: 3
+  files_changed: 7
+  lines_added: 298
+  lines_removed: 16
+  footprint_refreshed_at: '2026-10-27T16:43:34Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4833-consumer-claudemd-template-carries-the-w.md
+generated_by: context-agent-hybrid
