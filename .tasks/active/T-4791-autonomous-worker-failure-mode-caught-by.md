@@ -100,16 +100,19 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Source: observation OBS-452 (.context/inbox.yaml). A worker edited vendored paths (lib/, agents/) and closed its task green without running `fw vendor self`, because its own Verification block never mentioned vendor. A second rail caught it later. Checked 2026-10-28: the pre-push audit FAILs on self-vendor drift (agents/audit/audit.sh ~3755), so drift cannot reach origin, and the task template recommends `bin/fw vendor self --check --task T-XXXX`; but agents/task-create/update-task.sh's close path never checks it, so a close is still green with the copy out of sync.
+
+The need: a task whose own commits changed vendored paths cannot reach work-completed while those paths are out of sync with the vendored copy, whether or not its author remembered the check.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduce first: a bats test builds a temp framework repo, commits a change to a vendored path (e.g. lib/x.sh) under task T-A without syncing .agentic-framework/, and shows `fw task update T-A --status work-completed` succeeds; it fails before the fix
+- [ ] The close path runs the equivalent of `bin/fw vendor self --check --task T-A` (only the task's own changed files) when the task's commits touched vendored paths, and refuses with the exact fix command when they are out of sync; it passes untouched when no vendored path changed, and in a consumer project (no self-vendor)
+- [ ] The refusal names a bypass consistent with the other close gates (operator-only `--skip-*` with --reason, or a logged env var), per CLAUDE.md §Hook Bypass Contract Parity
+- [ ] Existing update-task close tests stay green; vendor in sync
 
-### Human
+<!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -156,6 +159,9 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 900 bats tests/unit/t4791_close_requires_vendor_sync.bats
+bin/fw vendor self --check --task T-4791
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
