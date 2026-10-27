@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4821: fw upgrade's CLAUDE.md governance refresh duplicates the Work Proposal line (again since be.21)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T14:52:24Z
+# ============================================================================
+
+task_id: T-4821
+task_name: "fw upgrade's CLAUDE.md governance refresh duplicates the Work Proposal line (again since be.21)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T13:20:36Z
+completed: 2026-10-27T14:51:04Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T14:46:14+01:00
+last_commit: 2026-10-27T14:46:14+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  drop duplicated Work Proposal bullet from consumer template; refresh removes identical CLAUDE.md.bak
+
+# Key outcomes
+outcomes:
+  - 'A failing bats case first (upgrade_fresh_machine_simulation style): running the CLAUDE.md governance refresh twice on a consumer leaves the Work Proposal line (and any other refreshed line) duplicated, and leaves a CLAUDE.md.bak identical to CLAUDE.md'
+  - 'The refresh is idempotent: a second run changes nothing; and a .bak is removed (or never written) when the content did not change'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats stays green; new tests in tests/unit/t4821_claudemd_refresh_idempotent.bats; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — where to fix the duplicate'
+    chose: 'delete the stale `checkpoint.sh status` bullet from the template, and pin "no section repeats a bold-led bullet" in a test.'
+    rationale: 'the refresh was already idempotent (second run = "Already up to date"); the duplicate is template content, copied faithfully.'
+    alternatives_rejected: ['de-duplicating lines inside the refresh — it would silently rewrite template text and hide the next authoring slip instead of failing it.']
+  - decision: '2026-10-27 — backup handling'
+    chose: 'remove CLAUDE.md.bak when it is byte-identical to CLAUDE.md (after a rewrite that changed no byte, or on an up-to-date run); keep any differing backup.'
+    rationale: 'an identical backup holds nothing to recover; a differing one may hold the consumer''s only copy of lost lines (G-055).'
+    alternatives_rejected: ['removing every .bak on an up-to-date run — destroys the recovery copy the lost-lines notice tells the operator to review.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/templates/claude-project.md'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.tasks/active/T-4821-fw-upgrades-claudemd-governance-refresh-.md'
+  - 'lib/templates/claude-project.md'
+  - 'lib/upgrade.sh'
+  - 'tests/unit/t4821_claudemd_refresh_idempotent.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T14:46:14'
+    action: 'T-4821: drop duplicated Work Proposal bullet from consumer template; refresh removes identical CLAUDE.md.bak'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 90 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 90
+  commits: 2
+  files_changed: 8
+  lines_added: 655
+  lines_removed: 11
+  footprint_refreshed_at: '2026-10-27T15:00:37Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4821-fw-upgrades-claudemd-governance-refresh-.md
+generated_by: context-agent-hybrid
