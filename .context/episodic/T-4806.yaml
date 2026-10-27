@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4806: claude-fw refuses every budget auto-restart after any 'fw continuous disarm' (last_terminated_reason read as a bound even when continuous mode is off)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T11:49:37Z
+# ============================================================================
+
+task_id: T-4806
+task_name: "claude-fw refuses every budget auto-restart after any 'fw continuous disarm' (last_terminated_reason read as a bound even when continuous mode is off)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T11:02:17Z
+completed: 2026-10-27T11:47:41Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T12:34:01+01:00
+last_commit: 2026-10-27T12:36:44+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  disarm records disarmed_at/disarmed_reason, not a termination; claude-fw brakes a restart on a stored termination only for an armed run, ignores the legacy disarm form, and notifies on refusal. verification lines independent of worker env; siblings green; AC5 ticked
+
+# Key outcomes
+outcomes:
+  - 'A failing bats case first: with .continuous-mode.yaml carrying a disarm-written last_terminated_reason and enabled false, a fresh restart signal makes claude-fw refuse the restart ("Continuous run was TERMINATED")'
+  - '`fw continuous disarm` (lib/continuous-mode.sh ~531) records the operator''s disarm as disarmed_at + disarmed_reason and no longer writes last_terminated_reason. Real bounds (iteration/hour ceilings, human gates, injector terminations) still write last_terminated_reason'
+  - 'bin/claude-fw applies the terminated check (~1583) only when the run was armed (enabled true, or the loop recorded it armed for this run). A plain budget auto-restart of a non-continuous session is never refused by a stale termination. When it does refuse, it also calls fw_notify, so an unattended refusal is not silent'
+  - 'Existing state files with a disarm-written last_terminated_reason (''disarmed by operator at …'') stop blocking: the check ignores that exact disarm form, or `fw continuous status` / doctor names it with the one-line fix. Record the choice in ## Decisions'
+  - 'Sibling continuous-mode and claude-fw tests stay green (grep tests/unit for continuous / claude_fw / terminated); new tests in tests/unit/t4806_disarm_not_a_bound.bats; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — what "the run was armed" means to the restart brake'
+    chose: 'a stored termination refuses the restart only when continuous mode was armed when claude-fw launched this run, OR the state file''s `last_resumed_at` is at/after this run''s start (armed mid-session, or the injector processed an armed iteration in it).'
+    rationale: 'a terminating write disarms in the same write (T-3167), so "enabled is true now" can never see a real termination — that test alone would delete T-3253''s brake. Snapshotting armed-at-launch covers the normal loop; `last_resumed_at` (written by arm and by every injector iteration) covers the arm-during-session case.'
+    alternatives_rejected: ['`enabled: true` at check time (never true after a bound, see above); a new `terminated_at` stamp compared to run start (needs a writer change in agents/context/inject-next-directive.py, outside this task''s write-set).']
+  - decision: '2026-10-27 — legacy state files carrying the disarm-written reason'
+    chose: 'the brake ignores the exact pre-T-4806 disarm form (`disarmed by operator at …`); `fw continuous status` shows a new-style disarm on its own line (`Disarmed by operator at …: <reason>`).'
+    rationale: 'fixes 1409 and AEF''s own state file with no operator step. A legacy disarm with a custom `--reason` cannot be recognised by text, but it no longer brakes anyway: it only counts on a run that was armed, and `arm` clears it.'
+    alternatives_rejected: ['doctor/status one-line fix only (leaves every consumer braked until someone reads doctor).']
+  - decision: '2026-10-27 — an operator disarm mid-run no longer stops the budget restart'
+    chose: 'accept it. Disarm still stops the loop (no armed directive is injected; the clean-exit re-arm path checks `enabled`), but a budget restart of that session proceeds as a plain T-179 restart. The operator''s tools for "stop restarting" are `--no-restart` and `.continuous-halt`.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - '.agentic-framework/lib/continuous-mode.sh'
+  - '.tasks/active/T-4806-claude-fw-refuses-every-budget-auto-rest.md'
+  - 'bin/claude-fw'
+  - 'lib/continuous-mode.sh'
+  - 'tests/unit/t4806_disarm_not_a_bound.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T12:34:01'
+    action: 'T-4806: disarm records disarmed_at/disarmed_reason, not a termination; claude-fw brakes a restart on a stored termination only for an armed run, ignores the legacy disarm form, and notifies on refusal'
+  - time: '2026-10-27T12:36:44'
+    action: 'T-4806: verification lines independent of worker env; siblings green; AC5 ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 45 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 45
+  commits: 3
+  files_changed: 9
+  lines_added: 877
+  lines_removed: 19
+  footprint_refreshed_at: '2026-10-27T11:51:24Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4806-claude-fw-refuses-every-budget-auto-rest.md
+generated_by: context-agent-hybrid

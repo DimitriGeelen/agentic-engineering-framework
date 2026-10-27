@@ -49721,3 +49721,57 @@ task_id: T-4737
 payload:
   overall: CONFIRMED
   claim_count: 2
+---
+kind: scan_emitted
+timestamp: '2026-10-27T11:49:24Z'
+scan_id: R-d6c91567
+task_id: T-4806
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T11:49:24Z'
+scan_id: R-d6c91567
+task_id: T-4806
+payload:
+  task_file: .tasks/active/T-4806-claude-fw-refuses-every-budget-auto-rest.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T11:50:04Z'
+scan_id: R-f1bd4679
+task_id: T-4811
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T11:50:04Z'
+scan_id: R-f1bd4679
+task_id: T-4811
+payload:
+  task_file: .tasks/active/T-4811-claude-fw---termlink-project-termlink-id.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T11:50:51Z'
+scan_id: R-ecae97a0
+task_id: T-4812
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T11:50:51Z'
+scan_id: R-ecae97a0
+task_id: T-4812
+payload:
+  task_file: .tasks/active/T-4812-closed-record-append-route-refused-on-it.md
