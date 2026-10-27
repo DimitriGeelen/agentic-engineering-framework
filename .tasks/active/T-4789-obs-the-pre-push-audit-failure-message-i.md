@@ -90,16 +90,19 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Source: observation OBS-274 (.context/inbox.yaml). When the pre-push hook blocks a push because the audit FAILs, its message ("Fix the issues above") points at ~200 lines of scrolled-away output, and it reads almost the same as the lock-held message; both end in the same bypass line. Tonight's pushes showed a bare "Fail: 1" whose cause had to be dug out of the audit YAML by hand.
+
+The need: a blocked push says, right next to the refusal, which check(s) failed and what to do, and the audit-FAIL refusal is plainly different from the lock-held one.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduce first: a bats test drives the pre-push hook with an audit that FAILs one named check and shows the refusal does not name the check; it fails before the fix
+- [ ] The refusal lists each FAIL check name (and its first evidence line, cut short) directly above or below the refusal line; the lock-held refusal says the lock is held and by what, and does not look like an audit failure
+- [ ] The hook text changes go through the repo's own hook sources and their digest files (agents/git/lib/*hook-lines*, tools/gen-*hook*), so `fw git install-hooks` and its integrity checks stay consistent; existing pre-push and hook-digest tests stay green
+- [ ] Vendor in sync
 
-### Human
+<!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -146,6 +149,9 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 900 bats tests/unit/t4789_prepush_names_failing_checks.bats
+bin/fw vendor self --check --task T-4789
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

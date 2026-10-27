@@ -90,16 +90,16 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+See description. Follow-up of T-4847. The need: `fw update` finds the upstream repo however the `upstream_repo:` value is laid out in .framework.yaml.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduce first: a bats test puts a folded (continuation-line) `upstream_repo:` value in a temp project's .framework.yaml and shows lib/update.sh's reader returns empty; it fails before the fix
+- [ ] The reader returns the full value for plain, quoted and folded layouts (a YAML parse, with the existing grep as the fallback when python/yaml is unavailable); other line-wise readers of upstream_repo in lib/ and bin/fw get the same treatment, or are listed in Decisions with why not
+- [ ] tests/unit/t3735_config_set_no_fold.bats and t4847_config_set_preserves_lines.bats stay green; vendor in sync
 
-### Human
+<!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -146,6 +146,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 900 bats tests/unit/t4849_update_reads_folded_upstream.bats
+timeout 900 bats tests/unit/t3735_config_set_no_fold.bats tests/unit/t4847_config_set_preserves_lines.bats
+bin/fw vendor self --check --task T-4849
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

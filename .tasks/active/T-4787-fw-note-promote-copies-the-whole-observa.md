@@ -92,16 +92,20 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Source: observation OBS-484 (.context/inbox.yaml). `fw note promote` copies the whole observation text into the task's `name:` and does not escape it; a double quote in the text made T-3442's frontmatter unparseable. Still live: T-4785..T-4792, promoted on 2026-10-27, carry raw text such as `"  text: 'Structural gap found ...` as their names, and their descriptions say only "Promoted from observation OBS-NNN".
+
+The need: a promoted task has a short readable name, the full observation text where a reader finds it, and frontmatter that always parses.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduce first: a bats test promotes an observation whose text holds a double quote, a single quote, a colon and a newline, and shows the task file's frontmatter does not parse or the name is the raw text; it fails before the fix
+- [ ] The name is a short summary (first sentence, at most about 120 characters, without YAML-like prefixes such as `text:`); the full observation text goes into the task's Context (and description), quoted safely
+- [ ] Every frontmatter string the verb writes is YAML-safe; the created file parses with yaml.safe_load in the test
+- [ ] Repair the eight already-promoted tasks T-4785..T-4792: short names and their observation text in Context (Edit tool on each task file, not a shell write); their frontmatter parses
+- [ ] Existing promote/note tests stay green; vendor in sync
 
-### Human
+<!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -148,6 +152,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 900 bats tests/unit/t4787_note_promote_name.bats
+python3 -c "import yaml,glob; [yaml.safe_load(open(f).read().split('---')[1]) for t in range(4785,4793) for f in glob.glob(f'.tasks/active/T-{t}-*.md')]"
+bin/fw vendor self --check --task T-4787
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
