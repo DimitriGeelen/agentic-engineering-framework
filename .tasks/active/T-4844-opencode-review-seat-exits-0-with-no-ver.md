@@ -1,8 +1,16 @@
 ---
 id: T-4844
-name: "opencode review seat exits 0 with no verdict: its TMPDIR (SEAT_TMP) is outside the export, so the plan agent auto-rejects every write"
+name: "opencode review seat exits 0 with no verdict: its TMPDIR (SEAT_TMP) is outside
+  the export, so the plan agent auto-rejects every write"
 description: >
-  832 field report (msg 36c65b40, be.38 test F): the opencode seat (agents/termlink/termlink.sh ~1862) runs with cwd=export TREE and TMPDIR=SEAT_TMP=$WDIR/tmp (~1841). SEAT_TMP lies outside the export, and opencode's plan agent auto-rejects external_directory, so the seat has nowhere to work: it exited 0 with no verdict and was recorded only as close_state 'incomplete'. Codex gets --add-dir SEAT_TMP; opencode has no equivalent allowance. Need: (1) the opencode seat may use exactly SEAT_TMP (and nothing else outside the export); (2) a seat that exits 0 without a verdict is recorded loudly (named reason in the run record and stderr), not only as 'incomplete'.
+  832 field report (msg 36c65b40, be.38 test F): the opencode seat (agents/termlink/termlink.sh
+  ~1862) runs with cwd=export TREE and TMPDIR=SEAT_TMP=$WDIR/tmp (~1841). SEAT_TMP
+  lies outside the export, and opencode's plan agent auto-rejects external_directory,
+  so the seat has nowhere to work: it exited 0 with no verdict and was recorded only
+  as close_state 'incomplete'. Codex gets --add-dir SEAT_TMP; opencode has no equivalent
+  allowance. Need: (1) the opencode seat may use exactly SEAT_TMP (and nothing else
+  outside the export); (2) a seat that exits 0 without a verdict is recorded loudly
+  (named reason in the run record and stderr), not only as 'incomplete'.
 
 status: captured
 workflow_type: build
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T20:47:23Z
-last_update: 2026-10-27T20:47:23Z
-date_finished: null
+last_update: '2026-10-27T21:00:39Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-27T21:00:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=299,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4844: opencode review seat exits 0 with no verdict: its TMPDIR (SEAT_TMP) is outside the export, so the plan agent auto-rejects every write
