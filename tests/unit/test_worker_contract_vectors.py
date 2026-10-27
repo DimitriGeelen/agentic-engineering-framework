@@ -477,6 +477,33 @@ def test_v034_vocabulary_and_spec_marker(doc):
         assert "A2" in var["then"]["final"]
 
 
+class NoRedispatchClosingAdapter(ClosingAdapter):
+    """ring20's shape (T-4805): it cannot tell CC-19's variants apart at reset, so it reports
+    the equivalent on every step, and it keeps no retry_of_dispatch_id link (re-dispatch)."""
+
+    def apply(self, step):
+        if step["op"] == "create":
+            raise NotImplementedError("op:create with retry_of_dispatch_id")
+        return super().apply(step)
+
+
+def test_cc19_shared_base_steps_are_judged_plainly(doc):
+    vec = copy.deepcopy(_vec(doc, "CC-19"))
+    adapter = NoRedispatchClosingAdapter("CC-19", "next-attempt")
+    adapter.cc15 = False
+    r = run_local.run_vector(vec, adapter, "ring20")
+    by = {v["variant"]: v for v in r["variants"]}
+    assert by["next-attempt"]["status"] == "pass", r
+    assert "closed" in by["next-attempt"]["equivalent"]
+    assert by["re-dispatch"]["status"] == "not-implemented", r
+
+
+def test_cc19_declared_route_silent_on_own_step_still_fails(doc):
+    vec, adapter = _closing(doc, "CC-19", "next-attempt", report=False)
+    r = run_local.run_vector(vec, adapter, "ring20")
+    assert r["status"] == "fail" and "silently" in r["variants"][0]["reason"], r
+
+
 def test_closed_route_declared_passes_cc15_and_cc19(doc):
     for vid, name in CLOSED_ROUTES:
         vec, adapter = _closing(doc, vid, name)

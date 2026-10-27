@@ -103,14 +103,16 @@ def ops_used(vec: dict) -> list[str]:
 def runs_of(vec: dict) -> list[dict]:
     if not vec.get("variants"):
         return [{"name": None, "requires": [], "equivalent": None, "given": vec["given"],
-                 "steps": list(vec["steps"]), "then": vec["then"]}]
+                 "steps": list(vec["steps"]), "base_len": 0, "then": vec["then"]}]
     out = []
     for var in vec["variants"]:
         given = copy.deepcopy(vec["given"])
         given.update(var.get("given") or {})
         out.append({"name": var["name"], "requires": var.get("requires") or [],
                     "equivalent": var.get("equivalent"), "given": given,
-                    "steps": list(vec["steps"]) + list(var["steps"]), "then": var["then"]})
+                    "steps": list(vec["steps"]) + list(var["steps"]),
+                    # T-4805: the leading shared steps run the same in every variant.
+                    "base_len": len(vec["steps"]), "then": var["then"]})
     return out
 
 
@@ -157,9 +159,12 @@ def check_route(result: dict, step: dict, route: str | None, offered: str | None
     return ran or None
 
 
-def check_step(adapter, step: dict, route: str | None = None, offered: str | None = None) -> str | None:
+def check_step(adapter, step: dict, route: str | None = None, offered: str | None = None,
+               base: bool = False) -> str | None:
     result = adapter.apply(step)
-    ran = check_route(result, step, route, offered)
+    # T-4805: a shared base step is judged on its plain expect in every variant. The adapter
+    # cannot tell variants apart at reset, so an "equivalent" it reports there is ignored.
+    ran = None if base else check_route(result, step, route, offered)
     exp = step.get("expect_equivalent", step["expect"]) if route and ran else step["expect"]
     if step["op"] == "concurrent":
         results = result.get("results") or []
@@ -249,8 +254,9 @@ def run_vector(vec: dict, adapter, backend_reason: str) -> dict:
                 raise Mismatch(f"{key} declared as an equivalent route, but the variant offers no equivalent")
             adapter.reset(copy.deepcopy(run["given"]))
             before = copy.deepcopy(adapter.snapshot())
-            ran = [r for r in (check_step(adapter, step, route, run["equivalent"])
-                               for step in run["steps"]) if r]
+            ran = [r for r in (check_step(adapter, step, route, run["equivalent"],
+                                          base=i < run["base_len"])
+                               for i, step in enumerate(run["steps"])) if r]
             check_then(before, adapter.snapshot(), run["then"], equivalent=bool(route and ran))
             passed = {"variant": label, "status": "pass"}
             if ran:
