@@ -1,13 +1,17 @@
 ---
 id: T-4826
-name: "fw doctor Watchtower smoke check judges too early right after a restart (warm-up gives a false endpoint failure)"
+name: "fw doctor Watchtower smoke check judges too early right after a restart (warm-up
+  gives a false endpoint failure)"
 description: >
-  055 be.37 field test H (msg 20f79168): fw doctor's smoke check run right after fw watchtower restart reported 1/54 endpoints failed; a minute later 54/54 OK. Fix: wait for the first good answer (bounded) or retry a failed endpoint once before reporting it.
+  055 be.37 field test H (msg 20f79168): fw doctor's smoke check run right after fw
+  watchtower restart reported 1/54 endpoints failed; a minute later 54/54 OK. Fix:
+  wait for the first good answer (bounded) or retry a failed endpoint once before
+  reporting it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug]
 components: []
 related_tasks: []
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T13:25:36Z
-last_update: 2026-10-27T13:25:36Z
-date_finished: null
+last_update: '2026-10-27T22:31:41Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-27T22:31:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4826: fw doctor Watchtower smoke check judges too early right after a restart (warm-up gives a false endpoint failure)
@@ -61,9 +82,9 @@ See description. The need: `fw doctor` run right after a Watchtower restart repo
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: locate the smoke check in fw doctor and show (test with a stub server that fails the first request to an endpoint, then succeeds) that it reports a failure; it fails before the fix
-- [ ] A failed endpoint is retried once after a short bounded wait (or the check waits, bounded, for the first good health answer) before it is reported; a persistently failing endpoint is still reported
-- [ ] The whole smoke check stays bounded in time (state the bound in a comment); existing doctor tests stay green
+- [x] Reproduce first: locate the smoke check in fw doctor and show (test with a stub server that fails the first request to an endpoint, then succeeds) that it reports a failure; it fails before the fix
+- [x] A failed endpoint is retried once after a short bounded wait (or the check waits, bounded, for the first good health answer) before it is reported; a persistently failing endpoint is still reported
+- [x] The whole smoke check stays bounded in time (state the bound in a comment); existing doctor tests stay green
 - [ ] Vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
@@ -116,6 +137,7 @@ See description. The need: `fw doctor` run right after a Watchtower restart repo
 
 timeout 900 bats tests/unit/t4826_doctor_smoke_warmup.bats
 bin/fw vendor self --check --task T-4826
+bin/fw watchtower current
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -269,6 +291,14 @@ bin/fw vendor self --check --task T-4826
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** `fw doctor` run right after `fw watchtower restart` printed `WARN Watchtower smoke: 1/54 endpoints failed`; the same check a minute later was 54/54 OK.
+
+**Root cause:** `web/smoke_test.py` `run_smoke_tests` (HTTP branch, the per-route loop after `wait_for_warmup`) judged every route on a single probe. The T-4363 warm-up wait only covers what `/api/_identity` reports as `warming`; a route whose first request is still cold (lazy import, cache build, 5 s urlopen timeout) after that point fails once and is counted as broken. `bin/fw` doctor (the smoke block, ~line 4018) just relays `failed`.
+
+**Why structurally allowed:** the smoke tests (T-3453, T-4354) stub the server so every probe answers on the first try; nothing modelled a route that is slow or failing only on its first hit, so "one failed probe = broken endpoint" was never questioned.
+
+**Prevention:** failed routes are re-probed once after `RETRY_PAUSE_SECONDS`, inside a fixed `RETRY_BUDGET_SECONDS`; only routes failing both probes are reported. `tests/unit/t4826_doctor_smoke_warmup.bats` drives a real stub HTTP server with a fail-once route (must not be reported) and a fail-always route (must be reported, probed exactly twice).
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -333,6 +363,11 @@ bin/fw vendor self --check --task T-4826
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-27 — where the retry lives
+- **Chose:** retry failed routes once inside `web/smoke_test.py` (one pass over the failures, after a 2 s pause, capped by a 60 s budget).
+- **Why:** the smoke test owns the per-route verdict and is also used by `fw audit`; the fix applies everywhere it runs and keeps `bin/fw` untouched (shared lane).
+- **Rejected:** (a) re-running the whole smoke test from `bin/fw` on failure — doubles a 76-126 s check; (b) a longer fixed sleep before probing — slows every doctor run and still misjudges a route that is slower than the sleep.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -349,3 +384,7 @@ bin/fw vendor self --check --task T-4826
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4826-fw-doctor-watchtower-smoke-check-judges-.md
 - **Context:** Initial task creation
+
+### 2026-10-27T22:31:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

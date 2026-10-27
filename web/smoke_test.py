@@ -88,6 +88,37 @@ def wait_for_warmup(base: str, limit: float = WARMUP_WAIT_SECONDS, poll: float =
         time.sleep(poll)
 
 
+# T-4826: how long to pause before re-probing the routes that failed, and the
+# most time the retry pass may spend starting re-probes. Worst case added to a run
+# with failures: RETRY_PAUSE_SECONDS + RETRY_BUDGET_SECONDS + one 5 s probe.
+RETRY_PAUSE_SECONDS = 2.0
+RETRY_BUDGET_SECONDS = 60.0
+
+
+def _probe_http(base: str, path: str) -> dict:
+    """Probe one route once; return its result row (``error`` key when it failed)."""
+    url = f"{base}{path}"
+    try:
+        req = urllib.request.Request(url, method="GET")
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            status = resp.status
+            body = resp.read().decode("utf-8", errors="replace")
+    except urllib.error.HTTPError as e:
+        status = e.code
+        body = ""
+    except Exception as e:
+        return {"path": path, "status": "error", "error": str(e)}
+
+    if status >= 500:
+        return {"path": path, "status": status, "error": f"HTTP {status}"}
+
+    markers = CRITICAL_ROUTES.get(path, [])
+    missing = [m for m in markers if m not in body]
+    if missing:
+        return {"path": path, "status": status, "error": f"Missing content: {missing}"}
+    return {"path": path, "status": status, "ok": True}
+
+
 def run_smoke_tests(port: int = 3000, use_test_client: bool = False,
                     base_url: str | None = None) -> dict:
     """Run smoke tests against Watchtower.
@@ -148,37 +179,34 @@ def run_smoke_tests(port: int = 3000, use_test_client: bool = False,
         base = (base_url or f"http://localhost:{port}").rstrip("/")
         warmup = wait_for_warmup(base)
 
+        retry_paths = []
         for path in routes:
-            url = f"{base}{path}"
-            try:
-                req = urllib.request.Request(url, method="GET")
-                with urllib.request.urlopen(req, timeout=5) as resp:
-                    status = resp.status
-                    body = resp.read().decode("utf-8", errors="replace")
-            except urllib.error.HTTPError as e:
-                status = e.code
-                body = ""
-            except Exception as e:
-                results.append({"path": path, "status": "error", "error": str(e)})
-                failed += 1
-                continue
+            r = _probe_http(base, path)
+            if "error" in r:
+                retry_paths.append(path)
+            results.append(r)
 
-            if status >= 500:
-                results.append({"path": path, "status": status, "error": f"HTTP {status}"})
-                failed += 1
-                continue
+        # T-4826: a route can fail its first probe right after a restart even
+        # once the warm-up wait is over (a cold first request). Re-probe each
+        # failed route once after a short pause; only a second failure counts.
+        # Bound: RETRY_PAUSE_SECONDS + no new retry started after
+        # RETRY_BUDGET_SECONDS, each probe at most 5 s, so the retry pass adds
+        # at most RETRY_PAUSE_SECONDS + RETRY_BUDGET_SECONDS + 5 s.
+        if retry_paths:
+            import time
+            time.sleep(RETRY_PAUSE_SECONDS)
+            deadline = time.monotonic() + RETRY_BUDGET_SECONDS
+            for path in retry_paths:
+                if time.monotonic() >= deadline:
+                    break
+                r = _probe_http(base, path)
+                idx = next(i for i, x in enumerate(results) if x["path"] == path)
+                if "error" in r:
+                    r["retried"] = True
+                results[idx] = r
 
-            markers = CRITICAL_ROUTES.get(path, [])
-            missing = [m for m in markers if m not in body]
-            if missing:
-                results.append({
-                    "path": path, "status": status,
-                    "error": f"Missing content: {missing}"
-                })
-                failed += 1
-            else:
-                results.append({"path": path, "status": status, "ok": True})
-                passed += 1
+        failed = sum(1 for r in results if "error" in r)
+        passed = len(results) - failed
 
     report = {
         "passed": passed,
