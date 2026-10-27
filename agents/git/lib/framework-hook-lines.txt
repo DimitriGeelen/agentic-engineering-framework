@@ -13,12 +13,14 @@ ${_stdin_buf}
 && FRAMEWORK_ROOT="$PROJECT_ROOT/.agentic-framework"
 && [ -f "$PROJECT_ROOT/.agentic-framework/agents/git/lib/parked-merge-guard.sh" ] \
 && [ -f "$PROJECT_ROOT/.agentic-framework/agents/git/lib/secret-scan.sh" ] \
+&& [ -n "$(git diff --cached --name-only -- '.context/episodic/T-*.yaml' 2>/dev/null)" ]; then
 && [ -n "$(git diff --cached --name-only -- '.tasks/templates/*.md' 2>/dev/null)" ]; then
 && command -v python3 >/dev/null 2>&1 \
 && git cat-file -e "$_remote_sha" 2>/dev/null \
 && git merge-base --is-ancestor "$_r_sha" "$_l_sha" 2>/dev/null; then
 && git merge-base --is-ancestor "$_remote_sha" "$_local_sha" 2>/dev/null; then
 ' "$PROJECT_ROOT" 2>&1) || _ts_rc=$?
+' "$_t3126_out"
 *)  _fw_gcd="$PROJECT_ROOT/$_fw_gcd" ;;
 - ${_y##*/}: ${_err}"
 --project-root "$PROJECT_ROOT" --commit "$_fp_sha" 2>/dev/null || true
@@ -26,6 +28,7 @@ ${_stdin_buf}
 .context/*|.fabric/*|.tasks/*|.claude/*|.git/*|docs/*|*.md|*.yaml|*.yml|*.json) continue ;;
 .tasks/templates/*.md)                      return 0 ;;
 /*) ;;
+/^\[FAIL\] / { flush(); t = substr($0, 8); next }
 :   # forward in commit time despite VERSION decrease — allow
 ;;
 AUDIT_SCRIPT=""
@@ -57,6 +60,7 @@ DN_LINT="$PROJECT_ROOT/tools/bats-dead-negation-lint.py"
 DUP_TASK_SCANNER="$FRAMEWORK_ROOT/agents/git/lib/dup-task-scan.sh"
 EDIT_COUNTER="$PROJECT_ROOT/.context/working/.edit-counter"
 ELAPSED=$(( (NOW - HANDOVER_TIME) / 60 ))
+END { flush(); if (n > 10) print "  ... and " n - 10 " more (see the audit output above)" }
 EOF
 FABRIC_DIR="$PROJECT_ROOT/.fabric/components"
 FOOTPRINT_LIB="$FRAMEWORK_ROOT/lib/episodic_footprint.py"
@@ -158,6 +162,10 @@ _fcard="${_fl%%:location: *}"
 _first=$(printf '%s\n%s\n' "$_local_ver" "$_remote_ver" | sort -V | head -1)
 _floc="${_fl#*:location: }"
 _floc="${_floc%"${_floc##*[![:space:]]}"}"
+_fp_leave="--leave-committed"
+_fp_list=$( { echo "$COMMIT_MSG" | grep -oE 'T-[0-9]+'; [ -f "$_fp_pred" ] && cat "$_fp_pred"; } | sort -u)
+_fp_pred=$(git rev-parse --git-path fw-footprint-predicted 2>/dev/null)
+_fp_predicted=$( [ -f "$_fp_pred" ] && cat "$_fp_pred")
 _fp_sha=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)
 _fw_entry() {
 _fw_gcd=$(git rev-parse --git-common-dir 2>/dev/null)
@@ -236,6 +244,15 @@ _t3594_lines="${_t3594_lines}${_t3594_lines:+
 _t3594_py=""
 _t3594_remote="${1:-}"
 _t3594_root="$(git rev-parse --show-toplevel 2>/dev/null)"
+_t4542_hf="$PROJECT_ROOT/.context/locks/audit.lock.holder"
+_t4542_hjob=$(sed -n 's/^job=//p' "$_t4542_hf" 2>/dev/null | head -1)
+_t4542_holder_desc() {
+_t4542_hpid=$(sed -n 's/^pid=//p' "$_t4542_hf" 2>/dev/null | head -1)
+_t4542_hsince=$(sed -n 's/^since=//p' "$_t4542_hf" 2>/dev/null | head -1)
+_t4542_next_note=$(( _t3297_start + _t4542_progress ))
+_t4542_next_note=$(( _t4542_next_note + _t4542_progress ))
+_t4542_progress="${FW_PREPUSH_LOCK_PROGRESS:-30}"
+_t4542_waiting_file="$PROJECT_ROOT/.context/locks/push-waiting"
 _tag_type=$(git cat-file -t "$_local_sha" 2>/dev/null || echo "")
 _ts_out=$(git show :lib/upgrade_template_shipped.py 2>/dev/null | python3 -c '
 _ts_rc=0
@@ -253,6 +270,7 @@ _zero="0000000000000000000000000000000000000000"
 agents/*.sh|agents/*.py|agents/*.md)        return 0 ;;
 audit_exit=$?
 audit_exit=${PIPESTATUS[0]}
+awk '
 bash "$CORPUS_GUARD" scan-staged || exit 1
 bin/*)                                      return 0 ;;
 bin/*.pyc)                                  return 1 ;;
@@ -267,6 +285,9 @@ case "$_path" in .agentic-framework/*) continue ;; esac
 case "$_t3125_lref" in refs/heads/*) ;; *) continue ;; esac
 case "$_t3297_wait" in ''|*[!0-9]*) _t3297_wait=360; _t3297_wait_source="fallback default (T-3421)" ;; esac
 case "$_t3297_wait" in ''|*[!0-9]*) _t3297_wait=90 ;; esac
+case "$_t4542_hpid" in ''|*[!0-9]*) echo "holder unknown (no holder record)"; return 0 ;; esac
+case "$_t4542_hsince" in ''|*[!0-9]*) _t4542_hage="?" ;; *) _t4542_hage=$(( $(date +%s) - _t4542_hsince )) ;; esac
+case "$_t4542_progress" in ''|*[!0-9]*|0) _t4542_progress=30 ;; esac
 case "$file" in
 case "$file" in .context/*|.fabric/*|.tasks/*|docs/*) continue ;; esac
 commits_since=$(git rev-list --count "${latest_tag}..HEAD" 2>/dev/null || echo 0)
@@ -282,6 +303,7 @@ done <<< "$CHANGED_FILES"
 done <<< "$NEW_FILES"
 done <<< "$_dn_files"
 done <<EOF
+e = $0; sub(/^[[:space:]]*/, "", e)
 echo "                                       .large-file-allowlist." >&2
 echo "                                   and add it to .gitignore." >&2
 echo "           grep '^status:' .tasks/{active,completed}/T-NNNN-*.md" >&2
@@ -353,6 +375,7 @@ echo "  High connectivity ($DEP_COUNT edges) — consider: fw fabric blast-radiu
 echo "  If intentional, proceed. If accidental: git checkout HEAD -- ${_yaml_file}"
 echo "  Limit: 'git push --no-verify' skips this hook (a git property). Typed, it is" >&2
 echo "  Limit: any path that skips client-side hooks skips this one too —" >&2
+echo "  Lock: $(_t4542_holder_desc)"
 echo "  No audit verdict exists for this push; run 'fw audit' once the lock frees."
 echo "  Push blocked — fix framework path or install audit agent"
 echo "  Register: $(_fw_cmd 2>/dev/null || echo fw) fabric register <path>"
@@ -398,6 +421,7 @@ echo "  git tag -d $_t && git tag -a $_t -m \"Release $_t\"" >&2
 echo "  inside a script none of them is seen. Server-side branch and tag" >&2
 echo "  it, the operator (human-only) runs:" >&2
 echo "  launched (typed, script, make). A request has been recorded; to approve" >&2
+echo "  lock $(_t4542_holder_desc)" >&2
 echo "  predates T-3126, or its output could not be captured). Blocking:"
 echo "  protection (e.g. OneDev) is the stronger control — an operator decision." >&2
 echo "  pushed, not just in your working tree."
@@ -405,6 +429,7 @@ echo "  python3 lib/upgrade_template_sync.py --gen-known && git add lib/upgrade_
 echo "  reason: 'audit lock contention (exit 75) — no verdict produced; contention-only Tier-2 skip after ${_t3297_waited:-0}s wait'"
 echo "  session. Details: the [FAIL] blocks above, each with a 'Scope:' line."
 echo "  so you no longer have to already know which files are someone else's." >&2
+echo "  still waiting ($(( $(date +%s) - _t3297_start ))s of ${_t3297_wait}s) — lock $(_t4542_holder_desc)" >&2
 echo "  task: '${_t3297_task:-unknown}'"
 echo "  them — or, if they are a concurrent session's, leave them to that"
 echo "  then push again. One approval covers one ref update, once, for a bounded time." >&2
@@ -414,6 +439,7 @@ echo "" >&2
 echo "$CURRENT_COUNT" > "$COMMIT_COUNTER_FILE"
 echo "$_dn_out" | grep 'dead negation' >&2
 echo "$_dt_hits" >&2
+echo "$_fp_predicted" | grep -qx "$_fp_task" && _fp_leave=""
 echo "$_hits" >&2
 echo "$_lf_hits" >&2
 echo "$_mcp_out" | head -3 >&2
@@ -423,6 +449,7 @@ echo "$_sv_out" | grep "would sync" | head -3 >&2
 echo "$_sv_out" | grep "would sync" | head -3 | sed 's/^ */    /' >&2
 echo "$_ts_out" | sed 's/^/  /' >&2
 echo "$total"
+echo "(full Evidence and Mitigation for each are in the audit output)."
 echo "(set -e ignores negated pipelines). Write it as '! cmd || false'." >&2
 echo "- timestamp: '$(date -u +'%Y-%m-%dT%H:%M:%SZ')'"
 echo ".agentic-framework/bin/fw"
@@ -433,6 +460,7 @@ echo "=== Pre-Push Audit Check ==="
 echo "A '! cmd' that is not the last statement of its test cannot fail it" >&2
 echo "After user confirms, reset the counter:"
 echo "Audit lock held — waiting up to ${_t3297_wait}s for it to free (FW_PREPUSH_LOCK_WAIT=$_t3297_wait, 0 disables)..."
+echo "Audit lock held — waiting up to ${_t3297_wait}s for it to free (FW_PREPUSH_LOCK_WAIT=$_t3297_wait, 0 disables)..." >&2
 echo "BLOCKED: Inception gate — $TASK_REF has no go/no-go decision"
 echo "BLOCKED: inception commit for $TASK_REF — no research artifact (C-001/G-009)"
 echo "Bypass (Tier 0):" >&2
@@ -475,8 +503,10 @@ echo "FABRIC: $COMP_COUNT component(s) modified across $_changed_n changed files
 echo "FABRIC: $COMP_COUNT component(s) modified: $COMP_NAMES"
 echo "FABRIC: $UNREG_COUNT new file(s) without component cards (list skipped above 20) — $(_fw_cmd 2>/dev/null || echo fw) fabric drift"
 echo "FABRIC: $UNREG_COUNT new file(s) without component cards: $UNREG"
+echo "Failing check(s):"
 echo "Fix at the authority: cd $AUTHORITY_ROOT && bin/fw upgrade" >&2
 echo "Fix the YAML, then push again." >&2
+echo "Fix the failing check(s) listed above before pushing"
 echo "Fix the issues above before pushing."
 echo "Fix: cd $PROJECT_ROOT && bin/fw upgrade   (framework repo: bin/fw vendor self)" >&2
 echo "Fix: refresh the vendored framework payload:" >&2
@@ -552,6 +582,8 @@ echo "bin/fw"
 echo "for the lock to free. Cron audits can stack when a run overlaps the next"
 echo "for the staged task templates:" >&2
 echo "fw"
+echo "held by pid $_t4542_hpid (${_t4542_hjob:-job unknown}) for ${_t4542_hage}s"
+echo "holder unknown (recorded pid $_t4542_hpid has exited)"
 echo "is sized from the last measured structure audit, so more than one queued"
 echo "manifest as a capability gate would see the stale tool catalogue." >&2
 echo "must not cross-fan-out to consumer projects." >&2
@@ -588,6 +620,7 @@ flock -n "$_t3297_lock_file" -c true 2>/dev/null
 for _c in "${_t3594_fwp:+$_t3594_fwp/lib/tier0_action.py}" \
 for _cand in "$AUTHORITY_ROOT/agents/git/lib/worktree-corpus-guard.sh" \
 for _fp_task in $(echo "$COMMIT_MSG" | grep -oE 'T-[0-9]+' | sort -u); do
+for _fp_task in $_fp_list; do
 for _path in "${!_t3125_blob[@]}"; do
 for _t in $_lw_tags; do
 for _y in "$PROJECT_ROOT"/.context/project/*.yaml; do
@@ -595,14 +628,21 @@ for _yaml_file in .context/project/learnings.yaml .context/project/patterns.yaml
 for card in "$FABRIC_DIR"/*.yaml; do
 from pathlib import Path
 from upgrade_template_sync import generate_known
+function flush() {
 git show ":$_dn_f" > "$_dn_tmp/$_dn_f" 2>/dev/null && _dn_n=$((_dn_n + 1))
 grep -E '^AUDIT-SCOPE-WORKTREE: ' "$_t3126_out" 2>/dev/null \
 if ! echo "$COMMIT_MSG" | grep -qE "T-[0-9]+"; then
+if ! kill -0 "$_t4542_hpid" 2>/dev/null; then
 if ! python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" "$_y" 2>/dev/null; then
+if (e != "") print "      " e
+if (length(e) > 140) e = substr(e, 1, 137) "..."
+if (n <= 10) {
+if (t == "") return
 if [ ! -f "$AUDIT_SCRIPT" ]; then
 if [ ! -f "$FRAMEWORK_ROOT/lib/tasks.sh" ] && [ -f "$PROJECT_ROOT/.agentic-framework/lib/tasks.sh" ]; then
 if [ ! -f "$SCANNER" ]; then
 if [ ! -x "$SCANNER" ]; then
+if [ "$(date +%s)" -ge "$_t4542_next_note" ]; then
 if [ "$COMP_COUNT" -gt 0 ] && [ "$_changed_n" -gt "$_FAB_DETAIL_MAX" ]; then
 if [ "$COMP_COUNT" -gt 0 ]; then
 if [ "$CONSECUTIVE" -ge "$CIRCUIT_BREAKER_THRESHOLD" ]; then
@@ -654,6 +694,7 @@ if [ -f "$COUNTER_FILE" ]; then
 if [ -f "$DN_LINT" ] && command -v python3 >/dev/null 2>&1; then
 if [ -f "$DUP_TASK_SCANNER" ]; then
 if [ -f "$EDIT_COUNTER" ]; then
+if [ -f "$FOOTPRINT_LIB" ] && command -v python3 >/dev/null 2>&1 \
 if [ -f "$FOOTPRINT_LIB" ] && command -v python3 >/dev/null 2>&1; then
 if [ -f "$FOREIGN_DELETE_GUARD" ] && command -v python3 >/dev/null 2>&1; then
 if [ -f "$FRAMEWORK_ROOT/lib/config.sh" ]; then
@@ -682,6 +723,7 @@ if [ -n "$_dn_files" ]; then
 if [ -n "$_lw_tags" ]; then
 if [ -n "$_staged_files" ] && ! echo "$_staged_files" | grep -qvE '^\.context/reviews/|^\.context/costs/reviews\.jsonl$'; then
 if [ -n "$_sv_committed" ]; then
+if [ -n "$_t3126_out" ] && [ -f "$_t3126_out" ] && grep -q '\[FAIL\]' "$_t3126_out" 2>/dev/null; then
 if [ -n "$_t3126_out" ] && [ -f "$_t3126_out" ]; then
 if [ -n "$_t3126_out" ]; then
 if [ -n "$_t3126_ref_fails" ]; then
@@ -726,13 +768,17 @@ local _ref="$1" _line _meta _path _sha
 local sha files
 local task_ref="$1"
 local total=0
+mkdir -p "$PROJECT_ROOT/.context/locks" 2>/dev/null
 mkdir -p "$_dn_tmp/$(dirname "$_dn_f")"
 mkdir -p "$_t3297_log_dir" 2>/dev/null || return 0
 msg = str(e).splitlines()[0] if str(e) else 'unknown YAML error'
+n++
 name=$(grep "^name:" "$card" | head -1 | sed 's/^name: //')
 name=$({ grep "^name:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^name: //')
+next
 ns = {}
 policy/value-drivers.yaml|policy/bvp-scoring-rubric.md|policy/capability-overlay/tool-set.yaml|policy/anti-patterns.yaml|policy/escalation-patterns.yaml|policy/designer-pin.yaml) return 0 ;;
+print "  - " t (wt ? "  [worktree]" : "")
 print("\n".join(stale))
 print(msg)
 printf '%s\n' "$_block_lines" >&2
@@ -741,9 +787,15 @@ printf '%s\n' "$_sv_committed" | head -5 | sed 's/^/  /' >&2
 printf '%s\n' "$_t3594_lines" >&2
 printf '%s\n' "$_t3594_ok" | sed 's/^/  /' >&2
 printf '%s\n' "$_yaml_failures" >&2
+printf 'pid=%s\nsince=%s\n' "$$" "$(date +%s)" > "$_t4542_waiting_file" 2>/dev/null
+python3 "$FOOTPRINT_LIB" "$_fp_task" $_fp_leave \
 python3 "$FOOTPRINT_LIB" "$_fp_task" \
+python3 "$FOOTPRINT_LIB" --predict-staged --project-root "$PROJECT_ROOT" 2>/dev/null || true
 refs/tags/*)
+return 0
 return 1
+rm -f "$_fp_pred" 2>/dev/null
+rm -f "$_t4542_waiting_file"
 rm -rf "$_dn_tmp"
 shipped, known = ns.get("SHIPPED", {}), generate_known(Path(sys.argv[1]))
 source "$FRAMEWORK_ROOT/lib/config.sh"
@@ -752,12 +804,20 @@ source "$FRAMEWORK_ROOT/lib/tasks.sh"
 stale = sorted(k for k in set(shipped) | set(known) if shipped.get(k) != known.get(k))
 sys.exit(1 if stale else 0)
 sys.path.insert(0, sys.argv[1] + "/lib")
+t != "" && /^[[:space:]]*Scope: worktree/ { wt = 1; next }
+t != "" && e == "" && /^[[:space:]]*Evidence: / {
+t = ""; e = ""; wt = 0
 total=$((total + 1))
 trap 'rm -f "$_t3126_out"' EXIT
 trap 'rm -f "$_t3126_out"; trap - INT; kill -INT $BASHPID' INT
 trap 'rm -f "$_t3126_out"; trap - TERM; kill -TERM $BASHPID' TERM
+trap 'rm -f "$_t4542_waiting_file" ${_t3126_out:+"$_t3126_out"}' EXIT
+trap 'rm -f "$_t4542_waiting_file" ${_t3126_out:+"$_t3126_out"}; trap - INT; kill -INT $BASHPID' INT
+trap 'rm -f "$_t4542_waiting_file" ${_t3126_out:+"$_t3126_out"}; trap - TERM; kill -TERM $BASHPID' TERM
 try:
 unset _fp_sha _fp_task
+unset _fp_sha _fp_task _fp_pred _fp_list
+unset _fp_sha _fp_task _fp_pred _fp_list _fp_predicted _fp_leave
 web/*.sh|web/*.py|web/*.html|web/*.css|web/*.js|web/*.svg|web/*.j2|web/*.jinja2) return 0 ;;
 while IFS= read -r -d '' _line; do
 while IFS= read -r _dn_f; do
@@ -770,6 +830,7 @@ while IFS=' ' read -r _t3125_lref _t3125_lsha _t3125_rref _t3125_rsha; do
 while [ "$audit_exit" -eq 75 ] && [ "$(date +%s)" -lt "$_t3297_deadline" ]; do
 yaml.safe_load(open(sys.argv[1]))
 {
+{ gsub(/\033\[[0-9;]*m/, "") }
 | grep -E '^vendored_path:' | head -1 \
 | sed -e 's/^AUDIT-SCOPE-WORKTREE: /    - /'
 | sed -e 's/^vendored_path:[[:space:]]*//' -e 's/#.*//' -e 's/^"//' -e 's/"[[:space:]]*$//' -e 's/[[:space:]]*$//')
