@@ -49623,3 +49623,21 @@ task_id: T-4801
 payload:
   overall: CONTRADICTED
   claim_count: 2
+---
+kind: scan_emitted
+timestamp: '2026-10-27T10:06:30Z'
+scan_id: R-159496e3
+task_id: T-4802
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T10:06:30Z'
+scan_id: R-159496e3
+task_id: T-4802
+payload:
+  task_file: .tasks/active/T-4802-libdispatchrecordspy-local-backend-for-t.md

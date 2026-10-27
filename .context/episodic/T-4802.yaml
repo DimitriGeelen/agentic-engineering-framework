@@ -1,0 +1,104 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4802: lib/dispatch_records.py: local backend for the shared worker contract (§6.2 store + conformance adapter), option A of T-4801
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T10:06:42Z
+# ============================================================================
+
+task_id: T-4802
+task_name: "lib/dispatch_records.py: local backend for the shared worker contract (§6.2 store + conformance adapter), option A of T-4801"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T09:50:02Z
+completed: 2026-10-27T10:06:15Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T11:03:12+01:00
+last_commit: 2026-10-27T11:04:47+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  lib/dispatch_records.py — local backend for the shared worker contract (§6.2 store + conformance adapter); vectors 22 pass / 3 n/a / 0 fail. tick scope AC, record verification results
+
+# Key outcomes
+outcomes:
+  - 'lib/dispatch_records.py implements the §6.2 store: one JSON record per dispatch under a configurable root (default `.context/dispatch-records/`). Every write takes an exclusive flock on `<dispatch_id>.lock`, reads, checks nonce + supervisor_gen + expected prior state, applies, writes a temp file, fsyncs, renames over the record, fsyncs the directory, and releases. The lock times out (10 s default, injectable) and the write fails closed with fence_reject(cas_mismatch)'
+  - 'It implements the wc/0.3.3 §3 transition table (T1, T2, T3, T3b, T4, T5, T6, T6b, T7a-d, T8 and T-RECLAIM), the closed fence_reject reason list, per-attempt fencing, no overlapping attempts (§4.3) and the outcome derivation with refusal ahead of rule 1 (the order all three parties already run; v0.3.4 draft). Dispatch closure (v0.3.4 draft §4.7) is NOT implemented: the local backend keeps dispatches open like the hub'
+  - '`conformance_adapter()` returns an adapter for run_local.py with an injected clock and liveness probe. It declares its capabilities honestly: supervisor_gen fencing; no answer_channel (§5) and no real_worker unless actually built, so those cases report n/a or not-implemented'
+  - '`python3 tests/conformance/worker-contract/run_local.py` reports 0 fail. Every case whose requires the adapter meets passes, and the result table (pass / fail / not-implemented / n/a per case) is recorded in the task Updates. A mutant check (the adapter reporting one wrong outcome) makes run_local.py FAIL, recorded too'
+  - 'Unit tests in tests/unit/t4802_dispatch_records_test.py cover the store mechanics directly: CAS refusal on a stale prior state, lock timeout fails closed, a crash mid-write leaves the old record intact (temp file not renamed), and concurrent writers serialise'
+  - 'Scope fence holds: no change to agents/termlink/, run.sh, lib/spawn-env.sh or the dispatches.jsonl ledger (`git diff --stat` of the task''s commits touches only lib/dispatch_records.py, its vendored copy, its tests, its fabric card and the task file); vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — fence_reject is logged at dispatch level, not in the attempt''s history'
+    chose: 'every fence_reject is appended to a dispatch-level `fence_log` (plus `notices` where §3.3 asks for one); no attempt field changes.'
+    rationale: '§3.3 says a rejected write "changes nothing", and CC-05/CC-13/CC-24 assert `record_unchanged` and unchanged histories after a reject. Keeping the log off the attempt honours "outside the lifecycle".'
+    alternatives_rejected: ['a marker entry in the attempt''s history: it breaks `admissible_histories`/`record_unchanged`, and every reader that takes state from the last history `to` would need a special case.']
+  - decision: '2026-10-27 — hand-back `commission` is filled in by the adapter'
+    chose: 'the store applies outcome rule 1 strictly (commission must equal the dispatch id); the adapter writes `commission: <dispatch_id>` into vector hand-backs, which omit it.'
+    rationale: '§2 makes `commission` part of the hand-back schema and rule 1 refuses a mismatch; a real worker writes the dispatch it was commissioned for. The unit tests pin the mismatch case. Reported, not changed: the vectors could state `commission` in their hand-backs to make this explicit.'
+    alternatives_rejected: ['treating a missing commission as valid: a hand-back for another dispatch would pass rule 1.']
+  - decision: '2026-10-27 — local `lost` = probe absence + G, evidence read first; no equivalent routes'
+    chose: 'a probe `absent` on a seen-alive attempt starts G; after G the sweep writer reads the worker-dir evidence and takes T3/T3b/T7b when a bound signed completion exists, else T4/T7c (§3.2, §6.3). `confirm_end` = probe confirmed and G elapsed; on a `done` attempt it is forbidden_transition before any evidence is read. `hub_restart` re-instantiates the Store over the same files. G = 120 s, so the plain CC-08 path holds and `equivalent_routes` is empty: every transition-subject case ran its real path.'
+    alternatives_rejected: ['G = 0 (absence is lost at once): allowed by §2 for a backend that reads evidence first, but it needs the CC-08 equivalent route and gives evidence written just after exit no time to land.']
+  - decision: '2026-10-27 — capabilities declared honestly'
+    chose: '{supervisor_gen, caller_chosen_ids}. Not offered: answer_channel (questions can be appended, fenced, because CC-06 fences that write; answers/wait/ack are not built), registry_epoch, lease, real_worker. Dispatch closure (§4.7) not built: dispatches stay open, as on the hub. Signed completion = HMAC-SHA256 with an injected key (production key wiring is option B''s).'
+    rationale: 'a capability declared but not built would turn an n/a into a false pass.'
+  - decision: '2026-10-27 — the runner''s own no-backend tests'
+    chose: 'two tests in tests/unit/test_worker_contract_vectors.py asserted lib/dispatch_records.py does not exist ("local backend now exists: update this test"). They now point the runner at an absent path through a fixture, so the no-backend path stays tested, and a third test pins that the real local backend reports no fail and no not-implemented. Runner, vectors and spec unchanged.'
+    alternatives_rejected: ['deleting them: the no-backend behaviour is still the runner''s contract for other checkouts.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/dispatch_records.py'
+  - '.fabric/components/lib-dispatch_records.yaml'
+  - '.tasks/active/T-4802-libdispatchrecordspy-local-backend-for-t.md'
+  - 'lib/dispatch_records.py'
+  - 'tests/unit/t4802_dispatch_records_test.py'
+  - 'tests/unit/test_worker_contract_vectors.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T11:03:12'
+    action: 'T-4802: lib/dispatch_records.py — local backend for the shared worker contract (§6.2 store + conformance adapter); vectors 22 pass / 3 n/a / 0 fail'
+  - time: '2026-10-27T11:04:47'
+    action: 'T-4802: tick scope AC, record verification results'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 16
+  commits: 3
+  files_changed: 9
+  lines_added: 2791
+  lines_removed: 9
+  footprint_refreshed_at: '2026-10-27T10:07:08Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4802-libdispatchrecordspy-local-backend-for-t.md
+generated_by: context-agent-hybrid

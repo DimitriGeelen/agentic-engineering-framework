@@ -11,12 +11,12 @@ description: >
   (allocation, no overlap), §6.1-6.5 (local mechanism). Entry point fixed by tests/conformance/worker-contract/run_local.py:52-81
   (lib/dispatch_records.py exposing conformance_adapter()). Research: docs/reports/T-4801-local-reference-backend.md.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/dispatch_records.py, tests/unit/test_worker_contract_vectors.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T09:50:02Z
-last_update: 2026-10-27T09:50:41Z
-date_finished:
+last_update: 2026-10-27T10:06:15Z
+date_finished: 2026-10-27T10:06:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -426,3 +426,24 @@ bin/fw vendor self --check --task T-4802
 Mutant check: a backend wrapping this module whose derive_outcome reports `paused` as `succeeded` → `fail=2 (CC-16, CC-19), n/a=3, pass=20`, exit 1.
 Unit tests: tests/unit/t4802_dispatch_records_test.py 10 passed; together with tests/unit/test_worker_contract_vectors.py 51 passed, 0 skipped.
 Scope: commit 7c1f441cc touches lib/dispatch_records.py, its vendored copy, tests/unit/t4802_dispatch_records_test.py, tests/unit/test_worker_contract_vectors.py (the runner's no-backend tests, see Decisions), the fabric card and this task file; nothing under agents/termlink/, run.sh, lib/spawn-env.sh or dispatches.jsonl. All four ## Verification lines pass under `set -o pipefail`; `bin/fw test invariants` green.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-159496e3
+- **Timestamp:** 2026-10-27T10:06:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — lib/dispatch_records.py implements the §6.2 store: one JSON record per dispatch under a configurable root (default `.context/dispatch-records/`). Every write takes an exclusive flock on `<dispatch_id>
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/dispatch_records.py in: lib/dispatch_records.py implements the §6.2 store: one JSON record per dispatch under a configurable root (default `.context/dispatch-records/`). Ever`
+- **AC#6 (Agent)** — Scope fence holds: no change to agents/termlink/, run.sh, lib/spawn-env.sh or the dispatches.jsonl ledger (`git diff --stat` of the task's commits touches only lib/dispatch_records.py, its vendored co
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/spawn-env.sh in: Scope fence holds: no change to agents/termlink/, run.sh, lib/spawn-env.sh or the dispatches.jsonl ledger (`git diff --stat` of the task's commits tou`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-27T10:06:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
