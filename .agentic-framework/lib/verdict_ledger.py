@@ -4254,7 +4254,8 @@ def _cli(argv: list[str] | None = None) -> int:
             print(f"REFUSED: {e}", file=sys.stderr)
             return 1
         print(json.dumps({"dispatch_id": c["dispatch_id"], "exit_code": c["exit_code"],
-                          "verdicts": len(c["verdicts"]), "sig": c["sig"]}))
+                          "verdicts": len(c["verdicts"]), "seat_state": c["seat_state"],
+                          "sig": c["sig"]}))
         return 0
     if args.cmd == "apply":
         res = apply(args.task_id)

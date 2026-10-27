@@ -96,9 +96,9 @@ See description. Two needs (832): an opencode review seat can actually work in i
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: confirm from opencode's own docs or a local run how its plan agent decides external_directory, and show (test or captured run) that the current seat rejects SEAT_TMP
-- [ ] The opencode seat may write exactly SEAT_TMP outside the export and nothing else (for example a seat-scoped opencode permission config naming that one path, passed the way the seat already passes its other settings); the export stays read-only as before and the T-3986 export-unchanged check still holds
-- [ ] A seat that exits 0 without a verdict is recorded with a named reason (e.g. `no-verdict`) in the run/completion record and a plain line in stderr.log, and `fw reviewer judge` reports that seat as no-verdict rather than only incomplete
+- [x] Reproduce first: confirm from opencode's own docs or a local run how its plan agent decides external_directory, and show (test or captured run) that the current seat rejects SEAT_TMP
+- [x] The opencode seat may write exactly SEAT_TMP outside the export and nothing else (for example a seat-scoped opencode permission config naming that one path, passed the way the seat already passes its other settings); the export stays read-only as before and the T-3986 export-unchanged check still holds
+- [x] A seat that exits 0 without a verdict is recorded with a named reason (e.g. `no-verdict`) in the run/completion record and a plain line in stderr.log, and `fw reviewer judge` reports that seat as no-verdict rather than only incomplete
 - [ ] Tests for both: an opencode-seat test with a stub binary that writes to TMPDIR (permitted) and outside it (refused), and a no-verdict test; existing review-seat tests (t4835, t3580, green-degraded) stay green
 - [ ] Vendor in sync
 

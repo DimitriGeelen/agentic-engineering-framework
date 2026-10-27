@@ -44,6 +44,9 @@ TERMLINK = _HERE / "agents" / "termlink" / "termlink.sh"
 _PERM_SEAT = hk._OPENCODE.replace(
     'mode = os.environ.get("STUB_MODE", "green")',
     'mode = os.environ.get("STUB_MODE", "green")\n'
+    'if a == ["--version"]:\n'   # T-4843's binary/version probe, not a seat run
+    '    print("1.18.31")\n'
+    '    sys.exit(0)\n'
     'import fnmatch\n'
     'def _allowed(path):\n'
     '    path = os.path.realpath(path)\n'
