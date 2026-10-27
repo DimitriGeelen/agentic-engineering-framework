@@ -13,7 +13,7 @@ description: >
   the T-2621 lifecycle conformance rail. Acceptance: 832's test_gallery_instances_api.py
   and _t884-instance-overlay-cdp.mjs pointed at AEF.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T15:26:50Z
-last_update: '2026-10-27T15:30:44Z'
+last_update: 2026-10-27T15:35:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,10 +98,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] web/blueprints/designer_api.py serves GET /api/instances?template=<id> per the T-1300 contract: a bad id (pattern ^[a-z0-9][a-z0-9_-]*$) gives 400, an unknown template 404, otherwise 200 {template, generated, state, examined, instances, refusals}
-- [ ] For aef-task-lifecycle each active task maps to one node by status and horizon: captured+now/next gives tl_create, captured+later tl_parked, started-work tl_work, issues tl_heal, work-completed still in active/ tl_human_review. Instance state is NODE when the node exists in the map, STALE when the mapped node is missing from it, NO-POSITION for an unmapped status. Every other template answers state NO-INSTANCES with an empty list. The mapping lives in one table, recorded in ## Decisions
-- [ ] The mapping is cross-checked against the map: a test asserts every node id the table uses exists in the aef-task-lifecycle map (so a map edit that drops a node fails the test, not production)
-- [ ] Tests in tests/web/test_t4831_instances.py (bad id, unknown template, other template NO-INSTANCES, lifecycle with tasks in each status); existing designer_api tests stay green; Watchtower restarted and `bin/fw watchtower current` OK; vendor in sync
+- [x] web/blueprints/designer_api.py serves GET /api/instances?template=<id> per the T-1300 contract: a bad id (pattern ^[a-z0-9][a-z0-9_-]*$) gives 400, an unknown template 404, otherwise 200 {template, generated, state, examined, instances, refusals}
+- [x] For aef-task-lifecycle each active task maps to one node by status and horizon: captured+now/next gives tl_create, captured+later tl_parked, started-work tl_work, issues tl_heal, work-completed still in active/ tl_human_review. Instance state is NODE when the node exists in the map, STALE when the mapped node is missing from it, NO-POSITION for an unmapped status. Every other template answers state NO-INSTANCES with an empty list. The mapping lives in one table, recorded in ## Decisions
+- [x] The mapping is cross-checked against the map: a test asserts every node id the table uses exists in the aef-task-lifecycle map (so a map edit that drops a node fails the test, not production)
+- [x] Tests in tests/web/test_t4831_instances.py (bad id, unknown template, other template NO-INSTANCES, lifecycle with tasks in each status); existing designer_api tests stay green; Watchtower restarted and `bin/fw watchtower current` OK; vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -160,7 +160,7 @@ bvp_scores_proposed:
 
 python3 -m pytest -q tests/web/test_t4831_instances.py
 bin/fw watchtower current
-bin/fw vendor self --check
+bin/fw vendor self --check --task T-4831
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -340,6 +340,14 @@ bin/fw vendor self --check
 
 ## Recommendation
 
+**Recommendation:** GO
+**Rationale:** GET /api/instances is live and matches 832's contract (400 bad id, 404 unknown template, 200 with INSTANCES/NO-INSTANCES). Only aef-task-lifecycle carries instances; every other map answers NO-INSTANCES. The remaining question is whether the overlay looks right to you.
+**Evidence:**
+- 7 new tests in tests/web/test_t4831_instances.py pass, as do the existing designer_api and overlay tests (16 total)
+- A test asserts every node the mapping uses exists in the real aef-task-lifecycle map, so a map edit that drops a node fails a test
+- Live route on the restarted Watchtower returns 863 examined tasks with node assignments
+- Review page: http://192.168.10.107:3000/review/T-4831
+
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
      shape is copied rather than reinvented.
@@ -369,14 +377,10 @@ bin/fw vendor self --check
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-10-27 — status/horizon to node mapping
+- **Chose:** one table `_LIFECYCLE_NODES` in web/blueprints/designer_api.py: captured+now/next to tl_create, captured+later to tl_parked, started-work to tl_work, issues to tl_heal, work-completed in active/ to tl_human_review. Unmapped status gives NO-POSITION; a mapped node missing from the map gives STALE.
+- **Why:** same states as tools/corpus_overlay.py (T-2629); the node-existence test guards the table against map edits.
+- **Rejected:** importing the overlay's bucket function (it loses owner and per-task state); mapping tl_archive (completed tasks are not active instances).
 
 ## Decision
 
@@ -394,3 +398,6 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4831-designer-data-api-get-apiinstances-live-.md
 - **Context:** Initial task creation
+
+### 2026-10-27T15:35:16Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

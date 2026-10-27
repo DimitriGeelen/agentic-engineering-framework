@@ -251,6 +251,82 @@ def field_catalog():
     return resp
 
 
+# T-4831 (T-4737 GO, slice 2): GET /api/instances — live tasks on the map.
+# 832's contract (T-1300): only a map with state-carrier nodes has instances; AEF
+# has exactly one, aef-task-lifecycle (nodes per CLAUDE.md §Task Lifecycle). The
+# one status+horizon -> node table below is the single place the mapping lives;
+# tools/corpus_overlay.py (T-2629) projects the same states onto badges.
+_LIFECYCLE_MAP = "aef-task-lifecycle"
+_LIFECYCLE_NODES = {
+    ("captured", "now"): "tl_create",
+    ("captured", "next"): "tl_create",
+    ("captured", "later"): "tl_parked",
+    ("started-work", None): "tl_work",
+    ("issues", None): "tl_heal",
+    ("work-completed", None): "tl_human_review",  # still in active/ = partial-complete
+}
+_INSTANCE_FM = re.compile(r"^(id|status|horizon|owner):[ \t]*(.*?)[ \t]*$", re.M)
+
+
+def _lifecycle_node(status, horizon):
+    return _LIFECYCLE_NODES.get((status, horizon)) or _LIFECYCLE_NODES.get((status, None))
+
+
+def _lifecycle_instances():
+    """(instances, examined, refusals) for the active tasks under PROJECT_ROOT."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "corpus_overlay", FRAMEWORK_ROOT / "tools" / "corpus_overlay.py")
+    overlay = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(overlay)
+    present = overlay.carriers(PROJECT_ROOT, _LIFECYCLE_MAP)
+    instances, refusals, examined = [], [], 0
+    for p in sorted((PROJECT_ROOT / ".tasks" / "active").glob("T-*.md")):
+        examined += 1
+        try:
+            head = re.match(r"^---\n(.*?)\n---", p.read_text(errors="replace"), re.S)
+        except OSError as e:
+            refusals.append({"task": p.name, "reason": f"unreadable: {e}"})
+            continue
+        if not head:
+            refusals.append({"task": p.name, "reason": "no frontmatter"})
+            continue
+        fm = {k: v.strip("\"'") for k, v in _INSTANCE_FM.findall(head.group(1))}
+        task = fm.get("id") or "-".join(p.name.split("-")[:2])
+        status = fm.get("status", "")
+        node = _lifecycle_node(status, fm.get("horizon") or "now")
+        if node is None:
+            state = "NO-POSITION"
+        else:
+            state = "NODE" if node in present else "STALE"
+        instances.append({
+            "task": task, "state": state, "node": node,
+            "status": status, "owner": fm.get("owner", ""),
+        })
+    return instances, examined, refusals
+
+
+@bp.route("/api/instances")
+def instances():
+    template = request.args.get("template", "")
+    if not _valid_id(template):
+        return _err("bad template id", 400)
+    if _read_meta(template) is None:
+        return _err("unknown template", 404)
+    insts, examined, refusals = [], 0, []
+    if template == _LIFECYCLE_MAP:
+        insts, examined, refusals = _lifecycle_instances()
+    return jsonify({
+        "template": template,
+        "generated": int(time.time()),
+        "state": "INSTANCES" if insts else "NO-INSTANCES",
+        "examined": examined,
+        "instances": insts,
+        "refusals": refusals,
+    })
+
+
 @bp.route("/api/save", methods=["POST"])
 def save():
     data = request.get_json(silent=True) or {}
