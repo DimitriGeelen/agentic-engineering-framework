@@ -158,30 +158,32 @@ EOF
 
 # ── the sweep's boundary: only what it can attribute ─────────────────────────
 
-@test "sweep leaves foreign entries, live owners and young bats-run dirs alone" {
+@test "sweep leaves foreign entries, live owners and every bats-run dir alone" {
+    # bats-run-* cannot be attributed to AEF: every project on the host runs bats as
+    # the same uid in the shared /tmp, so even an old one is never AEF's to delete.
     mkdir -p "$S/root/other-project-scratch" "$S/root/pytest-of-root" \
              "$S/root/aef-other-1-abcdef" "$S/root/fw-something" \
-             "$S/root/aef-bats-$$-live01" "$S/root/bats-run-young1"
+             "$S/root/aef-bats-$$-live01" "$S/root/bats-run-young1" "$S/root/bats-run-old001"
     touch -d '3 days ago' "$S/root/other-project-scratch" "$S/root/pytest-of-root" \
-                          "$S/root/aef-other-1-abcdef" "$S/root/fw-something"
+                          "$S/root/aef-other-1-abcdef" "$S/root/fw-something" \
+                          "$S/root/bats-run-old001"
     run fw_tmp_sweep "$S/root"
     [ "$status" -eq 0 ]
     [ -z "$output" ]
-    [ "$(_top_names | wc -l)" -eq 6 ]
+    [ "$(_top_names | wc -l)" -eq 7 ]
 }
 
-@test "sweep removes a dead owner's dir and a stale bats-run dir, not an in-use one" {
+@test "sweep removes a dead owner's dirs, not one a live process is using" {
     ( exit 0 ) & dead=$!; wait "$dead"
     mkdir -p "$S/root/aef-bats-$dead-dead01" "$S/root/aef-verify-$dead-dead02" \
-             "$S/root/bats-run-stale1" "$S/root/bats-run-busy01"
-    touch -d '2 days ago' "$S/root/bats-run-stale1" "$S/root/bats-run-busy01"
-    # A process with its cwd inside makes the dir in use, however old it looks.
-    ( cd "$S/root/bats-run-busy01" && exec sleep 30 ) &
+             "$S/root/aef-bats-$dead-busy01"
+    # A process with its cwd inside makes the dir in use, even when its owner pid is gone.
+    ( cd "$S/root/aef-bats-$dead-busy01" && exec sleep 30 ) &
     busy=$!
     run fw_tmp_sweep "$S/root"
     kill "$busy" 2>/dev/null; wait "$busy" 2>/dev/null || true
     [ "$status" -eq 0 ]
-    [ "$(_top_names)" = "bats-run-busy01" ]
+    [ "$(_top_names)" = "aef-bats-$dead-busy01" ]
 }
 
 @test "sweep stops at its bound" {

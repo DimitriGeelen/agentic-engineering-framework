@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T21:22:53Z
-last_update: 2026-10-27T22:00:07Z
+last_update: 2026-10-27T22:22:25Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -376,6 +376,10 @@ bin/fw vendor self --check --task T-4846
 - **Chose:** the owned dir stays under the caller's $TMPDIR, named `aef-<label>-<pid>-XXXXXX`; the sweep removes AEF-named dirs whose owner pid is dead, and top-level `bats-run-*` only when older than 24 h, owned by this uid; in both cases only when no process holds a cwd or fd inside. Nothing else.
 - **Why:** moving test temp onto the repo disk changes paths that many tests and hooks reason about (boundary hook, git-status checks), a far wider change than this bug. A named dir with the owner pid makes orphans attributable, which bare `bats-run-*` dirs are not. bats removes its run dir on every clean exit, so a 24 h-old unreferenced one is debris whoever made it; /tmp is shared with other projects, so the bar for touching unnamed entries is kept high.
 - **Rejected:** sweeping every `bats-run-*` regardless of age (could hit another project's live run between tests); pointing TMPDIR at `.context/` (scope, above).
+
+### 2026-10-27 — parent review: no bare `bats-run-*` in the sweep at all
+- **Chose:** the sweep removes only `aef-bats-<pid>-*` and `aef-verify-<pid>-*` with a dead owner pid and nothing holding them; the `bats-run-*` branch is removed.
+- **Why:** every project on this host runs bats as the same uid in the shared /tmp, so "older than 24 h" does not make a `bats-run-*` dir AEF's; it may be 832's, 055's or 1409's, and deleting another project's files crosses the project boundary. The parent's brief invited that branch; the review corrected it. AEF's own bats runs now make their run dir inside an `aef-*` dir, so nothing AEF leaves needs the generic name. The sweep tests now assert an old `bats-run-*` survives, and the doctor/audit wording says other projects' entries are theirs to remove.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

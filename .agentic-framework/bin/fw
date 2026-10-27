@@ -3960,7 +3960,7 @@ else:
         IFS=$'\t' read -r _tu_v _tu_use _tu_mnt _tu_top <<< "$_tu_out"
         if [ "$_tu_rc" -eq 1 ]; then
             echo -e "  ${YELLOW}WARN${NC}  [host] temp filesystem $_tu_mnt is ${_tu_use}% full (over TMP_USE_WARN_PCT=$_tu_pct) — largest: $_tu_top"
-            echo "         A full tmpfs fails writes quietly; remove finished scratch (AEF orphans: fw test sweeps aef-bats-*/aef-verify-*/old bats-run-*)"
+            echo "         A full tmpfs fails writes quietly; remove finished scratch (AEF orphans: fw test sweeps aef-bats-*/aef-verify-*; other projects' entries are theirs)"
             warnings=$((warnings + 1))
             host_warnings=$((host_warnings + 1))
         elif [ "$_tu_rc" -eq 2 ]; then

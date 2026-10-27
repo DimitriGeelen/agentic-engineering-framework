@@ -3372,7 +3372,7 @@ if [ -f "$FRAMEWORK_ROOT/lib/tmp-hygiene.sh" ]; then
     if [ "$_tu_rc" -eq 1 ]; then
         warn "Temp filesystem $_tu_mnt is ${_tu_use}% full (over TMP_USE_WARN_PCT=$_tu_pct)" \
              "largest: $_tu_top — a full tmpfs fails writes quietly (T-4846)" \
-             "Remove finished scratch there; AEF's own orphans (aef-bats-*, aef-verify-*, old bats-run-*) are swept by the next fw test run"
+             "Remove finished scratch there; AEF's own orphans (aef-bats-*, aef-verify-*) are swept by the next fw test run; other projects' entries are theirs to remove"
     elif [ "$_tu_rc" -eq 2 ]; then
         warn "Temp filesystem check could not run" "$_tu_use" "Check: df -Pk \"\${TMPDIR:-/tmp}\""
     else

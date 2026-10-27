@@ -33,10 +33,13 @@ _fw_tmp_in_use() {
 # fw_tmp_sweep [root] [bats_run_age_min] [max] — remove orphans left by killed
 # runs and print one removed name per line. Removes ONLY, at the top of <root>:
 #   aef-bats-<pid>-* / aef-verify-<pid>-*  whose <pid> is not running
-#   bats-run-*  older than <bats_run_age_min> (default 1440 = 24 h) — bats
-#               removes its run dir on every clean exit, so an old one is debris
-# and in both cases only when owned by this uid and no process holds a cwd or fd
-# inside. At most <max> (default 20) per call, so a call stays cheap.
+# and only when owned by this uid and no process holds a cwd or fd inside. At
+# most <max> (default 20) per call, so a call stays cheap.
+# Never a bare bats-run-*: /tmp is shared by every project on the host, and they
+# all run bats as the same uid, so a bats-run-* dir cannot be attributed to AEF
+# (parent review, T-4846). AEF's own bats runs now make theirs inside an aef-*
+# dir above, so nothing AEF leaves needs that name. [bats_run_age_min] is kept
+# for call compatibility and unused.
 fw_tmp_sweep() {
     local root="${1:-${TMPDIR:-/tmp}}" age="${2:-1440}" max="${3:-20}"
     local n=0 d base pid
@@ -50,14 +53,12 @@ fw_tmp_sweep() {
                 pid="${base#aef-*-}"; pid="${pid%%-*}"
                 case "$pid" in ''|*[!0-9]*) continue ;; esac
                 if kill -0 "$pid" 2>/dev/null || [ -d "/proc/$pid" ]; then continue; fi ;;
-            bats-run-*)
-                [ -n "$(find "$d" -maxdepth 0 -mmin "+$age" 2>/dev/null)" ] || continue ;;
             *) continue ;;
         esac
         _fw_tmp_in_use "$d" && continue
         rm -rf -- "$d" 2>/dev/null && { printf '%s\n' "$base"; n=$((n + 1)); }
     done < <(find "$root" -mindepth 1 -maxdepth 1 -type d -user "$(id -u)" \
-                \( -name 'aef-bats-*' -o -name 'aef-verify-*' -o -name 'bats-run-*' \) \
+                \( -name 'aef-bats-*' -o -name 'aef-verify-*' \) \
                 -print0 2>/dev/null)
     return 0
 }
