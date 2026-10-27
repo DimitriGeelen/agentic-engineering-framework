@@ -1,13 +1,18 @@
 ---
 id: T-4825
-name: "Focus-drift gate reads a task id inside a fw sidecar send --body as the action target and refuses the send"
+name: "Focus-drift gate reads a task id inside a fw sidecar send --body as the action
+  target and refuses the send"
 description: >
-  055 be.37 field test C note (msg 20f79168): the focus-drift gate treats a T-XXXX mentioned in a sidecar message BODY as the command's target task and refuses the send under another focus. Same class as T-4817 (body text read as a command) but in the focus-drift gate. Fix: a --body value is data for the focus-drift gate too (reuse T-4817's lexer approach); a task id passed as a real argument still counts.
+  055 be.37 field test C note (msg 20f79168): the focus-drift gate treats a T-XXXX
+  mentioned in a sidecar message BODY as the command's target task and refuses the
+  send under another focus. Same class as T-4817 (body text read as a command) but
+  in the focus-drift gate. Fix: a --body value is data for the focus-drift gate too
+  (reuse T-4817's lexer approach); a task id passed as a real argument still counts.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug]
 components: []
 related_tasks: []
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T13:25:36Z
-last_update: 2026-10-27T13:25:36Z
-date_finished: null
+last_update: '2026-10-27T22:31:41Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-27T22:31:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4825: Focus-drift gate reads a task id inside a fw sidecar send --body as the action target and refuses the send
@@ -61,9 +83,9 @@ See description. The need: a task id that appears only inside a message body (da
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: a bats test runs the focus-drift gate on `bin/fw sidecar send --to x --body 'see T-9999'` under focus T-A and shows it refuses; it fails before the fix
-- [ ] After the fix the --body (and --body-file content, if read) value is data for the focus-drift gate, reusing T-4817's lexer approach; the send passes
-- [ ] A task id as a real target still triggers the gate (e.g. `bin/fw task update T-9999 --status ...` under focus T-A is still refused); existing focus-drift tests stay green
+- [x] Reproduce first: tests/unit/t4825_focus_drift_body_is_data.bats runs the focus-drift gate on `fw sidecar send --body '<text quoting a command shape that names T-9999>'` under focus T-1001; tests 1-4 failed (refused) on the unfixed code
+- [x] After the fix the --body value is data for the focus-drift gate, reusing T-4817's lexer (`_blank_data_args`); the sends pass (tests 1-4 green)
+- [x] A task id as a real target still triggers the gate (`bin/fw task update T-9999 --status issues`, a command chained after the send, `--body` on a non-sidecar verb: tests 5-7); existing focus-drift tests stay green
 - [ ] Vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
@@ -114,7 +136,8 @@ See description. The need: a task id that appears only inside a message body (da
 
 ## Verification
 
-timeout 900 bats tests/unit/t4825_focus_drift_body_is_data.bats
+timeout 900 bats tests/unit/t4825_focus_drift_body_is_data.bats > /tmp/.t4825.out 2>&1 && ! grep -q "^not ok" /tmp/.t4825.out && test "$(grep -c '# skip' /tmp/.t4825.out)" -eq 0
+timeout 900 bats tests/unit/focus_drift_gate.bats > /tmp/.t4825b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4825b.out
 bin/fw vendor self --check --task T-4825
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -269,6 +292,14 @@ bin/fw vendor self --check --task T-4825
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** 055 (be.37 field test C, msg 20f79168): `fw sidecar send --body '…'` was refused with FOCUS-DRIFT because the message text named another task.
+
+**Root cause:** `_fw_extract_drift_target` (agents/context/check-active-task.sh:103) runs its three regexes (`fw task update T-N`, `fw context add-* --task T-N`, `git commit -m "T-N: …"`) over the whole command string. Bash regex cannot see quote nesting, so a peer message that quotes one of those command shapes supplies the "target". A bare mention (`see T-9999`) never tripped it; the body has to contain a command shape, which is what peer consults about work usually contain.
+
+**Why structurally allowed:** The residual was documented in the function's own comments (T-2833, T-2879: a QUOTED PAYLOAD containing the command still matches) and judged unfixable with bash regex. When T-4499/T-4817 built a lexer that reads a sidecar --body as data for the tick guard, the drift gate was a second consumer of the same question and was not wired to it.
+
+**Prevention:** The drift extractor now blanks data arguments through the same `_blank_data_args` the tick guard uses, so a future `_DATA_ARGS` entry covers both gates at once. Regression: tests/unit/t4825_focus_drift_body_is_data.bats (4 data cases + 3 controls proving the gate still bites).
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -333,6 +364,15 @@ bin/fw vendor self --check --task T-4825
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-27 — reproduction shape
+- **Chose:** test bodies that quote a command shape (`bin/fw task update T-9999 …`, `git commit -m "T-9999: …"`, `fw context add-learning --task T-9999`, the `'\''` quoting), not the AC's literal `--body 'see T-9999'`.
+- **Why:** a bare mention matches none of the three drift patterns; the unfixed gate already passed it. Only command-shaped bodies reproduce the field report.
+- **Rejected:** a red test on `see T-9999` — it would not have failed before the fix.
+
+### 2026-10-27 — where to blank
+- **Chose:** call `lib/shell_write_scan.py:_blank_data_args` from `_fw_extract_drift_target`, only when the command contains both `sidecar` and `--body` (keeps the python call off every other Bash command); on lexer failure keep the original text, so the gate errs toward refusing.
+- **Rejected:** a bash-side strip of `--body '…'` — cannot handle `'\''`, `$'…'` or `--body=`, and a second parser would drift from T-4817's.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -349,3 +389,7 @@ bin/fw vendor self --check --task T-4825
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4825-focus-drift-gate-reads-a-task-id-inside-.md
 - **Context:** Initial task creation
+
+### 2026-10-27T22:31:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

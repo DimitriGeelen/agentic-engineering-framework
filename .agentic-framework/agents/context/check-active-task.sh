@@ -102,6 +102,16 @@ FOCUS_FILE=$(_resolve_focus_file)   # T-3038: re-resolve, PROJECT_ROOT just move
 # than re-deriving it, so the two call sites cannot drift apart.
 _fw_extract_drift_target() {
     local c="$1"
+    # T-4825: a `fw sidecar send --body` value is a message, not the command's target.
+    # Blank it with the tick guard's lexer (T-4817, _blank_data_args): every quoting of
+    # the text is data, a substitution bash runs in it stays. Lexer unavailable → keep c.
+    if [[ "$c" == *--body* && "$c" == *sidecar* ]]; then
+        local _blanked
+        if _blanked=$(python3 -c 'import sys; sys.path.insert(0, sys.argv[1]); from shell_write_scan import _blank_data_args; sys.stdout.write(_blank_data_args(sys.argv[2])[0])' \
+                "$FRAMEWORK_ROOT/lib" "$c" 2>/dev/null); then
+            c="$_blanked"
+        fi
+    fi
     # Pattern 1: fw task update T-NNNN (mutation)
     if [[ "$c" =~ (^|[[:space:]])(bin/)?fw[[:space:]]+task[[:space:]]+update[[:space:]]+(T-[0-9]+) ]]; then
         printf '%s' "${BASH_REMATCH[3]}"; return 0
