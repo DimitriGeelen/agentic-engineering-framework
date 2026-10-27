@@ -157,6 +157,100 @@ def lens_definition():
     return _ok(definition=d)
 
 
+# T-4832: the project's field catalog, read by designer 0.30.0's ref picker. Contract:
+# 832 docs/reports/T-1312-field-catalog-contract.md; design: docs/reports/
+# T-4832-field-catalog-design.md. PROJECT_ROOT, not FRAMEWORK_ROOT: the catalog is
+# project data, named by the project's own config. Unlike /api/lens-definition (500
+# for any failure) this route splits absent (404) from malformed (422), as the
+# contract asks: the designer hides the picker on 404 and must not on a broken file.
+_FIELD_CATALOG_MAX_DEFAULT = 10 * 1024 * 1024
+
+
+def _project_config(key, default=""):
+    """FW_<KEY> env > PROJECT_ROOT/.framework.yaml > default (lib/config.sh order)."""
+    import os
+    import yaml
+
+    env = os.environ.get(f"FW_{key}")
+    if env is not None and env.strip() != "":
+        return env.strip()
+    try:
+        data = yaml.safe_load((PROJECT_ROOT / ".framework.yaml").read_text()) or {}
+    except (OSError, yaml.YAMLError):
+        data = {}
+    v = data.get(key) if isinstance(data, dict) else None
+    return default if v is None else str(v).strip()
+
+
+def load_field_catalog(rel=None, root=None, max_bytes=None):
+    """Return (status, payload). 200 -> the catalog dict unchanged; 404/422 -> an
+    error string that names the rule broken and never a filesystem path."""
+    root = Path(root or PROJECT_ROOT).resolve()
+    rel = _project_config("DESIGNER_FIELD_CATALOG") if rel is None else rel
+    if not rel:
+        return 404, "no field catalog"
+    if max_bytes is None:
+        try:
+            max_bytes = int(_project_config("DESIGNER_FIELD_CATALOG_MAX_BYTES",
+                                            str(_FIELD_CATALOG_MAX_DEFAULT)))
+        except ValueError:
+            max_bytes = _FIELD_CATALOG_MAX_DEFAULT
+        if max_bytes < 1:
+            max_bytes = _FIELD_CATALOG_MAX_DEFAULT
+    p = (root / rel).resolve()  # follows symlinks, so a link out of the root is caught
+    if p != root and root not in p.parents:
+        return 422, "field catalog path is outside the project root"
+    if not p.is_file():
+        return 404, "no field catalog"
+    try:
+        with p.open("rb") as f:
+            raw = f.read(max_bytes + 1)
+    except OSError:
+        return 422, "field catalog unreadable"
+    if len(raw) > max_bytes:
+        return 422, f"field catalog larger than DESIGNER_FIELD_CATALOG_MAX_BYTES ({max_bytes} bytes)"
+    try:
+        cat = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return 422, "field catalog is not valid UTF-8 JSON"
+    if not isinstance(cat, dict) or type(cat.get("version")) is not int or cat["version"] != 1:
+        return 422, "field catalog version must be 1"
+    attrs = cat.get("attributes")
+    if not isinstance(attrs, list):
+        return 422, "field catalog attributes must be an array"
+    seen = set()
+    for n, row in enumerate(attrs):
+        if not isinstance(row, dict):
+            return 422, f"field catalog attribute {n} is not an object"
+        ref = row.get("ref")
+        if not isinstance(ref, str) or not ref.strip():
+            return 422, f"field catalog attribute {n} has no ref (non-blank string required)"
+        if ref in seen:
+            return 422, f"field catalog ref {ref!r} is duplicated (refs must be unique)"
+        seen.add(ref)
+    return 200, cat
+
+
+@bp.route("/api/field-catalog")
+def field_catalog():
+    """GET -> {"ok": true, "catalog": {version:1, attributes:[...]}} (designer 0.30.0).
+    404 {ok:false, error:"no field catalog"}; 422 malformed, refused whole. Gzipped
+    when the client accepts it (1,300 rows: 309 KB raw, 20 KB gz)."""
+    import gzip
+
+    status, payload = load_field_catalog()
+    if status != 200:
+        return _err(payload, status)
+    body = json.dumps({"ok": True, "catalog": payload}, ensure_ascii=False).encode("utf-8")
+    resp = Response(body, mimetype="application/json")
+    resp.headers["Vary"] = "Accept-Encoding"
+    if "gzip" in request.accept_encodings:
+        resp.set_data(gzip.compress(body, compresslevel=6))
+        resp.headers["Content-Encoding"] = "gzip"
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
+
+
 @bp.route("/api/save", methods=["POST"])
 def save():
     data = request.get_json(silent=True) or {}

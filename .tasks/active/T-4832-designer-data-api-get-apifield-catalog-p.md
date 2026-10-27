@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T15:26:51Z
-last_update: '2026-10-27T15:26:58Z'
+last_update: 2026-10-27T15:28:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,12 +88,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] docs/reports/T-4832-field-catalog-design.md records both consultations (832's measurements, the Codex review) and the resolved design (written by the parent before dispatch)
-- [ ] web/blueprints/designer_api.py serves GET /api/field-catalog per 832's T-1312 contract. The catalog path comes from a project config key (DESIGNER_FIELD_CATALOG, a path relative to PROJECT_ROOT, read from the project's .framework.yaml, registered in lib/config.sh FW_CONFIG_REGISTRY with registry parity), resolved inside the project root (a path escaping the root, including via a symlink, is refused). Unset or missing file: 404 {ok:false, error:"no field catalog"}
-- [ ] A bounded read before parsing (a configurable limit, default 10 MiB) refuses an oversized file whole with 422, no truncation. Full structural validation: version 1, an attributes array, every row an object, every ref a non-blank string, refs unique (case-sensitive). Any failure is 422 for the whole file, and the error names the rule broken, never a filesystem path. A valid file is served with its content unchanged (unknown fields preserved)
-- [ ] The response is gzip-compressed when the request accepts gzip (Vary: Accept-Encoding) and plain otherwise; no 304/conditional handling in this slice
-- [ ] Tests in tests/web/test_t4832_field_catalog.py: unset key, missing file, valid 1,300-row catalog (200 and content preserved), missing ref, duplicate ref, wrong version, oversized file, path escaping the root, gzip vs plain. Existing designer_api tests (lens-definition, save) stay green
-- [ ] Watchtower restarted, `bin/fw watchtower current` OK; vendor in sync
+- [x] docs/reports/T-4832-field-catalog-design.md records both consultations (832's measurements, the Codex review) and the resolved design (written by the parent before dispatch)
+- [x] web/blueprints/designer_api.py serves GET /api/field-catalog per 832's T-1312 contract. The catalog path comes from a project config key (DESIGNER_FIELD_CATALOG, a path relative to PROJECT_ROOT, read from the project's .framework.yaml, registered in lib/config.sh FW_CONFIG_REGISTRY with registry parity), resolved inside the project root (a path escaping the root, including via a symlink, is refused). Unset or missing file: 404 {ok:false, error:"no field catalog"}
+- [x] A bounded read before parsing (a configurable limit, default 10 MiB) refuses an oversized file whole with 422, no truncation. Full structural validation: version 1, an attributes array, every row an object, every ref a non-blank string, refs unique (case-sensitive). Any failure is 422 for the whole file, and the error names the rule broken, never a filesystem path. A valid file is served with its content unchanged (unknown fields preserved)
+- [x] The response is gzip-compressed when the request accepts gzip (Vary: Accept-Encoding) and plain otherwise; no 304/conditional handling in this slice
+- [x] Tests in tests/web/test_t4832_field_catalog.py: unset key, missing file, valid 1,300-row catalog (200 and content preserved), missing ref, duplicate ref, wrong version, oversized file, path escaping the root, gzip vs plain. Existing designer_api tests (lens-definition, save) stay green
+- [x] Watchtower restarted, `bin/fw watchtower current` OK; vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -150,9 +150,12 @@ bvp_scores_proposed:
 
 ## Verification
 
-python3 -m pytest -q tests/web/test_t4832_field_catalog.py
+python3 -m pytest -q tests/web/test_t4832_field_catalog.py tests/web/test_lens_definition.py tests/web/test_designer_api_save_gate.py > /tmp/.t4832 2>&1 && grep -q passed /tmp/.t4832
+timeout 300 bats tests/lint/config-registry-parity.bats > /tmp/.t4832b 2>&1 && ! grep -q "^not ok" /tmp/.t4832b
+grep -q '"DESIGNER_FIELD_CATALOG||' lib/config.sh && grep -q '"DESIGNER_FIELD_CATALOG_MAX_BYTES|10485760|' lib/config.sh
+code=$(curl -s -o /dev/null -w '%{http_code}' "$(bin/fw watchtower url)/api/field-catalog"); test "$code" = 404 -o "$code" = 200 -o "$code" = 422
 bin/fw watchtower current
-bin/fw vendor self --check
+bin/fw vendor self --check --task T-4832
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -369,6 +372,14 @@ bin/fw vendor self --check
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-27 — path outside the project root
+- **Chose:** 422 "field catalog path is outside the project root" (the setting is malformed), resolved with symlinks followed.
+- **Why:** a configured-but-forbidden path is a broken setting, not an absent catalog; 404 would hide the misconfiguration as "no picker".
+- **Rejected:** 404 (silently indistinguishable from unset).
+
+### 2026-10-27 — second config key for the read bound
+- **Chose:** DESIGNER_FIELD_CATALOG_MAX_BYTES (default 10485760), env > .framework.yaml > default, registered in both registries. Response is `Cache-Control: no-store`, matching the designer's fetch.
 
 ## Decision
 
