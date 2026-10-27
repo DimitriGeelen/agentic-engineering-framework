@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T15:26:50Z
-last_update: 2026-10-27T15:40:15Z
+last_update: 2026-10-27T16:38:35Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -156,7 +156,7 @@ bvp_scores_proposed:
   1. Open http://192.168.10.107:3000/designer/app and open any map
   2. Press Check
   **Expected:** findings appear as markers (or a clean result); no "could not check: HTTP 403" message
-  **If not:** Note the message shown; the agent reproduces it against /api/validate
+  **If not:** Note the message shown; the agent reproduces it against http://192.168.10.107:3000/api/validate
 
 ## Verification
 
@@ -371,7 +371,7 @@ grep -q '^validator_sha256:' policy/designer-pin.yaml
 -->
 
 **Recommendation:** GO
-**Rationale:** POST /api/validate is live and is a thin wrapper over 832's own released validator, pinned and sha256-checked; AEF adds no rules. Check no longer hits the 403.
+**Rationale:** The validate endpoint is live and is a thin wrapper over 832's own released validator, pinned and sha256-checked; AEF adds no rules. Check no longer hits the 403.
 **Evidence:**
 - 832 ships the validator at tag designer-v0.30.0 (dist/aef-authoring-kit-0.30.0/validate-workflow.py); `fw designer sync --from-tag` now verifies it against the kit SHA256SUMS, the MANIFEST kit_sha256 and the pin, and installs it read-only.
 - tests/web/test_t4830_validate.py: 23 passed with the existing designer_api tests (98 passed across all files naming designer_api). Clean map gives zero findings, a broken one gives E-XML-STRUCTURE, empty input 400, absent/unpinned/mismatched validator 503, form POST 415, cross-origin 403.
