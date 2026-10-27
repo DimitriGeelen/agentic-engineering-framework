@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T20:47:23Z
-last_update: '2026-10-27T20:48:20Z'
+last_update: 2026-10-27T20:49:11Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -84,7 +84,7 @@ See description. The need (832): after any dispatch, whichever worker kind ran, 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: a test dispatches (or drives run.sh for) a non-claude worker kind with a stub binary that prints a version, and shows stderr.log and meta.json carry no binary/version line; it fails before the fix
+- [x] Reproduce first: a test dispatches (or drives run.sh for) a non-claude worker kind with a stub binary that prints a version, and shows stderr.log and meta.json carry no binary/version line; it fails before the fix
 - [ ] Every worker kind (claude, codex, opencode, ollama-loop and any other kind run.sh launches) writes `worker binary: <path> (<version>)` to stderr.log before launch, using one shared helper rather than per-branch copies
 - [ ] meta.json gains keys for the resolved worker binary path and its version line; a binary whose --version fails or hangs records that (bounded by the existing 20 s timeout), never blocks the launch
 - [ ] Review-seat signing is not disturbed: the T-3580/T-4835 seat tests stay green (grep tests/unit for review_seat, t4835, t3580)
@@ -138,7 +138,10 @@ See description. The need (832): after any dispatch, whichever worker kind ran, 
 
 ## Verification
 
-timeout 900 bats tests/unit/t4843_worker_binary_every_kind.bats
+timeout 900 bats tests/unit/t4843_worker_binary_every_kind.bats > /tmp/.t4843.out 2>&1 && ! grep -q "^not ok" /tmp/.t4843.out && grep -q "^ok 9 " /tmp/.t4843.out
+test "$(grep -c '# skip' /tmp/.t4843.out)" -eq 0
+timeout 900 bats tests/unit/t4775_spawn_path_native_claude.bats tests/unit/t4835_review_seat_pycache.bats tests/unit/t4683_harness_seat_first_dispatch.bats > /tmp/.t4843b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4843b.out
+timeout 900 python3 -m pytest tests/unit/t3582_harness_kinds_test.py -q -p no:cacheprovider > /tmp/.t4843c.out 2>&1 && grep -q passed /tmp/.t4843c.out
 bin/fw vendor self --check --task T-4843
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -293,6 +296,25 @@ bin/fw vendor self --check --task T-4843
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** after a codex (or opencode / antigravity / ollama-loop) dispatch, the worker dir held
+`worker_bin` but no version anywhere; stderr.log and meta.json did not say which build ran (832 msg
+36c65b40, be.38 test E).
+
+**Root cause:** T-4775 added the `worker binary: <path> (<version>)` line inline in the claude
+branch of the run.sh template only (agents/termlink/termlink.sh, old lines 1916-1918). The
+ollama-loop branch (~1797) and the harness branch (codex/opencode/antigravity, ~1846-1867) launch
+their binary without it, and no branch wrote the binary or version into meta.json.
+
+**Why structurally allowed:** run.sh has three independent launch branches and no shared launch
+helper, so a per-launch concern added to one branch silently misses the others. The only test
+(t4775_spawn_path_native_claude.bats) exercised a claude dispatch, so nothing asserted the line
+for any other kind.
+
+**Prevention:** one helper, `_fw_record_worker_bin` (marked block `T-4843 worker binary record`),
+called from every branch; tests/unit/t4843_worker_binary_every_kind.bats asserts each launch
+branch calls it, that no `--version` probe exists outside it, and drives real run.sh for claude,
+ollama-loop, codex and opencode seats.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -356,6 +378,18 @@ bin/fw vendor self --check --task T-4843
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-27 — where the version is captured, and what "version" means for ollama-loop
+- **Chose:** record in run.sh at launch time (stderr line + jq update of meta.json keys
+  `worker_bin` / `worker_version`), writing `--version` output to a file rather than a pipe; for
+  ollama-loop the "version" is the interpreter's `python3 --version` plus the loop script's sha256
+  prefix, passed to the helper as an override.
+- **Why:** run.sh is where the binary that actually runs is known (PATH is constructed there);
+  a file redirect means a `--version` that leaves a child holding stdout cannot hold the launch
+  past the 20 s timeout; the loop script has no `--version` flag and is run by python3.
+- **Rejected:** writing the keys at dispatch time in cmd_dispatch (resolves on the caller's PATH,
+  not the worker's — the exact T-4775 blind spot); calling `ollama-tool-loop.py --version` (no
+  such flag; argparse would exit 2 and record nothing useful).
 
 ## Decision
 

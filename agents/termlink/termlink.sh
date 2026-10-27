@@ -1635,6 +1635,37 @@ _fw_watchdog() {
 }
 # --- T-4776 watchdog (end)
 
+# --- T-4843 worker binary record (start)
+# Name the binary that actually runs and its version, for EVERY worker kind: one stderr.log line
+# and the meta.json keys worker_bin / worker_version (T-4775 did claude only; a stale codex was
+# invisible after the fact). $2 overrides the version (a script run by an interpreter). --version
+# goes to a file, not a pipe, so a child it leaves holding stdout cannot outlast the 20 s bound;
+# a failure or timeout is recorded, and this never fails the launch.
+_fw_record_worker_bin() {
+    local bin ver="${2:-}" out="$WDIR/worker_version.txt" rc=0
+    bin=$(command -v "$1" 2>/dev/null || echo "$1")
+    if [ -z "$ver" ]; then
+        timeout -k 2 20 "$bin" --version > "$out" 2>&1 < /dev/null || rc=$?
+        ver=$(head -1 "$out" 2>/dev/null)
+        if [ "$rc" -eq 124 ] || [ "$rc" -eq 137 ]; then
+            ver="version unknown: --version timed out after 20s"
+        elif [ "$rc" -ne 0 ]; then
+            ver="version unknown: --version exited $rc${ver:+: $ver}"
+        elif [ -z "$ver" ]; then
+            ver="version unknown: --version printed nothing"
+        fi
+    fi
+    echo "worker binary: $bin ($ver)" >> "$WDIR/stderr.log"
+    if command -v jq >/dev/null 2>&1 && [ -f "$WDIR/meta.json" ]; then
+        jq --arg b "$bin" --arg v "$ver" '.worker_bin = $b | .worker_version = $v' \
+           "$WDIR/meta.json" > "$WDIR/meta.json.tmp" 2>/dev/null \
+            && mv "$WDIR/meta.json.tmp" "$WDIR/meta.json" \
+            || rm -f "$WDIR/meta.json.tmp"
+    fi
+    return 0
+}
+# --- T-4843 worker binary record (end)
+
 # T-3580 round 6: the completion secret is ISSUED to this runtime by its authenticated start
 # (below), never written to disk by registration. Deliberately NOT exported; it reaches
 # `complete` only on stdin, after the worker has exited.
@@ -1809,6 +1840,8 @@ if [ "$WORKER_KIND" = "ollama-loop" ]; then
     else
         # Pass model alias as OLLAMA_LOOP_MODEL when --model was supplied.
         [ -n "$MODEL" ] && export OLLAMA_LOOP_MODEL="$MODEL"
+        # T-4843: the loop is a script run by python3 (no --version): record both.
+        _fw_record_worker_bin "$LOOP_BIN" "$(python3 --version 2>&1 | head -1); sha256 $(sha256sum "$LOOP_BIN" 2>/dev/null | cut -c1-12)"
         ( python3 "$LOOP_BIN" --wdir "$WDIR" >"$WDIR/stdout.log" 2>>"$WDIR/stderr.log" ) &
         LOOP_PID=$!
         ( _fw_watchdog "$LOOP_PID" ) &
@@ -1843,6 +1876,7 @@ elif [ -n "$HARNESS" ]; then
         _tree_fp() { ( cd "$TREE" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum 2>/dev/null | sha256sum | cut -d' ' -f1 ); }
         TREE_FP_BEFORE="$(_tree_fp)"
         PROMPT_TEXT="$(cat "$WDIR/prompt.md")"
+        _fw_record_worker_bin "$WORKER_BIN"
         case "$WORKER_KIND" in
             codex)
                 # -s workspace-write (T-3986, was read-only): writes reach only the workspace (the
@@ -1914,8 +1948,7 @@ else
     else
         # T-4775: name the binary that actually runs, and its version — a stale claude on the
         # constructed PATH was invisible after the fact.
-        _WB=$(command -v "$WORKER_BIN" 2>/dev/null || echo "$WORKER_BIN")
-        echo "worker binary: $_WB ($(timeout 20 "$_WB" --version 2>&1 < /dev/null | head -1))" >> "$WDIR/stderr.log"
+        _fw_record_worker_bin "$WORKER_BIN"
         "$WORKER_BIN" -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG $SETTING_SOURCES_FLAG $TOOLS_FLAG $PERMISSION_MODE_FLAG $MCP_CONFIG_FLAG $STRICT_MCP_FLAG $ALLOWED_TOOLS_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>>"$WDIR/stderr.log" &
         CLAUDE_PID=$!
     fi
