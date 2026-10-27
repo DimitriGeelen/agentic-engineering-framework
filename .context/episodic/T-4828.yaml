@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4828: Arc-focus AGE warning fires on a still-active arc (focus old but its tasks are committing): reads as nagging
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T22:49:51Z
+# ============================================================================
+
+task_id: T-4828
+task_name: "Arc-focus AGE warning fires on a still-active arc (focus old but its tasks are committing): reads as nagging"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T13:45:59Z
+completed: 2026-10-27T22:49:27Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T23:34:22+01:00
+last_commit: 2026-10-27T23:38:20+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc-focus AGE only for an old AND quiet arc — active arc reports age on the OK line. vendor arc_focus_health.py. tick vendor/T-4774 AC
+
+# Key outcomes
+outcomes:
+  - 'Reproduce first: a bats test builds a repo whose arc focus was set more than the limit ago but whose arc tasks have commits inside the window, and shows the AGE warning fires; it fails before the fix'
+  - 'AGE is suppressed (or downgraded to an INFO line) when the focused arc has its own task commits within the window, using the same measure DRIFT uses (T-4774); an old focus on a quiet arc still warns'
+  - 'Existing T-4774 handover tests stay green; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — what "active" means, and suppress vs INFO'
+    chose: 'AGE is suppressed when the arc''s share of the window''s task commits is at or above DRIFT''s MIN_FRACTION (10%) — exactly when DRIFT is silent. The old timestamp moves onto the OK line ("active: k of n … (focus set D, N days ago)"), which `fw doctor` prints as OK and the handover does not print.'
+    rationale: 'One measure for both signals, as the AC asks; no caller changes (bin/fw and handover.sh already filter on `AGE|DRIFT`), so nothing in another lane is edited. Keeping the age on the OK line is the INFO downgrade without a new verdict type.'
+    alternatives_rejected: ['"any arc commit in the window" (inside ≥ 1) — one stray commit among 50 would silence AGE on an arc that has effectively stopped; a new INFO verdict — needs bin/fw (another lane) to render it.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/arc_focus_health.py'
+  - '.tasks/active/T-4828-arc-focus-age-warning-fires-on-a-still-a.md'
+  - 'lib/arc_focus_health.py'
+  - 'tests/unit/t4774_arc_focus_health.bats'
+  - 'tests/unit/t4828_arc_age_active_arc.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T23:34:22'
+    action: 'T-4828: arc-focus AGE only for an old AND quiet arc — active arc reports age on the OK line'
+  - time: '2026-10-27T23:35:12'
+    action: 'T-4828: vendor arc_focus_health.py'
+  - time: '2026-10-27T23:38:20'
+    action: 'T-4828: tick vendor/T-4774 AC'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 543 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [enhancement]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 543
+  commits: 4
+  files_changed: 8
+  lines_added: 291
+  lines_removed: 44
+  footprint_refreshed_at: '2026-10-27T22:50:04Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4828-arc-focus-age-warning-fires-on-a-still-a.md
+generated_by: context-agent-hybrid
