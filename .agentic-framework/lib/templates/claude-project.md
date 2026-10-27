@@ -57,6 +57,29 @@ When multiple instruction sources conflict (CLAUDE.md, plugins, skills, user mes
 
 **Why this matters:** Third-party plugins are not aware of project-specific governance. They will issue instructions like "implement now" or "code first, test first" without checking for task context. The agent must apply framework rules as a pre-filter before deferring to skill workflows.
 
+## Worktree Policy — OPT-IN ONLY (operator directive, 2026-08-25)
+
+**The default is the main checkout. Do not create a git worktree unless the
+operator has explicitly instructed one, in this session, in their own words.**
+
+This overrides every other passage in this file that reads as "use a worktree for parallel work".
+
+| Situation | What to do |
+|---|---|
+| Ordinary work, any size | Main checkout. No worktree. |
+| Parallel work that edits files | Serialise it in the main checkout. Converging writes are a reason to go sequential, not a reason to branch the filesystem. |
+| Genuinely major piece of work | You MAY **suggest** a worktree, once, as a suggestion. Silence or anything short of a clear yes = main checkout. |
+| Operator explicitly says to use one | Use it (`fw worktree create`). Land it on the project's development branch from the main checkout (`fw integrate run <dev-branch> --push`), never straight onto the release branch. |
+
+**"It would be cleaner in isolation" is the rationalisation this rule exists to
+catch.** So is "the dispatch protocol says to". Neither is an instruction.
+
+The mechanism is not removed and not gated; only the default changed. This binds on
+agent discipline, so do not read the absence of a gate as permission. Worktrees have
+been a repeated source of damage: branch/worktree divergence, commits stranded in
+directories later torn down, and handed-off `cd …/worktrees/…` commands that fail
+because the path is gone.
+
 ## Task System
 
 ### File Structure

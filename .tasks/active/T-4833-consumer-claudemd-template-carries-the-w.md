@@ -1,10 +1,19 @@
 ---
 id: T-4833
-name: "Consumer CLAUDE.md template carries the Worktree Policy (opt-in only, operator's explicit instruction)"
+name: "Consumer CLAUDE.md template carries the Worktree Policy (opt-in only, operator's
+  explicit instruction)"
 description: >
-  055 finding (msg be9562f5, their T-649): AEF's Worktree Policy (CLAUDE.md §Worktree Policy, operator directive 2026-08-25: no worktree unless the operator explicitly instructed one, in this session, in their own words; 'Consumer / vendored project: Same rule') never reaches consumers. lib/templates/claude-project.md mentions worktree 0 times (verified 2026-10-27), so consumer CLAUDE.md files never carry it. 055 made 27 worktree branches in 8 days (2026-10-19..27) with no operator instruction. Fix: carry the policy (condensed, with the table and the 'cleaner in isolation is not an instruction' line) in the consumer template and the governance refresh, so fw upgrade delivers it.
+  055 finding (msg be9562f5, their T-649): AEF's Worktree Policy (CLAUDE.md §Worktree
+  Policy, operator directive 2026-08-25: no worktree unless the operator explicitly
+  instructed one, in this session, in their own words; 'Consumer / vendored project:
+  Same rule') never reaches consumers. lib/templates/claude-project.md mentions worktree
+  0 times (verified 2026-10-27), so consumer CLAUDE.md files never carry it. 055 made
+  27 worktree branches in 8 days (2026-10-19..27) with no operator instruction. Fix:
+  carry the policy (condensed, with the table and the 'cleaner in isolation is not
+  an instruction' line) in the consumer template and the governance refresh, so fw
+  upgrade delivers it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T15:30:31Z
-last_update: 2026-10-27T15:30:31Z
-date_finished: null
+last_update: 2026-10-27T15:44:10Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-27T15:43:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=1 (body/components:prompt-incidental); F1=0 (no-signal); 
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4833: Consumer CLAUDE.md template carries the Worktree Policy (opt-in only, operator's explicit instruction)
@@ -62,8 +89,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A failing test first: a consumer CLAUDE.md generated from lib/templates/claude-project.md (fw init, and the governance refresh fw upgrade runs) contains no Worktree Policy
+- [ ] lib/templates/claude-project.md carries a condensed Worktree Policy section: opt-in only; no worktree unless the operator explicitly instructed one, in this session, in their own words; the situation table (ordinary work → main checkout; parallel edits → serialise; major work → may suggest once; operator says use one → use it, land on the dev branch); "cleaner in isolation" and "the dispatch protocol says to" are not instructions. Wording consistent with AEF's own CLAUDE.md §Worktree Policy
+- [ ] The governance refresh delivers the section to an existing consumer on `fw upgrade` without duplicating it on a second run (T-4821 idempotence), and the consumer's project-specific sections stay intact
+- [ ] tests/unit/upgrade_fresh_machine_simulation.bats stays green; new tests in tests/unit/t4833_template_worktree_policy.bats; vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -112,6 +141,9 @@ date_finished: null
 -->
 
 ## Verification
+
+bats tests/unit/t4833_template_worktree_policy.bats
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -251,6 +283,11 @@ date_finished: null
 
 ## RCA
 
+**Symptom:** 055 made 27 worktree branches in 8 days with no operator instruction.
+**Root cause:** lib/templates/claude-project.md had no Worktree Policy section (0 mentions), and both fw init (lib/init.sh:1036) and the fw upgrade governance refresh (lib/upgrade.sh:1956, replaces everything from `## Core Principle`) copy that template, so the AEF-only policy never reached consumers.
+**Why structurally allowed:** the policy lived only in AEF's own CLAUDE.md; nothing compared the template against repo-level operator directives that say "Consumer: same rule".
+**Prevention:** tests/unit/t4833_template_worktree_policy.bats pins the section in the template, its position in the refreshed region, and upgrade idempotence.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -345,3 +382,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4833-consumer-claudemd-template-carries-the-w.md
 - **Context:** Initial task creation
+
+### 2026-10-27T15:43:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
