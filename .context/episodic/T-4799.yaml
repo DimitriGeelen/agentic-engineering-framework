@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4799: Conformance vectors: CC-21 refused-before-start gets an equivalent route; CC-10 answer-path steps move to an answer_channel variant
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T00:20:49Z
+# ============================================================================
+
+task_id: T-4799
+task_name: "Conformance vectors: CC-21 refused-before-start gets an equivalent route; CC-10 answer-path steps move to an answer_channel variant"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-27T00:18:58Z
+completed: 2026-10-27T00:20:18Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-27T01:20:16+01:00
+last_commit: 2026-10-27T01:20:16+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  CC-21 refused-before-start gets the equivalent route; CC-10 answer-path steps move to an answer_channel variant (base keeps the T3 subject)
+
+# Key outcomes
+outcomes:
+  - 'vectors.yaml CC-21 variant refused-before-start carries an `equivalent:` field with the same wording pattern as CC-16 supervisor-refusal (T-4793)'
+  - 'vectors.yaml CC-10 judges by variants: `lifecycle-unaffected` (no requires; dispatcher_lost then T3 accepted, final done/succeeded) and `answer-path-resumes` (requires [answer_channel]; the question, operator_queue, adopt and worker_topics steps, final questions 1 and dispatcher_session S-successor)'
+  - 'check_vectors.py passes and tests/unit/test_worker_contract_vectors.py stays green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4799-conformance-vectors-cc-21-refused-before.md'
+  - 'tests/conformance/worker-contract/vectors.yaml'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T01:20:16'
+    action: 'T-4799: CC-21 refused-before-start gets the equivalent route; CC-10 answer-path steps move to an answer_channel variant (base keeps the T3 subject)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 5
+  lines_added: 517
+  lines_removed: 34
+  footprint_refreshed_at: '2026-10-27T00:21:34Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4799-conformance-vectors-cc-21-refused-before.md
+generated_by: context-agent-hybrid

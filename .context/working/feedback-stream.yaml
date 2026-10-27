@@ -49561,3 +49561,21 @@ scan_id: R-242baf81
 task_id: T-4798
 payload:
   task_file: .tasks/active/T-4798-v1815-report-record-be26-be32-field-verd.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T00:20:30Z'
+scan_id: R-950b5a60
+task_id: T-4799
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T00:20:30Z'
+scan_id: R-950b5a60
+task_id: T-4799
+payload:
+  task_file: .tasks/active/T-4799-conformance-vectors-cc-21-refused-before.md
