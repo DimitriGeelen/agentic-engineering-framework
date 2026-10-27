@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T15:26:51Z
-last_update: 2026-10-27T15:59:32Z
+last_update: 2026-10-27T16:34:52Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -376,7 +376,7 @@ bin/fw vendor self --check --task T-4832
 **Rationale:** GET /api/field-catalog is built to the design in docs/reports/T-4832-field-catalog-design.md (832's measurements plus the independent Codex review). The parent reviewed the worker's diff; the one defect it found (a client sending `gzip;q=0` still got gzip) is fixed and pinned by a test. The setting is already on in this project, pointing at a 1,301-row sample catalog, so the review needs no setup: open the designer and type into a ref field.
 **Evidence:**
 - 17 tests pass in tests/web/test_t4832_field_catalog.py: unset key, missing file, 1,300-row catalog preserved, missing or duplicate ref, wrong version, oversized file, path escaping the root, gzip vs plain, gzip;q=0
-- Live: `/api/field-catalog` answers 200, 11 KB gzipped, from the restarted Watchtower (`bin/fw watchtower current` OK)
+- Live: http://192.168.10.107:3000/api/field-catalog answers 200, 11 KB gzipped, from the restarted Watchtower (`bin/fw watchtower current` OK)
 - Config key DESIGNER_FIELD_CATALOG (+ _MAX_BYTES, default 10 MiB) registered in lib/config.sh and shown on /config
 - Sample catalog: docs/examples/designer-field-catalog-sample.json (AEF Task/Dispatch/Verdict fields plus synthetic CRM/ERP rows); turn it off with `bin/fw config set DESIGNER_FIELD_CATALOG ""`
 
