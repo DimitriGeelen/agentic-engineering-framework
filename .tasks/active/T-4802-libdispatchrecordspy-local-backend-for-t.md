@@ -92,7 +92,7 @@ Option A of T-4801 (GO 2026-10-27): the §6.2 store and its conformance adapter,
 - [x] `conformance_adapter()` returns an adapter for run_local.py with an injected clock and liveness probe. It declares its capabilities honestly: supervisor_gen fencing; no answer_channel (§5) and no real_worker unless actually built, so those cases report n/a or not-implemented
 - [x] `python3 tests/conformance/worker-contract/run_local.py` reports 0 fail. Every case whose requires the adapter meets passes, and the result table (pass / fail / not-implemented / n/a per case) is recorded in the task Updates. A mutant check (the adapter reporting one wrong outcome) makes run_local.py FAIL, recorded too
 - [x] Unit tests in tests/unit/t4802_dispatch_records_test.py cover the store mechanics directly: CAS refusal on a stale prior state, lock timeout fails closed, a crash mid-write leaves the old record intact (temp file not renamed), and concurrent writers serialise
-- [ ] Scope fence holds: no change to agents/termlink/, run.sh, lib/spawn-env.sh or the dispatches.jsonl ledger (`git diff --stat` of the task's commits touches only lib/dispatch_records.py, its vendored copy, its tests, its fabric card and the task file); vendor in sync
+- [x] Scope fence holds: no change to agents/termlink/, run.sh, lib/spawn-env.sh or the dispatches.jsonl ledger (`git diff --stat` of the task's commits touches only lib/dispatch_records.py, its vendored copy, its tests, its fabric card and the task file); vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -425,3 +425,4 @@ bin/fw vendor self --check --task T-4802
 
 Mutant check: a backend wrapping this module whose derive_outcome reports `paused` as `succeeded` → `fail=2 (CC-16, CC-19), n/a=3, pass=20`, exit 1.
 Unit tests: tests/unit/t4802_dispatch_records_test.py 10 passed; together with tests/unit/test_worker_contract_vectors.py 51 passed, 0 skipped.
+Scope: commit 7c1f441cc touches lib/dispatch_records.py, its vendored copy, tests/unit/t4802_dispatch_records_test.py, tests/unit/test_worker_contract_vectors.py (the runner's no-backend tests, see Decisions), the fabric card and this task file; nothing under agents/termlink/, run.sh, lib/spawn-env.sh or dispatches.jsonl. All four ## Verification lines pass under `set -o pipefail`; `bin/fw test invariants` green.
