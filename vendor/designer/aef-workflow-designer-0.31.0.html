@@ -1175,25 +1175,33 @@ font-family: 'Outfit';
     background-size: 4px 4px, 4px 4px;
     background-repeat: no-repeat;
   }
+  /* T-1310: req and × were --text-faint (2.84:1 on the panel; AA needs 4.5:1 for the label, 3:1 for the glyph) and
+     their boxes 37×14.5 / 15.6×14 px (WCAG 2.2 target minimum 24×24). Now --text-dim, and a 24 px HIT AREA from an
+     absolutely placed ::after: it takes no layout space (a 24 px box narrowed the name and type and made field rows
+     taller, T-1310 sweep). */
   .io-req {
     display: flex;
     align-items: center;
     gap: 3px;
     font-family: var(--mono);
     font-size: 10px;
-    color: var(--text-faint);
+    color: var(--text-dim);
     user-select: none;
     cursor: pointer;
     padding: 0 2px;
+    position: relative;
   }
+  .io-req::after, .io-del::after { content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+                                   width: max(100%, 24px); height: max(100%, 24px); }
   .io-req input { accent-color: var(--accent); width: 12px; height: 12px; margin: 0; cursor: pointer; }
   .io-del {
-    color: var(--text-faint);
+    color: var(--text-dim);
     cursor: pointer;
     font-size: 14px;
     padding: 0 4px;
     line-height: 1;
     user-select: none;
+    position: relative;
   }
   .io-del:hover { color: var(--red); }
   .io-add {
@@ -1219,6 +1227,14 @@ font-family: 'Outfit';
   .io-v11 .v, .wf-v11 .v { color: var(--text); }
   .io-v11 .d { color: var(--text-faint); font-style: italic; margin-left: 4px; }
   .io-v11-kid { padding-left: 2px; }
+  /* T-1303: a Check finding on this io (mapping v1.1 lint), under its row; the edge colour is the severity's */
+  .io-findings { margin: 0 0 3px 2px; min-width: 0; }
+  .io-finding { padding: 2px 0 2px 7px; border-left: 2px solid var(--orange); font-size: 11px; line-height: 1.4;
+    color: var(--text); overflow-wrap: anywhere; }
+  .io-finding[data-sev="ERROR"] { border-left-color: var(--red); }
+  .io-finding-sev { font-family: var(--mono); font-size: 10px; font-weight: 600; margin-right: 5px; color: var(--orange); }
+  .io-finding[data-sev="ERROR"] .io-finding-sev { color: var(--red); }
+  .io-finding-rule { display: block; font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
   .io-v11-kid .tag { color: var(--accent); }
   /* T-1301: the io attributes editor, under its row, behind a toggle */
   .io-attrs-toggle { font-family: var(--mono); font-size: 10px; color: var(--text-dim); cursor: pointer; margin: 0 0 4px 2px;
@@ -8698,6 +8714,8 @@ function ioListField(kind /* 'inputs' | 'outputs' */, items, isInput, node) {
   }
   items.forEach((item, idx) => {
     list.appendChild(ioRow(item, idx, items, isInput));
+    const found = ioFindingsBlock(node, item, idx, isInput);   // T-1303: Check findings on this io
+    if (found) list.appendChild(found);
     const editing = _ioAttrsOpen.has(item);   // T-1301
     const v11 = ioV11Block(item, isInput, node, editing);   // T-1249: read-only
     if (v11) list.appendChild(v11);
@@ -8715,6 +8733,43 @@ function ioListField(kind /* 'inputs' | 'outputs' */, items, isInput, node) {
   };
   wrap.appendChild(addBtn);
   return wrap;
+}
+
+// ── T-1303 (slice 4 of T-1242): the Check findings that name ONE io, under its row ──
+// The mapping v1.1 lint (E-XML-IO-MATCH-MISSING, E-XML-IO-PREFIX-UNDECLARED, W-XML-IO-MATCH-UNRESOLVED) locates a
+// finding as `node '<id>' output[i] "<name>"`: i counts that node's outputs (or inputs) in document order, which is the
+// order of `items`. Matched on node, kind, index AND name, so an io removed, moved or renamed since the Check shows no
+// finding rather than its neighbour's. The drawer and the canvas marker still carry every finding; this only repeats
+// it where the io is edited. Not checked, or no finding on this io: null, and the panel is exactly as before.
+const IO_FINDING_LOC = /\b(input|output)\[(\d+)\] "([^"]*)"/;
+function ioFindingsBlock(node, item, idx, isInput) {
+  if (!node || findingsView.state !== 'checked') return null;
+  const kind = isInput ? 'input' : 'output';
+  const hits = findingsView.rows.filter(r => {
+    const m = IO_FINDING_LOC.exec(String((r && r.location) || ''));
+    return m && m[1] === kind && Number(m[2]) === idx && m[3] === (item.name || '') && findingNodeId(r.location) === node.id;
+  });
+  if (!hits.length) return null;
+  const box = document.createElement('div');
+  box.className = 'io-findings';
+  for (const r of hits) {
+    const row = document.createElement('div');
+    row.className = 'io-finding';
+    row.dataset.sev = r.severity;
+    row.dataset.rule = r.rule;
+    const sev = document.createElement('span');
+    sev.className = 'io-finding-sev';
+    sev.textContent = r.severity;
+    const msg = document.createElement('span');
+    msg.className = 'io-finding-msg';
+    msg.textContent = r.message;
+    const rule = document.createElement('span');
+    rule.className = 'io-finding-rule';
+    rule.textContent = r.rule;
+    row.append(sev, msg, rule);
+    box.appendChild(row);
+  }
+  return box;
 }
 
 // ── T-1249 (slice 1 of T-1242): SHOW the mapping v1.1 io constructs, read-only ──
@@ -13541,7 +13596,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.30.0';
+const APP_VERSION = '0.31.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's

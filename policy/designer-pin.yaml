@@ -16,13 +16,13 @@
 # frozen annotated tag = published frozen bytes — 832's working tree stays
 # off-limits.
 
-version: "0.30.0"
-sha256: "137810095a2a673bd543d16eab2cb6634b2ba0011f8afe5e2d9005c31cd1bcd6"
-bytes: 1261404
+version: "0.31.0"
+sha256: "045726676578d2d88fec327695922cc3aa0bd46ad477bc3f00a024511473244e"
+bytes: 1264751
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.30.0.html"
-source_tag: "designer-v0.30.0"
+source_artifact: "dist/aef-workflow-designer-0.31.0.html"
+source_tag: "designer-v0.31.0"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 # Read-only LAN origin for pull-at-tag intake (T-247/D-335, tooling T-2616).
 # `fw designer sync --from-tag` fetches artifact + MANIFEST at the annotated tag
@@ -187,19 +187,21 @@ protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha25
 #   whole io names (T-1305). No new endpoint; edits save via /api/save.
 # T-4795 (2026-10-27): re-pinned 0.29.0 -> 0.30.0 (832 msg 97852295). Ref picker over GET /api/field-catalog (hidden
 #   while AEF does not serve it; T-4737) and the add-field order fix (832 T-1314). No new endpoint required.
-vendored_path: "vendor/designer/aef-workflow-designer-0.30.0.html"
+# T-4838 (2026-10-27): re-pinned 0.30.0 -> 0.31.0 (832 msg 9079c0e9), build and validator from the same kit.
+#   Validator adds the mapping v1.1 io rules (832 T-1303, AEF spec T-4415); req/x legible (832 T-1310).
+vendored_path: "vendor/designer/aef-workflow-designer-0.31.0.html"
 
 # T-4830 (T-4737 GO): 832's validator, pinned beside the build. POST /api/validate runs its run_xml()
 # in-process and adds no rules. Released as part of 832's authoring kit at the SAME tag; fw designer
 # sync --from-tag verifies it against the kit's SHA256SUMS at the tag (itself checked against the
 # MANIFEST kit_sha256) and against validator_sha256 here, then installs it read-only. Bump these with
 # the build above, from the same announce.
-validator_source: "dist/aef-authoring-kit-0.30.0/validate-workflow.py"
-validator_sums: "dist/aef-authoring-kit-0.30.0/SHA256SUMS"
-validator_kit_sha256: "66f0c3ba2d26c58ac707fe7d71f93df4ff86dd3788a21564dd33b5c2e22c92fb"
-validator_sha256: "d721a8b0a641f5a8ac37f744f972095354f0f1e7d3647fb29fe083c96d4840ba"
-validator_bytes: 109553
-validator_path: "vendor/designer/validate-workflow-0.30.0.py"
+validator_source: "dist/aef-authoring-kit-0.31.0/validate-workflow.py"
+validator_sums: "dist/aef-authoring-kit-0.31.0/SHA256SUMS"
+validator_kit_sha256: "bf85239fd739f17a32aa7e4717ba801f862b1cf1ae8b8aa0f7058373523da19d"
+validator_sha256: "779379480a68fc2ea2bfb42abb8c1308b8a87492ee9c0de3538d0a2fae650751"
+validator_bytes: 113844
+validator_path: "vendor/designer/validate-workflow-0.31.0.py"
 
 # Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
 # on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for
@@ -216,4 +218,4 @@ cdn_fonts: false
 # ever regresses this capability, flip back to false — the dual-form emit and
 # the lint gate reactivate automatically (T-2612 guard).
 resolves_workflow_ref: true
-notes: "self-contained single-file editor; offline-hardened (base64 woff2, zero-network); IW-9 owner-collapse (owner read-only from lane authority); 0.25.0: aef:io v1.1 read-only + lossless save, lens switch, labels off flows; 0.26.0: ?browse=1, legibility; 0.27.0: io panel shows producer ref + dataType; 0.28.0: io attributes editable; 0.29.0: io field editing, whole io names; 0.30.0: field-catalog ref picker, add-field order"
+notes: "self-contained single-file editor; offline-hardened (base64 woff2, zero-network); IW-9 owner-collapse (owner read-only from lane authority); 0.25.0: aef:io v1.1 read-only + lossless save, lens switch, labels off flows; 0.26.0: ?browse=1, legibility; 0.27.0: io panel shows producer ref + dataType; 0.28.0: io attributes editable; 0.29.0: io field editing, whole io names; 0.30.0: field-catalog ref picker, add-field order; 0.31.0: mapping v1.1 io lint (match missing, prefix undeclared, match unresolved), req/x legible"

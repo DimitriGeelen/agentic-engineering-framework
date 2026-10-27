@@ -31,6 +31,7 @@ later adopt it as `fw workflow validate`.
 
 import argparse
 import json
+import re
 import sys
 import xml.etree.ElementTree as ET
 
@@ -1581,6 +1582,77 @@ class XmlValidator:
         # hint depends on whether the ordering rule is clean, because heights can
         # only contain lanes that are already ordered (see _check_lane_capacity).
         self._check_lane_capacity(process)
+
+        # Mapping v1.1 lint on the io (T-1303, AEF spec T-4415): R1-R3.
+        self._check_io_v11(process)
+
+    # Attributes that take a CURIE (mapping v1.1). `ref` is v1 and has its own read rule, so it is not read here.
+    IO_CURIE_ATTRS = ("fieldRef", "typeRef", "conceptRef")
+    IO_KEYLESS_OPERATIONS = ("update", "upsert", "delete")
+
+    def _check_io_v11(self, process):
+        """Mapping v1.1 lint decidable from the map alone (T-1303; AEF spec T-4415, vendored under
+        .agentic-framework/docs/reports/T-4415-structured-io-attributes.md).
+
+        R1 E-XML-IO-MATCH-MISSING, ERROR: an io whose operation is update / upsert / delete and that has no
+           aef:field role="match" reads as "update / delete everything".
+        R2 E-XML-IO-PREFIX-UNDECLARED, ERROR: a CURIE prefix in fieldRef / typeRef / conceptRef (the io's own or an
+           aef:field's) that the process-level aef:prefixes does not declare. http / https / urn are schemes, not
+           prefixes; a value without a prefix is not a CURIE. Same test as the designer's hint (ioUndeclaredPrefix).
+        R3 W-XML-IO-MATCH-UNRESOLVED, WARN: a role="match" field with neither fieldRef nor path: a key exists, but
+           which one is not yet determined.
+        XML-only: the YAML form cannot write any of these constructs (its bridge writes an io's name, type and
+        required), which tests/test_rule_form_parity.py re-measures.
+
+        Location: node '<id>' <input|output>[<i>] "<name>", i counting that node's inputs (or outputs) in document
+        order. Single quotes mark ids in every location (tests/test_finding_anchorability.py resolves them), so the
+        node id is single-quoted and the io's name, which is not an id, double-quoted.
+        """
+        curie = re.compile(r"^([A-Za-z_][\w.-]*):(?!//)")
+        declared = set()
+        pext = process.find("{%s}extensionElements" % BPMN_NS)
+        if pext is not None:
+            for p in pext.iter("{%s}prefix" % AEF_NS):
+                if p.get("name"):
+                    declared.add(p.get("name"))
+
+        def undeclared(value):
+            m = curie.match(value or "")
+            if not m or m.group(1).lower() in ("http", "https", "urn"):
+                return None
+            return None if m.group(1) in declared else m.group(1)
+
+        for node in process.iter():
+            nid = node.get("id")
+            ext = node.find("{%s}extensionElements" % BPMN_NS)
+            if nid is None or ext is None or node is process:
+                continue
+            index = {"input": 0, "output": 0}
+            for io in ext.iter():
+                kind = self._local(io.tag)
+                if kind not in index or not io.tag.startswith("{%s}" % AEF_NS):
+                    continue
+                loc = 'node \'%s\' %s[%d] "%s"' % (nid, kind, index[kind], io.get("name") or "")
+                index[kind] += 1
+                fields = [c for c in io if c.tag == "{%s}field" % AEF_NS]
+                op = io.get("operation") or ""
+                if op in self.IO_KEYLESS_OPERATIONS and not any(f.get("role") == "match" for f in fields):
+                    self.err("E-XML-IO-MATCH-MISSING", loc,
+                             "operation=\"%s\" with no aef:field role=\"match\": the map reads as %s every "
+                             "instance; name the field that picks the instance" % (op, op))
+                for holder in [io] + fields:
+                    for attr in self.IO_CURIE_ATTRS:
+                        pfx = undeclared(holder.get(attr))
+                        if pfx:
+                            where = "" if holder is io else " on an aef:field"
+                            self.err("E-XML-IO-PREFIX-UNDECLARED", loc,
+                                     "prefix '%s' in %s=\"%s\"%s is not declared in the process aef:prefixes"
+                                     % (pfx, attr, holder.get(attr), where))
+                for f in fields:
+                    if f.get("role") == "match" and not f.get("fieldRef") and not f.get("path"):
+                        self.warn("W-XML-IO-MATCH-UNRESOLVED", loc,
+                                  "a match field with neither fieldRef nor path: a key exists, but which "
+                                  "field it is is not yet determined")
 
     def _node_y(self, node_el):
         """The node's drawn y from <aef:position>, or None when unpositioned.

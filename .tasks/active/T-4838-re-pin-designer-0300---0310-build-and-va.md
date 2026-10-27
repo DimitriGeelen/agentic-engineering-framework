@@ -82,10 +82,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] policy/designer-pin.yaml names 0.31.0 for the build and the validator, from the same kit and tag, with the sha256 values from 832's release mail
-- [ ] `bin/fw designer sync --from-tag` verifies and vendors both files (no mismatch); the 0.30.0 build and validator are pruned
-- [ ] POST to the validate endpoint with a map whose update io has no match field returns E-XML-IO-MATCH-MISSING
-- [ ] Designer tests stay green; vendor in sync; Watchtower restarted and current
+- [x] policy/designer-pin.yaml names 0.31.0 for the build and the validator, from the same kit and tag, with the sha256 values from 832's release mail
+- [x] `bin/fw designer sync --from-tag` verifies and vendors both files (no mismatch); the 0.30.0 build and validator are pruned from the vendored copy
+- [x] POST to the validate endpoint with a map whose update io has no match field returns E-XML-IO-MATCH-MISSING
+- [x] Designer tests stay green; vendor in sync; Watchtower restarted and current
 
 ### Human
 - [ ] [REVIEW] Check in the designer shows the new io findings under the io row
@@ -142,6 +142,14 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+grep -q '^version: "0.31.0"' policy/designer-pin.yaml && grep -q 'validator_sha256: "779379480a68fc2ea2bfb42abb8c1308b8a87492ee9c0de3538d0a2fae650751"' policy/designer-pin.yaml
+test "$(sha256sum vendor/designer/validate-workflow-0.31.0.py | cut -d' ' -f1)" = 779379480a68fc2ea2bfb42abb8c1308b8a87492ee9c0de3538d0a2fae650751
+test "$(sha256sum vendor/designer/aef-workflow-designer-0.31.0.html | cut -d' ' -f1)" = 045726676578d2d88fec327695922cc3aa0bd46ad477bc3f00a024511473244e
+python3 -m pytest -q tests/web/test_t4830_validate.py tests/web/test_t4836_consumer_validator.py tests/web/test_t4832_field_catalog.py
+timeout 600 bats tests/unit/t4836_validator_delivery.bats
+bin/fw vendor self --check --task T-4838
+bin/fw watchtower current
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -347,6 +355,13 @@ bvp_scores_proposed:
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+**Rationale:** The designer build and 832's validator both moved to 0.31.0, from the same kit and tag, as 832 asked. `fw designer sync --from-tag` checked every checksum against 832's release before vendoring, and the new io rule fires on the live server. What remains is your check that the finding shows under its io row in the designer.
+**Evidence:**
+- Sync: MANIFEST anchor, pin anchor and validator anchors (kit SHA256SUMS, kit line, pin) all agree
+- Live: a map whose update output has no match field gets E-XML-IO-MATCH-MISSING at node 't1' output[0] "customer" from http://192.168.10.107:3000/api/validate
+- 38 designer API tests pass; t4836_validator_delivery.bats green; the vendored copy holds only 0.31.0 of each file
 
 ## Decisions
 
