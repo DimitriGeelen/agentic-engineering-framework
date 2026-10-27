@@ -70,8 +70,9 @@ run_check() {
 }
 
 @test "old focus: AGE names arc, date and age in days" {
+    # T-4828: no commits — an old focus on an arc still committing is not AGE
+    # (tests/unit/t4828_arc_age_active_arc.bats); an old quiet one is.
     focus focus-arc 2026-01-02T00:00:00Z
-    commit "T-1: arc work"
     run_check
     [ "$status" -eq 0 ]
     grep -q "^AGE|Arc focus 'focus-arc' set 2026-01-02, [0-9]* days ago (limit 14)|.*fw arc focus focus-arc.*fw arc focus --clear" <<<"$output"

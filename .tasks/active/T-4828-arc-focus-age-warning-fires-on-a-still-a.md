@@ -1,13 +1,18 @@
 ---
 id: T-4828
-name: "Arc-focus AGE warning fires on a still-active arc (focus old but its tasks are committing): reads as nagging"
+name: "Arc-focus AGE warning fires on a still-active arc (focus old but its tasks
+  are committing): reads as nagging"
 description: >
-  TermLink be.39 field test B (msg 829aeb6d): 'Arc focus arc-011 set 2026-09-22, 35 days ago (limit 14)' is true, but arc-011 is still TermLink's live arc with commits in the window. T-4774's AGE fires on focused_at age alone. Refinement: suppress AGE (or downgrade to INFO) when the focused arc has its own task commits within the window (DRIFT already measures that); keep AGE for an arc that is old AND quiet.
+  TermLink be.39 field test B (msg 829aeb6d): 'Arc focus arc-011 set 2026-09-22, 35
+  days ago (limit 14)' is true, but arc-011 is still TermLink's live arc with commits
+  in the window. T-4774's AGE fires on focused_at age alone. Refinement: suppress
+  AGE (or downgrade to INFO) when the focused arc has its own task commits within
+  the window (DRIFT already measures that); keep AGE for an arc that is old AND quiet.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [enhancement]
 components: []
 related_tasks: []
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T13:45:59Z
-last_update: 2026-10-27T13:45:59Z
-date_finished: null
+last_update: '2026-10-27T22:31:40Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-27T22:31:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4828: Arc-focus AGE warning fires on a still-active arc (focus old but its tasks are committing): reads as nagging
@@ -61,8 +83,8 @@ See description. The need: the handover's arc-focus AGE warning fires only when 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: a bats test builds a repo whose arc focus was set more than the limit ago but whose arc tasks have commits inside the window, and shows the AGE warning fires; it fails before the fix
-- [ ] AGE is suppressed (or downgraded to an INFO line) when the focused arc has its own task commits within the window, using the same measure DRIFT uses (T-4774); an old focus on a quiet arc still warns
+- [x] Reproduce first: a bats test builds a repo whose arc focus was set more than the limit ago but whose arc tasks have commits inside the window, and shows the AGE warning fires; it fails before the fix
+- [x] AGE is suppressed (or downgraded to an INFO line) when the focused arc has its own task commits within the window, using the same measure DRIFT uses (T-4774); an old focus on a quiet arc still warns
 - [ ] Existing T-4774 handover tests stay green; vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
@@ -113,7 +135,8 @@ See description. The need: the handover's arc-focus AGE warning fires only when 
 
 ## Verification
 
-timeout 900 bats tests/unit/t4828_arc_age_active_arc.bats
+out=$(timeout 900 bats tests/unit/t4828_arc_age_active_arc.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -qE '^not ok|# skip'
+out=$(timeout 900 bats tests/unit/t4774_arc_focus_health.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -qE '^not ok|# skip'
 bin/fw vendor self --check --task T-4828
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -268,6 +291,14 @@ bin/fw vendor self --check --task T-4828
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** TermLink (be.39, msg 829aeb6d) got "Arc focus arc-011 set 2026-09-22, 35 days ago (limit 14)" in its handover and `fw doctor` while arc-011 was its live arc, with arc tasks committing inside the window. True but useless: the advice ("re-confirm or clear") was wrong for an active arc.
+
+**Root cause:** `lib/arc_focus_health.py:check()` (T-4774) emitted AGE on `focused_at` age alone; the activity measure it already computed for DRIFT (share of the window's task commits that belong to the arc) was never consulted for AGE. `focused_at` only moves on `fw arc focus`, so any long-running arc ages into a warning however busy it is.
+
+**Why structurally allowed:** T-4774's tests treated AGE and DRIFT as independent signals and pinned "old focus + arc commit → AGE" as correct (`tests/unit/t4774_arc_focus_health.bats`, old-focus test), so the nagging case was asserted rather than caught. It surfaced only in a consumer whose arc outlived the 14-day limit.
+
+**Prevention:** `tests/unit/t4828_arc_age_active_arc.bats` pins all four quadrants (old+active → OK, old+no commits → AGE, old+all outside → AGE+DRIFT, old+below threshold → AGE+DRIFT) plus the `AGE|DRIFT` filter the handover applies; the T-4774 old-focus test was corrected to the old-and-quiet premise.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -332,6 +363,12 @@ bin/fw vendor self --check --task T-4828
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-27 — what "active" means, and suppress vs INFO
+- **Chose:** AGE is suppressed when the arc's share of the window's task commits is at or above DRIFT's MIN_FRACTION (10%) — exactly when DRIFT is silent. The old timestamp moves onto the OK line ("active: k of n … (focus set D, N days ago)"), which `fw doctor` prints as OK and the handover does not print.
+- **Why:** One measure for both signals, as the AC asks; no caller changes (bin/fw and handover.sh already filter on `AGE|DRIFT`), so nothing in another lane is edited. Keeping the age on the OK line is the INFO downgrade without a new verdict type.
+- **Rejected:** "any arc commit in the window" (inside ≥ 1) — one stray commit among 50 would silence AGE on an arc that has effectively stopped; a new INFO verdict — needs bin/fw (another lane) to render it.
+- **Kept:** a missing/unreadable `focused_at` still emits AGE regardless of activity — that is a malformed focus file, not an age judgement.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -348,3 +385,7 @@ bin/fw vendor self --check --task T-4828
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4828-arc-focus-age-warning-fires-on-a-still-a.md
 - **Context:** Initial task creation
+
+### 2026-10-27T22:31:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

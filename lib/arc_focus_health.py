@@ -7,7 +7,10 @@ again: ours stayed pinned to ewcr-arc0-contract-evidence from 2026-09-17 while
 every task since was outside that arc, and the handover kept announcing it as
 the "Current Arc". Two signals:
 
-  AGE    focused_at is older than ARC_FOCUS_STALE_DAYS (or missing).
+  AGE    focused_at is older than ARC_FOCUS_STALE_DAYS (or missing), AND
+         the arc is quiet: it holds under MIN_FRACTION of the window's task
+         commits (T-4828 — an old focus on an arc still committing is not
+         stale; the OK line reports the age instead).
   DRIFT  of the tasks committed in the last ARC_FOCUS_STALE_DAYS days, fewer
          than MIN_FRACTION belong to the focused arc. Handover and WM-
          commits are not work and are not counted.
@@ -119,26 +122,31 @@ def check(project_root: Path | str, days: int = DEFAULT_DAYS,
     now = now or datetime.now(timezone.utc)
     findings: list[tuple[str, str, str]] = []
 
+    recent = recent_task_ids(root, days)
+    inside = len(recent & arc_task_ids(root, arc)) if recent else 0
+    # T-4828: the same measure DRIFT uses decides whether the arc is active.
+    active = bool(recent) and inside / len(recent) >= MIN_FRACTION
+
     ts = _parse_ts(focused_at) if focused_at else None
+    age = (now - ts).days if ts else None
     if ts is None:
         findings.append(("AGE", f"Arc focus '{arc}' has no readable focused_at "
                                 f"({focused_at or 'missing'})", _hint(arc)))
-    else:
-        age = (now - ts).days
-        if age > days:
-            findings.append(("AGE", f"Arc focus '{arc}' set {ts.date().isoformat()}, "
-                                    f"{age} days ago (limit {days})", _hint(arc)))
+    elif age > days and not active:
+        findings.append(("AGE", f"Arc focus '{arc}' set {ts.date().isoformat()}, "
+                                f"{age} days ago (limit {days})", _hint(arc)))
 
-    recent = recent_task_ids(root, days)
-    if recent:
-        inside = len(recent & arc_task_ids(root, arc))
-        if inside / len(recent) < MIN_FRACTION:
-            findings.append(("DRIFT", f"Arc focus '{arc}': {inside} of {len(recent)} task(s) "
-                                      f"committed in the last {days} days are in it, "
-                                      f"{len(recent) - inside} outside "
-                                      f"(below {int(MIN_FRACTION * 100)}%)", _hint(arc)))
+    if recent and not active:
+        findings.append(("DRIFT", f"Arc focus '{arc}': {inside} of {len(recent)} task(s) "
+                                  f"committed in the last {days} days are in it, "
+                                  f"{len(recent) - inside} outside "
+                                  f"(below {int(MIN_FRACTION * 100)}%)", _hint(arc)))
 
     if not findings:
+        if age is not None and age > days:
+            return [("OK", f"Arc focus '{arc}' active: {inside} of {len(recent)} task(s) "
+                           f"committed in the last {days} days are in it "
+                           f"(focus set {ts.date().isoformat()}, {age} days ago)", "")]
         age_txt = f", set {ts.date().isoformat()}" if ts else ""
         return [("OK", f"Arc focus '{arc}' current{age_txt}", "")]
     return findings
