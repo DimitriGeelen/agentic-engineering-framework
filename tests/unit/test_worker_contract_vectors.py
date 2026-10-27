@@ -111,8 +111,14 @@ def test_outcome_without_done_breaks_i2(doc):
 
 
 # ── runner ────────────────────────────────────────────────────────────────
-def test_runner_without_backend_reports_not_implemented(doc):
-    assert not run_local.LOCAL_BACKEND.exists(), "local backend now exists: update this test"
+@pytest.fixture
+def no_backend(monkeypatch, tmp_path):
+    """The no-backend path, kept testable now that lib/dispatch_records.py exists (T-4802)."""
+    monkeypatch.setattr(run_local, "LOCAL_BACKEND", tmp_path / "absent" / "dispatch_records.py")
+
+
+def test_runner_without_backend_reports_not_implemented(doc, no_backend):
+    assert not run_local.LOCAL_BACKEND.exists()
     results = [run_local.run_vector(v, None, "no local backend") for v in doc["vectors"]]
     assert len(results) == 25
     assert {r["status"] for r in results} == {"not-implemented"}
@@ -121,13 +127,22 @@ def test_runner_without_backend_reports_not_implemented(doc):
     assert "op:sweep" in cc17["missing"]
 
 
-def test_runner_cli_never_passes_without_backend(capsys):
+def test_runner_cli_never_passes_without_backend(capsys, no_backend):
     assert run_local.main(["--json"]) == 0
     import json
     out = json.loads(capsys.readouterr().out)
     assert out["backend_found"] is False
     assert out["counts"] == {"not-implemented": 25}
     assert run_local.main(["--require-implemented"]) == 3
+
+
+def test_runner_local_backend_has_no_failures(capsys):
+    """T-4802: AEF's own local backend runs the vectors with no fail and no not-implemented."""
+    import json
+    assert run_local.main(["--json", "--require-implemented"]) == 0
+    out = json.loads(capsys.readouterr().out)
+    assert out["backend_found"] is True
+    assert set(out["counts"]) <= {"pass", "n/a"} and out["counts"].get("pass", 0) >= 22
 
 
 class ScriptedAdapter:

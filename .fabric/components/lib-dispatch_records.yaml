@@ -1,0 +1,22 @@
+id: lib/dispatch_records.py
+name: dispatch_records
+type: script
+subsystem: framework-core
+location: lib/dispatch_records.py
+tags: [worker-contract, dispatch, conformance]
+
+purpose: "Local backend of the shared dispatched-worker contract, wc/0.3.3 (T-4802)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  - target: tests/conformance/worker-contract/run_local.py
+    type: calls
+
+last_verified: 2026-10-27
+created_by: T-4802
