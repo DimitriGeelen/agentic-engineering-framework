@@ -524,14 +524,21 @@ if act == "status":
     stored = state.get("last_terminated_reason")
     if isinstance(stored, str) and stored.strip():
         print(f"  (stored last_terminated_reason, NOT re-evaluated: {stored.strip()})")
+    if state.get("disarmed_at"):
+        print(f"  Disarmed by operator at {state.get('disarmed_at')}: {state.get('disarmed_reason') or '-'}")
     sys.exit(0 if st == "ARMED" else 1)
 
+# T-4806: a disarm is the operator's choice, not a bound. It is recorded in its own
+# fields; last_terminated_reason keeps one meaning ("a bound stopped the loop"),
+# which bin/claude-fw reads as a restart brake. Writing the disarm there braked every
+# later budget restart of every session until the next arm (1409: 17 days).
 if act == "disarm":
     state["enabled"] = False
-    state["last_terminated_reason"] = os.environ.get("FW_CM_REASON") or f"disarmed by operator at {now.strftime(Z)}"
+    state["disarmed_at"] = now.strftime(Z)
+    state["disarmed_reason"] = os.environ.get("FW_CM_REASON") or f"disarmed by operator at {now.strftime(Z)}"
     save(sp, state)
     print("Continuous mode: DISARMED")
-    print(f"  Reason: {state['last_terminated_reason']}")
+    print(f"  Reason: {state['disarmed_reason']}")
     sys.exit(0)
 
 hours = as_int(os.environ.get("FW_CM_HOURS") or "", 4)
@@ -616,6 +623,8 @@ state["enabled"] = True
 state["current_iteration"] = 0
 state["max_iterations"] = iters
 state["last_terminated_reason"] = None
+state.pop("disarmed_at", None)       # T-4806
+state.pop("disarmed_reason", None)
 state["last_resumed_at"] = now.strftime(Z)
 state["tasks_completed"] = 0
 # T-3233 (W1-F4): clear the id list in the SAME write that zeroes the counter.

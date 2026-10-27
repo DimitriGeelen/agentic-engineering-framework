@@ -299,6 +299,17 @@ _cfw_lib() {
     return 0
 }
 
+# _cfw_notify <title> <message> — push via fw_notify (T-4806), so a refusal on an
+# unattended host is not silent. Subshell: notify.sh must not leak into this shell.
+# Opt-in and fire-and-forget like every fw_notify caller; never fails the wrapper.
+_cfw_notify() {
+    local lib root
+    lib="$(_cfw_lib notify.sh)"; [ -n "$lib" ] || return 0
+    root=$(git rev-parse --show-toplevel 2>/dev/null) || return 0
+    ( PROJECT_ROOT="$root" FRAMEWORK_ROOT="$(_cfw_framework_dir)"; . "$lib" && fw_notify "$1" "$2" manual framework ) >/dev/null 2>&1 || true
+    return 0
+}
+
 # T-4454: TermLink registration resolves its identity from TERMLINK_IDENTITY_FILE, the same
 # env precedence as signing. Without it the session registered with the HOST key (shared by
 # every co-resident session) while every signing path used the project key. Resolve the
@@ -1096,13 +1107,22 @@ PY
 # `last_terminated_reason` means "switched on, then stopped for this reason".
 # Only the second is a brake. T-3167 guarantees a terminating write also disarms,
 # so this predicate is strictly narrower than the flag and never disagrees with it.
+#
+# T-4806: ...and only for a run that was ARMED. A stored reason outlives the run that
+# wrote it (only `arm` clears it), so reading it unconditionally braked every later
+# plain budget restart — and `fw continuous disarm` used to write it too, so one
+# disarm stopped T-179 for good (1409: 17 days). Args: $1 run_start_epoch, $2 = 1
+# when the run was armed at launch. A termination counts only when the run was armed
+# at launch, or the loop stamped last_resumed_at during this run (armed mid-session,
+# or the injector processed an armed iteration). The legacy disarm form
+# ('disarmed by operator at …', written before T-4806) is never a bound.
 _continuous_terminated() {
     local root state reason
     root=$(git rev-parse --show-toplevel 2>/dev/null) || return 1
     state="${root}/.context/working/.continuous-mode.yaml"
     [ -f "$state" ] || return 1
-    reason=$(python3 - "$state" <<'PY' 2>/dev/null
-import sys
+    reason=$(python3 - "$state" "${1:-0}" "${2:-0}" <<'PY' 2>/dev/null
+import datetime, sys
 try:
     import yaml
     d = yaml.safe_load(open(sys.argv[1], encoding="utf-8")) or {}
@@ -1111,7 +1131,22 @@ except Exception:
 r = d.get("last_terminated_reason") or ""
 if not isinstance(r, str) or not r.strip():
     sys.exit(1)
-print(r.strip())
+r = r.strip()
+if r.startswith("disarmed by operator at "):
+    sys.exit(1)
+if sys.argv[3] != "1":
+    lr = d.get("last_resumed_at")
+    try:
+        if isinstance(lr, datetime.datetime):
+            ts = lr if lr.tzinfo else lr.replace(tzinfo=datetime.timezone.utc)
+        else:
+            ts = datetime.datetime.strptime(str(lr), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc)
+        in_run = ts.timestamp() >= int(sys.argv[2])
+    except Exception:
+        in_run = False
+    if not in_run:
+        sys.exit(1)
+print(r)
 PY
     ) || return 1
     [ -n "$reason" ] || return 1
@@ -1429,6 +1464,9 @@ while true; do
     # T-2373: record when this run started so the terminator only acts on a
     # signal written DURING the run (edge case a — not a leftover/stale signal).
     run_start_epoch=$(date +%s)
+    # T-4806: was this run part of a continuous run? Read before launch, because a
+    # termination inside the run disarms the flag (T-3167) before we look again.
+    _cm_armed_at_launch=0; _continuous_armed && _cm_armed_at_launch=1
     _resolve_continue    # T-4497 (before naming: an unresolvable -c leaves a fresh run)
     _name_fresh_relaunch # T-3629
     _conversation_guard || exit 3   # T-3890
@@ -1580,7 +1618,8 @@ while true; do
         # Ordered BEFORE the budget spend deliberately. A terminated loop must not
         # consume restart budget on its way to refusing — otherwise the ledger reports
         # the rate limit as the cause and the real reason is lost.
-        if term_reason=$(_continuous_terminated); then
+        if term_reason=$(_continuous_terminated "$run_start_epoch" "$_cm_armed_at_launch"); then
+            _cfw_notify "claude-fw: continuous run terminated, restart refused" "$term_reason"   # T-4806
             echo ""
             echo "claude-fw: Continuous run was TERMINATED — refusing to restart."
             echo "  Reason: ${term_reason}"
