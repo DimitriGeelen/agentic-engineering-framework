@@ -50189,3 +50189,21 @@ scan_id: R-6b61358f
 task_id: T-4841
 payload:
   task_file: .tasks/active/T-4841-fw-task-create-an-aborted-create-leaves-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T20:13:30Z'
+scan_id: R-9fdf79c2
+task_id: T-4842
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T20:13:30Z'
+scan_id: R-9fdf79c2
+task_id: T-4842
+payload:
+  task_file: .tasks/active/T-4842-be-tag-with-t-4841-task-id-lock-released.md
