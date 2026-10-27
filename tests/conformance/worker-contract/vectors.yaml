@@ -582,35 +582,51 @@ vectors:
     steps:
       - op: dispatcher_lost
         expect: {ok: true}
-      - op: append_question
-        writer: worker
-        attempt: 1
-        nonce: n1
-        args: {question_id: q1, body: which branch}
-        expect: {ok: true}
-      - op: inspect
-        args: {surface: operator_queue}
-        expect: {ok: true, values: {contains_question: q1}}
-      - op: complete
-        writer: supervisor
-        attempt: 1
-        nonce: n1
-        credential: c1
-        evidence: E1
-        expect: {accepted: T3}
-      - op: adopt
-        writer: operator
-        args: {to: S-successor}
-        expect: {ok: true}
-      - op: inspect
-        args: {surface: worker_topics}
-        expect: {ok: true, values: {count: 0}}
-    then:
-      final:
-        A1: {state: done, outcome: succeeded, questions: 1}
-      dispatcher_session: S-successor
-      admissible_histories:
-        A1: [[running, done]]
+    then: {judged_by: variants}
+    # T-4799: the question, operator-queue, adopt and topic steps are the §5 answer path, so
+    # they live in a variant that requires answer_channel (closed n/a list, as CC-23 / T-4794).
+    # The subject, the lifecycle is unaffected by the parent's loss, runs everywhere.
+    variants:
+      - name: lifecycle-unaffected
+        steps:
+          - {op: complete, writer: supervisor, attempt: 1, nonce: n1, credential: c1, evidence: E1, expect: {accepted: T3}}
+        then:
+          final:
+            A1: {state: done, outcome: succeeded}
+          admissible_histories:
+            A1: [[running, done]]
+      - name: answer-path-resumes
+        requires: [answer_channel]
+        steps:
+          - op: append_question
+            writer: worker
+            attempt: 1
+            nonce: n1
+            args: {question_id: q1, body: which branch}
+            expect: {ok: true}
+          - op: inspect
+            args: {surface: operator_queue}
+            expect: {ok: true, values: {contains_question: q1}}
+          - op: complete
+            writer: supervisor
+            attempt: 1
+            nonce: n1
+            credential: c1
+            evidence: E1
+            expect: {accepted: T3}
+          - op: adopt
+            writer: operator
+            args: {to: S-successor}
+            expect: {ok: true}
+          - op: inspect
+            args: {surface: worker_topics}
+            expect: {ok: true, values: {count: 0}}
+        then:
+          final:
+            A1: {state: done, outcome: succeeded, questions: 1}
+          dispatcher_session: S-successor
+          admissible_histories:
+            A1: [[running, done]]
 
   - id: CC-11
     title: Answer delivered and acked
@@ -1204,6 +1220,8 @@ vectors:
           operator_notices: 1
           admissible_histories: {A1: [[dispatched, unknown]]}
       - name: refused-before-start
+        # T-4799: same route as CC-16 supervisor-refusal (T-4793).
+        equivalent: a backend with no post-T1 refusal path (it refuses before T1) runs derivation rule 2 through its derivation function on this evidence and reports T3b done{refused} (§3.3, §6.6 N2)
         given:
           evidence:
             E1: {attempt: 1, nonce: n1, exit_code: 3, supervisor_refused: true, handback: absent, signed: true, persisted_at: 5}
