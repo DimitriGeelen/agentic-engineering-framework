@@ -250,6 +250,26 @@ fw_focus_file() {
     local dir="${CONTEXT_DIR:-$root/.context}/working"
 
     if [ "${FW_SESSION_SCOPED_FOCUS:-0}" != "1" ]; then
+        # T-4820: a linked worktree with no focus.yaml of its own shares the main
+        # checkout's. Governance state is main's to write (T-3098 refuses creating
+        # it in the worktree), so resolving to the worktree here left the gate
+        # reading a file nothing could create: every Bash and Write refused as
+        # "session not active". One resolver for gate and verb keeps them on the
+        # same file. A worktree that HAS its own focus keeps it (T-2463).
+        # Only for the tree's own .context: a sandboxed CONTEXT_DIR (T-3141) must
+        # never be redirected to a real main checkout.
+        if [ ! -f "$dir/focus.yaml" ] && [ "$dir" = "$root/.context/working" ] \
+           && declare -F fw_is_linked_worktree >/dev/null 2>&1 \
+           && fw_is_linked_worktree "$root"; then
+            local gcd main
+            gcd=$(git -C "$root" rev-parse --git-common-dir 2>/dev/null) || gcd=""
+            case "$gcd" in /*) ;; "") ;; *) gcd="$root/$gcd" ;; esac
+            main=$([ -n "$gcd" ] && cd "$gcd/.." 2>/dev/null && pwd -P) || main=""
+            if [ -n "$main" ] && [ -d "$main/.context/working" ]; then
+                printf '%s\n' "$main/.context/working/focus.yaml"
+                return 0
+            fi
+        fi
         printf '%s\n' "$dir/focus.yaml"
         return 0
     fi

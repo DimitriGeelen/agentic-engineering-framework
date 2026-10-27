@@ -183,6 +183,15 @@ except Exception:
             ;;
     esac
 
+    # T-4820: a bare `cd PATH` changes nothing but the shell's cwd, and it is the
+    # way OUT of a tree whose focus cannot be resolved. Decided here, ahead of
+    # every focus read, so no focus state can turn it into a deadlock. Bare means
+    # bare: one cd, no chain, substitution, redirect or second line.
+    if [[ "$BASH_CMD" =~ ^[[:space:]]*cd([[:space:]]+[^\;\&\|\<\>\`\$\(\)]*)?$ ]] \
+       && [[ "$BASH_CMD" != *$'\n'* ]]; then
+        exit 0
+    fi
+
     # Source safe-command allowlist.
     # T-3231 moved this ABOVE the --help exemption, which now consults
     # has_bash_write_pattern. Sourcing only defines functions, so the move is
@@ -787,6 +796,10 @@ except:
 # Read current session ID for comparison
 CURRENT_SESSION=""
 SESSION_FILE="$PROJECT_ROOT/.context/working/session.yaml"
+# T-4820: compare the focus stamp against the session that lives beside it. In a
+# linked worktree that borrows the main checkout's focus (lib/paths.sh
+# fw_focus_file), the worktree's session.yaml is a stale tracked copy.
+[ -f "$(dirname "$FOCUS_FILE")/session.yaml" ] && SESSION_FILE="$(dirname "$FOCUS_FILE")/session.yaml"
 if [ -f "$SESSION_FILE" ]; then
     CURRENT_SESSION=$({ grep "^session_id:" "$SESSION_FILE" 2>/dev/null || true; } | head -1 | awk '{print $2}')
 fi

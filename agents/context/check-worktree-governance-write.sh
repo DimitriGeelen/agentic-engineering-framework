@@ -176,6 +176,16 @@ fi
     echo "  \`fw integrate run bleeding-edge --push\` from the main checkout. Only"
     echo "  .context/ and .tasks/ writes are refused."
     echo ""
+    case "$REL_PATH" in
+        .context/working/focus*.yaml)
+            # T-4820: a worktree with no focus of its own reads the main
+            # checkout's (lib/paths.sh fw_focus_file), so set focus there.
+            echo "  Setting focus? This worktree reads the main checkout's focus file"
+            echo "  ($MAIN_ROOT/.context/working/focus.yaml). Set it with:"
+            echo "    fw context focus T-XXX     (runs from here; writes that file)"
+            echo ""
+            ;;
+    esac
     echo "  If this write genuinely belongs in the worktree, bypass with the"
     echo "  env var (the Write tool has no flag surface, so it must be env):"
     echo ""

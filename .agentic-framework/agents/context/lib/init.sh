@@ -45,7 +45,18 @@ notes: []
 EOF
 
     # Initialize focus.yaml
-    cat > "$CONTEXT_DIR/working/focus.yaml" << EOF
+    # T-4820: resolve through the gate's own resolver. In a linked worktree with
+    # no focus of its own that is the MAIN checkout's file: creating a worktree
+    # copy would fork governance state (T-3098), and resetting main's to null
+    # would drop the main session's task. So an existing borrowed focus is kept.
+    local focus_file="$CONTEXT_DIR/working/focus.yaml"
+    if [ "${FW_SESSION_SCOPED_FOCUS:-0}" != "1" ] && declare -F fw_focus_file >/dev/null 2>&1; then
+        focus_file=$(fw_focus_file "$PROJECT_ROOT")
+    fi
+    if [ "$focus_file" != "$CONTEXT_DIR/working/focus.yaml" ] && [ -f "$focus_file" ]; then
+        echo "Note: linked worktree shares the main checkout's focus ($focus_file); left unchanged (T-4820)."
+    else
+    cat > "$focus_file" << EOF
 # Working Memory - Current Focus
 # Session: $session_id
 
@@ -65,6 +76,7 @@ reminders:
   - "Run audit before pushing"
   - "Create handover before ending session"
 EOF
+    fi
 
     # Reset tool counter (P-009 context protection)
     echo "0" > "$CONTEXT_DIR/working/.tool-counter"
