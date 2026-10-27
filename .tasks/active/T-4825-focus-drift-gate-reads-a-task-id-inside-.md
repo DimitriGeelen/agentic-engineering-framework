@@ -86,7 +86,7 @@ See description. The need: a task id that appears only inside a message body (da
 - [x] Reproduce first: tests/unit/t4825_focus_drift_body_is_data.bats runs the focus-drift gate on `fw sidecar send --body '<text quoting a command shape that names T-9999>'` under focus T-1001; tests 1-4 failed (refused) on the unfixed code
 - [x] After the fix the --body value is data for the focus-drift gate, reusing T-4817's lexer (`_blank_data_args`); the sends pass (tests 1-4 green)
 - [x] A task id as a real target still triggers the gate (`bin/fw task update T-9999 --status issues`, a command chained after the send, `--body` on a non-sidecar verb: tests 5-7); existing focus-drift tests stay green
-- [ ] Vendor in sync
+- [x] Vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
