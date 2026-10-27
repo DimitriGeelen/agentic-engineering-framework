@@ -2365,12 +2365,16 @@ do_doctor() {
     if [ -f "$settings_file" ]; then
         local hook_validation
         hook_validation=$(python3 -c "
-import json, os, shutil
+import json, os, shlex, shutil
 with open('$settings_file') as f:
     data = json.load(f)
 total = 0
 broken = 0
 stale_paths = 0
+# T-4813: each broken hook is reported as kind and path, so the advice can say
+# what fixes it. kind fw = a framework hook (fw upgrade regenerates it);
+# kind file = a project script upgrade never generated (only the operator can fix).
+broken_list = []
 for event, entries in data.get('hooks', {}).items():
     for entry in entries:
         for hook in entry.get('hooks', []):
@@ -2384,13 +2388,20 @@ for event, entries in data.get('hooks', {}).items():
             # the next says make them absolute). L-399 producer/consumer parity --
             # the generator learned the placeholder, this validator had not.
             cmd = cmd.replace('\${CLAUDE_PROJECT_DIR}', '$PROJECT_ROOT').replace('\$CLAUDE_PROJECT_DIR', '$PROJECT_ROOT')
-            parts = cmd.split()
+            # T-4813: tokenise the way the shell does. A plain split left a quote
+            # inside a mid-word quoted path (quoted placeholder followed by
+            # /scripts/x.sh), which strip() cannot remove, so the stat missed.
+            try:
+                parts = shlex.split(cmd)
+            except ValueError:
+                parts = cmd.split()
             # Check for portable 'fw hook' format (bare fw in PATH)
             if len(parts) >= 2 and parts[0] == 'fw':
                 if shutil.which('fw'):
                     continue  # fw hook — portable, OK
                 else:
                     broken += 1
+                    broken_list.append(('fw', 'fw (not on PATH)'))
                     continue
             # T-1222: vendored hook format (.agentic-framework/bin/fw hook or bin/fw hook)
             if len(parts) >= 2 and parts[0].endswith('/bin/fw'):
@@ -2399,6 +2410,7 @@ for event, entries in data.get('hooks', {}).items():
                     continue  # vendored fw hook — OK
                 else:
                     broken += 1
+                    broken_list.append(('fw', fw_path))
                     continue
             # Old-style: absolute path — check if executable exists
             # T-4056: an interpreter-prefixed hook (python3 with a script path, env ...,
@@ -2406,29 +2418,51 @@ for event, entries in data.get('hooks', {}).items():
             # file to check; the script only has to exist, not be executable.
             # Quotes are stripped with \x27 and \x22 (this block sits in a double-quoted string,
             # so no literal quote characters or dollar signs may appear in these comments).
-            words = [w.strip('\x27\x22') for w in parts if '=' not in w]
+            # T-4813: shlex has already removed the quotes. Only LEADING assignments
+            # (NAME=value, as after env) are skipped; an inline-code flag (bash or sh
+            # with -c, python with -c or -m, node with -e or -p) means the next
+            # argument is code, not a file, so there is nothing on disk to check.
+            words = list(parts)
             interp = False
+            inline = False
+            while words and '=' in words[0] and not words[0].startswith('-'):
+                words = words[1:]
             while words and os.path.basename(words[0]) in ('env', 'python3', 'python', 'bash', 'sh', 'node'):
+                base = os.path.basename(words[0])
                 interp = True
                 words = words[1:]
-                while words and words[0].startswith('-'):
+                while words and (words[0].startswith('-') or (base == 'env' and '=' in words[0])):
+                    flag = words[0]
                     words = words[1:]
-            exe = words[0] if words else None
+                    if base in ('bash', 'sh') and not flag.startswith('--') and 'c' in flag[1:]:
+                        inline = True
+                    elif base.startswith('python') and flag in ('-c', '-m'):
+                        inline = True
+                    elif base == 'node' and flag in ('-e', '-p', '--eval', '--print'):
+                        inline = True
+                if inline:
+                    break
+            exe = words[0] if words and not inline else None
             if exe and interp:
                 if not os.path.isfile(exe):
                     broken += 1
+                    broken_list.append(('file', exe))
             elif exe and not (os.path.isfile(exe) and os.access(exe, os.X_OK)):
                 if not shutil.which(exe):
                     broken += 1
+                    broken_list.append(('file', exe))
             # Check for hardcoded absolute paths (path isolation violation)
             if '/agents/context/' in cmd or 'PROJECT_ROOT=' in cmd:
                 stale_paths += 1
 print(f'{total},{broken},{stale_paths}')
+for kind, path in broken_list:
+    print(f'{kind} {path}')
 " 2>/dev/null || echo "0,0,0")
-        local hook_total hook_broken hook_stale
-        hook_total=$(echo "$hook_validation" | cut -d, -f1)
-        hook_broken=$(echo "$hook_validation" | cut -d, -f2)
-        hook_stale=$(echo "$hook_validation" | cut -d, -f3)
+        local hook_total hook_broken hook_stale hook_broken_lines
+        hook_total=$(echo "$hook_validation" | head -1 | cut -d, -f1)
+        hook_broken=$(echo "$hook_validation" | head -1 | cut -d, -f2)
+        hook_stale=$(echo "$hook_validation" | head -1 | cut -d, -f3)
+        hook_broken_lines=$(echo "$hook_validation" | tail -n +2)
 
         # T-2709 (T-2704 RCA): host-portability is a SEPARATE question from the two
         # above. `broken` asks "does this file exist?" — on the generating host it
@@ -2441,7 +2475,18 @@ print(f'{total},{broken},{stale_paths}')
         hook_nonportable=$(echo "$hook_portability" | cut -d'|' -f2)
         if [ "${hook_broken:-0}" -gt 0 ]; then
             echo -e "  ${RED}FAIL${NC}  Hook path validation: $hook_broken/$hook_total hooks have broken paths"
-            echo -e "        Run: fw upgrade (regenerates hooks with portable paths)"
+            # T-4813: name each broken path, and advise fw upgrade only when a
+            # framework hook is broken; upgrade never generated a project script.
+            local hb_kind hb_path
+            while read -r hb_kind hb_path; do
+                [ -n "$hb_kind" ] && echo -e "        missing: $hb_path"
+            done <<< "$hook_broken_lines"
+            if echo "$hook_broken_lines" | grep -q '^fw '; then
+                echo -e "        Run: fw upgrade (regenerates hooks with portable paths)"
+            fi
+            if echo "$hook_broken_lines" | grep -q '^file '; then
+                echo -e "        Fix: create the missing script, or correct or remove that hook in .claude/settings.json (fw upgrade does not manage project hooks)"
+            fi
             issues=$((issues + 1))
         elif [ "${hook_stale:-0}" -gt 0 ]; then
             echo -e "  ${YELLOW}WARN${NC}  Hook path isolation: $hook_stale/$hook_total hooks use hardcoded paths (works here, breaks on clone)"
