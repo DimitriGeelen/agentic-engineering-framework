@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T16:43:43Z
-last_update: 2026-10-27T16:43:43Z
-date_finished: null
+last_update: '2026-10-27T16:45:28Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +50,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-27T16:45:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=295,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4837: be-tag after designer data APIs + field report verdicts since T-4804
@@ -64,7 +74,7 @@ Cut the next v1.8.15 be-tag after the designer data APIs (T-4830, T-4831, T-4832
 - [ ] Fast unit suite run with 0 new reds; `bin/fw audit --section structure` shows Fail: 0 and "0 new"
 - [ ] bleeding-edge pushed and `bin/fw release be-tag --push` cut the tag; tag name recorded in ## Updates
 - [ ] 832 and greenfield told the tag, the task ids and the config key via `bin/fw sidecar send`
-- [ ] docs/reports/field-test-v1.8.15-results.md has a section with the verdicts since T-4804, one row per project and build
+- [x] docs/reports/field-test-v1.8.15-results.md has a section with the verdicts since T-4804, one row per project and build
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
