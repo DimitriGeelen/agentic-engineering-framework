@@ -90,10 +90,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A failing test first: in the review-seat runtime (agents/termlink/termlink.sh run.sh heredoc, _tree_fp ~1842 / T-3986 check ~1877), a seat that runs `python3` importing a module from the export writes __pycache__/*.pyc and the run is voided as "modified the export it reviewed"
-- [ ] Every review seat (claude, codex, opencode, antigravity) is launched with PYTHONDONTWRITEBYTECODE=1 in its signed env (env.json), so a Python corroboration run leaves the tree fingerprint unchanged; the fingerprint itself stays strict (no exclusions added)
-- [ ] A seat that edits or adds a real file in the export is still voided (negative control); the env change is visible in the signed env and checked at complete like the rest
-- [ ] New tests in tests/unit/t4835_review_seat_pycache.bats (fakes only, no real model call); existing review-dispatch tests (t3580*, t3986*) stay green; vendor in sync
+- [x] A failing test first: in the review-seat runtime (agents/termlink/termlink.sh run.sh heredoc, _tree_fp ~1842 / T-3986 check ~1877), a seat that runs `python3` importing a module from the export writes __pycache__/*.pyc and the run is voided as "modified the export it reviewed"
+- [x] Every review seat (claude, codex, opencode, antigravity) is launched with PYTHONDONTWRITEBYTECODE=1 in its signed env (env.json), so a Python corroboration run leaves the tree fingerprint unchanged; the fingerprint itself stays strict (no exclusions added)
+- [x] A seat that edits or adds a real file in the export is still voided (negative control); the env change is visible in the signed env and checked at complete like the rest
+- [x] New tests in tests/unit/t4835_review_seat_pycache.bats (fakes only, no real model call); existing review-dispatch tests (t3580*, t3986*) stay green; vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
