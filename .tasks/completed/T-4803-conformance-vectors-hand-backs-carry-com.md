@@ -11,12 +11,12 @@ description: >
   (wrong commission -> handback-malformed), so the rule is exercised by the suite
   itself. Coordinate with ring20 and TermLink: their adapters must not break.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/dispatch_records.py, tests/conformance/worker-contract/vectors.yaml, tests/unit/test_worker_contract_vectors.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T10:07:09Z
-last_update: 2026-10-27T10:43:59Z
-date_finished:
+last_update: 2026-10-27T10:50:48Z
+date_finished: 2026-10-27T10:50:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -397,3 +397,22 @@ bin/fw vendor self --check --task T-4803
 ### 2026-10-27T10:43:41Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-12467b21
+- **Timestamp:** 2026-10-27T10:51:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — AEF's adapter in lib/dispatch_records.py no longer needs to fill in commission for vectors that carry it. Leave the fill-in for vectors without it, and note that in a code comment
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/dispatch_records.py in: AEF's adapter in lib/dispatch_records.py no longer needs to fill in commission for vectors that carry it. Leave the fill-in for vectors without it, an`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-27T10:50:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

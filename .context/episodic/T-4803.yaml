@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4803: Conformance vectors: hand-backs carry commission (= dispatch id) so rule 1 holds without adapter help
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T10:51:22Z
+# ============================================================================
+
+task_id: T-4803
+task_name: "Conformance vectors: hand-backs carry commission (= dispatch id) so rule 1 holds without adapter help"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T10:07:09Z
+completed: 2026-10-27T10:50:48Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-27T11:48:53+01:00
+last_commit: 2026-10-27T11:49:17+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  vector hand-backs carry commission (= dispatch id); CC-16 adds handback-wrong-commission -> handback-malformed. vendor lib/dispatch_records.py docstring
+
+# Key outcomes
+outcomes:
+  - 'Step (1) of the sequence agreed with TermLink (msg 64df5c75) and ring20: every hand-back in tests/conformance/worker-contract/vectors.yaml (in `given.evidence` and variant `given.evidence`) carries `commission` equal to its case''s `dispatch.dispatch_id`. Hand-backs that are deliberately `absent` or malformed by design stay as they are'
+  - 'One new negative fixture: a variant of CC-16 (or the case that holds the outcome-derivation fixtures) whose hand-back is valid except that `commission` names another dispatch id. It expects done{handback-malformed} via T3, with no requires. The absent-commission fixture is NOT added yet (step 3, after TermLink confirms)'
+  - 'check_vectors.py accepts `commission` in hand-backs; run_local.py with AEF''s local backend stays at 0 fail (22 pass / 3 n/a, plus the new variant passing); test_worker_contract_vectors.py stays green'
+  - 'AEF''s adapter in lib/dispatch_records.py no longer needs to fill in commission for vectors that carry it. Leave the fill-in for vectors without it, and note that in a code comment'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — where `commission` goes in each hand-back'
+    chose: 'prepend `commission: <case dispatch_id>` as the first key of every inline hand-back mapping (25 of them; `handback: absent` left alone), so each line changes only by that insertion. That is the §2 schema order (commission first).'
+    rationale: 'TermLink''s runner fetches vectors.yaml live. A prepend-only edit keeps every other byte of every hand-back as it was, and the diff is easy to review (25 lines, one insertion each).'
+    alternatives_rejected: ['reordering to full §2 order (attempt, nonce, status): it would rewrite every hand-back for no gain in what is tested.']
+  - decision: '2026-10-27 — CC-16/handback-wrong-nonce gets a correct commission too'
+    chose: 'yes. The variant is malformed only on its nonce.'
+    rationale: 'if its commission were left out, a backend that checks commission first would reach handback-malformed for the wrong reason, and the variant would stop isolating the nonce check.'
+  - decision: '2026-10-27 — wrong-commission fixture id'
+    chose: '`D-01JBBBBBBBBBBBBBBBBBBBBB16`: a grammatical ULID id that belongs to no case.'
+    alternatives_rejected: ['another case''s id (e.g. CC-17''s): it would read as a link between cases that does not exist.']
+  - decision: '2026-10-27 — adapter fill-in'
+    chose: 'keep `{"commission": did, **hb}`. The hand-back''s own commission already wins over the fill-in, so the code needs no change. Only the docstring changes, saying the fill-in now applies only to hand-backs without the field (older copies of the vectors). A test monkeypatches the adapter to overwrite commission and shows that the new variant then FAILs. That proves the pass-through is what makes rule 1 bite.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/dispatch_records.py'
+  - '.tasks/active/T-4803-conformance-vectors-hand-backs-carry-com.md'
+  - 'lib/dispatch_records.py'
+  - 'tests/conformance/worker-contract/vectors.yaml'
+  - 'tests/unit/test_worker_contract_vectors.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T11:48:53'
+    action: 'T-4803: vector hand-backs carry commission (= dispatch id); CC-16 adds handback-wrong-commission -> handback-malformed'
+  - time: '2026-10-27T11:49:17'
+    action: 'T-4803: vendor lib/dispatch_records.py docstring'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 43 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 43
+  commits: 3
+  files_changed: 8
+  lines_added: 633
+  lines_removed: 35
+  footprint_refreshed_at: '2026-10-27T10:51:46Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4803-conformance-vectors-hand-backs-carry-com.md
+generated_by: context-agent-hybrid

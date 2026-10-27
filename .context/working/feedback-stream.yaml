@@ -49677,3 +49677,21 @@ scan_id: R-725b126b
 task_id: T-4805
 payload:
   task_file: .tasks/active/T-4805-conformance-runner-judge-shared-base-ste.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T10:51:06Z'
+scan_id: R-12467b21
+task_id: T-4803
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T10:51:06Z'
+scan_id: R-12467b21
+task_id: T-4803
+payload:
+  task_file: .tasks/active/T-4803-conformance-vectors-hand-backs-carry-com.md
