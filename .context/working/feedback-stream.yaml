@@ -49641,3 +49641,21 @@ scan_id: R-159496e3
 task_id: T-4802
 payload:
   task_file: .tasks/active/T-4802-libdispatchrecordspy-local-backend-for-t.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T10:16:00Z'
+scan_id: R-120dcd97
+task_id: T-4804
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T10:16:00Z'
+scan_id: R-120dcd97
+task_id: T-4804
+payload:
+  task_file: .tasks/active/T-4804-v1815-report-record-be31-be35-field-verd.md

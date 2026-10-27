@@ -4,10 +4,10 @@ name: "v1.8.15 report: record be.31-be.35 field verdicts (832 be.31, TermLink be
 description: >
   Add 832's be.31 report (msg d340e318), TermLink's be.31 upgrade (msg 26c85299), ring20's be.33 report (msg e9a2e72e) and AEF's own local-backend conformance result (T-4802: 22 pass / 3 n/a / 0 fail) to docs/reports/field-test-v1.8.15-results.md, in the T-4798 section shape.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T10:15:18Z
-last_update: 2026-10-27T10:15:18Z
-date_finished: null
+last_update: 2026-10-27T10:15:58Z
+date_finished: 2026-10-27T10:15:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -347,3 +347,20 @@ grep -q "be.31 – be.35" docs/reports/field-test-v1.8.15-results.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4804-v1815-report-record-be31-be35-field-verd.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-120dcd97
+- **Timestamp:** 2026-10-27T10:16:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-27T10:15:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
