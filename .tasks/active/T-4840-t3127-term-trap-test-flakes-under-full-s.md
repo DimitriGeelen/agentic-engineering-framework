@@ -1,8 +1,15 @@
 ---
 id: T-4840
-name: "t3127 TERM-trap test flakes under full-suite load: audit.sh parse error (unexpected EOF) when timeout kills it"
+name: "t3127 TERM-trap test flakes under full-suite load: audit.sh parse error (unexpected
+  EOF) when timeout kills it"
 description: >
-  Fast suite 2026-10-27T18:37:28Z: t3127_audit_timing_headroom.bats test 10 failed with 'audit.sh: trap: line 10: unexpected EOF while looking for matching )' and 'line 917: unexpected EOF'. audit.sh unchanged since 15:10 and bash -n clean; the test passes 3/3 alone. Hypothesis: the SIGTERM from timeout lands while bash is still reading/parsing audit.sh, so the trap string or the script tail is parsed from a short read. Failure output: .context/audits/unit-suite/failures/2026-10-27T18:37:28Z/bats/t3127_audit_timing_headroom.bats.out. Blocked the be.43 pre-push as a NEW red.
+  Fast suite 2026-10-27T18:37:28Z: t3127_audit_timing_headroom.bats test 10 failed
+  with 'audit.sh: trap: line 10: unexpected EOF while looking for matching )' and
+  'line 917: unexpected EOF'. audit.sh unchanged since 15:10 and bash -n clean; the
+  test passes 3/3 alone. Hypothesis: the SIGTERM from timeout lands while bash is
+  still reading/parsing audit.sh, so the trap string or the script tail is parsed
+  from a short read. Failure output: .context/audits/unit-suite/failures/2026-10-27T18:37:28Z/bats/t3127_audit_timing_headroom.bats.out.
+  Blocked the be.43 pre-push as a NEW red.
 
 status: captured
 workflow_type: build
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T18:41:50Z
-last_update: 2026-10-27T18:41:50Z
-date_finished: null
+last_update: '2026-10-27T19:00:27Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-27T19:00:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4840: t3127 TERM-trap test flakes under full-suite load: audit.sh parse error (unexpected EOF) when timeout kills it
