@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T19:44:44Z
-last_update: 2026-10-27T19:46:18Z
+last_update: 2026-10-27T19:55:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -118,8 +118,7 @@ Confirmed by reproduction (tests/unit/t4841_create_lock_on_abort.bats test 1 at 
 - **Why:** bash cannot set O_CLOEXEC on an fd, and the existing T-1493 primitive is the codebase's answer to this class; narrowing also stops serialising the origin/recommendation/focus steps behind the lock (the id is already persisted to .id-highwater inside generate_id).
 - **Rejected:** changing lib/keylock.sh to auto-close in every child (no bash mechanism; would alter other callers); releasing only after the file write without closing the fd in children (a child spawned inside the window would still keep the lock after a kill).
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
+<!-- No Human criteria: every criterion is agent-verifiable.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
 
