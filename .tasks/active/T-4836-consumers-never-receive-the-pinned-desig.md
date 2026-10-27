@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T15:57:56Z
-last_update: 2026-10-27T16:16:01Z
+last_update: 2026-10-27T16:21:25Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -370,6 +370,13 @@ bin/fw watchtower current
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+**Rationale:** 832's validator now reaches consumer projects the same way the designer build does: `fw vendor`, the framework's own vendored copy, `fw designer install` and `fw upgrade`. Without this, the designer's Check button answered "validator unavailable" in every project except this one. The parent reviewed the worker's diff. The loader reads the installed copy first, then the vendored one, refuses a sha mismatch, and no longer leaves `__pycache__` beside the read-only file.
+**Evidence:**
+- All 7 Verification lines pass: validate tests plus a synthetic-consumer test, `t4836_validator_delivery.bats` with 0 skips, the fresh-machine upgrade simulation, no `__pycache__`, vendor in sync, Watchtower current
+- Live: POST /api/validate answers 200 from the restarted Watchtower
+- Older pinned files are pruned per kind (designer build `*.html`, validator `*.py`), so the two never delete each other
 
 ## Decisions
 
