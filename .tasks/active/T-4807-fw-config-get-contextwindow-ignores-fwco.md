@@ -86,7 +86,7 @@ See description. The need: `fw config get KEY` answers what the rest of the fram
 - [x] Reproduce first: a bats test sets FW_CONTEXT_WINDOW=500000 with 975000 in a temp project's .framework.yaml and shows `fw config get CONTEXT_WINDOW` prints 975000; it fails before the fix
 - [x] `fw config get` honours the FW_* env tier for every registry key (not only CONTEXT_WINDOW), matching lib/config.sh fw_config and the budget gate
 - [x] If `fw config get` has a mode that deliberately reads the file only (e.g. for `set` round-trips), it is explicit and named; the default answers the effective value
-- [ ] Existing config tests and tests/lint/config-registry-parity.bats stay green; vendor in sync
+- [x] Existing config tests and tests/lint/config-registry-parity.bats stay green; vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
