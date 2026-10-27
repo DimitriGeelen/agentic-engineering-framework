@@ -6,12 +6,12 @@ description: >
   fw vendor ships only vendored_path, not validator_path; loader reads FRAMEWORK_ROOT;
   import writes __pycache__ into vendor/designer
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug, designer]
-components: []
+components: [agents/designer/designer.sh, bin/fw, lib/upgrade.sh, lib/vendor-visibility.sh, web/blueprints/designer_api.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T15:57:56Z
-last_update: '2026-10-27T16:30:23Z'
-date_finished:
+last_update: 2026-10-27T16:29:33Z
+date_finished: 2026-10-27T16:29:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -432,3 +432,15 @@ bin/fw watchtower current
 
 ### 2026-10-27T15:58:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-27T16:29:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-02d41c3b
+- **Timestamp:** 2026-10-27T16:34:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
