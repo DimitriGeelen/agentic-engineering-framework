@@ -56,6 +56,7 @@ SETTINGS = [
     # T-2842: honoured by shipped code and documented in CLAUDE.md, but absent
     # from the registry — so they were env-var-only and never rendered here.
     ("SCRATCH_WARN_GB", "10", "Size of .context/scratch in GB above which fw doctor WARNs and names the largest subdirs; release lanes are pruned after each release (T-4703)"),
+    ("TMP_USE_WARN_PCT", "85", "Use percent of the filesystem holding $TMPDIR above which fw doctor and the structure audit WARN and name its largest top-level entries; WARN only (T-4846)"),
     ("BRANCH_BEHIND_WARN", "50", "Commits-behind-origin/master threshold for the branch-hygiene WARN and handover merge-back nudge; T-100143/T-100144"),
     ("STALE_ARC_DAYS", "30", "Days without a constituent-task commit before fw audit WARNs an in-progress arc as stale; T-1855"),
     ("ARC_FOCUS_STALE_DAYS", "14", "Days after which handover and fw doctor WARN the arc focus is stale: focused_at older (AGE) or under 10% of recent tasks in the focused arc (DRIFT); advisory; T-4774"),
