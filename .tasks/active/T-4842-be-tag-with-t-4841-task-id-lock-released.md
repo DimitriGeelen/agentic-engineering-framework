@@ -88,9 +88,9 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Fast unit suite with 0 new reds; `bin/fw audit --section structure` Fail: 0
-- [ ] bleeding-edge pushed and `bin/fw release be-tag --push` cut the tag
-- [ ] 1409 told the tag and what T-4841 changes
+- [x] Fast unit suite with 0 new reds; `bin/fw audit --section structure` Fail: 0
+- [x] bleeding-edge pushed and `bin/fw release be-tag --push` cut the tag (v1.8.15-be.44)
+- [x] 1409 told the tag and what T-4841 changes (msg 84476f51)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
