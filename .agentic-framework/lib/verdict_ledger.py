@@ -493,7 +493,8 @@ REVIEW_ENV_ALLOW: tuple[str, ...] = ()
 _RUNTIME_ENV_KEYS = ("FW_SIDECAR_AGENT_ID", "FW_REVIEW_REVISION", "FW_REVIEW_WORKER",
                      "FW_DISPATCHED_WORKER",   # T-3959: written by the dispatcher for every worker
                      "FW_SESSION_SCOPED_FOCUS", "FW_FOCUS_SESSION_KEY",
-                     "GIT_AUTHOR_NAME", "GIT_AUTHOR_EMAIL", "GIT_COMMITTER_NAME", "GIT_COMMITTER_EMAIL")
+                     "GIT_AUTHOR_NAME", "GIT_AUTHOR_EMAIL", "GIT_COMMITTER_NAME", "GIT_COMMITTER_EMAIL",
+                     "PYTHONDONTWRITEBYTECODE")   # T-4835: a seat's Python must not write .pyc into its export
 
 
 def brief_digest(text: str) -> str:
