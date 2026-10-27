@@ -50369,3 +50369,21 @@ scan_id: R-9183bbc9
 task_id: T-4826
 payload:
   task_file: .tasks/active/T-4826-fw-doctor-watchtower-smoke-check-judges-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T22:48:30Z'
+scan_id: R-b13470bc
+task_id: T-4807
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T22:48:30Z'
+scan_id: R-b13470bc
+task_id: T-4807
+payload:
+  task_file: .tasks/active/T-4807-fw-config-get-contextwindow-ignores-fwco.md

@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4807: fw config get CONTEXT_WINDOW ignores FW_CONTEXT_WINDOW (env tier skipped; budget gate honours it)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T22:48:56Z
+# ============================================================================
+
+task_id: T-4807
+task_name: "fw config get CONTEXT_WINDOW ignores FW_CONTEXT_WINDOW (env tier skipped; budget gate honours it)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T11:02:19Z
+completed: 2026-10-27T22:48:25Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T23:40:58+01:00
+last_commit: 2026-10-27T23:42:25+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw config get honours the FW_* env tier for registry keys; --file reads the stored value; regression bats; RCA. vendor sync of lib/config-file.sh; Agent ACs ticked
+
+# Key outcomes
+outcomes:
+  - 'Reproduce first: a bats test sets FW_CONTEXT_WINDOW=500000 with 975000 in a temp project''s .framework.yaml and shows `fw config get CONTEXT_WINDOW` prints 975000; it fails before the fix'
+  - '`fw config get` honours the FW_* env tier for every registry key (not only CONTEXT_WINDOW), matching lib/config.sh fw_config and the budget gate'
+  - 'If `fw config get` has a mode that deliberately reads the file only (e.g. for `set` round-trips), it is explicit and named; the default answers the effective value'
+  - 'Existing config tests and tests/lint/config-registry-parity.bats stay green; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — scope of the env tier in `fw config get`'
+    chose: 'env tier for registry keys only (the canonical `FW_<KEY>` that `fw_config` reads), plus an explicit `--file` flag for the stored value. A key absent from both env and file still exits 1, as before.'
+    rationale: 'matches exactly what `fw_config` and the budget gate consume; keeps the exit-1 "not set" contract that `continuous-driver.sh` and existing tests rely on.'
+    alternatives_rejected: ['(a) also answering the registry default — changes the exit-1 contract callers use to detect "unset"; (b) env lookup for dotted / non-registry keys — `fw_config` never reads those from env, so get would invent a tier nothing else honours.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/config-file.sh'
+  - '.tasks/active/T-4807-fw-config-get-contextwindow-ignores-fwco.md'
+  - 'lib/config-file.sh'
+  - 'tests/unit/t4807_config_get_env_tier.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T23:40:58'
+    action: 'T-4807: fw config get honours the FW_* env tier for registry keys; --file reads the stored value; regression bats; RCA'
+  - time: '2026-10-27T23:42:25'
+    action: 'T-4807: vendor sync of lib/config-file.sh; Agent ACs ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 706 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 706
+  commits: 3
+  files_changed: 7
+  lines_added: 277
+  lines_removed: 18
+  footprint_refreshed_at: '2026-10-27T22:49:07Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4807-fw-config-get-contextwindow-ignores-fwco.md
+generated_by: context-agent-hybrid
