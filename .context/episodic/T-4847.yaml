@@ -1,0 +1,105 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4847: fw config set rewrites unrelated folded lines of .framework.yaml (upstream_repo collapsed onto one line)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T22:22:05Z
+# ============================================================================
+
+task_id: T-4847
+task_name: "fw config set rewrites unrelated folded lines of .framework.yaml (upstream_repo collapsed onto one line)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T21:29:46Z
+completed: 2026-10-27T22:21:40Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-10-27T22:30:25+01:00
+last_commit: 2026-10-27T23:21:36+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — fw config set rewrites unrelated folded lines (832 msg ac944d99). ACs, Verification; horizon now. fw config set edits a flat key's own lines in place instead of re-dumping .framework.yaml. vendor lib/config-file.sh. tick ACs (tests, vendor). parent review — t3735 fallback test drives the dumper through a dotted key; heal-on-write loss recorded, reader fix filed as T-4849. name T-4849 as the follow-up in the review decision
+
+# Key outcomes
+outcomes:
+  - 'Reproduce first: a bats test builds a .framework.yaml with a folded scalar (e.g. a long `upstream_repo: >-` value), a comment and a quoted value, runs `fw config set` on an unrelated key, and shows the other lines change; it fails before the fix'
+  - 'After the fix, setting an existing key changes only that key''s line(s); setting a new key appends it; every other line is byte-identical (diff shows only the intended change)'
+  - 'The set value still reads back correctly through `fw config get` and lib/config.sh''s resolution, including values that need YAML quoting'
+  - 'Existing config tests stay green (grep tests/unit for config set / fw_config) and tests/lint/config-registry-parity.bats'
+  - 'Vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'parent review — t3735 fallback test drives the dumper through a dotted key; heal-on-write loss recorded, reader fix filed as T-4849'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — how to stop set from rewriting other lines'
+    chose: 'edit flat (top-level) keys line by line: replace the key line plus its continuation lines (indented, blank, or top-level `- ` items; trailing blank/comment lines left in place), or append one line. The value is rendered with `yaml.safe_dump({key: value})` so quoting is correct. Dotted keys keep the ruamel round-trip.'
+    rationale: 'every key `fw config set` writes in practice is flat; a line edit is the only way to promise byte-identical other lines. safe_dump quotes only what needs it, and the result reads back through both the grep reader in `lib/config.sh` and `yaml.safe_load`.'
+    alternatives_rejected: ['tuning ruamel (it cannot round-trip a wrapped plain scalar); rewriting nested keys line-wise too (needs a YAML-aware editor; the nested path is rare and was not reported).']
+  - decision: '2026-10-27 — parent review: heal-on-write is gone (accepted; reader fix is T-4849)'
+    chose: 'keep the line-wise edit (832''s need: set changes only its own key) and fix the reader instead, as its own task, so a folded value reads correctly however it got there. The parent also updated `tests/unit/t3735_config_set_no_fold.bats` test 2, which asserted the fallback dumper''s warning on a flat key: it now drives the fallback through a dotted key and still checks the long value on a flat set.'
+  - decision: '2026-10-27 — inline comment on the replaced key line'
+    chose: 'drop it; the whole key line is replaced.'
+    rationale: 'the grep reader in `lib/config.sh` `_fw_config_file_val` does not strip `# comment`, so a kept comment would be read as part of the value (`3009 # c`). Replacing the line means `fw_config` reads what was set.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/config-file.sh'
+  - '.tasks/active/T-4847-fw-config-set-rewrites-unrelated-folded-.md'
+  - 'lib/config-file.sh'
+  - 'tests/unit/t3735_config_set_no_fold.bats'
+  - 'tests/unit/t4847_config_set_preserves_lines.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T22:30:25'
+    action: 'T-4847: file — fw config set rewrites unrelated folded lines (832 msg ac944d99)'
+  - time: '2026-10-27T22:59:24'
+    action: 'T-4847: ACs, Verification; horizon now'
+  - time: '2026-10-27T23:07:03'
+    action: 'T-4847: fw config set edits a flat key''s own lines in place instead of re-dumping .framework.yaml'
+  - time: '2026-10-27T23:08:11'
+    action: 'T-4847: vendor lib/config-file.sh'
+  - time: '2026-10-27T23:10:43'
+    action: 'T-4847: tick ACs (tests, vendor)'
+  - time: '2026-10-27T23:21:11'
+    action: 'T-4847: parent review — t3735 fallback test drives the dumper through a dotted key; heal-on-write loss recorded, reader fix filed as T-4849'
+  - time: '2026-10-27T23:21:36'
+    action: 'T-4847: name T-4849 as the follow-up in the review decision'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 51 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, config]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 51
+  commits: 8
+  files_changed: 8
+  lines_added: 857
+  lines_removed: 98
+  footprint_refreshed_at: '2026-10-27T22:22:22Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4847-fw-config-set-rewrites-unrelated-folded-.md
+generated_by: context-agent-hybrid

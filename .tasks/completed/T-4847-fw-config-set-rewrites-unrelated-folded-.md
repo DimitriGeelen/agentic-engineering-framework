@@ -9,12 +9,12 @@ description: >
   intend to change. Need: fw config set changes only the key it sets and leaves every
   other line byte-identical.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, config]
-components: []
+components: [lib/config-file.sh, tests/unit/t3735_config_set_no_fold.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T21:29:46Z
-last_update: 2026-10-27T22:20:18Z
-date_finished:
+last_update: 2026-10-27T22:21:40Z
+date_finished: 2026-10-27T22:21:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -427,3 +427,20 @@ bin/fw vendor self --check --task T-4847
 
 ### 2026-10-27T21:58:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-27T22:21:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d1811e38
+- **Timestamp:** 2026-10-27T22:21:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — Existing config tests stay green (grep tests/unit for config set / fw_config) and tests/lint/config-registry-parity.bats
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/lint/config-registry-parity.bats in: Existing config tests stay green (grep tests/unit for config set / fw_config) and tests/lint/config-registry-parity.bats`
