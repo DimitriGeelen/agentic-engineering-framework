@@ -50261,3 +50261,21 @@ scan_id: R-83d04490
 task_id: T-4844
 payload:
   task_file: .tasks/active/T-4844-opencode-review-seat-exits-0-with-no-ver.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T21:47:01Z'
+scan_id: R-b81df127
+task_id: T-4848
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T21:47:01Z'
+scan_id: R-b81df127
+task_id: T-4848
+payload:
+  task_file: .tasks/active/T-4848-be-tag-with-t-4843-t-4844-t-4845-for-832.md
