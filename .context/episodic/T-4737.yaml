@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4737: Which designer data APIs should AEF serve (/api/validate, /api/instances, /api/field-profile, /api/field-suggestions)?
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-27T10:54:27Z
+# ============================================================================
+
+task_id: T-4737
+task_name: "Which designer data APIs should AEF serve (/api/validate, /api/instances, /api/field-profile, /api/field-suggestions)?"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-24T20:09:41Z
+completed: 2026-10-27T10:54:02Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-10-24T22:20:38+02:00
+last_commit: 2026-10-26T23:13:35+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  research artifact — 832 designer data-API contract, live probe, per-endpoint recommendation (GO validate + instances, NO-GO field profile/suggestions). correction from 832 — Check is visibly broken in AEF today (validate failure is never quiet); reference tests listed. cite 832 contract commit 94deef57. record fifth candidate GET /api/field-catalog (832 e25c128d; read-only project JSON, T-4402 pattern; contract pending 832 T-1312). record 832's GET /api/field-catalog contract (msg 76a0767a, 832 T-1312)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4737-which-designer-data-apis-should-aef-serv.md'
+  - 'docs/reports/T-4737-designer-data-apis.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-24T22:20:38'
+    action: 'T-4737: research artifact — 832 designer data-API contract, live probe, per-endpoint recommendation (GO validate + instances, NO-GO field profile/suggestions)'
+  - time: '2026-10-24T22:21:53'
+    action: 'T-4737: correction from 832 — Check is visibly broken in AEF today (validate failure is never quiet); reference tests listed'
+  - time: '2026-10-24T23:03:50'
+    action: 'T-4737: cite 832 contract commit 94deef57'
+  - time: '2026-10-26T13:58:40'
+    action: 'T-4737: record fifth candidate GET /api/field-catalog (832 e25c128d; read-only project JSON, T-4402 pattern; contract pending 832 T-1312)'
+  - time: '2026-10-26T23:13:35'
+    action: 'T-4737: record 832''s GET /api/field-catalog contract (msg 76a0767a, 832 T-1312)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 3764 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3764
+  commits: 6
+  files_changed: 6
+  lines_added: 441
+  lines_removed: 13
+  footprint_refreshed_at: '2026-10-27T10:54:41Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4737-which-designer-data-apis-should-aef-serv.md
+generated_by: context-agent-hybrid

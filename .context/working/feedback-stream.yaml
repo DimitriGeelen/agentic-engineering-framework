@@ -49695,3 +49695,29 @@ scan_id: R-12467b21
 task_id: T-4803
 payload:
   task_file: .tasks/active/T-4803-conformance-vectors-hand-backs-carry-com.md
+---
+kind: scan_emitted
+timestamp: '2026-10-27T10:54:03Z'
+scan_id: R-fa49a009
+task_id: T-4737
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-27T10:54:03Z'
+scan_id: R-fa49a009
+task_id: T-4737
+payload:
+  task_file: .tasks/active/T-4737-which-designer-data-apis-should-aef-serv.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-10-27T10:54:03Z'
+scan_id: RC-6ed3b99c
+task_id: T-4737
+payload:
+  overall: CONFIRMED
+  claim_count: 2
