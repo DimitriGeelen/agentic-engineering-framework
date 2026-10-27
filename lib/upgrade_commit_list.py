@@ -37,6 +37,7 @@ import sys
 
 VENDORED = ".agentic-framework/"
 STAMP = ".fw-vendor-stamp.json"
+UPSTREAM = ".upstream"
 CHUNK = 1 << 20
 BIG = 64 << 20
 DIR_CAP = 5000
@@ -258,7 +259,10 @@ def report(target, before_file, wrote_file=None):
                   " uncommitted but were already dirty, unchanged, before it ran."
                   f" Check: cd {shlex.quote(top)} && git status")
         return 0
-    plain = [n for n in changed if not n.startswith(VENDORED)]
+    # T-4814: a <file>.upstream is a template copy to resolve and delete, not to
+    # commit; do_upgrade names each one with its diff after this list.
+    upstream = [n for n in changed if n.endswith(UPSTREAM) and not n.startswith(VENDORED)]
+    plain = [n for n in changed if not n.startswith(VENDORED) and n not in upstream]
     vendored = [n for n in changed if n.startswith(VENDORED)]
     print("")
     print("  Files this upgrade created or changed (not committed yet):")
@@ -269,8 +273,12 @@ def report(target, before_file, wrote_file=None):
     if vendored:
         print(f"    {'vendored':<9} {VENDORED} ({len(vendored)} file(s))")
         add.append(VENDORED)
-    print("  Commit them with:")
-    print(f"    cd {shlex.quote(top)} && git add -- {' '.join(shlex.quote(a) for a in add)}")
+    if add:
+        print("  Commit them with:")
+        print(f"    cd {shlex.quote(top)} && git add -- {' '.join(shlex.quote(a) for a in add)}")
+    if upstream:
+        print(f"  {len(upstream)} {UPSTREAM} template cop{'y is' if len(upstream) == 1 else 'ies are'}"
+              " left out of the git add line on purpose: resolve each, then delete it.")
     return 0
 
 

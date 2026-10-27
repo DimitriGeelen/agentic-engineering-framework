@@ -1826,6 +1826,7 @@ do_upgrade() {
     # never "$FRAMEWORK_ROOT/lib/…", and a failure is kept as a reason for the
     # summary instead of being dropped by 2>/dev/null.
     local _t4692_before="" _t4692_would=() _t4697_log="" _t4717_why=""
+    local _t4814_upstream=()   # T-4814: files KEPT/PRESERVED with a <file>.upstream beside them
     if [ "$dry_run" != true ]; then
         _t4717_commit_list_snapshot "$target_dir"   # sets _t4692_before / _t4717_why
         _t4697_log=$(mktemp "${TMPDIR:-/tmp}/fw-upgrade-wrote.XXXXXX") || _t4697_log=""
@@ -2180,6 +2181,8 @@ $project_owned"
             ERROR|WOULD-*) ;;
             *) _rel="${line#* }"; _rel="${_rel%% *}"; _t4697_wrote "$_rel" "$_rel.upstream" .context/upgrade-template-stamp.json ;;
         esac
+        # T-4814: name every .upstream this run wrote again in the summary
+        case "$st" in KEPT|PRESERVED) [ -f "$target_dir/$_rel.upstream" ] && _t4814_upstream+=("$_rel") ;; esac
         case "$st" in
             KEPT|WOULD-KEPT|PRESERVED|WOULD-PRESERVED) echo -e "  ${YELLOW}${st}${NC}  ${line#* }" ;;
             ERROR) echo -e "  ${YELLOW}WARN${NC}  template sync skipped — ${line#* } (file left untouched)"; return 0 ;;
@@ -3563,6 +3566,7 @@ EOF
         # T-4724: the file list (or why it is missing) belongs with the counters
         # above, not after the doctor advisory where the be.15 field run found it.
         _t4692_emit_commit_list "$target_dir" "$_t4692_before" "$_t4697_log" "$_t4717_why"
+        _t4814_emit_upstream_list "$target_dir" ${_t4814_upstream[@]+"${_t4814_upstream[@]}"}
 
         if [ "$changes" -gt 0 ]; then
             echo ""
@@ -3637,6 +3641,27 @@ _t4692_emit_commit_list() {
         echo "  Upgrade file list unavailable — $why. Check by hand: cd $root && git status"
     fi
     rm -f "$before" "$wrote"
+    return 0
+}
+
+# T-4814: the files a live run KEPT or PRESERVED with the new template written
+# beside them as <file>.upstream (ring20 be.37: left untracked, no guidance).
+# $1 = target_dir, $@ = root-relative kept files (duplicates collapse). One
+# line per file: the diff to read, then the three ways to resolve it. The
+# .upstream is a comparison copy, never committed (the git add line omits it).
+# Silent when none. Advisory only: always returns 0.
+_t4814_emit_upstream_list() {
+    local root="${1:-}" f q; shift || true
+    [ "$#" -gt 0 ] || return 0
+    echo ""
+    echo "  Template updates written beside your edited files (.upstream, not committed):"
+    echo "    cd $(printf '%q' "$root"), read the diff, then: keep yours (rm the .upstream),"
+    echo "    take upstream (mv the .upstream over the file), or merge by hand and rm the .upstream."
+    while IFS= read -r f; do
+        [ -n "$f" ] || continue
+        q=$(printf '%q' "$f")
+        echo "    diff -u $q $q.upstream"
+    done < <(printf '%s\n' "$@" | awk '!seen[$0]++')
     return 0
 }
 
