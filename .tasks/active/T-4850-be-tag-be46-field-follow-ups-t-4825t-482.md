@@ -89,9 +89,9 @@ Tag for the field follow-ups closed tonight, so their reporters can test them: 0
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Fast unit suite with 0 new reds; `bin/fw audit --section structure` Fail: 0
-- [ ] bleeding-edge pushed and `bin/fw release be-tag --push` cut the tag
-- [ ] 055, TermLink and 1409 told the tag and their task ids
+- [x] Fast unit suite with 0 new reds; `bin/fw audit --section structure` Fail: 0
+- [x] bleeding-edge pushed and `bin/fw release be-tag --push` cut the tag (v1.8.15-be.46)
+- [x] 055, TermLink and 1409 told the tag and their task ids (msgs 8b607d98, 45619697, 42441647)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
