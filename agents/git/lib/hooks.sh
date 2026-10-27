@@ -1910,7 +1910,38 @@ elif [ $audit_exit -eq 2 ]; then
             echo "  an undetermined scope is not a determination that the ref is clean."
         fi
         echo ""
-        echo "Fix the issues above before pushing."
+        # T-4789 / OBS-274: name the failing checks HERE. The [FAIL] blocks are
+        # ~200 lines up, so `git push | tail` showed a refusal with no cause.
+        # Read back from the capture: title, first Evidence line (cut short), and
+        # a worktree tag where the audit scoped it so. ANSI colour is stripped.
+        if [ -n "$_t3126_out" ] && [ -f "$_t3126_out" ] && grep -q '\[FAIL\]' "$_t3126_out" 2>/dev/null; then
+            echo "Failing check(s):"
+            awk '
+                function flush() {
+                    if (t == "") return
+                    n++
+                    if (n <= 10) {
+                        print "  - " t (wt ? "  [worktree]" : "")
+                        if (e != "") print "      " e
+                    }
+                    t = ""; e = ""; wt = 0
+                }
+                { gsub(/\033\[[0-9;]*m/, "") }
+                /^\[FAIL\] / { flush(); t = substr($0, 8); next }
+                t != "" && e == "" && /^[[:space:]]*Evidence: / {
+                    e = $0; sub(/^[[:space:]]*/, "", e)
+                    if (length(e) > 140) e = substr(e, 1, 137) "..."
+                    next
+                }
+                t != "" && /^[[:space:]]*Scope: worktree/ { wt = 1; next }
+                END { flush(); if (n > 10) print "  ... and " n - 10 " more (see the audit output above)" }
+            ' "$_t3126_out"
+            echo ""
+            echo "Fix the failing check(s) listed above before pushing"
+            echo "(full Evidence and Mitigation for each are in the audit output)."
+        else
+            echo "Fix the issues above before pushing."
+        fi
         echo ""
         echo "Bypass: git push --no-verify"
         echo "  (In agent context, Tier 0 will prompt for approval on --no-verify.)"

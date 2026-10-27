@@ -11,7 +11,7 @@ name: "OBS: the pre-push audit-failure message is indistinguishable from the loc
 description: >
   Promoted from observation OBS-274
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
 horizon: now
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-26T23:03:29Z
-last_update: '2026-10-26T23:15:35Z'
+last_update: '2026-10-27T23:13:40Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -83,6 +83,23 @@ bvp_scores_proposed:
     rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-27T23:13:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -305,6 +322,14 @@ bin/fw vendor self --check --task T-4789
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** a push refused by the pre-push audit gate printed "ERROR: Push blocked - audit has FAILURES … Fix the issues above before pushing" with no check named near it. The FAIL blocks were ~200 lines earlier in the audit output, so `git push | tail` showed a refusal with no cause (OBS-274; on 2026-10-27 a bare "Fail: 1" had to be traced through the audit YAML by hand).
+
+**Root cause:** `agents/git/lib/hooks.sh` (pre-push template, FAIL branch at the `ERROR: Push blocked - audit has FAILURES` echo) only reported the ref/worktree failure COUNT from the `AUDIT-SCOPE:` line. It already captured the full audit output to `$_t3126_out` (T-3126) but never read the `[FAIL]` titles back out of it; the audit emits only worktree-scoped titles in machine form (`AUDIT-SCOPE-WORKTREE:`), so the ref-scoped ones — the blocking ones — were never repeated.
+
+**Why structurally allowed:** the gate tests (t3126, t3297, t2930) assert the verdict (exit code, "Push blocked") and the scope partition, never what the refusal tells the reader about the cause. A refusal with no cause is still a correct refusal, so every test stayed green. The lock-held branch had been given a holder line (T-4542) — that branch was already distinct ("audit COULD NOT RUN … This is not an audit failure"), the gap was only on the FAIL side.
+
+**Prevention:** `tests/unit/t4789_prepush_names_failing_checks.bats` pins that the refusal text (from the ERROR line on, and the last 15 lines) names every failing check with its first evidence line, truncated and ANSI-free, and that the lock-held refusal never reads as an audit failure.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -385,3 +410,6 @@ bin/fw vendor self --check --task T-4789
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4789-obs-the-pre-push-audit-failure-message-i.md
 - **Context:** Initial task creation
+
+### 2026-10-27T23:13:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
