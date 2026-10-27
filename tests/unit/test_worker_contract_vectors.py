@@ -275,7 +275,59 @@ def test_reference_backend_passes_all_cc16_variants_by_real_path(doc):
         assert r["status"] == "pass", r
         assert "equivalent" not in r["variants"][0]
         results.append(r)
-    assert len(results) == 6
+    assert len(results) == 7
+
+
+# ── T-4803: hand-backs carry commission, so outcome rule 1 is exercised by the suite ──
+def _handbacks(vec):
+    for g in [vec.get("given") or {}] + [v.get("given") or {} for v in vec.get("variants") or []]:
+        for name, ev in (g.get("evidence") or {}).items():
+            yield name, ev.get("handback")
+
+
+def test_every_handback_carries_its_dispatch_commission(doc):
+    seen = 0
+    for vec in doc["vectors"]:
+        did = (vec["given"].get("dispatch") or {}).get("dispatch_id")
+        for name, hb in _handbacks(vec):
+            if not isinstance(hb, dict):
+                continue  # `absent` by design
+            seen += 1
+            if _vec(doc, "CC-16") is vec and hb["commission"] != did:
+                continue  # the wrong-commission fixture, checked below
+            assert hb.get("commission") == did, (vec["id"], name, hb)
+    assert seen >= 25
+
+
+def test_cc16_wrong_commission_variant_is_malformed(doc):
+    var = next(v for v in _vec(doc, "CC-16")["variants"] if v["name"] == "handback-wrong-commission")
+    hb = var["given"]["evidence"]["E1"]["handback"]
+    did = _vec(doc, "CC-16")["given"]["dispatch"]["dispatch_id"]
+    assert hb["commission"] != did and hb["nonce"] == "n1" and hb["attempt"] == 1
+    assert var["then"]["final"]["A1"]["outcome"] == "handback-malformed"
+    assert "requires" not in var
+
+
+def test_local_backend_judges_wrong_commission_and_bites(doc, monkeypatch):
+    vec = _variant(doc, "CC-16", "handback-wrong-commission")
+    adapter, _ = run_local.load_backend(None)
+    r = run_local.run_vector(vec, adapter, "local")
+    assert r["status"] == "pass", r
+    # An adapter that stamps the dispatch id over the hand-back's commission would hide
+    # rule 1; the variant must catch it.
+    adapter, _ = run_local.load_backend(None)  # load_backend re-executes the module: a fresh class
+    cls = type(adapter)
+    orig = cls._materialise
+
+    def overwrite(self, did, ev):
+        ev = copy.deepcopy(ev)
+        if isinstance(ev.get("handback"), dict):
+            ev["handback"]["commission"] = did
+        return orig(self, did, ev)
+
+    monkeypatch.setattr(cls, "_materialise", overwrite)
+    r = run_local.run_vector(vec, adapter, "local")
+    assert r["status"] == "fail", r
 
 
 def test_equivalent_route_passes_and_is_named(doc):

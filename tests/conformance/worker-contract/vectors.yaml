@@ -104,7 +104,7 @@ vectors:
       attempts:
         - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1, seen_alive_epoch: E1}
       evidence:
-        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA01, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
       clock: 20
     steps:
       - op: confirm_end
@@ -137,7 +137,7 @@ vectors:
       attempts:
         - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1, seen_alive_epoch: E1}
       evidence:
-        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA02, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
       clock: 20
     steps:
       - op: complete
@@ -180,7 +180,7 @@ vectors:
       - name: evidence-present
         given:
           evidence:
-            E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+            E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA03, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
         steps:
           - op: confirm_end
             writer: hub
@@ -225,7 +225,7 @@ vectors:
       attempts:
         - {attempt: 1, state: done, outcome: succeeded, nonce: n1, credential: c1, supervisor_gen: 1, evidence: E1}
       evidence:
-        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA04, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
       clock: 20
     steps:
       - op: complete
@@ -262,8 +262,8 @@ vectors:
       attempts:
         - {attempt: 1, state: done, outcome: succeeded, nonce: n1, credential: c1, supervisor_gen: 1, evidence: E1}
       evidence:
-        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
-        E2: {attempt: 1, nonce: n1, exit_code: 1, handback: {status: failed, attempt: 1, nonce: n1}, signed: true, persisted_at: 11}
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA05, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+        E2: {attempt: 1, nonce: n1, exit_code: 1, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA05, status: failed, attempt: 1, nonce: n1}, signed: true, persisted_at: 11}
       clock: 20
     steps: []
     then: {judged_by: variants}
@@ -362,7 +362,7 @@ vectors:
         - {attempt: 1, state: lost, nonce: n1, credential: c1, supervisor_gen: 1, lost_at: 100}
         - {attempt: 2, state: running, nonce: n2, credential: c2, supervisor_gen: 1}
       evidence:
-        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 90}
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA07, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 90}
       clock: 200
     steps:
       - op: complete
@@ -508,7 +508,7 @@ vectors:
       attempts:
         - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1, seen_alive_epoch: E1}
       evidence:
-        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 50}
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA09, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 50}
       clock: 20
     steps:
       - op: partition
@@ -584,7 +584,7 @@ vectors:
       attempts:
         - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1}
       evidence:
-        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 30}
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA10, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 30}
       clock: 20
     steps:
       - op: dispatcher_lost
@@ -708,7 +708,7 @@ vectors:
       attempts:
         - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1}
       evidence:
-        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 30}
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA12, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 30}
       clock: 20
     steps:
       - op: append_question
@@ -772,7 +772,7 @@ vectors:
       attempts:
         - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1}
       evidence:
-        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA13, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
       clock: 20
     steps: []
     then: {judged_by: variants}
@@ -875,7 +875,7 @@ vectors:
       attempts:
         - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1}
       evidence:
-        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA14, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
       clock: 20
     steps: []
     then: {judged_by: variants}
@@ -1020,7 +1020,7 @@ vectors:
       - name: clean-exit-valid-handback
         given:
           evidence:
-            E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+            E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA16, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
         steps:
           - {op: complete, writer: supervisor, attempt: 1, nonce: n1, credential: c1, evidence: E1, expect: {accepted: T3}}
         then:
@@ -1029,7 +1029,7 @@ vectors:
       - name: exit-1
         given:
           evidence:
-            E1: {attempt: 1, nonce: n1, exit_code: 1, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+            E1: {attempt: 1, nonce: n1, exit_code: 1, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA16, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
         steps:
           - {op: complete, writer: supervisor, attempt: 1, nonce: n1, credential: c1, evidence: E1, expect: {accepted: T3}}
         then:
@@ -1048,7 +1048,17 @@ vectors:
       - name: handback-wrong-nonce
         given:
           evidence:
-            E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n-wrong}, signed: true, persisted_at: 10}
+            E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA16, status: complete, attempt: 1, nonce: n-wrong}, signed: true, persisted_at: 10}
+        steps:
+          - {op: complete, writer: supervisor, attempt: 1, nonce: n1, credential: c1, evidence: E1, expect: {accepted: T3}}
+        then:
+          final: {A1: {state: done, outcome: handback-malformed, exit_code: 0}}
+          admissible_histories: {A1: [[running, done]]}
+      - name: handback-wrong-commission
+        # valid except that commission names another dispatch: outcome rule 1 (§3.3, §2 handback.commission)
+        given:
+          evidence:
+            E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JBBBBBBBBBBBBBBBBBBBBB16, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
         steps:
           - {op: complete, writer: supervisor, attempt: 1, nonce: n1, credential: c1, evidence: E1, expect: {accepted: T3}}
         then:
@@ -1066,7 +1076,7 @@ vectors:
       - name: paused-exit-0
         given:
           evidence:
-            E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: paused, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+            E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA16, status: paused, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
         steps:
           - {op: complete, writer: supervisor, attempt: 1, nonce: n1, credential: c1, evidence: E1, expect: {accepted: T3}}
         then:
@@ -1087,7 +1097,7 @@ vectors:
       attempts:
         - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1, seen_alive_epoch: E1}
       evidence:
-        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA17, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
       clock: 20
     steps: []
     then: {judged_by: variants}
@@ -1163,7 +1173,7 @@ vectors:
       attempts:
         - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1}
       evidence:
-        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: paused, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA19, status: paused, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
       clock: 20
     steps:
       - {op: complete, writer: supervisor, attempt: 1, nonce: n1, credential: c1, evidence: E1, expect: {accepted: T3}}
@@ -1211,7 +1221,7 @@ vectors:
       attempts:
         - {attempt: 1, state: lost, nonce: n1, credential: c1, supervisor_gen: 1, lost_at: 100}
       evidence:
-        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 90}
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA20, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 90}
       clock: 150
     steps:
       - {op: sweep, writer: hub, attempt: 1, args: {observe: alive, epoch: E1}, expect: {no_transition: true, notices: 1, values: {observation_logged: true}}}
@@ -1275,7 +1285,7 @@ vectors:
       attempts:
         - {attempt: 1, state: unknown, nonce: n1, credential: c1, supervisor_gen: 1}
       evidence:
-        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA22, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
       clock: 20
     steps: []
     then: {judged_by: variants}
@@ -1320,7 +1330,7 @@ vectors:
       attempts:
         - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1}
       evidence:
-        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA23, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
       clock: 20
     steps:
       - {op: complete, writer: worker, attempt: 1, nonce: n1, credential: none, evidence: E1, expect: {fence_reject: bad_credential}}
@@ -1362,7 +1372,7 @@ vectors:
       - name: persisted-before-lost
         given:
           evidence:
-            E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 100}
+            E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA24, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 100}
         steps:
           - {op: complete, writer: reconciler, attempt: 1, nonce: n1, credential: c1, evidence: E1, expect: {accepted: T5}}
         then:
@@ -1371,7 +1381,7 @@ vectors:
       - name: persisted-after-lost
         given:
           evidence:
-            E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 101}
+            E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA24, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 101}
         steps:
           - {op: complete, writer: reconciler, attempt: 1, nonce: n1, credential: c1, evidence: E1, expect: {fence_reject: forbidden_transition, notices: 1}}
         then:
@@ -1401,7 +1411,7 @@ vectors:
       - name: exit-confirmed-valid-handback
         given:
           evidence:
-            E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 30}
+            E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA25, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 30}
         steps:
           - {op: stop, writer: supervisor, attempt: 1, args: {cause: deadline_stop, exit_status_captured: true}, expect: {ok: true}}
           - {op: complete, writer: supervisor, attempt: 1, nonce: n1, credential: c1, evidence: E1, expect: {accepted: T3}}
@@ -1437,7 +1447,7 @@ vectors:
       - name: revoked
         given:
           evidence:
-            E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 30}
+            E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA25, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 30}
         steps:
           - {op: stop, writer: supervisor, attempt: 1, args: {cause: revoked, exit_status_captured: true}, expect: {ok: true}}
           - {op: complete, writer: supervisor, attempt: 1, nonce: n1, credential: c1, evidence: E1, expect: {accepted: T3}}
