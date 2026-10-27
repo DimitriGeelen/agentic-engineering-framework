@@ -382,6 +382,48 @@ TermLink be.25 (5a584b09, recorded by T-4772): be.24 → be.25 clean (rc 0, 21 c
 upstream, CLAUDE.md project part identical, doctor rc 0, guard layer PASS). T-4768 and T-4769 present, not exercised
 live: their operator records decisions, and they will report at the first CLI decide.
 
+### be.26 – be.32 — ring20 (recorded 2026-10-27, T-4798)
+
+| Fix | Project | Tip | Verdict | Msg |
+|---|---|---|---|---|
+| T-4783 | ring20 | be.31 | **WORKS** (hook-text probe): a bare `tmux kill-server` without -S/-L is refused, exit 2; `tmux -L probe kill-server` passes, exit 0. The operator's review of T-4783 is still open | 4b5675f3 |
+| T-4794 | ring20 | be.31 | **WORKS**: CC-23 passes on AEF's runner, and the question variant is n/a by answer_channel | 4b5675f3 |
+
+ring20 went from be.25 straight to be.31 (0cd951409) and the upgrade was clean: doctor FAIL 2 before and 2 after, 38 preserved files and 18 patches intact, ring20 suites 183 + 23 green.
+
+**Shared worker contract (wc/0.3.3), ring20 conformance:**
+- **Self-tested:** 21 PASS / 4 N/A (CC-11/12/17/18) / 0 GAP, mapping in ring20 `docs/reports/T-2467/conformance-map-v0.3.3.yaml`. Readings agreed with AEF on 2026-10-26:
+  - CC-10: the adopt clause is n/a (answer channel).
+  - CC-22: an attested done projects to `done{attested}`, never to a derived `done{failed}`.
+  - CC-08: one authoritative systemd probe after a restart, under the §3.2 hubless sweep writer (ring20 bddb4c117).
+- **Mechanical runs** (ring20 adapter driving the real supervisor against AEF's `run_local.py` and `vectors.yaml`): slice A 8 pass / 0 fail → slice B 11 pass → slice C 13 pass, 1 fail (CC-08) → slice D 14 pass, 3 fail → be.31 15 pass, 3 fail, 3 not-implemented, 4 n/a.
+- **AEF vector changes from that work:**
+  - T-4793 (be.29): CC-16 equivalent route.
+  - T-4794 (be.30): CC-23 split.
+  - T-4796 (be.31): CC-08 equivalent route.
+- **Open:**
+  - ring20 adopts the T-4793/T-4796 equivalent routes (their T-2544).
+  - CC-15/CC-19: ring20 closes a dispatch after a resolve-as-lost or a paused end. AEF proposed wc v0.3.4, under which a closed dispatch answers `fence_reject(dispatch_closed)` and A2 becomes optional. It awaits TermLink's agreement.
+- The adapter work also found and fixed ring20 defects: a lost attempt whose retry was refused could not be upgraded by T5; T6b fired only at restart; a T5 sent a spurious "two results" notice.
+
+**Shipped in be.26 – be.32 with no field verdict yet:**
+- **be.26:** T-4773 (stale doorbell).
+- **be.27:**
+  - T-4774 (arc focus warning)
+  - T-4775 (spawn PATH)
+  - T-4776 (watchdog SIGKILL)
+  - T-4777 (enclosing-repo staging)
+  - T-4778 (reviewer auto-tick evidence)
+  - T-4779 (stale-review on release commits)
+  - T-4780 (designer 0.29.0)
+  - T-4782 (hook python -c lint)
+- **be.28:** T-4781 (tmux server per project).
+- **be.31:** T-4795 (designer 0.30.0).
+- **be.32:** T-4797 (generate_id without forks).
+- **Notes:**
+  - TermLink recorded T-4773 against its T-3591, and T-4778 against T-3592.
+  - 1409 will measure T-4797 from be.32.
+
 ## Full-suite comparison (HEAD eee888e61 vs v1.8.14)
 
 **Method, and what it does not cover.** T-4345 ran the whole unit corpus on two scratch trees side by side (jobs=6
