@@ -104,7 +104,15 @@ The need: AEF's own test runs do not accumulate on the /tmp tmpfs when they are 
 - [x] tests/unit/t4846_tmp_hygiene.bats covers the kill case, the sweep's boundaries and the threshold WARN; t4215/t4526 temp tests and tests/lint/config-registry-parity.bats stay green
 - [x] Vendor in sync
 
-<!-- No Human criteria: every criterion is agent-verifiable.
+### Human
+- [ ] [REVIEW] The new temp-space setting reads clearly on the settings page
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find TMP_USE_WARN_PCT
+  **Expected:** the row shows 85 and a description you understand (when doctor and the audit warn about a nearly full temp disk)
+  **If not:** note what is unclear; the agent rewords it
+
+<!-- Template guidance follows.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -369,6 +377,13 @@ bin/fw vendor self --check --task T-4846
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+**Rationale:** Tonight /tmp, a 32 GB in-memory disk shared by every project here, filled to zero and writes failed quietly. AEF's share was test folders left behind when a test run was killed. Task checks and `fw test` now give their test runs a temp folder of their own and remove it on exit, a later run removes AEF's own orphans, and `fw doctor` plus the audit warn when the temp disk passes 85%. The parent's review removed one part that could have deleted other projects' test folders.
+**Evidence:**
+- 12 tests pass in tests/unit/t4846_tmp_hygiene.bats, including killed-mid-run cases for `fw test` and the task-check runner, and a sweep test proving another project's old folder survives
+- The existing temp-hygiene tests (T-4215, T-4526) stay green
+- The new setting TMP_USE_WARN_PCT (default 85) is listed on http://192.168.10.107:3000/config
 
 ## Decisions
 
