@@ -61,9 +61,9 @@ Release-freeze tag (T-4869 allows tags for testers): carries the two field FAILS
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Fast unit suite with 0 new reds; `bin/fw audit --section structure` Fail: 0
-- [ ] bleeding-edge pushed and `bin/fw release be-tag --push` cut the tag
-- [ ] ring20-dashboard (T-4872, scanner) and 055 (T-4873) told the tag
+- [x] Fast unit suite with 0 new reds; `bin/fw audit --section structure` Fail: 0
+- [x] bleeding-edge pushed and `bin/fw release be-tag --push` cut the tag (v1.8.15-be.49)
+- [x] ring20-dashboard (T-4872, scanner) and 055 (T-4873) told the tag (msgs 46421878, ed0abd46)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
