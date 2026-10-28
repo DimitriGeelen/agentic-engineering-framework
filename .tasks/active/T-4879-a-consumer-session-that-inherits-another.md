@@ -56,7 +56,7 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Pre-read (parent, 2026-10-28, current tree): lib/paths.sh keeps an inherited FRAMEWORK_ROOT (line 27, `[[ -z ... ]]`) and an inherited PROJECT_ROOT (line 39) as-is; nothing compares them with this fw's own location or the cwd's .framework.yaml. The T-2289 guard (line 64) only re-derives TASKS_DIR/CONTEXT_DIR when they came from a different PROJECT_ROOT; it never questions PROJECT_ROOT itself. With both variables inherited from 055 together, every derived path pointed at 055, which explains 1023's "second source" without one. Likely fix site: lib/paths.sh (and bin/fw's own FRAMEWORK_ROOT resolution): when the inherited roots disagree with the location of the bin/fw being run (or the cwd's .framework.yaml), refuse with a clear message (or re-derive and warn), before any write. Mind legitimate cross-project uses (fw upgrade <dir>, tests that set PROJECT_ROOT deliberately, worktrees T-3111).
 
 ## Acceptance Criteria
 
