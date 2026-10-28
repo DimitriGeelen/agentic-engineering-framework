@@ -15,10 +15,10 @@ description: >
   whether the pre-push ratchet should re-run a first-time red once before blocking
   (operator decision; record evidence here).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [test-flake, unit-suite]
 components: []
 related_tasks: []
@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T09:27:30Z
-last_update: '2026-10-28T09:30:34Z'
+last_update: '2026-10-28T23:11:48Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,6 +88,23 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-28T23:11:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4866: Full fast suite shows first-time one-off reds that pass alone and under parallel load (three on 2026-10-28)
@@ -100,8 +117,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Sweep report docs/reports/T-4866-shared-state-sweep.md: every test file under tests/unit that reads or writes live-repo state (the real .context/, .tasks/, manifests), binds a fixed port, takes a shared lock or marker outside its own temp dir, or depends on the live Watchtower/host load; each finding with file:line, class and a one-line fix direction
+- [ ] Each finding classed fix-now (a race that can redden the pre-push ratchet) or note (harmless); fix-now findings get their own bug task each (one bug = one task)
+- [ ] fw_pending_remind.bats test 5 and t4041_watchtower_fw_host.bats test 6 each assessed in the report: plausible shared-state cause named, or "none found" with what was checked
+- [x] Re-run-once decision: done as T-4875 (operator answer a, 2026-10-28)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -383,3 +402,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4866-full-fast-suite-shows-first-time-one-off.md
 - **Context:** Initial task creation
+
+### 2026-10-28T23:11:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
