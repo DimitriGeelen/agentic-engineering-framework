@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4859: Shell write scanner: relative T-NNNN*.md paths with a non-dot prefix, or a cwd inside .tasks, are not counted as mentions
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T10:05:24Z
+# ============================================================================
+
+task_id: T-4859
+task_name: "Shell write scanner: relative T-NNNN*.md paths with a non-dot prefix, or a cwd inside .tasks, are not counted as mentions"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-28T07:29:26Z
+completed: 2026-10-28T10:05:02Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-28T11:01:18+01:00
+last_commit: 2026-10-28T11:01:18+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  tick guard mention is cwd-aware — a cwd inside the task dir (hook or cd, symlinks followed) is an implicit mention, and dir/T-NNNN.md counts unless dir provably resolves outside it; regression bats; RCA; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Reproduce first: bats cases for `cd .tasks && echo x > active/T-0001-x.md`, `cd .tasks/active && sed -i … T-0001-x.md`, and a relative path with a non-dot prefix that resolves into .tasks; record which the guard passes before the fix'
+  - 'Fixed so those are refused: a relative T-NNNN*.md token counts as a mention unless its prefix provably resolves outside .tasks from a known cwd; a cwd inside .tasks makes the command an implicit mention'
+  - 'Read-only commands on task files from inside .tasks (cat, grep, sed -n) still pass'
+  - 'Existing scanner tests stay green; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-28 — concern "cwd inside .tasks is not a mention" (REAL)'
+    chose: 'a cwd inside `.tasks` (hook cwd or any literal `cd` destination in the text, realpath) makes the command an implicit mention.'
+    rationale: 'reproduced — inline code and `"$F"` writes from `.tasks/` passed. Read-only commands still pass because the mention only arms refusals for writes/inline code (bats case 9).'
+    alternatives_rejected: ['treating any command run from anywhere with an unknown cd as a mention (would refuse common `cd /abs && …` artefact writes).']
+  - decision: '2026-10-28 — concern "relative T-NNNN*.md with a non-dot prefix is not a mention" (REAL, narrower than stated)'
+    chose: 'the word counts unless its directory provably resolves (realpath, from every cwd the command may run in) outside `.tasks`; a run-time-built directory (`$D/`, `${D}/`, `$(…)/`) always counts.'
+    rationale: 'reproduced via a symlinked dir and `$D/`. A plain directory outside `.tasks` (`docs/reports/`, `sub/`) cannot land a write in `.tasks`, so treating it as a mention would only re-open the T-4159 false refusals.'
+    alternatives_rejected: ['"every non-dot relative prefix is a mention" — refuses the C-001 artefact convention for no gain. A dir that becomes a link into `.tasks` only at run time is outside the text gate; named in the scope comment.']
+  - decision: '2026-10-28 — reviewer''s resolvable-target examples (NOT a hole)'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - '.tasks/active/T-4859-shell-write-scanner-relative-t-nnnnmd-pa.md'
+  - 'lib/shell_write_scan.py'
+  - 'tests/unit/t4859_scanner_relative_task_paths.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T11:01:18'
+    action: 'T-4859: tick guard mention is cwd-aware — a cwd inside the task dir (hook or cd, symlinks followed) is an implicit mention, and dir/T-NNNN.md counts unless dir provably resolves outside it; regression bats; RCA; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 155 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [security, scanner]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 155
+  commits: 4
+  files_changed: 9
+  lines_added: 1485
+  lines_removed: 38
+  footprint_refreshed_at: '2026-10-28T10:05:41Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4859-shell-write-scanner-relative-t-nnnnmd-pa.md
+generated_by: context-agent-hybrid
