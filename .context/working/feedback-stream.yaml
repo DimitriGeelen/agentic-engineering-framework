@@ -50819,3 +50819,21 @@ scan_id: R-9ebcae5f
 task_id: T-4867
 payload:
   task_file: .tasks/active/T-4867-v1815-release-cut-point-latest-bleeding-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-28T12:13:21Z'
+scan_id: R-73760eee
+task_id: T-4874
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-28T12:13:21Z'
+scan_id: R-73760eee
+task_id: T-4874
+payload:
+  task_file: .tasks/active/T-4874-be-tag-be49-field-fails-fixes-t-4872-t-4.md
