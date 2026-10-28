@@ -496,7 +496,19 @@ One row per project and build. A blank Msg means the id was not kept in the sess
 
 **Freeze exit status (2026-10-28 evening):** six of seven active testers are on be.48 or later with a clean upgrade report, which meets the operator's confirmation rule (b: clean full upgrades by three or more testers). Both FAILS reported in this round were fixed under the freeze (T-4872, T-4873) and confirmed by their reporters on be.49. Still missing: **1409**'s be.48+ upgrade report (partial report at about be.46: T-4841 WORKS; their lost local blueprint block is backlog T-4870). Open but not blocking: 055 G and dimitri-mint-dev G/T-4781 after their next restarts.
 
+### be.50 — 1409, 055 (recorded 2026-10-29, T-4885)
+
+be.50 (370b2688b) is be.49 plus T-4875, T-4880, T-4881 and T-4883. The release waits for 1409's be.50 report (operator, 2026-10-28, answer "1"). Under rule b, three clean be.50 upgrades confirm the four new fixes.
+
+| Tester | Versions | Doctor | Own tests | Verdicts | Messages |
+|---|---|---|---|---|---|
+| 1409 | → be.50 | 0 FAIL, 38 project WARN + 1 host WARN (no pre-upgrade reading) | **owed**: full suite after their machine restart; 7 data-dependent reds before the upgrade are theirs (5f66369d) and are listed separately | upgrade clean: dry-run and upgrade exit 0, no PRESERVE file changed, 29 files (their 97362b0b7); 40 STALE review worktrees and the claude-fw restart hint were expected | 8e456671, 3b77df39 |
+| 055 | be.49 (be.50 after their T-648 deploy) | — | — | **WORKS** G session restore: after the host .107 reboot their fleet starter ran `claude-fw --resume <id>` at 23:55:28; SessionStart fired as resume, injected their handover, and the conversation continued with full context. Not exercised: claude-fw's own `.restart-requested` path | 698140ea |
+
+**Freeze exit status (2026-10-29):** waiting on 1409's full test suite on be.50. 055 G is now confirmed. 055 and TermLink upgrade to be.50 when their operators say go.
+
 **Still unexercised, and who reports:**
+- **claude-fw budget auto-restart (`.restart-requested`):** written by the budget gate at 2026-10-28 18:06Z here, but the wrapper did not end the session (it predated later claude-fw fixes); no tester has exercised it yet.
 - **1409:** upgrade to be.44 or later after their workers rest, then the create-time re-measure at about 20 worktrees (T-4797, T-4841); T-4806 needs their Dauerlauf armed.
 - **dimitri-mint-dev:** G, T-4781, T-4812 re-check (after relaunch).
 - **055:** E, F, G.
