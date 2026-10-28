@@ -8,8 +8,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: [bug, designer]
 components: [agents/designer/designer.sh, bin/fw, lib/upgrade.sh, lib/vendor-visibility.sh, web/blueprints/designer_api.py]
 related_tasks: []
@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T15:57:56Z
-last_update: 2026-10-27T16:29:33Z
+last_update: 2026-10-28T11:27:27Z
 date_finished: 2026-10-27T16:29:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -108,12 +108,13 @@ import writes `vendor/designer/__pycache__/` beside the pinned file.
 - [x] tests/unit/upgrade_fresh_machine_simulation.bats stays green (consumer-facing command hygiene, T-1633)
 
 ### Human
-- [ ] [REVIEW] The designer's Check button still reports 832's findings after this change
+- [x] [REVIEW] The designer's Check button still reports 832's findings after this change
   **Steps:**
   1. Open http://192.168.10.107:3000/designer/app
   2. Open any map and press Check
   **Expected:** a findings list (or "no findings") appears; no "validator unavailable" message
   **If not:** note the message shown; it names which pinned file is missing or mismatched
+  **Reviewer verdict:** green V-20261028-f3ae3d7c — reviewer-judge-t-4836-r5-opencode-5aa8c8beaced:opencode (rung rung-5-panel:opencode), digest 4b134bf1114f; dispatch judge-t-4836-r5-opencode-5aa8c8beaced; evidence: .context/reviews/evidence/T-4836/AC1-judge-t-4836-r5-opencode-5aa8c8beaced.md; ledger .context/reviews/verdicts.jsonl
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

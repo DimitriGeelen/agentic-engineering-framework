@@ -1,0 +1,129 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4836: Consumers never receive the pinned designer validator so POST /api/validate is 503 outside the framework repo
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T11:31:02Z
+# ============================================================================
+
+task_id: T-4836
+task_name: "Consumers never receive the pinned designer validator so POST /api/validate is 503 outside the framework repo"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T15:57:56Z
+completed: 2026-10-27T16:29:33Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T16:59:20+01:00
+last_commit: 2026-10-28T12:19:35+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — pinned designer validator never reaches consumers (found reviewing T-4830); ACs, RCA. deliver the pinned designer validator to consumers (vendor, vendor self, install, upgrade); loader reads PROJECT_ROOT then FRAMEWORK_ROOT, writes no __pycache__. Recommendation GO (parent review). full URL in Evidence. partial-complete — Agent ACs and Verification green, owner human for the [REVIEW] check. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (opencode seat opencode, recorded by the runtime)
+
+# Key outcomes
+outcomes:
+  - '`fw vendor` copies the pin''s `validator_path` beside `vendored_path` into the vendored copy (when the pin declares one), and `fw upgrade` delivers it the same way'
+  - '`fw designer install` installs the validator from FRAMEWORK_ROOT to PROJECT_ROOT with the same sha256-vs-pin refusal as the build (mismatch refused, absent source names the cause)'
+  - '`_load_validator` resolves PROJECT_ROOT/validator_path first, then FRAMEWORK_ROOT/validator_path, and still refuses on sha256 mismatch (503)'
+  - 'Loading the validator writes no `__pycache__` anywhere under vendor/ (e.g. `sys.dont_write_bytecode` held around exec_module, restored afterwards)'
+  - 'A test builds a synthetic consumer (vendored copy separate from the project root, no validator in PROJECT_ROOT) and gets 200 with findings from POST /api/validate after vendor+install; a second test shows 503 when the vendored file''s sha does not match the pin'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats stays green (consumer-facing command hygiene, T-1633)'
+  - '[REVIEW] The designer''s Check button still reports 832''s findings after this change'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-27 — which pin keys are delivered'
+    chose: 'an explicit key list, `vendored_path validator_path` (bin/fw do_vendor loop; `_DESIGNER_PIN_PATH_KEYS` + `_designer_pin_path` in lib/upgrade.sh). File names always come from the pin, and superseded siblings are pruned by the pinned name''s stem (`<stem>-*.<ext>`), so no file name is hard-coded.'
+    rationale: 'adding a new pinned file means adding one word to the list, and nothing the pin names on 832''s side (source_*, protocol) can be copied by accident.'
+    alternatives_rejected: ['every `^[a-z_]+_path:` key (would silently pick up any future key that is not meant to be delivered); a validator-only copy of the build block (two carve-outs to keep in step).']
+  - decision: '2026-10-27 — loader: first copy present wins, mismatch refused'
+    chose: '`_load_validator` checks the first existing file out of PROJECT_ROOT/validator_path and FRAMEWORK_ROOT/validator_path. A sha256 mismatch on that file is 503, never a fall-through to the other copy.'
+    rationale: 'a stale or tampered installed copy should fail loudly (Reliability); `fw upgrade` re-installs, so a current consumer''s two copies agree.'
+    alternatives_rejected: ['"first copy that verifies" (it would hide a corrupt installed copy behind the vendored one).']
+  - decision: '2026-10-27 — validator problems fail `fw designer install`'
+    chose: 'absent vendored validator → rc 5, mismatch → rc 1, after the build has installed; a pin without validator_path is skipped with rc 0.'
+    rationale: 'the AC asks for the build''s refusal semantics; init and upgrade print the install output, so the operator sees which file is missing.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/designer/designer.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/lib/vendor-visibility.sh'
+  - '.agentic-framework/vendor/designer/validate-workflow-0.30.0.py'
+  - '.agentic-framework/web/blueprints/designer_api.py'
+  - '.context/reviews/evidence/T-4836/AC1-judge-t-4836-r5-claude-code-acfc86c53f8a.md'
+  - '.context/reviews/evidence/T-4836/AC1-judge-t-4836-r5-codex-3ecdbff1b1da.md'
+  - '.context/reviews/evidence/T-4836/AC1-judge-t-4836-r5-opencode-5aa8c8beaced.md'
+  - '.context/reviews/evidence/T-4836/check-judge-t-4836-r5-claude-code-acfc86c53f8a.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-4836-consumers-never-receive-the-pinned-desig.md'
+  - 'agents/designer/designer.sh'
+  - 'bin/fw'
+  - 'lib/upgrade.sh'
+  - 'lib/vendor-visibility.sh'
+  - 'tests/unit/t4836_validator_delivery.bats'
+  - 'tests/web/test_t4836_consumer_validator.py'
+  - 'web/blueprints/designer_api.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T16:59:20'
+    action: 'T-4836: file — pinned designer validator never reaches consumers (found reviewing T-4830); ACs, RCA'
+  - time: '2026-10-27T17:16:27'
+    action: 'T-4836: deliver the pinned designer validator to consumers (vendor, vendor self, install, upgrade); loader reads PROJECT_ROOT then FRAMEWORK_ROOT, writes no __pycache__'
+  - time: '2026-10-27T17:25:23'
+    action: 'T-4836: Recommendation GO (parent review)'
+  - time: '2026-10-27T17:29:31'
+    action: 'T-4836: full URL in Evidence'
+  - time: '2026-10-27T17:55:10'
+    action: 'T-4836: partial-complete — Agent ACs and Verification green, owner human for the [REVIEW] check'
+  - time: '2026-10-28T12:16:04'
+    action: 'T-4836: reviewer verdict'
+  - time: '2026-10-28T12:16:53'
+    action: 'T-4836: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-10-28T12:19:35'
+    action: 'T-4836: reviewer verdict (opencode seat opencode, recorded by the runtime)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 31 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, designer]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 31
+  commits: 9
+  files_changed: 26
+  lines_added: 3698
+  lines_removed: 225
+  footprint_refreshed_at: '2026-10-28T11:34:48Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4836-consumers-never-receive-the-pinned-desig.md
+generated_by: context-agent-hybrid
