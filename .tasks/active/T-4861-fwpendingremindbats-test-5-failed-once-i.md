@@ -1,8 +1,14 @@
 ---
 id: T-4861
-name: "fw_pending_remind.bats test 5 failed once in the full fast suite (exit status non-zero, no output captured)"
+name: "fw_pending_remind.bats test 5 failed once in the full fast suite (exit status
+  non-zero, no output captured)"
 description: >
-  Fast suite for be.47 (failure dir .context/audits/unit-suite/failures/2026-10-28T07:59:00Z): tests/unit/fw_pending_remind.bats test 5 'entry with back-dated created is reported' failed at line 86 ([ $status -eq 0 ]) with no captured output. Passes 3/3 alone and 20/20 with 4 parallel copies x5. Blocked the be.47 pre-push once as a NEW red. Next: capture fw pending remind's stderr in the test on failure, and look for a load-sensitive step (lock, timeout, python start-up) in the remind path.
+  Fast suite for be.47 (failure dir .context/audits/unit-suite/failures/2026-10-28T07:59:00Z):
+  tests/unit/fw_pending_remind.bats test 5 'entry with back-dated created is reported'
+  failed at line 86 ([ $status -eq 0 ]) with no captured output. Passes 3/3 alone
+  and 20/20 with 4 parallel copies x5. Blocked the be.47 pre-push once as a NEW red.
+  Next: capture fw pending remind's stderr in the test on failure, and look for a
+  load-sensitive step (lock, timeout, python start-up) in the remind path.
 
 status: captured
 workflow_type: build
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T08:09:29Z
-last_update: 2026-10-28T08:09:29Z
-date_finished: null
+last_update: '2026-10-28T08:15:20Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-28T08:15:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4861: fw_pending_remind.bats test 5 failed once in the full fast suite (exit status non-zero, no output captured)
