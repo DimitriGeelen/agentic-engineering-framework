@@ -1,10 +1,19 @@
 ---
 id: T-4851
-name: "Degraded Tier 0 gate (python3 broken) lets hook-bypass and fw force/decide commands through"
+name: "Degraded Tier 0 gate (python3 broken) lets hook-bypass and fw force/decide
+  commands through"
 description: >
-  ring20-dashboard be.46 report (msg 2c503ddf, finding 1): with python3 shadowed on PATH by a stub that exits 1, the Tier 0 gate hook (fw hook check-tier0, its degraded fallback hook_degraded_tier0) exits 0 for `git commit --no-verify -m x` and for `fw task update T-1 --status work-completed --force`. The degraded pattern lacks --no-verify, `commit -n`, `fw ... --force`, `fw inception decide`, core.hooksPath, include.path and includeIf, all of which the fast-path keyword list has. Force push, hard reset and recursive delete are blocked correctly. Same class as T-4652 (degraded fallbacks must fail closed). Their local patch 0032 adds the missing classes. Reproduce first; do not rely only on their patch.
+  ring20-dashboard be.46 report (msg 2c503ddf, finding 1): with python3 shadowed on
+  PATH by a stub that exits 1, the Tier 0 gate hook (fw hook check-tier0, its degraded
+  fallback hook_degraded_tier0) exits 0 for `git commit --no-verify -m x` and for
+  `fw task update T-1 --status work-completed --force`. The degraded pattern lacks
+  --no-verify, `commit -n`, `fw ... --force`, `fw inception decide`, core.hooksPath,
+  include.path and includeIf, all of which the fast-path keyword list has. Force push,
+  hard reset and recursive delete are blocked correctly. Same class as T-4652 (degraded
+  fallbacks must fail closed). Their local patch 0032 adds the missing classes. Reproduce
+  first; do not rely only on their patch.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T07:27:23Z
-last_update: 2026-10-28T07:27:23Z
-date_finished: null
+last_update: '2026-10-28T07:29:13Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-28T07:29:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4851: Degraded Tier 0 gate (python3 broken) lets hook-bypass and fw force/decide commands through
@@ -114,7 +140,9 @@ See description. The need: when python3 is unavailable or broken, the Tier 0 gat
 
 ## Verification
 
-timeout 900 bats tests/unit/t4851_degraded_gate_classes.bats
+timeout 900 bats tests/unit/t4851_degraded_gate_classes.bats > /tmp/.t4851-v1 2>&1 && ! grep -q "^not ok" /tmp/.t4851-v1
+test "$(grep -c '# skip' /tmp/.t4851-v1)" -eq 0
+timeout 900 bats tests/unit/t4652_hook_fail_closed_degraded.bats > /tmp/.t4851-v2 2>&1 && ! grep -q "^not ok" /tmp/.t4851-v2
 bin/fw vendor self --check --task T-4851
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -269,6 +297,14 @@ bin/fw vendor self --check --task T-4851
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** with python3 shadowed by a stub that exits 1, the Tier 0 hook exited 0 for `git commit --no-verify -m x` and `fw task update T-1 --status work-completed --force` (ring20-dashboard be.46, msg 2c503ddf). Reproduced here: 25 of 34 sample commands, covering ~20 classes, were allowed while degraded (`tests/unit/t4851_degraded_gate_classes.bats` test 3 before the fix).
+
+**Root cause:** `lib/hook-degraded.sh:hook_degraded_tier0` (T-4652) had a hand-picked keyword list (rm -r, force push, hard reset, branch -D, clean -f, SQL, dd, mkfs, the Tier 0 word). It was written separately from the fast-path keyword filter in `agents/context/check-t*0.sh:141-143`, which is what decides which commands reach the python matcher. Every class the filter sends to python but the fallback did not list was allowed while degraded: --no-verify, `commit -n`, core.hooksPath / include.path / includeIf, HOME / GIT_CONFIG* assignments, push --delete / :ref / flag clusters (`-uf`), reset `--h` abbreviations, checkout/restore `.`, `branch --force --delete`, docker system, kubectl delete, find -delete, chmod 000, pkill/killall, tmux kill-se, `fw … --force`, `fw inception decide`, reassembled spellings (`tier""0`) and ANSI-C quoting.
+
+**Why structurally allowed:** the two lists had no link. T-4652's tests checked the classes its author listed (rm, force push, reset, branch -D, DROP), so they were green; nothing compared the fallback with the fast path.
+
+**Prevention:** the new bats drift guard reads the fast-path regex from check-t*0.sh, splits it into its top-level alternatives, and fails when any alternative has no row in its case table. Each row must be blocked by the healthy gate (so the sample is a real Tier 0 instance) and by the degraded gate. Adding a keyword to the fast path without a degraded counterpart now turns that test red.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -333,6 +369,16 @@ bin/fw vendor self --check --task T-4851
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-28 — how to keep the degraded list from drifting
+- **Chose:** keep a separate bash ERE in `hook_degraded_tier0` (one class per fast-path keyword), and add a drift test that parses the fast-path regex and needs a sample command per alternative, blocked both healthy and degraded.
+- **Why:** the fast-path regex is a pre-filter, not a block list. Reusing it verbatim while degraded would block every `git -C …`, every `git push` and every `git checkout`, so handovers would stop entirely. The degraded patterns are narrower (they block the destructive shape of each class) but still wider than the python matcher. The test is what ties the two lists together.
+- **Rejected:** (a) source the fast-path regex from a shared variable used by both. That changes the healthy path (the brief says not to) and over-blocks as described. (b) Port ring20-dashboard's patch 0032 unchanged. It covered the reported classes but not push --delete / `-uf` clusters / docker / kubectl / find / chmod / pkill / tmux / ANSI-C, and had no drift guard.
+
+### 2026-10-28 — ANSI-C quoting while degraded
+- **Chose:** block any payload containing `$'` while degraded, and scan a dequoted copy of the payload (quotes, backslashes and `$` removed), as the fast path does.
+- **Why:** the healthy fast path sends every `$'` command to python, because only python decodes it (`$'tier\x30'`). Bash cannot decode it reliably here, so blocking it is the fail-closed choice. It only applies while degraded.
+- **Rejected:** decoding `$'…'` in bash with `printf %b`. Its escape rules differ from bash's ANSI-C rules (`\c`, `\u`, a NUL cut), and those are exactly the differences the python decoder exists to handle.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -349,3 +395,6 @@ bin/fw vendor self --check --task T-4851
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4851-degraded-tier-0-gate-python3-broken-lets.md
 - **Context:** Initial task creation
+
+### 2026-10-28T07:29:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -34,8 +34,24 @@ _hook_degraded_warn() {
 
 hook_degraded_tier0() {
     local input="$1" why="$2"
-    local pat='(^|[^[:alnum:]_])rm[[:space:]]+(-[[:alnum:]]*[rR]|--recursive)|git[[:space:]].*push[[:space:]].*(--force|-f([[:space:]"\\]|$)|[[:space:]]\+[[:alnum:]_./-])|reset[[:space:]]+--hard|git[[:space:]].*branch[[:space:]]+(-D|--delete[[:space:]]+--force)|git[[:space:]]+clean[[:space:]]+-[[:alnum:]]*f|DROP[[:space:]]+(TABLE|DATABASE|SCHEMA)|TRUNCATE[[:space:]]|mkfs|dd[[:space:]]+if=|tier0'
-    if printf '%s' "$input" | grep -qEi -- "$pat"; then
+    # T-4851: one class per fast-path keyword in check-tier0.sh — that filter decides
+    # what reaches the matcher, so every class it sends there must block here too.
+    # tests/unit/t4851_degraded_gate_classes.bats fails when a keyword has no case.
+    local e='([[:space:]"\\]|$)' b='(^|[^[:alnum:]_])'
+    local pat="${b}rm[[:space:]]+(-[[:alnum:]]*[rR]|--recursive)"
+    pat+="|git[[:space:]].*push[[:space:]](.*[[:space:]])?(-[[:alnum:]]*[fd][[:alnum:]]*$e|--fo|--d|\+[[:alnum:]_./-]|:[^[:space:]\"\\])"
+    pat+="|git[[:space:]].*reset[[:space:]].*--h|git[[:space:]].*clean[[:space:]].*-[[:alnum:]]*f"
+    pat+="|git[[:space:]].*(checkout|restore)[[:space:]]+\.([[:space:];&|)\"\\]|$)"
+    pat+="|git[[:space:]].*branch[[:space:]](.*[[:space:]])?(-[[:alpha:]]*D|--d.*--f|--f.*--d)"
+    pat+="|git[[:space:]].*commit[^;|&]*[[:space:]]-[[:alpha:]]*n|--no-v|hookspath|include\.path|includeif"
+    pat+="|${b}(HOME|XDG_CONFIG_HOME|GIT_CONFIG[[:alnum:]_]*)=.*git[[:space:]].*(push|commit|merge|pull|rebase|am|cherry-pick|revert)$e"
+    pat+="|DROP[[:space:]]+(TABLE|DATABASE|SCHEMA)|TRUNCATE[[:space:]]|mkfs|dd[[:space:]]+if=|tier0"
+    pat+="|docker[[:space:]]+system|kubectl[[:space:]]+delete|find[[:space:]].*-delete|chmod[[:space:]].*[[:space:]]000"
+    pat+="|${b}(pkill|killall)[[:space:]]|kill-se|${b}fw[[:space:]].*--force|${b}fw[[:space:]].*inception[[:space:]].*decide"
+    # The fast path also scans a dequoted copy (tier""0) and sends ANSI-C quoting
+    # ($'...') to python unread; while degraded, both are blocked here.
+    local dq; dq=$(printf '%s' "$input" | tr -d "\"'\\\\\$")
+    if [[ "$input" == *"\$'"* ]] || printf '%s\n%s\n' "$input" "$dq" | grep -qEi -- "$pat"; then
         _hook_degraded_banner "check-tier0" "$why" "The raw payload matches a Tier 0 keyword, so the call is BLOCKED (fail closed)."
         echo "  This may over-block while degraded. Repair python3 (it must import json, re," >&2
         echo "  os, hashlib) or ask the operator to approve." >&2
