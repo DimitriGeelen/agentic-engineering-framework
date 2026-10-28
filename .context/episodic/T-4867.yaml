@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4867: v1.8.15 release cut-point: latest bleeding-edge point whose fixes are all field-confirmed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T11:49:09Z
+# ============================================================================
+
+task_id: T-4867
+task_name: "v1.8.15 release cut-point: latest bleeding-edge point whose fixes are all field-confirmed"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-28T10:54:31Z
+completed: 2026-10-28T11:48:52Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-28T11:55:31+01:00
+last_commit: 2026-10-28T12:48:47+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ACs (release cut-point analysis, operator answer c). release cut-point report — no strict cut past v1.8.14; be.46 under upgrade-run rule. operator ruling — clean full upgrade by 3+ testers counts as confirmation (decision-walk Q5a, answer b). CLAUDE.md freeze section — what counts as confirmed (operator answer b)
+
+# Key outcomes
+outcomes:
+  - 'docs/reports/T-4867-release-cut-point.md lists, for every tag from v1.8.14 to v1.8.15-be.48 (plus current bleeding-edge), the fix tasks it introduced (T-ids from commit subjects in that range, excluding pure task-file, handover and bookkeeping commits) and each fix''s field status from docs/reports/field-test-v1.8.15-results.md and the sidecar reports: WORKS (by whom, which tag), FAILS (and whether a later fix superseded it), or UNCONFIRMED (no field report)'
+  - 'The report names the latest tag (or commit) such that every fix up to and including it is WORKS, or FAILS-then-fixed-and-WORKS, and lists which confirmed fixes after that point would be left out, plus every UNCONFIRMED fix with who could confirm it'
+  - 'Fixes that are internal (tests, docs, the framework''s own tooling with no consumer effect) are marked as such and do not by themselves block a cut point; the rule used is stated explicitly'
+  - 'A one-paragraph summary at the top that answers: "release up to be.XX now (includes N fixes, leaves M confirmed ones for later)" or "no useful cut point yet, because …"'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # 1 decision(s) below are recorded in the register (.context/project/decisions.yaml) for this task but absent from the task file's Decisions section (T-4193).
+  - decision: 'D-939'
+    chose: 'Release confirmation rule for v1.8.15 (operator 2026-10-28, answer b to decision-walk question 5a): a clean full upgrade by at least three different testers (fw doctor no worse, own tests as before, project works) counts as field confirmation for consumer-facing changes that have no specific verdict. A fix that was specifically tested and FAILED must still be fixed and re-confirmed.'
+    rationale: 'T-4867: 343 of 466 consumer-facing changes since v1.8.14 have no specific verdict and cannot practically get one; four testers (ring20-dashboard, ring20, dimitri-mint-dev, 055) upgraded cleanly to be.48 on 2026-10-28.'
+    id: 'D-939'
+    source: register
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/decisions.yaml'
+  - '.tasks/active/T-4867-v1815-release-cut-point-latest-bleeding-.md'
+  - 'CLAUDE.md'
+  - 'docs/reports/T-4867-release-cut-point.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T11:55:31'
+    action: 'T-4867: ACs (release cut-point analysis, operator answer c)'
+  - time: '2026-10-28T12:02:30'
+    action: 'T-4867: release cut-point report — no strict cut past v1.8.14; be.46 under upgrade-run rule'
+  - time: '2026-10-28T12:48:22'
+    action: 'T-4867: operator ruling — clean full upgrade by 3+ testers counts as confirmation (decision-walk Q5a, answer b)'
+  - time: '2026-10-28T12:48:47'
+    action: 'T-4867: CLAUDE.md freeze section — what counts as confirmed (operator answer b)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 54 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 54
+  commits: 5
+  files_changed: 7
+  lines_added: 1259
+  lines_removed: 10
+  footprint_refreshed_at: '2026-10-28T11:49:21Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4867-v1815-release-cut-point-latest-bleeding-.md
+generated_by: context-agent-hybrid
