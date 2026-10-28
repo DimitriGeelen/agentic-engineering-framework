@@ -209,7 +209,7 @@ class Unreadable(RuntimeError):
     """A mail route could not be read; the answer is unknown, not empty."""
 
 
-class ReadFailed(list):
+class _ReadFailed(list):
     """An empty read that is NOT an empty inbox (T-4452).
 
     `default_reader` used to return a plain [] when termlink timed out or
@@ -221,6 +221,20 @@ class ReadFailed(list):
     def __init__(self, reason: str):
         super().__init__()
         self.reason = reason
+
+
+# T-4883: keep both classes' identity across importlib.reload(inbox). A reload
+# runs this module again in the SAME globals; without this guard it bound new
+# classes, while every alias taken at import (alerts.Unreadable, ...) kept the old
+# ones, so `except alerts.Unreadable` missed what strict_reader raised. Tests do
+# reload this module (4 files), so the order of the suite decided the verdict.
+_kept = globals().get("_KEPT_CLASSES")
+if _kept:
+    Unreadable, ReadFailed = _kept
+else:
+    ReadFailed = _ReadFailed
+    _KEPT_CLASSES = (Unreadable, ReadFailed)
+del _kept
 
 
 #: termlink's refusal for a topic that has never been created: no mail yet.
