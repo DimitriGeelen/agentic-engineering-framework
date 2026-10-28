@@ -95,6 +95,8 @@ bvp_scores_proposed:
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+**Second occurrence (1409 pickup P-010, msg fe78b067, 2026-10-29):** the be.50 upgrade (their 97362b0b7) removed the 1409-local T-2754 block in `web/blueprints/__init__.py` again, and `/arbeiter` returned 404. The first time was ebdca0c0b (be.46+27). `.fwvendor-preserve.yaml` protects the files (`files:`), but `lib/vendor_preserve.py` post only reports a missing `in_file` marker and blocks nothing. 1409's three directions: (1) an upstream workers page, filed separately as T-4889; (2) a local-blueprint extension point, which is T-4649 extension point 1; (3) vendor_preserve post exits non-zero when an `in_file` marker disappears. Direction 3 is the narrow fix for this task.
+
 ## Acceptance Criteria
 
 ### Agent
