@@ -1,8 +1,15 @@
 ---
 id: T-4878
-name: "Sidecar message arrived truncated at 832: body cut after 'Checked just now:' (multi-line body, msg 6f5d2d3b)"
+name: "Sidecar message arrived truncated at 832: body cut after 'Checked just now:'
+  (multi-line body, msg 6f5d2d3b)"
 description: >
-  832 (msg dc70896a): our reply 6f5d2d3b (sent 2026-10-28 ~17:02Z via bin/fw sidecar send --body with a multi-line body: a line ending 'Checked just now:' followed by numbered lines 1) to 3) and a closing paragraph containing an apostrophe) arrived at 832 ending at 'Checked just now:'. Earlier multi-line bodies to 832 arrived whole. Unknown which side truncates (send path, hub, 832's receiver or display). Investigate before the release if it reproduces: a silent partial delivery is a reliability failure. Allowed under the freeze if confirmed (reported breakage).
+  832 (msg dc70896a): our reply 6f5d2d3b (sent 2026-10-28 ~17:02Z via bin/fw sidecar
+  send --body with a multi-line body: a line ending 'Checked just now:' followed by
+  numbered lines 1) to 3) and a closing paragraph containing an apostrophe) arrived
+  at 832 ending at 'Checked just now:'. Earlier multi-line bodies to 832 arrived whole.
+  Unknown which side truncates (send path, hub, 832's receiver or display). Investigate
+  before the release if it reproduces: a silent partial delivery is a reliability
+  failure. Allowed under the freeze if confirmed (reported breakage).
 
 status: captured
 workflow_type: build
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T17:04:10Z
-last_update: 2026-10-28T17:04:10Z
-date_finished: null
+last_update: '2026-10-28T17:15:24Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-28T17:15:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4878: Sidecar message arrived truncated at 832: body cut after 'Checked just now:' (multi-line body, msg 6f5d2d3b)
