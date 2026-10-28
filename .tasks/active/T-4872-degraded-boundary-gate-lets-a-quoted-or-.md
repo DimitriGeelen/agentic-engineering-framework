@@ -61,9 +61,9 @@ ring20-dashboard (msg a575cc7a), live be.48, reproduced by them: with python3 br
 ## Acceptance Criteria
 
 ### Agent
-- [ ] tests/unit/t4852_degraded_boundary_system_paths.bats gains cases for the four reported forms (double-quoted, single-quoted, backslash before the slash, cd into a quoted root); they fail before the fix
-- [ ] The redirect, of= and cd/pushd alternatives accept any run of quotes and backslashes before the system root; all four forms are refused, the earlier blocked forms stay blocked, and reads (cat /etc/os-release, 2>/dev/null, /usr/bin/env) stay allowed
-- [ ] Vendor in sync
+- [x] tests/unit/t4852_degraded_boundary_system_paths.bats gains cases for the four reported forms (double-quoted, single-quoted, backslash before the slash, cd into a quoted root); they fail before the fix (4/4 not ok before)
+- [x] The redirect, of= and cd/pushd alternatives accept any run of quotes and backslashes before the system root; all four forms are refused, the earlier blocked forms stay blocked, and reads (cat /etc/os-release, 2>/dev/null, /usr/bin/env) stay allowed (21/21 ok; t4851, t4853 0 failures)
+- [x] Vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -253,6 +253,11 @@ bin/fw vendor self --check --task T-4872
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
 ## RCA
+
+**Symptom:** with python3 broken, `echo hi > "/etc/x"` (and the single-quoted, backslash and quoted-cd forms) passed the degraded boundary gate on live be.48, while the unquoted forms were blocked (ring20-dashboard, msg a575cc7a).
+**Root cause:** the degraded fallback greps the raw JSON payload. T-4852's redirect, of= and cd patterns required the system root to follow whitespace directly, but in JSON a typed quote is `\"` and a typed backslash is `\\`, so a quoted target never matched.
+**Why structurally allowed:** T-4852's tests used only unquoted paths; the review (parent) checked the classes, not the quoting of each class.
+**Prevention:** the bats file now carries quoted, single-quoted, backslash and quoted-cd cases plus a quoted read that must stay allowed.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
