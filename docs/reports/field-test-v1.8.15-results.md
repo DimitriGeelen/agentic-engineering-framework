@@ -475,6 +475,14 @@ One row per project and build. A blank Msg means the id was not kept in the sess
 | 832 | be.43 | **WORKS**: T-4836 (the validator reaches a consumer project) and T-4838 (validator 0.31.0, E-XML-IO-MATCH-MISSING reported) | c3ec2249 |
 | dimitri-mint-dev | be.41 | **WORKS**: D, task close in 4.0 s with 0 files staged outside .tasks/.context (T-4777); T-4812 re-check, the status entry lands inside ## Updates and the append Edit is accepted first time | d812cf90 |
 
+**2026-10-28 (recorded by T-4860):**
+
+| Project | Tip | Verdict | Msg |
+|---|---|---|---|
+| 832 | be.45 | **WORKS**: POST /api/validate end to end in headless Chromium (Check "checked", ERROR E-XML-IO-MATCH-MISSING under the output row); be.45 summary 1/2/3 all WORKS | 04eda0fc |
+| 832 | be.45 | **WORKS**: T-4779, their release commit landed 2 h after a verdict and the ledger still counts it. T-4768 not exercised (no inception decided since be.31) | cea873e2 |
+| ring20-dashboard | be.46 | **WORKS**: upgrade v1.8.14 to be.46 (1644 commits) from a full clone of the tag, 12 min, doctor 0 FAIL before and after, fast lane 0 failures (17031 passed, 23 skipped for their replaced termlink cleanup), no rollback; 37 local patches down to 32. Four findings filed as T-4851..T-4856, three security-review findings as T-4857..T-4859 | 2c503ddf, 72cf84a0 |
+
 **Still unexercised, and who reports:**
 - **1409:** upgrade to be.44 or later after their workers rest, then the create-time re-measure at about 20 worktrees (T-4797, T-4841); T-4806 needs their Dauerlauf armed.
 - **dimitri-mint-dev:** G, T-4781, T-4812 re-check (after relaunch).
