@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T08:37:31Z
-last_update: 2026-10-28T08:59:12Z
+last_update: 2026-10-28T09:15:25Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -291,6 +291,11 @@ bin/fw vendor self --check --task T-4863
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
 ## RCA
+
+**Symptom:** a task created with `owner:` in its description came out with an empty owner (T-4787, 2026-10-27); ring20-dashboard carried a local patch (0018) for the same defect.
+**Root cause:** create-task.sh filled the template with `str.replace` on bare text (`owner:`, `name:`, `created:` once; `status: captured`, `horizon: now` with no count) after the description had already been inserted, so the first match could be inside the description or name, and status/horizon phrases anywhere in the file were rewritten.
+**Why structurally allowed:** the tests only used names and descriptions without key-like text, and the template happened to put each key first; nothing pinned "fields are set in the frontmatter only".
+**Prevention:** tests/unit/t4863_create_task_anchored_fields.bats creates tasks whose name and description carry `owner:`, `status: captured` and `horizon: now`, and checks both frontmatter and text.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
