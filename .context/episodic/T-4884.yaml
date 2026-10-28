@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4884: Prompt hook never surfaces peer message text in 0506-Voxtype-extention
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T23:39:06Z
+# ============================================================================
+
+task_id: T-4884
+task_name: "Prompt hook never surfaces peer message text in 0506-Voxtype-extention"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-28T21:03:54Z
+completed: 2026-10-28T23:38:53Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-28T22:04:16+01:00
+last_commit: 2026-10-29T00:38:51+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file 0506 field report — prompt hook never surfaces peer message text. real ACs; asked 0506 for version, receiver events and hook wiring (msg 205c52ff). localised — 0506 lacks the four sidecar hooks (pre-T-3617 install); fw upgrade restores them (sandbox); receiver guard filed as post-freeze T-4890. 0506 told (4339222a)
+
+# Key outcomes
+outcomes:
+  - 'Localised in ## Context from 0506''s own data (asked via sidecar, their repo is not read): their framework version, the receiver events for 7bde4624 (INJECT_* lines and reasons), the prompt-hook entry in their .claude/settings.json, and our side''s ledger (SENT/RECEIVED/REPLIED within 90 s, 2026-10-28 20:55-20:56)'
+  - 'Root cause named: which step between "receiver stored the message" and "prompt hook printed its text" dropped the text, and why no HANDED_OVER/UNCONFIRMED event was written for three re-injections'
+  - 'If the cause is in framework code on current bleeding-edge: fixed with a unit test that reproduces 0506''s case; if it is fixed already in a newer release than theirs, the RCA names the commit and 0506 gets upgrade guidance — fixed by upgrading (sandbox reproduction in ## Context); the receiver-side safeguard is post-freeze T-4890'
+  - '0506 told the result (msg 4339222a: upgrade to be.50, restart the session; T-4890 for the receiver guard)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4884-prompt-hook-never-surfaces-peer-message-.md'
+  - '.tasks/active/T-4890-sidecar-receiver-injects-a-banner-that-p.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T22:04:16'
+    action: 'T-4884: file 0506 field report — prompt hook never surfaces peer message text'
+  - time: '2026-10-29T00:07:40'
+    action: 'T-4884: real ACs; asked 0506 for version, receiver events and hook wiring (msg 205c52ff)'
+  - time: '2026-10-29T00:38:26'
+    action: 'T-4884: localised — 0506 lacks the four sidecar hooks (pre-T-3617 install); fw upgrade restores them (sandbox); receiver guard filed as post-freeze T-4890'
+  - time: '2026-10-29T00:38:51'
+    action: 'T-4884: 0506 told (4339222a)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 154 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, sidecar, field-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 154
+  commits: 5
+  files_changed: 5
+  lines_added: 853
+  lines_removed: 13
+  footprint_refreshed_at: '2026-10-28T23:39:10Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4884-prompt-hook-never-surfaces-peer-message-.md
+generated_by: context-agent-hybrid
