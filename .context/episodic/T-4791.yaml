@@ -1,0 +1,108 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4791: A task that changed vendored paths closes green without the vendor sync check
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T00:14:00Z
+# ============================================================================
+
+task_id: T-4791
+task_name: "A task that changed vendored paths closes green without the vendor sync check"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-26T23:04:20Z
+completed: 2026-10-28T00:10:46Z
+duration_days: 2
+updates_count: 4
+first_commit: 2026-10-28T00:14:03+01:00
+last_commit: 2026-10-28T01:09:59+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ACs (close gate checks vendor sync for the task's own vendored changes). close gate refuses work-completed while the task's vendored changes are unsynced. delegate (D-626) — reviewer-judged close-readiness criterion added. reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (antigravity seat antigravity, recorded by the runtime)
+
+# Key outcomes
+outcomes:
+  - 'Reproduce first: a bats test builds a temp framework repo, commits a change to a vendored path (e.g. lib/x.sh) under task T-A without syncing .agentic-framework/, and shows `fw task update T-A --status work-completed` succeeds; it fails before the fix'
+  - 'The close path runs the equivalent of `bin/fw vendor self --check --task T-A` (only the task''s own changed files) when the task''s commits touched vendored paths, and refuses with the exact fix command when they are out of sync; it passes untouched when no vendored path changed, and in a consumer project (no self-vendor)'
+  - 'The refusal names a bypass consistent with the other close gates (operator-only `--skip-*` with --reason, or a logged env var), per CLAUDE.md §Hook Bypass Contract Parity'
+  - 'Existing update-task close tests stay green; vendor in sync'
+  - '[REVIEW] Close-readiness: the work meets its Agent criteria and the Verification section passes (T-4791, reviewer-judged, T-4156)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-28 — how the close gate decides drift'
+    chose: 'call `bin/fw vendor self --check --task <id>` itself, behind a cheap `git log` pre-filter (same commit grep as `--check --task`) that skips the gate when the task''s commits touched only `.tasks/`, `.context/`, `.agentic-framework/`, `docs/` or `tests/`.'
+    rationale: 'one definition of "vendored" and "this task''s files" (T-4419 scoping, which also names other workers'' drift as in flight). The check costs about 5 s, so the pre-filter keeps docs-only and task-file-only closes fast.'
+    alternatives_rejected: ['re-implementing the vendored-class list in update-task.sh, which would drift from lib/upgrade.sh. Also rejected: deriving required lines into `## Verification` (OBS-452''s candidate), which still leaves the gate dependent on the task file''s text.']
+  - decision: '2026-10-28 — bypass shape'
+    chose: '`--skip-vendor-sync "reason"` and `FW_SKIP_VENDOR_SYNC=1`, both logged Tier-2 and both refused under CLAUDECODE=1 without `--i-am-human`, mirroring `--skip-reviewer-severe` (T-4197).'
+    rationale: 'the gate is called by direct `fw task update` and by wrappers, so it needs both a flag and an env var (Hook Bypass Contract Parity). An agent has no reason to waive it, because the fix is one command.'
+    alternatives_rejected: ['an agent-usable reason-only flag, which would reopen the OBS-452 hole for autonomous workers.']
+  - decision: '2026-10-28 — neighbouring tests'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.context/reviews/applied.jsonl'
+  - '.context/reviews/evidence/T-4791/AC1-judge-t-4791-r3-5f9ad73167b0.md'
+  - '.context/reviews/evidence/T-4791/AC1-judge-t-4791-r3-bc5dc583fda9.md'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-4791-autonomous-worker-failure-mode-caught-by.md'
+  - 'agents/task-create/update-task.sh'
+  - 'tests/unit/t4791_close_requires_vendor_sync.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T00:14:03'
+    action: 'T-4791: ACs (close gate checks vendor sync for the task''s own vendored changes)'
+  - time: '2026-10-28T00:33:10'
+    action: 'T-4791: close gate refuses work-completed while the task''s vendored changes are unsynced'
+  - time: '2026-10-28T00:37:47'
+    action: 'T-4791: delegate (D-626) — reviewer-judged close-readiness criterion added'
+  - time: '2026-10-28T00:55:12'
+    action: 'T-4791: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-10-28T01:09:59'
+    action: 'T-4791: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 1506 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1506
+  commits: 6
+  files_changed: 16
+  lines_added: 646
+  lines_removed: 21
+  footprint_refreshed_at: '2026-10-28T00:14:16Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4791-autonomous-worker-failure-mode-caught-by.md
+generated_by: context-agent-hybrid

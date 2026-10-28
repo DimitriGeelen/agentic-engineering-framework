@@ -50495,3 +50495,21 @@ scan_id: R-c4caa770
 task_id: T-4789
 payload:
   task_file: .tasks/active/T-4789-obs-the-pre-push-audit-failure-message-i.md
+---
+kind: scan_emitted
+timestamp: '2026-10-28T00:13:44Z'
+scan_id: R-163c8293
+task_id: T-4791
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-28T00:13:44Z'
+scan_id: R-163c8293
+task_id: T-4791
+payload:
+  task_file: .tasks/active/T-4791-autonomous-worker-failure-mode-caught-by.md
