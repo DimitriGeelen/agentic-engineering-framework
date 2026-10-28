@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4840: t3127 TERM-trap test flakes under full-suite load: audit.sh parse error (unexpected EOF) when timeout kills it
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T01:20:31Z
+# ============================================================================
+
+task_id: T-4840
+task_name: "t3127 TERM-trap test flakes under full-suite load: audit.sh parse error (unexpected EOF) when timeout kills it"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-27T18:41:50Z
+completed: 2026-10-28T01:18:58Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-10-27T19:47:50+01:00
+last_commit: 2026-10-28T02:14:56+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — t3127 TERM-trap test flaked under full-suite load (blocked be.43 once; passed 3/3 alone and on rerun). root cause (bash 5.2 parser state broken by a trap during $(...), reproduced), ACs, RCA. learning — bash 5.2 trap lost when a signal lands during $(...) parsing. audit watchdog writes the timeout record itself, then TERM, then KILL
+
+# Key outcomes
+outcomes:
+  - 'The audit''s watchdog writes the timeout record itself before it signals the body: the body keeps the in-flight section name and start in a small marker file (written at each section start, under the audit''s own state dir), and the watchdog writes `timed_out: true` / `killed_in_section:` from it, then TERMs the body and, after a short grace, KILLs it if it is still running. The body''s existing TERM trap stays as a second writer; the two never produce a contradictory record (the later write must not erase timed_out)'
+  - 'The marker write adds no measurable cost per section (one small file write) and is removed on a normal exit'
+  - 'tests/unit/t3127_audit_timing_headroom.bats passes 20 runs in a row under parallel load (e.g. 4 copies at once), recorded in Decisions with the command used; before the fix, show the same loop failing at least once or explain why the rate is too low to show it'
+  - 'A test pins the new path: with the body''s TERM trap disabled, a timed-out audit still leaves timed_out and killed_in_section, and no audit process remains afterwards'
+  - 'Existing audit lock and timing tests stay green (grep tests/unit for t3127, t3298, t3451, t4397, t4545); vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-28 — where the timeout record comes from'
+    chose: 'the watchdog (a separate subshell, never the interrupted process) writes the record from a marker the body rewrites at each `section_mark` (`.context/audits/.audit-inflight.<body pid>`: name + start SECONDS, one printf). Order: write `.fired` + record, TERM, up to 5 s grace (`_FW_AUDIT_KILL_GRACE`), then STOP the body, KILL its whole descendant tree and the body, wait (bounded 10 s), re-assert the record. Every later writer (`_audit_write_timing_yaml`, `_audit_record_section_run`) reads `.fired` and cannot write `timed_out: false` for the killed run/section. Tmp files are pid-suffixed so the two writers never share one. The holder maps a KILLed body (137 + `.fired`) to 124 and removes the marker however the body exits; the body''s EXIT trap is left unchanged (t3298 pins it).'
+    rationale: 'no rewording of the trap fixes the bash 5.2 parser bug (Context); only a writer outside the interrupted process does. The marker costs one small file write per section (~28 per full run).'
+    alternatives_rejected: ['a trap function (only lowers the rate, per Context); killing the process group (the body shares its group with the holder and the caller).']
+  - decision: '2026-10-28 — timeouts outside any section'
+    chose: 'when no section is in flight, the watchdog records `killed_in_section: "(startup)"` (before the first section) or `"(summary)"` (after the last), in `last_run:` only, never in `section_runs:`.'
+    rationale: 'the first post-fix stress loop still failed 3/80 the same way (`[ -f "$TIMING_FILE" ]`). Measured: at load avg ~83 the first section starts 3.0–4.1 s after launch, so t3127''s 3 s ceiling fired before any section, and neither writer had a section to name. The task''s need is that a timed-out audit *always* leaves its record.'
+    alternatives_rejected: ['raising t3127''s ceiling (hides the gap; the record would still be missing for a real startup timeout).']
+  - decision: '2026-10-28 — stress evidence (AC3)'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.context/project/learnings.yaml'
+  - '.tasks/active/T-4840-t3127-term-trap-test-flakes-under-full-s.md'
+  - 'agents/audit/audit.sh'
+  - 'tests/unit/t4840_watchdog_writes_timeout_record.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T19:47:50'
+    action: 'T-4840: file — t3127 TERM-trap test flaked under full-suite load (blocked be.43 once; passed 3/3 alone and on rerun)'
+  - time: '2026-10-28T01:39:58'
+    action: 'T-4840: root cause (bash 5.2 parser state broken by a trap during $(...), reproduced), ACs, RCA'
+  - time: '2026-10-28T01:40:15'
+    action: 'T-4840: learning — bash 5.2 trap lost when a signal lands during $(...) parsing'
+  - time: '2026-10-28T02:14:56'
+    action: 'T-4840: audit watchdog writes the timeout record itself, then TERM, then KILL'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 397 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, test-flake]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 397
+  commits: 5
+  files_changed: 8
+  lines_added: 898
+  lines_removed: 23
+  footprint_refreshed_at: '2026-10-28T01:21:18Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4840-t3127-term-trap-test-flakes-under-full-s.md
+generated_by: context-agent-hybrid

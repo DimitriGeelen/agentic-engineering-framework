@@ -50513,3 +50513,21 @@ scan_id: R-163c8293
 task_id: T-4791
 payload:
   task_file: .tasks/active/T-4791-autonomous-worker-failure-mode-caught-by.md
+---
+kind: scan_emitted
+timestamp: '2026-10-28T01:19:45Z'
+scan_id: R-9215cff3
+task_id: T-4840
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-28T01:19:45Z'
+scan_id: R-9215cff3
+task_id: T-4840
+payload:
+  task_file: .tasks/active/T-4840-t3127-term-trap-test-flakes-under-full-s.md
