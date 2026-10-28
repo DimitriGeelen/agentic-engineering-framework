@@ -6568,3 +6568,10 @@ decisions:
     date: 2026-10-28
     task: T-4869
     rationale: "T-4867: no strict cut point past v1.8.14; 466 consumer-facing fixes since, 343 without a specific field verdict. Stabilise and release before adding more."
+
+  - id: D-939
+    decision: "Release confirmation rule for v1.8.15 (operator 2026-10-28, answer b to decision-walk question 5a): a clean full upgrade by at least three different testers (fw doctor no worse, own tests as before, project works) counts as field confirmation for consumer-facing changes that have no specific verdict. A fix that was specifically tested and FAILED must still be fixed and re-confirmed."
+    scope: project
+    date: 2026-10-28
+    task: T-4867
+    rationale: "T-4867: 343 of 466 consumer-facing changes since v1.8.14 have no specific verdict and cannot practically get one; four testers (ring20-dashboard, ring20, dimitri-mint-dev, 055) upgraded cleanly to be.48 on 2026-10-28."
