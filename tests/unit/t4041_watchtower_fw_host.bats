@@ -91,7 +91,24 @@ _resolve() {
 }
 
 @test "start: health check passes, url file holds the FW_HOST address, server gets WATCHTOWER_URL" {
-    run env PROJECT_ROOT="$PROJ" FRAMEWORK_ROOT="$(ROOT)" FW_HOST=$BOUND "$(ROOT)/bin/watchtower.sh" start --port "$PORT"
+    # T-4886: the real web.app starts here. Under host load the 60 s default start
+    # deadline is too short, so give it 90 s (the most that fits the fast tier's
+    # 120 s per-file cap) and pin the warm-up mode against an inherited value. The
+    # port was picked in setup by bind-and-close, so another process can take it
+    # first: retry once on a fresh port for that case only. Print the output, so a
+    # red names which exit fired.
+    _wt_start() {
+        run env PROJECT_ROOT="$PROJ" FRAMEWORK_ROOT="$(ROOT)" FW_HOST=$BOUND \
+            FW_WATCHTOWER_START_TIMEOUT=90 FW_WATCHTOWER_WARM_BEFORE_SERVE=0 \
+            "$(ROOT)/bin/watchtower.sh" start --port "$PORT"
+    }
+    _wt_start
+    if [ "$status" -ne 0 ] && [[ "$output" == *FOREIGN* || "$output" == *"exited immediately"* ]]; then
+        echo "port $PORT lost between setup and start; retrying on a fresh port"
+        PORT=$(python3 -c 'import socket;s=socket.socket();s.bind(("127.0.0.2",0));print(s.getsockname()[1]);s.close()')
+        _wt_start
+    fi
+    echo "$output"
     [ "$status" -eq 0 ]
     [[ "$output" == *"Health check passed"* ]]
     [ "$(tr -d '[:space:]' < "$PROJ/.context/working/watchtower.port")" = "$PORT" ]

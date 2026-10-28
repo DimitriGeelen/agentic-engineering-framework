@@ -9,7 +9,7 @@ description: >
   be taken before start. Fix direction: longer start timeout in the test env or slow
   tier, retry once on port collision.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T23:24:27Z
-last_update: '2026-10-28T23:30:35Z'
+last_update: 2026-10-28T23:32:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The start test in tests/unit/t4041_watchtower_fw_host.bats gives the server a 90 s start deadline (FW_WATCHTOWER_START_TIMEOUT), the most that fits the fast tier's 120 s per-file cap, instead of the 60 s default
+- [x] A port taken between setup and start (output says FOREIGN or "exited immediately") is retried once on a fresh port; any other failure is not retried
+- [x] On failure the test prints watchtower.sh's output, so the next red names which exit fired
+- [x] The file passes (bats) three times in a row
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,6 +283,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+bats tests/unit/t4041_watchtower_fw_host.bats > /tmp/.t4886.out 2>&1
+test "$(FW_WATCHTOWER_START_TIMEOUT=90 bin/fw config get WATCHTOWER_START_TIMEOUT)" = 90
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -296,6 +301,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** on 2026-10-28 09:21Z, t4041 test 6 ("start: health check passes …") failed once in the parallel fast suite, blocking a be-tag pre-push. It passed alone and under 4-way stress. Only the status line was kept.
+
+**Root cause:** the test starts the real Watchtower (`python3 -m web.app`) under watchtower.sh's 60 s start deadline. Host load reached ~90 on 24 cores, and the code records the home page taking 68 s under load (T-4460). A second, smaller window: the port is chosen in setup by bind-and-close, so another process can take it before start, which makes start exit 1 (FOREIGN or "exited immediately").
+
+**Why structurally allowed:** a real server start was placed in the fast tier with the production default deadline. bats kept no output, so the failure could not say which exit fired.
+
+**Prevention:** the deadline is 90 s, the most the fast tier's 120 s per-file cap allows. A port collision is retried once on a fresh port. The output is printed, so the next red names its exit. If 90 s ever proves too short, the next step is moving the file to the slow tier (T-4866 report, direction 3), and T-4875's retry-once with flakes.jsonl will record it if that happens.
 
 ## Evolution
 
@@ -377,3 +390,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4886-t4041watchtowerfwhost-test-6-races-host-.md
 - **Context:** Initial task creation
+
+### 2026-10-28T23:32:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
