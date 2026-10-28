@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T07:27:24Z
-last_update: '2026-10-28T07:45:20Z'
+last_update: 2026-10-28T07:54:33Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -286,6 +286,11 @@ bin/fw vendor self --check --task T-4852
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
 ## RCA
+
+**Symptom:** with python3 broken, the project-boundary gate let `echo hi > /etc/systemd/system/evil.service` through (ring20-dashboard, msg 2c503ddf).
+**Root cause:** the degraded fallback (T-4652) only knew "another project's root" as foreign: its list was /opt /home /root /srv /mnt. System roots were never foreign projects, so they were not in the list, and the normal python path, which judges any path outside the project, had no counterpart in the fallback.
+**Why structurally allowed:** the fallback was written from the foreign-project angle and tested only for those roots; nothing compared what the degraded path refuses with what the normal path refuses.
+**Prevention:** tests/unit/t4852_degraded_boundary_system_paths.bats pins writes under /etc /usr /var /boot as refused while degraded, and reads as allowed.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
