@@ -50783,3 +50783,21 @@ scan_id: R-bfb46a85
 task_id: T-4872
 payload:
   task_file: .tasks/active/T-4872-degraded-boundary-gate-lets-a-quoted-or-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-28T11:40:24Z'
+scan_id: R-6d2b62d6
+task_id: T-4873
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-28T11:40:24Z'
+scan_id: R-6d2b62d6
+task_id: T-4873
+payload:
+  task_file: .tasks/active/T-4873-audit-continuous-run-check-stays-silent-.md

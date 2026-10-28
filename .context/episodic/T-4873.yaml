@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4873: Audit continuous-run check stays silent on unreadable state even when the last record says armed=yes (T-4809 FAILS, 055)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T11:40:37Z
+# ============================================================================
+
+task_id: T-4873
+task_name: "Audit continuous-run check stays silent on unreadable state even when the last record says armed=yes (T-4809 FAILS, 055)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-28T11:38:19Z
+completed: 2026-10-28T11:40:16Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-28T12:39:16+01:00
+last_commit: 2026-10-28T12:40:14+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ACs (T-4809 over-exempts armed=yes, 055 FAILS). G-099 exemption only when the carried-forward arming state is not yes (055 FAILS on T-4809). ACs ticked, RCA
+
+# Key outcomes
+outcomes:
+  - 'tests/unit/t4809_loop_ledger_armed_state.bats gains: start with armed=yes and no readable continuous state still WARNs; iterate after an armed=yes start with unreadable state still WARNs (the arming state is carried forward from the last start); both fail before the fix (2/2 not ok before)'
+  - 'The exemption for unreadable/empty or not-armed live state applies only when the carried-forward arming state (the last start record''s armed=) is not yes; the existing T-4809 cases (armed=no, never armed, deliberately disarmed, iterate after an unarmed start) stay silent (7/7 ok; t3225 0 failures)'
+  - 'Vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.tasks/active/T-4873-audit-continuous-run-check-stays-silent-.md'
+  - 'agents/audit/audit.sh'
+  - 'tests/unit/t4809_loop_ledger_armed_state.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T12:39:16'
+    action: 'T-4873: ACs (T-4809 over-exempts armed=yes, 055 FAILS)'
+  - time: '2026-10-28T12:39:57'
+    action: 'T-4873: G-099 exemption only when the carried-forward arming state is not yes (055 FAILS on T-4809)'
+  - time: '2026-10-28T12:40:14'
+    action: 'T-4873: ACs ticked, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1
+  commits: 4
+  files_changed: 7
+  lines_added: 521
+  lines_removed: 18
+  footprint_refreshed_at: '2026-10-28T11:42:41Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4873-audit-continuous-run-check-stays-silent-.md
+generated_by: context-agent-hybrid
