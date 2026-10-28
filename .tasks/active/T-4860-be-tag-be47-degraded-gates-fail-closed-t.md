@@ -286,6 +286,11 @@ git ls-remote --tags origin | grep -q "$(git tag --contains 6980ff1a5 | grep '^v
 
 ## RCA
 
+**Symptom:** none of its own: this is a release-tag task, classed bug-class only because its title says "fail closed".
+**Root cause:** the defects it ships are analysed in their own tasks: T-4851, T-4852, T-4853 (degraded gates failed open) and T-4861 (two one-off suite reds met while cutting this tag).
+**Why structurally allowed:** see those tasks.
+**Prevention:** see those tasks; the be.47 tag carries their fixes and tests.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
