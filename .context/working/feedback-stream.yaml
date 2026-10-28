@@ -50945,3 +50945,21 @@ scan_id: R-734159e6
 task_id: T-4883
 payload:
   task_file: .tasks/active/T-4883-sidecar-tests-reload-libsidecarinbox-so-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-28T23:25:25Z'
+scan_id: R-47de6c91
+task_id: T-4866
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-28T23:25:25Z'
+scan_id: R-47de6c91
+task_id: T-4866
+payload:
+  task_file: .tasks/active/T-4866-full-fast-suite-shows-first-time-one-off.md
