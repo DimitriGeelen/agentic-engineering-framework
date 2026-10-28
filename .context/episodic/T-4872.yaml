@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4872: Degraded boundary gate lets a quoted or backslashed system path through (T-4852 FAILS, ring20-dashboard)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T11:18:59Z
+# ============================================================================
+
+task_id: T-4872
+task_name: "Degraded boundary gate lets a quoted or backslashed system path through (T-4852 FAILS, ring20-dashboard)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-28T11:15:26Z
+completed: 2026-10-28T11:18:35Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-28T12:16:21+01:00
+last_commit: 2026-10-28T12:18:34+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ACs (quoted system path in degraded boundary gate, ring20-dashboard FAILS). degraded boundary gate refuses a quoted or backslashed system root (ring20-dashboard FAILS on T-4852). ACs ticked, RCA
+
+# Key outcomes
+outcomes:
+  - 'tests/unit/t4852_degraded_boundary_system_paths.bats gains cases for the four reported forms (double-quoted, single-quoted, backslash before the slash, cd into a quoted root); they fail before the fix (4/4 not ok before)'
+  - 'The redirect, of= and cd/pushd alternatives accept any run of quotes and backslashes before the system root; all four forms are refused, the earlier blocked forms stay blocked, and reads (cat /etc/os-release, 2>/dev/null, /usr/bin/env) stay allowed (21/21 ok; t4851, t4853 0 failures)'
+  - 'Vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/hook-degraded.sh'
+  - '.tasks/active/T-4872-degraded-boundary-gate-lets-a-quoted-or-.md'
+  - 'lib/hook-degraded.sh'
+  - 'tests/unit/t4852_degraded_boundary_system_paths.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T12:16:21'
+    action: 'T-4872: ACs (quoted system path in degraded boundary gate, ring20-dashboard FAILS)'
+  - time: '2026-10-28T12:18:18'
+    action: 'T-4872: degraded boundary gate refuses a quoted or backslashed system root (ring20-dashboard FAILS on T-4852)'
+  - time: '2026-10-28T12:18:34'
+    action: 'T-4872: ACs ticked, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 4
+  files_changed: 7
+  lines_added: 514
+  lines_removed: 9
+  footprint_refreshed_at: '2026-10-28T11:19:13Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4872-degraded-boundary-gate-lets-a-quoted-or-.md
+generated_by: context-agent-hybrid
