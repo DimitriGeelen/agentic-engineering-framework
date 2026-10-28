@@ -1,8 +1,16 @@
 ---
 id: T-4871
-name: "fw runme does not refuse a second concurrent start of the same runme; two runs interleave one run.log"
+name: "fw runme does not refuse a second concurrent start of the same runme; two runs
+  interleave one run.log"
 description: >
-  ring20-dashboard (msg 4c7cd097): their operator started the same runme twice; both appended to one run.log, the second copy truncated the summary and its STOP line became the last line, so the first (successful) run's final check failed. They now take an flock in their own script. Need: a runme cannot run twice at once (e.g. a per-runme lock; refuse with 'already running, see run.log'). Same report notes the Watchtower background warm-up took 68 s on ~2570 tasks, close to their 60 s watchdog timeout (T-4854 /health is the safe probe). Filed during the release freeze (T-4869): backlog.
+  ring20-dashboard (msg 4c7cd097): their operator started the same runme twice; both
+  appended to one run.log, the second copy truncated the summary and its STOP line
+  became the last line, so the first (successful) run's final check failed. They now
+  take an flock in their own script. Need: a runme cannot run twice at once (e.g.
+  a per-runme lock; refuse with 'already running, see run.log'). Same report notes
+  the Watchtower background warm-up took 68 s on ~2570 tasks, close to their 60 s
+  watchdog timeout (T-4854 /health is the safe probe). Filed during the release freeze
+  (T-4869): backlog.
 
 status: captured
 workflow_type: build
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T11:15:03Z
-last_update: 2026-10-28T11:15:03Z
-date_finished: null
+last_update: '2026-10-28T11:30:20Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-28T11:30:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4871: fw runme does not refuse a second concurrent start of the same runme; two runs interleave one run.log
