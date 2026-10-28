@@ -1,8 +1,18 @@
 ---
 id: T-4863
-name: "create-task fills frontmatter by text replace: an owner, status or horizon phrase in the name or description gets the substitution"
+name: "create-task fills frontmatter by text replace: an owner, status or horizon
+  phrase in the name or description gets the substitution"
 description: >
-  ring20-dashboard (msg 17bebede, their patch 0018 / T-2020): agents/task-create/create-task.sh inserts the description (line 527) before t.replace('owner: agent', ..., 1) (line 530), so an 'owner:' inside the name or description is replaced instead of the frontmatter key; status ('status: captured') and horizon ('horizon: now') are replaced with no count, so every occurrence in the body is rewritten too (lines 528-529; again at 563ff for the inception template). Likely cause of T-4787's empty owner (created by note promote on 2026-10-27). Need: substitute whole frontmatter lines only (anchored per field inside the --- block, e.g. re.sub with ^key: and count=1), keeping T-4787's json.dumps quoting; a test with 'owner:', 'status: captured' and 'horizon: now' in both name and description.
+  ring20-dashboard (msg 17bebede, their patch 0018 / T-2020): agents/task-create/create-task.sh
+  inserts the description (line 527) before t.replace('owner: agent', ..., 1) (line
+  530), so an 'owner:' inside the name or description is replaced instead of the frontmatter
+  key; status ('status: captured') and horizon ('horizon: now') are replaced with
+  no count, so every occurrence in the body is rewritten too (lines 528-529; again
+  at 563ff for the inception template). Likely cause of T-4787's empty owner (created
+  by note promote on 2026-10-27). Need: substitute whole frontmatter lines only (anchored
+  per field inside the --- block, e.g. re.sub with ^key: and count=1), keeping T-4787's
+  json.dumps quoting; a test with 'owner:', 'status: captured' and 'horizon: now'
+  in both name and description.
 
 status: captured
 workflow_type: build
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T08:37:31Z
-last_update: 2026-10-28T08:37:31Z
-date_finished: null
+last_update: '2026-10-28T08:45:18Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-28T08:45:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4863: create-task fills frontmatter by text replace: an owner, status or horizon phrase in the name or description gets the substitution
