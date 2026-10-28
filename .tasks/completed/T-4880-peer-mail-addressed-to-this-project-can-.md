@@ -16,12 +16,12 @@ description: >
   workaround and 17 fixtures: their scripts/check-unacted-mail.sh, tests/unacted-mail-fixtures.sh
   (ask for a diff; do not read their repo). Reported breakage: allowed under the freeze.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, sidecar, mail]
-components: []
+components: [lib/config.sh, lib/sidecar/alerts.py, lib/sidecar/dm.py, lib/sidecar_cli.py, tests/unit/test_sidecar_alerts_t3856.py, tests/unit/test_sidecar_dm_unacted_t4880.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -50,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T17:34:49Z
-last_update: 2026-10-28T18:24:39Z
-date_finished:
+last_update: 2026-10-28T18:38:08Z
+date_finished: 2026-10-28T18:38:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -411,3 +411,15 @@ bin/fw vendor self --check --task T-4880
 
 ### 2026-10-28T18:21:51Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-28T18:38:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f322f7d0
+- **Timestamp:** 2026-10-28T18:38:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

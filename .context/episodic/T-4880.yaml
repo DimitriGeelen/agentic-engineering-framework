@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4880: Peer mail addressed to this project can sit unread for days: dm-stale judges by signing identity, and auto-confirm receipts count as read
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T18:38:31Z
+# ============================================================================
+
+task_id: T-4880
+task_name: "Peer mail addressed to this project can sit unread for days: dm-stale judges by signing identity, and auto-confirm receipts count as read"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-28T17:34:49Z
+completed: 2026-10-28T18:38:08Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-28T18:34:51+01:00
+last_commit: 2026-10-28T19:38:06+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — peer mail to this project unread for days (dm-stale by signer; auto-confirm counts as read), TermLink f37f3c3f. DM mail judged per addressee — fw sidecar alerts lists unanswered dm mail (to_project = us, or our keys incl. SIDECAR_DM_ADDRESS_KEYS); receipts/own posts never count; dm-handled escape; stale() drops chat receipts and own posts. vendored copies + fabric card for the unacted-dm test. TermLink told (3ecffccd); RCA, Context, Verification
+
+# Key outcomes
+outcomes:
+  - 'Localised in ## Context: which topic/route carried 055''s 2026-10-20 report and 1023''s ~2026-10-15 report, and which check (session-start alerts, dm stale, inbox) should have surfaced each and why it did not'
+  - 'Mail addressed to this project (to_project = this project, or our addressed key) counts as unacted until this project posts after it; our own posts, receipts and auto-confirm "delivered" notices never count as reading or answering it'
+  - '`fw sidecar alerts` (session start) lists such unacted mail by sender and age, including on a host-shared signing key'
+  - 'Unit tests cover: addressed mail with only an auto-confirm receipt after it (OPEN), answered by us (closed), our own post (not mail), mail to another project on a shared rail (not ours), and the two real cases as fixtures'
+  - 'TermLink told the result (reply to msg 80641d05; sent 3ecffccd, RECEIVED by their receiver)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/sidecar/alerts.py'
+  - '.agentic-framework/lib/sidecar/dm.py'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.context/sidecar/dm-handled'
+  - '.fabric/components/install-launcher-aef-start.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_dm_unacted_t4880.yaml'
+  - '.framework.yaml'
+  - '.tasks/active/T-4880-peer-mail-addressed-to-this-project-can-.md'
+  - 'lib/config.sh'
+  - 'lib/sidecar/alerts.py'
+  - 'lib/sidecar/dm.py'
+  - 'lib/sidecar_cli.py'
+  - 'tests/unit/test_sidecar_alerts_t3856.py'
+  - 'tests/unit/test_sidecar_dm_unacted_t4880.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T18:34:51'
+    action: 'T-4880: file — peer mail to this project unread for days (dm-stale by signer; auto-confirm counts as read), TermLink f37f3c3f'
+  - time: '2026-10-28T19:37:12'
+    action: 'T-4880: DM mail judged per addressee — fw sidecar alerts lists unanswered dm mail (to_project = us, or our keys incl. SIDECAR_DM_ADDRESS_KEYS); receipts/own posts never count; dm-handled escape; stale() drops chat receipts and own posts'
+  - time: '2026-10-28T19:37:30'
+    action: 'T-4880: vendored copies + fabric card for the unacted-dm test'
+  - time: '2026-10-28T19:38:06'
+    action: 'T-4880: TermLink told (3ecffccd); RCA, Context, Verification'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 63 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, sidecar, mail]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 63
+  commits: 5
+  files_changed: 18
+  lines_added: 1219
+  lines_removed: 27
+  footprint_refreshed_at: '2026-10-28T18:38:42Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4880-peer-mail-addressed-to-this-project-can-.md
+generated_by: context-agent-hybrid
