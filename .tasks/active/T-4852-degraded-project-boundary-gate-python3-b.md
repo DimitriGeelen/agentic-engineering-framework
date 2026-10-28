@@ -1,10 +1,15 @@
 ---
 id: T-4852
-name: "Degraded project-boundary gate (python3 broken) allows writes under /etc, /usr, /var, /boot"
+name: "Degraded project-boundary gate (python3 broken) allows writes under /etc, /usr,
+  /var, /boot"
 description: >
-  ring20-dashboard be.46 report (msg 2c503ddf, finding 1): with python3 shadowed on PATH by a stub that exits 1, `fw hook check-project-boundary` exits 0 for `echo hi > /etc/systemd/system/evil.service`; the degraded foreign-path list names only /opt /home /root /srv /mnt. T-4652 class: a degraded gate must fail closed. Their patch 0032 adds /etc /usr /var /boot. Reproduce first.
+  ring20-dashboard be.46 report (msg 2c503ddf, finding 1): with python3 shadowed on
+  PATH by a stub that exits 1, `fw hook check-project-boundary` exits 0 for `echo
+  hi > /etc/systemd/system/evil.service`; the degraded foreign-path list names only
+  /opt /home /root /srv /mnt. T-4652 class: a degraded gate must fail closed. Their
+  patch 0032 adds /etc /usr /var /boot. Reproduce first.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T07:27:24Z
-last_update: 2026-10-28T07:27:24Z
-date_finished: null
+last_update: '2026-10-28T07:29:12Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-28T07:29:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4852: Degraded project-boundary gate (python3 broken) allows writes under /etc, /usr, /var, /boot
@@ -61,9 +83,9 @@ See description. The need: with python3 unavailable or broken, the project-bound
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: a bats test shadows python3 with a failing stub and shows the gate exits 0 for a redirect into /etc/systemd/system/x; it fails before the fix
-- [ ] The degraded fallback refuses writes under /etc, /usr, /var, /boot as well as the existing roots; a write inside the project still passes; reads stay allowed
-- [ ] Consider whether the degraded list should instead be "anything outside the project root and the documented allow paths" (fail closed by default); record the choice in Decisions
+- [x] Reproduce first: a bats test shadows python3 with a failing stub and shows the gate exits 0 for a redirect into /etc/systemd/system/x; it fails before the fix
+- [x] The degraded fallback refuses writes under /etc, /usr, /var, /boot as well as the existing roots; a write inside the project still passes; reads stay allowed
+- [x] Consider whether the degraded list should instead be "anything outside the project root and the documented allow paths" (fail closed by default); record the choice in Decisions
 - [ ] With a working python3, behaviour is unchanged; existing boundary tests stay green; vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
@@ -293,6 +315,14 @@ bin/fw vendor self --check --task T-4852
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+**Symptom:** with python3 shadowed by a stub that exits 1, `check-project-boundary.sh` exits 0 for `echo hi > /etc/systemd/system/evil.service` (ring20-dashboard be.46, msg 2c503ddf finding 1). Reproduced: 9 of 16 tests in `tests/unit/t4852_degraded_boundary_system_paths.bats` red on the pre-fix code.
+
+**Root cause:** `lib/hook-degraded.sh:hook_degraded_boundary` (the T-4652 bash-only fallback, called from `agents/context/check-project-boundary.sh:69-71` and `:1068`) matched only `/opt /home /root /srv /mnt` — the "foreign *project*" roots. System roots were never in the list, so a degraded gate allowed any write there.
+
+**Why structurally allowed:** T-4652 modelled the degraded scan as "foreign project paths", copying the healthy matcher's question rather than its *effect*; its tests (`t4652_hook_fail_closed_degraded.bats`) covered only those roots, so nothing exercised a system-path write under broken python.
+
+**Prevention:** the new bats file pins write-blocked / read-allowed / project-allowed / healthy-unchanged for each system root and each write shape (redirect, append, tee, cp, dd of=, sed -i, cd, Write/Edit tool).
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -333,6 +363,11 @@ bin/fw vendor self --check --task T-4852
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-28 — degraded scan: write-indicated system roots, not "everything outside the project"
+- **Chose:** keep the existing foreign-project list (any mention blocks) and add a second rule: /etc /usr /var /boot block only when the raw payload shows a write — `>`/`>>`/`>|` redirect, a write verb (tee cp mv install ln rsync dd sed perl truncate chmod chown chgrp touch mkdir rm rmdir unlink shred patch tar unzip curl wget) before the path, `of=`, `cd`/`pushd` into the root, or a Write/Edit/MultiEdit/NotebookEdit tool with `file_path`/`notebook_path` there. Paths under PROJECT_ROOT are stripped first, as before.
+- **Why:** the AC requires reads to stay allowed; `cat /etc/os-release`, `/usr/bin/env`, `2>/dev/null` and `/tmp` appear in most commands, so fail-closed-on-anything-outside-root would turn a broken python3 into a total lockout of the session (and of the repair itself). Over-blocking is still accepted within the write rule (e.g. `cp /etc/hosts ./x` blocks because `cp` precedes an /etc path).
+- **Rejected:** (a) patch 0032's form — add /etc /usr /var /boot to the any-mention list: blocks every read of those roots, contradicting the read AC. (b) block anything outside project + allow list: same lockout, and the allow list (tmp, dev, home .claude, …) would need to be duplicated in bash and kept in sync with the python matcher.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -349,3 +384,6 @@ bin/fw vendor self --check --task T-4852
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4852-degraded-project-boundary-gate-python3-b.md
 - **Context:** Initial task creation
+
+### 2026-10-28T07:29:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
