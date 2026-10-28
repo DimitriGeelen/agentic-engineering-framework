@@ -2,7 +2,11 @@
 id: T-4884
 name: "Prompt hook never surfaces peer message text in 0506-Voxtype-extention"
 description: >
-  Field report from 0506 (msg 3587840d, 2026-10-28): the sidecar prompt hook never shows message text there; msg 7bde4624 was re-injected 3 times with no HANDED_OVER/UNCONFIRMED event, and the agent read both messages from disk instead. A reported failure, so allowed under the freeze. Localise first: 0506's framework version, receiver inject mode, prompt-hook wiring in their .claude/settings.json.
+  Field report from 0506 (msg 3587840d, 2026-10-28): the sidecar prompt hook never
+  shows message text there; msg 7bde4624 was re-injected 3 times with no HANDED_OVER/UNCONFIRMED
+  event, and the agent read both messages from disk instead. A reported failure, so
+  allowed under the freeze. Localise first: 0506's framework version, receiver inject
+  mode, prompt-hook wiring in their .claude/settings.json.
 
 status: captured
 workflow_type: build
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T21:03:54Z
-last_update: 2026-10-28T21:03:54Z
-date_finished: null
+last_update: '2026-10-28T21:15:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-28T21:15:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4884: Prompt hook never surfaces peer message text in 0506-Voxtype-extention
