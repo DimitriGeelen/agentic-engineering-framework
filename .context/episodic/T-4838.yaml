@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4838: Re-pin designer 0.30.0 -> 0.31.0, build and validator together (832 release, mapping v1.1 io rules)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T11:27:04Z
+# ============================================================================
+
+task_id: T-4838
+task_name: "Re-pin designer 0.30.0 -> 0.31.0, build and validator together (832 release, mapping v1.1 io rules)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-27T16:58:14Z
+completed: 2026-10-27T18:45:20Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-27T19:34:08+01:00
+last_commit: 2026-10-28T12:22:32+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context from 832 release mail, ACs. re-pin designer 0.30.0 -> 0.31.0, build and validator from the same kit (832 msg 9079c0e9); mapping v1.1 io lint live. partial-complete — owner human for the [REVIEW] Check. reviewer verdict
+
+# Key outcomes
+outcomes:
+  - 'policy/designer-pin.yaml names 0.31.0 for the build and the validator, from the same kit and tag, with the sha256 values from 832''s release mail'
+  - '`bin/fw designer sync --from-tag` verifies and vendors both files (no mismatch); the 0.30.0 build and validator are pruned from the vendored copy'
+  - 'POST to the validate endpoint with a map whose update io has no match field returns E-XML-IO-MATCH-MISSING'
+  - 'Designer tests stay green; vendor in sync; Watchtower restarted and current'
+  - '[REVIEW] Check in the designer shows the new io findings under the io row'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/designer-pin.yaml'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.31.0.html'
+  - '.agentic-framework/vendor/designer/validate-workflow-0.31.0.py'
+  - '.context/reviews/evidence/T-4838/AC1-judge-t-4838-r3-21538497e803.md'
+  - '.context/reviews/evidence/T-4838/io-row-after-check-judge-t-4838-r3-21538497e803.png'
+  - '.context/reviews/evidence/T-4838/io-row-zoom-judge-t-4838-r3-21538497e803.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-4838-re-pin-designer-0300---0310-build-and-va.md'
+  - 'policy/designer-pin.yaml'
+  - 'vendor/designer/aef-workflow-designer-0.31.0.html'
+  - 'vendor/designer/validate-workflow-0.31.0.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T19:34:08'
+    action: 'T-4838: context from 832 release mail, ACs'
+  - time: '2026-10-27T19:35:52'
+    action: 'T-4838: re-pin designer 0.30.0 -> 0.31.0, build and validator from the same kit (832 msg 9079c0e9); mapping v1.1 io lint live'
+  - time: '2026-10-27T19:36:23'
+    action: 'T-4838: partial-complete — owner human for the [REVIEW] Check'
+  - time: '2026-10-28T12:22:32'
+    action: 'T-4838: reviewer verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 107 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [designer]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 107
+  commits: 5
+  files_changed: 17
+  lines_added: 18380
+  lines_removed: 42
+  footprint_refreshed_at: '2026-10-28T11:34:42Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4838-re-pin-designer-0300---0310-build-and-va.md
+generated_by: context-agent-hybrid
