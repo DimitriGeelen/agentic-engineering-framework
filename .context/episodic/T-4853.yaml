@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4853: check-agent-dispatch has no degraded path: with python3 broken the dispatch limit stops applying
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T07:56:32Z
+# ============================================================================
+
+task_id: T-4853
+task_name: "check-agent-dispatch has no degraded path: with python3 broken the dispatch limit stops applying"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-28T07:27:25Z
+completed: 2026-10-28T07:56:04Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-28T08:32:51+01:00
+last_commit: 2026-10-28T08:32:51+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  check-agent-dispatch fails closed when python3 is broken
+
+# Key outcomes
+outcomes:
+  - 'Reproduce first: a bats test shadows python3 with a failing stub, sends an Agent-tool PreToolUse payload with FW_DISPATCH_LIMIT=0, and shows exit 0; it fails before the fix'
+  - 'When the payload cannot be parsed, the hook detects an Agent call from the raw payload (e.g. "tool_name":"Agent" with the usual whitespace variants) and blocks with the T-4652 degraded banner; a non-Agent payload still passes'
+  - 'With a working python3, behaviour is unchanged; existing dispatch-gate tests stay green; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-28 — what the degraded path does with an Agent call'
+    chose: 'block every Agent call while degraded (banner + exit 2). An Agent call is detected by `"tool_name"\s*:\s*"Agent"` in the raw payload, and only when the decoder printed nothing.'
+    rationale: 'this only tightens. Without a decoded session id the limit, counter and approval cannot be trusted, and the default limit is 0 anyway. Healthy python is unchanged, including the ''-'' it prints for malformed JSON.'
+    alternatives_rejected: ['falling through to the normal counter/approval logic with TOOL_NAME forced to Agent. That would allow calls up to the limit on an undecoded session key, and would allow outright when termlink is absent. Also rejected: a new helper in lib/hook-degraded.sh, because the T-4851/T-4852 workers share that file. The hook reuses `_hook_degraded_banner` read-only instead.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-agent-dispatch.sh'
+  - '.tasks/active/T-4853-check-agent-dispatch-has-no-degraded-pat.md'
+  - 'agents/context/check-agent-dispatch.sh'
+  - 'tests/unit/t4853_dispatch_gate_degraded.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T08:32:51'
+    action: 'T-4853: check-agent-dispatch fails closed when python3 is broken'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 28 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, security, dispatch]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 28
+  commits: 3
+  files_changed: 9
+  lines_added: 308
+  lines_removed: 30
+  footprint_refreshed_at: '2026-10-28T07:56:41Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4853-check-agent-dispatch-has-no-degraded-pat.md
+generated_by: context-agent-hybrid

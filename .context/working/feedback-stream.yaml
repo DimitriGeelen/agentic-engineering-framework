@@ -50567,3 +50567,21 @@ scan_id: R-327ab835
 task_id: T-4852
 payload:
   task_file: .tasks/active/T-4852-degraded-project-boundary-gate-python3-b.md
+---
+kind: scan_emitted
+timestamp: '2026-10-28T07:56:18Z'
+scan_id: R-ace04796
+task_id: T-4853
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-28T07:56:18Z'
+scan_id: R-ace04796
+task_id: T-4853
+payload:
+  task_file: .tasks/active/T-4853-check-agent-dispatch-has-no-degraded-pat.md
