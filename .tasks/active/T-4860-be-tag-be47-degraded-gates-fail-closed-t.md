@@ -38,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T07:58:02Z
-last_update: 2026-10-28T07:58:02Z
+last_update: 2026-10-28T08:08:35Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -61,7 +61,7 @@ Tag so ring20-dashboard can drop its local patch 0032 (msg 2cea782f): T-4851, T-
 ## Acceptance Criteria
 
 ### Agent
-- [ ] docs/reports/field-test-v1.8.15-results.md records ring20-dashboard's be.46 upgrade and 832's T-4779 WORKS
+- [x] docs/reports/field-test-v1.8.15-results.md records ring20-dashboard's be.46 upgrade and 832's T-4779 WORKS
 - [ ] Fast unit suite with 0 new reds; `bin/fw audit --section structure` Fail: 0
 - [ ] bleeding-edge pushed and `bin/fw release be-tag --push` cut the tag
 - [ ] ring20-dashboard told the tag and the three task ids
