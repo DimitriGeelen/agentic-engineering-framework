@@ -97,10 +97,10 @@ See description. The need: when python3 is unavailable or broken, the Tier 0 gat
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: a bats test shadows python3 on PATH with a stub that exits 1, pipes a Bash PreToolUse payload into the gate for each reported command (commit with the no-verify flag, `commit -n`, `fw task update … --force`, `fw inception decide …`, a core.hooksPath / include.path / includeIf config change), and shows exit 0; it fails before the fix
-- [ ] The degraded fallback blocks each of those classes (exit 2 with the T-4652 degraded banner); the classes already blocked (force push, hard reset, recursive delete) stay blocked
-- [ ] The degraded class list is derived from, or checked against, the fast-path keyword list so the two cannot drift again (a test that fails when a fast-path class has no degraded counterpart)
-- [ ] With a working python3, behaviour is unchanged: the existing gate tests stay green (grep tests/unit for the gate and T-4652); vendor in sync
+- [x] Reproduce first: a bats test shadows python3 on PATH with a stub that exits 1, pipes a Bash PreToolUse payload into the gate for each reported command (commit with the no-verify flag, `commit -n`, `fw task update … --force`, `fw inception decide …`, a core.hooksPath / include.path / includeIf config change), and shows exit 0; it fails before the fix
+- [x] The degraded fallback blocks each of those classes (exit 2 with the T-4652 degraded banner); the classes already blocked (force push, hard reset, recursive delete) stay blocked
+- [x] The degraded class list is derived from, or checked against, the fast-path keyword list so the two cannot drift again (a test that fails when a fast-path class has no degraded counterpart)
+- [x] With a working python3, behaviour is unchanged: the existing gate tests stay green (grep tests/unit for the gate and T-4652); vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
