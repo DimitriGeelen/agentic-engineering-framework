@@ -1,8 +1,20 @@
 ---
 id: T-4880
-name: "Peer mail addressed to this project can sit unread for days: dm-stale judges by signing identity, and auto-confirm receipts count as read"
+name: "Peer mail addressed to this project can sit unread for days: dm-stale judges
+  by signing identity, and auto-confirm receipts count as read"
 description: >
-  TermLink finding (msg f37f3c3f, their T-3618): lib/sidecar/dm.py stale() measures unread from the inbox cursor of the signing identity and counts every chat post after it, including our own posts and receipt posts. On a host where projects sign with the shared root key, a message addressed to this project (to_project, or our agent key) shows unread for the root key, not for us; notify-sidecars --auto-confirm posted 'delivered' receipts and nothing surfaced it. Evidence: 055's report of 2026-10-20 and 1023's report of ~2026-10-15 reached AEF only on 2026-10-28 via TermLink forwards (T-4714 was by luck delivered another way; 1023 is T-4879). Need: unread is judged per addressee (to_project / addressed key), own posts and receipts excluded; auto-confirm receipts are never treated as read; session-start alerts surface such mail. TermLink's workaround and 17 fixtures: their scripts/check-unacted-mail.sh, tests/unacted-mail-fixtures.sh (ask for a diff; do not read their repo). Reported breakage: allowed under the freeze.
+  TermLink finding (msg f37f3c3f, their T-3618): lib/sidecar/dm.py stale() measures
+  unread from the inbox cursor of the signing identity and counts every chat post
+  after it, including our own posts and receipt posts. On a host where projects sign
+  with the shared root key, a message addressed to this project (to_project, or our
+  agent key) shows unread for the root key, not for us; notify-sidecars --auto-confirm
+  posted 'delivered' receipts and nothing surfaced it. Evidence: 055's report of 2026-10-20
+  and 1023's report of ~2026-10-15 reached AEF only on 2026-10-28 via TermLink forwards
+  (T-4714 was by luck delivered another way; 1023 is T-4879). Need: unread is judged
+  per addressee (to_project / addressed key), own posts and receipts excluded; auto-confirm
+  receipts are never treated as read; session-start alerts surface such mail. TermLink's
+  workaround and 17 fixtures: their scripts/check-unacted-mail.sh, tests/unacted-mail-fixtures.sh
+  (ask for a diff; do not read their repo). Reported breakage: allowed under the freeze.
 
 status: captured
 workflow_type: build
@@ -38,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T17:34:49Z
-last_update: 2026-10-28T17:34:49Z
-date_finished: null
+last_update: '2026-10-28T17:45:19Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +62,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-28T17:45:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4880: Peer mail addressed to this project can sit unread for days: dm-stale judges by signing identity, and auto-confirm receipts count as read

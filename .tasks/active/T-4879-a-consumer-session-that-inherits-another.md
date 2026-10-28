@@ -1,8 +1,19 @@
 ---
 id: T-4879
-name: "A consumer session that inherits another project's PROJECT_ROOT makes fw write tasks and focus into that other project (1023 report)"
+name: "A consumer session that inherits another project's PROJECT_ROOT makes fw write
+  tasks and focus into that other project (1023 report)"
 description: >
-  1023-portable-encrypted-chromium-vault (forwarded by TermLink msg e477f204; sent ~2026-10-15 to an unread channel): in a 1023 session, bin/fw work-on created tasks in /opt/055-agentic-fleet-cockpit and set 055's focus; env carried PROJECT_ROOT, FRAMEWORK_ROOT and _FW_PATHS_DERIVED_BY of 055, FW_ROUTED_FROM, FW_CLAUDE_FW_SUPERVISED=1 (likely a supervised claude-fw relaunch from 055's context). Even with those four unset, work-on still wrote into 055 (a second source, unconfirmed). Need: fw derives the project from its own bin/fw location and the cwd's .framework.yaml and refuses (or loudly warns) when an inherited PROJECT_ROOT disagrees, before any write. 1023 ran vendored v1.6.15: reproduce on current be.49 first (related: T-4855 FRAMEWORK_ROOT trap, T-3111 worktree redirect). Reported breakage: allowed under the freeze if it reproduces.
+  1023-portable-encrypted-chromium-vault (forwarded by TermLink msg e477f204; sent
+  ~2026-10-15 to an unread channel): in a 1023 session, bin/fw work-on created tasks
+  in /opt/055-agentic-fleet-cockpit and set 055's focus; env carried PROJECT_ROOT,
+  FRAMEWORK_ROOT and _FW_PATHS_DERIVED_BY of 055, FW_ROUTED_FROM, FW_CLAUDE_FW_SUPERVISED=1
+  (likely a supervised claude-fw relaunch from 055's context). Even with those four
+  unset, work-on still wrote into 055 (a second source, unconfirmed). Need: fw derives
+  the project from its own bin/fw location and the cwd's .framework.yaml and refuses
+  (or loudly warns) when an inherited PROJECT_ROOT disagrees, before any write. 1023
+  ran vendored v1.6.15: reproduce on current be.49 first (related: T-4855 FRAMEWORK_ROOT
+  trap, T-3111 worktree redirect). Reported breakage: allowed under the freeze if
+  it reproduces.
 
 status: captured
 workflow_type: build
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T17:27:56Z
-last_update: 2026-10-28T17:27:56Z
-date_finished: null
+last_update: '2026-10-28T17:45:19Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-28T17:45:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4879: A consumer session that inherits another project's PROJECT_ROOT makes fw write tasks and focus into that other project (1023 report)
