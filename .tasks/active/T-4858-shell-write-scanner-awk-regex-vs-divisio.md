@@ -12,10 +12,10 @@ description: >
   fail closed on `system` or an unescaped `|` anywhere in the program. Reproduce first
   with a concrete awk program the scanner passes but that writes a task file.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [security, scanner]
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T07:29:26Z
-last_update: '2026-10-28T07:30:40Z'
+last_update: 2026-10-28T09:45:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,10 +96,10 @@ See description. The need: an awk program that writes a task file (via `system(.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: a bats case gives the guard an awk one-liner where `/` after `)`, `]`, an identifier, a number or `++`/`--` is division, and the following text contains a write to a .tasks path (e.g. through system()); record whether the guard passes it before the fix
-- [ ] If it passes: treat those tokens as operand-ending (so `/` is division), and when the tokenizer cannot decide, fail closed when the awk program contains `system`, an unescaped `|` or a `>` redirect together with a guarded path; tests for each case
-- [ ] Legitimate read-only awk over task files (e.g. `awk '/^### Human/,/^## /' file`) still passes
-- [ ] Existing scanner tests stay green; vendor in sync
+- [x] Reproduce first: a bats case gives the guard an awk one-liner where `/` after `)`, `]`, an identifier, a number or `++`/`--` is division, and the following text contains a write to a .tasks path (e.g. through system()); record whether the guard passes it before the fix
+- [x] If it passes: treat those tokens as operand-ending (so `/` is division), and when the tokenizer cannot decide, fail closed when the awk program contains `system`, an unescaped `|` or a `>` redirect together with a guarded path; tests for each case
+- [x] Legitimate read-only awk over task files (e.g. `awk '/^### Human/,/^## /' file`) still passes
+- [x] Existing scanner tests stay green; vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -149,7 +149,9 @@ See description. The need: an awk program that writes a task file (via `system(.
 
 ## Verification
 
-timeout 900 bats tests/unit/t4858_scanner_awk_division.bats
+timeout 900 bats tests/unit/t4858_scanner_awk_division.bats > /tmp/.t4858.out 2>&1 && ! grep -q "^not ok" /tmp/.t4858.out
+test "$(grep -c '# skip' /tmp/.t4858.out)" -eq 0
+timeout 900 bats tests/unit/t4509_awk_exec.bats > /tmp/.t4858b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4858b.out
 bin/fw vendor self --check --task T-4858
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -288,8 +290,6 @@ bin/fw vendor self --check --task T-4858
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
-## RCA
-
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -327,6 +327,16 @@ bin/fw vendor self --check --task T-4858
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** the read-only allowlist (`agents/context/lib/safe-commands.sh` `is_bash_safe_command`, used by the task gate `check-active-task.sh`) reported `awk 'BEGIN{x++ / 2; system("touch F"); y = 1 / 3}'` SAFE, and awk runs that system(). Reproduced in `tests/unit/t4858_scanner_awk_division.bats` (tests 2 and 5 red before the fix; test 1 proves awk really runs it).
+
+**Root cause:** `lib/shell_write_scan.py` `awk_program_risk` (tokenizer at :686) opens a regex literal when `prev` is in `_AWK_REGEX_AFTER` (:663), which contains `+` and `-`. A postfix `++`/`--` was emitted as two single-char tokens, so `prev` was `+`/`-` and the following `/` opened a "regex" that swallowed `/ 2; system("touch F"); y = 1 /` as data. After `)`, `]`, an identifier, a number, a string or a regex the tokenizer already read `/` as division (measured; pinned in test 3), so only `++`/`--` was a real hole.
+
+**Why structurally allowed:** T-4509's tests covered regex literals after operators and division after names, but no case put an operator token that ENDS an operand (postfix `++`/`--`) before `/`. The tokenizer had no notion of multi-char operators.
+
+**Prevention:** `++`/`--` are now one operand-ending token; the docstring states the rule and that an undecided `/` reads as division (fail-closed). Regression bats `t4858_scanner_awk_division.bats` pins the vector, the already-correct token classes, and read-only controls.
 
 ## Recommendation
 
@@ -368,6 +378,15 @@ bin/fw vendor self --check --task T-4858
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-28 — which of the reported token classes was real
+- **Chose:** fix postfix `++`/`--` only (operand-ending token). `)`, `]`, identifier, number, string and regex already made `/` divide — measured with `awk_program_risk` before the fix and pinned in test 3, so nothing was changed for them.
+- **Why:** fixes only tighten; the measured hole was exactly one token class.
+- **Rejected:** "fail closed on `system` / unescaped `|` anywhere in the program" — `/a|b/` and `split(x, a, /,|;/)` are common read-only awk and T-4509 pins them SAFE. Unneeded too: every `prev` the tokenizer does not list as regex-opening (gawk `case /re/`, `getline /`) already reads `/` as division, which keeps the following text scanned, so an undecided case fails closed by construction (stated in the docstring).
+
+### 2026-10-28 — tick guard: concern does not reproduce
+- **Chose:** no change to the Human-AC tick guard's awk arm (`lib/shell_write_scan.py` awk verb handler). It does not use the tokenizer: it matches `system(`, `print >`/`|`, `| getline` and `close(` over the raw program (regex literals included), so `awk 'BEGIN{x++ / 2; system("echo ticked >> .tasks/…"); …}'` was already refused (test 6, with the vector proven to write the file in a mktemp project).
+- **Why:** do not fix what is not broken; the reported risk lived in the read-only allowlist (`safe-commands.sh` → `awk_program_risk`), which the fix covers.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -384,3 +403,7 @@ bin/fw vendor self --check --task T-4858
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4858-shell-write-scanner-awk-regex-vs-divisio.md
 - **Context:** Initial task creation
+
+### 2026-10-28T09:45:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

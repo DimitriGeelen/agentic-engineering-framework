@@ -669,7 +669,11 @@ def awk_program_risk(prog: str) -> str | None:
     system(), `"cmd" | getline`, `print | "cmd"` / printf, and gawk's `|&` coprocess;
     gawk's @load / @include pull in code. String literals, regex literals and comments
     are skipped, so `/a|b/` and `"a|b"` are data; `||` is logical or. Every other `|`,
-    and `system` called as a function, is refused."""
+    and `system` called as a function, is refused. `/` opens a regex only after an
+    operator, `(`, `,`, `{`, `;`, a newline or print/printf/return/in; after an operand
+    (name, number, string, regex, `)`, `]`, postfix `++`/`--`) it divides, and anything
+    unlisted (gawk `case /re/`, `getline /`) reads as division too: division keeps the
+    text scanned, so an undecided `/` fails closed (T-4858)."""
     code: list[str] = []
     i, n, prev = 0, len(prog), ""
     while i < n:
@@ -712,6 +716,12 @@ def awk_program_risk(prog: str) -> str | None:
         elif c.isspace() and c != "\n":
             code.append(c)
             i += 1
+        elif c in "+-" and prog[i + 1:i + 2] == c:
+            # T-4858: `++`/`--` end an operand (`x++ / 2` divides; `++ /re/` is not
+            # awk), so `/` after one divides and the text after it stays scanned.
+            code.append(c + c)
+            prev = c + c
+            i += 2
         elif c.isalnum() or c in "_$":
             j = i
             while j < n and (prog[j].isalnum() or prog[j] in "_$"):
