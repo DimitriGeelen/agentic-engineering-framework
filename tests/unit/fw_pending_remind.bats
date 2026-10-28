@@ -83,7 +83,8 @@ pending_updates:
 EOF
     PROJECT_ROOT="$TMPREPO" TASKS_DIR= CONTEXT_DIR= \
         run bash "$FW" pending remind
-    [ "$status" -eq 0 ]
+    # T-4861: show what came back when this fails (it failed once in the full suite, no output kept).
+    [ "$status" -eq 0 ] || { echo "status=$status output=$output"; false; }
     [[ "$output" == *"U-001"* ]]
     [[ "$output" == *"aged thing"* ]]
 }

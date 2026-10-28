@@ -28,8 +28,10 @@ setup() {
 teardown() {
     [ -s "${BACKUP_TS:-/dev/null}" ] && \
         cp "$BACKUP_TS" "$FRAMEWORK_ROOT/policy/capability-overlay/tool-set.yaml"
+    # T-4861: t3 deletes the manifest, so cp would create it with the mktemp backup's 0600 mode.
     [ -s "${BACKUP_MF:-/dev/null}" ] && \
-        cp "$BACKUP_MF" "$FRAMEWORK_ROOT/agents/mcp/framework-mcp-manifest.json"
+        cp "$BACKUP_MF" "$FRAMEWORK_ROOT/agents/mcp/framework-mcp-manifest.json" && \
+        chmod 644 "$FRAMEWORK_ROOT/agents/mcp/framework-mcp-manifest.json"
     rm -f "${BACKUP_TS:-}" "${BACKUP_MF:-}"
 }
 
@@ -61,7 +63,8 @@ yaml.safe_dump(d, open(p,'w'), sort_keys=False)
     rm -f "$FRAMEWORK_ROOT/agents/mcp/framework-mcp-manifest.json"
     cd "$FRAMEWORK_ROOT"
     run bin/fw mcp check
-    [ "$status" -eq 2 ]
+    # T-4861: show what came back when this fails (it raced other live-manifest tests once).
+    [ "$status" -eq 2 ] || { echo "status=$status output=$output"; false; }
     [[ "$output" == *"ABSENT:"* ]]
     [[ "$output" == *"fw mcp emit-manifest"* ]]
 }
