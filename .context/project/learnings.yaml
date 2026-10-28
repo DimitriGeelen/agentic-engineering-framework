@@ -5170,3 +5170,21 @@ X'` returning empty group."
   task: T-4725
   date: 2026-10-24
   context: Added via context agent
+- id: L-706
+  learning: "In Agent ACs, do not cite other task ids next to 'follow-up', 'linked to' or similar: the T-3694 self-deferral gate reads that as deferring work, and refuses the close when the cited task is completed or does not mention this one. Describe the reference in words instead ('names the task filed for X'). Hit twice on 2026-10-25 (T-4698, T-4755)."
+  source: P-001
+  task: T-4755
+  date: 2026-10-25
+  context: Added via context agent
+- id: L-707
+  learning: "Targeted per-task test runs miss cross-file regressions: on 2026-10-25 three closed fixes (T-4727, T-4740, T-4753) each passed their own and sibling tests, yet the 02:03 nightly unit run found 5 new reds in other files that pinned the behaviour they changed. Before cutting a be tag after a batch, run the fast unit tier (FW_UNIT_SUITE_TIER=fast agents/audit/unit-suite.sh) against HEAD, or grep tests/ for the functions and strings each fix changed."
+  source: P-001
+  task: T-4759
+  date: 2026-10-26
+  context: Added via context agent
+- id: L-708
+  learning: "bash 5.2.21: a trapped signal (TERM, CHLD) arriving while bash parses a $(...) corrupts the parser state; the trap then fails to parse ('trap: line N: unexpected EOF while looking for matching )') and does not run, and the script may keep going. Reproduced 5/200 with a multi-line trap and 1/200 with 'trap fn TERM'. Do not rely on a TERM trap in the killed process as the only writer of a must-have record; let the signaller write it, and follow TERM with a bounded KILL. Upstream: bug-bash 2023-09/msg00058."
+  source: P-001
+  task: T-4840
+  date: 2026-10-28
+  context: Added via context agent
