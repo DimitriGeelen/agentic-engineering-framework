@@ -61,9 +61,9 @@ Tag so ring20-dashboard can drop local patches 0031 (warm-up, T-4854) and 0018 (
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Fast unit suite with 0 new reds; `bin/fw audit --section structure` Fail: 0
-- [ ] bleeding-edge pushed and `bin/fw release be-tag --push` cut the tag
-- [ ] ring20-dashboard told the tag, the task ids, and the new setting WATCHTOWER_WARM_BEFORE_SERVE
+- [x] Fast unit suite with 0 new reds; `bin/fw audit --section structure` Fail: 0 (first run: one-off t4041 red, tracked in T-4866; rerun clean)
+- [x] bleeding-edge pushed and `bin/fw release be-tag --push` cut the tag (v1.8.15-be.48)
+- [x] ring20-dashboard told the tag, the task ids, and the new setting WATCHTOWER_WARM_BEFORE_SERVE (msg ffee20c0)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
