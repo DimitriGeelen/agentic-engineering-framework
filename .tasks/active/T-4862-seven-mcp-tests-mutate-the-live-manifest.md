@@ -12,10 +12,10 @@ description: >
   at a temp clone), or the suite runs them serially, so a test never writes the live
   repo.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, test-isolation]
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T08:18:00Z
-last_update: '2026-10-28T08:30:35Z'
+last_update: 2026-10-28T08:59:12Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,9 +97,9 @@ See description. The need: no unit test writes the live repository's MCP manifes
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Every test file that writes agents/mcp/framework-mcp-manifest.json or policy/capability-overlay/tool-set.yaml in the live repo (t2293, t2290, t2294, t2296, t2459, t2461, test_no_project_relative_fw_shell_t3964.py; re-check with grep) works on a copy instead: a temp framework tree (only the files the verbs need, or a full copy) with FRAMEWORK_ROOT/PROJECT_ROOT pointing at it
-- [ ] Proof: running those files leaves the live manifest and tool-set.yaml byte-identical and at their original mode (a test or a before/after checksum in Verification)
-- [ ] The tests still assert what they did (drift exit 1, absent exit 2, pre-push drift, doctor content check); all pass
+- [x] Every test file that writes agents/mcp/framework-mcp-manifest.json or policy/capability-overlay/tool-set.yaml in the live repo (t2293, t2290, t2294, t2296, t2459, t2461, test_no_project_relative_fw_shell_t3964.py; re-check with grep) works on a copy instead: a temp framework tree (only the files the verbs need, or a full copy) with FRAMEWORK_ROOT/PROJECT_ROOT pointing at it
+- [x] Proof: running those files leaves the live manifest and tool-set.yaml byte-identical and at their original mode (a test or a before/after checksum in Verification)
+- [x] The tests still assert what they did (drift exit 1, absent exit 2, pre-push drift, doctor content check); all pass
 - [ ] Vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
@@ -153,6 +153,9 @@ See description. The need: no unit test writes the live repository's MCP manifes
 before=$(sha256sum agents/mcp/framework-mcp-manifest.json policy/capability-overlay/tool-set.yaml); timeout 1200 bats tests/unit/t2293_mcp_check.bats tests/unit/t2290_doctor_mcp_content_check.bats tests/unit/t2294_pre_push_mcp_drift.bats tests/unit/t2296_audit_mcp_manifest_drift.bats tests/unit/t2459_mcp_server_root_split.bats tests/unit/t2461_doctor_mcp_consumer_path.bats && [ "$before" = "$(sha256sum agents/mcp/framework-mcp-manifest.json policy/capability-overlay/tool-set.yaml)" ]
 test "$(stat -c %a agents/mcp/framework-mcp-manifest.json)" = 644
 bin/fw vendor self --check --task T-4862
+timeout 300 bats tests/unit/t2293_mcp_check.bats > /tmp/.t4862v 2>&1 && grep -q '^ok 5 t5: control' /tmp/.t4862v && ! grep -q '^not ok' /tmp/.t4862v
+! grep -nE 'cd "\$(FRAMEWORK_ROOT|REPO)"' tests/unit/t2293_mcp_check.bats tests/unit/t2459_mcp_server_root_split.bats
+timeout 300 python3 -m pytest -q tests/unit/test_no_project_relative_fw_shell_t3964.py > /tmp/.t4862p 2>&1 && grep -q passed /tmp/.t4862p
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -306,6 +309,14 @@ bin/fw vendor self --check --task T-4862
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** t2293 t3 ("manifest absent → exit 2") failed once in the be.47 checks (T-4861): another test file regenerated the live manifest between t3's `rm` and its `fw mcp check`. A killed run could also leave the live tool-set.yaml carrying `fake_drift_tool_t2293`, or the manifest deleted.
+
+**Root cause:** two files wrote the live repo, not seven. `tests/unit/t2293_mcp_check.bats:16-35` (setup ran `bin/fw mcp emit-manifest` in `$FRAMEWORK_ROOT`, t2 rewrote the live `policy/capability-overlay/tool-set.yaml`, t3 `rm`-ed the live `agents/mcp/framework-mcp-manifest.json`, teardown restored from backups) and `tests/unit/t2459_mcp_server_root_split.bats:45` (setup re-emitted the live manifest before every test; t8 ran `fw mcp check` against the live tree). The unit suite runs files in parallel (T-3602), so t2459's per-test emit could land inside t2293 t3's delete-then-check window. The other five named files were already isolated: t2290 uses a fixture root since T-3801; t2294 and t2296 run stub `bin/fw`s in temp repos; t2461 builds synthetic layouts and only greps the live source; test_no_project_relative_fw_shell_t3964.py only reads.
+
+**Why structurally allowed:** a backup/restore teardown looks hermetic when files run one at a time, and the suite turned parallel after these tests were written. Nothing asserted that a unit test leaves these two tracked files untouched; `live_repo_guard.bash` (T-4671) exists but watches git status, which a delete-then-restore does not change.
+
+**Prevention:** both files now run against a copied framework tree (`tests/unit/helpers/mcp_fixture.bash`), and the helper's guard (`mcp_live_guard_begin/_end`) records the sha256 and mode of the live manifest and tool-set.yaml before each test and fails the test if either moved, so a regression back to live writes is red on the next run rather than a rare race.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -370,6 +381,15 @@ bin/fw vendor self --check --task T-4862
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-28 — fixture tree vs serial execution
+- **Chose:** a per-test fixture framework tree: the tracked files of bin/, lib/, agents/mcp/, policy/capability-overlay/ plus FRAMEWORK.md and VERSION, copied from the working tree (`git ls-files | tar`, ~6 MB, so uncommitted edits are what gets tested), with a `.framework.yaml` marker, and `bin/fw` run from that tree with FRAMEWORK_ROOT=PROJECT_ROOT=fixture. `fw mcp check` / `emit-manifest` take ~0.1 s there.
+- **Why:** keeps the real dispatcher (`bin/fw mcp ...`) under test, which is what t2293 exists to cover, and removes the shared file instead of ordering access to it.
+- **Rejected:** running these files serially (still writes the live repo, a killed run still leaves it edited); calling `manifest.py` directly (drops the bin/fw routing the test pins); `git archive HEAD` for the fixture (would test the committed code, not the working tree).
+
+### 2026-10-28 — scope: five of the seven named files already isolated
+- **Chose:** change t2293 and t2459 only; leave t2290, t2294, t2296, t2461 and test_no_project_relative_fw_shell_t3964.py as they are.
+- **Why:** read each file: t2290 has used a fixture root since T-3801; t2294/t2296 run stub `bin/fw`s in temp repos; t2461 builds synthetic layouts and greps the live source read-only; t3964 only reads. Re-check: `grep -lE "framework-mcp-manifest.json|tool-set.yaml" tests/unit/*` lists no other writer (t2287 writes a synthetic tree; test_capability_overlay_toolset.py only reads).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -386,3 +406,7 @@ bin/fw vendor self --check --task T-4862
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4862-seven-mcp-tests-mutate-the-live-manifest.md
 - **Context:** Initial task creation
+
+### 2026-10-28T08:59:12Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

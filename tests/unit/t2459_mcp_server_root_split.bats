@@ -22,6 +22,7 @@
 # t9 exercises the live server build and is skipped when `mcp` is unavailable.
 
 load ../test_helper
+load helpers/mcp_fixture
 
 # Import the REAL manifest module via PYTHONPATH while letting FRAMEWORK_ROOT
 # point at a synthetic layout — the two are deliberately independent (code
@@ -30,6 +31,7 @@ load ../test_helper
 MP() { echo "$FRAMEWORK_ROOT/agents/mcp"; }
 
 setup() {
+    mcp_live_guard_begin
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
     REPO="$FRAMEWORK_ROOT"
@@ -41,12 +43,16 @@ setup() {
     : > "$VENDOR/bin/fw"
     chmod +x "$VENDOR/bin/fw"
     # Vendor a freshly-emitted (enriched) manifest into the synthetic layout.
-    ( cd "$REPO" && bin/fw mcp emit-manifest >/dev/null 2>&1 )
-    cp "$REPO/agents/mcp/framework-mcp-manifest.json" "$VENDOR/agents/mcp/framework-mcp-manifest.json"
+    # T-4862: emitted in a private framework tree, never the live repo (parallel
+    # files raced on the live manifest, T-4861).
+    mcp_fixture_make
+    cp "$MCP_FIX/agents/mcp/framework-mcp-manifest.json" "$VENDOR/agents/mcp/framework-mcp-manifest.json"
 }
 
 teardown() {
     [ -n "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
+    mcp_fixture_cleanup
+    mcp_live_guard_end
 }
 
 @test "t2459:t1 framework_root from __file__ when FRAMEWORK_ROOT unset == repo" {
@@ -140,7 +146,7 @@ print('ok', fw_bin, '|', pr)
 @test "t2459:t7 enriched manifest carries fw_command + description; scanner keys (name/gated) intact" {
     run env -u PROJECT_ROOT python3 -c "
 import json, sys; sys.path.insert(0, '$(MP)')
-m = json.load(open('$REPO/agents/mcp/framework-mcp-manifest.json'))
+m = json.load(open('$MCP_FIX/agents/mcp/framework-mcp-manifest.json'))
 tools = m['tools']
 assert len(tools) >= 1
 for t in tools:
@@ -154,8 +160,7 @@ print('ok', len(tools))
 }
 
 @test "t2459:t8 no regression: fw mcp check reports in-sync after emit" {
-    cd "$REPO"
-    run bin/fw mcp check
+    run mcp_fw mcp check
     [ "$status" -eq 0 ]
     [[ "$output" == *"in sync"* ]]
 }
