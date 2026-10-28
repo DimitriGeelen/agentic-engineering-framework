@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4876: Field report: be.48/be.49 upgrade round under the release freeze (six testers)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T17:09:30Z
+# ============================================================================
+
+task_id: T-4876
+task_name: "Field report: be.48/be.49 upgrade round under the release freeze (six testers)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-28T15:53:37Z
+completed: 2026-10-28T17:09:15Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-28T18:08:59+01:00
+last_commit: 2026-10-28T18:09:13+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  field report — be.48/be.49 upgrade round (six testers) and freeze exit status. ACs ticked
+
+# Key outcomes
+outcomes:
+  - 'docs/reports/field-test-v1.8.15-results.md has a section for the be.48/be.49 round: one row per tester (ring20-dashboard, ring20, dimitri-mint-dev, 055, 832, TermLink) with from/to, doctor before/after, own tests before/after, and the fix-level WORKS/FAILS they reported, with message ids'
+  - 'The section states the freeze exit status: who is on be.48+ with a clean report, which FAILS were fixed under the freeze (T-4872, T-4873) and confirmed, and who is still missing (1409)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4876-field-report-be48be49-upgrade-round-unde.md'
+  - 'docs/reports/field-test-v1.8.15-results.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T18:08:59'
+    action: 'T-4876: field report — be.48/be.49 upgrade round (six testers) and freeze exit status'
+  - time: '2026-10-28T18:09:13'
+    action: 'T-4876: ACs ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 75 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 75
+  commits: 3
+  files_changed: 5
+  lines_added: 496
+  lines_removed: 6
+  footprint_refreshed_at: '2026-10-28T17:09:47Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4876-field-report-be48be49-upgrade-round-unde.md
+generated_by: context-agent-hybrid
