@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4869: Release freeze phase: codify in workflow (no new development until v1.8.15 is released; new requests to backlog)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T11:10:18Z
+# ============================================================================
+
+task_id: T-4869
+task_name: "Release freeze phase: codify in workflow (no new development until v1.8.15 is released; new requests to backlog)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-28T11:07:20Z
+completed: 2026-10-28T11:09:59Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-28T12:08:10+01:00
+last_commit: 2026-10-28T12:09:58+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ACs (release freeze phase, operator ruling). CLAUDE.md — Release Freeze Phase (operator ruling 2026-10-28), state FREEZE ACTIVE. freeze recorded, codified, backlog moved, testers told; ACs ticked
+
+# Key outcomes
+outcomes:
+  - 'The ruling is recorded as a project decision (fw context add-decision) with the operator''s words'
+  - 'CLAUDE.md has a "Release Freeze Phase" section: what is allowed (testing, field-reported breakage fixes, test reliability, release work), what is not (new development), how new requests are filed (task with horizon later and tag post-freeze, need stated before solution), the exit condition (every active tester on be.48 or later reported, no open failures, then the release), and that only the operator enters or lifts it'
+  - 'Improvement tasks not covered by the freeze are moved to horizon later with tag post-freeze (T-4649 recommendation changed to DEFER until after the release; T-4855, T-4856, T-4864)'
+  - 'The active testers (ring20, ring20-dashboard, 832, 1409, 055, TermLink, dimitri-mint-dev) are told: freeze, please run be.48 and report, only breakage is fixed until the release (msgs cc1c3c3e, 80366bdf, bee292bf, b46669cd, f3d3b830, d7f63c04, 5c04ca1f)'
+  - 'The handover and next-session notes start with the freeze state (next-session notes now; the next generated handover carries it from CLAUDE.md and the decision)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # 1 decision(s) below are recorded in the register (.context/project/decisions.yaml) for this task but absent from the task file's Decisions section (T-4193).
+  - decision: 'D-938'
+    chose: 'Release freeze until v1.8.15 is released. Operator 2026-10-28: ''We are not going to start new development work until we have tested everything and can do a proper release.'' and ''new requests can come in, but they come on the backlog.'' Allowed: testing, fixing field-reported breakage, test reliability, release work. New requests: task with horizon later and tag post-freeze. Exit: every active tester on be.48 or later reported, no open failures, then the release; only the operator lifts it.'
+    rationale: 'T-4867: no strict cut point past v1.8.14; 466 consumer-facing fixes since, 343 without a specific field verdict. Stabilise and release before adding more.'
+    id: 'D-938'
+    source: register
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4869-release-freeze-phase-codify-in-workflow-.md'
+  - 'CLAUDE.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T12:08:10'
+    action: 'T-4869: ACs (release freeze phase, operator ruling)'
+  - time: '2026-10-28T12:08:31'
+    action: 'T-4869: CLAUDE.md — Release Freeze Phase (operator ruling 2026-10-28), state FREEZE ACTIVE'
+  - time: '2026-10-28T12:09:58'
+    action: 'T-4869: freeze recorded, codified, backlog moved, testers told; ACs ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 4
+  files_changed: 5
+  lines_added: 520
+  lines_removed: 10
+  footprint_refreshed_at: '2026-10-28T11:10:31Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4869-release-freeze-phase-codify-in-workflow-.md
+generated_by: context-agent-hybrid
