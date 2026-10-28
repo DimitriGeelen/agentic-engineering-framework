@@ -56,16 +56,17 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+See description. The need: when python3 is unavailable or broken, the Tier 0 gate's degraded fallback blocks at least every class its normal fast path blocks; it never fails open for a class the normal path knows.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduce first: a bats test shadows python3 on PATH with a stub that exits 1, pipes a Bash PreToolUse payload into the gate for each reported command (commit with the no-verify flag, `commit -n`, `fw task update … --force`, `fw inception decide …`, a core.hooksPath / include.path / includeIf config change), and shows exit 0; it fails before the fix
+- [ ] The degraded fallback blocks each of those classes (exit 2 with the T-4652 degraded banner); the classes already blocked (force push, hard reset, recursive delete) stay blocked
+- [ ] The degraded class list is derived from, or checked against, the fast-path keyword list so the two cannot drift again (a test that fails when a fast-path class has no degraded counterpart)
+- [ ] With a working python3, behaviour is unchanged: the existing gate tests stay green (grep tests/unit for the gate and T-4652); vendor in sync
 
-### Human
+<!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -112,6 +113,9 @@ date_finished: null
 -->
 
 ## Verification
+
+timeout 900 bats tests/unit/t4851_degraded_gate_classes.bats
+bin/fw vendor self --check --task T-4851
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

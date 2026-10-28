@@ -56,16 +56,16 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+See description. The need: with python3 unavailable or broken, check-agent-dispatch still enforces the harness dispatch limit instead of letting every Agent call through.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduce first: a bats test shadows python3 with a failing stub, sends an Agent-tool PreToolUse payload with FW_DISPATCH_LIMIT=0, and shows exit 0; it fails before the fix
+- [ ] When the payload cannot be parsed, the hook detects an Agent call from the raw payload (e.g. "tool_name":"Agent" with the usual whitespace variants) and blocks with the T-4652 degraded banner; a non-Agent payload still passes
+- [ ] With a working python3, behaviour is unchanged; existing dispatch-gate tests stay green; vendor in sync
 
-### Human
+<!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -112,6 +112,9 @@ date_finished: null
 -->
 
 ## Verification
+
+timeout 900 bats tests/unit/t4853_dispatch_gate_degraded.bats
+bin/fw vendor self --check --task T-4853
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

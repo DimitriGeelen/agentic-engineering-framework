@@ -56,16 +56,17 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+See description. The need: with python3 unavailable or broken, the project-boundary gate's degraded fallback refuses writes to system paths outside the project, not only to the five roots it lists today.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduce first: a bats test shadows python3 with a failing stub and shows the gate exits 0 for a redirect into /etc/systemd/system/x; it fails before the fix
+- [ ] The degraded fallback refuses writes under /etc, /usr, /var, /boot as well as the existing roots; a write inside the project still passes; reads stay allowed
+- [ ] Consider whether the degraded list should instead be "anything outside the project root and the documented allow paths" (fail closed by default); record the choice in Decisions
+- [ ] With a working python3, behaviour is unchanged; existing boundary tests stay green; vendor in sync
 
-### Human
+<!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -112,6 +113,9 @@ date_finished: null
 -->
 
 ## Verification
+
+timeout 900 bats tests/unit/t4852_degraded_boundary_system_paths.bats
+bin/fw vendor self --check --task T-4852
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
