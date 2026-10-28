@@ -6575,3 +6575,10 @@ decisions:
     date: 2026-10-28
     task: T-4867
     rationale: "T-4867: 343 of 466 consumer-facing changes since v1.8.14 have no specific verdict and cannot practically get one; four testers (ring20-dashboard, ring20, dimitri-mint-dev, 055) upgraded cleanly to be.48 on 2026-10-28."
+
+  - id: D-940
+    decision: "T-4802 / T-4801 options (operator 2026-10-28, answer a): lib/dispatch_records.py (option A, the reference store) is supported for ring20's poold as their production record store. AEF keeps its interface stable for them (create, allocate, start, complete with signed evidence, sweep(probe), tick, load, sign_completion, canonical) and fixes what they report. Options B (shadow-write from AEF's own dispatch) and C (switch-over) wait until after the release freeze."
+    scope: project
+    date: 2026-10-28
+    task: T-4802
+    rationale: "A passes the shared worker-contract vectors (22 pass, 0 fail); ring20's poold tests and a sealed end-to-end job exercise the parts they use; B/C prove AEF's own workers, a different question, and are new development during the freeze."
