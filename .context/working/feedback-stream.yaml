@@ -50981,3 +50981,21 @@ scan_id: R-a74dea53
 task_id: T-4887
 payload:
   task_file: .tasks/active/T-4887-t3443-audit-structure-test-reads-partial.md
+---
+kind: scan_emitted
+timestamp: '2026-10-28T23:32:15Z'
+scan_id: R-5905e9d3
+task_id: T-4888
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-28T23:32:15Z'
+scan_id: R-5905e9d3
+task_id: T-4888
+payload:
+  task_file: .tasks/active/T-4888-t3202-audit-kill-test-sends-term-on-a-4-.md
