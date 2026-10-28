@@ -46,10 +46,20 @@ _t3443_require_audit_ran() {
     fi
 }
 
+# T-4887: `timeout` kills a slow audit under host load (load ~90 on 24 cores in the
+# parallel fast tier) and leaves partial output; grepping it reads as a regression.
+# A killed run proves nothing either way, so it skips as NOT DETERMINED, like the lock.
+_t3443_require_audit_finished() {
+    if [ "$1" -eq 124 ]; then
+        skip "NOT DETERMINED: audit killed by its ${T3443_AUDIT_TIMEOUT:-60}s timeout (host load)"
+    fi
+}
+
 @test "T-3443: fixture audit (PROJECT_ROOT != FRAMEWORK_ROOT) skips both checks with INFO lines, no verdict" {
     _t3443_fixture "$TEST_TEMP_DIR/p"
-    local out
-    out="$(cd "$FRAMEWORK_ROOT" && timeout 60 env PROJECT_ROOT="$TEST_TEMP_DIR/p" bash agents/audit/audit.sh --sections structure 2>&1 || true)"
+    local out rc=0
+    out="$(cd "$FRAMEWORK_ROOT" && timeout "${T3443_AUDIT_TIMEOUT:-60}" env PROJECT_ROOT="$TEST_TEMP_DIR/p" bash agents/audit/audit.sh --sections structure 2>&1)" || rc=$?
+    _t3443_require_audit_finished "$rc"
     _t3443_require_audit_ran "$out"
 
     echo "$out" | grep -q "Invariant suite (tests/lint) skipped — framework-repo property; PROJECT_ROOT is not the framework repo"

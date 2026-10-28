@@ -1,10 +1,15 @@
 ---
 id: T-4887
-name: "t3443 audit-structure test reads partial output when timeout 60 kills audit.sh under load"
+name: "t3443 audit-structure test reads partial output when timeout 60 kills audit.sh
+  under load"
 description: >
-  T-4866 sweep: t3443_audit_structure_framework_scope.bats:52 wraps a full audit.sh --sections structure in timeout 60; a kill leaves partial output and lines 55-56 fail. The file already skips on the audit lock but not on exit 124. Fix direction: treat 124 as NOT DETERMINED like the lock case, or raise the timeout within the 120 s fast-file cap.
+  T-4866 sweep: t3443_audit_structure_framework_scope.bats:52 wraps a full audit.sh
+  --sections structure in timeout 60; a kill leaves partial output and lines 55-56
+  fail. The file already skips on the audit lock but not on exit 124. Fix direction:
+  treat 124 as NOT DETERMINED like the lock case, or raise the timeout within the
+  120 s fast-file cap.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T23:24:28Z
-last_update: 2026-10-28T23:24:28Z
-date_finished: null
+last_update: '2026-10-28T23:29:09Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-28T23:29:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4887: t3443 audit-structure test reads partial output when timeout 60 kills audit.sh under load
@@ -62,8 +84,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The fixture-audit test in tests/unit/t3443_audit_structure_framework_scope.bats keeps the audit's exit code; exit 124 (killed by its timeout) skips with "NOT DETERMINED" instead of grepping partial output, the same way the audit-lock case already skips
+- [x] A completed audit (rc != 124) is still graded as before: all assertions run, so a real regression stays red
+- [x] The file passes (bats), and a forced timeout (`timeout 1`) shows the skip, not a failure
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +272,9 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+bats tests/unit/t3443_audit_structure_framework_scope.bats > /tmp/.t4887.out 2>&1
+T3443_AUDIT_TIMEOUT=1 bats -f "fixture audit" tests/unit/t3443_audit_structure_framework_scope.bats > /tmp/.t4887b.out 2>&1 && grep -q "skip NOT DETERMINED" /tmp/.t4887b.out
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -264,6 +290,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** found by the T-4866 sweep, not yet seen red: the fixture-audit test can fail on a heavily loaded host with no regression in the code.
+
+**Root cause:** the test wrapped a full `audit.sh --sections structure` in `timeout 60` and discarded the exit code (`|| true`). A kill at 60 s left partial output, and the greps then failed as if the skip lines were missing.
+
+**Why structurally allowed:** the file already guarded one way a run could prove nothing (the audit lock) but not the other (a timeout kill). Nothing in the suite tells "the audit didn't finish" apart from "the audit finished wrong".
+
+**Prevention:** exit 124 now skips as NOT DETERMINED, and a forced 1 s timeout in Verification pins that path. A completed run is graded exactly as before.
 
 ## Evolution
 
@@ -345,3 +379,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4887-t3443-audit-structure-test-reads-partial.md
 - **Context:** Initial task creation
+
+### 2026-10-28T23:29:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
