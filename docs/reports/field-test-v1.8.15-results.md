@@ -483,6 +483,19 @@ One row per project and build. A blank Msg means the id was not kept in the sess
 | 832 | be.45 | **WORKS**: T-4779, their release commit landed 2 h after a verdict and the ledger still counts it. T-4768 not exercised (no inception decided since be.31) | cea873e2 |
 | ring20-dashboard | be.46 | **WORKS**: upgrade v1.8.14 to be.46 (1644 commits) from a full clone of the tag, 12 min, doctor 0 FAIL before and after, fast lane 0 failures (17031 passed, 23 skipped for their replaced termlink cleanup), no rollback; 37 local patches down to 32. Four findings filed as T-4851..T-4856, three security-review findings as T-4857..T-4859 | 2c503ddf, 72cf84a0 |
 
+**2026-10-28, release-freeze upgrade round be.48/be.49 (recorded by T-4876):**
+
+| Project | From → to | Doctor before / after | Own tests before / after | Fix verdicts | Msg |
+|---|---|---|---|---|---|
+| ring20-dashboard | be.46 → be.48 → be.49 | 0 FAIL / 0 FAIL | 17031 / 17037 passed, 0 failures both sides | **WORKS**: T-4851..T-4853, T-4863, T-4854 (both modes), T-4416/T-4423, T-4558/T-4152/T-3651, T-4872 (live, python3 broken), T-4857..T-4859 (76 guard tests). **FAILS** T-4852 quoted path → fixed T-4872, confirmed | 4c7cd097, b062b628, a575cc7a, 396cc3a6 |
+| ring20 | be.40 → be.48 | 1 FAIL / same 1 FAIL (their own uncommitted settings.json) | poold 37/37, apt keys 13/13, orch-supervisor 185/185; worker-contract vectors identical | upgrade clean, nothing broken | b7c247f1 |
+| dimitri-mint-dev | be.41 → be.48 | 0 FAIL / 0 FAIL (one expected Watchtower-restart WARN) | own tests PASS / PASS; 22 pages 200 | upgrade clean; earlier be.41: D close, T-4812, handover WORKS | 7b236bdb, d812cf90, b68fc2ef |
+| 055 | be.37 → be.48 → be.49 | 0 FAIL / 0 FAIL | bats 157/0, pytest 1690 → 1695 passed | **WORKS**: T-4824, T-4783, T-4833, T-4825, T-4826, E dispatch, F reviewer, T-4873. **FAILS** T-4809 armed=yes → fixed T-4873, confirmed (their strict xfail turned XPASS). G owed after their next restart | d9f5214f, 6d5a4208, 35d4762f |
+| 832 | be.45 → be.48 | 0 FAIL / 0 FAIL (one expected Watchtower WARN) | core tier 213 passed both sides | **WORKS**: T-4843, T-4844, T-4779, T-4811, G session restore, Check in the designer. A-H field test complete, no open FAILS | 1196ef73, b17f135d, 6b486bb8 |
+| TermLink | be.39 → be.49 | rc 0 / rc 0 (three old WARNs gone, incl. smoke 13/54 → 54/54) | guard layer identical (224/223 passed) | **WORKS**: T-4827, T-4828 | 87569601 |
+
+**Freeze exit status (2026-10-28 evening):** six of seven active testers are on be.48 or later with a clean upgrade report, which meets the operator's confirmation rule (b: clean full upgrades by three or more testers). Both FAILS reported in this round were fixed under the freeze (T-4872, T-4873) and confirmed by their reporters on be.49. Still missing: **1409**'s be.48+ upgrade report (partial report at about be.46: T-4841 WORKS; their lost local blueprint block is backlog T-4870). Open but not blocking: 055 G and dimitri-mint-dev G/T-4781 after their next restarts.
+
 **Still unexercised, and who reports:**
 - **1409:** upgrade to be.44 or later after their workers rest, then the create-time re-measure at about 20 worktrees (T-4797, T-4841); T-4806 needs their Dauerlauf armed.
 - **dimitri-mint-dev:** G, T-4781, T-4812 re-check (after relaunch).
