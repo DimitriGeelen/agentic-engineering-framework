@@ -8,8 +8,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T21:09:07Z
-last_update: '2026-10-27T22:00:36Z'
+last_update: 2026-10-28T11:27:06Z
 date_finished: 2026-10-27T21:13:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -79,12 +79,13 @@ cost_estimate_proposed:
 - [x] Vendor in sync; Watchtower current
 
 ### Human
-- [ ] [REVIEW] Check marks errors on a map that has them
+- [x] [REVIEW] Check marks errors on a map that has them
   **Steps:**
   1. Open http://192.168.10.107:3000/designer/app
   2. Open a map, give a step an output with operation update and no match field, press Check
   **Expected:** the error is shown under that io row; no "could not check" message
   **If not:** note what Check showed; the agent compares it with the validate endpoint
+  **Reviewer verdict:** green V-20261028-e37629a5 — reviewer-judge-t-4845-r3-40fa09882f59:reviewer (rung rung-3-termlink-single-reviewer), digest 5bf7d5c78f0c; dispatch judge-t-4845-r3-40fa09882f59; evidence: .context/reviews/evidence/T-4845/AC1-judge-t-4845-r3-40fa09882f59.md, .context/reviews/evidence/T-4845/io-row-judge-t-4845-r3-40fa09882f59.png, .context/reviews/evidence/T-4845/full-judge-t-4845-r3-40fa09882f59.png; ledger .context/reviews/verdicts.jsonl
 
 ## RCA
 

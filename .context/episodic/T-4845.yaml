@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4845: POST /api/validate answers ok:false on a successful check of a map with errors; designer shows 'could not check
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T11:27:25Z
+# ============================================================================
+
+task_id: T-4845
+task_name: "POST /api/validate answers ok:false on a successful check of a map with errors; designer shows 'could not check"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-27T21:09:07Z
+completed: 2026-10-27T22:00:36Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-27T22:13:36+01:00
+last_commit: 2026-10-28T12:25:12+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  POST /api/validate answers ok:true on every successful check (832 T-1300 §1); errors carries the count; tests corrected (832 msg c3ec2249). partial-complete — owner human for the [REVIEW] Check. reviewer verdict
+
+# Key outcomes
+outcomes:
+  - 'A successful validation (200) always answers `"ok": true`; `errors` and `warnings` carry the counts unchanged; refusals keep `ok: false`'
+  - 'tests/web/test_t4830_validate.py asserts ok:true with errors >= 1 for a map with an ERROR (the old assertion pinned the wrong behaviour; the same assertion in tests/web/test_t4836_consumer_validator.py corrected too)'
+  - 'Live: a POST of a map with an ERROR to the restarted Watchtower answers ok:true and errors >= 1 (ok True, errors 5)'
+  - 'Vendor in sync; Watchtower current'
+  - '[REVIEW] Check marks errors on a map that has them'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'POST /api/validate answers ok:true on every successful check (832 T-1300 §1); errors carries the count; tests corrected (832 msg c3ec2249)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/designer_api.py'
+  - '.context/reviews/evidence/T-4845/AC1-judge-t-4845-r3-40fa09882f59.md'
+  - '.context/reviews/evidence/T-4845/full-judge-t-4845-r3-40fa09882f59.png'
+  - '.context/reviews/evidence/T-4845/io-row-judge-t-4845-r3-40fa09882f59.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-4845-post-apivalidate-answers-okfalse-on-a-su.md'
+  - 'tests/web/test_t4830_validate.py'
+  - 'tests/web/test_t4836_consumer_validator.py'
+  - 'web/blueprints/designer_api.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T22:13:36'
+    action: 'T-4845: POST /api/validate answers ok:true on every successful check (832 T-1300 §1); errors carries the count; tests corrected (832 msg c3ec2249)'
+  - time: '2026-10-27T22:47:59'
+    action: 'T-4845: partial-complete — owner human for the [REVIEW] Check'
+  - time: '2026-10-28T12:25:12'
+    action: 'T-4845: reviewer verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 51 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 51
+  commits: 4
+  files_changed: 15
+  lines_added: 516
+  lines_removed: 12
+  footprint_refreshed_at: '2026-10-28T11:34:45Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4845-post-apivalidate-answers-okfalse-on-a-su.md
+generated_by: context-agent-hybrid
