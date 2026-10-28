@@ -46,6 +46,13 @@ a path assembled at run time from pieces the text does not contain (`'.ta'+'sks'
 printf, a path read from a file written by an earlier call) is not seen. Those writes are
 caught after the fact, not before: `fw audit` (lib/human_ac_ticks.py) FAILs on a committed
 `### Human` tick that carries no provenance.
+
+Message arguments (`fw sidecar send --body`, _DATA_ARGS) are blanked so their text is not
+read as commands, but the guarded-path mention is read from the ORIGINAL command (T-4857):
+a path inside a message still reaches the shell through `$_`. Any program called `fw`
+(_FW_VERB matches `*/fw`) gets that blanking; what such a program does with its arguments
+is a script the gate does not open (above). `!$` is history expansion, which is off in the
+non-interactive bash that runs these commands, so it is a literal word.
 """
 from __future__ import annotations
 
@@ -1569,12 +1576,12 @@ def scan(command: str, cwd: str | None = None, project_root: str | None = None) 
     `project_root` (T-4336): when given, a `.tasks` target provably outside it is not a
     guarded write. Without it every `.tasks` target is guarded, as before.
     """
-    original = command
-    command, live = _blank_data_args(command)
+    # T-4857: the mention is read from the ORIGINAL command. Blanking a message only stops
+    # its text being parsed as commands; a path in it is still in the shell's hands (`$_`
+    # is the previous command's last argument, a substitution's $F may be that path).
+    mentions = mentions_guarded(command)
+    command, _ = _blank_data_args(command)
     guarded = _guarded_within(os.path.realpath(project_root)) if project_root else None
-    # T-4817: a substitution bash runs inside a message keeps the message's guarded
-    # mention as its context (its $F may be that path), as before the message was blanked
-    mentions = mentions_guarded(command) or (live and mentions_guarded(original))
     ctx = _Ctx(cwd=cwd, mentions=mentions, guarded=guarded)
     unlexed = "command does not tokenise (unbalanced quote) and names a guarded path"
     try:

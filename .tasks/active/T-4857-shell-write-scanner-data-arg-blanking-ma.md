@@ -17,10 +17,10 @@ description: >
   T-3695), so record which concerns are real holes and which are outside its stated
   scope.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [security, scanner]
 components: []
 related_tasks: []
@@ -51,7 +51,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T07:29:25Z
-last_update: '2026-10-28T07:30:40Z'
+last_update: 2026-10-28T09:39:02Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,10 +101,10 @@ See description. The need: a Bash command that writes a task file is not let thr
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: for each of the three concerns ($_ / !$ reuse after a blanked --body, a non-framework `*/fw`, the mentions-from-original logic), a bats case runs the Human-AC tick guard on a concrete command and records pass/refuse. Record in Decisions which concerns are real holes (a shell write to .tasks passes) and which cannot occur (e.g. `!$` history expansion is off in non-interactive bash)
-- [ ] For each real hole: the guard refuses (fail closed), with a test that failed before; the sidecar --body data case (T-4817, T-4825) still passes a body that only mentions a task path in text
-- [ ] For each concern judged out of scope: one line in the guard's scope comment (lib/shell_write_scan.py header or check-human-ac-tick) naming it, consistent with the text-gate boundary (T-2742, T-3695)
-- [ ] Existing scanner and guard tests stay green; vendor in sync
+- [x] Reproduce first: for each of the three concerns ($_ / !$ reuse after a blanked --body, a non-framework `*/fw`, the mentions-from-original logic), a bats case runs the Human-AC tick guard on a concrete command and records pass/refuse. Record in Decisions which concerns are real holes (a shell write to .tasks passes) and which cannot occur (e.g. `!$` history expansion is off in non-interactive bash)
+- [x] For each real hole: the guard refuses (fail closed), with a test that failed before; the sidecar --body data case (T-4817, T-4825) still passes a body that only mentions a task path in text
+- [x] For each concern judged out of scope: one line in the guard's scope comment (lib/shell_write_scan.py header or check-human-ac-tick) naming it, consistent with the text-gate boundary (T-2742, T-3695)
+- [x] Existing scanner and guard tests stay green; vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -155,6 +155,9 @@ See description. The need: a Bash command that writes a task file is not let thr
 ## Verification
 
 timeout 900 bats tests/unit/t4857_scanner_blanking_reuse.bats
+timeout 900 bats tests/unit/t4817_tick_guard_quoted_args.bats
+timeout 900 bats tests/unit/t4499_sidecar_body_data.bats
+timeout 900 bats tests/unit/t3695_human_ac_tick_bash.bats
 bin/fw vendor self --check --task T-4857
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -309,6 +312,14 @@ bin/fw vendor self --check --task T-4857
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** `fw sidecar send --to x --body '.tasks/active/T-1.md'; sed -i s/a/b/ "$_"` passed the Human-AC tick guard. bash sets `$_` to the previous command's last argument, so the sed edits the task file. Reproduced against the real hook (tests/unit/t4857_scanner_blanking_reuse.bats, tests 1-4 failed before the fix).
+
+**Root cause:** lib/shell_write_scan.py:scan (was line ~1573-1577) blanked the `--body` value first and then computed `mentions = mentions_guarded(command)` on the BLANKED text. It fell back to the original text only when a live substitution sat in the body (T-4817). A guarded path that appeared only in the body therefore did not count as a mention. The later write target `"$_"` cannot be resolved from the text, and an unresolved target is refused only when the command mentions a guarded path, so nothing refused it.
+
+**Why structurally allowed:** T-4499 added blanking so that body TEXT is not parsed as commands. Moving the mention check onto the blanked text came along with that change, and nobody stated it as a separate decision. Every regression test checked one direction only: the body is data and is allowed. No test combined a body that names a path with a later write whose target comes from the shell.
+
+**Prevention:** The mention is now read from the original command (blanking still applies to parsing). The scope comment in the module header states this. t4857_scanner_blanking_reuse.bats covers `$_`, `${_}` and a foreign `*/fw`, with allowed controls for body text, pipes and resolvable redirects.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -373,6 +384,19 @@ bin/fw vendor self --check --task T-4857
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-28 — concern (a): `$_` reuse after a blanked --body — REAL, fixed
+- **Chose:** Read the mention from the original command (`mentions = mentions_guarded(original)`). Blanking now only controls parsing.
+- **Why:** This is the reviewer's suggestion and it is strictly tighter. It adds refusals only when some non-body part of the command makes a write the text cannot resolve. Body-only sends, `| tail`, `2>&1` and redirects to `/dev/null` still pass (bats 7-10, and the T-4499/T-4817/T-4825 suites are green).
+- **Rejected:** Special-casing `$_`/`${_}` only. That is narrower, but the same hidden mention would also be lost to any other channel from a message into the shell. The original-text rule closes the class.
+
+### 2026-10-28 — concern (b): `!$` — NOT a hole
+- **Chose:** Make no code change. Document it in the scope comment.
+- **Why:** `!$` is history expansion. It is off in non-interactive bash (`set -o` shows `histexpand off`, pinned by bats 6), so `!$` reaches sed as a literal word, not the previous argument.
+
+### 2026-10-28 — concern (c): `_FW_VERB` matches any `*/fw` — out of scope, no change
+- **Chose:** Leave `_FW_VERB` as it is. Name it in the scope comment.
+- **Why:** With the mention read from the original command, blanking a foreign `fw`'s body no longer hides anything: `/tmp/evil/fw … --body '.tasks/…'; cp /dev/null "$_"` is refused (bats 4). What remains is a foreign program writing its own arguments. That is the same as `./mytool .tasks/…`, a script the text gate does not open (T-2742), and it stays out of scope (bats 11 pins it as allowed). Resolving `fw` to this framework's bin/fw would add false refusals for legitimate spellings (`fw`, `bin/fw`, `.agentic-framework/bin/fw`, absolute paths) and close nothing more.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -389,3 +413,7 @@ bin/fw vendor self --check --task T-4857
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4857-shell-write-scanner-data-arg-blanking-ma.md
 - **Context:** Initial task creation
+
+### 2026-10-28T09:39:02Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
