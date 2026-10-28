@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4862: Seven MCP tests mutate the live manifest and tool-set.yaml in the repo, so parallel suite runs race on one shared file
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T09:17:57Z
+# ============================================================================
+
+task_id: T-4862
+task_name: "Seven MCP tests mutate the live manifest and tool-set.yaml in the repo, so parallel suite runs race on one shared file"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-28T08:18:00Z
+completed: 2026-10-28T09:17:27Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-28T09:18:09+01:00
+last_commit: 2026-10-28T10:05:33+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — MCP tests mutate the live manifest and race in the parallel suite (found by T-4861). MCP manifest tests run on a private framework tree, never the live repo. fabric card for tests/unit/helpers/mcp_fixture.bash. tick vendor AC, verification lines run green
+
+# Key outcomes
+outcomes:
+  - 'Every test file that writes agents/mcp/framework-mcp-manifest.json or policy/capability-overlay/tool-set.yaml in the live repo (t2293, t2290, t2294, t2296, t2459, t2461, test_no_project_relative_fw_shell_t3964.py; re-check with grep) works on a copy instead: a temp framework tree (only the files the verbs need, or a full copy) with FRAMEWORK_ROOT/PROJECT_ROOT pointing at it'
+  - 'Proof: running those files leaves the live manifest and tool-set.yaml byte-identical and at their original mode (a test or a before/after checksum in Verification)'
+  - 'The tests still assert what they did (drift exit 1, absent exit 2, pre-push drift, doctor content check); all pass'
+  - 'Vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fabric card for tests/unit/helpers/mcp_fixture.bash'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-28 — fixture tree vs serial execution'
+    chose: 'a per-test fixture framework tree: the tracked files of bin/, lib/, agents/mcp/, policy/capability-overlay/ plus FRAMEWORK.md and VERSION, copied from the working tree (`git ls-files | tar`, ~6 MB, so uncommitted edits are what gets tested), with a `.framework.yaml` marker, and `bin/fw` run from that tree with FRAMEWORK_ROOT=PROJECT_ROOT=fixture. `fw mcp check` / `emit-manifest` take ~0.1 s there.'
+    rationale: 'keeps the real dispatcher (`bin/fw mcp ...`) under test, which is what t2293 exists to cover, and removes the shared file instead of ordering access to it.'
+    alternatives_rejected: ['running these files serially (still writes the live repo, a killed run still leaves it edited); calling `manifest.py` directly (drops the bin/fw routing the test pins); `git archive HEAD` for the fixture (would test the committed code, not the working tree).']
+  - decision: '2026-10-28 — scope: five of the seven named files already isolated'
+    chose: 'change t2293 and t2459 only; leave t2290, t2294, t2296, t2461 and test_no_project_relative_fw_shell_t3964.py as they are.'
+    rationale: 'read each file: t2290 has used a fixture root since T-3801; t2294/t2296 run stub `bin/fw`s in temp repos; t2461 builds synthetic layouts and greps the live source read-only; t3964 only reads. Re-check: `grep -lE "framework-mcp-manifest.json|tool-set.yaml" tests/unit/*` lists no other writer (t2287 writes a synthetic tree; test_capability_overlay_toolset.py only reads).'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-unit-helpers-mcp_fixture.yaml'
+  - '.tasks/active/T-4862-seven-mcp-tests-mutate-the-live-manifest.md'
+  - 'tests/unit/helpers/mcp_fixture.bash'
+  - 'tests/unit/t2293_mcp_check.bats'
+  - 'tests/unit/t2459_mcp_server_root_split.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T09:18:09'
+    action: 'T-4862: file — MCP tests mutate the live manifest and race in the parallel suite (found by T-4861)'
+  - time: '2026-10-28T10:04:15'
+    action: 'T-4862: MCP manifest tests run on a private framework tree, never the live repo'
+  - time: '2026-10-28T10:05:13'
+    action: 'T-4862: fabric card for tests/unit/helpers/mcp_fixture.bash'
+  - time: '2026-10-28T10:05:33'
+    action: 'T-4862: tick vendor AC, verification lines run green'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 59 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, test-isolation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 59
+  commits: 5
+  files_changed: 8
+  lines_added: 642
+  lines_removed: 44
+  footprint_refreshed_at: '2026-10-28T09:18:07Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4862-seven-mcp-tests-mutate-the-live-manifest.md
+generated_by: context-agent-hybrid

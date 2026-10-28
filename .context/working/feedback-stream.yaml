@@ -50639,3 +50639,21 @@ scan_id: R-278807c8
 task_id: T-4863
 payload:
   task_file: .tasks/active/T-4863-create-task-fills-frontmatter-by-text-re.md
+---
+kind: scan_emitted
+timestamp: '2026-10-28T09:17:44Z'
+scan_id: R-61483e48
+task_id: T-4862
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-28T09:17:44Z'
+scan_id: R-61483e48
+task_id: T-4862
+payload:
+  task_file: .tasks/active/T-4862-seven-mcp-tests-mutate-the-live-manifest.md
