@@ -50693,3 +50693,21 @@ scan_id: R-e0537cfa
 task_id: T-4865
 payload:
   task_file: .tasks/active/T-4865-be-tag-be48-warm-up-readiness-t-4854-and.md
+---
+kind: scan_emitted
+timestamp: '2026-10-28T10:03:20Z'
+scan_id: R-057701df
+task_id: T-4857
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-28T10:03:20Z'
+scan_id: R-057701df
+task_id: T-4857
+payload:
+  task_file: .tasks/active/T-4857-shell-write-scanner-data-arg-blanking-ma.md

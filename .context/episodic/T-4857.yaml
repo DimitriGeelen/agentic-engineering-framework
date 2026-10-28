@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4857: Shell write scanner: data-arg blanking may hide a guarded path reused via $_ or !$, and _FW_VERB matches any */fw
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T10:03:34Z
+# ============================================================================
+
+task_id: T-4857
+task_name: "Shell write scanner: data-arg blanking may hide a guarded path reused via $_ or !$, and _FW_VERB matches any */fw"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-28T07:29:25Z
+completed: 2026-10-28T10:02:45Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-28T10:44:14+01:00
+last_commit: 2026-10-28T10:44:14+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  tick guard reads the guarded-path mention from the original command; a sidecar --body is blanked for parsing only, so a path in it reused via $_ is refused; !$ and foreign */fw judged in scope comment; regression bats; RCA; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Reproduce first: for each of the three concerns ($_ / !$ reuse after a blanked --body, a non-framework `*/fw`, the mentions-from-original logic), a bats case runs the Human-AC tick guard on a concrete command and records pass/refuse. Record in Decisions which concerns are real holes (a shell write to .tasks passes) and which cannot occur (e.g. `!$` history expansion is off in non-interactive bash)'
+  - 'For each real hole: the guard refuses (fail closed), with a test that failed before; the sidecar --body data case (T-4817, T-4825) still passes a body that only mentions a task path in text'
+  - 'For each concern judged out of scope: one line in the guard''s scope comment (lib/shell_write_scan.py header or check-human-ac-tick) naming it, consistent with the text-gate boundary (T-2742, T-3695)'
+  - 'Existing scanner and guard tests stay green; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-28 — concern (a): `$_` reuse after a blanked --body — REAL, fixed'
+    chose: 'Read the mention from the original command (`mentions = mentions_guarded(original)`). Blanking now only controls parsing.'
+    rationale: 'This is the reviewer''s suggestion and it is strictly tighter. It adds refusals only when some non-body part of the command makes a write the text cannot resolve. Body-only sends, `| tail`, `2>&1` and redirects to `/dev/null` still pass (bats 7-10, and the T-4499/T-4817/T-4825 suites are green).'
+    alternatives_rejected: ['Special-casing `$_`/`${_}` only. That is narrower, but the same hidden mention would also be lost to any other channel from a message into the shell. The original-text rule closes the class.']
+  - decision: '2026-10-28 — concern (b): `!$` — NOT a hole'
+    chose: 'Make no code change. Document it in the scope comment.'
+    rationale: '`!$` is history expansion. It is off in non-interactive bash (`set -o` shows `histexpand off`, pinned by bats 6), so `!$` reaches sed as a literal word, not the previous argument.'
+  - decision: '2026-10-28 — concern (c): `_FW_VERB` matches any `*/fw` — out of scope, no change'
+    chose: 'Leave `_FW_VERB` as it is. Name it in the scope comment.'
+    rationale: 'With the mention read from the original command, blanking a foreign `fw`''s body no longer hides anything: `/tmp/evil/fw … --body ''.tasks/…''; cp /dev/null "$_"` is refused (bats 4). What remains is a foreign program writing its own arguments. That is the same as `./mytool .tasks/…`, a script the text gate does not open (T-2742), and it stays out of scope (bats 11 pins it as allowed). Resolving `fw` to this framework''s bin/fw would add false refusals for legitimate spellings (`fw`, `bin/fw`, `.agentic-framework/bin/fw`, absolute paths) and close nothing more.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - '.tasks/active/T-4857-shell-write-scanner-data-arg-blanking-ma.md'
+  - 'lib/shell_write_scan.py'
+  - 'tests/unit/t4857_scanner_blanking_reuse.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T10:44:14'
+    action: 'T-4857: tick guard reads the guarded-path mention from the original command; a sidecar --body is blanked for parsing only, so a path in it reused via $_ is refused; !$ and foreign */fw judged in scope comment; regression bats; RCA; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 153 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [security, scanner]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 153
+  commits: 2
+  files_changed: 7
+  lines_added: 296
+  lines_removed: 22
+  footprint_refreshed_at: '2026-10-28T10:03:45Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4857-shell-write-scanner-data-arg-blanking-ma.md
+generated_by: context-agent-hybrid
