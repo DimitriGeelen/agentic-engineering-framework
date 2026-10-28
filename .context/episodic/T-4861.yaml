@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4861: fw_pending_remind.bats test 5 failed once in the full fast suite (exit status non-zero, no output captured)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T08:24:20Z
+# ============================================================================
+
+task_id: T-4861
+task_name: "fw_pending_remind.bats test 5 failed once in the full fast suite (exit status non-zero, no output captured)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-28T08:09:29Z
+completed: 2026-10-28T08:24:03Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-28T09:09:36+01:00
+last_commit: 2026-10-28T09:24:01+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — fw_pending_remind test 5 flaked once in the full suite (0/20 under parallel load). investigation findings (live-manifest race in t2293 and siblings), ACs. failure output in t2293 t3 and fw_pending_remind test 5; t2293 restore keeps the manifest at mode 644. two clean suite runs, ACs ticked, RCA
+
+# Key outcomes
+outcomes:
+  - 'Both tests print status and output when they fail (diagnostic lines added), so the next occurrence is explained rather than retried'
+  - 'The real manifest''s mode is restored to 644; t2293''s restore keeps the original mode'
+  - 'The full fast suite is run again with the diagnostics in place; any fw_pending_remind failure''s output is recorded here, and its cause stated or a follow-up filed with that output (two full runs at 08:18Z and 08:20Z: neither test failed; only the 9 baselined reds, the same five files as every earlier run. fw_pending_remind stays unreproduced; its failure now carries its output)'
+  - 'The live-manifest race is filed as its own task (the fix: those tests work on a copy, or the suite serialises them), unless fixed here (T-4862)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4861-fwpendingremindbats-test-5-failed-once-i.md'
+  - 'tests/unit/fw_pending_remind.bats'
+  - 'tests/unit/t2293_mcp_check.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T09:09:36'
+    action: 'T-4861: file — fw_pending_remind test 5 flaked once in the full suite (0/20 under parallel load)'
+  - time: '2026-10-28T09:17:23'
+    action: 'T-4861: investigation findings (live-manifest race in t2293 and siblings), ACs'
+  - time: '2026-10-28T09:17:59'
+    action: 'T-4861: failure output in t2293 t3 and fw_pending_remind test 5; t2293 restore keeps the manifest at mode 644'
+  - time: '2026-10-28T09:24:01'
+    action: 'T-4861: two clean suite runs, ACs ticked, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, test-flake]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 14
+  commits: 5
+  files_changed: 6
+  lines_added: 506
+  lines_removed: 20
+  footprint_refreshed_at: '2026-10-28T08:24:54Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4861-fwpendingremindbats-test-5-failed-once-i.md
+generated_by: context-agent-hybrid
