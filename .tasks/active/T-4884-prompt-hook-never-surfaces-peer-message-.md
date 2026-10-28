@@ -8,10 +8,10 @@ description: >
   allowed under the freeze. Localise first: 0506's framework version, receiver inject
   mode, prompt-hook wiring in their .claude/settings.json.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, sidecar, field-report]
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T21:03:54Z
-last_update: '2026-10-28T21:15:32Z'
+last_update: 2026-10-28T23:07:19Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Localised in ## Context from 0506's own data (asked via sidecar, their repo is not read): their framework version, the receiver events for 7bde4624 (INJECT_* lines and reasons), the prompt-hook entry in their .claude/settings.json, and our side's ledger (SENT/RECEIVED/REPLIED within 90 s, 2026-10-28 20:55-20:56)
+- [ ] Root cause named: which step between "receiver stored the message" and "prompt hook printed its text" dropped the text, and why no HANDED_OVER/UNCONFIRMED event was written for three re-injections
+- [ ] If the cause is in framework code on current bleeding-edge: fixed with a unit test that reproduces 0506's case; if it is fixed already in a newer release than theirs, the RCA names the commit and 0506 gets upgrade guidance
+- [ ] 0506 told the result
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -377,3 +379,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4884-prompt-hook-never-surfaces-peer-message-.md
 - **Context:** Initial task creation
+
+### 2026-10-28T23:07:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
