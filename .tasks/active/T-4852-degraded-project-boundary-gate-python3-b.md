@@ -86,7 +86,7 @@ See description. The need: with python3 unavailable or broken, the project-bound
 - [x] Reproduce first: a bats test shadows python3 with a failing stub and shows the gate exits 0 for a redirect into /etc/systemd/system/x; it fails before the fix
 - [x] The degraded fallback refuses writes under /etc, /usr, /var, /boot as well as the existing roots; a write inside the project still passes; reads stay allowed
 - [x] Consider whether the degraded list should instead be "anything outside the project root and the documented allow paths" (fail closed by default); record the choice in Decisions
-- [ ] With a working python3, behaviour is unchanged; existing boundary tests stay green; vendor in sync
+- [x] With a working python3, behaviour is unchanged; existing boundary tests stay green; vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
