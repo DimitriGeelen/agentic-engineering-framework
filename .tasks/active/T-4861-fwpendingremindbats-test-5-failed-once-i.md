@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T08:09:29Z
-last_update: 2026-10-28T08:16:11Z
+last_update: 2026-10-28T08:23:22Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,10 +98,10 @@ The need: the suite's verdict on a change does not depend on which tests happen 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Both tests print status and output when they fail (diagnostic lines added), so the next occurrence is explained rather than retried
-- [ ] The real manifest's mode is restored to 644; t2293's restore keeps the original mode
-- [ ] The full fast suite is run again with the diagnostics in place; any fw_pending_remind failure's output is recorded here, and its cause stated or a follow-up filed with that output
-- [ ] The live-manifest race is filed as its own task (the fix: those tests work on a copy, or the suite serialises them), unless fixed here
+- [x] Both tests print status and output when they fail (diagnostic lines added), so the next occurrence is explained rather than retried
+- [x] The real manifest's mode is restored to 644; t2293's restore keeps the original mode
+- [x] The full fast suite is run again with the diagnostics in place; any fw_pending_remind failure's output is recorded here, and its cause stated or a follow-up filed with that output (two full runs at 08:18Z and 08:20Z: neither test failed; only the 9 baselined reds, the same five files as every earlier run. fw_pending_remind stays unreproduced; its failure now carries its output)
+- [x] The live-manifest race is filed as its own task (the fix: those tests work on a copy, or the suite serialises them), unless fixed here (T-4862)
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -150,6 +150,10 @@ The need: the suite's verdict on a change does not depend on which tests happen 
 -->
 
 ## Verification
+
+timeout 900 bats tests/unit/t2293_mcp_check.bats tests/unit/fw_pending_remind.bats
+test "$(stat -c %a agents/mcp/framework-mcp-manifest.json)" = 644
+grep -q 'status=$status output=$output' tests/unit/fw_pending_remind.bats
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -288,6 +292,11 @@ The need: the suite's verdict on a change does not depend on which tests happen 
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
 ## RCA
+
+**Symptom:** two different tests each failed once in consecutive be.47 suite runs (fw_pending_remind test 5, t2293 t3), each passing alone, so the release ratchet blocked twice on unexplained new reds.
+**Root cause:** for t2293, a shared-state race: several MCP test files write the live manifest in the repo while the suite runs files in parallel (T-4862). For fw_pending_remind, not determined: it did not recur in two full runs or 20 parallel runs, and the failing run kept no output.
+**Why structurally allowed:** the tests discarded the output of the command they checked, so a one-off failure left only an exit status; and nothing stops a unit test from writing the live repo.
+**Prevention:** both tests now print status and output on failure; T-4862 moves the MCP tests off the live repo.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
