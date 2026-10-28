@@ -101,7 +101,7 @@ See description. The need: creating a task sets exactly its frontmatter keys; te
 - [x] Reproduce first: a bats test creates a task whose name and description contain `owner:`, `status: captured` and `horizon: now`, and shows the frontmatter owner/status/horizon are wrong or the text was rewritten; it fails before the fix
 - [x] Every frontmatter substitution in create-task.sh (both template paths, ~526-535 and ~563ff) is anchored to its own key line inside the leading --- block and applied once; T-4787's json.dumps quoting of name is kept
 - [x] The created file's frontmatter parses (yaml.safe_load) and carries the requested owner, status and horizon; the name and description round-trip unchanged
-- [ ] Existing create-task tests stay green (grep tests/unit for create_task, task_id_race, t4787); vendor in sync
+- [x] Existing create-task tests stay green (grep tests/unit for create_task, task_id_race, t4787); vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
