@@ -10,12 +10,12 @@ description: >
   in main() and web/wsgi.py before serving. Their suggestions: an opt-in warm-before-bind,
   or a /health that does not depend on the corpus build.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug, watchtower]
-components: []
+components: [lib/config.sh, web/app.py, web/blueprints/config.py, web/warmup.py, web/wsgi.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T07:27:25Z
-last_update: 2026-10-28T09:18:10Z
-date_finished:
+last_update: 2026-10-28T09:19:00Z
+date_finished: 2026-10-28T09:19:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -417,3 +417,20 @@ bin/fw watchtower current
 
 ### 2026-10-28T08:59:12Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-28T09:19:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-899a0754
+- **Timestamp:** 2026-10-28T09:19:16Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Choose and record in Decisions between (a) an opt-in warm-before-serve (config key, default off) and (b) a cheap readiness/health route that never waits for the corpus build and reports warm-up state 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/app.py in: Choose and record in Decisions between (a) an opt-in warm-before-serve (config key, default off) and (b) a cheap readiness/health route that never wai`
