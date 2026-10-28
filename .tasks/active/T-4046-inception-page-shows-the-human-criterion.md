@@ -114,7 +114,7 @@ GitHub #93 (MikeEchoVoid). `/inception/T-XXX` — where the operator is sent to 
 ### Human
 - [ ] [REVIEW] You can tick the review criterion on the inception page itself
   **Steps:**
-  1. Open `$(bin/fw watchtower url)/inception/T-4023` in the browser (it has an open Human criterion)
+  1. Open http://192.168.10.107:3000/inception/T-4023 in the browser (it has an open Human criterion)
   2. Look at the "Acceptance Criteria" card
   **Expected:** the Human criterion has a real checkbox and a link to the task page; the card reads as cleanly as the task page's criteria (do not tick it unless you mean to decide T-4023)
   **If not:** screenshot the card
