@@ -1555,6 +1555,40 @@ Pinned by `tests/unit/t3187_branch_identity_guard.bats` — 10 tests, including 
 control leg that separates "fires correctly" from "never fires", and the 0-behind
 case that is precisely what `diverged-fork` could not see.
 
+## Release Freeze Phase (operator ruling 2026-10-28, T-4869)
+
+**A release freeze is a phase the operator enters and lifts. While it holds, no new
+development starts: the work is testing, fixing what the field reports broken, and the
+release.** Operator, verbatim: *"We are not going to start new development work until we
+have tested everything and can do a proper release."* and *"new requests can come in, but
+they come on the backlog."*
+
+**State now: FREEZE ACTIVE** (entered 2026-10-28, for v1.8.15). Check this line, the
+handover's first section and `fw decisions` at session start.
+
+| During the freeze | Allowed? |
+|---|---|
+| Field testing, collecting and recording verdicts | Yes |
+| Fixing breakage a field test reported (FAILS), with its own task | Yes |
+| Test reliability (flaky or shared-state tests) | Yes |
+| Release work: tags for testers, cut-point analysis, release notes, the release itself | Yes |
+| New features, extension points, improvements, refactors without a reported failure | **No** |
+
+**New requests during the freeze** (from the operator, peers or observations) are still
+captured, so nothing is lost: file a task with `--horizon later` and the tag
+`post-freeze`, state the need or risk first (with evidence) and a solution only as a
+possible direction. Do not dispatch or build it. Tell the requester it is on the backlog.
+
+**Exit condition (proposed with the ruling):** every active tester has upgraded to the
+latest be-tag (be.48 or later) and reported, and no reported failure is open. Then the
+release goes ahead (up to that point, release-train rules above), and the operator lifts
+the freeze. Only the operator enters or lifts a freeze; an agent never declares one over.
+
+**Why a phase and not a habit.** Between v1.8.14 and be.48 about 1,700 commits landed;
+466 changed consumer-facing behaviour and 343 of those have no specific field verdict
+(T-4867). Fixes kept arriving faster than they could be confirmed, so there was never a
+point safe to release. A freeze stops the inflow so the confirmation can catch up.
+
 ## Session Start Protocol
 
 **Before beginning any work:**
