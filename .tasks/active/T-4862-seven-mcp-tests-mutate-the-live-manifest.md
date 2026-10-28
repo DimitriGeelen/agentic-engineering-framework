@@ -100,7 +100,7 @@ See description. The need: no unit test writes the live repository's MCP manifes
 - [x] Every test file that writes agents/mcp/framework-mcp-manifest.json or policy/capability-overlay/tool-set.yaml in the live repo (t2293, t2290, t2294, t2296, t2459, t2461, test_no_project_relative_fw_shell_t3964.py; re-check with grep) works on a copy instead: a temp framework tree (only the files the verbs need, or a full copy) with FRAMEWORK_ROOT/PROJECT_ROOT pointing at it
 - [x] Proof: running those files leaves the live manifest and tool-set.yaml byte-identical and at their original mode (a test or a before/after checksum in Verification)
 - [x] The tests still assert what they did (drift exit 1, absent exit 2, pre-push drift, doctor content check); all pass
-- [ ] Vendor in sync
+- [x] Vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
