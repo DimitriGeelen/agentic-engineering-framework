@@ -38,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T11:07:20Z
-last_update: 2026-10-28T11:07:20Z
+last_update: 2026-10-28T11:09:10Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -61,11 +61,11 @@ Operator ruling 2026-10-28, in their words: "We are not going to start new devel
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The ruling is recorded as a project decision (fw context add-decision) with the operator's words
-- [ ] CLAUDE.md has a "Release Freeze Phase" section: what is allowed (testing, field-reported breakage fixes, test reliability, release work), what is not (new development), how new requests are filed (task with horizon later and tag post-freeze, need stated before solution), the exit condition (every active tester on be.48 or later reported, no open failures, then the release), and that only the operator enters or lifts it
-- [ ] Improvement tasks not covered by the freeze are moved to horizon later with tag post-freeze (T-4649 recommendation changed to DEFER until after the release; T-4855, T-4856, T-4864)
-- [ ] The active testers (ring20, ring20-dashboard, 832, 1409, 055, TermLink, dimitri-mint-dev) are told: freeze, please run be.48 and report, only breakage is fixed until the release
-- [ ] The handover and next-session notes start with the freeze state
+- [x] The ruling is recorded as a project decision (fw context add-decision) with the operator's words
+- [x] CLAUDE.md has a "Release Freeze Phase" section: what is allowed (testing, field-reported breakage fixes, test reliability, release work), what is not (new development), how new requests are filed (task with horizon later and tag post-freeze, need stated before solution), the exit condition (every active tester on be.48 or later reported, no open failures, then the release), and that only the operator enters or lifts it
+- [x] Improvement tasks not covered by the freeze are moved to horizon later with tag post-freeze (T-4649 recommendation changed to DEFER until after the release; T-4855, T-4856, T-4864)
+- [x] The active testers (ring20, ring20-dashboard, 832, 1409, 055, TermLink, dimitri-mint-dev) are told: freeze, please run be.48 and report, only breakage is fixed until the release (msgs cc1c3c3e, 80366bdf, bee292bf, b46669cd, f3d3b830, d7f63c04, 5c04ca1f)
+- [x] The handover and next-session notes start with the freeze state (next-session notes now; the next generated handover carries it from CLAUDE.md and the decision)
 
 <!-- No Human criteria: the operator gave the ruling; wording of the CLAUDE.md section can be adjusted on request. -->
 
