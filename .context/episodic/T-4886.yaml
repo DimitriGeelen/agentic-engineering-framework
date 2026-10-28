@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4886: t4041_watchtower_fw_host test 6 races host load: 60 s Watchtower start deadline and bind-then-close port
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T23:34:40Z
+# ============================================================================
+
+task_id: T-4886
+task_name: "t4041_watchtower_fw_host test 6 races host load: 60 s Watchtower start deadline and bind-then-close port"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-28T23:24:27Z
+completed: 2026-10-28T23:34:19Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-29T00:34:18+01:00
+last_commit: 2026-10-29T00:34:18+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t4041 start test — 90 s start deadline, retry once on a lost port, print output on failure
+
+# Key outcomes
+outcomes:
+  - 'The start test in tests/unit/t4041_watchtower_fw_host.bats gives the server a 90 s start deadline (FW_WATCHTOWER_START_TIMEOUT), the most that fits the fast tier''s 120 s per-file cap, instead of the 60 s default'
+  - 'A port taken between setup and start (output says FOREIGN or "exited immediately") is retried once on a fresh port; any other failure is not retried'
+  - 'On failure the test prints watchtower.sh''s output, so the next red names which exit fired'
+  - 'The file passes (bats) three times in a row'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4886-t4041watchtowerfwhost-test-6-races-host-.md'
+  - 'tests/unit/t4041_watchtower_fw_host.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-29T00:34:18'
+    action: 'T-4886: t4041 start test — 90 s start deadline, retry once on a lost port, print output on failure'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, test-flake, unit-suite]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 9
+  commits: 2
+  files_changed: 5
+  lines_added: 152
+  lines_removed: 9
+  footprint_refreshed_at: '2026-10-28T23:34:44Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4886-t4041watchtowerfwhost-test-6-races-host-.md
+generated_by: context-agent-hybrid
