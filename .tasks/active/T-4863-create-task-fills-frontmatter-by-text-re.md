@@ -14,7 +14,7 @@ description: >
   json.dumps quoting; a test with 'owner:', 'status: captured' and 'horizon: now'
   in both name and description.
 
-status: captured
+status: started-work
 workflow_type: build
 owner:
 horizon: now
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T08:37:31Z
-last_update: '2026-10-28T08:45:32Z'
+last_update: 2026-10-28T08:59:12Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,9 +98,9 @@ See description. The need: creating a task sets exactly its frontmatter keys; te
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: a bats test creates a task whose name and description contain `owner:`, `status: captured` and `horizon: now`, and shows the frontmatter owner/status/horizon are wrong or the text was rewritten; it fails before the fix
-- [ ] Every frontmatter substitution in create-task.sh (both template paths, ~526-535 and ~563ff) is anchored to its own key line inside the leading --- block and applied once; T-4787's json.dumps quoting of name is kept
-- [ ] The created file's frontmatter parses (yaml.safe_load) and carries the requested owner, status and horizon; the name and description round-trip unchanged
+- [x] Reproduce first: a bats test creates a task whose name and description contain `owner:`, `status: captured` and `horizon: now`, and shows the frontmatter owner/status/horizon are wrong or the text was rewritten; it fails before the fix
+- [x] Every frontmatter substitution in create-task.sh (both template paths, ~526-535 and ~563ff) is anchored to its own key line inside the leading --- block and applied once; T-4787's json.dumps quoting of name is kept
+- [x] The created file's frontmatter parses (yaml.safe_load) and carries the requested owner, status and horizon; the name and description round-trip unchanged
 - [ ] Existing create-task tests stay green (grep tests/unit for create_task, task_id_race, t4787); vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
@@ -330,6 +330,14 @@ bin/fw vendor self --check --task T-4863
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+**Symptom:** a task whose name or description contains `owner:` was created with an empty `owner:` key and `owner: agent` spliced into the name; `status: captured` / `horizon: now` phrases in name or description were rewritten to the new values; `created:` and `workflow_type:` in a description took the timestamp/type and left the keys empty (reproduced: 3/3 new tests red before the fix).
+
+**Root cause:** `agents/task-create/create-task.sh` (pre-fix lines ~526-535 default-path equivalents ~563-573) filled the template with plain `str.replace` on the whole file, AFTER inserting name and description. `owner:`, `created:`, `last_update:`, `workflow_type:` used count=1, so the first hit was inside the inserted text, not the key; `status: captured`, `horizon: now`, `tags: []`, `related_tasks: []` had no count and rewrote every copy.
+
+**Why structurally allowed:** the tests only ever used names/descriptions without frontmatter-shaped text, and YAML still parsed (the keys just came out empty), so `fw audit` saw valid frontmatter.
+
+**Prevention:** substitution is now `set_key()` — a line-anchored `^key:` regex, count=1, applied only to the leading `---` block, with name and description set last; body replacements touch only the body. `tests/unit/t4863_create_task_anchored_fields.bats` pins both template paths.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -370,6 +378,15 @@ bin/fw vendor self --check --task T-4863
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-28 — key missing from the template
+- **Chose:** `set_key` leaves a template without that key unchanged (same as the old replace did).
+- **Why:** consumer projects may carry their own templates; refusing would turn a cosmetic gap into a failed `fw work-on`.
+- **Rejected:** raising on a missing key — stricter, but a behaviour change outside this bug's scope.
+
+### 2026-10-28 — status/horizon match
+- **Chose:** anchor on the key (`^status:`), not on the template's literal value (`status: captured`).
+- **Why:** the key is what create-task owns; a template default that differs no longer silently keeps its own value.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -386,3 +403,6 @@ bin/fw vendor self --check --task T-4863
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4863-create-task-fills-frontmatter-by-text-re.md
 - **Context:** Initial task creation
+
+### 2026-10-28T08:59:12Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
