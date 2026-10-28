@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4881: Register SIDECAR_DM_ADDRESS_KEYS in the Watchtower config list (T-4880 broke config-registry parity invariant)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T18:46:59Z
+# ============================================================================
+
+task_id: T-4881
+task_name: "Register SIDECAR_DM_ADDRESS_KEYS in the Watchtower config list (T-4880 broke config-registry parity invariant)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-28T18:43:02Z
+completed: 2026-10-28T18:45:56Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-28T19:45:22+01:00
+last_commit: 2026-10-28T19:45:55+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  list SIDECAR_DM_ADDRESS_KEYS in the Watchtower config table (config-registry parity, broken by T-4880). vendored copy. ACs ticked
+
+# Key outcomes
+outcomes:
+  - '`web/blueprints/config.py` lists SIDECAR_DM_ADDRESS_KEYS with the same default as lib/config.sh'
+  - 'Structural invariants green (`bin/fw test invariants`), Watchtower restarted and current'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/config.py'
+  - '.tasks/active/T-4881-register-sidecardmaddresskeys-in-the-wat.md'
+  - 'web/blueprints/config.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T19:45:22'
+    action: 'T-4881: list SIDECAR_DM_ADDRESS_KEYS in the Watchtower config table (config-registry parity, broken by T-4880)'
+  - time: '2026-10-28T19:45:35'
+    action: 'T-4881: vendored copy'
+  - time: '2026-10-28T19:45:55'
+    action: 'T-4881: ACs ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 4
+  files_changed: 6
+  lines_added: 486
+  lines_removed: 7
+  footprint_refreshed_at: '2026-10-28T18:47:15Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4881-register-sidecardmaddresskeys-in-the-wat.md
+generated_by: context-agent-hybrid
