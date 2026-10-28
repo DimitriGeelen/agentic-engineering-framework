@@ -451,6 +451,23 @@ section_mark() {
     fi
     _SECTION_MARK_NAME="$1"
     _SECTION_MARK_START=$SECONDS
+    # T-4840: the watchdog reads the in-flight section from this marker, so the
+    # timeout record no longer depends on the body's TERM trap running.
+    if [ -n "$_AUDIT_INFLIGHT_FILE" ]; then
+        printf '%s\n%s\n' "$1" "$SECONDS" > "$_AUDIT_INFLIGHT_FILE" 2>/dev/null
+    fi
+}
+
+# T-4840: in-flight section marker, set by the flock arm (the only arm with a
+# watchdog). Empty = no watchdog, nothing to mark. "$_AUDIT_INFLIGHT_FILE.fired"
+# holds the killed section's name once the watchdog has fired; every later
+# writer reads it so no write after the timeout can record timed_out: false.
+_AUDIT_INFLIGHT_FILE=""
+_audit_fired_section() {
+    _AUDIT_FIRED_SECTION=""
+    [ -n "$_AUDIT_INFLIGHT_FILE" ] && [ -f "$_AUDIT_INFLIGHT_FILE.fired" ] || return 1
+    read -r _AUDIT_FIRED_SECTION 2>/dev/null < "$_AUDIT_INFLIGHT_FILE.fired"
+    [ -n "$_AUDIT_FIRED_SECTION" ]
 }
 
 # Fixed path (not date-stamped) so `fw doctor` always reads the latest full
@@ -472,6 +489,11 @@ AUDIT_RUN_START_ISO="$(date -Iseconds)"
 _audit_write_timing_yaml() {
     local timed_out="$1" killed_section="$2" total="$3"
     mkdir -p "$(dirname "$AUDIT_TIMING_FILE")" 2>/dev/null
+    # T-4840: once the watchdog has fired, a completion write cannot undo it.
+    if [ "$timed_out" != 1 ] && _audit_fired_section; then
+        timed_out=1
+        killed_section="$_AUDIT_FIRED_SECTION"
+    fi
 
     # T-3451: this function used to own the WHOLE file — now section_runs:
     # (below) is written continuously by _audit_record_section_run,
@@ -518,7 +540,7 @@ _audit_write_timing_yaml() {
         if [ -n "$_section_runs_block" ]; then
             printf '%s\n' "$_section_runs_block"
         fi
-    } > "$AUDIT_TIMING_FILE.tmp" && mv "$AUDIT_TIMING_FILE.tmp" "$AUDIT_TIMING_FILE"
+    } > "$AUDIT_TIMING_FILE.tmp.$BASHPID" && mv "$AUDIT_TIMING_FILE.tmp.$BASHPID" "$AUDIT_TIMING_FILE"
 }
 
 # _audit_record_section_run NAME SECONDS TIMED_OUT[0|1]
@@ -551,6 +573,11 @@ _audit_record_section_run() {
     local name="$1" seconds="$2" timed_out_flag="$3"
     [ -n "$name" ] || return 0
     mkdir -p "$(dirname "$AUDIT_TIMING_FILE")" 2>/dev/null
+    # T-4840: the killed section stays timed_out whoever writes it last.
+    if [ "$timed_out_flag" != 1 ] && _audit_fired_section \
+       && [ "$_AUDIT_FIRED_SECTION" = "$name" ]; then
+        timed_out_flag=1
+    fi
 
     # Preserve last_run: verbatim — this function never owns that block,
     # only _audit_write_timing_yaml (full runs) does.
@@ -591,7 +618,31 @@ _audit_record_section_run() {
             echo "    timed_out: false"
         fi
         echo "    excludes_lock_wait: true"
-    } > "$AUDIT_TIMING_FILE.tmp" && mv "$AUDIT_TIMING_FILE.tmp" "$AUDIT_TIMING_FILE"
+    } > "$AUDIT_TIMING_FILE.tmp.$BASHPID" && mv "$AUDIT_TIMING_FILE.tmp.$BASHPID" "$AUDIT_TIMING_FILE"
+}
+
+# _audit_watchdog_record NAME START
+# T-4840: the watchdog's own timeout record, written BEFORE it signals the body.
+# The body's TERM trap used to be the only writer, and bash 5.2 can lose that
+# trap when the TERM lands while it is parsing a $(...) (see T-4840 Context).
+# The .fired file is written first so any body write racing this one keeps
+# timed_out (see _audit_fired_section).
+#
+# NAME empty means no section was in flight: PHASE ("(startup)" before the first
+# section, "(summary)" after the last) names where the run was instead. That
+# goes only into the full-run last_run: record, never into section_runs:, which
+# holds real section measurements for the pre-push budget.
+_audit_watchdog_record() {
+    local name="$1" start="$2" phase="$3"
+    local killed="${name:-$phase}"
+    [ -n "$killed" ] || return 0
+    printf '%s\n' "$killed" > "$_AUDIT_INFLIGHT_FILE.fired" 2>/dev/null
+    if [ -n "$name" ]; then
+        _audit_record_section_run "$name" "$(( SECONDS - ${start:-$SECONDS} ))" 1
+    fi
+    if [ -z "$SECTIONS" ]; then
+        _audit_write_timing_yaml 1 "$killed" "$SECONDS"
+    fi
 }
 
 # Use flock if available, otherwise simple lock file
@@ -676,6 +727,14 @@ elif command -v flock >/dev/null 2>&1 && [ -z "${_FW_AUDIT_LOCK_HOLDER:-}" ]; th
         wait "$_audit_body_pid"
         _audit_rc=$?
     done
+    # T-4840: a body the watchdog had to KILL (its TERM trap lost) still reports
+    # the timeout exit, and its in-flight marker is cleared here, since a KILLed
+    # body runs no EXIT trap.
+    _audit_inflight="$CONTEXT_DIR/audits/.audit-inflight.$_audit_body_pid"
+    if [ "$_audit_rc" = 137 ] && [ -f "$_audit_inflight.fired" ]; then
+        _audit_rc=124
+    fi
+    rm -f "$_audit_inflight" "$_audit_inflight.fired"
     _audit_clear_lock_holder
     exit "$_audit_rc"
 elif command -v flock >/dev/null 2>&1; then
@@ -684,6 +743,12 @@ elif command -v flock >/dev/null 2>&1; then
     # started by a section takes its own lock.
     _audit_lock_holder="$_FW_AUDIT_LOCK_HOLDER"
     unset _FW_AUDIT_LOCK_HOLDER
+    # T-4840: in-flight section marker (see section_mark), keyed by this body's
+    # pid so the holder can clear it after a KILL.
+    mkdir -p "$CONTEXT_DIR/audits" 2>/dev/null
+    _AUDIT_INFLIGHT_FILE="$CONTEXT_DIR/audits/.audit-inflight.$$"
+    # Grace between the watchdog's TERM and its KILL (seconds).
+    _AUDIT_KILL_GRACE="${_FW_AUDIT_KILL_GRACE:-5}"
     # Apply timeout: kill self if still running after AUDIT_TIMEOUT seconds.
     # T-1464 + T-1772: detach EVERY inherited fd in the watchdog subshell, not
     # just stdio. The `sleep` child reparents to init when its subshell exits,
@@ -722,9 +787,62 @@ elif command -v flock >/dev/null 2>&1; then
           kill -0 "$_audit_lock_holder" 2>/dev/null || break
           _watchdog_left=$(( _watchdog_left - 1 ))
       done
+      # T-4840: record first, then TERM, then KILL after a bounded grace. The
+      # body's TERM trap stays as a second writer; when bash loses it (5.2,
+      # TERM during $(...) parsing) the record is already on disk and the KILL
+      # stops a body that would otherwise carry on.
+      _wd_name="" _wd_start="" _wd_phase="(startup)"
+      if [ -f "$_AUDIT_INFLIGHT_FILE" ]; then
+          { read -r _wd_name; read -r _wd_start; } 2>/dev/null < "$_AUDIT_INFLIGHT_FILE"
+          _wd_phase="(summary)"
+      fi
+      _audit_watchdog_record "$_wd_name" "$_wd_start" "$_wd_phase"
       kill -TERM $$ 2>/dev/null
+      _wd_grace="$_AUDIT_KILL_GRACE"
+      while [ "$_wd_grace" -gt 0 ] && kill -0 $$ 2>/dev/null; do
+          sleep 1 &
+          wait $!
+          _wd_grace=$(( _wd_grace - 1 ))
+      done
+      if kill -0 $$ 2>/dev/null; then
+          # The body's descendants go too (the section command in flight and
+          # its subshells). Stop the body first so it forks nothing new while
+          # the tree is walked; this subshell is skipped.
+          kill -STOP $$ 2>/dev/null
+          if command -v pgrep >/dev/null 2>&1; then
+              _wd_tree="" _wd_level="$$"
+              while [ -n "$_wd_level" ]; do
+                  _wd_next=""
+                  for _wd_p in $_wd_level; do
+                      for _wd_child in $(pgrep -P "$_wd_p" 2>/dev/null); do
+                          [ "$_wd_child" = "$BASHPID" ] && continue
+                          _wd_next="$_wd_next $_wd_child"
+                      done
+                  done
+                  _wd_tree="$_wd_tree $_wd_next"
+                  _wd_level="$_wd_next"
+              done
+              for _wd_p in $_wd_tree; do
+                  kill -KILL "$_wd_p" 2>/dev/null
+              done
+          fi
+          kill -KILL $$ 2>/dev/null
+          _wd_grace=10
+          while [ "$_wd_grace" -gt 0 ] && kill -0 $$ 2>/dev/null; do
+              sleep 1 &
+              wait $!
+              _wd_grace=$(( _wd_grace - 1 ))
+          done
+          # Re-assert: a body write that raced the first record cannot win now.
+          # The holder may already have cleared the marker; clear what this
+          # re-assert wrote back.
+          _audit_watchdog_record "$_wd_name" "$_wd_start" "$_wd_phase"
+          rm -f "$_AUDIT_INFLIGHT_FILE" "$_AUDIT_INFLIGHT_FILE.fired"
+      fi
     ) </dev/null >/dev/null 2>&1 &
     AUDIT_TIMEOUT_PID=$!
+    # The in-flight marker is cleared by the holder once this body is gone,
+    # however it exits (T-4840); this trap only reaps the watchdog (T-3298 pin).
     trap "kill $AUDIT_TIMEOUT_PID 2>/dev/null" EXIT
     # T-3127/AC4: the watchdog above kills via SIGTERM. Without this trap, a
     # timeout kill leaves NO trace of which section died — which is precisely
@@ -745,6 +863,11 @@ elif command -v flock >/dev/null 2>&1; then
         fi
         exit 124
     ' TERM
+    # T-4840 test hook: stand in for a lost trap (the body ignores TERM and
+    # carries on), so a test can pin that the watchdog alone records and stops it.
+    if [ "${_FW_AUDIT_TEST_IGNORE_TERM:-}" = 1 ]; then
+        trap '' TERM
+    fi
 else
     # Fallback: simple lock file (less robust but prevents most zombies).
     # Same 75 as the flock arm — "in ALL modes" is the point. A fix applied to only

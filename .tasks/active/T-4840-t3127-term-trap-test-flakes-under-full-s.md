@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T18:41:50Z
-last_update: 2026-10-28T00:39:37Z
+last_update: 2026-10-28T00:41:38Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,11 +101,11 @@ The need: a timed-out audit always leaves its `timed_out: true` + `killed_in_sec
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The audit's watchdog writes the timeout record itself before it signals the body: the body keeps the in-flight section name and start in a small marker file (written at each section start, under the audit's own state dir), and the watchdog writes `timed_out: true` / `killed_in_section:` from it, then TERMs the body and, after a short grace, KILLs it if it is still running. The body's existing TERM trap stays as a second writer; the two never produce a contradictory record (the later write must not erase timed_out)
-- [ ] The marker write adds no measurable cost per section (one small file write) and is removed on a normal exit
-- [ ] tests/unit/t3127_audit_timing_headroom.bats passes 20 runs in a row under parallel load (e.g. 4 copies at once), recorded in Decisions with the command used; before the fix, show the same loop failing at least once or explain why the rate is too low to show it
-- [ ] A test pins the new path: with the body's TERM trap disabled, a timed-out audit still leaves timed_out and killed_in_section, and no audit process remains afterwards
-- [ ] Existing audit lock and timing tests stay green (grep tests/unit for t3127, t3298, t3451, t4397, t4545); vendor in sync
+- [x] The audit's watchdog writes the timeout record itself before it signals the body: the body keeps the in-flight section name and start in a small marker file (written at each section start, under the audit's own state dir), and the watchdog writes `timed_out: true` / `killed_in_section:` from it, then TERMs the body and, after a short grace, KILLs it if it is still running. The body's existing TERM trap stays as a second writer; the two never produce a contradictory record (the later write must not erase timed_out)
+- [x] The marker write adds no measurable cost per section (one small file write) and is removed on a normal exit
+- [x] tests/unit/t3127_audit_timing_headroom.bats passes 20 runs in a row under parallel load (e.g. 4 copies at once), recorded in Decisions with the command used; before the fix, show the same loop failing at least once or explain why the rate is too low to show it
+- [x] A test pins the new path: with the body's TERM trap disabled, a timed-out audit still leaves timed_out and killed_in_section, and no audit process remains afterwards
+- [x] Existing audit lock and timing tests stay green (grep tests/unit for t3127, t3298, t3451, t4397, t4545); vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -379,6 +379,22 @@ bin/fw vendor self --check --task T-4840
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-28 — where the timeout record comes from
+- **Chose:** the watchdog (a separate subshell, never the interrupted process) writes the record from a marker the body rewrites at each `section_mark` (`.context/audits/.audit-inflight.<body pid>`: name + start SECONDS, one printf). Order: write `.fired` + record, TERM, up to 5 s grace (`_FW_AUDIT_KILL_GRACE`), then STOP the body, KILL its whole descendant tree and the body, wait (bounded 10 s), re-assert the record. Every later writer (`_audit_write_timing_yaml`, `_audit_record_section_run`) reads `.fired` and cannot write `timed_out: false` for the killed run/section. Tmp files are pid-suffixed so the two writers never share one. The holder maps a KILLed body (137 + `.fired`) to 124 and removes the marker however the body exits; the body's EXIT trap is left unchanged (t3298 pins it).
+- **Why:** no rewording of the trap fixes the bash 5.2 parser bug (Context); only a writer outside the interrupted process does. The marker costs one small file write per section (~28 per full run).
+- **Rejected:** a trap function (only lowers the rate, per Context); killing the process group (the body shares its group with the holder and the caller).
+
+### 2026-10-28 — timeouts outside any section
+- **Chose:** when no section is in flight, the watchdog records `killed_in_section: "(startup)"` (before the first section) or `"(summary)"` (after the last), in `last_run:` only, never in `section_runs:`.
+- **Why:** the first post-fix stress loop still failed 3/80 the same way (`[ -f "$TIMING_FILE" ]`). Measured: at load avg ~83 the first section starts 3.0–4.1 s after launch, so t3127's 3 s ceiling fired before any section, and neither writer had a section to name. The task's need is that a timed-out audit *always* leaves its record.
+- **Rejected:** raising t3127's ceiling (hides the gap; the record would still be missing for a real startup timeout).
+
+### 2026-10-28 — stress evidence (AC3)
+- Command: `.context/scratch/t4840/stress.sh tests/unit/t3127_audit_timing_headroom.bats N`, which runs N rounds of 4 concurrent `timeout 600 bats <file>` and counts files with any `not ok`.
+- Before the fix (HEAD b7d23d67c from `git archive` into a scratch dir), N=25: **runs=100 failed=5**, all test 10 `[ -f "$TIMING_FILE" ]`.
+- After the watchdog record, before the startup case: first loop N=20 80/80 green; second loop N=20 **3/80 failed** (startup window, see above).
+- Final code, N=20, load avg ~90: **runs=80 failed=0**.
 
 ## Decision
 
