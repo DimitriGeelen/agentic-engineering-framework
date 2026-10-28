@@ -1,8 +1,18 @@
 ---
 id: T-4889
-name: "Upstream Watchtower workers page (/arbeiter-style live overview of TermLink dispatch workers) — 1409 P-010"
+name: "Upstream Watchtower workers page (/arbeiter-style live overview of TermLink
+  dispatch workers) — 1409 P-010"
 description: >
-  Need (1409 operator, pickup P-010, msg fe78b067, 2026-10-29): an orchestrator running many TermLink workers needs one live browser overview: which workers run, died or finished, with exit code, task, runtime, tokens (in/out/cache) and cost (API = money, subscription = token equivalent), plus in-flight paid sends with their state, and host load. Risk today: 1409 built it locally (/arbeiter, their T-2754) by patching an upstream file, and two upgrades removed the patch (T-4870). Possible direction only: a generic Watchtower page over fw termlink dispatch dirs, with project-specific parts through an extension point (T-4649). Their local version (arbeiter.py, arbeiter.html, tools/arbeiter_top.py) is a reference, not a spec; ask 1409 for files rather than reading their repo. Filed during the release freeze (T-4869): backlog.
+  Need (1409 operator, pickup P-010, msg fe78b067, 2026-10-29): an orchestrator running
+  many TermLink workers needs one live browser overview: which workers run, died or
+  finished, with exit code, task, runtime, tokens (in/out/cache) and cost (API = money,
+  subscription = token equivalent), plus in-flight paid sends with their state, and
+  host load. Risk today: 1409 built it locally (/arbeiter, their T-2754) by patching
+  an upstream file, and two upgrades removed the patch (T-4870). Possible direction
+  only: a generic Watchtower page over fw termlink dispatch dirs, with project-specific
+  parts through an extension point (T-4649). Their local version (arbeiter.py, arbeiter.html,
+  tools/arbeiter_top.py) is a reference, not a spec; ask 1409 for files rather than
+  reading their repo. Filed during the release freeze (T-4869): backlog.
 
 status: captured
 workflow_type: build
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T23:28:08Z
-last_update: 2026-10-28T23:28:08Z
-date_finished: null
+last_update: '2026-10-28T23:30:20Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-28T23:30:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4889: Upstream Watchtower workers page (/arbeiter-style live overview of TermLink dispatch workers) — 1409 P-010
