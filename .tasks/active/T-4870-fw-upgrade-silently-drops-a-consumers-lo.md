@@ -1,8 +1,18 @@
 ---
 id: T-4870
-name: "fw upgrade silently drops a consumer's local block inside a vendored file (1409 lost its blueprint registration)"
+name: "fw upgrade silently drops a consumer's local block inside a vendored file (1409
+  lost its blueprint registration)"
 description: >
-  1409-sprind upgrade report (msg c5d95213, be.28 to be.46): their local 4-line block in web/blueprints/__init__.py (registering their /arbeiter blueprint, 1409 T-2754) was removed by the upgrade without a warning; the blueprint file itself is preserved (.fwvendor-preserve), its registration is not; 8 tests red and the route 404 until they re-applied it. Need: an upgrade must not lose a consumer's local change in a vendored file silently. 1409 suggests: fail (not warn) when a marked local block disappears. Related: T-4649 extension point 1 (blueprint registration) removes the need for this edit; also note from the same report: the Worktree Policy text added to consumer CLAUDE.md by T-4833 conflicts with 1409's own project rule (consumer opt-out may be wanted). Filed during the release freeze (T-4869): backlog.
+  1409-sprind upgrade report (msg c5d95213, be.28 to be.46): their local 4-line block
+  in web/blueprints/__init__.py (registering their /arbeiter blueprint, 1409 T-2754)
+  was removed by the upgrade without a warning; the blueprint file itself is preserved
+  (.fwvendor-preserve), its registration is not; 8 tests red and the route 404 until
+  they re-applied it. Need: an upgrade must not lose a consumer's local change in
+  a vendored file silently. 1409 suggests: fail (not warn) when a marked local block
+  disappears. Related: T-4649 extension point 1 (blueprint registration) removes the
+  need for this edit; also note from the same report: the Worktree Policy text added
+  to consumer CLAUDE.md by T-4833 conflicts with 1409's own project rule (consumer
+  opt-out may be wanted). Filed during the release freeze (T-4869): backlog.
 
 status: captured
 workflow_type: build
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T11:13:28Z
-last_update: 2026-10-28T11:13:28Z
-date_finished: null
+last_update: '2026-10-28T11:15:21Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-28T11:15:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4870: fw upgrade silently drops a consumer's local block inside a vendored file (1409 lost its blueprint registration)
