@@ -1,0 +1,8 @@
+#!/usr/bin/env bats
+# T-4875 fixture: red on its first run, green on every later run (state in $T4875_STATE).
+@test "fixture flaky FLAKY-4875" {
+    if [ ! -f "$T4875_STATE/flaky.seen" ]; then
+        touch "$T4875_STATE/flaky.seen"
+        false
+    fi
+}

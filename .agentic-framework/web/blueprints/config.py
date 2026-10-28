@@ -43,6 +43,7 @@ SETTINGS = [
     ("BASH_TIMEOUT", "300000", "Default Bash tool timeout in milliseconds"),
     ("KEYLOCK_TIMEOUT", "300", "Per-key lock stale cleanup timeout in seconds"),
     ("TERMLINK_WORKER_TIMEOUT", "600", "TermLink worker execution timeout in seconds"),
+    ("UNIT_SUITE_FLAKE_RETRY_MAX", "5", "Files with a NEW unit-suite red (not in the ratchet baseline) re-run once per nightly run; a pass on the retry grades WARN suspected flaky at pre-push instead of FAIL, logged to flakes.jsonl. More NEW-red files than this = none retried. 0 = never retry (T-4875)"),
     ("TERMLINK_MAX_WORKERS", "5", "Concurrent fw termlink dispatch workers per project (T-3910). Raise situationally, on the operator's say-so: FW_TERMLINK_MAX_WORKERS=N for one run, fw config set TERMLINK_MAX_WORKERS N to keep it"),
     ("MESSAGING_TOOLKIT", "0", "Install/update the cross-host messaging toolkit (9 slash commands + 12 scripts, TermLink) on fw upgrade. Opt-in; derived once from existing files (T-4042). 1=install, 0=skip"),
     ("HANDOVER_DEDUP_COOLDOWN", "300", "Seconds between duplicate handover detection"),

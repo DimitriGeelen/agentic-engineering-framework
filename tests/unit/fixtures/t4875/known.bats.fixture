@@ -1,0 +1,5 @@
+#!/usr/bin/env bats
+# T-4875 fixture: red on every run, listed in the fixture baseline.
+@test "fixture known KNOWN-4875" {
+    false
+}

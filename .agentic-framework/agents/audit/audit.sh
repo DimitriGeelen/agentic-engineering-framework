@@ -4240,6 +4240,7 @@ def _incomplete(r):
     return "; ".join(why)
 try:
     d = yaml.safe_load(open(sys.argv[1])) or {}
+    latest = d
     # T-3794: at pre-push, grade the last COMPLETE run instead of an incomplete
     # LATEST (interrupted after 2 of 730 files graded 0 new reds → WARN → push).
     # Reds the incomplete run DID record still count (a recorded red is a verdict).
@@ -4277,6 +4278,16 @@ try:
             break
         if fb_state == "missing":
             fb_note += "; no complete run on record (LAST-COMPLETE.yaml or a dated report in %s)" % rdir
+    # T-4875: reds whose file passed its one retry in the graded run. A red the
+    # (incomplete) LATEST recorded again is not a flake: it failed twice.
+    flaky = set()
+    for e in d.get("suspected_flaky") or []:
+        if isinstance(e, dict):
+            flaky.add((e.get("leg"), str(e.get("name"))))
+    if d is not latest:
+        for g in ("bats", "pytest"):
+            for n in ((latest.get("legs") or {}).get(g) or {}).get("failed") or []:
+                flaky.discard((g, str(n)))
     legs = d.get("legs") or {}
     total = failed = 0
     names = []
@@ -4326,7 +4337,7 @@ try:
         shown.append("... +%d more in the report" % (len(names) - 25))
     # T-3621: grade each recorded red against the ratchet baseline. "none" /
     # "bad" mean no baseline applies: the caller fails closed on every red.
-    bl_state, n_base, new, expired = "none", 0, [], []
+    bl_state, n_base, new, expired, flaked = "none", 0, [], [], []
     try:
         b = yaml.safe_load(open(sys.argv[2]))
         ents = b.get("entries") if isinstance(b, dict) else None
@@ -4343,7 +4354,10 @@ try:
         bl_state = "ok"
         for leg, n in reds:
             if (leg, n) not in base:
-                new.append("%s: %s" % (leg, n))
+                if (leg, n) in flaky:
+                    flaked.append("%s: %s" % (leg, n))
+                else:
+                    new.append("%s: %s" % (leg, n))
             elif base[(leg, n)]:
                 n_base += 1
             else:
@@ -4368,13 +4382,14 @@ try:
         fd = os.path.join(os.path.dirname(sys.argv[1]), fd)
         if root and fd.startswith(root + "/"):
             fd = fd[len(root) + 1:]
-    print("%d|%d|%d|%d|%d|%d|%s|%s|%s|%d|%s|%d|%d|%d|%s|%s|%s|%s|%s|%s|%s" % (
+    print("%d|%d|%d|%d|%d|%d|%s|%s|%s|%d|%s|%d|%d|%d|%s|%s|%s|%s|%s|%s|%s|%d|%s" % (
         total, failed, rc, age_h, to, tos,
         "; ".join(shown).replace("|", "/"), ran,
         ", ".join(ftimed).replace("|", "/"), partial,
         bl_state, n_base, len(new), len(expired), _bound(new), _bound(expired),
         sd.replace("|", "/"), fd.replace("|", "/"),
-        fb_state, fb_label.replace("|", "/"), fb_note.replace("|", "/")))
+        fb_state, fb_label.replace("|", "/"), fb_note.replace("|", "/"),
+        len(flaked), _bound(flaked)))
 except Exception:
     pass
 PYEOF
@@ -4390,10 +4405,10 @@ PYEOF
     local _us_total _us_failed _us_rc _us_age _us_timedout _us_timeout_s _us_names
     local _us_ran _us_ftimed _us_partial
     local _us_bl _us_nbase _us_nnew _us_nexp _us_new _us_exp _us_dir _us_fdir
-    local _us_fb _us_fblabel _us_fbnote
+    local _us_fb _us_fblabel _us_fbnote _us_nflaky _us_flaky
     IFS='|' read -r _us_total _us_failed _us_rc _us_age _us_timedout _us_timeout_s _us_names \
         _us_ran _us_ftimed _us_partial _us_bl _us_nbase _us_nnew _us_nexp _us_new _us_exp _us_dir _us_fdir \
-        _us_fb _us_fblabel _us_fbnote <<< "$_parsed"
+        _us_fb _us_fblabel _us_fbnote _us_nflaky _us_flaky <<< "$_parsed"
     local _us_label="$_us_name${_us_dir:+ ($_us_dir)}"
 
     # T-3794: pre-push, incomplete LATEST, nothing complete to grade instead.
@@ -4435,7 +4450,7 @@ PYEOF
         # T-3621 ratchet: only the pre-push scope, only with a readable baseline.
         local _us_bl_note=""
         case "${_us_bl:-none}" in
-            ok)   _us_bl_note="Ratchet baseline (T-3621): ${_us_nbase} baselined, ${_us_nnew} new, ${_us_nexp} expired. Only the pre-push scope grades baselined reds WARN; this scope FAILs on every red. " ;;
+            ok)   _us_bl_note="Ratchet baseline (T-3621): ${_us_nbase} baselined, ${_us_nnew} new, ${_us_nexp} expired, ${_us_nflaky:-0} suspected flaky (passed on retry, T-4875${_us_flaky:+: $_us_flaky}). Only the pre-push scope grades baselined and suspected-flaky reds WARN; this scope FAILs on every red. " ;;
             bad)  _us_bl_note="Ratchet baseline (T-3621) UNREADABLE at $_baseline: failing closed on every red. " ;;
             *)    _us_bl_note="Ratchet baseline (T-3621) absent at $_baseline: failing closed on every red. " ;;
         esac
@@ -4446,9 +4461,18 @@ PYEOF
                      "${_us_kept}New red: fix it or file a task (one bug = one task); only the operator may accept it into the baseline (python3 agents/audit/unit_suite_baseline.py add --i-am-human --name '<name>'). Expired: fix it, or the operator re-arms it the same way. Report: $_us_rel"
                 return 0
             fi
+            # T-4875: a NEW red whose file passed its one retry is a suspected
+            # flake: WARN here, still a FAIL in every other scope.
+            if [ "${_us_nflaky:-0}" -gt 0 ]; then
+                warn "$_us_label: ${_us_nflaky} suspected flaky red(s) — NEW, but the file passed its one retry — pre-push ratchet grade; the full fw audit still FAILs them (T-4875)" \
+                     "${_us_incomplete:-$_us_ran. }Suspected flaky: ${_us_flaky}. Logged with the first run's output in $(dirname "$_us_rel")/flakes.jsonl" \
+                     "${_us_kept}Investigate each (T-4866): read the first run's output, file a task per flaky test (one bug = one task)"
+            fi
+            if [ "${_us_nbase:-0}" -gt 0 ] || [ "${_us_nflaky:-0}" -eq 0 ]; then
             warn "$_us_label: ${_us_nbase} BASELINED red(s), 0 new, 0 expired — pre-push ratchet grade; the full fw audit still FAILs them (T-3621)" \
                  "${_us_incomplete:-$_us_ran. }runner_exit=$_us_rc; baseline: $_baseline. Baselined reds are a known backlog owned by their triage tasks, not green" \
                  "${_us_kept}Fix the reds via their owning tasks (owner: in the baseline); once a nightly run shows them green, shrink the baseline: python3 agents/audit/unit_suite_baseline.py regenerate"
+            fi
             # Unchanged rule: a stale report is still called stale.
             if [ "$_us_age" -lt 0 ] || [ "$_us_age" -ge 48 ]; then
                 warn "$_us_label report STALE — last run ${_us_age}h ago, threshold 48h (T-3302)" \

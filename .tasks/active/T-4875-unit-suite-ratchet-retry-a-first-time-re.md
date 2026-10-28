@@ -38,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T15:30:55Z
-last_update: 2026-10-28T15:30:55Z
+last_update: 2026-10-28T15:32:16Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -61,11 +61,11 @@ Operator ruling 2026-10-28 (decision walk question f, answer a), allowed under t
 ## Acceptance Criteria
 
 ### Agent
-- [ ] When the suite run ends with NEW reds (not in the baseline), each such test FILE is re-run once, alone, under the same per-file runner settings (TMPDIR, timeout) the suite uses. A red that fails again stays a NEW red and FAILs pre-push exactly as today; a red that passes on the retry is graded WARN "suspected flaky" instead of FAIL
-- [ ] Every retried-and-passed red is appended to a flake log (e.g. .context/audits/unit-suite/flakes.jsonl: test name, file, first-run failure output path, retry result, timestamp, HEAD) and named in the audit evidence; the full audit (not pre-push) still reports them so they are investigated (T-4866), never silently dropped
-- [ ] Bounded: at most N files retried per run (config key, default e.g. 5); more NEW reds than that are not retried and FAIL as today
-- [ ] Tests: a fake suite run with (1) a red that passes on retry -> WARN + flake row, (2) a red that fails again -> FAIL, (3) more NEW reds than the cap -> FAIL without retry, (4) baselined reds unaffected; existing ratchet tests (t3621 and siblings) stay green
-- [ ] Vendor in sync
+- [x] When the suite run ends with NEW reds (not in the baseline), each such test FILE is re-run once, alone, under the same per-file runner settings (TMPDIR, timeout) the suite uses. A red that fails again stays a NEW red and FAILs pre-push exactly as today; a red that passes on the retry is graded WARN "suspected flaky" instead of FAIL
+- [x] Every retried-and-passed red is appended to a flake log (e.g. .context/audits/unit-suite/flakes.jsonl: test name, file, first-run failure output path, retry result, timestamp, HEAD) and named in the audit evidence; the full audit (not pre-push) still reports them so they are investigated (T-4866), never silently dropped
+- [x] Bounded: at most N files retried per run (config key, default e.g. 5); more NEW reds than that are not retried and FAIL as today
+- [x] Tests: a fake suite run with (1) a red that passes on retry -> WARN + flake row, (2) a red that fails again -> FAIL, (3) more NEW reds than the cap -> FAIL without retry, (4) baselined reds unaffected; existing ratchet tests (t3621 and siblings) stay green
+- [x] Vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -115,7 +115,11 @@ Operator ruling 2026-10-28 (decision walk question f, answer a), allowed under t
 
 ## Verification
 
-timeout 900 bats tests/unit/t4875_ratchet_retry_flaky.bats
+timeout 900 bats tests/unit/t4875_ratchet_retry_flaky.bats > /tmp/.t4875.out 2>&1 && ! grep -q "^not ok" /tmp/.t4875.out && grep -q "^ok 1 " /tmp/.t4875.out
+test "$(grep -c '# skip' /tmp/.t4875.out)" -eq 0
+timeout 900 bats tests/unit/t3621_unit_suite_ratchet.bats tests/unit/t3794_unit_suite_incomplete_prepush.bats > /tmp/.t4875r.out 2>&1 && ! grep -q "^not ok" /tmp/.t4875r.out
+timeout 300 bats tests/lint/config-registry-parity.bats > /tmp/.t4875c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4875c.out
+python3 tools/bats-dead-negation-lint.py tests/unit/t4875_ratchet_retry_flaky.bats > /tmp/.t4875l.out 2>&1 && grep -q clean /tmp/.t4875l.out
 bin/fw vendor self --check --task T-4875
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -254,22 +258,6 @@ bin/fw vendor self --check --task T-4875
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
-
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -293,6 +281,16 @@ bin/fw vendor self --check --task T-4875
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** the pre-push unit-suite ratchet blocked be-tag pushes four times on first-time one-off reds that passed on rerun (T-4866: fw_pending_remind, t2293, t4041, T-4840's case).
+
+**Root cause:** the ratchet grades a single run. agents/audit/unit-suite.sh `_finish` wrote every red of the one run into the report, and agents/audit/audit.sh `check_unit_suite_report` (the T-3621 pre-push branch, "NEW red(s)" FAIL) treated any red not in baseline.yaml as new breakage. A red caused by parallel load or shared state was indistinguishable from a regression, because no second measurement existed.
+
+**Why structurally allowed:** T-3621 designed the ratchet around a baseline of known reds only; flakiness was a known problem (T-3992) but had no channel other than the operator-only baseline `add`, so every one-off either blocked the push or needed an operator action.
+
+**Prevention:** the runner now re-runs each file with a NEW red once, alone, under the same per-file settings (bounded by UNIT_SUITE_FLAKE_RETRY_MAX); a pass on the retry is recorded in the report (`suspected_flaky`) and appended to .context/audits/unit-suite/flakes.jsonl with the first run's kept output; the pre-push grade turns those into a WARN "suspected flaky" while a second red stays a NEW red and FAILs. tests/unit/t4875_ratchet_retry_flaky.bats pins all four cases.
 
 ## Recommendation
 
@@ -333,6 +331,16 @@ bin/fw vendor self --check --task T-4875
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-28 — where the retry lives and what it may change
+- **Chose:** the retry runs in the runner (`agents/audit/unit-suite.sh` `_finish`, through the same `_run_one` job: per-file TMPDIR, cap, env scrub), before the tree guard's after-snapshot; the decision of which files to retry and the recording are in a new helper `agents/audit/unit_suite_flaky.py`. The first run's reds stay in `failed` and the leg/runner exit codes are unchanged; the report gains `suspected_flaky` + `flake_retry`. The audit's only change: at pre-push with a readable baseline, a NEW red named in `suspected_flaky` counts as flaky (WARN) instead of new (FAIL).
+- **Why:** the runner is the only place with the per-file machinery, so a retried file runs exactly as in the suite; keeping the red in `failed` means every non-pre-push scope still FAILs it (investigated, never dropped) and `regenerate` cannot read a flake as green.
+- **Rejected:** retrying from audit.sh (no runner settings, and pre-push would spend minutes); removing retried-and-passed reds from `failed` (a flake would read green in the full audit).
+
+### 2026-10-28 — cap semantics and edge cases
+- **Chose:** UNIT_SUITE_FLAKE_RETRY_MAX (default 5, 0 = off). When more files hold a NEW red than the cap, NONE is retried. Per-file: only a retry that finishes with rc 0 (st done; a fast-tier skip or a timeout is not a pass) downgrades, and then all of that file's NEW reds. Baselined reds (expired included) are never retried. No readable baseline (slow/perf tiers, the integration suite) = no retry. An interrupted run is not retried. In the audit's incomplete-LATEST fallback, a red LATEST recorded again is removed from the flaky set (it failed twice). flakes.jsonl is gitignored like runs.log (it points into the gitignored failures/ dir).
+- **Why:** many new reds at once read as real breakage, and retrying only some of them would make the grade depend on order; conservative on the release gate.
+- **Rejected:** retrying the first N of many (order-dependent grade).
 
 ## Decision
 

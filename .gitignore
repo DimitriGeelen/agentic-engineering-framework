@@ -189,6 +189,7 @@ docs/reports/T-3239-continuous-loop-demo/.livefire-run-copy.sh
 .context/audits/unit-suite/LATEST.yaml
 .context/audits/unit-suite/LAST-COMPLETE.yaml
 .context/audits/unit-suite/runs.log
+.context/audits/unit-suite/flakes.jsonl
 .context/audits/unit-suite/2*.yaml
 .context/audits/integration-suite/LATEST.yaml
 .context/audits/integration-suite/LAST-COMPLETE.yaml

@@ -1,0 +1,5 @@
+#!/usr/bin/env bats
+# T-4875 fixture: red on every run (a real regression).
+@test "fixture broken BROKEN-4875" {
+    false
+}

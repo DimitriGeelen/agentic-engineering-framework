@@ -1,0 +1,21 @@
+id: agents/audit/unit_suite_flaky.py
+name: unit_suite_flaky
+type: script
+subsystem: audit
+location: agents/audit/unit_suite_flaky.py
+tags: []
+
+purpose: "T-4875 (T-4866): retry a first-time red file once before the ratchet blocks."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-28
+created_by: unknown

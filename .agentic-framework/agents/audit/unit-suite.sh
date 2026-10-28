@@ -196,6 +196,15 @@ FILE_TIMEOUT="${FW_UNIT_SUITE_FILE_TIMEOUT:-900}"
 if [ "$TIER" = fast ]; then FILE_TIMEOUT="${FW_UNIT_SUITE_FAST_FILE_TIMEOUT:-120}"; fi
 if [ "$TIER" = perf ]; then JOBS=1; fi
 [ "$FILE_TIMEOUT" -lt 1 ] && FILE_TIMEOUT=1
+# T-4875: files with a NEW red retried once per run (registry key
+# UNIT_SUITE_FLAKE_RETRY_MAX; 0 = never retry). The baseline the NEW is judged
+# against is the ratchet's own: <report-dir>/baseline.yaml.
+FLAKE_RETRY_MAX="${FW_UNIT_SUITE_FLAKE_RETRY_MAX:-}"
+[ -n "$FLAKE_RETRY_MAX" ] || FLAKE_RETRY_MAX="$( . "$FRAMEWORK_ROOT/lib/config.sh" 2>/dev/null \
+    && fw_config UNIT_SUITE_FLAKE_RETRY_MAX 5 2>/dev/null)"
+case "$FLAKE_RETRY_MAX" in ''|*[!0-9]*) FLAKE_RETRY_MAX=5 ;; esac
+FLAKE_BASELINE="$REPORT_DIR/baseline.yaml"
+FLAKE_LOG="$REPORT_DIR/flakes.jsonl"
 
 BATS_BUDGET=0 PY_BUDGET=0
 RESULTS="$(mktemp -d)"
@@ -375,6 +384,7 @@ _stop_pool() {
 INTERRUPTED=0
 LEG_PID=""
 BATS_FILES=0 BATS_RC=0 BATS_ERROR="" PY_FILES=0 PY_RC=0 PY_ERROR=""
+BATS_LIST=() PY_LIST=()
 _on_signal() {
     trap '' TERM INT
     INTERRUPTED=1
@@ -419,6 +429,31 @@ _leg_rc() {
 [ -z "$BATS_ERROR" ] && BATS_RC=$(_leg_rc "$RESULTS/bats")
 [ -z "$PY_ERROR" ] && PY_RC=$(_leg_rc "$RESULTS/pytest")
 
+# T-4875 (T-4866): retry each file holding a NEW red (not in the ratchet
+# baseline) once, alone, through the same _run_one (per-file TMPDIR, cap, env
+# scrub). Leg exit codes and the `failed` list stay the first run's: a flake is
+# still a red. A pass on the retry is recorded as suspected_flaky (the pre-push
+# grade WARNs it), a second red changes nothing. Bounded by FLAKE_RETRY_MAX; no
+# baseline (slow/perf tiers, the integration suite) means no retry. Runs before
+# the tree guard's after-snapshot, so the retries' writes are graded too.
+: > "$RESULTS/flake-retry-files"
+printf '%s\n' "${BATS_LIST[@]}" > "$RESULTS/bats-list" 2>/dev/null
+printf '%s\n' "${PY_LIST[@]}" > "$RESULTS/pytest-list" 2>/dev/null
+python3 -I "$SCRIPT_DIR/unit_suite_flaky.py" plan --results "$RESULTS" --baseline "$FLAKE_BASELINE" \
+    --max "$FLAKE_RETRY_MAX" --bats-list "$RESULTS/bats-list" --pytest-list "$RESULTS/pytest-list" \
+    $([ "$INTERRUPTED" -eq 1 ] && echo --interrupted) > "$RESULTS/flake-retry-files" 2>/dev/null || :
+if [ -s "$RESULTS/flake-retry-files" ]; then
+    mkdir -p "$RESULTS/retry/bats" "$RESULTS/retry/pytest" "$RESULTS/retry/t"
+    : > "$RESULTS/retry/tmp-leaked"
+    while IFS=$'\t' read -r _leg _file; do
+        [ -n "$_file" ] || continue
+        echo "$(date -u +%FT%TZ) RETRY $_leg $(basename "$_file") (NEW red, T-4875)" >> "$RUN_LOG"
+        # Subshell: _run_one scrubs the environment, which must not reach the runner.
+        ( RESULTS="$RESULTS/retry" _run_one "$_leg" $(( $(date +%s) + FILE_TIMEOUT )) "$_file" ) 9>&-
+    done < "$RESULTS/flake-retry-files"
+    cat "$RESULTS/retry/tmp-leaked" >> "$RESULTS/tmp-leaked" 2>/dev/null
+fi
+
 # T-4523: what the run changed in the checkout (before the report is written, so
 # the runner's own writes never count). Leaked = enforced red on a clean start.
 TREE_LEAKED=""
@@ -460,6 +495,10 @@ _keep_failures() {
     return 0
 }
 _keep_failures
+
+# T-4875: grade the retries (writes $RESULTS/flaky.json, appends flakes.jsonl).
+python3 -I "$SCRIPT_DIR/unit_suite_flaky.py" record --results "$RESULTS" --report-dir "$REPORT_DIR" \
+    --failures-dir "$FAILURES_KEPT" --started "$STARTED" --commit "$REV_COMMIT" --log "$FLAKE_LOG" || :
 
 # T-4526: new aef-*/fw-* temp entries since the run started.
 _tmp_names | LC_ALL=C comm -13 "$RESULTS/tmp-before" - > "$RESULTS/tmp-new" 2>/dev/null || : > "$RESULTS/tmp-new"
@@ -645,6 +684,15 @@ except OSError:
     _new = []
 report["tmp_leftovers"] = {"dir": env.get("T4526_TMP_ROOT") or "/tmp",
                            "count": len(_new), "names": _new[:50]}
+# T-4875: the retry of files with a NEW red. suspected_flaky = first-run reds
+# whose file passed on its retry; they stay in `failed` above. The pre-push
+# ratchet grades them WARN, every other scope still FAILs them.
+try:
+    _fl = __import__("json").load(open(os.path.join(results, "flaky.json")))
+except Exception:
+    _fl = {}
+report["flake_retry"] = _fl.get("flake_retry") or None
+report["suspected_flaky"] = _fl.get("suspected_flaky") or []
 
 report_dir = env["T3302_REPORT_DIR"]
 dated = os.path.join(
