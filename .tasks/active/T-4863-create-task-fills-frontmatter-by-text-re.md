@@ -93,16 +93,17 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+See description. The need: creating a task sets exactly its frontmatter keys; text in the name, description or body is never rewritten, whatever it says.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduce first: a bats test creates a task whose name and description contain `owner:`, `status: captured` and `horizon: now`, and shows the frontmatter owner/status/horizon are wrong or the text was rewritten; it fails before the fix
+- [ ] Every frontmatter substitution in create-task.sh (both template paths, ~526-535 and ~563ff) is anchored to its own key line inside the leading --- block and applied once; T-4787's json.dumps quoting of name is kept
+- [ ] The created file's frontmatter parses (yaml.safe_load) and carries the requested owner, status and horizon; the name and description round-trip unchanged
+- [ ] Existing create-task tests stay green (grep tests/unit for create_task, task_id_race, t4787); vendor in sync
 
-### Human
+<!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -149,6 +150,9 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 900 bats tests/unit/t4863_create_task_anchored_fields.bats
+bin/fw vendor self --check --task T-4863
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

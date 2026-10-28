@@ -92,16 +92,17 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+See description. The need: no unit test writes the live repository's MCP manifest or tool-set.yaml, so parallel test files cannot race on them and a killed run leaves the repo untouched.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Every test file that writes agents/mcp/framework-mcp-manifest.json or policy/capability-overlay/tool-set.yaml in the live repo (t2293, t2290, t2294, t2296, t2459, t2461, test_no_project_relative_fw_shell_t3964.py; re-check with grep) works on a copy instead: a temp framework tree (only the files the verbs need, or a full copy) with FRAMEWORK_ROOT/PROJECT_ROOT pointing at it
+- [ ] Proof: running those files leaves the live manifest and tool-set.yaml byte-identical and at their original mode (a test or a before/after checksum in Verification)
+- [ ] The tests still assert what they did (drift exit 1, absent exit 2, pre-push drift, doctor content check); all pass
+- [ ] Vendor in sync
 
-### Human
+<!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -148,6 +149,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+before=$(sha256sum agents/mcp/framework-mcp-manifest.json policy/capability-overlay/tool-set.yaml); timeout 1200 bats tests/unit/t2293_mcp_check.bats tests/unit/t2290_doctor_mcp_content_check.bats tests/unit/t2294_pre_push_mcp_drift.bats tests/unit/t2296_audit_mcp_manifest_drift.bats tests/unit/t2459_mcp_server_root_split.bats tests/unit/t2461_doctor_mcp_consumer_path.bats && [ "$before" = "$(sha256sum agents/mcp/framework-mcp-manifest.json policy/capability-overlay/tool-set.yaml)" ]
+test "$(stat -c %a agents/mcp/framework-mcp-manifest.json)" = 644
+bin/fw vendor self --check --task T-4862
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

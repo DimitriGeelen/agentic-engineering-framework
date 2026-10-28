@@ -89,16 +89,24 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+See description. The need: an external health check that probes Watchtower right after a (re)start gets a fast, truthful answer, so a watchdog does not restart it in a loop while the corpus cache is still cold.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduce first: measure (and pin in a test, with a stubbed slow corpus build) that a request made during the cold build waits for the build; record the measured cold time on this repo in Decisions
+- [ ] Choose and record in Decisions between (a) an opt-in warm-before-serve (config key, default off) and (b) a cheap readiness/health route that never waits for the corpus build and reports warm-up state (web/app.py already exposes WARMUP_STATE). Prefer the option that fixes ring20-dashboard's watchdog case without slowing every start; both are acceptable if small
+- [ ] The chosen route or setting is documented where operators look (the config registry row if a key is added); existing warm-up tests (T-4363) and web tests stay green
+- [ ] Watchtower restarted; `bin/fw watchtower current` OK; vendor in sync
 
 ### Human
+- [ ] [REVIEW] Watchtower behaves normally right after a restart
+  **Steps:**
+  1. Restart Watchtower from the dashboard or ask the agent to; then open http://192.168.10.107:3000/ within a few seconds
+  **Expected:** the page loads (perhaps slowly the very first time) and nothing reports an error; later pages are fast
+  **If not:** note what you saw and when; the agent checks the warm-up state
+
+<!-- Template guidance follows.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -145,6 +153,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 900 python3 -m pytest -q tests/web -k "warmup or t4854"
+bin/fw vendor self --check --task T-4854
+bin/fw watchtower current
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
