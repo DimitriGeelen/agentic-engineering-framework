@@ -50657,3 +50657,39 @@ scan_id: R-61483e48
 task_id: T-4862
 payload:
   task_file: .tasks/active/T-4862-seven-mcp-tests-mutate-the-live-manifest.md
+---
+kind: scan_emitted
+timestamp: '2026-10-28T09:19:16Z'
+scan_id: R-899a0754
+task_id: T-4854
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-28T09:19:16Z'
+scan_id: R-899a0754
+task_id: T-4854
+payload:
+  task_file: .tasks/active/T-4854-watchtower-warm-up-starts-after-the-port.md
+---
+kind: scan_emitted
+timestamp: '2026-10-28T09:35:54Z'
+scan_id: R-e0537cfa
+task_id: T-4865
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-28T09:35:54Z'
+scan_id: R-e0537cfa
+task_id: T-4865
+payload:
+  task_file: .tasks/active/T-4865-be-tag-be48-warm-up-readiness-t-4854-and.md
