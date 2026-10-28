@@ -62,8 +62,8 @@ T-4880 added `SIDECAR_DM_ADDRESS_KEYS` to `lib/config.sh` but not to `web/bluepr
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `web/blueprints/config.py` lists SIDECAR_DM_ADDRESS_KEYS with the same default as lib/config.sh
-- [ ] Structural invariants green (`bin/fw test invariants`), Watchtower restarted and current
+- [x] `web/blueprints/config.py` lists SIDECAR_DM_ADDRESS_KEYS with the same default as lib/config.sh
+- [x] Structural invariants green (`bin/fw test invariants`), Watchtower restarted and current
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
