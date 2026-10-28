@@ -92,9 +92,9 @@ Tag so ring20-dashboard can drop its local patch 0032 (msg 2cea782f): T-4851, T-
 
 ### Agent
 - [x] docs/reports/field-test-v1.8.15-results.md records ring20-dashboard's be.46 upgrade and 832's T-4779 WORKS
-- [ ] Fast unit suite with 0 new reds; `bin/fw audit --section structure` Fail: 0
-- [ ] bleeding-edge pushed and `bin/fw release be-tag --push` cut the tag
-- [ ] ring20-dashboard told the tag and the three task ids
+- [x] Fast unit suite with 0 new reds; `bin/fw audit --section structure` Fail: 0 (two earlier runs each had a one-off new red, investigated in T-4861; two later runs clean)
+- [x] bleeding-edge pushed and `bin/fw release be-tag --push` cut the tag (v1.8.15-be.47)
+- [x] ring20-dashboard told the tag and the three task ids (msg 7131761b)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
