@@ -11,10 +11,10 @@ description: >
   resolves outside .tasks against a known cwd; treat a cwd inside .tasks as an implicit
   mention. Reproduce first.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [security, scanner]
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T07:29:26Z
-last_update: '2026-10-28T07:30:40Z'
+last_update: 2026-10-28T09:52:47Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,10 +95,10 @@ See description. The need: a shell write to a task file is recognised however th
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: bats cases for `cd .tasks && echo x > active/T-0001-x.md`, `cd .tasks/active && sed -i … T-0001-x.md`, and a relative path with a non-dot prefix that resolves into .tasks; record which the guard passes before the fix
-- [ ] Fixed so those are refused: a relative T-NNNN*.md token counts as a mention unless its prefix provably resolves outside .tasks from a known cwd; a cwd inside .tasks makes the command an implicit mention
-- [ ] Read-only commands on task files from inside .tasks (cat, grep, sed -n) still pass
-- [ ] Existing scanner tests stay green; vendor in sync
+- [x] Reproduce first: bats cases for `cd .tasks && echo x > active/T-0001-x.md`, `cd .tasks/active && sed -i … T-0001-x.md`, and a relative path with a non-dot prefix that resolves into .tasks; record which the guard passes before the fix
+- [x] Fixed so those are refused: a relative T-NNNN*.md token counts as a mention unless its prefix provably resolves outside .tasks from a known cwd; a cwd inside .tasks makes the command an implicit mention
+- [x] Read-only commands on task files from inside .tasks (cat, grep, sed -n) still pass
+- [x] Existing scanner tests stay green; vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -148,7 +148,8 @@ See description. The need: a shell write to a task file is recognised however th
 
 ## Verification
 
-timeout 900 bats tests/unit/t4859_scanner_relative_task_paths.bats
+timeout 900 bats tests/unit/t4859_scanner_relative_task_paths.bats > /tmp/.t4859.out 2>&1 && ! grep -q "^not ok" /tmp/.t4859.out
+test "$(grep -c '# skip' /tmp/.t4859.out)" -eq 0
 bin/fw vendor self --check --task T-4859
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -303,6 +304,14 @@ bin/fw vendor self --check --task T-4859
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** with the Bash cwd inside `.tasks/` (the Bash tool keeps cwd between calls), mention-gated writes passed the Human-AC tick guard: `python3 -c 'open("active/T-1-x.md","w")'` from `.tasks`, `sed -i s/a/b/ "$F"` from `.tasks/active`, inline code on `sub/T-1-x.md` where `sub` links into `.tasks`, and `sed -i … "$D/T-1-x.md"`. Reproduced: all four returned no hit on HEAD (2db2f3138) and are refused after the fix. The reviewer's other shapes (`cd .tasks && echo x > active/T-1.md`, `cd .tasks/active && sed -i … T-1.md`, a redirect from a cwd in .tasks) were already refused, because a target the text can resolve is checked against the tracked cwd regardless of any mention.
+
+**Root cause:** `lib/shell_write_scan.py:_mentions` (TASK_NAME_RE branch, T-4159) is text-only: a `dir/T-NNNN*.md` word counted only when `dir` normalised to `.`/`..`, and nothing considered the cwd. Inline code (`_inline`), unresolvable targets (`_check_target`), `git checkout`, extractors and script arguments are gated on that mention alone, so from a cwd inside `.tasks` they had no mention to trip.
+
+**Why structurally allowed:** T-4159 narrowed the mention to stop false refusals on `docs/reports/T-NNNN-*.md`; its tests all ran with cwd = project root, so the "cwd elsewhere" axis was never exercised.
+
+**Prevention:** `_mentions_from` / `_command_cwds` / `_seg_mentions` make the mention cwd-aware (cwd inside `.tasks`, from the hook or any `cd` in the text, symlinks followed, is an implicit mention; a `dir/T-NNNN*.md` word counts unless `dir` realpath-resolves outside `.tasks` from every such cwd; a `$`/`}`/`)`/backtick-built dir always counts). `tests/unit/t4859_scanner_relative_task_paths.bats` (16 cases, hook-driven, varying cwd) pins both the refusals and the read-only/C-001 allowances.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -367,6 +376,19 @@ bin/fw vendor self --check --task T-4859
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-28 — concern "cwd inside .tasks is not a mention" (REAL)
+- **Chose:** a cwd inside `.tasks` (hook cwd or any literal `cd` destination in the text, realpath) makes the command an implicit mention.
+- **Why:** reproduced — inline code and `"$F"` writes from `.tasks/` passed. Read-only commands still pass because the mention only arms refusals for writes/inline code (bats case 9).
+- **Rejected:** treating any command run from anywhere with an unknown cd as a mention (would refuse common `cd /abs && …` artefact writes).
+
+### 2026-10-28 — concern "relative T-NNNN*.md with a non-dot prefix is not a mention" (REAL, narrower than stated)
+- **Chose:** the word counts unless its directory provably resolves (realpath, from every cwd the command may run in) outside `.tasks`; a run-time-built directory (`$D/`, `${D}/`, `$(…)/`) always counts.
+- **Why:** reproduced via a symlinked dir and `$D/`. A plain directory outside `.tasks` (`docs/reports/`, `sub/`) cannot land a write in `.tasks`, so treating it as a mention would only re-open the T-4159 false refusals.
+- **Rejected:** "every non-dot relative prefix is a mention" — refuses the C-001 artefact convention for no gain. A dir that becomes a link into `.tasks` only at run time is outside the text gate; named in the scope comment.
+
+### 2026-10-28 — reviewer's resolvable-target examples (NOT a hole)
+- `cd .tasks && echo x > active/T-1.md` and `cd .tasks/active && sed -i … T-1.md` were already refused (cwd tracked through `cd`, target resolved); pinned by bats cases 1-3.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -383,3 +405,7 @@ bin/fw vendor self --check --task T-4859
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4859-shell-write-scanner-relative-t-nnnnmd-pa.md
 - **Context:** Initial task creation
+
+### 2026-10-28T09:52:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
