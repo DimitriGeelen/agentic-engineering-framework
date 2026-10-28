@@ -13,3 +13,5 @@ dm:33df8954b2a9b70d:3bba15e681b3a078 9    # ring20-dashboard T-2382 thread -> T-
 dm:3bba15e681b3a078:d1993c2c3ec44c94 133  # 055 structural finding 2026-10-01 (pickups not arriving) -> T-3758/T-3759
 dm:3bba15e681b3a078:d1993c2c3ec44c94 123  # 010-termlink e2e delivery probe, not mail
 dm:3bba15e681b3a078:d1993c2c3ec44c94 127  # 010-termlink e2e delivery probe, not mail
+dm:3bba15e681b3a078:d1993c2c3ec44c94 130  # 055 harness-access consult 2026-10-01 -> answered same day on cockpit:harness-access offsets 1,7 (docs/harnesses.md)
+dm:d1993c2c3ec44c94:d1993c2c3ec44c94 15   # 0235 P-001 inception Human-AC tick -> T-4046 (v1.8.11); 0235 told 2026-10-28
