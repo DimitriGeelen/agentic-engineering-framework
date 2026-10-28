@@ -48,6 +48,23 @@ except:
     print('-')
 " 2>/dev/null)
 
+# T-4853: the decoder always prints something (a name, or '-'); nothing at all means
+# python3 itself could not run, and the `!= Agent` test below would allow every call.
+# Scan the raw payload in bash instead and block an Agent call (fail closed).
+if [ -z "${TOOL_NAME:-}" ]; then
+    if printf '%s' "$INPUT" | grep -qE '"tool_name"[[:space:]]*:[[:space:]]*"Agent"'; then
+        source "$FRAMEWORK_ROOT/lib/hook-degraded.sh"
+        _hook_degraded_banner "check-agent-dispatch" "python3 could not decode the payload" \
+            "The raw payload is an Agent call, so it is BLOCKED (fail closed)."
+        echo "  The dispatch limit and approvals cannot be evaluated while degraded." >&2
+        echo "  Repair python3 on PATH, or use: $(_fw_cmd) termlink dispatch" >&2
+        echo "  Policy: T-4652 (hooks must not fail open)" >&2
+        echo "══════════════════════════════════════════════════════════" >&2
+        exit 2
+    fi
+    exit 0
+fi
+
 if [ "${TOOL_NAME:-}" != "Agent" ]; then
     exit 0
 fi

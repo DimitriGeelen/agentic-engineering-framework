@@ -1,10 +1,16 @@
 ---
 id: T-4853
-name: "check-agent-dispatch has no degraded path: with python3 broken the dispatch limit stops applying"
+name: "check-agent-dispatch has no degraded path: with python3 broken the dispatch
+  limit stops applying"
 description: >
-  ring20-dashboard be.46 report (msg 2c503ddf, finding 1): check-agent-dispatch has no degraded path. With python3 shadowed by a failing stub, its python prints nothing, TOOL_NAME is empty, the `!= Agent` test exits 0, and the harness Agent-tool limit (FW_DISPATCH_LIMIT) stops applying. T-4652 class. Their patch 0032 greps the raw payload for "tool_name":"Agent" when python printed nothing and blocks with the T-4652 banner. Reproduce first.
+  ring20-dashboard be.46 report (msg 2c503ddf, finding 1): check-agent-dispatch has
+  no degraded path. With python3 shadowed by a failing stub, its python prints nothing,
+  TOOL_NAME is empty, the `!= Agent` test exits 0, and the harness Agent-tool limit
+  (FW_DISPATCH_LIMIT) stops applying. T-4652 class. Their patch 0032 greps the raw
+  payload for "tool_name":"Agent" when python printed nothing and blocks with the
+  T-4652 banner. Reproduce first.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T07:27:25Z
-last_update: 2026-10-28T07:27:25Z
-date_finished: null
+last_update: '2026-10-28T07:29:10Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-28T07:29:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4853: check-agent-dispatch has no degraded path: with python3 broken the dispatch limit stops applying
@@ -61,9 +84,9 @@ See description. The need: with python3 unavailable or broken, check-agent-dispa
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: a bats test shadows python3 with a failing stub, sends an Agent-tool PreToolUse payload with FW_DISPATCH_LIMIT=0, and shows exit 0; it fails before the fix
-- [ ] When the payload cannot be parsed, the hook detects an Agent call from the raw payload (e.g. "tool_name":"Agent" with the usual whitespace variants) and blocks with the T-4652 degraded banner; a non-Agent payload still passes
-- [ ] With a working python3, behaviour is unchanged; existing dispatch-gate tests stay green; vendor in sync
+- [x] Reproduce first: a bats test shadows python3 with a failing stub, sends an Agent-tool PreToolUse payload with FW_DISPATCH_LIMIT=0, and shows exit 0; it fails before the fix
+- [x] When the payload cannot be parsed, the hook detects an Agent call from the raw payload (e.g. "tool_name":"Agent" with the usual whitespace variants) and blocks with the T-4652 degraded banner; a non-Agent payload still passes
+- [x] With a working python3, behaviour is unchanged; existing dispatch-gate tests stay green; vendor in sync
 
 <!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -113,7 +136,9 @@ See description. The need: with python3 unavailable or broken, check-agent-dispa
 
 ## Verification
 
-timeout 900 bats tests/unit/t4853_dispatch_gate_degraded.bats
+timeout 900 bats tests/unit/t4853_dispatch_gate_degraded.bats > /tmp/.t4853 2>&1 && ! grep -q '^not ok' /tmp/.t4853
+test "$(grep -c '# skip' /tmp/.t4853)" -eq 0
+timeout 900 bats tests/unit/t4729_agent_dispatch_counter.bats tests/unit/t3910_dispatch_limits.bats tests/unit/t4652_hook_fail_closed_degraded.bats > /tmp/.t4853b 2>&1 && ! grep -q '^not ok' /tmp/.t4853b
 bin/fw vendor self --check --task T-4853
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -254,6 +279,14 @@ bin/fw vendor self --check --task T-4853
 
 ## RCA
 
+**Symptom:** with python3 shadowed by a failing stub, an Agent-tool PreToolUse payload with FW_DISPATCH_LIMIT=0 exits 0, so the harness dispatch limit stops applying (ring20-dashboard be.46, msg 2c503ddf finding 1). Reproduced by tests/unit/t4853_dispatch_gate_degraded.bats tests 1-3 (exit 0, expected 2) before the fix.
+
+**Root cause:** agents/context/check-agent-dispatch.sh:42-53 decodes the tool name with python3. When python3 cannot run, `read` gets nothing, TOOL_NAME is empty, and `[ "$TOOL_NAME" != "Agent" ] && exit 0` treats "unknown" as "not an Agent call". That fails open.
+
+**Why structurally allowed:** T-4652 added a bash fallback (lib/hook-degraded.sh) to the Tier 0 and project-boundary gates only. The dispatch gate was outside its scope, and no test ran it with a broken python3.
+
+**Prevention:** the bats regression test pins the degraded path (block on a raw `"tool_name":"Agent"`, allow non-Agent) and the healthy path (unchanged). The decoder always prints a name or '-', so empty output means only one thing: python failed.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -323,6 +356,11 @@ bin/fw vendor self --check --task T-4853
 
 ## Decisions
 
+### 2026-10-28 — what the degraded path does with an Agent call
+- **Chose:** block every Agent call while degraded (banner + exit 2). An Agent call is detected by `"tool_name"\s*:\s*"Agent"` in the raw payload, and only when the decoder printed nothing.
+- **Why:** this only tightens. Without a decoded session id the limit, counter and approval cannot be trusted, and the default limit is 0 anyway. Healthy python is unchanged, including the '-' it prints for malformed JSON.
+- **Rejected:** falling through to the normal counter/approval logic with TOOL_NAME forced to Agent. That would allow calls up to the limit on an undecoded session key, and would allow outright when termlink is absent. Also rejected: a new helper in lib/hook-degraded.sh, because the T-4851/T-4852 workers share that file. The hook reuses `_hook_degraded_banner` read-only instead.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -348,3 +386,6 @@ bin/fw vendor self --check --task T-4853
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4853-check-agent-dispatch-has-no-degraded-pat.md
 - **Context:** Initial task creation
+
+### 2026-10-28T07:29:08Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
