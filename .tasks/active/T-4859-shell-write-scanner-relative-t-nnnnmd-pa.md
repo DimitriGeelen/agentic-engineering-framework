@@ -90,16 +90,17 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+See description. The need: a shell write to a task file is recognised however the path is spelled relative to the current directory, including from a cwd inside .tasks.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduce first: bats cases for `cd .tasks && echo x > active/T-0001-x.md`, `cd .tasks/active && sed -i … T-0001-x.md`, and a relative path with a non-dot prefix that resolves into .tasks; record which the guard passes before the fix
+- [ ] Fixed so those are refused: a relative T-NNNN*.md token counts as a mention unless its prefix provably resolves outside .tasks from a known cwd; a cwd inside .tasks makes the command an implicit mention
+- [ ] Read-only commands on task files from inside .tasks (cat, grep, sed -n) still pass
+- [ ] Existing scanner tests stay green; vendor in sync
 
-### Human
+<!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -146,6 +147,9 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 900 bats tests/unit/t4859_scanner_relative_task_paths.bats
+bin/fw vendor self --check --task T-4859
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

@@ -91,16 +91,17 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+See description. The need: an awk program that writes a task file (via `system(...)`, a `|` pipe or a `>` redirect inside awk) is refused, however the scanner reads `/` in it.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduce first: a bats case gives the guard an awk one-liner where `/` after `)`, `]`, an identifier, a number or `++`/`--` is division, and the following text contains a write to a .tasks path (e.g. through system()); record whether the guard passes it before the fix
+- [ ] If it passes: treat those tokens as operand-ending (so `/` is division), and when the tokenizer cannot decide, fail closed when the awk program contains `system`, an unescaped `|` or a `>` redirect together with a guarded path; tests for each case
+- [ ] Legitimate read-only awk over task files (e.g. `awk '/^### Human/,/^## /' file`) still passes
+- [ ] Existing scanner tests stay green; vendor in sync
 
-### Human
+<!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -147,6 +148,9 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 900 bats tests/unit/t4858_scanner_awk_division.bats
+bin/fw vendor self --check --task T-4858
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

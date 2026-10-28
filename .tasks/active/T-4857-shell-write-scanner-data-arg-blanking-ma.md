@@ -96,16 +96,17 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+See description. The need: a Bash command that writes a task file is not let through because the path only appears in a blanked data argument, a shell history shorthand, or behind a foreign `fw`; and anything the guard deliberately does not cover is named as such.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduce first: for each of the three concerns ($_ / !$ reuse after a blanked --body, a non-framework `*/fw`, the mentions-from-original logic), a bats case runs the Human-AC tick guard on a concrete command and records pass/refuse. Record in Decisions which concerns are real holes (a shell write to .tasks passes) and which cannot occur (e.g. `!$` history expansion is off in non-interactive bash)
+- [ ] For each real hole: the guard refuses (fail closed), with a test that failed before; the sidecar --body data case (T-4817, T-4825) still passes a body that only mentions a task path in text
+- [ ] For each concern judged out of scope: one line in the guard's scope comment (lib/shell_write_scan.py header or check-human-ac-tick) naming it, consistent with the text-gate boundary (T-2742, T-3695)
+- [ ] Existing scanner and guard tests stay green; vendor in sync
 
-### Human
+<!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -152,6 +153,9 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 900 bats tests/unit/t4857_scanner_blanking_reuse.bats
+bin/fw vendor self --check --task T-4857
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
