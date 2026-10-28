@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4879: A consumer session that inherits another project's PROJECT_ROOT makes fw write tasks and focus into that other project (1023 report)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T18:18:27Z
+# ============================================================================
+
+task_id: T-4879
+task_name: "A consumer session that inherits another project's PROJECT_ROOT makes fw write tasks and focus into that other project (1023 report)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-28T17:27:56Z
+completed: 2026-10-28T18:18:06Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-28T18:27:58+01:00
+last_commit: 2026-10-28T19:18:05+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — inherited PROJECT_ROOT makes fw write into another project (1023, via TermLink e477f204). pre-read — inherited FRAMEWORK_ROOT/PROJECT_ROOT kept as-is in lib/paths.sh (lines 27, 39). 1023 cross-project write does not reproduce on be.49 (closed by T-3285, T-4222); pin the 1023 shape in t4879 bats
+
+# Key outcomes
+outcomes:
+  - 'Reproduction on current bleeding-edge recorded in ## Context: two sandbox projects A and B, fw run from B''s cwd with A''s PROJECT_ROOT / FRAMEWORK_ROOT / _FW_PATHS_DERIVED_BY / CLAUDE_PROJECT_DIR / TASKS_DIR inherited (each source alone and the 1023 combination); for each, which project the task file and focus landed in'
+  - 'If any scenario still writes into A: fixed so fw resolves B and names the ignored inherited value on stderr, with a bats regression test covering every reproduced scenario; explicit `PROJECT_ROOT=/x fw ...` (no sentinel) still targets /x — not applicable: no scenario writes into A on be.49 (see ## Context); the explicit-env control is pinned as t4'
+  - 'If no scenario writes into A on current code: the RCA names which commits closed it since v1.6.15, and a bats test pins the 1023 combination'
+  - '1023 told the result (sidecar msg 232412c0, conversation 1023-env-leak-upgrade, RECEIVED by their receiver)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4879-a-consumer-session-that-inherits-another.md'
+  - 'tests/unit/t4879_inherited_consumer_session.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T18:27:58'
+    action: 'T-4879: file — inherited PROJECT_ROOT makes fw write into another project (1023, via TermLink e477f204)'
+  - time: '2026-10-28T18:30:06'
+    action: 'T-4879: pre-read — inherited FRAMEWORK_ROOT/PROJECT_ROOT kept as-is in lib/paths.sh (lines 27, 39)'
+  - time: '2026-10-28T19:18:05'
+    action: 'T-4879: 1023 cross-project write does not reproduce on be.49 (closed by T-3285, T-4222); pin the 1023 shape in t4879 bats'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 50 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, consumer, paths]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 50
+  commits: 4
+  files_changed: 5
+  lines_added: 599
+  lines_removed: 9
+  footprint_refreshed_at: '2026-10-28T18:18:36Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4879-a-consumer-session-that-inherits-another.md
+generated_by: context-agent-hybrid
