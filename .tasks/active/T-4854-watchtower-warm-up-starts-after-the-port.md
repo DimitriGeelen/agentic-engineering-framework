@@ -94,10 +94,10 @@ See description. The need: an external health check that probes Watchtower right
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduce first: measure (and pin in a test, with a stubbed slow corpus build) that a request made during the cold build waits for the build; record the measured cold time on this repo in Decisions
-- [ ] Choose and record in Decisions between (a) an opt-in warm-before-serve (config key, default off) and (b) a cheap readiness/health route that never waits for the corpus build and reports warm-up state (web/app.py already exposes WARMUP_STATE). Prefer the option that fixes ring20-dashboard's watchdog case without slowing every start; both are acceptable if small
-- [ ] The chosen route or setting is documented where operators look (the config registry row if a key is added); existing warm-up tests (T-4363) and web tests stay green
-- [ ] Watchtower restarted; `bin/fw watchtower current` OK; vendor in sync
+- [x] Reproduce first: measure (and pin in a test, with a stubbed slow corpus build) that a request made during the cold build waits for the build; record the measured cold time on this repo in Decisions
+- [x] Choose and record in Decisions between (a) an opt-in warm-before-serve (config key, default off) and (b) a cheap readiness/health route that never waits for the corpus build and reports warm-up state (web/app.py already exposes WARMUP_STATE). Prefer the option that fixes ring20-dashboard's watchdog case without slowing every start; both are acceptable if small
+- [x] The chosen route or setting is documented where operators look (the config registry row if a key is added); existing warm-up tests (T-4363) and web tests stay green
+- [x] Watchtower restarted; `bin/fw watchtower current` OK; vendor in sync
 
 ### Human
 - [ ] [REVIEW] Watchtower behaves normally right after a restart
