@@ -10,10 +10,10 @@ description: >
   Next: capture fw pending remind's stderr in the test on failure, and look for a
   load-sensitive step (lock, timeout, python start-up) in the remind path.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, test-flake]
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T08:09:29Z
-last_update: '2026-10-28T08:15:35Z'
+last_update: 2026-10-28T08:16:11Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,16 +89,21 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Investigation (parent session, 2026-10-28). Two DIFFERENT tests each failed once in consecutive full fast-suite runs for be.47, each for the first time in the kept failure history, and each passes alone (and fw_pending_remind 20/20 with 4 parallel copies):
+1. fw_pending_remind.bats test 5 (07:59Z): `fw pending remind` returned non-zero; no output kept.
+2. t2293_mcp_check.bats t3 (08:09Z): `fw mcp check` returned something other than 2. Mechanism found: t2293 (and t2290, t2294, t2296, t2459, t2461) back up, mutate, delete and restore the LIVE agents/mcp/framework-mcp-manifest.json and tool-set.yaml in the repo, so parallel test files race on one shared file; t3 deletes the manifest and another file's setup can recreate it before the check. Side effect: the restore copies a mktemp backup, leaving the real manifest mode 600.
+
+The need: the suite's verdict on a change does not depend on which tests happen to run at the same moment; failures carry their output.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Both tests print status and output when they fail (diagnostic lines added), so the next occurrence is explained rather than retried
+- [ ] The real manifest's mode is restored to 644; t2293's restore keeps the original mode
+- [ ] The full fast suite is run again with the diagnostics in place; any fw_pending_remind failure's output is recorded here, and its cause stated or a follow-up filed with that output
+- [ ] The live-manifest race is filed as its own task (the fix: those tests work on a copy, or the suite serialises them), unless fixed here
 
-### Human
+<!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -378,3 +383,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4861-fwpendingremindbats-test-5-failed-once-i.md
 - **Context:** Initial task creation
+
+### 2026-10-28T08:16:11Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
