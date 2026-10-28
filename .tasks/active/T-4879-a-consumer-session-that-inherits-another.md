@@ -15,7 +15,7 @@ description: >
   trap, T-3111 worktree redirect). Reported breakage: allowed under the freeze if
   it reproduces.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T17:27:56Z
-last_update: '2026-10-28T17:45:35Z'
+last_update: 2026-10-28T18:13:44Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,12 +97,28 @@ bvp_scores_proposed:
 
 Pre-read (parent, 2026-10-28, current tree): lib/paths.sh keeps an inherited FRAMEWORK_ROOT (line 27, `[[ -z ... ]]`) and an inherited PROJECT_ROOT (line 39) as-is; nothing compares them with this fw's own location or the cwd's .framework.yaml. The T-2289 guard (line 64) only re-derives TASKS_DIR/CONTEXT_DIR when they came from a different PROJECT_ROOT; it never questions PROJECT_ROOT itself. With both variables inherited from 055 together, every derived path pointed at 055, which explains 1023's "second source" without one. Likely fix site: lib/paths.sh (and bin/fw's own FRAMEWORK_ROOT resolution): when the inherited roots disagree with the location of the bin/fw being run (or the cwd's .framework.yaml), refuse with a clear message (or re-derive and warn), before any write. Mind legitimate cross-project uses (fw upgrade <dir>, tests that set PROJECT_ROOT deliberately, worktrees T-3111).
 
+**Reproduction on be.49 (2026-10-28).** Two vendored sandbox consumers made by `fw init` (A plays 055, B plays 1023). B's `.agentic-framework/bin/fw task create` was run from B's cwd, with A's values inherited:
+
+| Scenario | Task landed in | stderr |
+|---|---|---|
+| clean env | B | — |
+| 1023 combination (PROJECT_ROOT, FRAMEWORK_ROOT=A's vendored copy, _FW_PATHS_DERIVED_BY, FW_ROUTED_FROM, FW_CLAUDE_FW_SUPERVISED=1) | B | "inherited PROJECT_ROOT=… is another project's (fw-leaked …); using B" (T-3285) |
+| same plus CLAUDE_PROJECT_DIR=A | B | same |
+| CLAUDE_PROJECT_DIR=A only | B | — (T-2446: cwd project wins) |
+| FRAMEWORK_ROOT=A's copy only | B | — |
+| TASKS_DIR/CONTEXT_DIR=A only (1023's "four unset" case) | B | "inherited TASKS_DIR=… lies inside another project" (T-4222) |
+| PROJECT_ROOT=A only, no sentinel | A | — by design: the explicit-env contract (T-2391, T-3285 t2) |
+
+`fw work-on` under the 1023 combination and under CLAUDE_PROJECT_DIR=A set focus in B (A's focus stayed null). On current code, nothing writes into A unless PROJECT_ROOT is given without the fw sentinel, which is the documented way to target another project on purpose. No code change.
+
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduction on current bleeding-edge recorded in ## Context: two sandbox projects A and B, fw run from B's cwd with A's PROJECT_ROOT / FRAMEWORK_ROOT / _FW_PATHS_DERIVED_BY / CLAUDE_PROJECT_DIR / TASKS_DIR inherited (each source alone and the 1023 combination); for each, which project the task file and focus landed in
+- [x] If any scenario still writes into A: fixed so fw resolves B and names the ignored inherited value on stderr, with a bats regression test covering every reproduced scenario; explicit `PROJECT_ROOT=/x fw ...` (no sentinel) still targets /x — not applicable: no scenario writes into A on be.49 (see ## Context); the explicit-env control is pinned as t4
+- [x] If no scenario writes into A on current code: the RCA names which commits closed it since v1.6.15, and a bats test pins the 1023 combination
+- [x] 1023 told the result (sidecar msg 232412c0, conversation 1023-env-leak-upgrade, RECEIVED by their receiver)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,6 +304,10 @@ Pre-read (parent, 2026-10-28, current tree): lib/paths.sh keeps an inherited FRA
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+bats tests/unit/t4879_inherited_consumer_session.bats > /tmp/.t4879.out 2>&1 && grep -q "^ok 4 " /tmp/.t4879.out
+bats tests/unit/t3285_nested_fw_cross_project.bats > /tmp/.t4879b.out 2>&1
+bats tests/unit/t4222_inherited_env_dirs.bats > /tmp/.t4879c.out 2>&1
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -303,6 +323,19 @@ Pre-read (parent, 2026-10-28, current tree): lib/paths.sh keeps an inherited FRA
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** in a 1023 session (vendored v1.6.15) whose environment came from a supervised claude-fw relaunch in 055, `fw work-on` created tasks in 055 and set 055's focus. With PROJECT_ROOT, FRAMEWORK_ROOT, _FW_PATHS_DERIVED_BY and FW_ROUTED_FROM unset, it still wrote into 055.
+
+**Root cause:** v1.6.15 trusted any inherited PROJECT_ROOT that named a real project (the T-2391 "env wins" contract) and had no way to tell an fw-leaked value from an explicit one. That was the first source. The second source was the inherited TASKS_DIR/CONTEXT_DIR. T-2289 re-derives these only while `_FW_PATHS_DERIVED_BY` is present, so unsetting the sentinel left the stale 055 paths in force.
+
+**Closed since v1.6.15 by:**
+- T-3285 (first commit d015460cb, v1.7.0): an fw-leaked PROJECT_ROOT (sentinel equal to the root) re-anchors to the cwd's project, with a stderr line.
+- T-4222 (b585a5f20, v1.8.11): an inherited TASKS_DIR/CONTEXT_DIR inside another framework project is re-derived, sentinel or not.
+- T-2446 (d63572c18): CLAUDE_PROJECT_DIR yields to the cwd's project outside hooks.
+
+**Why structurally allowed:** each guard was tested on its own, in the framework repo layout. No test reproduced a consumer-to-consumer leak with vendored FRAMEWORK_ROOT and supervised-relaunch variables together, and the report reached us 13 days late through an unread channel (T-4880).
+
+**Prevention:** `tests/unit/t4879_inherited_consumer_session.bats` pins the 1023 shape: the full combination (t1), the "four unset" second source (t2), work-on focus (t3) and the explicit-env control (t4). t1 and t2 assert the guards' own stderr lines, so they fail if either guard stops firing. Consumers below v1.8.11 stay exposed until they upgrade; 1023 was told (msg d8b7308d).
 
 ## Evolution
 
@@ -384,3 +417,6 @@ Pre-read (parent, 2026-10-28, current tree): lib/paths.sh keeps an inherited FRA
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4879-a-consumer-session-that-inherits-another.md
 - **Context:** Initial task creation
+
+### 2026-10-28T18:13:44Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
