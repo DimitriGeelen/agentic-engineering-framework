@@ -115,7 +115,7 @@ Fix: `dm.unacted()` asks, per message, whether it is addressed to us (`to_projec
 - [x] Mail addressed to this project (to_project = this project, or our addressed key) counts as unacted until this project posts after it; our own posts, receipts and auto-confirm "delivered" notices never count as reading or answering it
 - [x] `fw sidecar alerts` (session start) lists such unacted mail by sender and age, including on a host-shared signing key
 - [x] Unit tests cover: addressed mail with only an auto-confirm receipt after it (OPEN), answered by us (closed), our own post (not mail), mail to another project on a shared rail (not ours), and the two real cases as fixtures
-- [ ] TermLink told the result (reply to msg 80641d05)
+- [x] TermLink told the result (reply to msg 80641d05; sent 3ecffccd, RECEIVED by their receiver)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
