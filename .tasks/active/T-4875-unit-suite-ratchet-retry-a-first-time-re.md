@@ -4,12 +4,12 @@ name: "Unit-suite ratchet: retry a first-time red file once before it blocks; lo
 description: >
   Unit-suite ratchet: retry a first-time red file once before it blocks; log retried passes as suspected flakes (T-4866, operator answer a)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/audit/audit.sh, agents/audit/unit-suite.sh, agents/audit/unit_suite_flaky.py, lib/config.sh, web/blueprints/config.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T15:30:55Z
-last_update: 2026-10-28T15:43:03Z
-date_finished: null
+last_update: 2026-10-28T15:44:07Z
+date_finished: 2026-10-28T15:44:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -371,3 +371,20 @@ bin/fw vendor self --check --task T-4875
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4875-unit-suite-ratchet-retry-a-first-time-re.md
 - **Context:** Initial task creation
+
+### 2026-10-28T15:44:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3e9b89e0
+- **Timestamp:** 2026-10-28T15:44:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Every retried-and-passed red is appended to a flake log (e.g. .context/audits/unit-suite/flakes.jsonl: test name, file, first-run failure output path, retry result, timestamp, HEAD) and named in the a
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/unit-suite/flakes.jsonl in: Every retried-and-passed red is appended to a flake log (e.g. .context/audits/unit-suite/flakes.jsonl: test name, file, first-run failure output path,`
