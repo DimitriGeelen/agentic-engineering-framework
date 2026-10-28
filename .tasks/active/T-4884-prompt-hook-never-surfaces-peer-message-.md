@@ -108,7 +108,7 @@ bvp_scores_proposed:
 - [x] Localised in ## Context from 0506's own data (asked via sidecar, their repo is not read): their framework version, the receiver events for 7bde4624 (INJECT_* lines and reasons), the prompt-hook entry in their .claude/settings.json, and our side's ledger (SENT/RECEIVED/REPLIED within 90 s, 2026-10-28 20:55-20:56)
 - [x] Root cause named: which step between "receiver stored the message" and "prompt hook printed its text" dropped the text, and why no HANDED_OVER/UNCONFIRMED event was written for three re-injections
 - [x] If the cause is in framework code on current bleeding-edge: fixed with a unit test that reproduces 0506's case; if it is fixed already in a newer release than theirs, the RCA names the commit and 0506 gets upgrade guidance — fixed by upgrading (sandbox reproduction in ## Context); the receiver-side safeguard is post-freeze T-4890
-- [ ] 0506 told the result
+- [x] 0506 told the result (msg 4339222a: upgrade to be.50, restart the session; T-4890 for the receiver guard)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
