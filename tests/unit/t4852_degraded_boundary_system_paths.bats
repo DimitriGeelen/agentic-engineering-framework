@@ -123,6 +123,33 @@ healthy() {
     [ "$status" -eq 0 ]
 }
 
+# T-4872 (ring20-dashboard, live be.48): a quoted or backslashed system root slipped
+# through. The payload is JSON, so a typed " arrives as \" and a typed \ as \\.
+@test "T-4872: degraded + redirect into a double-quoted /etc path is BLOCKED" {
+    degraded "$(bash_payload 'echo hi > \"/etc/systemd/system/x.service\"')"
+    [ "$status" -eq 2 ]
+}
+
+@test "T-4872: degraded + redirect into a single-quoted /etc path is BLOCKED" {
+    degraded "$(bash_payload "echo hi > '/etc/systemd/system/x.service'")"
+    [ "$status" -eq 2 ]
+}
+
+@test "T-4872: degraded + redirect into a backslash-escaped /etc path is BLOCKED" {
+    degraded "$(bash_payload 'echo hi > \\/etc/x')"
+    [ "$status" -eq 2 ]
+}
+
+@test "T-4872: degraded + cd into a quoted /etc then write is BLOCKED" {
+    degraded "$(bash_payload 'cd \"/etc\" && echo x > y')"
+    [ "$status" -eq 2 ]
+}
+
+@test "T-4872: degraded + quoted read of /etc stays allowed" {
+    degraded "$(bash_payload 'cat \"/etc/os-release\"')"
+    [ "$status" -eq 0 ]
+}
+
 @test "T-4852: healthy python output carries no degraded banner" {
     healthy "$(bash_payload "echo hi > $PROJ/out.txt")"
     [ "$status" -eq 0 ]

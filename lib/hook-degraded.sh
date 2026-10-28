@@ -84,9 +84,13 @@ hook_degraded_boundary() {
     # `/usr/bin/env`, `2>/dev/null`) stay allowed. A write is a redirect, a write verb,
     # dd of=, a cd into the root, or a Write/Edit tool aimed at it.
     local sys='/(etc|usr|var|boot)([/"[:space:]\\]|$)'
+    # T-4872: the payload is raw JSON, so a quoted target arrives as \"/etc, '/etc or
+    # \\/etc. Allow any run of quotes and backslashes before the root in the redirect,
+    # of= and cd alternatives (write verbs already absorb them through [^|;&]*).
+    local q=$'[\\\\"\']*'
     local wverb='(^|[^[:alnum:]_.-])(tee|cp|mv|install|ln|rsync|dd|sed|perl|truncate|chmod|chown|chgrp|touch|mkdir|rm|rmdir|unlink|shred|patch|tar|unzip|curl|wget)[[:space:]][^|;&]*'
     local wtool='"tool_name"[[:space:]]*:[[:space:]]*"(Write|Edit|MultiEdit|NotebookEdit)"'
-    if printf '%s' "$rest" | grep -qE -- ">[>|]?[[:space:]]*$sys|$wverb$sys|of=$sys|(^|[^[:alnum:]_])(cd|pushd)[[:space:]]+$sys" \
+    if printf '%s' "$rest" | grep -qE -- ">[>|]?[[:space:]]*$q$sys|$wverb$sys|of=$q$sys|(^|[^[:alnum:]_])(cd|pushd)[[:space:]]+$q$sys" \
        || { printf '%s' "$rest" | grep -qE -- "$wtool" \
             && printf '%s' "$rest" | grep -qE -- "\"(file_path|notebook_path)\"[[:space:]]*:[[:space:]]*\"$sys"; }; then
         _hook_degraded_banner "check-project-boundary" "$why" "The raw payload writes under a system root (/etc /usr /var /boot), so the call is BLOCKED (fail closed)."
