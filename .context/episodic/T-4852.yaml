@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4852: Degraded project-boundary gate (python3 broken) allows writes under /etc, /usr, /var, /boot
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T07:55:36Z
+# ============================================================================
+
+task_id: T-4852
+task_name: "Degraded project-boundary gate (python3 broken) allows writes under /etc, /usr, /var, /boot"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-28T07:27:24Z
+completed: 2026-10-28T07:55:14Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-28T08:34:47+01:00
+last_commit: 2026-10-28T08:55:12+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  degraded boundary gate refuses writes under /etc /usr /var /boot. tick final Agent AC (suites green, vendor in sync). RCA
+
+# Key outcomes
+outcomes:
+  - 'Reproduce first: a bats test shadows python3 with a failing stub and shows the gate exits 0 for a redirect into /etc/systemd/system/x; it fails before the fix'
+  - 'The degraded fallback refuses writes under /etc, /usr, /var, /boot as well as the existing roots; a write inside the project still passes; reads stay allowed'
+  - 'Consider whether the degraded list should instead be "anything outside the project root and the documented allow paths" (fail closed by default); record the choice in Decisions'
+  - 'With a working python3, behaviour is unchanged; existing boundary tests stay green; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-28 — degraded scan: write-indicated system roots, not "everything outside the project"'
+    chose: 'keep the existing foreign-project list (any mention blocks) and add a second rule: /etc /usr /var /boot block only when the raw payload shows a write — `>`/`>>`/`>|` redirect, a write verb (tee cp mv install ln rsync dd sed perl truncate chmod chown chgrp touch mkdir rm rmdir unlink shred patch tar unzip curl wget) before the path, `of=`, `cd`/`pushd` into the root, or a Write/Edit/MultiEdit/NotebookEdit tool with `file_path`/`notebook_path` there. Paths under PROJECT_ROOT are stripped first, as before.'
+    rationale: 'the AC requires reads to stay allowed; `cat /etc/os-release`, `/usr/bin/env`, `2>/dev/null` and `/tmp` appear in most commands, so fail-closed-on-anything-outside-root would turn a broken python3 into a total lockout of the session (and of the repair itself). Over-blocking is still accepted within the write rule (e.g. `cp /etc/hosts ./x` blocks because `cp` precedes an /etc path).'
+    alternatives_rejected: ['(a) patch 0032''s form — add /etc /usr /var /boot to the any-mention list: blocks every read of those roots, contradicting the read AC. (b) block anything outside project + allow list: same lockout, and the allow list (tmp, dev, home .claude, …) would need to be duplicated in bash and kept in sync with the python matcher.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/hook-degraded.sh'
+  - '.context/working/delegations.jsonl'
+  - '.tasks/active/T-4852-degraded-project-boundary-gate-python3-b.md'
+  - 'lib/hook-degraded.sh'
+  - 'tests/unit/t4852_degraded_boundary_system_paths.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T08:34:47'
+    action: 'T-4852: degraded boundary gate refuses writes under /etc /usr /var /boot'
+  - time: '2026-10-28T08:36:48'
+    action: 'T-4852: tick final Agent AC (suites green, vendor in sync)'
+  - time: '2026-10-28T08:55:12'
+    action: 'T-4852: RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 27 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, security, boundary]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 27
+  commits: 4
+  files_changed: 8
+  lines_added: 342
+  lines_removed: 14
+  footprint_refreshed_at: '2026-10-28T07:55:45Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4852-degraded-project-boundary-gate-python3-b.md
+generated_by: context-agent-hybrid
