@@ -1,8 +1,19 @@
 ---
 id: T-4866
-name: "Full fast suite shows first-time one-off reds that pass alone and under parallel load (three on 2026-10-28)"
+name: "Full fast suite shows first-time one-off reds that pass alone and under parallel
+  load (three on 2026-10-28)"
 description: >
-  Pattern, 2026-10-28, each a first-ever failure of that test, each passing alone and in 4-way parallel stress: (1) fw_pending_remind.bats test 5 (07:59Z, exit status only, unreproduced; T-4861 added output capture); (2) t2293_mcp_check.bats t3 (08:09Z, explained: live-manifest race, fixed by T-4862); (3) t4041_watchtower_fw_host.bats test 6 (09:21Z, watchtower.sh start under a 60 s health deadline, 0/12 under parallel stress, no output kept). Each one blocked a be-tag pre-push once. Host load was high (load avg up to ~90 on 24 cores overnight). Need: find whether the suite has other shared-state races of the T-4862 kind (tests writing the live repo, fixed ports, shared lock files), make failing tests keep their command output, and decide whether the pre-push ratchet should re-run a first-time red once before blocking (operator decision; record evidence here).
+  Pattern, 2026-10-28, each a first-ever failure of that test, each passing alone
+  and in 4-way parallel stress: (1) fw_pending_remind.bats test 5 (07:59Z, exit status
+  only, unreproduced; T-4861 added output capture); (2) t2293_mcp_check.bats t3 (08:09Z,
+  explained: live-manifest race, fixed by T-4862); (3) t4041_watchtower_fw_host.bats
+  test 6 (09:21Z, watchtower.sh start under a 60 s health deadline, 0/12 under parallel
+  stress, no output kept). Each one blocked a be-tag pre-push once. Host load was
+  high (load avg up to ~90 on 24 cores overnight). Need: find whether the suite has
+  other shared-state races of the T-4862 kind (tests writing the live repo, fixed
+  ports, shared lock files), make failing tests keep their command output, and decide
+  whether the pre-push ratchet should re-run a first-time red once before blocking
+  (operator decision; record evidence here).
 
 status: captured
 workflow_type: build
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T09:27:30Z
-last_update: 2026-10-28T09:27:30Z
-date_finished: null
+last_update: '2026-10-28T09:30:19Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-28T09:30:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4866: Full fast suite shows first-time one-off reds that pass alone and under parallel load (three on 2026-10-28)
