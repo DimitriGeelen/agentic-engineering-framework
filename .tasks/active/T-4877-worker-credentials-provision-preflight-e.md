@@ -1,8 +1,21 @@
 ---
 id: T-4877
-name: "Worker credentials: provision, preflight, expiry and rotation for unattended Claude workers (subscription only, never the interactive login)"
+name: "Worker credentials: provision, preflight, expiry and rotation for unattended
+  Claude workers (subscription only, never the interactive login)"
 description: >
-  ring20 (msg b57ecbc0, operator-requested, will recur in every project with unattended workers): on 2026-10-27 ring20's long-lived worker token was refused ('Your organization has disabled Claude subscription access for Claude Code - Use an Anthropic API key') while interactive logins kept working; nothing noticed until a preflight. Copying the interactive login to workers is wrong (refresh token rotates and locks others out; the sandbox would hold the operator's full session). Operator policy there: subscription only, no API keys. Asked of AEF: (1) a standard procedure to provision worker credentials (operator mints with 'claude setup-token', URL handed over as a clickable link; stored root-only or in the project's secret store, never printed; distributed to worker hosts); (2) a worker preflight that recognises this refusal and names the token's account and org; (3) expiry tracking (setup tokens ~1 year) with early warning and a rotation runme; (4) a rule: workers never reuse the interactive credential. Filed during the release freeze (T-4869): backlog.
+  ring20 (msg b57ecbc0, operator-requested, will recur in every project with unattended
+  workers): on 2026-10-27 ring20's long-lived worker token was refused ('Your organization
+  has disabled Claude subscription access for Claude Code - Use an Anthropic API key')
+  while interactive logins kept working; nothing noticed until a preflight. Copying
+  the interactive login to workers is wrong (refresh token rotates and locks others
+  out; the sandbox would hold the operator's full session). Operator policy there:
+  subscription only, no API keys. Asked of AEF: (1) a standard procedure to provision
+  worker credentials (operator mints with 'claude setup-token', URL handed over as
+  a clickable link; stored root-only or in the project's secret store, never printed;
+  distributed to worker hosts); (2) a worker preflight that recognises this refusal
+  and names the token's account and org; (3) expiry tracking (setup tokens ~1 year)
+  with early warning and a rotation runme; (4) a rule: workers never reuse the interactive
+  credential. Filed during the release freeze (T-4869): backlog.
 
 status: captured
 workflow_type: inception
@@ -12,8 +25,8 @@ tags: [post-freeze, credentials, workers]
 components: []
 related_tasks: []
 created: 2026-10-28T15:57:21Z
-last_update: 2026-10-28T15:57:21Z
-date_finished: null
+last_update: '2026-10-28T16:00:23Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +35,16 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-10-28T16:00:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=112,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4877: Worker credentials: provision, preflight, expiry and rotation for unattended Claude workers (subscription only, never the interactive login)
