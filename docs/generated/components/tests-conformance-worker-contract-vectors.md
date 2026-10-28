@@ -9,7 +9,7 @@
 Shared dispatched-worker contract: conformance vectors.
 Data only. One entry per conformance case of §9 of the shared worker contract
 ("Shared dispatched-worker contract — transition table and conformance spec",
-v0.3.3, contract_version wc/0.3). Every backend that claims conformance (hub,
+DRAFT v0.3.4 pending adoption, contract_version wc/0.3). Every backend that claims conformance (hub,
 local, any external backend per §6.6) runs these vectors through its own adapter.
 Ownership and how to contribute: README.md beside this file.
 Reading a vector
