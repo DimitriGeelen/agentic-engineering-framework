@@ -117,9 +117,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Sweep report docs/reports/T-4866-shared-state-sweep.md: every test file under tests/unit that reads or writes live-repo state (the real .context/, .tasks/, manifests), binds a fixed port, takes a shared lock or marker outside its own temp dir, or depends on the live Watchtower/host load; each finding with file:line, class and a one-line fix direction
-- [ ] Each finding classed fix-now (a race that can redden the pre-push ratchet) or note (harmless); fix-now findings get their own bug task each (one bug = one task)
-- [ ] fw_pending_remind.bats test 5 and t4041_watchtower_fw_host.bats test 6 each assessed in the report: plausible shared-state cause named, or "none found" with what was checked
+- [x] Sweep report docs/reports/T-4866-shared-state-sweep.md: every test file under tests/unit that reads or writes live-repo state (the real .context/, .tasks/, manifests), binds a fixed port, takes a shared lock or marker outside its own temp dir, or depends on the live Watchtower/host load; each finding with file:line, class and a one-line fix direction
+- [x] Each finding classed fix-now (a race that can redden the pre-push ratchet) or note (harmless); fix-now findings get their own bug task each (one bug = one task) — 3 fix-now: T-4886 (t4041), T-4887 (t3443), T-4888 (t3202); 9 notes stay in the report
+- [x] fw_pending_remind.bats test 5 and t4041_watchtower_fw_host.bats test 6 each assessed in the report: plausible shared-state cause named, or "none found" with what was checked
 - [x] Re-run-once decision: done as T-4875 (operator answer a, 2026-10-28)
 
 ### Human
@@ -306,6 +306,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+test -s docs/reports/T-4866-shared-state-sweep.md && grep -q "fix-now" docs/reports/T-4866-shared-state-sweep.md
+ls .tasks/active/T-4886-* .tasks/active/T-4887-* .tasks/active/T-4888-*
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -321,6 +324,22 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** on 2026-10-28, three tests failed for the first time each during the parallel fast suite and passed alone. Each failure blocked a be-tag pre-push once.
+
+**Root cause:** each had a different cause.
+- t2293: a live-manifest race, fixed by T-4862.
+- t4041 test 6: a real web.app start under a 60 s health deadline in the fast tier, plus a port chosen by bind-then-close that can be taken before start (sweep: fix-now, T-4886).
+- fw_pending_remind test 5: no shared state found. The cause could not be determined from what was kept, and T-4861's output capture will show it if it repeats.
+
+The sweep found two more tests of the same timing class: t3443 (`timeout 60` around a full audit; T-4887) and t3202 (TERM sent on a 4 s wall clock; T-4888).
+
+**Why structurally allowed:** the tree guard (T-4523) catches writes to tracked and non-ignored paths, but nothing checks how much timing headroom a fast-tier test has. Host load reached ~90 on 24 cores, while these tests assume a quiet host.
+
+**Prevention:**
+- T-4875 retries a first-time red once and records it in flakes.jsonl, so the next one-off red is named and doesn't block a push.
+- The three fix-now findings each have their own bug task.
+- The report lists 9 harmless findings to recheck if their conditions change.
 
 ## Evolution
 
