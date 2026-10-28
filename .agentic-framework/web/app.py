@@ -28,7 +28,7 @@ import sys
 from flask import Flask, abort, jsonify, render_template, request, session
 
 from web.config import Config
-from web.warmup import WARMUP_STATE, start_cache_warmup
+from web.warmup import WARMUP_STATE, start_cache_warmup, warm_before_serve
 from web.shared import APP_DIR, NAV_ITEMS, NAV_GROUPS, PROJECT_ROOT, build_ambient
 
 log = logging.getLogger(__name__)
@@ -444,6 +444,10 @@ def create_app() -> Flask:
         except Exception:
             result["tests"] = {"status": "unavailable"}
 
+        # T-4854: a watchdog probing right after a restart reads the warm-up here;
+        # /health never reads the corpus, so it does not wait for the cold build.
+        result["warmup"] = {k: WARMUP_STATE[k] for k in ("state", "started_at", "finished_at")}
+
         code = 200 if healthy else 503
         return jsonify(result), code
 
@@ -583,7 +587,8 @@ def main():
 
     # T-4363: build the corpus caches off the request thread, so the first
     # request (an operator's, or fw doctor's 5 s smoke probe) is not the cold build.
-    start_cache_warmup(app)
+    # T-4854: WATCHTOWER_WARM_BEFORE_SERVE=1 finishes it before the port binds.
+    start_cache_warmup(app, wait=warm_before_serve())
 
     print("Watchtower running at http://{}:{}".format(host, port))
     print("  Project root: {}".format(PROJECT_ROOT))
