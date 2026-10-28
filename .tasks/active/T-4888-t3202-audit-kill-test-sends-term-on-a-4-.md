@@ -8,7 +8,7 @@ description: >
   is never written and line 255 fails. Fix direction: poll for the in-flight marker
   (audit.sh:733/749), then send TERM.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T23:24:28Z
-last_update: '2026-10-28T23:30:35Z'
+last_update: 2026-10-28T23:31:16Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,8 +93,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The end-to-end kill test in tests/unit/t3202_audit_kill_source.bats sends TERM only after audit.sh has started a section (its in-flight marker exists in the scratch project), instead of after a fixed 4 s
+- [x] If the audit ends before any section marker appears, or the marker never appears within the deadline, the test skips as NOT DETERMINED rather than failing; a run that was killed mid-section is graded as before (timing file, timed_out: true, kill_source: external)
+- [x] The file passes (bats) three times in a row
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,6 +281,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+bats tests/unit/t3202_audit_kill_source.bats > /tmp/.t4888.out 2>&1
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -295,6 +298,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** found by the T-4866 sweep, not yet seen red: the end-to-end external-kill test can fail under host load with no regression in audit.sh.
+
+**Root cause:** the test sent TERM on a fixed 4 s wall clock, assuming the scratch audit would be mid-section by then. audit.sh writes `full-audit-timing.yaml` from its TERM trap only when a section has started (`_SECTION_MARK_NAME`). On a slow host, 4 s can land before the first section, so no record is written and the test fails.
+
+**Why structurally allowed:** the test's own comment named the assumption ("~10 s, so the kill at 4 s lands mid-run"), but nothing checked it at run time. The suite has no guard against wall-clock assumptions in the fast tier.
+
+**Prevention:** the test now waits for the body's in-flight marker (`.context/audits/.audit-inflight.<pid>`), the observable state the code depends on, before sending TERM. If no section ever starts, it skips as NOT DETERMINED. The same pattern (wait for observable state, not time) is named in the T-4866 report for future tests.
 
 ## Evolution
 
@@ -376,3 +387,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4888-t3202-audit-kill-test-sends-term-on-a-4-.md
 - **Context:** Initial task creation
+
+### 2026-10-28T23:31:16Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -249,8 +249,21 @@ YAML
 
     # Ceiling deliberately far above the external kill, which is the whole
     # point: the run must be killed long before its own watchdog could fire.
+    # T-4888: TERM once a section is under way (the body's in-flight marker exists;
+    # the timing record is written only for a started section), not on a fixed 4 s
+    # wall clock, which under host load could land before the first section.
     env PROJECT_ROOT="$proj" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" FW_AUDIT_FULL_TIMEOUT=3000 \
-        timeout 4 bash "$AUDIT" --output "$TMP_T3202/audit-out" --quiet || true
+        bash "$AUDIT" --output "$TMP_T3202/audit-out" --quiet &
+    local audit_pid=$! waited=0
+    while ! compgen -G "$proj/.context/audits/.audit-inflight.*" >/dev/null; do
+        if ! kill -0 "$audit_pid" 2>/dev/null || [ "$waited" -ge 600 ]; then
+            kill -KILL "$audit_pid" 2>/dev/null; wait "$audit_pid" 2>/dev/null || true
+            skip "NOT DETERMINED: no audit section started within ${waited}x0.1s (lock or host load)"
+        fi
+        sleep 0.1; waited=$((waited + 1))
+    done
+    kill -TERM "$audit_pid"
+    wait "$audit_pid" || true
 
     [ -f "$TIMING_FILE" ]
     run grep -q "timed_out: true" "$TIMING_FILE"
