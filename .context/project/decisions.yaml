@@ -5665,3 +5665,906 @@ decisions:
     date: 2026-10-24
     task: T-4748
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-810
+    decision: "Dissolve the rewiring and pin the existing refusal with a test."
+    scope: project
+    date: 2026-10-25
+    task: T-4728
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-811
+    decision: "store `<count> <session-key>` in the existing counter file; key = hook payload `session_id`, falling back to `session_id:` in `.context/working/session.yaml`; a different key (or a legacy bare number) starts at 0."
+    scope: project
+    date: 2026-10-25
+    task: T-4729
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-812
+    decision: "a `-h|--help` arm in each subcommand's own option loop, with `ensure_termlink` moved after the loop so usage works without the binary."
+    scope: project
+    date: 2026-10-25
+    task: T-4730
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-813
+    decision: "a completed-scoped lookup inside `do_inception_decide`'s not-found branch, pointing at the existing `fw inception correct` (T-4324)."
+    scope: project
+    date: 2026-10-25
+    task: T-4734
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-814
+    decision: "add `$TERMLINK_RUNTIME_DIR/` (realpath) to the read prefixes only when its last path component contains `termlink`."
+    scope: project
+    date: 2026-10-25
+    task: T-4731
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-815
+    decision: "byte-identity (`cmp -s`) against the same-named build in the upgrade source's `vendor/designer/`, plus untracked in the consumer's git. That directory is tracked in the framework repo and keeps every released build, and both upgrade paths (in-repo `fw upgrade <dir>`, and a consumer's clone of upstream) run with FRAMEWORK_ROOT on a full checkout."
+    scope: project
+    date: 2026-10-25
+    task: T-4736
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-816
+    decision: "`client.beta.messages.stream(..., betas=[\"server-side-fallback-2026-07-01\"], fallbacks=\"default\")`."
+    scope: project
+    date: 2026-10-25
+    task: T-4749
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-817
+    decision: "always emit `thinking`/`thinking_done` chunks."
+    scope: project
+    date: 2026-10-25
+    task: T-4749
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-818
+    decision: "`anthropic>=1.0` (PyPI today: 2.3.0 latest)."
+    scope: project
+    date: 2026-10-25
+    task: T-4749
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-819
+    decision: "list each tracked runtime path and print one literal `git rm --cached -- <paths>` command. Never untrack."
+    scope: project
+    date: 2026-10-25
+    task: T-4701
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-820
+    decision: "`git ls-files -ci --exclude-standard -x <each framework rule>`, scoped to `.context/working`."
+    scope: project
+    date: 2026-10-25
+    task: T-4701
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-821
+    decision: "fall back only when `-c` failed fast (within `AEF_START_FALLBACK_SECS`, default 15 s) with a code other than 3; exit 3 (T-3890/T-4048 refusal) never falls back."
+    scope: project
+    date: 2026-10-25
+    task: T-4721
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-822
+    decision: "ship it as `install/launcher/aef-start.sh` (T-3659 IW-4, adopted with the GO) and point the doc at it."
+    scope: project
+    date: 2026-10-25
+    task: T-4721
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-823
+    decision: "discovered dirs join the candidate list only when `TERMLINK_RUNTIME_DIR_FALLBACK` is unset (the built-in default); an explicit FALLBACK stays the authoritative list. A discovered dir still has to pass `fw_termlink_hub_live`."
+    scope: project
+    date: 2026-10-25
+    task: T-4722
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-824
+    decision: "run all 42 HEAD-side red/undetermined/changed/differing files on `git archive` trees of v1.8.14 and HEAD (per-file, unit-suite.sh invocation, foreground chunks)."
+    scope: project
+    date: 2026-10-25
+    task: T-4739
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-825
+    decision: "a fixed peer list (`AEF`, `TermLink`, `framework`, `upstream`, possessive allowed), plus the open `<project>#T-X` form for any other project, plus inheritance across a `/` chain. Inside the framework repo itself (FRAMEWORK.md + bin/fw at root), `AEF`/`framework` count as local, so the gate is not weakened where those names are the local project."
+    scope: project
+    date: 2026-10-25
+    task: T-4698
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-826
+    decision: "a T-3766-style strict-grammar exemption that blanks only the value token of"
+    scope: project
+    date: 2026-10-25
+    task: T-4751
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-827
+    decision: "note only when the inherited root is not a project (missing dir under a hook context, or a dir with no `.framework.yaml`/`.tasks`) and is not the home directory; skip it entirely under `fw hook NAME`. No new env/config key."
+    scope: project
+    date: 2026-10-26
+    task: T-4756
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-828
+    decision: "the grouped summary replaces the one-path-per-line list; the `git rm --cached` command stays complete (it is the full list). Groups: a path under a subdirectory of `.context/working` groups as `<that first-level dir>/*`; a top-level file groups under the first glob rule it matches (`*.log.*` → `.context/working/*.log.*`); an exact-name rule (or a glob group of one) shows the path itself. Every line is `N x <label>`, largest first, ties by label."
+    scope: project
+    date: 2026-10-26
+    task: T-4754
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-829
+    decision: "match code spans per block (a run of lines between blank lines and block starts: list item, heading, blockquote, table row, fence, `---`; inside frontmatter, a top-level YAML key). The bash reader strips the whole file in one pass and indexes the result by line number."
+    scope: project
+    date: 2026-10-26
+    task: T-4762
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-830
+    decision: "keep `_substitutions`' over-approximate body list for the write scan, so every body it finds that tokenises is still scanned for writes, including bodies inside single quotes such as `bash -c '…$(…)…'`. Only the \"does not tokenise\" refusal for those bodies is moved to the quote-aware lexer (`executed_texts`) whenever the lexer parses the command. That lexer pass now refuses a real body that does not tokenise, where it used to skip it silently. If the lexer fails, the old behaviour stays."
+    scope: project
+    date: 2026-10-26
+    task: T-4763
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-831
+    decision: "`fw sidecar settle-sent <client_msg_id> --reason \"…\"`"
+    scope: project
+    date: 2026-10-26
+    task: T-4757
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-832
+    decision: "one appended ack-ledger row, same state, `error: \"settled: <reason>\"`, plus `settled_by` and `reason` fields; also one row in the waiting register's closures so `fw sidecar waiting` stops listing it."
+    scope: project
+    date: 2026-10-26
+    task: T-4757
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-833
+    decision: "a `retry.closed_ids()` helper (`is_open` over `latest_rows`) that waiting's hub-path loop calls."
+    scope: project
+    date: 2026-10-26
+    task: T-4766
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-834
+    decision: "`do_inception_decide` commits its own paths with `git commit --only -m \"T-XXX: inception decision <V>\" -- <task file (active+completed)> <episodic> <ledger>`, and skips this under `--from-watchtower`."
+    scope: project
+    date: 2026-10-26
+    task: T-4768
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-835
+    decision: "keep the working-tree budget (verdicts unchanged); add a summary-line note where the row is uncommitted, and a hint on the FAIL line everywhere else."
+    scope: project
+    date: 2026-10-26
+    task: T-4769
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-836
+    decision: "the receiver prompt hook, `lib/sidecar/hooks.py prompt` (wired as `fw hook sidecar-receiver-adapter`)."
+    scope: project
+    date: 2026-10-26
+    task: T-4773
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-837
+    decision: "candidate (1) (hook detects handled ids, says so with the ledger time) AND (2) (the line carries `typed <UTC minute>`)."
+    scope: project
+    date: 2026-10-26
+    task: T-4773
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-838
+    decision: "handled = handed over, dropped, or in `seen.withheld` (answered / shown as often as allowed). Time = latest HANDED_OVER row in the receiver ledger for those ids, else the latest ledger row for them."
+    scope: project
+    date: 2026-10-26
+    task: T-4773
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-839
+    decision: "`lib/arc_focus_health.py`, emitting `VERDICT|msg|hint` lines, called by handover.sh and bin/fw doctor."
+    scope: project
+    date: 2026-10-26
+    task: T-4774
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-840
+    decision: "one key `ARC_FOCUS_STALE_DAYS` (default 14) for both the age limit and the DRIFT look-back; the DRIFT fraction is a module constant (`MIN_FRACTION = 0.10`) printed in the message."
+    scope: project
+    date: 2026-10-26
+    task: T-4774
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-841
+    decision: "only when the caller-resolved claude is an npm install (readlink -f lands in `node_modules/@anthropic-ai/claude-code/`) and `$HOME/.local/bin/claude` is executable; ~/.local/bin is inserted just before the npm dir."
+    scope: project
+    date: 2026-10-26
+    task: T-4775
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-842
+    decision: "a single `_fw_watchdog` function in the run.sh template between T-4776 markers, called at all three sites."
+    scope: project
+    date: 2026-10-26
+    task: T-4776
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-843
+    decision: "one predicate `_t4777_own_repo` (toplevel realpath == PROJECT_ROOT realpath) gating all four git sites in the close path: (1) `_t2864_reconcile_index` `git add -A` (:76); (2) `_t4094_note_move_source` `ls-tree HEAD` read (:142, so the hint does not name outer-repo paths); (3) the two archive `git mv` sites (:2206 status-transition move, :2888 post-close move); (4) the T-4094 post-close `git add` of completed file + episodic (:3267). The remaining `git -C \"$PROJECT_ROOT\"` calls (:102-109 remote lookup for the printed hint) are read-only and left as is."
+    scope: project
+    date: 2026-10-26
+    task: T-4777
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-844
+    decision: "a catalogue pattern id named in the criterion text (e.g. \"no findings on `tautology`\") whose detector `scan_task` runs (`SCANNED_PATTERN_IDS`), with zero findings — kept or override-suppressed — for that pattern in this scan."
+    scope: project
+    date: 2026-10-26
+    task: T-4778
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-845
+    decision: "updated the positive cases in tests/unit/test_reviewer_auto_tick.py to name a scanned pattern; their AC text (\"static check passes\", \"reviewer audit passes — sentinel\") names none, so under the new contract they correctly stay unticked."
+    scope: project
+    date: 2026-10-26
+    task: T-4778
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-846
+    decision: "a path touched by a task-naming commit after R counts only if (a) it is not a release artifact (top-level `dist/`, constant `_RELEASE_ARTIFACTS`) and (b) its content at HEAD differs from its content at R (`git diff --name-only R HEAD`). A source change behind a dist/ copy is still caught, on the source path itself."
+    scope: project
+    date: 2026-10-26
+    task: T-4779
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-847
+    decision: "`verdict_ledger.py apply` prints one `WITHDRAWN: <task> AC<n> verdict <id> — <reason>` line per withdrawal on stderr; JSON stays on stdout."
+    scope: project
+    date: 2026-10-26
+    task: T-4779
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-848
+    decision: "a separate, hook-scoped scanner that flags both backtick and `$(`."
+    scope: project
+    date: 2026-10-26
+    task: T-4782
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-849
+    decision: "quoted heredoc (`python3 - \"$APPROVAL_YAML\" <<'PY'`), timestamp computed in Python."
+    scope: project
+    date: 2026-10-26
+    task: T-4782
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-850
+    decision: "`tmux -L fw-agents-<16 hex>`, where the hex is the T-3693 fw-project id (sha256 of the realpath project root, the same walk `_fw_project_tag` and `lib/sidecar/inject.py project_tag()` do). bin/claude-fw `_cfw_tmux_socket` and inject.py `tmux_socket()` derive it independently; a bats case pins them equal. The session name stays `fw-<dir>-<pid>`, so the 055 cockpit and TermLink find it by name; `tmux -L fw-agents-<id> ls` lists it. Started by the wrapper after its T-4636 scope re-exec, so the server lives in the scope of the project's own first wrap."
+    scope: project
+    date: 2026-10-26
+    task: T-4781
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-851
+    decision: "keep `$TMUX` in the pane. With one server per project, a bare `tmux kill-server` issued from a pane now ends only that project's server."
+    scope: project
+    date: 2026-10-26
+    task: T-4781
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-852
+    decision: "the adapter declares the variants it runs by the equivalent in an optional `adapter.equivalent_routes` set (`\"CC-16/supervisor-refusal\"`). For a declared route every step result must carry a non-empty `\"equivalent\"`, else the variant fails (\"taken silently\"); the string is named in the case result. An undeclared adapter is judged on the steps as today. An `\"equivalent\"` on a variant that offers none fails."
+    scope: project
+    date: 2026-10-26
+    task: T-4793
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-853
+    decision: "per-step `expect_equivalent:` and per-variant `then.admissible_histories_equivalent:`, used only when the variant is declared in `equivalent_routes` AND the step result names the equivalent (the T-4793 gate already makes \"declared\" imply \"named\", or the step fails as taken silently)."
+    scope: project
+    date: 2026-10-26
+    task: T-4796
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-854
+    decision: "`admissible_histories_equivalent` for alive/undecidable lists both the hub history and the T-RECLAIM one; absent lists [running, lost] and [running, running, lost] (lost only)."
+    scope: project
+    date: 2026-10-26
+    task: T-4796
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-855
+    decision: "a variant-level `then.final_equivalent` (replaces `final` on a declared route) where `A2: null` means the attempt must not exist; runner and checker both enforce it."
+    scope: project
+    date: 2026-10-27
+    task: T-4800
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-856
+    decision: "check_vectors refuses `fence_reject: dispatch_closed` in any plain `expect` (including any_of); only `expect_equivalent` may name it."
+    scope: project
+    date: 2026-10-27
+    task: T-4800
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-857
+    decision: "split CC-15 so its final allocate sits in a single variant, `allocate-after-resolve`. The shared steps keep the cas_mismatch allocate and the three resolves."
+    scope: project
+    date: 2026-10-27
+    task: T-4800
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-858
+    decision: "every fence_reject is appended to a dispatch-level `fence_log` (plus `notices` where §3.3 asks for one); no attempt field changes."
+    scope: project
+    date: 2026-10-27
+    task: T-4802
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-859
+    decision: "the store applies outcome rule 1 strictly (commission must equal the dispatch id); the adapter writes `commission: <dispatch_id>` into vector hand-backs, which omit it."
+    scope: project
+    date: 2026-10-27
+    task: T-4802
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-860
+    decision: "a probe `absent` on a seen-alive attempt starts G; after G the sweep writer reads the worker-dir evidence and takes T3/T3b/T7b when a bound signed completion exists, else T4/T7c (§3.2, §6.3). `confirm_end` = probe confirmed and G elapsed; on a `done` attempt it is forbidden_transition before any evidence is read. `hub_restart` re-instantiates the Store over the same files. G = 120 s, so the plain CC-08 path holds and `equivalent_routes` is empty: every transition-subject case ran its real path."
+    scope: project
+    date: 2026-10-27
+    task: T-4802
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-861
+    decision: "{supervisor_gen, caller_chosen_ids}. Not offered: answer_channel (questions can be appended, fenced, because CC-06 fences that write; answers/wait/ack are not built), registry_epoch, lease, real_worker. Dispatch closure (§4.7) not built: dispatches stay open, as on the hub. Signed completion = HMAC-SHA256 with an injected key (production key wiring is option B's)."
+    scope: project
+    date: 2026-10-27
+    task: T-4802
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-862
+    decision: "two tests in tests/unit/test_worker_contract_vectors.py asserted lib/dispatch_records.py does not exist (\"local backend now exists: update this test\"). They now point the runner at an absent path through a fixture, so the no-backend path stays tested, and a third test pins that the real local backend reports no fail and no not-implemented. Runner, vectors and spec unchanged."
+    scope: project
+    date: 2026-10-27
+    task: T-4802
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-863
+    decision: "prepend `commission: <case dispatch_id>` as the first key of every inline hand-back mapping (25 of them; `handback: absent` left alone), so each line changes only by that insertion. That is the §2 schema order (commission first)."
+    scope: project
+    date: 2026-10-27
+    task: T-4803
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-864
+    decision: "yes. The variant is malformed only on its nonce."
+    scope: project
+    date: 2026-10-27
+    task: T-4803
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-865
+    decision: "`D-01JBBBBBBBBBBBBBBBBBBBBB16`: a grammatical ULID id that belongs to no case."
+    scope: project
+    date: 2026-10-27
+    task: T-4803
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-866
+    decision: "keep `{\"commission\": did, **hb}`. The hand-back's own commission already wins over the fill-in, so the code needs no change. Only the docstring changes, saying the fill-in now applies only to hand-backs without the field (older copies of the vectors). A test monkeypatches the adapter to overwrite commission and shows that the new variant then FAILs. That proves the pass-through is what makes rule 1 bite."
+    scope: project
+    date: 2026-10-27
+    task: T-4803
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-867
+    decision: "a stored termination refuses the restart only when continuous mode was armed when claude-fw launched this run, OR the state file's `last_resumed_at` is at/after this run's start (armed mid-session, or the injector processed an armed iteration in it)."
+    scope: project
+    date: 2026-10-27
+    task: T-4806
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-868
+    decision: "the brake ignores the exact pre-T-4806 disarm form (`disarmed by operator at …`); `fw continuous status` shows a new-style disarm on its own line (`Disarmed by operator at …: <reason>`)."
+    scope: project
+    date: 2026-10-27
+    task: T-4806
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-869
+    decision: "accept it. Disarm still stops the loop (no armed directive is injected; the clean-exit re-arm path checks `enabled`), but a budget restart of that session proceeds as a plain T-179 restart. The operator's tools for \"stop restarting\" are `--no-restart` and `.continuous-halt`."
+    scope: project
+    date: 2026-10-27
+    task: T-4806
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-870
+    decision: "`termlink spawn --env TERMLINK_IDENTITY_FILE=<path>`, built as a bash array and added only when the variable is set."
+    scope: project
+    date: 2026-10-27
+    task: T-4811
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-871
+    decision: "(a) writers insert the entry at the end of `## Updates` (before the next `## `) through one shared helper, lib/task_updates.py; EOF append only when the file has no `## Updates`."
+    scope: project
+    date: 2026-10-27
+    task: T-4812
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-872
+    decision: "shlex.split plus explicit inline-code flags (bash/sh any short flag containing c; python -c/-m; node -e/-p) inside Check 6."
+    scope: project
+    date: 2026-10-27
+    task: T-4813
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-873
+    decision: "print each broken path; advise `fw upgrade` only when a framework hook (bare fw / vendored bin/fw) is broken, otherwise \"create the script or fix the hook in .claude/settings.json\"."
+    scope: project
+    date: 2026-10-27
+    task: T-4813
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-874
+    decision: "INFO \"has no WorkingDirectory — cannot attribute it to this project\", never LIVE."
+    scope: project
+    date: 2026-10-27
+    task: T-4819
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-875
+    decision: "give t4357's stub a `show` reply naming PROJECT_ROOT as owner, rather than keep LIVE reachable without an owner."
+    scope: project
+    date: 2026-10-27
+    task: T-4819
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-876
+    decision: "keep `*.upstream` out of the `git add` line, say so there, and list each one in a separate summary block with its `diff -u` command and the keep/take/merge actions."
+    scope: project
+    date: 2026-10-27
+    task: T-4814
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-877
+    decision: "the first literal `--` word ends the scan, unless the word before it is `-L` (or a short cluster ending in L) or `--decorate-refs[-exclude]`, the cmd_log_init parse_options options that take a separate value and would eat `--` before setup_revisions sees it."
+    scope: project
+    date: 2026-10-27
+    task: T-4816
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-878
+    decision: "lex the value word with the existing lexer (`_lex_spans`) and blank everything except the substitutions bash runs (delimiters kept). When such a substitution is kept, the \"command names a guarded path\" signal is still read from the unblanked command, so T-4499's refusal of `--body \"\\`git log --output=$F\\` .tasks/…\"` stands."
+    scope: project
+    date: 2026-10-27
+    task: T-4817
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-879
+    decision: "blank (newline-preserving) only HTML comments that contain an AC bullet (`- [ ]`/`- [x]`) or a `##`+ heading; keep other comments verbatim. Applied once in `scan_task`."
+    scope: project
+    date: 2026-10-27
+    task: T-4815
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-880
+    decision: "a single `ls-tree -z` of `.tasks/` at `rev`, with blobs read through the scan's existing `_BlobReader` and only for the task ids that have findings or pending notes. The result is a `(task, full key)` set. The full key is added to each finding, because `criterion` is truncated to 100 characters and two criteria could share a prefix."
+    scope: project
+    date: 2026-10-27
+    task: T-4824
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-881
+    decision: "filter them with the same set, so a NOTE for a tick that is now unticked is dropped (055's known cosmetic gap, closed). The verdict (rc) is unchanged."
+    scope: project
+    date: 2026-10-27
+    task: T-4824
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-882
+    decision: "the pre-ticked Desktop criterion is unticked when its tick moves to Mobile, so its finding now resolves. The Mobile tick stands and still FAILs, and the test now asserts that Mobile is the one reported."
+    scope: project
+    date: 2026-10-27
+    task: T-4824
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-883
+    decision: "A worktree's own `.context/working/focus.yaml` when it exists (T-2463 unchanged). When it does not exist, the main checkout's file, resolved in the one shared resolver `lib/paths.sh:fw_focus_file` that both the gate and `fw context focus` call. The gate reads `session.yaml` from the directory the focus came from, so the stamp check compares like with like. `fw context init` in such a worktree leaves an existing main focus untouched rather than creating a fork or resetting it. The fallback applies only to the tree's own `.context`: a sandboxed `CONTEXT_DIR` (T-3141) is never redirected, and session-scoped focus (T-3038) is unchanged."
+    scope: project
+    date: 2026-10-27
+    task: T-4820
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-884
+    decision: "delete the stale `checkpoint.sh status` bullet from the template, and pin \"no section repeats a bold-led bullet\" in a test."
+    scope: project
+    date: 2026-10-27
+    task: T-4821
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-885
+    decision: "remove CLAUDE.md.bak when it is byte-identical to CLAUDE.md (after a rewrite that changed no byte, or on an up-to-date run); keep any differing backup."
+    scope: project
+    date: 2026-10-27
+    task: T-4821
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-886
+    decision: "`upgrade` never redirects (`bin/fw:_fw_reexec_authority`), which generalises T-4661. `lib/upgrade.sh` also passes `FW_REEXEC_DEPTH=1` to its own `cron generate` child."
+    scope: project
+    date: 2026-10-27
+    task: T-4822
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-887
+    decision: "render with the main checkout (the parent of the git common dir, only when that dir is named `.git`), and write to the current checkout's file."
+    scope: project
+    date: 2026-10-27
+    task: T-4822
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-888
+    decision: "when the new pinned build is in place, remove a superseded root build that is"
+    scope: project
+    date: 2026-10-27
+    task: T-4823
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-889
+    decision: "an explicit key list, `vendored_path validator_path` (bin/fw do_vendor loop; `_DESIGNER_PIN_PATH_KEYS` + `_designer_pin_path` in lib/upgrade.sh). File names always come from the pin, and superseded siblings are pruned by the pinned name's stem (`<stem>-*.<ext>`), so no file name is hard-coded."
+    scope: project
+    date: 2026-10-27
+    task: T-4836
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-890
+    decision: "`_load_validator` checks the first existing file out of PROJECT_ROOT/validator_path and FRAMEWORK_ROOT/validator_path. A sha256 mismatch on that file is 503, never a fall-through to the other copy."
+    scope: project
+    date: 2026-10-27
+    task: T-4836
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-891
+    decision: "absent vendored validator → rc 5, mismatch → rc 1, after the build has installed; a pin without validator_path is skipped with rc 0."
+    scope: project
+    date: 2026-10-27
+    task: T-4836
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-892
+    decision: "422 \"field catalog path is outside the project root\" (the setting is malformed), resolved with symlinks followed."
+    scope: project
+    date: 2026-10-27
+    task: T-4832
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-893
+    decision: "DESIGNER_FIELD_CATALOG_MAX_BYTES (default 10485760), env > .framework.yaml > default, registered in both registries. Response is `Cache-Control: no-store`, matching the designer's fetch."
+    scope: project
+    date: 2026-10-27
+    task: T-4832
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-894
+    decision: "one table `_LIFECYCLE_NODES` in web/blueprints/designer_api.py: captured+now/next to tl_create, captured+later to tl_parked, started-work to tl_work, issues to tl_heal, work-completed in active/ to tl_human_review. Unmapped status gives NO-POSITION; a mapped node missing from the map gives STALE."
+    scope: project
+    date: 2026-10-27
+    task: T-4831
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-895
+    decision: "pin `validator_*` keys in `policy/designer-pin.yaml`; `fw designer sync --from-tag` also fetches the validator at the tag, checks it against the kit SHA256SUMS at that tag (itself checked against MANIFEST `kit_sha256`) AND the pin, and installs it read-only at `vendor/designer/validate-workflow-<ver>.py`. The route loads it by path (importlib), re-verifying the sha against the pin on first use; absent, mismatched or failing to import gives 503."
+    scope: project
+    date: 2026-10-27
+    task: T-4830
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-896
+    decision: "add PYTHONDONTWRITEBYTECODE=1 to env.json in cmd_dispatch (review task_type), so it is signed and exported to all seats by run.sh."
+    scope: project
+    date: 2026-10-27
+    task: T-4835
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-897
+    decision: "narrow the lock to slug→acquire→generate_id→template write→release, and run generate_id and the template writers in subshells that `eval \"$(keylock_subshell_close_cmd)\"` first; lib/keylock.sh unchanged."
+    scope: project
+    date: 2026-10-27
+    task: T-4841
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-898
+    decision: "record in run.sh at launch time (stderr line + jq update of meta.json keys"
+    scope: project
+    date: 2026-10-27
+    task: T-4843
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-899
+    decision: "`OPENCODE_CONFIG_CONTENT={\"agent\":{\"plan\":{\"permission\":{\"external_directory\":{\"<SEAT_TMP>\":\"allow\",\"<SEAT_TMP>/*\":\"allow\"}}}}}`, written by cmd_dispatch into the review seat's signed env.json (opencode kind only), built by one function (`verdict_ledger.opencode_seat_config`), and checked by the ledger's env check to equal exactly that value for the registered wdir. Verified on the installed opencode 1.18.31: `opencode debug agent plan` with this env shows the two new allow rules appended after the built-in ones, with `external_directory \"*\" → ask` and `edit \"*\" → deny` unchanged."
+    scope: project
+    date: 2026-10-27
+    task: T-4844
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-900
+    decision: "a signed `seat_state` field in the runtime completion (`verdict` / `no-verdict` / `failed`), a `NO-VERDICT:` line in stderr.log, close_state `no-verdict` for a review dispatch in that state (counted as a failure in the route cache), and `judge_cli._unavailable_reason` returning `no-verdict (exit 0)` (or `no-verdict: <cause>` when a known cause is in the logs)."
+    scope: project
+    date: 2026-10-27
+    task: T-4844
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-901
+    decision: "edit flat (top-level) keys line by line: replace the key line plus its continuation lines (indented, blank, or top-level `- ` items; trailing blank/comment lines left in place), or append one line. The value is rendered with `yaml.safe_dump({key: value})` so quoting is correct. Dotted keys keep the ruamel round-trip."
+    scope: project
+    date: 2026-10-27
+    task: T-4847
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-902
+    decision: "keep the line-wise edit (832's need: set changes only its own key) and fix the reader instead, as its own task, so a folded value reads correctly however it got there. The parent also updated `tests/unit/t3735_config_set_no_fold.bats` test 2, which asserted the fallback dumper's warning on a flat key: it now drives the fallback through a dotted key and still checks the long value on a flat set."
+    scope: project
+    date: 2026-10-27
+    task: T-4847
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-903
+    decision: "drop it; the whole key line is replaced."
+    scope: project
+    date: 2026-10-27
+    task: T-4847
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-904
+    decision: "the owned dir stays under the caller's $TMPDIR, named `aef-<label>-<pid>-XXXXXX`; the sweep removes AEF-named dirs whose owner pid is dead, and top-level `bats-run-*` only when older than 24 h, owned by this uid; in both cases only when no process holds a cwd or fd inside. Nothing else."
+    scope: project
+    date: 2026-10-27
+    task: T-4846
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-905
+    decision: "the sweep removes only `aef-bats-<pid>-*` and `aef-verify-<pid>-*` with a dead owner pid and nothing holding them; the `bats-run-*` branch is removed."
+    scope: project
+    date: 2026-10-27
+    task: T-4846
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-906
+    decision: "test bodies that quote a command shape (`bin/fw task update T-9999 …`, `git commit -m \"T-9999: …\"`, `fw context add-learning --task T-9999`, the `'\\''` quoting), not the AC's literal `--body 'see T-9999'`."
+    scope: project
+    date: 2026-10-27
+    task: T-4825
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-907
+    decision: "call `lib/shell_write_scan.py:_blank_data_args` from `_fw_extract_drift_target`, only when the command contains both `sidecar` and `--body` (keeps the python call off every other Bash command); on lexer failure keep the original text, so the gate errs toward refusing."
+    scope: project
+    date: 2026-10-27
+    task: T-4825
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-908
+    decision: "set up the same locals in `_bash_gate_reason` (`_FW_GIT_CWD` from `_fw_initial_git_cwd`, advanced per segment by `_fw_advance_cwd` with the chain operator; `_FW_LIT_VARS`), and skip loop keyword headers, judging the command a `do`/`while`/`until` carries."
+    scope: project
+    date: 2026-10-27
+    task: T-4827
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-909
+    decision: "retry failed routes once inside `web/smoke_test.py` (one pass over the failures, after a 2 s pause, capped by a 60 s budget)."
+    scope: project
+    date: 2026-10-27
+    task: T-4826
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-910
+    decision: "env tier for registry keys only (the canonical `FW_<KEY>` that `fw_config` reads), plus an explicit `--file` flag for the stored value. A key absent from both env and file still exits 1, as before."
+    scope: project
+    date: 2026-10-27
+    task: T-4807
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-911
+    decision: "AGE is suppressed when the arc's share of the window's task commits is at or above DRIFT's MIN_FRACTION (10%) — exactly when DRIFT is silent. The old timestamp moves onto the OK line (\"active: k of n … (focus set D, N days ago)\"), which `fw doctor` prints as OK and the handover does not print."
+    scope: project
+    date: 2026-10-27
+    task: T-4828
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-912
+    decision: "keep `start armed` in the ledger; make audit's G-099 check apply the same never-armed / disarmed exemption as `fw doctor` (T-4358), keyed on the turn driver's live reason."
+    scope: project
+    date: 2026-10-27
+    task: T-4809
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-913
+    decision: "the existing shell reader `get_yaml_field` (lib/yaml.sh) at all four sites."
+    scope: project
+    date: 2026-10-27
+    task: T-4849
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-914
+    decision: "escape in create-task.sh, writing `name:` as `json.dumps(name)` (a JSON string is a valid YAML double-quoted scalar) in all three write paths. Promote additionally reads the inbox with yaml.safe_load."
+    scope: project
+    date: 2026-10-27
+    task: T-4787
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-915
+    decision: "whitespace-collapsed first sentence (split at `.`/`!`/`?` + space), cut at 120 characters on a word boundary with \"…\". The full text goes into description (after \"Promoted from observation OBS-NNN: \") and as a `>` quote under `## Context`."
+    scope: project
+    date: 2026-10-27
+    task: T-4787
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-916
+    decision: "the hook reads the `[FAIL]` titles, first `Evidence:` line and `Scope: worktree` tag back out of the audit output it already captures (`$_t3126_out`), strips ANSI, truncates evidence to 140 chars, caps the list at 10."
+    scope: project
+    date: 2026-10-27
+    task: T-4789
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-917
+    decision: "no change. The lock branch already says \"audit COULD NOT RUN … This is not an audit failure\" and names the holder (T-4542); the test pins that it never prints \"audit has FAILURES\" or a failing-check list."
+    scope: project
+    date: 2026-10-27
+    task: T-4789
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-918
+    decision: "call `bin/fw vendor self --check --task <id>` itself, behind a cheap `git log` pre-filter (same commit grep as `--check --task`) that skips the gate when the task's commits touched only `.tasks/`, `.context/`, `.agentic-framework/`, `docs/` or `tests/`."
+    scope: project
+    date: 2026-10-28
+    task: T-4791
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-919
+    decision: "`--skip-vendor-sync \"reason\"` and `FW_SKIP_VENDOR_SYNC=1`, both logged Tier-2 and both refused under CLAUDECODE=1 without `--i-am-human`, mirroring `--skip-reviewer-severe` (T-4197)."
+    scope: project
+    date: 2026-10-28
+    task: T-4791
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-920
+    decision: "the watchdog (a separate subshell, never the interrupted process) writes the record from a marker the body rewrites at each `section_mark` (`.context/audits/.audit-inflight.<body pid>`: name + start SECONDS, one printf). Order: write `.fired` + record, TERM, up to 5 s grace (`_FW_AUDIT_KILL_GRACE`), then STOP the body, KILL its whole descendant tree and the body, wait (bounded 10 s), re-assert the record. Every later writer (`_audit_write_timing_yaml`, `_audit_record_section_run`) reads `.fired` and cannot write `timed_out: false` for the killed run/section. Tmp files are pid-suffixed so the two writers never share one. The holder maps a KILLed body (137 + `.fired`) to 124 and removes the marker however the body exits; the body's EXIT trap is left unchanged (t3298 pins it)."
+    scope: project
+    date: 2026-10-28
+    task: T-4840
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-921
+    decision: "when no section is in flight, the watchdog records `killed_in_section: \"(startup)\"` (before the first section) or `\"(summary)\"` (after the last), in `last_run:` only, never in `section_runs:`."
+    scope: project
+    date: 2026-10-28
+    task: T-4840
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-922
+    decision: "keep a separate bash ERE in `hook_degraded_tier0` (one class per fast-path keyword), and add a drift test that parses the fast-path regex and needs a sample command per alternative, blocked both healthy and degraded."
+    scope: project
+    date: 2026-10-28
+    task: T-4851
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-923
+    decision: "block any payload containing `$'` while degraded, and scan a dequoted copy of the payload (quotes, backslashes and `$` removed), as the fast path does."
+    scope: project
+    date: 2026-10-28
+    task: T-4851
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-924
+    decision: "keep the existing foreign-project list (any mention blocks) and add a second rule: /etc /usr /var /boot block only when the raw payload shows a write — `>`/`>>`/`>|` redirect, a write verb (tee cp mv install ln rsync dd sed perl truncate chmod chown chgrp touch mkdir rm rmdir unlink shred patch tar unzip curl wget) before the path, `of=`, `cd`/`pushd` into the root, or a Write/Edit/MultiEdit/NotebookEdit tool with `file_path`/`notebook_path` there. Paths under PROJECT_ROOT are stripped first, as before."
+    scope: project
+    date: 2026-10-28
+    task: T-4852
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-925
+    decision: "block every Agent call while degraded (banner + exit 2). An Agent call is detected by `\"tool_name\"\\s*:\\s*\"Agent\"` in the raw payload, and only when the decoder printed nothing."
+    scope: project
+    date: 2026-10-28
+    task: T-4853
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-926
+    decision: "`set_key` leaves a template without that key unchanged (same as the old replace did)."
+    scope: project
+    date: 2026-10-28
+    task: T-4863
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-927
+    decision: "anchor on the key (`^status:`), not on the template's literal value (`status: captured`)."
+    scope: project
+    date: 2026-10-28
+    task: T-4863
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-928
+    decision: "a per-test fixture framework tree: the tracked files of bin/, lib/, agents/mcp/, policy/capability-overlay/ plus FRAMEWORK.md and VERSION, copied from the working tree (`git ls-files | tar`, ~6 MB, so uncommitted edits are what gets tested), with a `.framework.yaml` marker, and `bin/fw` run from that tree with FRAMEWORK_ROOT=PROJECT_ROOT=fixture. `fw mcp check` / `emit-manifest` take ~0.1 s there."
+    scope: project
+    date: 2026-10-28
+    task: T-4862
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-929
+    decision: "change t2293 and t2459 only; leave t2290, t2294, t2296, t2461 and test_no_project_relative_fw_shell_t3964.py as they are."
+    scope: project
+    date: 2026-10-28
+    task: T-4862
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-930
+    decision: "both, since each is a few lines. (b) `/health` now carries `warmup: {state, started_at, finished_at}` and still avoids the corpus. A test holds the build lock while `/health` answers. (a) `WATCHTOWER_WARM_BEFORE_SERVE` (default 0) makes `web.app main()` and `web/wsgi.py` finish the warm-up before serving."
+    scope: project
+    date: 2026-10-28
+    task: T-4854
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-931
+    decision: "Read the mention from the original command (`mentions = mentions_guarded(original)`). Blanking now only controls parsing."
+    scope: project
+    date: 2026-10-28
+    task: T-4857
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-932
+    decision: "Make no code change. Document it in the scope comment."
+    scope: project
+    date: 2026-10-28
+    task: T-4857
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-933
+    decision: "Leave `_FW_VERB` as it is. Name it in the scope comment."
+    scope: project
+    date: 2026-10-28
+    task: T-4857
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-934
+    decision: "fix postfix `++`/`--` only (operand-ending token). `)`, `]`, identifier, number, string and regex already made `/` divide — measured with `awk_program_risk` before the fix and pinned in test 3, so nothing was changed for them."
+    scope: project
+    date: 2026-10-28
+    task: T-4858
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-935
+    decision: "no change to the Human-AC tick guard's awk arm (`lib/shell_write_scan.py` awk verb handler). It does not use the tokenizer: it matches `system(`, `print >`/`|`, `| getline` and `close(` over the raw program (regex literals included), so `awk 'BEGIN{x++ / 2; system(\"echo ticked >> .tasks/…\"); …}'` was already refused (test 6, with the vector proven to write the file in a mktemp project)."
+    scope: project
+    date: 2026-10-28
+    task: T-4858
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-936
+    decision: "a cwd inside `.tasks` (hook cwd or any literal `cd` destination in the text, realpath) makes the command an implicit mention."
+    scope: project
+    date: 2026-10-28
+    task: T-4859
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-937
+    decision: "the word counts unless its directory provably resolves (realpath, from every cwd the command may run in) outside `.tasks`; a run-time-built directory (`$D/`, `${D}/`, `$(…)/`) always counts."
+    scope: project
+    date: 2026-10-28
+    task: T-4859
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-938
+    decision: "Release freeze until v1.8.15 is released. Operator 2026-10-28: 'We are not going to start new development work until we have tested everything and can do a proper release.' and 'new requests can come in, but they come on the backlog.' Allowed: testing, fixing field-reported breakage, test reliability, release work. New requests: task with horizon later and tag post-freeze. Exit: every active tester on be.48 or later reported, no open failures, then the release; only the operator lifts it."
+    scope: project
+    date: 2026-10-28
+    task: T-4869
+    rationale: "T-4867: no strict cut point past v1.8.14; 466 consumer-facing fixes since, 343 without a specific field verdict. Stabilise and release before adding more."
