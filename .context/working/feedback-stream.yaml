@@ -50603,3 +50603,21 @@ scan_id: R-4800b4eb
 task_id: T-4861
 payload:
   task_file: .tasks/active/T-4861-fwpendingremindbats-test-5-failed-once-i.md
+---
+kind: scan_emitted
+timestamp: '2026-10-28T08:30:46Z'
+scan_id: R-9a6fd4b1
+task_id: T-4860
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-28T08:30:46Z'
+scan_id: R-9a6fd4b1
+task_id: T-4860
+payload:
+  task_file: .tasks/active/T-4860-be-tag-be47-degraded-gates-fail-closed-t.md

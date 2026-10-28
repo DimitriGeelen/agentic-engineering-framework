@@ -6,10 +6,10 @@ description: >
   be-tag be.47: degraded gates fail closed (T-4851..T-4853) for ring20-dashboard;
   field report
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T07:58:02Z
-last_update: 2026-10-28T08:24:57Z
-date_finished:
+last_update: 2026-10-28T08:30:45Z
+date_finished: 2026-10-28T08:30:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -385,3 +385,22 @@ git ls-remote --tags origin | grep -q "$(git tag --contains 6980ff1a5 | grep '^v
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4860-be-tag-be47-degraded-gates-fail-closed-t.md
 - **Context:** Initial task creation
+
+### 2026-10-28T08:30:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9a6fd4b1
+- **Timestamp:** 2026-10-28T08:30:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `git tag --contains 6980ff1a5 | grep -q "^v1.8.15-be."`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `git ls-remote --tags origin | grep -q "$(git tag --contains 6980ff1a5 | grep '^v1.8.15-be.' | head -1)"`
