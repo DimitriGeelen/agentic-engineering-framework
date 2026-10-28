@@ -1,0 +1,21 @@
+id: tests/unit/helpers/mcp_fixture.bash
+name: mcp_fixture
+type: script
+subsystem: tests
+location: tests/unit/helpers/mcp_fixture.bash
+tags: []
+
+purpose: "tests/unit/helpers/mcp_fixture.bash — a private framework tree for MCP manifest tests (T-4862)"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-28
+created_by: unknown
