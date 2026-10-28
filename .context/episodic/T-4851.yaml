@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4851: Degraded Tier 0 gate (python3 broken) lets hook-bypass and fw force/decide commands through
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T07:54:22Z
+# ============================================================================
+
+task_id: T-4851
+task_name: "Degraded Tier 0 gate (python3 broken) lets hook-bypass and fw force/decide commands through"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-28T07:27:23Z
+completed: 2026-10-28T07:53:07Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-28T08:40:26+01:00
+last_commit: 2026-10-28T08:51:56+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  degraded Tier 0 fallback covers every fast-path class; drift-guard bats. tick Agent ACs — degraded gate covers all fast-path classes, suites green
+
+# Key outcomes
+outcomes:
+  - 'Reproduce first: a bats test shadows python3 on PATH with a stub that exits 1, pipes a Bash PreToolUse payload into the gate for each reported command (commit with the no-verify flag, `commit -n`, `fw task update … --force`, `fw inception decide …`, a core.hooksPath / include.path / includeIf config change), and shows exit 0; it fails before the fix'
+  - 'The degraded fallback blocks each of those classes (exit 2 with the T-4652 degraded banner); the classes already blocked (force push, hard reset, recursive delete) stay blocked'
+  - 'The degraded class list is derived from, or checked against, the fast-path keyword list so the two cannot drift again (a test that fails when a fast-path class has no degraded counterpart)'
+  - 'With a working python3, behaviour is unchanged: the existing gate tests stay green (grep tests/unit for the gate and T-4652); vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-28 — how to keep the degraded list from drifting'
+    chose: 'keep a separate bash ERE in `hook_degraded_tier0` (one class per fast-path keyword), and add a drift test that parses the fast-path regex and needs a sample command per alternative, blocked both healthy and degraded.'
+    rationale: 'the fast-path regex is a pre-filter, not a block list. Reusing it verbatim while degraded would block every `git -C …`, every `git push` and every `git checkout`, so handovers would stop entirely. The degraded patterns are narrower (they block the destructive shape of each class) but still wider than the python matcher. The test is what ties the two lists together.'
+    alternatives_rejected: ['(a) source the fast-path regex from a shared variable used by both. That changes the healthy path (the brief says not to) and over-blocks as described. (b) Port ring20-dashboard''s patch 0032 unchanged. It covered the reported classes but not push --delete / `-uf` clusters / docker / kubectl / find / chmod / pkill / tmux / ANSI-C, and had no drift guard.']
+  - decision: '2026-10-28 — ANSI-C quoting while degraded'
+    chose: 'block any payload containing `$''` while degraded, and scan a dequoted copy of the payload (quotes, backslashes and `$` removed), as the fast path does.'
+    rationale: 'the healthy fast path sends every `$''` command to python, because only python decodes it (`$''tier\x30''`). Bash cannot decode it reliably here, so blocking it is the fail-closed choice. It only applies while degraded.'
+    alternatives_rejected: ['decoding `$''…''` in bash with `printf %b`. Its escape rules differ from bash''s ANSI-C rules (`\c`, `\u`, a NUL cut), and those are exactly the differences the python decoder exists to handle.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/hook-degraded.sh'
+  - '.tasks/active/T-4851-degraded-tier-0-gate-python3-broken-lets.md'
+  - 'lib/hook-degraded.sh'
+  - 'tests/unit/t4851_degraded_gate_classes.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T08:40:26'
+    action: 'T-4851: degraded Tier 0 fallback covers every fast-path class; drift-guard bats'
+  - time: '2026-10-28T08:51:56'
+    action: 'T-4851: tick Agent ACs — degraded gate covers all fast-path classes, suites green'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 25 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, security, gate]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 25
+  commits: 3
+  files_changed: 7
+  lines_added: 393
+  lines_removed: 19
+  footprint_refreshed_at: '2026-10-28T07:54:31Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4851-degraded-tier-0-gate-python3-broken-lets.md
+generated_by: context-agent-hybrid
