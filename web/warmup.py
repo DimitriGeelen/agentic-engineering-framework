@@ -16,11 +16,19 @@ app's own test client, on a daemon thread: whatever a page reads cold is
 filled before an operator or the smoke probe asks for it.
 
 ``WARMUP_STATE`` is surfaced by ``/api/_identity`` so a probe can tell a
-deliberate warm-up from a slow server (``web/smoke_test.py`` waits for it).
+deliberate warm-up from a slow server (``web/smoke_test.py`` waits for it),
+and by ``/health``, which never reads the corpus (T-4854).
+
+The warm-up starts after the port binds, so a page request in the first seconds
+still waits for the cold build. A watchdog that can only probe a page sets
+``WATCHTOWER_WARM_BEFORE_SERVE=1`` (default 0): the serve entry points then finish
+the warm-up before they serve (T-4854, ring20-dashboard's restart loop).
 """
 from __future__ import annotations
 
 import datetime
+import os
+import re
 import threading
 import time
 
@@ -57,9 +65,27 @@ def _run(app, paths) -> None:
         WARMUP_STATE["state"] = "done"
 
 
-def start_cache_warmup(app, paths=WARM_PATHS):
+def _project_root():
+    from web.shared import PROJECT_ROOT
+    return PROJECT_ROOT
+
+
+def warm_before_serve() -> bool:
+    """WATCHTOWER_WARM_BEFORE_SERVE: env > .framework.yaml > default 0. See lib/config.sh."""
+    val = os.environ.get("FW_WATCHTOWER_WARM_BEFORE_SERVE")
+    if val is None:
+        try:
+            text = (_project_root() / ".framework.yaml").read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            text = ""
+        m = re.search(r"^\s*WATCHTOWER_WARM_BEFORE_SERVE\s*:\s*(\S+)", text, re.M)
+        val = m.group(1).strip("\"'") if m else ""
+    return val.strip().lower() in ("1", "true", "yes")
+
+
+def start_cache_warmup(app, paths=WARM_PATHS, wait=False):
     """Start the warm-up on a daemon thread once per process; return the thread
-    (None when it already ran or is running)."""
+    (None when it already ran or is running). ``wait`` joins it before returning."""
     with _START_LOCK:
         if WARMUP_STATE["state"] != "idle":
             return None
@@ -67,4 +93,6 @@ def start_cache_warmup(app, paths=WARM_PATHS):
         t = threading.Thread(target=_run, args=(app, tuple(paths)),
                              name="watchtower-cache-warmup", daemon=True)
         t.start()
-        return t
+    if wait:
+        t.join()
+    return t

@@ -10,7 +10,7 @@ description: >
   in main() and web/wsgi.py before serving. Their suggestions: an opt-in warm-before-bind,
   or a /health that does not depend on the corpus build.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T07:27:25Z
-last_update: '2026-10-28T07:30:40Z'
+last_update: 2026-10-28T08:59:12Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -154,7 +154,7 @@ See description. The need: an external health check that probes Watchtower right
 
 ## Verification
 
-timeout 900 python3 -m pytest -q tests/web -k "warmup or t4854"
+timeout 900 python3 -m pytest -q tests/web/test_t4854_warmup_readiness.py tests/unit/test_t4363_startup_warmup.py > /tmp/.t4854.out 2>&1 && grep -q passed /tmp/.t4854.out
 bin/fw vendor self --check --task T-4854
 bin/fw watchtower current
 
@@ -310,6 +310,14 @@ bin/fw watchtower current
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** ring20-dashboard's health watchdog (10 s timeout, restart after 2 failures) restart-looped Watchtower: `GET /` right after a start took 12-13 s there (54 s here).
+
+**Root cause:** `web/app.py:586` (`main()`) and `web/wsgi.py:11` start the T-4363 warm-up on a daemon thread and then serve at once, so the port binds while the corpus caches are cold. A page request in that window blocks on `shared._TASK_BUILD_LOCK` (`web/shared.py:2173`) until the warm-up's build finishes. T-4363 made the cold build happen off the request thread but not before the first request, and the warm-up state was exposed only on `/api/_identity`, not on `/health`, which is the route a generic watchdog probes.
+
+**Why structurally allowed:** T-4363's tests checked that the build ran off the main thread and that fw doctor's own smoke probe waits for it; nothing tested what an outside probe that does not know about `/api/_identity` sees during the warm-up.
+
+**Prevention:** `tests/web/test_t4854_warmup_readiness.py` pins the waiting behaviour, that `/health` answers during a held build lock and reports the warm-up, and that the opt-in key is wired into both serve entry points and both config registries.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -374,6 +382,15 @@ bin/fw watchtower current
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-28 — reproduction and measured cold time
+- **Measured here (4,846 tasks, test client, host shared with other workers):** cold `GET /` 54.0 s, warm 0.9 s, `/health` 0.3 s.
+- **Pinned:** `tests/web/test_t4854_warmup_readiness.py::test_reproduce_a_page_request_during_warmup_waits_for_the_cold_build`. A stubbed 1.5 s build sits behind the real `shared._TASK_BUILD_LOCK`, and a page request issued during the warm-up waits for it. `/health` already avoided the corpus, but it did not report the warm-up: the test hit a KeyError on `warmup` before the fix.
+
+### 2026-10-28 — warm-before-serve vs cheap health route
+- **Chose:** both, since each is a few lines. (b) `/health` now carries `warmup: {state, started_at, finished_at}` and still avoids the corpus. A test holds the build lock while `/health` answers. (a) `WATCHTOWER_WARM_BEFORE_SERVE` (default 0) makes `web.app main()` and `web/wsgi.py` finish the warm-up before serving.
+- **Why:** (b) is the right default fix: every start stays fast, and a watchdog pointed at `/health` gets a quick, truthful answer. (a) covers ring20-dashboard's watchdog as it is today (it probes `/`), so they no longer need to carry patch 0031. It costs nothing when off.
+- **Rejected:** turning warm-before-serve on by default. It would delay every start by the cold build (54 s here), which on a loaded host runs past the 60 s `WATCHTOWER_START_TIMEOUT`. The registry row says to raise that timeout alongside the setting.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -390,3 +407,6 @@ bin/fw watchtower current
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4854-watchtower-warm-up-starts-after-the-port.md
 - **Context:** Initial task creation
+
+### 2026-10-28T08:59:12Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
