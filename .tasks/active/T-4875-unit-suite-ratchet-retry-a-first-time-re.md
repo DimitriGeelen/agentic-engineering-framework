@@ -38,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T15:30:55Z
-last_update: 2026-10-28T15:32:16Z
+last_update: 2026-10-28T15:43:03Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -68,6 +68,13 @@ Operator ruling 2026-10-28 (decision walk question f, answer a), allowed under t
 - [x] Vendor in sync
 
 ### Human
+- [ ] [REVIEW] The new retry setting reads clearly on the settings page
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find UNIT_SUITE_FLAKE_RETRY_MAX
+  **Expected:** it shows 5 and a description you understand (how many first-time failing test files are re-run once before a push is blocked)
+  **If not:** note what is unclear; the agent rewords it
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -320,6 +327,12 @@ bin/fw vendor self --check --task T-4875
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+**Rationale:** Your answer (a) to question f: a test file that fails for the first time is re-run once on its own before it can block a push. It still blocks if it fails again; a pass on the retry becomes a "suspected flaky" warning and is logged with the first run's output, so the pattern keeps being investigated (T-4866). At most 5 files are retried per run, set on http://192.168.10.107:3000/config. What remains is your look at that settings row.
+**Evidence:**
+- tests/unit/t4875_ratchet_retry_flaky.bats passes with 0 skips: a pass on retry gives WARN plus a flake log row; a second failure gives FAIL; more new failures than the cap give FAIL without a retry; already-known failures are unaffected
+- The existing ratchet tests (T-3621 and siblings) and the config-registry parity test stay green; vendor in sync
 
 ## Decisions
 
