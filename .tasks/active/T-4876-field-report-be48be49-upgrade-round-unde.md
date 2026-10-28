@@ -61,8 +61,8 @@ Release work under the freeze (T-4869): record the be.48/be.49 upgrade reports o
 ## Acceptance Criteria
 
 ### Agent
-- [ ] docs/reports/field-test-v1.8.15-results.md has a section for the be.48/be.49 round: one row per tester (ring20-dashboard, ring20, dimitri-mint-dev, 055, 832, TermLink) with from/to, doctor before/after, own tests before/after, and the fix-level WORKS/FAILS they reported, with message ids
-- [ ] The section states the freeze exit status: who is on be.48+ with a clean report, which FAILS were fixed under the freeze (T-4872, T-4873) and confirmed, and who is still missing (1409)
+- [x] docs/reports/field-test-v1.8.15-results.md has a section for the be.48/be.49 round: one row per tester (ring20-dashboard, ring20, dimitri-mint-dev, 055, 832, TermLink) with from/to, doctor before/after, own tests before/after, and the fix-level WORKS/FAILS they reported, with message ids
+- [x] The section states the freeze exit status: who is on be.48+ with a clean report, which FAILS were fixed under the freeze (T-4872, T-4873) and confirmed, and who is still missing (1409)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
