@@ -50927,3 +50927,21 @@ scan_id: R-7e119935
 task_id: T-4881
 payload:
   task_file: .tasks/active/T-4881-register-sidecardmaddresskeys-in-the-wat.md
+---
+kind: scan_emitted
+timestamp: '2026-10-28T18:54:54Z'
+scan_id: R-734159e6
+task_id: T-4883
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-28T18:54:54Z'
+scan_id: R-734159e6
+task_id: T-4883
+payload:
+  task_file: .tasks/active/T-4883-sidecar-tests-reload-libsidecarinbox-so-.md
