@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4858: Shell write scanner: awk regex-vs-division tokenizer may treat executable text as an inert regex
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T10:04:32Z
+# ============================================================================
+
+task_id: T-4858
+task_name: "Shell write scanner: awk regex-vs-division tokenizer may treat executable text as an inert regex"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-28T07:29:26Z
+completed: 2026-10-28T10:04:04Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-28T10:51:23+01:00
+last_commit: 2026-10-28T10:51:23+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  awk tokenizer reads postfix ++/-- as operand-ending, so / after it divides and system()/pipes after it stay scanned; regression bats; RCA; vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Reproduce first: a bats case gives the guard an awk one-liner where `/` after `)`, `]`, an identifier, a number or `++`/`--` is division, and the following text contains a write to a .tasks path (e.g. through system()); record whether the guard passes it before the fix'
+  - 'If it passes: treat those tokens as operand-ending (so `/` is division), and when the tokenizer cannot decide, fail closed when the awk program contains `system`, an unescaped `|` or a `>` redirect together with a guarded path; tests for each case'
+  - 'Legitimate read-only awk over task files (e.g. `awk ''/^### Human/,/^## /'' file`) still passes'
+  - 'Existing scanner tests stay green; vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'awk tokenizer reads postfix ++/-- as operand-ending, so / after it divides and system()/pipes after it stay scanned; regression bats; RCA; vendor synced'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-28 — which of the reported token classes was real'
+    chose: 'fix postfix `++`/`--` only (operand-ending token). `)`, `]`, identifier, number, string and regex already made `/` divide — measured with `awk_program_risk` before the fix and pinned in test 3, so nothing was changed for them.'
+    rationale: 'fixes only tighten; the measured hole was exactly one token class.'
+    alternatives_rejected: ['"fail closed on `system` / unescaped `|` anywhere in the program" — `/a|b/` and `split(x, a, /,|;/)` are common read-only awk and T-4509 pins them SAFE. Unneeded too: every `prev` the tokenizer does not list as regex-opening (gawk `case /re/`, `getline /`) already reads `/` as division, which keeps the following text scanned, so an undecided case fails closed by construction (stated in the docstring).']
+  - decision: '2026-10-28 — tick guard: concern does not reproduce'
+    chose: 'no change to the Human-AC tick guard''s awk arm (`lib/shell_write_scan.py` awk verb handler). It does not use the tokenizer: it matches `system(`, `print >`/`|`, `| getline` and `close(` over the raw program (regex literals included), so `awk ''BEGIN{x++ / 2; system("echo ticked >> .tasks/…"); …}''` was already refused (test 6, with the vector proven to write the file in a mktemp project).'
+    rationale: 'do not fix what is not broken; the reported risk lived in the read-only allowlist (`safe-commands.sh` → `awk_program_risk`), which the fix covers.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - '.tasks/active/T-4858-shell-write-scanner-awk-regex-vs-divisio.md'
+  - 'lib/shell_write_scan.py'
+  - 'tests/unit/t4858_scanner_awk_division.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T10:51:23'
+    action: 'T-4858: awk tokenizer reads postfix ++/-- as operand-ending, so / after it divides and system()/pipes after it stay scanned; regression bats; RCA; vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 154 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [security, scanner]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 154
+  commits: 2
+  files_changed: 7
+  lines_added: 303
+  lines_removed: 17
+  footprint_refreshed_at: '2026-10-28T10:04:43Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4858-shell-write-scanner-awk-regex-vs-divisio.md
+generated_by: context-agent-hybrid
