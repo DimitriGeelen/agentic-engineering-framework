@@ -61,9 +61,9 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] tests/unit/t4809_loop_ledger_armed_state.bats gains: start with armed=yes and no readable continuous state still WARNs; iterate after an armed=yes start with unreadable state still WARNs (the arming state is carried forward from the last start); both fail before the fix
-- [ ] The exemption for unreadable/empty or not-armed live state applies only when the carried-forward arming state (the last start record's armed=) is not yes; the existing T-4809 cases (armed=no, never armed, deliberately disarmed, iterate after an unarmed start) stay silent
-- [ ] Vendor in sync
+- [x] tests/unit/t4809_loop_ledger_armed_state.bats gains: start with armed=yes and no readable continuous state still WARNs; iterate after an armed=yes start with unreadable state still WARNs (the arming state is carried forward from the last start); both fail before the fix (2/2 not ok before)
+- [x] The exemption for unreadable/empty or not-armed live state applies only when the carried-forward arming state (the last start record's armed=) is not yes; the existing T-4809 cases (armed=no, never armed, deliberately disarmed, iterate after an unarmed start) stay silent (7/7 ok; t3225 0 failures)
+- [x] Vendor in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -253,6 +253,11 @@ bin/fw vendor self --check --task T-4873
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
 ## RCA
+
+**Symptom:** after be.48, the audit's G-099 check stayed silent when the wrapper's last start recorded armed=yes and the live continuous state was unreadable, the exact drift it exists to report (055 caught it with a strict xfail test).
+**Root cause:** T-4809 exempted two live states (unreadable/empty, explicitly not armed) unconditionally. Its rationale covers runs that were never armed or were disarmed; it never consulted the ledger's own armed= token, so an armed run that lost its state was exempted too.
+**Why structurally allowed:** T-4809's tests covered armed=no with the exempt states and armed=yes only with a readable, lapsed state; the armed=yes plus unreadable combination was missing. The parent review checked the rationale, not the combination.
+**Prevention:** two cases in t4809 pin armed=yes plus unreadable state (start, and iterate carried forward) as WARN.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
