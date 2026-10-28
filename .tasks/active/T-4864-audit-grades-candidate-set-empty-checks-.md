@@ -13,7 +13,7 @@ status: captured
 workflow_type: build
 owner: agent
 horizon: later
-tags: [audit, ux, consumer]
+tags: [audit, ux, consumer, post-freeze]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T08:59:12Z
-last_update: '2026-10-28T09:00:42Z'
+last_update: 2026-10-28T11:08:36Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -377,3 +377,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4864-audit-grades-candidate-set-empty-checks-.md
 - **Context:** Initial task creation
+
+### 2026-10-28T11:08:36Z — status-update [task-update-agent]
+- **Change:** horizon: later → later
+- **Change:** tags: +post-freeze
