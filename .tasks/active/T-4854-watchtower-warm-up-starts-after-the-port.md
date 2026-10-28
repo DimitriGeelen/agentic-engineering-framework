@@ -375,7 +375,7 @@ bin/fw watchtower current
 **Rationale:** ring20-dashboard's watchdog restarted Watchtower in a loop, because a page request right after a start waited for the 12-13 s first build of the task cache. Two small changes: http://192.168.10.107:3000/health now answers at once and says whether the warm-up has finished, without waiting for it; and a setting, off by default, makes Watchtower finish the warm-up before it starts answering at all. Normal starts are unchanged.
 **Evidence:**
 - Live: http://192.168.10.107:3000/health answers with a `warmup` block (state, started_at, finished_at) from the restarted Watchtower
-- tests/web/test_t4854_warmup_readiness.py: /health answers while the cache build holds its lock; the setting, when on, finishes the build before serving
+- tests/web/test_t4854_warmup_readiness.py: the health route answers while the cache build holds its lock; the setting, when on, finishes the build before serving
 - Existing warm-up tests (T-4363) stay green; vendor in sync; `bin/fw watchtower current` OK
 
 ## Decisions
