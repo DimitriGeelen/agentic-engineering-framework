@@ -9,16 +9,16 @@ description: >
   add a refusal, never remove one), .framework.yaml-declared allowlists per gate,
   and which of ring20's 27 patches are general enough to upstream instead.
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: agent
-horizon: now
-tags: [consumer, upgrade, extension-points]
+horizon: later
+tags: [consumer, upgrade, extension-points, post-freeze]
 components: []
 related_tasks: []
 origin: {kind: "peer", source: "proxmox-ring20-management", ref: "83c8790d"}
 created: 2026-10-22T14:14:29Z
-last_update: 2026-10-27T10:58:02Z
+last_update: 2026-10-28T11:08:37Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -155,7 +155,7 @@ cost_estimate_proposed:
 
 ## Recommendation
 
-**Recommendation:** GO, scoped: build extension points 1+2 (blueprints + nav), 6 (tightening-only project gate patterns) and 4 (notification-only post-decision hook). Point 3 (CSRF) only as an operator-owned allowlist, and only if the operator agrees to that shape. NO-GO on 5 (reviewer-brief addendum).
+**Recommendation:** DEFER until v1.8.15 is released: the operator put the project in a release freeze on 2026-10-28 (T-4869, CLAUDE.md §Release Freeze Phase), so no new development starts now. The per-point analysis below stands for after the release. Then, scoped: build extension points 1+2 (blueprints + nav), 6 (tightening-only project gate patterns) and 4 (notification-only post-decision hook). Point 3 (CSRF) only as an operator-owned allowlist, and only if the operator agrees to that shape. NO-GO on 5 (reviewer-brief addendum).
 
 **Rationale:** ring20 carries 27 in-file patches across 22 vendored files and had to roll back be.2 because upgrade would overwrite them (their G-187). Today's only supported extension points are BOUNDARY_EXTRA_READ_PATHS, .fwvendor-preserve.yaml (whole-file keep) and project hooks in .claude/settings.json (kept by upgrade, T-3833). None of them can add a page or add to a framework gate. On 2026-10-26, 055's local edit of a vendored gate killed every agent on one host for about 6 h. The point-by-point analysis splits what is safe to open from what is not:
 - **Points 1, 2, 4 and 6** add routes or display, only observe a decision, or can only tighten a gate. So they are safe to open.
@@ -194,3 +194,8 @@ cost_estimate_proposed:
 ### 2026-10-22T19:28:24Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-28T11:08:37Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
+- **Change:** tags: +post-freeze
