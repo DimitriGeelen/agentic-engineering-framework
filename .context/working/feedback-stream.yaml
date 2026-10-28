@@ -50621,3 +50621,21 @@ scan_id: R-9a6fd4b1
 task_id: T-4860
 payload:
   task_file: .tasks/active/T-4860-be-tag-be47-degraded-gates-fail-closed-t.md
+---
+kind: scan_emitted
+timestamp: '2026-10-28T09:16:45Z'
+scan_id: R-278807c8
+task_id: T-4863
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-28T09:16:45Z'
+scan_id: R-278807c8
+task_id: T-4863
+payload:
+  task_file: .tasks/active/T-4863-create-task-fills-frontmatter-by-text-re.md

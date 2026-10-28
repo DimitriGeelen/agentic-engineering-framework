@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4863: create-task fills frontmatter by text replace: an owner, status or horizon phrase in the name or description gets the substitution
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-28T09:16:58Z
+# ============================================================================
+
+task_id: T-4863
+task_name: "create-task fills frontmatter by text replace: an owner, status or horizon phrase in the name or description gets the substitution"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-28T08:37:31Z
+completed: 2026-10-28T09:16:21Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-28T09:37:38+01:00
+last_commit: 2026-10-28T10:16:19+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — create-task frontmatter substitution hits name/description text (ring20-dashboard msg 17bebede). create-task sets frontmatter keys by anchored line, not text replace. vendor create-task.sh. tick vendor/sibling-suite AC. RCA
+
+# Key outcomes
+outcomes:
+  - 'Reproduce first: a bats test creates a task whose name and description contain `owner:`, `status: captured` and `horizon: now`, and shows the frontmatter owner/status/horizon are wrong or the text was rewritten; it fails before the fix'
+  - 'Every frontmatter substitution in create-task.sh (both template paths, ~526-535 and ~563ff) is anchored to its own key line inside the leading --- block and applied once; T-4787''s json.dumps quoting of name is kept'
+  - 'The created file''s frontmatter parses (yaml.safe_load) and carries the requested owner, status and horizon; the name and description round-trip unchanged'
+  - 'Existing create-task tests stay green (grep tests/unit for create_task, task_id_race, t4787); vendor in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-28 — key missing from the template'
+    chose: '`set_key` leaves a template without that key unchanged (same as the old replace did).'
+    rationale: 'consumer projects may carry their own templates; refusing would turn a cosmetic gap into a failed `fw work-on`.'
+    alternatives_rejected: ['raising on a missing key — stricter, but a behaviour change outside this bug''s scope.']
+  - decision: '2026-10-28 — status/horizon match'
+    chose: 'anchor on the key (`^status:`), not on the template''s literal value (`status: captured`).'
+    rationale: 'the key is what create-task owns; a template default that differs no longer silently keeps its own value.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/create-task.sh'
+  - '.tasks/active/T-4863-create-task-fills-frontmatter-by-text-re.md'
+  - 'agents/task-create/create-task.sh'
+  - 'tests/unit/t4863_create_task_anchored_fields.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T09:37:38'
+    action: 'T-4863: file — create-task frontmatter substitution hits name/description text (ring20-dashboard msg 17bebede)'
+  - time: '2026-10-28T10:04:44'
+    action: 'T-4863: create-task sets frontmatter keys by anchored line, not text replace'
+  - time: '2026-10-28T10:05:44'
+    action: 'T-4863: vendor create-task.sh'
+  - time: '2026-10-28T10:06:12'
+    action: 'T-4863: tick vendor/sibling-suite AC'
+  - time: '2026-10-28T10:16:19'
+    action: 'T-4863: RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 38 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, task-create]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 38
+  commits: 6
+  files_changed: 7
+  lines_added: 689
+  lines_removed: 66
+  footprint_refreshed_at: '2026-10-28T09:17:08Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4863-create-task-fills-frontmatter-by-text-re.md
+generated_by: context-agent-hybrid
