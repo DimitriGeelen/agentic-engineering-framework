@@ -90,13 +90,24 @@ bvp_scores_proposed:
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+**Localised (0506 diagnostics, msg 43828cf0, 2026-10-29):**
+- **Our side:** 7bde4624 was SENT and RECEIVED at 20:55:08, and 0506 REPLIED at 20:56:38.
+- **0506's version:** vendored fw v1.7.832.
+- **0506's receiver:** STORED at 20:55:08.347, then INJECT_ATTEMPT on store and again every ~2 min (all ok:true, urgent_bypass), continuing across their reboot. There was no HANDED_OVER, HANDOVER_UNCONFIRMED or surfacing event. 0b881039 shows the same pattern. Their `config.json` is `{"inject": true}`.
+- **0506's settings.json:** no UserPromptSubmit and no Stop hooks at all (only PreCompact, SessionStart, PreToolUse, PostToolUse), and no mention of sidecar.
+
+**Reproduced the fix on current bleeding-edge:**
+1. `fw init` made a sandbox consumer.
+2. I removed its UserPromptSubmit and Stop hooks to match 0506.
+3. `fw upgrade` reported "UPDATED Hooks regenerated (missing 4 hook(s): Stop:sidecar-receiver-ready; Stop:stop-driver; UserPromptSubmit:sidecar-inbox; UserPromptSubmit:sidecar-receiver-adapter)", and all four were back.
+
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Localised in ## Context from 0506's own data (asked via sidecar, their repo is not read): their framework version, the receiver events for 7bde4624 (INJECT_* lines and reasons), the prompt-hook entry in their .claude/settings.json, and our side's ledger (SENT/RECEIVED/REPLIED within 90 s, 2026-10-28 20:55-20:56)
-- [ ] Root cause named: which step between "receiver stored the message" and "prompt hook printed its text" dropped the text, and why no HANDED_OVER/UNCONFIRMED event was written for three re-injections
-- [ ] If the cause is in framework code on current bleeding-edge: fixed with a unit test that reproduces 0506's case; if it is fixed already in a newer release than theirs, the RCA names the commit and 0506 gets upgrade guidance
+- [x] Localised in ## Context from 0506's own data (asked via sidecar, their repo is not read): their framework version, the receiver events for 7bde4624 (INJECT_* lines and reasons), the prompt-hook entry in their .claude/settings.json, and our side's ledger (SENT/RECEIVED/REPLIED within 90 s, 2026-10-28 20:55-20:56)
+- [x] Root cause named: which step between "receiver stored the message" and "prompt hook printed its text" dropped the text, and why no HANDED_OVER/UNCONFIRMED event was written for three re-injections
+- [x] If the cause is in framework code on current bleeding-edge: fixed with a unit test that reproduces 0506's case; if it is fixed already in a newer release than theirs, the RCA names the commit and 0506 gets upgrade guidance — fixed by upgrading (sandbox reproduction in ## Context); the receiver-side safeguard is post-freeze T-4890
 - [ ] 0506 told the result
 
 ### Human
@@ -283,6 +294,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+grep -q "hook sidecar-inbox" .claude/settings.json
+ls .tasks/active/T-4890-*
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -298,6 +312,16 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** at 0506, peer messages showed only the banner "[sidecar] N peer messages waiting … the prompt hook shows it above", with no body. The same message was re-injected every ~2 min, across sessions and a reboot, and was never marked handed over.
+
+**Root cause:** 0506 (vendored v1.7.832) has the receiver with `inject: true`, but its `.claude/settings.json` has none of the sidecar hooks: UserPromptSubmit `sidecar-inbox`/`sidecar-receiver-adapter` and Stop `stop-driver`/`sidecar-receiver-ready`. The prompt hook added in T-3617 (2026-10-01) postdates their last upgrade. The receiver typed its banner, no hook printed the body or ran finalize(), so there was no HANDED_OVER event and the message stayed due for re-injection.
+
+**Why structurally allowed:** the receiver injects without checking that the hooks that complete the hand-over exist. Its banner promises "the prompt hook shows it above" whether the hook is there or not.
+
+**Prevention:**
+- 0506's fix is `fw upgrade`. Upgrade step 5 compares the hooks by name with the framework's own and regenerates the missing ones, which was verified in a sandbox stripped to 0506's state.
+- The receiver-side guard (detect missing hooks; do not promise a hook that is absent) is post-freeze T-4890.
 
 ## Evolution
 
