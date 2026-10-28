@@ -1580,7 +1580,11 @@ captured, so nothing is lost: file a task with `--horizon later` and the tag
 possible direction. Do not dispatch or build it. Tell the requester it is on the backlog.
 
 **Exit condition (proposed with the ruling):** every active tester has upgraded to the
-latest be-tag (be.48 or later) and reported, and no reported failure is open. Then the
+latest be-tag (be.48 or later) and reported, and no reported failure is open.
+**What counts as confirmed (operator, 2026-10-28, answer b):** a clean full upgrade by at
+least three different testers (`fw doctor` no worse, their own tests as before, project
+works) confirms consumer-facing changes that have no specific verdict; a fix that was
+specifically tested and FAILED must still be fixed and re-confirmed. Then the
 release goes ahead (up to that point, release-train rules above), and the operator lifts
 the freeze. Only the operator enters or lifts a freeze; an agent never declares one over.
 
