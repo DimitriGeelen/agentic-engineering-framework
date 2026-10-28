@@ -11,10 +11,10 @@ description: >
   from a short read. Failure output: .context/audits/unit-suite/failures/2026-10-27T18:37:28Z/bats/t3127_audit_timing_headroom.bats.out.
   Blocked the be.43 pre-push as a NEW red.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, test-flake]
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T18:41:50Z
-last_update: '2026-10-27T19:00:47Z'
+last_update: 2026-10-28T00:39:37Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,16 +90,24 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Investigated by the parent session 2026-10-28 (probes in the session scratchpad, t4840/):
+- The flake is not load on the test. It is a bash 5.2.21 parser bug: when a trapped signal arrives while bash is parsing a command substitution, the parse aborts ("unexpected EOF while looking for matching `)'") and the corrupted parser state carries into the trap, which then fails to parse too ("trap: line N: …") and does not run. The audit then never writes `timed_out: true`, and the script may carry on.
+- Reproduced outside AEF: a 10-line script looping on `$(…)` with a multi-line TERM trap, TERMed at random moments. 5 of 200 runs lost the trap, and one unbounded run kept looping for 10 minutes at 41% CPU after the failed trap.
+- Moving the trap body into a function (`trap _on_term TERM`) only lowers the rate (1 of 200; the error then reads "trap: line 2" for a string with no parentheses, which shows the state is inherited from the interrupted comsub). So no rewording of the trap fixes it.
+- Matches a bug-bash report (Sep 2023, CHLD trap during `$()`, reproduces on 5.2 and devel): https://lists.libreplanet.org/archive/html/bug-bash/2023-09/msg00058.html
+
+The need: a timed-out audit always leaves its `timed_out: true` + `killed_in_section:` record, and always stops, whatever bash does with the TERM trap.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The audit's watchdog writes the timeout record itself before it signals the body: the body keeps the in-flight section name and start in a small marker file (written at each section start, under the audit's own state dir), and the watchdog writes `timed_out: true` / `killed_in_section:` from it, then TERMs the body and, after a short grace, KILLs it if it is still running. The body's existing TERM trap stays as a second writer; the two never produce a contradictory record (the later write must not erase timed_out)
+- [ ] The marker write adds no measurable cost per section (one small file write) and is removed on a normal exit
+- [ ] tests/unit/t3127_audit_timing_headroom.bats passes 20 runs in a row under parallel load (e.g. 4 copies at once), recorded in Decisions with the command used; before the fix, show the same loop failing at least once or explain why the rate is too low to show it
+- [ ] A test pins the new path: with the body's TERM trap disabled, a timed-out audit still leaves timed_out and killed_in_section, and no audit process remains afterwards
+- [ ] Existing audit lock and timing tests stay green (grep tests/unit for t3127, t3298, t3451, t4397, t4545); vendor in sync
 
-### Human
+<!-- No Human criteria: every criterion is agent-verifiable.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -146,6 +154,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 900 bats tests/unit/t3127_audit_timing_headroom.bats
+timeout 900 bats tests/unit/t4840_watchdog_writes_timeout_record.bats
+bin/fw vendor self --check --task T-4840
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -285,6 +297,11 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** t3127 test 10 failed once in a full fast-suite run (2026-10-27 18:37), with "audit.sh: trap: line 10: unexpected EOF while looking for matching `)'" and "line 917: unexpected EOF …"; it blocked the be.43 pre-push as a NEW red and passed on rerun.
+**Root cause:** bash 5.2.21 corrupts its parser state when a trapped signal arrives while it is parsing a command substitution; the TERM trap that records the timeout is then parsed from that broken state and does not run (reproduced in isolation; see Context). audit.sh's timeout record depended entirely on that trap.
+**Why structurally allowed:** the timeout path had a single writer (the trap in the process being killed), and its test passes almost always, so the rare loss read as load flakiness.
+**Prevention:** the watchdog, which is not the process being interrupted, writes the record before signalling, and a test pins that path with the trap disabled.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -379,3 +396,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4840-t3127-term-trap-test-flakes-under-full-s.md
 - **Context:** Initial task creation
+
+### 2026-10-28T00:39:37Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
