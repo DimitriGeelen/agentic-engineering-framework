@@ -61,6 +61,21 @@ start_line() {  # $1 = yes|no
     [[ "$output" != *"last recorded ARMED"* ]] || { echo "$output"; false; }
 }
 
+@test "T-4873: start with armed=yes and no readable continuous state still WARNs" {
+    start_line yes > "$LEDGER"
+    rm -f "$TEST_TEMP_DIR/.context/working/.continuous-mode.yaml"
+    run_check
+    [[ "$output" == *"WARN: Continuous-run wrapper last recorded ARMED but the turn driver is not"* ]] || { echo "$output"; false; }
+}
+
+@test "T-4873: iterate after an armed=yes start with no readable state still WARNs" {
+    start_line yes > "$LEDGER"
+    printf '{"ts":"2026-10-27T11:00:00Z","event":"iterate","reason":"budget","restart_count":1,"wrapper_pid":1}\n' >> "$LEDGER"
+    rm -f "$TEST_TEMP_DIR/.context/working/.continuous-mode.yaml"
+    run_check
+    [[ "$output" == *"WARN: Continuous-run wrapper last recorded ARMED but the turn driver is not"* ]] || { echo "$output"; false; }
+}
+
 @test "CONTROL: start with armed=yes and an armed run that lapsed still WARNs" {
     start_line yes > "$LEDGER"
     printf 'enabled: true\ncurrent_iteration: 3\nmax_iterations: 3\n' > "$TEST_TEMP_DIR/.context/working/.continuous-mode.yaml"

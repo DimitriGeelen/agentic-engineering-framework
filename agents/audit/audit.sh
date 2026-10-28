@@ -5157,8 +5157,9 @@ check_continuous_run_turn_driver() {
     [ -f "$_crl" ] || return 0
     local _out
     _out=$(python3 - "$_crl" <<'PY' 2>/dev/null
-import json, sys
+import json, re, sys
 last = None
+armed = "unknown"  # T-4873: arming state carried forward from the last start record
 try:
     with open(sys.argv[1], encoding="utf-8") as f:
         for line in f:
@@ -5169,18 +5170,22 @@ try:
                 last = json.loads(line)
             except Exception:
                 continue
+            if last.get("event") == "start":
+                m = re.search(r"\barmed=(yes|no)\b", str(last.get("detail", "")))
+                armed = m.group(1) if m else "unknown"
 except Exception:
     pass
 if last:
-    print(f"{last.get('event','?')}\t{last.get('reason','?')}\t{last.get('ts','?')}\t{last.get('detail','')}")
+    print(f"{last.get('event','?')}\t{last.get('reason','?')}\t{last.get('ts','?')}\t{last.get('detail','')}\t{armed}")
 PY
 )
     [ -n "$_out" ] || return 0
-    local _ev _reason _ts _detail
+    local _ev _reason _ts _detail _armed
     _ev=$(printf '%s' "$_out" | cut -f1)
     _reason=$(printf '%s' "$_out" | cut -f2)
     _ts=$(printf '%s' "$_out" | cut -f3)
     _detail=$(printf '%s' "$_out" | cut -f4)
+    _armed=$(printf '%s' "$_out" | cut -f5)
     case "$_ev" in
         start|iterate)
             [ -f "$FRAMEWORK_ROOT/lib/continuous-mode.sh" ] || return 0
@@ -5192,10 +5197,14 @@ PY
             # detail. A run that was never armed, or was deliberately disarmed, is
             # the ordinary interactive session, not drift: same exemption fw
             # doctor's twin has carried since T-4358 (GH #101).
+            # T-4873: that exemption holds only when the run was not armed. A last start
+            # that recorded armed=yes and a live state now unreadable or not armed is the
+            # genuine drift G-099 exists for, so it still WARNs (055, be.48).
             if _live=$(fw_continuous_cli status 2>/dev/null); then
                 :
-            elif [[ "$_live" == *"Reason (live): state-unreadable-or-empty"* \
-                 || "$_live" == *"Reason (live): .continuous-mode.yaml: enabled="*"(not armed)"* ]]; then
+            elif [ "$_armed" != "yes" ] \
+                 && [[ "$_live" == *"Reason (live): state-unreadable-or-empty"* \
+                    || "$_live" == *"Reason (live): .continuous-mode.yaml: enabled="*"(not armed)"* ]]; then
                 :
             else
                 warn "Continuous-run wrapper last recorded ARMED but the turn driver is not" \
