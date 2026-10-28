@@ -38,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T10:54:31Z
-last_update: 2026-10-28T10:54:31Z
+last_update: 2026-10-28T10:55:45Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -61,10 +61,10 @@ Operator, 2026-10-28 (question 2 of the session's decision walk, answer "c, do b
 ## Acceptance Criteria
 
 ### Agent
-- [ ] docs/reports/T-4867-release-cut-point.md lists, for every tag from v1.8.14 to v1.8.15-be.48 (plus current bleeding-edge), the fix tasks it introduced (T-ids from commit subjects in that range, excluding pure task-file, handover and bookkeeping commits) and each fix's field status from docs/reports/field-test-v1.8.15-results.md and the sidecar reports: WORKS (by whom, which tag), FAILS (and whether a later fix superseded it), or UNCONFIRMED (no field report)
-- [ ] The report names the latest tag (or commit) such that every fix up to and including it is WORKS, or FAILS-then-fixed-and-WORKS, and lists which confirmed fixes after that point would be left out, plus every UNCONFIRMED fix with who could confirm it
-- [ ] Fixes that are internal (tests, docs, the framework's own tooling with no consumer effect) are marked as such and do not by themselves block a cut point; the rule used is stated explicitly
-- [ ] A one-paragraph summary at the top that answers: "release up to be.XX now (includes N fixes, leaves M confirmed ones for later)" or "no useful cut point yet, because …"
+- [x] docs/reports/T-4867-release-cut-point.md lists, for every tag from v1.8.14 to v1.8.15-be.48 (plus current bleeding-edge), the fix tasks it introduced (T-ids from commit subjects in that range, excluding pure task-file, handover and bookkeeping commits) and each fix's field status from docs/reports/field-test-v1.8.15-results.md and the sidecar reports: WORKS (by whom, which tag), FAILS (and whether a later fix superseded it), or UNCONFIRMED (no field report)
+- [x] The report names the latest tag (or commit) such that every fix up to and including it is WORKS, or FAILS-then-fixed-and-WORKS, and lists which confirmed fixes after that point would be left out, plus every UNCONFIRMED fix with who could confirm it
+- [x] Fixes that are internal (tests, docs, the framework's own tooling with no consumer effect) are marked as such and do not by themselves block a cut point; the rule used is stated explicitly
+- [x] A one-paragraph summary at the top that answers: "release up to be.XX now (includes N fixes, leaves M confirmed ones for later)" or "no useful cut point yet, because …"
 
 <!-- No Human criteria: the operator decides on the summary in conversation. -->
 
@@ -271,6 +271,13 @@ grep -qiE "release up to|no useful cut point" docs/reports/T-4867-release-cut-po
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+Not a bug: this is a read-and-analyse task. The title matches "fix" only because it is about which fixes to release.
+
+**Symptom:** the operator asked for a release of field-confirmed fixes only, and nobody knew where bleeding-edge could be cut.
+**Root cause:** the per-fix field-test loop started around be.3 (2026-10-22). The ~1000 commits before it (v1.8.14..be.3) carry 271 consumer-facing fixes, and no peer gave a verdict on any of them individually. The first one lands at commit 5 after v1.8.14 (1282db1d9, T-4317). Release is fast-forward only (T-3185, `lib/release.sh`), so every later tag carries them.
+**Why structurally allowed:** nothing asks for a field verdict per fix before the next be tag is cut. The field-test report counts untested fixes (Appendix A of docs/reports/field-test-v1.8.15-results.md) but blocks nothing.
+**Prevention:** this is the operator's choice, not part of this task: either rule (a) in the report, or the cherry-pick release-branch model (T-4868).
 
 ## Evolution
 
