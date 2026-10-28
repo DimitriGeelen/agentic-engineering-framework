@@ -1,0 +1,21 @@
+id: tests/unit/test_sidecar_dm_unacted_t4880.py
+name: test_sidecar_dm_unacted_t4880
+type: script
+subsystem: tests
+location: tests/unit/test_sidecar_dm_unacted_t4880.py
+tags: []
+
+purpose: "T-4880 — DM mail is judged per addressee, not by the signing identity's cursor."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-28
+created_by: unknown

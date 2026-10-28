@@ -13,13 +13,19 @@ Two routes carry peer mail, and both are read here, read-only:
   - receiver-stored messages awaiting hand-over, minus `seen.withheld` (T-3872),
     so this lists exactly what the prompt hook would show.
 
+A third, T-4880: DM posts addressed to this project that it has not answered
+(`dm.unacted`). 055's and 1023's reports sat on DM rails for 8 and 13 days
+because nothing here read DM rails. Unlike the two routes above these are not
+"unseen" but "unacted": they stay listed until we post on that rail, or the
+post is marked handled in `dm.HANDLED_FILE`; --mark-seen does not hide them.
+
 Any failure to read raises `Unreadable`; the CLI turns it into
 `NOT CHECKED: <reason>` (exit 3). Never an empty answer for a failed read.
 """
 
 from __future__ import annotations
 
-from . import inbox, receiver, seen
+from . import dm, inbox, receiver, seen
 
 DEFAULT_LIMIT = 10
 
@@ -37,8 +43,11 @@ def _first_line(body) -> str:
     return ""
 
 
-def collect(limit: int = DEFAULT_LIMIT, *, reader=strict_reader) -> list[dict]:
-    """Unseen peer mail on both routes, one row per message (by base id)."""
+def collect(limit: int = DEFAULT_LIMIT, *, reader=strict_reader,
+            dm_unacted=None) -> list[dict]:
+    """Unseen peer mail on both routes, plus unacted DM mail (T-4880), one
+    row per message (by base id). `dm_unacted` is a no-arg callable returning
+    `dm.unacted()` rows (default: the live hub, strict)."""
     rows: list[dict] = []
     keys_seen: set[str] = set()
 
@@ -78,6 +87,27 @@ def collect(limit: int = DEFAULT_LIMIT, *, reader=strict_reader) -> list[dict]:
     except Exception as e:
         raise Unreadable(f"receiver store: {type(e).__name__}: {e}") from e
 
+    if dm_unacted is None:
+        def dm_unacted():
+            return dm.unacted(lister=dm.strict_lister, reader=reader)
+    try:
+        dm_rows = dm_unacted()
+    except Unreadable:
+        raise
+    except Exception as e:
+        raise Unreadable(f"dm rails: {type(e).__name__}: {e}") from e
+    for r in dm_rows:
+        rows.append({
+            "route": "dm",
+            "id": r["id"],
+            "from": r["from"],
+            "conversation_id": r.get("conversation_id"),
+            "urgent": r.get("urgent", False),
+            "first_line": _first_line(r.get("body")),
+            "age_hours": r.get("age_hours"),
+            "_unacted": True,
+        })
+
     rows.sort(key=lambda r: not r["urgent"])
     return rows[:limit] if limit and limit > 0 else rows
 
@@ -85,4 +115,5 @@ def collect(limit: int = DEFAULT_LIMIT, *, reader=strict_reader) -> list[dict]:
 def mark_seen(rows: list[dict]) -> None:
     """Record the listed messages as shown, so the prompt hook and a later
     `alerts` call do not repeat them."""
-    seen.mark_shown([(r["id"], r.get("_msg")) for r in rows], by="alerts")
+    seen.mark_shown([(r["id"], r.get("_msg")) for r in rows if not r.get("_unacted")],
+                    by="alerts")
