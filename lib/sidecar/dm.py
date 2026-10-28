@@ -166,6 +166,25 @@ def default_lister(*, binary: str | None = None, timeout: int = 20) -> list[dict
     return data.get("topics") or []
 
 
+def strict_lister(*, binary: str | None = None, timeout: int = 20) -> list[dict]:
+    """`default_lister`, but a listing that did not happen raises
+    `inbox.Unreadable` instead of reading as "no rails" (T-4880: the
+    session-start mail check must never turn a failed read into silence)."""
+    argv = [binary or _binary(), "channel", "list", "--prefix", DM_PREFIX, "--json"]
+    try:
+        proc = subprocess.run(argv, capture_output=True, text=True, timeout=timeout)
+    except (OSError, subprocess.SubprocessError) as e:
+        raise inbox.Unreadable(f"dm rails: {type(e).__name__}: {e}") from e
+    if proc.returncode != 0:
+        raise inbox.Unreadable(f"dm rails: termlink channel list exited {proc.returncode}: "
+                               f"{(proc.stderr or '').strip()[:200]}")
+    try:
+        data = json.loads(proc.stdout or "{}")
+    except json.JSONDecodeError as e:
+        raise inbox.Unreadable(f"dm rails: unparseable channel list: {e}") from e
+    return (data.get("topics") if isinstance(data, dict) else data) or []
+
+
 def rails_for_key(key: str | None = None, *, lister=default_lister) -> list[dict]:
     """`dm:*` rails where `key` (default: our own identity fingerprint, plus
     the host key `legacy_host_fingerprint()` names during a T-4311 switch) is
@@ -306,6 +325,7 @@ def stale(min_age_hours: float = 24, *, key: str | None = None,
     threshold = now_dt - timedelta(hours=min_age_hours)
     state = inbox.load_state()
     topics_state = state.get("topics", {})
+    own = {key} if key else {k for k in (identity_fingerprint(), legacy_host_fingerprint()) if k}
     rows = []
     for topic in rails_for_key(key, lister=lister):
         name = topic.get("name")
@@ -315,7 +335,10 @@ def stale(min_age_hours: float = 24, *, key: str | None = None,
             continue
         oldest_ts = None
         for env in reader(name, cursor, _STALE_PEEK_LIMIT):
-            if env.get("msg_type") in META_MSG_TYPES:
+            # T-4880: receipts posted as chat (stage/up_to) and our own posts
+            # are not unread mail (TermLink f37f3c3f: 2 "unread" for 43 h on a
+            # rail holding only our own smoke posts).
+            if not _is_mail(env) or env.get("sender_id") in own:
                 continue
             ts_ms = env.get("ts")
             if isinstance(ts_ms, (int, float)):
@@ -330,4 +353,144 @@ def stale(min_age_hours: float = 24, *, key: str | None = None,
             "oldest_unread_ts": oldest_ts.isoformat(),
             "age_hours": round(age_hours, 1),
         })
+    return rows
+
+
+# ---- T-4880: unacted mail, judged per addressee -----------------------------
+#
+# `stale()` above asks "unread by this identity, past its cursor". On a host
+# where projects sign with the shared root key that question has the wrong
+# subject: 055's 2026-10-20 report sat on dm:3bba…:d1993c… (3bba = an AEF agent
+# key we no longer sign with) and 1023's ~2026-10-15 report on the root key's
+# self-DM rail dm:d1993c…:d1993c… (a shared mailbox, posts tagged to_project).
+# Neither rail is on our current key, nothing on the session-start path read DM
+# rails at all, auto-confirming sidecars posted "delivered" receipts for us, and
+# a drain on the shared rail had moved its cursor past the 1023 post. Both
+# reached us 8 and 13 days late, by forward (TermLink f37f3c3f, their T-3618).
+#
+# So the test here is the one TermLink's scripts/check-unacted-mail.sh uses:
+# per message, is it addressed to us, and did WE post on that rail after it?
+# Cursors, receipts and "delivered" notices say nothing about that.
+
+#: Rails a co-resident project answered on another route can be marked handled
+#: here, one `<topic> <offset>` per line (TermLink's escape hatch, same shape).
+HANDLED_FILE = ".context/sidecar/dm-handled"
+
+UNACTED_THRESHOLD_HOURS = 24
+UNACTED_WINDOW_DAYS = 30
+_UNACTED_READ_LIMIT = 1000
+
+
+def address_keys() -> set[str]:
+    """Every key a DM addressed to THIS project may be keyed by: our own
+    fingerprint, the T-4311 host key while a transition is on, and any older
+    agent keys peers still write to (`SIDECAR_DM_ADDRESS_KEYS`, comma list)."""
+    keys = {k for k in (identity_fingerprint(), legacy_host_fingerprint()) if k}
+    extra = identity._config("SIDECAR_DM_ADDRESS_KEYS", "")
+    keys |= {k.strip() for k in extra.split(",") if k.strip()}
+    return keys
+
+
+def _handled(root=None) -> set[tuple[str, int]]:
+    from . import receiver
+    path = (root or receiver._root()) / HANDLED_FILE
+    out = set()
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return out
+    for line in lines:
+        parts = line.split("#", 1)[0].split()
+        if len(parts) >= 2 and parts[1].isdigit():
+            out.add((parts[0], int(parts[1])))
+    return out
+
+
+def _is_mail(env: dict) -> bool:
+    """Content, not metadata: receipts (by msg_type, or a chat post carrying
+    receipt fields `stage`/`up_to`), reactions, edits and notices are not mail."""
+    if env.get("msg_type") in META_MSG_TYPES:
+        return False
+    meta = env.get("metadata") or {}
+    if meta.get("stage") or meta.get("up_to"):
+        return False
+    if meta.get("notice") or meta.get("kind") == "notice":
+        return False
+    return True
+
+
+def _party(env: dict) -> str:
+    meta = env.get("metadata") or {}
+    return str(meta.get("from_project") or meta.get("from") or env.get("sender_id") or "")
+
+
+def unacted(project: str | None = None, *, keys: set[str] | None = None,
+            threshold_hours: float = UNACTED_THRESHOLD_HOURS,
+            window_days: float = UNACTED_WINDOW_DAYS,
+            lister=default_lister, reader=inbox.default_reader,
+            handled: set[tuple[str, int]] | None = None,
+            now: datetime | None = None) -> list[dict]:
+    """DM posts addressed to `project` that this project has not answered.
+
+    A post is addressed to us when its `to_project` is us, or, with no
+    `to_project`, when the rail carries one of our `keys` and the post is not
+    our own. It is OPEN until this project posts on the same rail after it.
+    Own posts, receipts and notices are never mail and never an answer: an
+    auto-confirm "delivered" receipt posted on our behalf reads nothing.
+    A to_project naming another project is not ours, even on our own rail.
+
+    Read-only: moves no cursor. Posts younger than `threshold_hours` (still
+    fresh) or older than `window_days` are not listed."""
+    from . import circuit
+    project = project or circuit.project_id()
+    keys = address_keys() if keys is None else set(keys)
+    handled = _handled() if handled is None else handled
+    now_dt = now or datetime.now(timezone.utc)
+    now_ms = now_dt.timestamp() * 1000
+    rows = []
+    for topic in lister():
+        name = topic.get("name") or ""
+        if not name.startswith(DM_PREFIX):
+            continue
+        parts = name[len(DM_PREFIX):].split(":")
+        on_our_key = len(parts) == 2 and bool(keys & set(parts))
+        envs = reader(name, 0, _UNACTED_READ_LIMIT)
+        if isinstance(envs, inbox.ReadFailed):
+            raise inbox.Unreadable(f"{name}: {getattr(envs, 'reason', 'read failed')}")
+        posts = [e for e in envs if _is_mail(e)]
+        for i, env in enumerate(posts):
+            meta = env.get("metadata") or {}
+            to = meta.get("to_project")
+            who = _party(env)
+            if who == project or (not meta.get("from_project") and env.get("sender_id") in keys
+                                  and not to):
+                continue  # our own post
+            if to:
+                if to != project:
+                    continue
+            elif not on_our_key:
+                continue
+            offset = env.get("offset")
+            if (name, offset) in handled:
+                continue
+            ts = env.get("ts") or 0
+            age_h = (now_ms - ts) / 3.6e6
+            if not (threshold_hours <= age_h <= window_days * 24):
+                continue
+            if any(_party(n) == project for n in posts[i + 1:]):
+                continue  # we posted on this rail after it: answered
+            body = inbox._decode(env)
+            rows.append({
+                "route": "dm",
+                "id": f"{name}@{offset}",
+                "topic": name,
+                "offset": offset,
+                "from": who or inbox.UNATTRIBUTED,
+                "to_project": to,
+                "conversation_id": meta.get("conversation_id"),
+                "urgent": bool(meta.get("urgent")),
+                "age_hours": round(age_h, 1),
+                "body": body,
+            })
+    rows.sort(key=lambda r: -r["age_hours"])
     return rows

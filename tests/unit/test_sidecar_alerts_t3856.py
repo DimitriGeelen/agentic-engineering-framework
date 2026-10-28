@@ -41,6 +41,9 @@ def proj(tmp_path, monkeypatch):
     # the live hub when termlink is on PATH. Stub it so these tests stay hermetic;
     # the orphan output is pinned by its own test below and in the T-4418 file.
     monkeypatch.setattr(cli.addressing, "orphan_inboxes", lambda **_: [])
+    # T-4880: collect() also lists unacted dm mail from the live hub; that
+    # route is pinned in test_sidecar_dm_unacted_t4880.py.
+    monkeypatch.setattr(alerts.dm, "unacted", lambda **_: [])
     return root
 
 

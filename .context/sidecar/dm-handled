@@ -1,0 +1,15 @@
+# T-4880: DM posts addressed to this project that were answered or acted on by
+# another route. One '<topic> <offset>' per line; the rest is a comment.
+# `fw sidecar alerts` lists an addressed DM until we post on its rail or it is here.
+dm:3bba15e681b3a078:d1993c2c3ec44c94 136  # 055 finding 2026-10-20 -> T-4714 (TermLink relay 2026-10-23)
+dm:d1993c2c3ec44c94:d1993c2c3ec44c94 20   # 1023 report ~2026-10-15 -> T-4879, answered msg d8b7308d
+dm:d1993c2c3ec44c94:d1993c2c3ec44c94 16   # 0235 P-002 -> T-4073
+dm:d1993c2c3ec44c94:d1993c2c3ec44c94 17   # 0235 P-003 -> T-4074
+dm:33df8954b2a9b70d:3bba15e681b3a078 1    # ring20-dashboard T-2382 thread -> T-3597 triage
+dm:33df8954b2a9b70d:3bba15e681b3a078 3    # ring20-dashboard T-2382 thread -> T-3597 triage
+dm:33df8954b2a9b70d:3bba15e681b3a078 5    # ring20-dashboard T-2382 thread -> T-3597 triage
+dm:33df8954b2a9b70d:3bba15e681b3a078 7    # ring20-dashboard T-2382 thread -> T-3597 triage
+dm:33df8954b2a9b70d:3bba15e681b3a078 9    # ring20-dashboard T-2382 thread -> T-3597 triage
+dm:3bba15e681b3a078:d1993c2c3ec44c94 133  # 055 structural finding 2026-10-01 (pickups not arriving) -> T-3758/T-3759
+dm:3bba15e681b3a078:d1993c2c3ec44c94 123  # 010-termlink e2e delivery probe, not mail
+dm:3bba15e681b3a078:d1993c2c3ec44c94 127  # 010-termlink e2e delivery probe, not mail

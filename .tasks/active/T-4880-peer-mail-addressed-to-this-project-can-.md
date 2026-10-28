@@ -16,7 +16,7 @@ description: >
   workaround and 17 fixtures: their scripts/check-unacted-mail.sh, tests/unacted-mail-fixtures.sh
   (ask for a diff; do not read their repo). Reported breakage: allowed under the freeze.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -50,7 +50,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T17:34:49Z
-last_update: '2026-10-28T17:45:35Z'
+last_update: 2026-10-28T18:24:39Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,14 +95,27 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Localised 2026-10-28 (live hub, read-only):
+
+- **055's 2026-10-20 report** = `dm:3bba15e681b3a078:d1993c2c3ec44c94` offset 136, from_project 055, signed with the host root key d1993c…, no to_project. `3bba…` is an older AEF agent key (framework-agent-systemd era, T-3442 origin). Only receipts follow it (offsets 137/138, `stage: delivered`, posted by 010-termlink's auto-confirm).
+- **1023's ~2026-10-15 report** = `dm:d1993c2c3ec44c94:d1993c2c3ec44c94` offset 20 (2026-10-15T23:53Z), signed d1993c…, no from_project, `to_project: 999-Agentic-Engineering-Framework`. That is the root key's self-DM rail, a shared mailbox. The `inbox-state.json` cursor for this rail stood at 22, past the post, from an earlier drain of the shared rail. Only a receipt follows (offset 21).
+
+Why nothing surfaced either:
+1. **`fw sidecar alerts`** (the /resume step-7 check) read only the consult inbox and the receiver store, never a DM rail.
+2. **`dm stale` / `dm summary`** select rails by `identity_fingerprint()`. That returns this session's `termlink whoami` key, `bdd184bd89f318e4`. Neither rail carries that key, and `legacy_host_fingerprint()` is None, so both rails were invisible. Separately, `identity_is_host_shared()` reads True here only because `whoami` resolves via pid-walk to the session key. That is a measurement quirk, not something this task needed to change.
+3. Even on a visible rail, `stale()` judged "unread past this identity's cursor". A drained cursor, or receipts posted as `chat` with `stage`/`up_to`, made that the wrong question.
+
+Fix: `dm.unacted()` asks, per message, whether it is addressed to us (`to_project` = us on any dm rail, or untagged on a rail carrying one of our keys: own fp, T-4311 host key, `SIDECAR_DM_ADDRESS_KEYS`) and whether this project posted on that rail afterwards. Receipts, notices and our own posts are never mail and never an answer. `fw sidecar alerts` lists the result as route `dm` ("unanswered Nh") and never hides it on `--mark-seen`. The escape hatch for mail answered elsewhere is `.context/sidecar/dm-handled`, TermLink's handled-file shape. A failed dm listing is NOT CHECKED (exit 3), never an empty answer.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Localised in ## Context: which topic/route carried 055's 2026-10-20 report and 1023's ~2026-10-15 report, and which check (session-start alerts, dm stale, inbox) should have surfaced each and why it did not
+- [x] Mail addressed to this project (to_project = this project, or our addressed key) counts as unacted until this project posts after it; our own posts, receipts and auto-confirm "delivered" notices never count as reading or answering it
+- [x] `fw sidecar alerts` (session start) lists such unacted mail by sender and age, including on a host-shared signing key
+- [x] Unit tests cover: addressed mail with only an auto-confirm receipt after it (OPEN), answered by us (closed), our own post (not mail), mail to another project on a shared rail (not ours), and the two real cases as fixtures
+- [ ] TermLink told the result (reply to msg 80641d05)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,8 +300,19 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+python3 -m pytest tests/unit/test_sidecar_dm_unacted_t4880.py tests/unit/test_sidecar_alerts_t3856.py tests/unit/test_sidecar_dm.py -q > /tmp/.t4880.out 2>&1 && grep -q passed /tmp/.t4880.out
+bin/fw config get SIDECAR_DM_ADDRESS_KEYS > /tmp/.t4880.cfg 2>&1 && grep -q 3bba15e681b3a078 /tmp/.t4880.cfg
+bin/fw vendor self --check --task T-4880
 
 ## RCA
+
+**Symptom:** 055's report of 2026-10-20 and 1023's of 2026-10-15, both addressed to AEF, went unseen for 8 and 13 days. They arrived only on 2026-10-28, forwarded by TermLink.
+
+**Root cause:** the mail checks judged DM mail by "unread past this signing identity's cursor", on rails selected by our *current* key. Peers wrote to an older AEF agent key (3bba…) and to the host root key's shared self-DM rail (with to_project). Neither is our current key, so those rails were never selected. The session-start check (`fw sidecar alerts`) did not read DM rails at all. A drain of the shared rail, plus auto-confirm "delivered" receipts, made the mail look handled.
+
+**Why structurally allowed:** there was no addressee concept for DM mail. "Who is this for?" was derived from signing keys, which on this host are shared by every project and change across identity moves (T-3405, T-4311). The two routes alerts did read have explicit addressing; DM rails were left to cursor-based tools that nothing ran at session start.
+
+**Prevention:** `tests/unit/test_sidecar_dm_unacted_t4880.py` pins the addressee rule: receipt-only OPEN, answered closed, own post, other project's mail, both real shapes, the key gap, NOT CHECKED on a failed listing, and `--mark-seen` not hiding dm rows. `fw sidecar alerts` now runs the check on every /resume. A key peers still use is named in `SIDECAR_DM_ADDRESS_KEYS`, and to_project-tagged mail is found on any rail.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -384,3 +408,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4880-peer-mail-addressed-to-this-project-can-.md
 - **Context:** Initial task creation
+
+### 2026-10-28T18:21:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

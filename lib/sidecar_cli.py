@@ -386,12 +386,24 @@ def cmd_alerts(args) -> int:
     elif not rows:
         print("peer mail: nothing unseen")
     else:
-        print(f"peer mail: {len(rows)} unseen")
+        n_dm = sum(1 for r in rows if r["route"] == "dm")
+        parts = [f"{len(rows) - n_dm} unseen"] if len(rows) > n_dm else []
+        if n_dm:
+            parts.append(f"{n_dm} dm unanswered")  # T-4880
+        print(f"peer mail: {', '.join(parts)}")
         for r in rows:
             flag = "[URGENT] " if r["urgent"] else ""
-            print(f"  - {flag}{_who(r['from'])} [{_meta(r['conversation_id'])}] "
-                  f"{_meta(r['id'][:12])} ({_meta(r['route'])}):")
+            if r["route"] == "dm":
+                # T-4880: unacted, not unseen — listed until we answer on that rail.
+                print(f"  - {flag}{_who(r['from'])} [{_meta(r['conversation_id'])}] "
+                      f"{_meta(r['id'])} (dm, unanswered {_meta(r.get('age_hours'))}h):")
+            else:
+                print(f"  - {flag}{_who(r['from'])} [{_meta(r['conversation_id'])}] "
+                      f"{_meta(r['id'][:12])} ({_meta(r['route'])}):")
             print(_framed(r["first_line"]))
+    if not args.json and any(r["route"] == "dm" for r in rows):
+        print(f"  dm mail stays listed until this project posts on that rail; if it was "
+              f"answered another way, add '<topic> <offset>' to {dm.HANDLED_FILE}")
     if not args.json:
         for line in _orphan_lines(orphans):
             print(line)

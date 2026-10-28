@@ -31,3 +31,4 @@ project_id: pid-ffd1e8ea93077f93
 PORT: 3000
 ISSUES_DECISIONS_STANDING_PERMISSION: 1
 DESIGNER_FIELD_CATALOG: docs/examples/designer-field-catalog-sample.json
+SIDECAR_DM_ADDRESS_KEYS: 3bba15e681b3a078
