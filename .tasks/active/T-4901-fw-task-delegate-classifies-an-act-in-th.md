@@ -100,7 +100,7 @@ bvp_scores_proposed:
 - [x] Reproduced: ring20-dashboard's T-510 criterion ("Add client on live :5000 succeeds …", Expected: toast "Client X added", QR modal) classifies as something other than act-in-the-world on current code — `unclassified` (REVIEWER-JUDGES); with the author's [REVIEWER] prefix, `deterministic`
 - [x] lib/delegation.py _ACT_IN_THE_WORLD_RE recognises (a) acting on a live system ("on live", "live :PORT", "live service/server/site/…") and (b) creating, deleting or changing a real external entity (add/create/delete/remove/revoke/rotate/provision/register a client, user, account, peer, certificate, VM, container, DNS record …); T-510 then classifies act-in-the-world (OPERATOR-ONLY)
 - [x] Regression tests in tests/unit/test_delegation_classifier.py: T-510's text plus a few same-family phrasings are act-in-the-world; controls stay as before (a grep-able "fw doctor reports …" criterion is still deterministic); the whole delegation test set passes — 68 pytest + 12 bats pass
-- [ ] Vendored copy synced; ring20-dashboard told
+- [x] Vendored copy synced; ring20-dashboard told (msg 3f348336)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
