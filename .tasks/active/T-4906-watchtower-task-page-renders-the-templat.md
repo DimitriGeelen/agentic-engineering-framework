@@ -347,6 +347,17 @@ bin/fw vendor self --check --task T-4906
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** the operator saw the text under Verification as "a huge font and bold" on every task, both in Watchtower and on GitHub.
+
+**Root cause:** the task template wrote its Verification guidance as `#`-prefixed comment lines inside a Markdown document. GitHub renders each one as an `<h1>`. In Watchtower the raw body is escaped and shown in `<pre><code>`, but `base.html` runs `hljs.highlightAll()` on every code block; it auto-detected Markdown and styled each `#` line as a bold section heading.
+
+**Why structurally allowed:** the `#` convention came from the completion gate, which treats `#` lines as comments, and nobody looked at how a Markdown viewer shows a task file. The page-wide highlighter was added for code blocks and never told to skip the raw task body.
+
+**Prevention:**
+- The template guidance is an HTML comment, which GitHub hides and the gate already strips.
+- The body block is `nohighlight`.
+- `t4906_verification_render.bats` pins that no heading-forming line sits outside the comment in the template's Verification, that the gate still extracts nothing from it, and that the page keeps `nohighlight`.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
