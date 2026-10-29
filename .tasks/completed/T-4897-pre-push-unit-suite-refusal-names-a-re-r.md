@@ -9,12 +9,12 @@ description: >
   task on empty runs). Need: the refusal prints the same command line the cron registry
   uses for this project (suite dir included).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, unit-suite, usability, field-report]
-components: []
+components: [agents/audit/audit.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T12:20:29Z
-last_update: 2026-10-29T14:05:42Z
-date_finished:
+last_update: 2026-10-29T14:08:57Z
+date_finished: 2026-10-29T14:08:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -393,3 +393,20 @@ bin/fw vendor self --check --task T-4897
 
 ### 2026-10-29T14:05:42Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-29T14:08:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e191a94e
+- **Timestamp:** 2026-10-29T14:09:28Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — check_unit_suite_report's re-run hint is the `command:` of this project's own `<kind>-nightly` entry in .context/cron-registry.yaml when one exists (so a consumer's FW_UNIT_SUITE_DIR is included); oth
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/cron-registry.yaml in: check_unit_suite_report's re-run hint is the `command:` of this project's own `<kind>-nightly` entry in .context/cron-registry.yaml when one exists (s`
