@@ -92,10 +92,10 @@ At ~13:38:58 on 2026-10-22 the parent session and six TermLink workers died at o
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] RCA report docs/reports/T-4635-session-kill-rca.md records symptom, evidence (journal lines, cgroup, linger state, timeout count), root cause, why nothing caught it, and remediation
-- [ ] Concern registered in .context/project/concerns.yaml naming the remediation tasks
-- [ ] One task per remediation filed (process placement, detection, environment hygiene) and the TermLink-side gap sent to TermLink
-- [ ] Operator handed one runme line for the host fix (enable root linger)
+- [x] RCA report docs/reports/T-4635-session-kill-rca.md records symptom, evidence (journal lines, cgroup, linger state, timeout count), root cause, why nothing caught it, and remediation
+- [x] Concern registered in .context/project/concerns.yaml naming the remediation tasks — names T-4636, T-4637, T-4638 (and T-4541)
+- [x] One task per remediation filed (process placement, detection, environment hygiene) and the TermLink-side gap sent to TermLink — T-4636..T-4638; TermLink told on conversation sev1-tmux-env-leak-2026-10-22 (msgs dacf9863 .. 2506bcdd, 2026-10-22)
+- [x] Operator handed one runme line for the host fix (enable root linger) — the fix was run by the operator through dimitri-mint-dev's runme `linger-107` (EXIT 0) and verified here (both users LINGER yes); the AEF runme `enable-root-linger` is therefore superseded and was never run
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -298,6 +298,28 @@ grep -q "T-4635" .context/project/concerns.yaml
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+Full report: docs/reports/T-4635-session-kill-rca.md.
+
+**Symptom:** on 2026-10-22 at ~13:38:58 the parent claude-fw session and all six running TermLink workers died mid-call, with no `exit_code`. Two other projects' sessions on the host died too.
+
+**Root cause:** long-lived agent processes (the shared tmux server, claude-fw, workers) were started from transient root login sessions, so they lived in `user-0.slice`. Root did not linger, so systemd tore the slice down when root's last login session closed (every minute, because of cron). Under host load the stop timed out and escalated to SIGKILL, killing everything in the slice.
+
+The same shared tmux server also leaked one project's PROJECT_ROOT/CONTEXT_DIR to others (050 wrote into 1409's tree).
+
+**Why structurally allowed:**
+- Nothing checked where long-lived framework processes live, or whether the owning user lingers.
+- Workers that die write no `exit_code`, so the parent's monitor never fires.
+- One shared tmux socket decided every project's server environment.
+
+**Prevention:**
+- Host: root and dimitri-mint-dev now linger (operator runme `linger-107`, EXIT 0, verified).
+- Process placement: T-4636.
+- Detection, with a "worker vanished" signal: T-4637.
+- Environment hygiene: T-4638, plus T-4222/T-4670 for inherited TASKS_DIR/CONTEXT_DIR.
+- The TermLink-side tmux socket gap is homed with TermLink.
+
+**Damage:** all exposed projects accounted for (050→1409 quarantined; 055, 1023 and 0506 clean).
 
 ## Evolution
 
