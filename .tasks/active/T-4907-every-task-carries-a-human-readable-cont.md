@@ -12,7 +12,7 @@ description: >
   refuses work on a task whose context is empty or template-only (where the gate bites
   is an operator decision, asked separately).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T16:58:28Z
-last_update: '2026-10-29T17:00:58Z'
+last_update: 2026-10-29T17:02:56Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,14 +91,30 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Background / trigger:** On 2026-10-29 the operator, reading tasks in Watchtower, found they do not say why they exist: "tasks miss a good description, a human readable description, the background, the purpose, the context of the task. I know we have all that information, but it's not written down in the task itself." In this session's tasks (T-4879 to T-4906) the reason usually sat in a one-line `description:` in the header, and `## Context` was the template's empty comment.
+
+**Problem / hypothesis:** Nothing asks for the context. The template's Context section is a single comment ("One sentence for small tasks"), and no gate checks it. The existing readiness gate (G-020) checks only that acceptance criteria are not placeholders. So an agent writes ACs, which it must, and skips the why, which it may. Hypothesis: as with ACs, a gate before work starts will make the context get written, where advice has not.
+
+**Goal:** Every task a person opens says, in plain language: what happened, what we think is wrong, what we are trying to achieve, and what will be different when it is done.
+
+**Expected outcome:**
+- New tasks carry four labelled parts in `## Context`.
+- Editing source under a task whose context is empty or template-only is refused, with the same remedy shape as the placeholder-AC gate: fill it in with the Edit tool.
+- Old tasks are caught only when someone picks them up.
+- Inceptions keep their own structure (Problem Statement) and are not affected.
+
+**Operator decision (2026-10-29):** the gate bites before work starts ("a, before work starts"). It is placed where G-020 bites, on source edits under the task, not on the started-work transition, because `fw work-on "name"` creates and starts a task in one step.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] .tasks/templates/default.md `## Context` carries four labelled lines with placeholder text: **Background / trigger:**, **Problem / hypothesis:**, **Goal:**, **Expected outcome:**
+- [ ] A shared check (lib/task_context.py, CLI + import) says a task's context is complete when the section holds all four labels, each followed by real text. Placeholder text is `<…>`-only, empty, or a copy of the template; HTML comments are ignored. Inception tasks are exempt
+- [ ] agents/context/check-active-task.sh refuses source writes under a non-inception task whose context is incomplete, next to the G-020 AC check, with a block message naming the missing parts and the remedy (Edit tool on the task file, which stays exempt); metadata-only `fw task update` stays allowed, as for G-020
+- [ ] Tests: complete context passes; each missing label blocks; placeholder-only blocks; HTML comments ignored; inception exempt; the hook blocks a source write and allows a .tasks/ edit
+- [ ] CLAUDE.md §Task System documents the four parts and the gate (T-4907, operator ruling 2026-10-29)
+- [ ] Vendored copy synced; existing gate tests (G-020 / check-active-task) still pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -380,3 +396,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4907-every-task-carries-a-human-readable-cont.md
 - **Context:** Initial task creation
+
+### 2026-10-29T17:02:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
