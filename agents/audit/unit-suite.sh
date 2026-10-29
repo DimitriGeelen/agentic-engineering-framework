@@ -15,7 +15,9 @@
 #
 # Env overrides (used by tests/unit/t3302_unit_suite_schedule.bats to stay
 # hermetic — the real corpus is NEVER run from the test):
-#   FW_UNIT_SUITE_DIR         corpus dir      (default: <framework>/tests/unit)
+#   FW_UNIT_SUITE_DIR         corpus dir      (default: <framework>/tests/unit). A dir that
+#                             does not exist or holds no test files exits 3, NOT EVALUATED,
+#                             and writes no report (T-4896).
 #   FW_UNIT_SUITE_REPORT_DIR  report dir      (default: .context/audits/unit-suite)
 #   FW_UNIT_SUITE_LOCK        lock file       (default: .context/locks/unit-suite.lock)
 #   FW_UNIT_SUITE_TIMEOUT     total seconds   (default: 7200)
@@ -58,6 +60,26 @@ PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
 
 SUITE_DIR="${FW_UNIT_SUITE_DIR:-$FRAMEWORK_ROOT/tests/unit}"
 REPORT_DIR="${FW_UNIT_SUITE_REPORT_DIR:-$PROJECT_ROOT/.context/audits/unit-suite}"
+
+# ── T-4896: a run with nothing to run is NOT EVALUATED, never green ─────────
+# In a consumer the default suite dir (<vendored framework>/tests/unit) does not
+# exist; a hand run without FW_UNIT_SUITE_DIR ran 0 files, reported runner_exit=0
+# and overwrote LATEST.yaml, and pre-push then graded that empty run as clean
+# (055, 2026-10-29). Refuse before any lock or report is written, so the last
+# real LATEST.yaml stays the one the ratchet reads.
+_t4896_has_tests=""
+if [ -d "$SUITE_DIR" ]; then
+    _t4896_has_tests="$(find "$SUITE_DIR" -maxdepth 2 -type f \
+        \( -name '*.bats' -o -name 'test_*.py' -o -name '*_test.py' \) -print -quit 2>/dev/null)"
+fi
+if [ -z "$_t4896_has_tests" ]; then
+    if [ -d "$SUITE_DIR" ]; then _t4896_why="contains no test files (*.bats, test_*.py, *_test.py)"
+    else _t4896_why="does not exist"; fi
+    echo "unit-suite: NOT EVALUATED — suite dir $SUITE_DIR $_t4896_why. Nothing ran; no report written (the last LATEST.yaml is kept)." >&2
+    echo "  In a consumer project, set FW_UNIT_SUITE_DIR to your own tests, as your cron registry line does." >&2
+    exit 3
+fi
+unset _t4896_has_tests _t4896_why
 LOCK_FILE="${FW_UNIT_SUITE_LOCK:-$PROJECT_ROOT/.context/locks/unit-suite.lock}"
 TREE_GUARD_REPORT_ROOT="$REPORT_DIR"   # T-4523: the runner's own writes, before tier subdirs
 TOTAL_TIMEOUT="${FW_UNIT_SUITE_TIMEOUT:-7200}"

@@ -10,7 +10,7 @@ description: >
   a missing suite dir or one with 0 test files is NOT EVALUATED (non-zero, says why),
   and an empty run never replaces a real LATEST.yaml.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T12:20:29Z
-last_update: '2026-10-29T12:30:19Z'
+last_update: 2026-10-29T13:58:59Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -66,6 +66,23 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=294,acs=4)
     rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-29T12:30:34Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4896: unit-suite.sh with a missing or empty suite dir reports rc 0 and overwrites LATEST.yaml, so pre-push passes on a run that tested nothing (055)
@@ -78,8 +95,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] agents/audit/unit-suite.sh refuses with "NOT EVALUATED" and exit 3 when the suite dir does not exist or holds no test files (*.bats, test_*.py, *_test.py), before taking its lock or writing any report
+- [x] An existing LATEST.yaml (and the dated report and LAST-COMPLETE.yaml) is left byte-identical by such a run
+- [x] The message names the suite dir and tells a consumer to set FW_UNIT_SUITE_DIR as its cron line does
+- [x] Regression test: missing dir and empty dir each exit 3 and leave a pre-existing LATEST.yaml untouched; a dir with one passing .bats file still runs and writes LATEST.yaml — tests/unit/t4896_unit_suite_empty_dir.bats 3/3; the 15 other files that drive unit-suite.sh pass (95 bats + 2 pytest)
+- [ ] Vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -265,6 +285,10 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+bats tests/unit/t4896_unit_suite_empty_dir.bats > /tmp/.t4896.out 2>&1
+bash -n agents/audit/unit-suite.sh
+bin/fw vendor self --check --task T-4896
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -280,6 +304,14 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** at 055 (v1.8.15), `unit-suite.sh` run by hand without `FW_UNIT_SUITE_DIR` ran 0 files in 1 s, reported runner_exit=0 and overwrote `LATEST.yaml`. The pre-push ratchet could then pass on a run that tested nothing.
+
+**Root cause:** the suite dir defaults to `<framework>/tests/unit`. A consumer's vendored framework does not carry that folder, and the runner treated "no files found" as "no files failed". The report writer then replaced the previous real LATEST with the empty result.
+
+**Why structurally allowed:** the runner's completeness checks (T-3794 LAST-COMPLETE, T-4381 timeouts) all assume at least one file ran. An empty corpus was never a case anyone considered. The cron line passes the right dir, so the hole only shows in hand runs, and the refusal message's suggested re-run command (T-4897) leads straight to it.
+
+**Prevention:** a missing or test-less suite dir now exits 3, NOT EVALUATED, before the lock or any report. `t4896_unit_suite_empty_dir.bats` pins both cases plus a control that still runs. T-4897 fixes the misleading re-run command.
 
 ## Evolution
 
@@ -361,3 +393,6 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4896-unit-suitesh-with-a-missing-or-empty-sui.md
 - **Context:** Initial task creation
+
+### 2026-10-29T13:58:59Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
