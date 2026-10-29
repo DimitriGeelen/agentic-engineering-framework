@@ -109,7 +109,7 @@ bvp_scores_proposed:
 - [x] In that state the dispatcher allows exactly the repair: a Bash `git checkout -- <broken file>` or `git restore [--source=HEAD] [--] <broken file>` (optionally after `cd <project> &&`), or a Write/Edit whose target is the broken file. Everything else is refused (exit 2) with a loud message naming the file, the line and the exact repair command
 - [x] Each such event is logged to .context/working/.hook-crashes.log (broken-hook <name> <file>), so `fw doctor` sees it
 - [x] Regression tests reproduce today's case: a gate hook with a syntax error refuses an ordinary write, allows `git checkout -- <file>` of the broken file and an Edit of it, and refuses a checkout of a different file. A hook that sources a broken library is handled the same. A healthy hook's exit codes pass through unchanged — t4908_broken_hook_repair_path.bats 8/8 (also: a repair chained with anything else is refused)
-- [ ] Changed with the safe-swap procedure (copy, bash -n, swap, smoke, auto-restore); vendored copy synced; existing hook-dispatch tests pass
+- [x] Changed with the safe-swap procedure (copy, bash -n, swap, smoke, auto-restore); vendored copy synced; existing hook-dispatch tests pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
