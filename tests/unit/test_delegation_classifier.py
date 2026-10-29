@@ -150,6 +150,54 @@ def test_act_in_the_world(c):
     assert cl.delegation_class == OPERATOR_ONLY
 
 
+#: T-4901 — ring20-dashboard's T-510 went to the reviewer although doing it creates a
+#: real WireGuard client. Acting on a live system, or creating/removing a real entity,
+#: is act-in-the-world.
+LIVE_ENTITY = [
+    crit(
+        "Add client on live :5000 succeeds when correct secret is configured",
+        "  **Steps:**\n  1. Open the dashboard\n  2. Add a client",
+        "  **Expected:** toast 'Client X added', QR modal",
+        IFNOT,
+    ),
+    crit(
+        "[REVIEWER] New peer works",
+        "  **Steps:**\n  1. Create a peer in the UI",
+        "  **Expected:** the peer is listed",
+        IFNOT,
+    ),
+    crit(
+        "[RUBBER-STAMP] Old certificate is gone",
+        "  **Steps:**\n  1. Revoke the certificate",
+        "  **Expected:** the CRL lists it",
+        IFNOT,
+    ),
+    crit(
+        "[REVIEWER] Toggle works on the live server",
+        "  **Steps:**\n  1. Click the toggle",
+        "  **Expected:** the setting reads `on`",
+        IFNOT,
+    ),
+]
+
+
+@pytest.mark.parametrize("c", LIVE_ENTITY)
+def test_t4901_live_system_or_real_entity_is_act_in_the_world(c):
+    cl = classify(c)
+    assert cl.cls == "act-in-the-world", cl
+    assert cl.delegation_class == OPERATOR_ONLY
+
+
+@pytest.mark.parametrize("title,step", [
+    ("[REVIEWER] fw doctor reports the hook", "Run `bin/fw doctor`"),
+    ("[REVIEWER] Fixture suite passes", "Run `bats tests/unit/x.bats`"),
+    ("[REVIEWER] Live-reload flag is documented", "Run `grep -q live-reload docs/x.md`"),
+])
+def test_t4901_controls_stay_deterministic(title, step):
+    c = crit(title, f"  **Steps:**\n  1. {step}", "  **Expected:** exit code 0", IFNOT)
+    assert classify(c).cls == "deterministic"
+
+
 def test_act_in_the_world_outranks_deterministic():
     """A grep-able Expected does not make an irreversible action delegable."""
     c = ACT[1]

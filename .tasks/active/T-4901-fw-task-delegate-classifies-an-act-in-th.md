@@ -12,7 +12,7 @@ description: >
   or change real external state (add/create/delete/send on a live service) as act-in-the-world,
   with this criterion as a regression fixture.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T13:57:42Z
-last_update: '2026-10-29T14:01:11Z'
+last_update: 2026-10-29T14:28:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,8 +97,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced: ring20-dashboard's T-510 criterion ("Add client on live :5000 succeeds …", Expected: toast "Client X added", QR modal) classifies as something other than act-in-the-world on current code — `unclassified` (REVIEWER-JUDGES); with the author's [REVIEWER] prefix, `deterministic`
+- [x] lib/delegation.py _ACT_IN_THE_WORLD_RE recognises (a) acting on a live system ("on live", "live :PORT", "live service/server/site/…") and (b) creating, deleting or changing a real external entity (add/create/delete/remove/revoke/rotate/provision/register a client, user, account, peer, certificate, VM, container, DNS record …); T-510 then classifies act-in-the-world (OPERATOR-ONLY)
+- [x] Regression tests in tests/unit/test_delegation_classifier.py: T-510's text plus a few same-family phrasings are act-in-the-world; controls stay as before (a grep-able "fw doctor reports …" criterion is still deterministic); the whole delegation test set passes — 68 pytest + 12 bats pass
+- [ ] Vendored copy synced; ring20-dashboard told
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -284,6 +286,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+python3 -m pytest -q tests/unit/test_delegation_classifier.py > /tmp/.t4901.out 2>&1
+bin/fw vendor self --check --task T-4901
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -299,6 +304,16 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** ring20-dashboard's T-510 criterion "Add client on live :5000 succeeds …" was moved off the operator by `fw task delegate`. Doing it creates a real WireGuard client.
+
+**Root cause:** `_ACT_IN_THE_WORLD_RE` knew two families: outbound-irreversible acts (publish, deploy, push, pay) and acts needing the operator's machine or credentials (install, login). Acting on a running live system, or creating/removing a real entity there, was in neither. So the criterion fell through to `unclassified` (agent reviewer judges) or, with a [REVIEWER] prefix, to `deterministic`.
+
+**Why structurally allowed:** the classifier is a list of phrasings, and its tests pin only the phrasings already known. Nothing tests the class definition itself ("an effect outside the repo that a scan cannot perform or observe") against field criteria.
+
+**Prevention:**
+- The two families are added, with T-510's own text and three same-family phrasings as regression cases, plus controls that stay deterministic.
+- A false positive only keeps a criterion with the operator, which is the safe direction.
 
 ## Evolution
 
@@ -380,3 +395,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4901-fw-task-delegate-classifies-an-act-in-th.md
 - **Context:** Initial task creation
+
+### 2026-10-29T14:28:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
