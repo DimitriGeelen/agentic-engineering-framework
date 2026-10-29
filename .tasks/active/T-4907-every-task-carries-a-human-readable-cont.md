@@ -109,12 +109,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] .tasks/templates/default.md `## Context` carries four labelled lines with placeholder text: **Background / trigger:**, **Problem / hypothesis:**, **Goal:**, **Expected outcome:**
-- [ ] A shared check (lib/task_context.py, CLI + import) says a task's context is complete when the section holds all four labels, each followed by real text. Placeholder text is `<…>`-only, empty, or a copy of the template; HTML comments are ignored. Inception tasks are exempt
-- [ ] agents/context/check-active-task.sh refuses source writes under a non-inception task whose context is incomplete, next to the G-020 AC check, with a block message naming the missing parts and the remedy (Edit tool on the task file, which stays exempt); metadata-only `fw task update` stays allowed, as for G-020
-- [ ] Tests: complete context passes; each missing label blocks; placeholder-only blocks; HTML comments ignored; inception exempt; the hook blocks a source write and allows a .tasks/ edit
-- [ ] CLAUDE.md §Task System documents the four parts and the gate (T-4907, operator ruling 2026-10-29)
-- [ ] Vendored copy synced; existing gate tests (G-020 / check-active-task) still pass
+- [x] .tasks/templates/default.md `## Context` carries four labelled lines with placeholder text: **Background / trigger:**, **Problem / hypothesis:**, **Goal:**, **Expected outcome:**
+- [x] A shared check (lib/task_context.py, CLI + import) says a task's context is complete when the section holds all four labels, each followed by real text. Placeholder text is `<…>`-only, empty, or a copy of the template; HTML comments are ignored. Inception tasks are exempt
+- [x] agents/context/check-active-task.sh refuses source writes under a non-inception task whose context is incomplete, next to the G-020 AC check, with a block message naming the missing parts and the remedy (Edit tool on the task file, which stays exempt); metadata-only `fw task update` stays allowed, as for G-020 — fails open (NOTE) if the helper cannot run, so it cannot lock the repo
+- [x] Tests: complete context passes; each missing label blocks; placeholder-only blocks; HTML comments ignored; inception exempt; the hook blocks a source write and allows a .tasks/ edit — test_task_context_t4907.py 12/12, t4907_context_gate.bats 6/6 (incl. the test-only opt-out doing nothing outside bats)
+- [x] CLAUDE.md §Task System documents the four parts and the gate (T-4907, operator ruling 2026-10-29)
+- [x] Vendored copy synced; existing gate tests (G-020 / check-active-task) still pass — all 64 hook test files pass; 17 that test other gates opt out explicitly under bats (`FW_TEST_SKIP_TASK_CONTEXT_GATE=1`, ignored outside bats)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -299,6 +299,11 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+
+python3 -m pytest -q tests/unit/test_task_context_t4907.py > /tmp/.t4907.out 2>&1
+bats tests/unit/t4907_context_gate.bats > /tmp/.t4907b.out 2>&1
+bash -n agents/context/check-active-task.sh
+bin/fw vendor self --check --task T-4907
 
 ## RCA
 
