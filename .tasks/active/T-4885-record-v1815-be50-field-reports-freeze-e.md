@@ -89,9 +89,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] docs/reports/field-test-v1.8.15-results.md has a be.50 section recording each be.50 report as it arrives (tester, from → to, doctor, own tests, verdicts, message ids), starting with 055's point G (msg 698140ea) and 1409's interim (8e456671, 3b77df39)
-- [ ] The freeze exit status line is updated after each report: what is still owed and by whom
-- [ ] Each reporter gets a short acknowledgement on their thread
+- [x] docs/reports/field-test-v1.8.15-results.md has a be.50 section recording each be.50 report as it arrives (tester, from → to, doctor, own tests, verdicts, message ids), starting with 055's point G (msg 698140ea) and 1409's interim (8e456671, 3b77df39)
+- [x] The freeze exit status line is updated after each report: what is still owed and by whom
+- [x] Each reporter gets a short acknowledgement on their thread
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -276,6 +276,10 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+
+grep -q "### be.50 — 1409, 055" docs/reports/field-test-v1.8.15-results.md
+grep -q "GitHub-linked fixes: field evidence per task" docs/reports/field-test-v1.8.15-results.md
+grep -q '"version": "v1.8.15"' .context/releases/decisions.jsonl
 
 ## RCA
 
