@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4895: Lift the v1.8.15 release freeze (operator, 2026-10-29)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-29T09:26:42Z
+# ============================================================================
+
+task_id: T-4895
+task_name: "Lift the v1.8.15 release freeze (operator, 2026-10-29)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-29T09:24:44Z
+completed: 2026-10-29T09:26:11Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-29T10:26:06+01:00
+last_commit: 2026-10-29T10:26:06+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  lift the v1.8.15 release freeze (operator, 2026-10-29); fleet told
+
+# Key outcomes
+outcomes:
+  - 'CLAUDE.md §Release Freeze Phase says the v1.8.15 freeze is LIFTED (2026-10-29, operator), keeping the section as the procedure for the next freeze'
+  - 'The lift is recorded as a decision with the operator''s words'
+  - 'The fleet is told; the first post-freeze work is T-4788 and T-4792 (operator ruling 2b)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # 1 decision(s) below are recorded in the register (.context/project/decisions.yaml) for this task but absent from the task file's Decisions section (T-4193).
+  - decision: 'D-945'
+    chose: 'Release freeze for v1.8.15 lifted (T-4895)'
+    rationale: 'Operator, 2026-10-29, verbatim: ''So then we can lift the freeze, right?'' after confirming the exit condition was met (every active tester on be.48+ reported, no open failure; v1.8.15 released). First post-freeze work: T-4788 and T-4792.'
+    id: 'D-945'
+    source: register
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/decisions.yaml'
+  - '.tasks/active/T-4895-lift-the-v1815-release-freeze-operator-2.md'
+  - 'CLAUDE.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-29T10:26:06'
+    action: 'T-4895: lift the v1.8.15 release freeze (operator, 2026-10-29); fleet told'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 6
+  lines_added: 511
+  lines_removed: 6
+  footprint_refreshed_at: '2026-10-29T09:26:46Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4895-lift-the-v1815-release-freeze-operator-2.md
+generated_by: context-agent-hybrid
