@@ -123,7 +123,7 @@ Source: observation OBS-200 (.context/inbox.yaml):
 - [x] agents/context/lib/safe-commands.sh no longer classifies `python3 -c` / `python -c` as read-only (the textual write-indicator blocklist is removed, not extended)
 - [x] With no active task the hook refuses all three measured forms plus a `subprocess` and an `exec(...)` form; with an active task whose gates pass, an ordinary `python3 -c "import json; print(1)"` is allowed — tests/unit/t4788_python_c_not_readonly.bats 7/7
 - [x] Existing safe-commands / hook tests updated where they pinned `python3 -c` as safe, each change stated; regression test file added — one test changed: context_safe_commands.bats "python3 parse check is safe" now asserts NOT safe (49/49); all 97 safe-commands/hook test files otherwise pass (1087 ok)
-- [ ] Vendored copy synced (owner stays human: the agent may not change ownership; the operator closes it)
+- [x] Vendored copy synced (owner stays human: the agent may not change ownership; the operator closes it)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
