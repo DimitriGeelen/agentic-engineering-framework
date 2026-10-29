@@ -1475,6 +1475,8 @@ whose live check is still open.
 
 **Release runs need a recorded decision; no scheduled release exists (T-4364).** `fw release tag-and-release` refuses an unattended run (no TTY on stdin, cron, or `FW_UNATTENDED=1`) unless `.context/releases/decisions.jsonl` holds a row for that exact version, written by `bin/fw release decide vX.Y.Z --by operator|field-evidence --ref "<operator's verbatim words | field-evidence task>"` (an agent records what the operator said; it is not a self-approval). `--dry-run` is never refused; interactive runs print the covering decision or warn. The weekly cron that cut an untested v1.8.12 on 2026-10-19 is paused and must not return.
 
+**Every release has human-readable notes (operator ruling 2026-10-29, standing, T-4899).** Before the release question, write `docs/releases/vX.Y.Z-notes.md` for consumers, in the style of the earlier notes files. Cover: summary, highlights, behaviour changes, how it was tested, known issues with workarounds, and upgrading. Commit it, and show it to the operator together with the dry-run. `fw release tag-and-release` refuses, before anything is tagged or pushed, when a repo that keeps `docs/releases/` has no committed notes file for the version; `--dry-run` reports it. The GitHub release leads with those notes and appends GitHub's changelog, ranged from the previous release. Origin: v1.8.15's GitHub page carried only an auto "Full Changelog" link.
+
 **Positive field tests are the release approval (operator ruling 2026-10-13, standing,
 T-4146 — amends T-4020).** When every fix in the release has a positive field test from
 another agent (a project that ran it and reported it working, recorded in the release's
