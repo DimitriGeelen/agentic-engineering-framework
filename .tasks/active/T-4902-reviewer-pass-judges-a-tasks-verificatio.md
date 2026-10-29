@@ -13,7 +13,7 @@ description: >
   a criterion must block PASS, and whether PASS needs evidence touching the criterion's
   Expected.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T13:57:43Z
-last_update: '2026-10-29T14:01:11Z'
+last_update: 2026-10-29T20:25:08Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,14 +92,29 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Background / trigger:** ring20-dashboard ran a 10-task pilot of the reviewer ladder on its human-check queue (their T-2585, v1.8.15, msg b398cef0). `fw reviewer T-XXX` returned PASS or CONCERN based on the shape of each task's `## Verification` commands, never on the criterion itself. Their T-372 got PASS although its criterion carried "Evidence … NEGATIVE FINDING: endpoints return 404". They worried that a PASS auto-ticks the converted criterion, ticking boxes nobody checked. Nothing was ticked; their report is their docs/reports/T-2585-obsolete-close.md.
+
+**Problem / hypothesis:**
+- Checked here, in `lib/reviewer/static_scan.py`: the auto-tick was already narrowed by T-4778, which is in v1.8.15. A static-scan PASS ticks a `[REVIEWER]` criterion only when the criterion names one of the scanner's own checks (SCANNED_PATTERN_IDS) and that check found nothing. Criteria converted by `fw task delegate` name no scanner check, so they get "route to fw reviewer judge" and are closed only by an independent reviewer's recorded verdict. So most of the feared case is already prevented.
+- What remains: a `[REVIEWER]` criterion that names a scanner check, and whose own body records NEGATIVE or FAILS evidence, can still be auto-ticked. The auto-tick reads only the criterion's title line, and no detector reads its evidence.
+- Also, the overall PASS label reads like "the criteria hold", when it only means "no anti-pattern found".
+
+**Goal:** No auto-tick ever stands on a criterion whose own recorded evidence says it does not hold, and the static scan's PASS does not read as a verdict on the criteria.
+
+**Expected outcome:**
+- A new detector flags a `[REVIEWER]` criterion whose body carries a negative evidence marker (NEGATIVE FINDING/RESULT, an Evidence line saying FAIL/FAILS). That finding blocks its auto-tick.
+- The reviewer's verdict block says plainly that PASS means "no anti-pattern found", not "criteria hold".
+- ring20-dashboard is told what T-4778 already covers.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Shown by test that a delegation-converted `[REVIEWER]` criterion naming no scanner check is NOT auto-ticked by a static PASS (T-4778 behaviour pinned for this case)
+- [ ] New detector `ac-negative-evidence` in lib/reviewer/static_scan.py: a `[REVIEWER]` criterion whose body (lines until the next criterion) carries `NEGATIVE FINDING`/`NEGATIVE RESULT`, or an Evidence line with FAIL/FAILS/FAILED, gets a finding on that criterion, so its auto-tick is refused; registered in scan_task and SCANNED_PATTERN_IDS
+- [ ] Tests: negative evidence blocks the tick of a criterion that names a scanner check; the same criterion without it still ticks; a criterion whose evidence says WORKS is unaffected
+- [ ] The verdict block's PASS wording states it means "no anti-pattern found", not "the criteria hold"
+- [ ] Existing reviewer tests pass; vendored copy synced; ring20-dashboard told
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -381,3 +396,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4902-reviewer-pass-judges-a-tasks-verificatio.md
 - **Context:** Initial task creation
+
+### 2026-10-29T20:25:08Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
