@@ -14,7 +14,7 @@ description: >
   confirm with their timing, then bound the search to where the file can live; also
   consider a progress line before slow pre-push sections.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T00:03:09Z
-last_update: '2026-10-29T00:15:31Z'
+last_update: 2026-10-29T00:26:20Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,8 +101,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The retire_when F-RECALL signal (b) in agents/audit/audit.sh no longer runs a recursive glob over PROJECT_ROOT. It finds `preference-index.yaml` / `preferences.yaml` among the files git tracks (`git ls-files`, bounded by a timeout); outside a git repo it searches only `.context/` and `policy/`
+- [x] Same verdict as before for a tracked file in any directory (signal found) and for no such file (not found); an ignored or untracked copy, for example under a home directory's `.cache`, no longer counts and is never walked
+- [x] Unit test: a fixture project with a large untracked tree plus a tracked `preferences.yaml` at depth finds it quickly, and the same without the tracked file finds nothing; the check never walks the tree (pinned by failing os.walk/glob/rglob in the test) and a gitignored `.cache/preferences.yaml` does not count
+- [ ] Vendored copy synced (`bin/fw vendor self --check` clean for this task); be.51 tagged with T-4891; dimitri-mint-dev and 1409 asked to test be.51
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,6 +290,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+python3 -m pytest -q tests/unit/test_tracked_files_t4891.py > /tmp/.t4891.out 2>&1
+bash -n agents/audit/audit.sh
+bin/fw vendor self --check --task T-4891
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -303,6 +309,17 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** at dimitri-mint-dev, every `git push` sat 5–6 minutes in the pre-push hook. The hook was in `audit --section structure`, inside a python check near its 300 s read cap.
+
+**Root cause:** the T-2169 retire_when advisory (2026-06), signal (b) for F-RECALL, ran `glob.glob(<root>/**/preferences.yaml, recursive=True)` and the same for `preference-index.yaml`. That walks the whole project tree. dimitri-mint-dev's root is a ~500 GB home directory, where the glob never finished (killed at 15 min). So the audit's 300 s read cap fired on every push.
+
+**Why structurally allowed:** the framework repo and most consumers are compact trees, so the walk took milliseconds wherever it was tested. Nothing bounds or measures how much filesystem an audit check may touch, and the hard 300 s cap turned a hang into a silent 5-minute delay, not an error.
+
+**Prevention:**
+- The search now goes through `lib/tracked_files.find_named`: git's tracked files, or only `.context/` and `policy/` outside git. It never walks the root.
+- `tests/unit/test_tracked_files_t4891.py` makes any os.walk, glob or rglob fail the test, and checks that an ignored copy does not count.
+- Learning recorded: an audit check must not walk PROJECT_ROOT, because a consumer root can be a home directory.
 
 ## Evolution
 
@@ -368,6 +385,16 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-29 — ship in this release as be.51
+- **Chose:** fix now and cut be.51 with T-4891 only (operator, answer "a, go ahead with be.51"). dimitri-mint-dev re-checks its push time, and 1409 runs its pending full suite on be.51. T-4870 stays a known issue for after the release.
+- **Why:** confirmed in the field; costs every push 5 min on a home-directory root; small fix; the gate tester had not started, so no confirmation round is lost.
+- **Rejected:** (b) ship be.50 with T-4891 as a known issue.
+
+### 2026-10-29 — search tracked files, not the tree
+- **Chose:** `git ls-files` for the two names; outside git, only `.context/` and `policy/`.
+- **Why:** a preference index that counts as a recall signal is project content, so it is tracked. Git answers from the index, and ignored trees (.cache, VM images) are never touched.
+- **Rejected:** keep the glob but prune known heavy directories (an endless denylist); `.context/` only (would drop a tracked file elsewhere, changing the verdict).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -384,3 +411,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4891-pre-push-audit-structure-takes-5-min-on-.md
 - **Context:** Initial task creation
+
+### 2026-10-29T00:26:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
