@@ -543,6 +543,24 @@ be.50 (370b2688b) is be.49 plus T-4875, T-4880, T-4881 and T-4883. The release w
 - **055:** E, F, G.
 - **832 and greenfield:** the designer data APIs (T-4830, T-4831, T-4832, T-4836) at the be-tag cut by T-4837.
 
+### v1.8.15 released — dimitri-mint-dev completes its field test (recorded 2026-10-30, T-4911)
+
+dimitri-mint-dev, msg 400f6ed2 (conversation aef-v1815-be3), on 1.8.15 (be.41 → be.51 → 1.8.15, upgraded 2026-10-29 09:13Z). Their own report: their T-193.
+
+- **G, claude-fw budget relaunch: WORKS.** This is the first tester run of the path listed above as unexercised.
+  - A budget restart at about 16:49Z wrote the auto-handover and started a fresh session at 16:51:36, with no transcript restored.
+  - SessionStart labelled it "budget restart. No compaction happened", and `checkpoint.sh status` in the new session gave real numbers (Green, about 720K free).
+  - Doctor: auto-handover OK, auto-restart armed, claude-fw copies current. The be.41 WARN "claude-fw pid started before it changed" is gone.
+  - Not exercised: the signal TTL, the 5-restart cap, `--no-restart`.
+- **T-4781, one tmux server per project: WORKS.** dimitri-mint-dev and 1409 each have their own server. The be.41 WARN "2 projects on fw-agents" is gone, and doctor says "none shared between projects".
+- **Their local bugs no longer reproduce on 1.8.15:** T-107 (budget restart labelled as compaction) and T-109 (budget gauge "unknown" after a budget restart).
+- **Cosmetic, ours:** the restarted process keeps the original `-c` on its command line although the restart is fresh, so `ps` can mislead. Filed as T-4912 (backlog).
+- **Doctor WARN "review model pin opencode zai-coding-plan/glm-5.2 is retired": not a framework default.** v1.8.15 ships `zai-coding-plan/glm-5.3` in `policy/review-backends.yaml` (T-4506). The 5.2 pin is in their own copy, and they were told where to look.
+- **Side note, not ours:** 055's fleet launcher still puts 7 projects' `fleet-*` sessions on the default tmux server.
+- **Not reported:** the T-4812 re-check.
+
+With A–D and H sent earlier, dimitri-mint-dev's be.41 / 1.8.15 field test is complete.
+
 ## Full-suite comparison (HEAD eee888e61 vs v1.8.14)
 
 **Method, and what it does not cover.** T-4345 ran the whole unit corpus on two scratch trees side by side (jobs=6
