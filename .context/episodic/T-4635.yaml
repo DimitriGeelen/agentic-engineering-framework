@@ -1,0 +1,121 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4635: RCA: agent sessions and workers killed when root's user slice is torn down under load (2026-10-22 13:38)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-29T09:35:50Z
+# ============================================================================
+
+task_id: T-4635
+task_name: "RCA: agent sessions and workers killed when root's user slice is torn down under load (2026-10-22 13:38)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T12:37:55Z
+completed: 2026-10-29T09:35:12Z
+duration_days: 7
+updates_count: 2
+first_commit: 2026-10-22T14:40:59+02:00
+last_commit: 2026-10-29T10:35:10+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RCA — sessions and workers killed when root's user slice is force-torn down under load; remediation tasks T-4636..T-4638. register G-124 (session/worker kill on root slice teardown). RCA containment — leaked 1409 paths removed from default tmux global env; peers notified. three isolated SEV-1 reviews (claude-code, codex, opencode) + RCA kill-time correction (13:38:43 ordinary slice teardown). RCA kill-time correction — 13:38:43 ordinary teardown of user-0.slice (ssh logout), not the 13:37:10 force-kill. RCA damage update — 050 confirmed write into 1409, 1023 clean, host reboot. RCA — 1409 inspection: 050 leak left 2 untracked files, no commit/push, quarantined. RCA — 055 allow-list + polluted-server test; post-reboot host scan clean. RCA — linger enabled for root and dimitri-mint-dev (verified). 0506 answered (clean, 10ac1353); 1409 asked to confirm no 0506 artefacts. 1409 confirms no 0506 artefacts (a2651199) — all exposed projects accounted for. ACs ticked with evidence, RCA summarised
+
+# Key outcomes
+outcomes:
+  - 'RCA report docs/reports/T-4635-session-kill-rca.md records symptom, evidence (journal lines, cgroup, linger state, timeout count), root cause, why nothing caught it, and remediation'
+  - 'Concern registered in .context/project/concerns.yaml naming the remediation tasks — names T-4636, T-4637, T-4638 (and T-4541)'
+  - 'One task per remediation filed (process placement, detection, environment hygiene) and the TermLink-side gap sent to TermLink — T-4636..T-4638; TermLink told on conversation sev1-tmux-env-leak-2026-10-22 (msgs dacf9863 .. 2506bcdd, 2026-10-22)'
+  - 'Operator handed one runme line for the host fix (enable root linger) — the fix was run by the operator through dimitri-mint-dev''s runme `linger-107` (EXIT 0) and verified here (both users LINGER yes); the AEF runme `enable-root-linger` is therefore superseded and was never run'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/costs/reviews.jsonl'
+  - '.context/episodic/T-4568.yaml'
+  - '.context/episodic/T-4650.yaml'
+  - '.context/episodic/T-4664.yaml'
+  - '.context/episodic/T-4668.yaml'
+  - '.context/episodic/T-4669.yaml'
+  - '.context/project/concerns.yaml'
+  - '.tasks/active/T-4635-rca-agent-sessions-and-workers-killed-wh.md'
+  - '.tasks/active/T-4636-run-claude-fw-sessions-and-termlink-work.md'
+  - '.tasks/active/T-4637-detect-fragile-placement-and-vanished-wo.md'
+  - '.tasks/active/T-4638-claude-fw-drops-inherited-projectrootcon.md'
+  - '.tasks/completed/T-4568-fw-upgrade-leaves-commit-msg-and-pre-pus.md'
+  - '.tasks/completed/T-4650-isbashsafecommand-refuses-sed--n-np-with.md'
+  - '.tasks/completed/T-4664-a-submitters-confirm-close-on-a-github-i.md'
+  - '.tasks/completed/T-4668-issue-replies-close-with-a-note-when-the.md'
+  - '.tasks/completed/T-4669-fw-issues-mark-a-submitter-reply-as-hand.md'
+  - 'docs/reports/T-4635-review/results/claude-code.md'
+  - 'docs/reports/T-4635-review/results/codex.md'
+  - 'docs/reports/T-4635-review/results/independence.json'
+  - 'docs/reports/T-4635-review/results/opencode.md'
+  - 'docs/reports/T-4635-session-kill-rca.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T14:40:59'
+    action: 'T-4635: RCA — sessions and workers killed when root''s user slice is force-torn down under load; remediation tasks T-4636..T-4638'
+  - time: '2026-10-22T14:53:11'
+    action: 'T-4635: register G-124 (session/worker kill on root slice teardown)'
+  - time: '2026-10-22T15:09:00'
+    action: 'T-4635: RCA containment — leaked 1409 paths removed from default tmux global env; peers notified'
+  - time: '2026-10-22T15:37:33'
+    action: 'T-4635: three isolated SEV-1 reviews (claude-code, codex, opencode) + RCA kill-time correction (13:38:43 ordinary slice teardown)'
+  - time: '2026-10-22T15:38:31'
+    action: 'T-4635: RCA kill-time correction — 13:38:43 ordinary teardown of user-0.slice (ssh logout), not the 13:37:10 force-kill'
+  - time: '2026-10-22T21:01:38'
+    action: 'T-4635: RCA damage update — 050 confirmed write into 1409, 1023 clean, host reboot'
+  - time: '2026-10-22T21:10:43'
+    action: 'T-4635: RCA — 1409 inspection: 050 leak left 2 untracked files, no commit/push, quarantined'
+  - time: '2026-10-22T21:25:54'
+    action: 'T-4635: RCA — 055 allow-list + polluted-server test; post-reboot host scan clean'
+  - time: '2026-10-22T23:41:35'
+    action: 'T-4635: RCA — linger enabled for root and dimitri-mint-dev (verified)'
+  - time: '2026-10-29T10:28:56'
+    action: 'T-4635: 0506 answered (clean, 10ac1353); 1409 asked to confirm no 0506 artefacts'
+  - time: '2026-10-29T10:34:16'
+    action: 'T-4635: 1409 confirms no 0506 artefacts (a2651199) — all exposed projects accounted for'
+  - time: '2026-10-29T10:35:10'
+    action: 'T-4635: ACs ticked with evidence, RCA summarised'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 12 commit(s), 9897 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 9897
+  commits: 13
+  files_changed: 24
+  lines_added: 2543
+  lines_removed: 37
+  footprint_refreshed_at: '2026-10-29T09:36:01Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4635-rca-agent-sessions-and-workers-killed-wh.md
+generated_by: context-agent-hybrid
