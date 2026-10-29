@@ -51287,3 +51287,21 @@ scan_id: R-3765697d
 task_id: T-4905
 payload:
   task_file: .tasks/active/T-4905-fw-runme-a-step-that-sets-its-own-exit-t.md
+---
+kind: scan_emitted
+timestamp: '2026-10-29T20:30:10Z'
+scan_id: R-0f188270
+task_id: T-4902
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-29T20:30:10Z'
+scan_id: R-0f188270
+task_id: T-4902
+payload:
+  task_file: .tasks/active/T-4902-reviewer-pass-judges-a-tasks-verificatio.md

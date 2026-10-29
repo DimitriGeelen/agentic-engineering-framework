@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4902: Reviewer PASS judges a task's Verification commands, not the criterion: can pass a criterion whose own evidence block says NEGATIVE (ring20-dashboard)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-29T20:30:27Z
+# ============================================================================
+
+task_id: T-4902
+task_name: "Reviewer PASS judges a task's Verification commands, not the criterion: can pass a criterion whose own evidence block says NEGATIVE (ring20-dashboard)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-29T13:57:43Z
+completed: 2026-10-29T20:29:58Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-29T21:26:14+01:00
+last_commit: 2026-10-29T21:29:57+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context (T-4778 already blocks delegated-criterion ticks; negative-evidence gap remains) and ACs. reviewer never auto-ticks a criterion over its own negative evidence (ac-negative-evidence); verdict block says PASS means no anti-pattern found, not that criteria hold; T-4778 delegated case pinned. vendor self — static_scan.py. ACs done
+
+# Key outcomes
+outcomes:
+  - 'Shown by test that a delegation-converted `[REVIEWER]` criterion naming no scanner check is NOT auto-ticked by a static PASS (T-4778 behaviour pinned for this case)'
+  - 'New detector `ac-negative-evidence` in lib/reviewer/static_scan.py: a `[REVIEWER]` criterion whose body (lines until the next criterion) carries `NEGATIVE FINDING`/`NEGATIVE RESULT`, or an Evidence line with FAIL/FAILS/FAILED, gets a finding on that criterion, so its auto-tick is refused; registered in scan_task and SCANNED_PATTERN_IDS — severity partial, so the overall verdict is CONCERN'
+  - 'Tests: negative evidence blocks the tick of a criterion that names a scanner check; the same criterion without it still ticks; a criterion whose evidence says WORKS is unaffected — test_reviewer_negative_evidence_t4902.py 8/8 (incl. three negative phrasings and per-criterion scoping)'
+  - 'The verdict block''s PASS wording states it means "no anti-pattern found", not "the criteria hold" — a separate **Scope** line, so parsers of the **Overall** line are unaffected'
+  - 'Existing reviewer tests pass; vendored copy synced; ring20-dashboard told — 381 pytest + 86 bats reviewer tests pass; told (msg 11e8fb2f)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/static_scan.py'
+  - '.tasks/active/T-4902-reviewer-pass-judges-a-tasks-verificatio.md'
+  - 'lib/reviewer/static_scan.py'
+  - 'tests/unit/test_reviewer_negative_evidence_t4902.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-29T21:26:14'
+    action: 'T-4902: context (T-4778 already blocks delegated-criterion ticks; negative-evidence gap remains) and ACs'
+  - time: '2026-10-29T21:29:39'
+    action: 'T-4902: reviewer never auto-ticks a criterion over its own negative evidence (ac-negative-evidence); verdict block says PASS means no anti-pattern found, not that criteria hold; T-4778 delegated case pinned'
+  - time: '2026-10-29T21:29:43'
+    action: 'T-4902: vendor self — static_scan.py'
+  - time: '2026-10-29T21:29:57'
+    action: 'T-4902: ACs done'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 392 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, reviewer, governance, field-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 392
+  commits: 6
+  files_changed: 8
+  lines_added: 1130
+  lines_removed: 17
+  footprint_refreshed_at: '2026-10-29T20:30:38Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4902-reviewer-pass-judges-a-tasks-verificatio.md
+generated_by: context-agent-hybrid
