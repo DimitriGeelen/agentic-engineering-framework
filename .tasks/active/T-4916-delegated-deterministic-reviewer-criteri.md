@@ -82,6 +82,7 @@ So the operator's ruling D-626 ("agent can use the reviewer agent … and with a
 - Tests: a converted criterion closes on a green recorded verdict, and stays open on amber/red.
 - ring20-dashboard is told.
 - Design check before building: whether the class should simply be REVIEWER-JUDGES at conversion time (one class, one path) rather than teaching judge a second class.
+- Design input from ring20-dashboard (msg 1cbe4ea5): many old criteria are dated (counts from May, a retired page, steps naming `bin/fw` where only `.agentic-framework/bin/fw` exists). Their Evidence blocks are dated and say HOLDS / PARTLY / CANNOT BE CHECKED NOW / DOES NOT HOLD. They ask that the reviewer judge the criterion's intent against the evidence, not the stale literal. Open question, not settled: green on "intent" would let a reviewer quietly rewrite an operator-written criterion. The safer shape may be that a stale-literal criterion gets amber or escalate, with the reviewer's proposed restatement, so the operator rules once on the restatement. Decide with the operator before building.
 
 ## Acceptance Criteria
 
