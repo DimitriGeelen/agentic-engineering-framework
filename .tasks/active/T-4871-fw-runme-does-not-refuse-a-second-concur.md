@@ -12,10 +12,10 @@ description: >
   watchdog timeout (T-4854 /health is the safe probe). Filed during the release freeze
   (T-4869): backlog.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [post-freeze, runme]
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T11:15:03Z
-last_update: '2026-10-28T11:30:36Z'
+last_update: 2026-10-29T23:15:20Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,14 +93,25 @@ bvp_scores_proposed:
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
-**Second occurrence (ring20-dashboard be.50 report, msg c20890c2, 2026-10-29):** the operator started their upgrade runme a second time mid-run. Their own upgrade script refused it via flock before writing anything. But `fw runme` had already truncated the shared `run.log`, so the first run's log lines are lost; only its own summary file survived. The need is unchanged: refuse the second start before touching run.log.
+**Background / trigger:** ring20-dashboard reported it twice. In msg 4c7cd097 (2026-10-28) their operator started the same runme twice; both runs wrote one `run.log`, the second run's STOP line became the last line, and the first (successful) run's final check failed. In msg c20890c2 (be.50 report, 2026-10-29) the operator started their upgrade runme a second time mid-run. Their own script refused it with flock before writing anything, but the first run's log lines were already gone.
+
+**Problem / hypothesis:** confirmed by reading `lib/runme.sh`. The generated `runme.sh` empties the log as its first action (`: > "$LOG"`) and takes no lock. So a second start wipes the running run's log and then appends to it in parallel, before anything in the operator's own steps can refuse. A consumer's own flock inside the steps comes too late by construction.
+
+**Goal:** a runme cannot run twice at once. A second start is refused before it touches `run.log` or emits any event a watcher would read as a start.
+
+**Expected outcome:**
+- A second `bash …/runme.sh` while the first is running prints "already running (pid N) — see <run.log>" and exits non-zero. The first run's log is intact and ends with its own RUNME EXIT.
+- A lock left behind by a run that was killed (pid gone) does not block the next start.
+- No new host dependency: a `mkdir` lock with a pid file, not util-linux `flock`, because macOS consumers have no flock.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Generated `runme.sh` takes a per-runme lock before `: > "$LOG"`; a second concurrent start exits 75 with "already running (pid N)", leaves run.log untouched and writes no `start` event
+- [x] The lock is released when the run ends normally, fails or is stopped by a signal; a stale lock (pid not alive) is taken over with a note
+- [x] Tests: concurrent second start refused with the first log intact; sequential re-run works; stale lock taken over; lock released after a failing step; existing runme tests pass
+- [ ] ring20-dashboard told (they can drop their own flock workaround after the next be-tag)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -285,8 +296,21 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 120 bats tests/unit/t4871_runme_single_run.bats > /tmp/.t4871.out 2>&1 && ! grep -q "^not ok" /tmp/.t4871.out
+test "$(grep -c '# skip' /tmp/.t4871.out)" -eq 0
+timeout 300 bats tests/unit/t3675_runme.bats tests/unit/t3741_runme_events.bats tests/unit/t4905_runme_step_exit_trap.bats > /tmp/.t4871b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4871b.out
+bash -n lib/runme.sh
+bin/fw vendor self --check --task T-4871
 
 ## RCA
+
+**Symptom:** ring20-dashboard's operator started the same runme twice (2026-10-28 and 2026-10-29). The first run's `run.log` was emptied and then interleaved with the second run's lines, so the first run's record was lost and its final check failed.
+
+**Root cause:** the generated `runme.sh` emptied the log (`: > "$LOG"`) as its first action and took no lock. A second start therefore damaged the running run's record before any step of the operator's own script could refuse.
+
+**Why structurally allowed:** runme was designed around one operator running one line once. Nothing modelled "the same line run again while it is still running", and the tests only ever ran a script once at a time.
+
+**Prevention:** a per-runme lock (`.running/` with a pid file) is taken before the log is touched and released by the EXIT trap. A live holder means refusal with exit 75; a dead holder means takeover with a note. `tests/unit/t4871_runme_single_run.bats` pins concurrent refusal, release on success, failure and signal, and stale takeover.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -382,3 +406,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4871-fw-runme-does-not-refuse-a-second-concur.md
 - **Context:** Initial task creation
+
+### 2026-10-29T23:15:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
