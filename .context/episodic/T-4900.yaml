@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4900: Re-pin Workflow Designer 0.31.0 -> 0.32.0 (832 msg d8513a55)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-29T13:52:45Z
+# ============================================================================
+
+task_id: T-4900
+task_name: "Re-pin Workflow Designer 0.31.0 -> 0.32.0 (832 msg d8513a55)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-29T13:47:51Z
+completed: 2026-10-29T13:51:29Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-29T14:50:00+01:00
+last_commit: 2026-10-29T14:51:25+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  re-pin designer 0.31.0 -> 0.32.0 (832 msg d8513a55); build and validator verified at tag designer-v0.32.0. vendor self — designer 0.32.0 build, validator and pin. ACs ticked — 0.32.0 PRESENT, served, 832 told
+
+# Key outcomes
+outcomes:
+  - 'policy/designer-pin.yaml pins 0.32.0: version, sha256 8ed494c1…c604 and bytes 1298447 as 832 announced (msg d8513a55), source_tag designer-v0.32.0, artifact/vendored paths, and the validator_* keys for dist/aef-authoring-kit-0.32.0 read from the tag; notes line extended with 0.32.0'
+  - '`fw designer sync --from-tag designer-v0.32.0` verifies the build (pin, MANIFEST at the tag, independent sha256) and the validator''s three anchors, then vendors both read-only; the vendored copy under .agentic-framework/ carries only 0.32.0 (vendor/designer/ keeps older builds as history, by convention)'
+  - '`fw designer` reports PRESENT for 0.32.0; Watchtower serves /designer/app from the new build after a restart (`bin/fw watchtower current` clean)'
+  - 'Vendored copy synced; 832 told the pin reads 0.32.0 (msg 11f89a0d)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/designer-pin.yaml'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.32.0.html'
+  - '.agentic-framework/vendor/designer/validate-workflow-0.32.0.py'
+  - '.tasks/active/T-4900-re-pin-workflow-designer-0310---0320-832.md'
+  - 'policy/designer-pin.yaml'
+  - 'vendor/designer/aef-workflow-designer-0.32.0.html'
+  - 'vendor/designer/validate-workflow-0.32.0.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-29T14:50:00'
+    action: 'T-4900: re-pin designer 0.31.0 -> 0.32.0 (832 msg d8513a55); build and validator verified at tag designer-v0.32.0'
+  - time: '2026-10-29T14:50:32'
+    action: 'T-4900: vendor self — designer 0.32.0 build, validator and pin'
+  - time: '2026-10-29T14:51:25'
+    action: 'T-4900: ACs ticked — 0.32.0 PRESENT, served, 832 told'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 4
+  files_changed: 10
+  lines_added: 19132
+  lines_removed: 56
+  footprint_refreshed_at: '2026-10-29T13:52:52Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4900-re-pin-workflow-designer-0310---0320-832.md
+generated_by: context-agent-hybrid
