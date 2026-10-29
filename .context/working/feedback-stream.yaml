@@ -51107,3 +51107,21 @@ scan_id: R-369db7e1
 task_id: T-4635
 payload:
   task_file: .tasks/active/T-4635-rca-agent-sessions-and-workers-killed-wh.md
+---
+kind: scan_emitted
+timestamp: '2026-10-29T12:48:32Z'
+scan_id: R-2fe15869
+task_id: T-4899
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-29T12:48:32Z'
+scan_id: R-2fe15869
+task_id: T-4899
+payload:
+  task_file: .tasks/active/T-4899-fw-release-refuses-to-publish-without-a-.md
