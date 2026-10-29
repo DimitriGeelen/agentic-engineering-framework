@@ -572,6 +572,14 @@ font-family: 'Outfit';
      one line (it was nowrap). */
   .clean-nudge { max-width: calc(100% - 24px); }
   .clean-nudge .clean-nudge-msg { white-space: normal; }
+  /* T-1327: at left:50% an absolutely placed box shrinks to fit the HALF of the canvas right of its left edge, so a long
+     advisory wrapped in half the width it has (242px of a 484px canvas at 1024). max-content up to the max-width above
+     uses the whole canvas; a short advisory keeps its natural width. And the import notice states one part per line. */
+  .clean-nudge { width: max-content; }
+  .clean-nudge-msg .notice-part { display: block; padding-left: 1.2em; text-indent: -1.2em; }
+  .clean-nudge-msg .notice-part + .notice-part::before { content: '•'; display: inline-block; width: 1.2em; text-indent: 0; }
+  .clean-nudge-msg .notice-part + .notice-part { margin-top: 3px; }
+  .clean-nudge-msg .notice-sep { display: none; }
   /* T-310: a malformed map can trigger BOTH advisories at once — the lane-fix
      notice takes the top slot (it reports a change already made to the document's
      appearance) and pushes the Clean nudge (an offer) below it. The fallback offset
@@ -2340,11 +2348,18 @@ function isStepNumbered(node) { return stepWordOf(node) === null; }
 // An event or gateway is `<abbr>_<word>_<slug>`; a second one in the lane with the same word and slug
 // takes `_2`, `_3` in x order (slugs never contain `_`, so the suffix cannot collide with another id).
 // If two nodes share an x exactly, uid order breaks the tie deterministically.
+// T-1102: a node with no lane (an event inside a subprocess, a lane id the map no longer has) or in a lane without an
+// abbreviation belongs to ONE "unlaned" group, prefixed `lan` unless a real lane already has that abbreviation; it then
+// takes the lane-variant scheme's next free one. Before, the fallback `lan` was shared with a real lane whose
+// abbreviation is also `lan` (kitchen-sink: Lane_1cofr07) while each side numbered on its own, so kitchen-sink saved
+// two endEvents as `lan_end_event`.
+const laneKeyOf = n => { const l = findLane(n.lane); return l && l.abbr ? l.id : null; };
 function computeDisplayId(node) {
   const lane = findLane(node.lane);
-  const abbr = lane?.abbr || 'lan';
+  const key = laneKeyOf(node);
+  const abbr = key !== null ? lane.abbr : uniqueAbbrAmong(state.lanes.filter(l => l.abbr), 'lan');
   const sameLane = state.nodes
-    .filter(n => n.lane === node.lane)
+    .filter(n => laneKeyOf(n) === key)
     .slice()
     .sort((a, b) => a.x - b.x || a.uid.localeCompare(b.uid));
   const slugOf = n => n.slug || deriveSlug(n.name);
@@ -2944,6 +2959,12 @@ let _processSkipReport = [];
 // it is a real edit to the document, not a render-time fudge. What stays out is
 // the narration about it.)
 let _laneGrowReport = [];
+
+// T-1327 (T-1322 GO, option C): what the last parse could not keep, for the import notice. A file from another tool
+// loses its own shape sizes and line bends (the designer lays out), the nesting of a subprocess (its contents are
+// drawn and saved at the top level, F8) and nested lanes (flattened, F9). Same discipline as above: a report about
+// the import, outside `state`.
+let _importNotKeptReport = null;
 
 // ============================================================================
 //  Fault record (T-821, F-05) — failures become evidence
@@ -10678,8 +10699,37 @@ function maybeShowLaneFixNotice() {
     if ((kd.skipped || []).length) parts.push(`${kd.skipped.length} data association${kd.skipped.length === 1 ? '' : 's'} NOT kept — ` +
       `${kd.skipped.length === 1 ? 'it points' : 'they point'} at something not in this file: ` + kd.skipped.map(s => `${s.id} → ${s.missing.join(', ')}`).join('; '));
   }
+  // T-1326/T-1327: annotations, groups and associations are kept and saved back, but not drawn yet.
+  const pk = (typeof state === 'object' && state && state.procKept) || null;
+  if (pk && (pk.artifacts || []).length) {
+    const count = tag => pk.artifacts.filter(a => new RegExp(`^<(?:[\\w.-]+:)?${tag}[\\s/>]`).test(a.xml)).length;
+    const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+    const kinds = [['textAnnotation', 'annotation'], ['group', 'group'], ['association', 'association']]
+      .map(([t, w]) => [count(t), w]).filter(([n]) => n).map(([n, w]) => plural(n, w));
+    if (kinds.length) parts.push(`${kinds.join(', ')} kept unchanged and saved back, not shown yet`);
+  }
+  // T-1327: what a save of THIS file will not keep (T-1322 option C), stated last like the T-603 line.
+  const nk = _importNotKeptReport || {};
+  if (nk.hoistedNodes) parts.push(`${nk.hoistedNodes} element${nk.hoistedNodes === 1 ? '' : 's'} inside ` +
+    `${nk.hoistingSubs} subprocess${nk.hoistingSubs === 1 ? '' : 'es'} shown and saved at the top level — the subprocess nesting is NOT kept`);
+  if (nk.nestedLanes) parts.push(`${nk.nestedLanes} nested lane${nk.nestedLanes === 1 ? '' : 's'} shown and saved as ` +
+    `top-level lane${nk.nestedLanes === 1 ? '' : 's'} — the lane nesting is NOT kept`);
+  // T-1264: unmoved shapes and lines keep the file's own geometry (a node moved back into its lane, or by the person,
+  // is redrawn); pool and lane outlines are still not written back
+  if (nk.diRedrawn) parts.push(`on save, shapes that neither you nor this import moved keep this file's sizes and labels, and lines between them keep their bends; the file's original pool and lane outlines are NOT kept`);
   const show = parts.length > 0;
-  if (show && msg) msg.textContent = '⚠ ' + parts.join('; ');
+  // T-1327: one part per line. Run together with semicolons, seven parts made a 300px-tall paragraph at 1024 that
+  // nobody reads. The "; " separators stay in the text (hidden), so textContent reads exactly as before.
+  if (show && msg) {
+    msg.textContent = '';
+    parts.forEach((p, i) => {
+      const line = document.createElement('span');
+      line.className = 'notice-part';
+      if (i) { const sep = document.createElement('span'); sep.className = 'notice-sep'; sep.textContent = '; '; line.appendChild(sep); }
+      line.appendChild(document.createTextNode((i ? '' : '⚠ ') + p));
+      msg.appendChild(line);
+    });
+  }
   el.style.display = show ? '' : 'none';
   if (nudge) nudge.classList.toggle('stacked', show);
 }
@@ -13188,15 +13238,39 @@ function ioExtraAttrXml(extra) {
 const IO_EXPORT_ROOT_NS = { bpmn: 'http://www.omg.org/spec/BPMN/20100524/MODEL', bpmndi: 'http://www.omg.org/spec/BPMN/20100524/DI',
                             dc: 'http://www.omg.org/spec/DD/20100524/DC', di: 'http://www.omg.org/spec/DD/20100524/DI',
                             aef: 'http://anchorpoint.framework/aef/extensions' };
+function keptElementXml(c) {
+  const x = new XMLSerializer().serializeToString(c);
+  return x.replace(/^(<[^\s>\/]+)((?:\s+[^\s=>]+="[^"]*")*)/, (m, tag, attrs) => tag + attrs.replace(/\s+xmlns(?::([A-Za-z_][\w.-]*))?="([^"]*)"/g,
+    (d, pfx, uri) => (pfx && IO_EXPORT_ROOT_NS[pfx] === uri) ? '' : d));
+}
 function ioChildXml(el) {
-  const ser = new XMLSerializer(), parts = [];
-  for (const c of Array.from(el.childNodes)) {
-    if (c.nodeType !== 1) continue;
-    let x = ser.serializeToString(c);
-    x = x.replace(/^(<[^\s>\/]+)((?:\s+[^\s=>]+="[^"]*")*)/, (m, tag, attrs) => tag + attrs.replace(/\s+xmlns(?::([A-Za-z_][\w.-]*))?="([^"]*)"/g,
-      (d, pfx, uri) => (pfx && IO_EXPORT_ROOT_NS[pfx] === uri) ? '' : d));
-    parts.push(x);
-  }
+  const parts = Array.from(el.childNodes).filter(c => c.nodeType === 1).map(keptElementXml);
+  return parts.length ? parts : null;
+}
+// T-1268: an aef element on a node that the designer does not read (one a newer AEF or bridge writes) is kept the same
+// way, verbatim and in order, and written back at the end of the node's extensionElements. Only the designer's own
+// namespace: foreign extensions are T-1259's question. Every element the import below reads is listed here; a reader
+// added there without a line here would also be written twice.
+const NODE_AEF_READ = new Set(['uid', 'position', 'meta', 'endpoint', 'contextReads', 'artifactsWrites', 'decisionInput',
+  'decisionOutputs', 'link', 'eventDef', 'boundaryPos', 'io', 'aggregation', 'multiInstance', 'timer', 'constituents',
+  ...Object.keys(STRUCT_LIST_KEYS)]);
+// T-1261 (job C F3): a third-party element's ORIGINAL id, recorded on the first open of an element without aef:uid
+// (its id is then saved under the designer's display id and aef:uid is a one-way hash of it). Carried as an
+// attribute-only element in a designer namespace, fixed once published: both AEF and an independent read chose it
+// over an aef: datum (docs/reports/T-1261-origin-carrier-advice.md). Matched by URI. The first value is never replaced.
+const ORIGIN_NS = 'urn:832-workflow-designer:origin:1';
+function readOriginalId(el, hadUid) {
+  const ext = Array.from(el.children).find(c => c.localName === 'extensionElements' && c.namespaceURI === IO_EXPORT_ROOT_NS.bpmn);
+  const o = ext && Array.from(ext.children).find(c => c.namespaceURI === ORIGIN_NS && c.localName === 'origin');
+  if (o && o.hasAttribute('originalId')) return o.getAttribute('originalId');
+  return hadUid ? null : (el.getAttribute('id') || null);
+}
+const originXml = id => `<x832:origin xmlns:x832="${ORIGIN_NS}" originalId="${escAttr(id)}"/>`;
+function nodeAefKeptXml(el) {
+  const ext = Array.from(el.children).find(c => c.localName === 'extensionElements' && c.namespaceURI === IO_EXPORT_ROOT_NS.bpmn);
+  if (!ext) return null;
+  const parts = Array.from(ext.children)
+    .filter(c => c.namespaceURI === IO_EXPORT_ROOT_NS.aef && !NODE_AEF_READ.has(c.localName)).map(keptElementXml);
   return parts.length ? parts : null;
 }
 // T-1249: a mapping v1.1 io often names no `name` or `type` (`<aef:output typeRef="sfdc:Account" operation="create">`),
@@ -13484,6 +13558,12 @@ function aefExtensionXml(node) {
       out += `        </aef:${wrap}>\n`;
     }
   }
+  // T-1268: aef elements the designer does not read, as they arrived.
+  for (const x of node.aefKept || []) out += `        ${x}\n`;
+  // T-1325: other tools' extensions (camunda, zeebe, Bizagi), as they arrived. They do not depend on the BPMN tag, so a
+  // retype keeps them.
+  for (const x of (node.kept && node.kept.ext) || []) out += `        ${x}\n`;
+  if (node.originalId) out += `        ${originXml(node.originalId)}\n`;   // T-1261
 
   out += '      </bpmn:extensionElements>\n';
   return out;
@@ -13596,7 +13676,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.31.0';
+const APP_VERSION = '0.32.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
@@ -13697,13 +13777,14 @@ function safeCommentData(raw) {
 
 function buildBpmnXml(s) {
   const lines = [];
+  const ids = exportIdsOf(s);   // T-1262
   lines.push(`<?xml version="1.0" encoding="UTF-8"?>`);
   lines.push(`<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"`);
   lines.push(`                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"`);
   lines.push(`                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"`);
   lines.push(`                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"`);
   lines.push(`                  xmlns:aef="http://anchorpoint.framework/aef/extensions"`);
-  lines.push(`                  id="Definitions_${escAttr(s.workflowMeta.id)}"`);
+  lines.push(`                  id="${escAttr(ids.defs)}"`);
   // T-399: producer identity. BPMN 2.0 defines `exporter` on <definitions> for
   // exactly this question, so we answer it with the standard's own carrier rather
   // than inventing one (Portability). Before this, NOTHING in our output said who
@@ -13712,7 +13793,13 @@ function buildBpmnXml(s) {
   // structural marker we emit (same namespaces, same targetNamespace, same
   // Definitions_ id shape) because conforming to it is the point.
   lines.push(`                  exporter="${BPMN_EXPORTER}"`);
-  lines.push(`                  targetNamespace="https://aef.anchorpoint.dev/workflows">`);
+  // T-1326: the source root's attributes the designer does not read (typeLanguage, xml:lang, a modeler's
+  // executionPlatform), with any prefix they need declared here.
+  const pk = s.procKept || null;
+  const pkOut = processLevelKeptOut(s);
+  const cmt = keptCommentsPlan(s);   // T-1327
+  const rootKept = pk && pk.rootAttrs ? keptAttrsXml(pk.rootAttrs) : '';
+  lines.push(`                  targetNamespace="${escAttr(ids.tns)}"${rootKept}>`);
   lines.push(``);
   // T-311: the authored rationale leads the document, ahead of the collaboration —
   // that position is what makes AEF's reader find the doc rather than our trailer.
@@ -13721,8 +13808,17 @@ function buildBpmnXml(s) {
     lines.push(`  <!--${safeCommentData(s.docComment)}-->`);
     lines.push(``);
   }
-  lines.push(`  <bpmn:collaboration id="Collaboration_${escAttr(s.workflowMeta.id)}">`);
-  lines.push(`    <bpmn:participant id="${escAttr(s.pool.id)}" name="${escAttr(s.pool.name)}" processRef="Process_${escAttr(s.workflowMeta.id)}"/>`);
+  lines.push(`  <bpmn:collaboration id="${escAttr(ids.collab)}"${pk && pk.collabAttrs ? keptAttrsXml(pk.collabAttrs) : ''}>`);
+  // T-1326: the collaboration's and our pool's documentation and other tools' extensions, as they arrived
+  for (const x of (pk && pk.collabDocs) || []) lines.push(`    ${x}`);
+  if (pk && pk.collabExt) { lines.push(`    <bpmn:extensionElements>`); for (const x of pk.collabExt) lines.push(`      ${x}`); lines.push(`    </bpmn:extensionElements>`); }
+  const partOpen = `    <bpmn:participant id="${escAttr(s.pool.id)}" name="${escAttr(s.pool.name)}" processRef="${escAttr(ids.proc)}"${pk && pk.partAttrs ? keptAttrsXml(pk.partAttrs) : ''}`;
+  if (pk && (pk.partDocs || pk.partExt)) {
+    lines.push(`${partOpen}>`);
+    for (const x of pk.partDocs || []) lines.push(`      ${x}`);
+    if (pk.partExt) { lines.push(`      <bpmn:extensionElements>`); for (const x of pk.partExt) lines.push(`        ${x}`); lines.push(`      </bpmn:extensionElements>`); }
+    lines.push(`    </bpmn:participant>`);
+  } else lines.push(`${partOpen}/>`);
   // T-1119: the other pools and the messageFlows, verbatim; a flow's end that named an element of OUR
   // process is re-pointed at the id written below (ids are re-derived on save), and our process / pool
   // ids at the ones this export uses. Ends naming another pool or process are left exactly as read.
@@ -13733,7 +13829,7 @@ function buildBpmnXml(s) {
         const n = s.nodes.find(x => x.uid === collab.idMap[ref]);
         if (n) return displayIdOf(n);
       }
-      if (ref === collab.ourProcessId) return `Process_${s.workflowMeta.id}`;
+      if (ref === collab.ourProcessId) return ids.proc;
       if (ref === collab.ourParticipantId) return s.pool.id;
       return ref;
     };
@@ -13742,9 +13838,12 @@ function buildBpmnXml(s) {
       lines.push(`    ${f.xml.replace(/\b(sourceRef|targetRef)="([^"]*)"/g, (m, k, v) => `${k}="${escAttr(repoint(v))}"`)}`);
     }
   }
+  for (const x of pkOut.collabArtifacts) lines.push(`    ${x}`);   // T-1326: tCollaboration's artifacts follow the flows
   lines.push(`  </bpmn:collaboration>`);
   lines.push(``);
-  lines.push(`  <bpmn:process id="Process_${escAttr(s.workflowMeta.id)}" isExecutable="true">`);
+  lines.push(`  <bpmn:process id="${escAttr(ids.proc)}"${ids.exec == null ? '' : ` isExecutable="${escAttr(ids.exec)}"`}${pk && pk.procAttrs ? keptAttrsXml(pk.procAttrs) : ''}>`);
+  // T-1326: the process's documentation, first (tBaseElement order)
+  for (const x of (pk && pk.procDocs) || []) lines.push(`    ${x}`);
   // workflow-level aef:workflowMeta
   const wm = s.workflowMeta;
   lines.push(`    <bpmn:extensionElements>`);
@@ -13769,6 +13868,7 @@ function buildBpmnXml(s) {
   if (wm.kind) wmAttrs.push(`kind="${escAttr(wm.kind)}"`);
   lines.push(`      <aef:workflowMeta ${wmAttrs.join(' ')}/>`);
   for (const x of s.procMetaKept || []) lines.push(`      ${x}`);   // T-1249: process-level aef:meta, verbatim
+  for (const x of (pk && pk.procExt) || []) lines.push(`      ${x}`);   // T-1326: other tools' process extensions
   lines.push(`    </bpmn:extensionElements>`);
   // T-1096: the process's own ioSpecification, kept — tCallableElement places it before the laneSet
   if (s.dataKept) for (const x of s.dataKept.procIo || []) lines.push(`    ${x}`);
@@ -13818,7 +13918,13 @@ function buildBpmnXml(s) {
     const outgoing = s.edges.filter(e => e.source === n.id).map(e => `      <bpmn:outgoing>${displayIdOf(e)}</bpmn:outgoing>`).join('\n');
     lines.push(``);
     // T-1218: no name is written as no name attribute, not as name="" (no committed map carries name="").
-    lines.push(`    <bpmn:${tag} id="${escAttr(nodeDisplayId)}"${n.name ? ` name="${escAttr(n.name)}"` : ''}${boundaryAttrs}>`);
+    // T-1325: what the designer does not read on this element, as it arrived (none after a retype); the default flow
+    // by its current id, and only while it still leaves this gateway.
+    const nk = nodeKeptFor(n);
+    const dflt = nk && nk.defaultFlow ? s.edges.find(e => e.uid === nk.defaultFlow && e.source === n.id) : null;
+    const keptAttrs = (nk ? keptAttrsXml(nk.attrs) : '') + (dflt ? ` default="${escAttr(displayIdOf(dflt))}"` : '');
+    lines.push(...cmt.take('node', n.uid));   // T-1327
+    lines.push(`    <bpmn:${tag} id="${escAttr(nodeDisplayId)}"${n.name ? ` name="${escAttr(n.name)}"` : ''}${boundaryAttrs}${keptAttrs}>`);
     // T-602: documentation first — the BPMN XSD orders tBaseElement as
     // documentation* then extensionElements?, so emitting it after the aef block
     // would produce a schema-invalid element.
@@ -13831,6 +13937,10 @@ function buildBpmnXml(s) {
     if (aefBlock) lines.push(aefBlock.trimEnd());
     if (incoming) lines.push(incoming);
     if (outgoing) lines.push(outgoing);
+    // T-1325: an event's kept children (dataOutput, outputSet, ...) come before its event definitions, which close
+    // tCatchEvent/tThrowEvent; an activity's come last (below).
+    const keptKids = (nk && nk.children) || [], eventHost = /Event$/.test(tag);
+    if (eventHost) for (const x of keptKids) lines.push(`      ${x}`);
     // T-1217: the kept native link definition, named by the current linkId so an edit in the panel
     // keeps throw and catch paired in both encodings.
     if (n.linkDef && (n.type === 'linkEventThrow' || n.type === 'linkEventCatch')) {
@@ -13843,6 +13953,9 @@ function buildBpmnXml(s) {
     // T-1096: the task's kept data content, after incoming/outgoing in tActivity's order
     const kd = s.dataKept && s.dataKept.perNode && s.dataKept.perNode[n.uid];
     if (kd) for (const t of DATA_TASK_TAGS) for (const x of kd[t] || []) lines.push(`      ${x}`);
+    // T-1325: kept children after the data content (tActivity: ... dataOutputAssociation, resourceRole,
+    // loopCharacteristics; then a scriptTask's script), in source order.
+    if (!eventHost) for (const x of keptKids) lines.push(`      ${x}`);
     lines.push(`    </bpmn:${tag}>`);
   }
 
@@ -13856,7 +13969,9 @@ function buildBpmnXml(s) {
     const tgtNode = findNode(e.target);
     const srcRef = srcNode ? displayIdOf(srcNode) : e.source;
     const tgtRef = tgtNode ? displayIdOf(tgtNode) : e.target;
-    lines.push(`    <bpmn:sequenceFlow id="${escAttr(edgeDisplayId)}"${nameAttr} sourceRef="${escAttr(srcRef)}" targetRef="${escAttr(tgtRef)}">`);
+    lines.push(...cmt.take('flow', e.uid));   // T-1327
+    lines.push(`    <bpmn:sequenceFlow id="${escAttr(edgeDisplayId)}"${nameAttr} sourceRef="${escAttr(srcRef)}" targetRef="${escAttr(tgtRef)}"${e.kept ? keptAttrsXml(e.kept.attrs) : ''}>`);   // T-1325
+    for (const x of e.keptDocs || []) lines.push(`      ${x}`);   // T-1326: documentation first in tBaseElement
     // T-690: extensionElements MUST precede conditionExpression. BPMN's tBaseElement declares
     // extensionElements as the first element of the sequence, and tSequenceFlow extends it, so
     // conditionExpression can only follow. This emitted them the other way round for the life of
@@ -13895,22 +14010,38 @@ function buildBpmnXml(s) {
       }
       lines.push(`        </aef:routing>`);
     }
+    for (const x of (e.kept && e.kept.ext) || []) lines.push(`        ${x}`);   // T-1325
+    if (e.originalId) lines.push(`        ${originXml(e.originalId)}`);   // T-1261
     lines.push(`      </bpmn:extensionElements>`);
     // T-690: emitted here, AFTER extensionElements, per tBaseElement's element order.
     if (e.condition) {
-      lines.push(`      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">${escText(e.condition)}</bpmn:conditionExpression>`);
+      // T-1265: id and language as imported; neither is written when the source had none.
+      const condId = e.conditionId ? ` id="${escAttr(e.conditionId)}"` : '';
+      const condLang = e.conditionLanguage ? ` language="${escAttr(e.conditionLanguage)}"` : '';
+      lines.push(`      <bpmn:conditionExpression${condId} xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"${condLang}>${escText(e.condition)}</bpmn:conditionExpression>`);
     }
+    for (const x of (e.kept && e.kept.children) || []) lines.push(`      ${x}`);   // T-1325
     lines.push(`    </bpmn:sequenceFlow>`);
   }
 
   // T-1096: the process's kept data objects and stores, verbatim
   if (s.dataKept) for (const x of s.dataKept.elements || []) { lines.push(``); lines.push(`    ${x}`); }
+  // T-1326: the artifacts, after the flow elements (tProcess order), each association at its ends' current ids
+  for (const x of pkOut.artifacts) {
+    const aid = (/\bid="([^"]*)"/.exec(x) || [])[1];
+    lines.push(``); if (aid) lines.push(...cmt.take('id', aid)); lines.push(`    ${x}`);
+  }
+  // T-1327: comments whose element is gone, or that ended the process
+  const restC = cmt.rest();
+  if (restC.length) { lines.push(``); lines.push(...restC); }
 
   lines.push(`  </bpmn:process>`);
   // T-1119: the processes behind the other pools and the messages the kept flows name, verbatim.
   if (s.collab) for (const x of [...(s.collab.processes || []), ...(s.collab.messages || [])]) { lines.push(``); lines.push(`  ${x}`); }
   // T-1222: the root elements kept native event definitions name, verbatim.
   for (const x of s.eventRoots || []) { lines.push(``); lines.push(`  ${x}`); }
+  // T-1326: the root categories a kept group names
+  for (const x of (pk && pk.categories) || []) { lines.push(``); lines.push(`  ${x}`); }
   lines.push(``);
   // SUPERSEDED 2026-08-23 (T-423). This block previously read:
   //
@@ -13957,16 +14088,18 @@ function buildBpmnXml(s) {
   // T-1119: with several pools the plane draws the COLLABORATION (BPMN DI), and our pool needs its own
   // shape; a one-pool map keeps the plane on the process, byte-identical to before.
   if (s.collab) {
-    lines.push(`    <bpmndi:BPMNPlane id="BPMNPlane_${wfId}" bpmnElement="Collaboration_${wfId}">`);
+    lines.push(`    <bpmndi:BPMNPlane id="BPMNPlane_${wfId}" bpmnElement="${escAttr(ids.collab)}">`);
     lines.push(`      <bpmndi:BPMNShape id="BPMNShape_${escAttr(s.pool.id)}" bpmnElement="${escAttr(s.pool.id)}" isHorizontal="true">`);
     lines.push(`        <dc:Bounds x="${POOL_X}" y="${POOL_Y}" width="${Math.round(contentRightEdge() - POOL_X)}" height="${Math.round(poolHeight())}"/>`);
     lines.push(`      </bpmndi:BPMNShape>`);
   } else {
-    lines.push(`    <bpmndi:BPMNPlane id="BPMNPlane_${wfId}" bpmnElement="Process_${wfId}">`);
+    lines.push(`    <bpmndi:BPMNPlane id="BPMNPlane_${wfId}" bpmnElement="${escAttr(ids.proc)}">`);
   }
   for (const n of s.nodes) {
     const def = NODE_DEFAULTS[n.type] || { w: 120, h: 48 };
     if (typeof n.x !== 'number' || typeof n.y !== 'number') continue;
+    const keptShape = keptShapeXml(n, displayIdOf(n));   // T-1264: another tool's geometry, while unmoved
+    if (keptShape) { for (const l of keptShape) lines.push(`      ${l}`); continue; }
     lines.push(`      <bpmndi:BPMNShape id="BPMNShape_${escAttr(displayIdOf(n))}" bpmnElement="${escAttr(displayIdOf(n))}">`);
     lines.push(`        <dc:Bounds x="${n.x.toFixed(1)}" y="${n.y.toFixed(1)}" width="${def.w}" height="${def.h}"/>`);
     lines.push(`      </bpmndi:BPMNShape>`);
@@ -13986,6 +14119,8 @@ function buildBpmnXml(s) {
     const poly = computeEdgeGeometry(e, srcNode, tgtNode).polyline;
     if (poly.length < 2) continue;
     const edgeId = escAttr(displayIdOf(e));
+    const keptEdge = keptEdgeXml(e, srcNode, tgtNode, displayIdOf(e), poly);   // T-1264
+    if (keptEdge) { for (const l of keptEdge) lines.push(`      ${l}`); continue; }
     lines.push(`      <bpmndi:BPMNEdge id="BPMNEdge_${edgeId}" bpmnElement="${edgeId}">`);
     for (const p of poly) {
       lines.push(`        <di:waypoint x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}"/>`);
@@ -14010,6 +14145,7 @@ function buildBpmnXml(s) {
     if (comp) for (const [ref, x] of comp) if (!done.has(ref)) lines.push(`      ${x}`);
   }
   for (const x of dataKeptDiLines(s)) lines.push(`      ${x}`);   // T-1096: data shapes and association edges
+  for (const x of pkOut.di) lines.push(`      ${x}`);   // T-1326: artifact shapes and association edges
   lines.push(`    </bpmndi:BPMNPlane>`);
   lines.push(`  </bpmndi:BPMNDiagram>`);
   lines.push(`</bpmn:definitions>`);
@@ -14086,6 +14222,142 @@ const DATA_PROC_TAGS = new Set(['dataObject', 'dataObjectReference', 'dataStoreR
 // task output -> process output) — keeping the association without it would write a dangling reference.
 const DATA_TASK_TAGS = ['ioSpecification', 'property', 'dataInputAssociation', 'dataOutputAssociation'];
 const DATA_ASSOC_TAGS = new Set(['dataInputAssociation', 'dataOutputAssociation']);
+// T-1325 (T-1322 GO slice 1; T-347's operator ruling (a), 2026-10-10): an element keeps what the designer does not
+// read, and the save writes it back in place. A third-party file lost 383 such items on one unedited save (T-1322 §2):
+// vendor attributes and extensions (camunda, zeebe, Bizagi), standard attributes (isInterrupting, instantiate,
+// isForCompensation, a gateway's default flow) and children (loop characteristics, scripts). Kept per element as
+// { attrs: [[qname, nsURI, value]], children: [xml], ext: [xml] }, set only when something is kept, so a map the
+// designer wrote parses to exactly the state it always did. Children read elsewhere are listed here; the elements a
+// subprocess contains are nodes and flows in their own right (and annotations/data are slice 2, T-1326).
+const ELEMENT_READ_CHILDREN = new Set(['documentation', 'extensionElements', 'incoming', 'outgoing', 'linkEventDefinition',
+  'conditionExpression', ...DATA_TASK_TAGS, 'sequenceFlow', 'dataObject', 'dataObjectReference', 'dataStoreReference',
+  'association', 'textAnnotation', 'group', 'laneSet']);
+const NODE_READ_ATTRS = new Set(['id', 'name', 'attachedToRef', 'cancelActivity', 'default']);
+const FLOW_READ_ATTRS = new Set(['id', 'name', 'sourceRef', 'targetRef']);
+function elementKept(el, readAttrs, skipChild) {
+  const B = IO_EXPORT_ROOT_NS.bpmn, attrs = [], children = [], ext = [];
+  for (const a of Array.from(el.attributes)) {
+    if (a.name === 'xmlns' || a.name.startsWith('xmlns:') || !XML_ATTR_NAME.test(a.name)) continue;
+    if (!a.namespaceURI && readAttrs.has(a.name)) continue;
+    attrs.push([a.name, a.namespaceURI || '', a.value]);
+  }
+  for (const c of Array.from(el.children)) {
+    if (c.namespaceURI === B && c.localName === 'extensionElements') {
+      for (const x of Array.from(c.children)) if (x.namespaceURI !== IO_EXPORT_ROOT_NS.aef && x.namespaceURI !== ORIGIN_NS) ext.push(keptElementXml(x));   // T-1261: origin is read, not kept
+      continue;
+    }
+    if (c.namespaceURI === B && (ELEMENT_READ_CHILDREN.has(c.localName) || /EventDefinition$/.test(c.localName))) continue;
+    if (skipChild && skipChild(c)) continue;
+    children.push(keptElementXml(c));
+  }
+  return (attrs.length || children.length || ext.length) ? { attrs, children, ext } : null;
+}
+// A foreign prefix the export root does not declare is declared on the element that uses it (xml: needs none).
+function keptAttrsXml(attrs) {
+  const decls = new Map();
+  for (const [q, ns] of attrs || []) {
+    const p = q.includes(':') ? q.split(':')[0] : '';
+    if (ns && p && p !== 'xml' && IO_EXPORT_ROOT_NS[p] !== ns && !decls.has(p)) decls.set(p, ns);
+  }
+  return [...decls].map(([p, u]) => ` xmlns:${p}="${escAttr(u)}"`).join('') + (attrs || []).map(([q, , v]) => ` ${q}="${escAttr(v)}"`).join('');
+}
+// T-1264 (job C F6): another tool's geometry, kept until the person moves the element. Only what differs from what this
+// designer would write is recorded (a size other than NODE_DEFAULTS, a DI id, isMarkerVisible and other attributes, a
+// BPMNLabel, waypoints other than the computed route), so a designer-written map records nothing and saves as before,
+// and re-opening a saved file records the same differences again (its second save is byte-identical). Runs at the end
+// of parse, with `state` the parsed map, after lane reconciliation: a node the reconcile moved counts as moved.
+const DI_NS_URI = 'http://www.omg.org/spec/BPMN/20100524/DI', DC_NS_URI = 'http://www.omg.org/spec/DD/20100524/DC';
+const DDI_NS_URI = 'http://www.omg.org/spec/DD/20100524/DI';   // di:waypoint is DD's, not BPMN DI's
+const edgeRouteSig = e => JSON.stringify([e.waypoints || [], e.sourcePort || null, e.targetPort || null,
+  e.routingHints || null, e.detourY ?? null, e.forceStraight || null]);
+function diShapeParts(el, defaultId) {
+  const k = {};
+  if (el.getAttribute('id') && el.getAttribute('id') !== defaultId) k.id = el.getAttribute('id');
+  const attrs = [];
+  for (const a of Array.from(el.attributes)) {
+    if (a.name === 'xmlns' || a.name.startsWith('xmlns:') || !XML_ATTR_NAME.test(a.name)) continue;
+    if (!a.namespaceURI && (a.name === 'id' || a.name === 'bpmnElement')) continue;
+    attrs.push([a.name, a.namespaceURI || '', a.value]);
+  }
+  if (attrs.length) k.attrs = attrs;
+  const children = Array.from(el.children).filter(c => !(c.namespaceURI === DC_NS_URI && c.localName === 'Bounds')
+    && !(c.namespaceURI === DDI_NS_URI && c.localName === 'waypoint')).map(keptElementXml);
+  if (children.length) k.children = children;
+  return k;
+}
+function captureImportedDi(doc, s, nodeUidByFileId, flowUidByFileId) {
+  const shapes = new Map(), edges = new Map();
+  for (const el of Array.from(doc.getElementsByTagNameNS(DI_NS_URI, '*'))) {
+    const ref = el.getAttribute('bpmnElement');
+    if (!ref) continue;
+    if (el.localName === 'BPMNShape' && !shapes.has(ref)) shapes.set(ref, el);
+    else if (el.localName === 'BPMNEdge' && !edges.has(ref)) edges.set(ref, el);
+  }
+  const byUid = new Map(s.nodes.map(n => [n.uid, n]));
+  // `at` is where the FILE put the shape, not where the node is now: a node this import moved (back into its declared
+  // lane, T-310) then counts as moved, exactly like one the person drags (T-1264 judge finding, 2026-10-28).
+  const fileAt = new Map();
+  for (const [fileId, uid] of nodeUidByFileId) {
+    const n = byUid.get(uid), el = shapes.get(fileId);
+    if (!n || !el || typeof n.x !== 'number' || typeof n.y !== 'number') continue;
+    const def = NODE_DEFAULTS[n.type] || { w: 120, h: 48 };
+    const k = diShapeParts(el, `BPMNShape_${fileId}`);
+    const b = Array.from(el.children).find(c => c.namespaceURI === DC_NS_URI && c.localName === 'Bounds');
+    const bx = b ? parseFloat(b.getAttribute('x')) : NaN, by = b ? parseFloat(b.getAttribute('y')) : NaN;
+    if (!Number.isFinite(bx) || !Number.isFinite(by)) continue;
+    fileAt.set(uid, [bx, by]);
+    const w = b.getAttribute('width'), h = b.getAttribute('height');
+    if (w && parseFloat(w) !== def.w) k.w = w;
+    if (h && parseFloat(h) !== def.h) k.h = h;
+    if (Object.keys(k).length) n.diKept = { at: [bx, by], ...k };
+  }
+  const nodeByUid = uid => byUid.get(uid);
+  for (const e of s.edges) {
+    const fileId = [...flowUidByFileId].find(([, u]) => u === e.uid);
+    const el = fileId && edges.get(fileId[0]);
+    const a = nodeByUid(e.source), z = nodeByUid(e.target);
+    if (!el || !a || !z || !fileAt.has(a.uid) || !fileAt.has(z.uid)) continue;
+    const k = diShapeParts(el, `BPMNEdge_${fileId[0]}`);
+    const wps = Array.from(el.children).filter(c => c.namespaceURI === DDI_NS_URI && c.localName === 'waypoint')
+      .map(p => [parseFloat(p.getAttribute('x')), parseFloat(p.getAttribute('y'))]);
+    const fmt = pts => pts.map(p => `${(+p[0]).toFixed(1)},${(+p[1]).toFixed(1)}`).join(' ');
+    if (wps.length >= 2 && wps.every(p => p.every(Number.isFinite))) {
+      const computed = computeEdgeGeometry(e, a, z).polyline.map(p => [p.x, p.y]);
+      if (fmt(wps) !== fmt(computed)) k.wps = wps;
+    }
+    if (Object.keys(k).length) e.diKept = { at: [...fileAt.get(a.uid), ...fileAt.get(z.uid)], sig: edgeRouteSig(e), ...k };
+  }
+}
+// The kept shape/edge XML for an element still where it was imported, else null (redraw as today).
+function keptShapeXml(n, disp) {
+  const k = n.diKept;
+  if (!k || k.at[0] !== n.x || k.at[1] !== n.y) return null;
+  const def = NODE_DEFAULTS[n.type] || { w: 120, h: 48 };
+  const out = [`<bpmndi:BPMNShape id="${escAttr(k.id || `BPMNShape_${disp}`)}" bpmnElement="${escAttr(disp)}"${keptAttrsXml(k.attrs)}>`,
+    `  <dc:Bounds x="${n.x.toFixed(1)}" y="${n.y.toFixed(1)}" width="${escAttr(k.w || String(def.w))}" height="${escAttr(k.h || String(def.h))}"/>`];
+  for (const c of k.children || []) out.push(`  ${c}`);
+  out.push(`</bpmndi:BPMNShape>`);
+  return out;
+}
+function keptEdgeXml(e, a, z, disp, poly) {
+  const k = e.diKept;
+  if (!k || k.at[0] !== a.x || k.at[1] !== a.y || k.at[2] !== z.x || k.at[3] !== z.y || k.sig !== edgeRouteSig(e)) return null;
+  const pts = k.wps || poly.map(p => [p.x, p.y]);
+  // sourceElement/targetElement name the end SHAPES' DI ids: point them at the ids this save writes for those shapes
+  const shapeId = n => (n.diKept && n.diKept.id) || `BPMNShape_${displayIdOf(n)}`;
+  const attrs = (k.attrs || []).map(([q, ns, v]) => !ns && q === 'sourceElement' ? [q, ns, shapeId(a)]
+    : !ns && q === 'targetElement' ? [q, ns, shapeId(z)] : [q, ns, v]);
+  const out = [`<bpmndi:BPMNEdge id="${escAttr(k.id || `BPMNEdge_${disp}`)}" bpmnElement="${escAttr(disp)}"${keptAttrsXml(attrs)}>`];
+  for (const p of pts) out.push(`  <di:waypoint x="${(+p[0]).toFixed(1)}" y="${(+p[1]).toFixed(1)}"/>`);
+  for (const c of k.children || []) out.push(`  ${c}`);
+  out.push(`</bpmndi:BPMNEdge>`);
+  return out;
+}
+// The kept attributes and children belong to the element's BPMN tag: a retype (task to gateway) writes none of them.
+function nodeKeptFor(n) {
+  const k = n.kept;
+  return k && k.type === n.type && (k.foreignTag || '') === (n.foreignTag || '') ? k : null;
+}
 // T-1222: a kept native event definition can name a root-level element (messageRef, signalRef, errorRef,
 // escalationRef). Keep each such element verbatim so the export never points at an id it does not contain;
 // a message the collaboration capture already keeps (T-1119) is not kept twice. Empty for every map without them.
@@ -14159,6 +14431,120 @@ function dataKeptDiLines(s) {
   (k.procIo || []).forEach(note);
   for (const n of s.nodes || []) for (const xs of Object.values((k.perNode || {})[n.uid] || {})) xs.forEach(note);
   return (k.di || []).filter(d => live.has(d.ref)).map(d => d.xml);
+}
+
+// T-1326 (T-1322 GO slice 2): what a save kept dropping at process and root level. The process's artifacts (text
+// annotations, associations, groups) with their DI and the root categories the groups name; the process's
+// documentation, unread attributes and other tools' extensions; the definitions root's unread attributes. An
+// association names its ends by id, and node and flow ids are rewritten on save, so `ends` keeps them by uid; an end
+// that is an annotation (or anything else not a node or flow) keeps its id. null when nothing is kept: a map the
+// designer wrote parses to exactly the state it always did.
+const ARTIFACT_TAGS = new Set(['textAnnotation', 'association', 'group']);
+const PROC_READ_ATTRS = new Set(['id', 'name', 'isExecutable']);
+const ROOT_READ_ATTRS = new Set(['id', 'exporter', 'exporterVersion', 'targetNamespace']);
+const AEF_TARGET_NS = 'https://aef.anchorpoint.dev/workflows';
+// T-1262: the ids a save writes — the file's own where it had its own (state.fileIds), else derived from the workflow
+// id as always. exec null = write no isExecutable.
+function exportIdsOf(s) {
+  const k = s.fileIds || {}, w = s.workflowMeta.id;
+  return {
+    defs: k.defs ?? `Definitions_${w}`, tns: k.tns ?? AEF_TARGET_NS, collab: k.collab ?? `Collaboration_${w}`,
+    proc: k.proc ?? `Process_${w}`, exec: 'exec' in k ? (k.exec === '' ? null : k.exec) : 'true',
+  };
+}
+function captureProcessLevelKept(doc, proc, displayIdToUid, flowIdToUid, partEl) {
+  const B = IO_EXPORT_ROOT_NS.bpmn;
+  const artifacts = [], keptIds = new Set(), categoryRefs = new Set();
+  const endOf = id => displayIdToUid.has(id) ? { node: displayIdToUid.get(id) } : flowIdToUid.has(id) ? { flow: flowIdToUid.get(id) } : { id };
+  // a collaboration carries artifacts too (a modeler puts groups there); ours is rewritten, so they are kept the same way
+  const collabEl = partEl && partEl.parentNode && partEl.parentNode.localName === 'collaboration' ? partEl.parentNode : null;
+  for (const [where, host] of [['process', proc], ['collab', collabEl]]) {
+    if (!host) continue;
+    for (const c of Array.from(host.children)) {
+      if (c.namespaceURI !== B || !ARTIFACT_TAGS.has(c.localName)) continue;
+      const a = { xml: keptElementXml(c), ...(where === 'collab' ? { inCollab: true } : {}) };
+      if (c.localName === 'association') a.ends = { sourceRef: endOf(c.getAttribute('sourceRef') || ''), targetRef: endOf(c.getAttribute('targetRef') || '') };
+      if (c.localName === 'group' && c.getAttribute('categoryValueRef')) categoryRefs.add(c.getAttribute('categoryValueRef'));
+      if (c.getAttribute('id')) keptIds.add(c.getAttribute('id'));
+      artifacts.push(a);
+    }
+  }
+  // the collaboration's and our pool's own documentation, unread attributes and other tools' extensions
+  const docsOf = el => el ? Array.from(el.children).filter(c => c.namespaceURI === B && c.localName === 'documentation').map(keptElementXml) : [];
+  const ck = collabEl ? elementKept(collabEl, new Set(['id']), () => true) : null;
+  const ptk = partEl ? elementKept(partEl, new Set(['id', 'name', 'processRef']), () => true) : null;
+  const collabDocs = docsOf(collabEl), partDocs = docsOf(partEl);
+  const categories = Array.from(doc.documentElement.children).filter(c => c.namespaceURI === B && c.localName === 'category'
+    && Array.from(c.children).some(v => categoryRefs.has(v.getAttribute('id')))).map(keptElementXml);
+  const di = [];
+  for (const el of doc.getElementsByTagNameNS(IO_EXPORT_ROOT_NS.bpmndi, '*')) {
+    if ((el.localName === 'BPMNShape' || el.localName === 'BPMNEdge') && keptIds.has(el.getAttribute('bpmnElement'))) {
+      di.push({ ref: el.getAttribute('bpmnElement'), xml: keptElementXml(el) });
+    }
+  }
+  const procDocs = Array.from(proc.children).filter(c => c.namespaceURI === B && c.localName === 'documentation').map(keptElementXml);
+  // T-1327 (F11): a comment among the process's children is kept before the element that followed it (a node or flow
+  // by uid, an artifact by id); one with nothing anchorable after it is written at the end of the process.
+  const comments = [];
+  for (const c of Array.from(proc.childNodes)) {
+    if (c.nodeType !== 8) continue;
+    let nx = c.nextSibling;
+    while (nx && nx.nodeType !== 1) nx = nx.nextSibling;
+    const id = nx && nx.namespaceURI === B ? nx.getAttribute('id') : null;
+    const end = id ? endOf(id) : null;
+    const at = end && (end.node || end.flow || (ARTIFACT_TAGS.has(nx.localName) && end.id)) ? end : null;
+    comments.push({ text: c.data, ...(at ? { at } : {}) });
+  }
+  const pk = elementKept(proc, PROC_READ_ATTRS, () => true);   // its children are the process's content; only attrs + ext
+  const rk = elementKept(doc.documentElement, ROOT_READ_ATTRS, () => true);
+  const out = {
+    ...(artifacts.length ? { artifacts } : {}), ...(categories.length ? { categories } : {}), ...(di.length ? { di } : {}),
+    ...(procDocs.length ? { procDocs } : {}), ...(comments.length ? { comments } : {}),
+    ...(pk && pk.attrs.length ? { procAttrs: pk.attrs } : {}), ...(pk && pk.ext.length ? { procExt: pk.ext } : {}),
+    ...(rk && rk.attrs.length ? { rootAttrs: rk.attrs } : {}),
+    ...(ck && ck.attrs.length ? { collabAttrs: ck.attrs } : {}), ...(ck && ck.ext.length ? { collabExt: ck.ext } : {}),
+    ...(collabDocs.length ? { collabDocs } : {}),
+    ...(ptk && ptk.attrs.length ? { partAttrs: ptk.attrs } : {}), ...(ptk && ptk.ext.length ? { partExt: ptk.ext } : {}),
+    ...(partDocs.length ? { partDocs } : {}),
+  };
+  return Object.keys(out).length ? out : null;
+}
+// The artifacts a save writes, each association's ends at their current ids. An association whose node or flow is gone
+// is left out (with its DI edge) and named in `dropped`, for the open notice (T-1327).
+function processLevelKeptOut(s) {
+  const k = s && s.procKept;
+  if (!k || !k.artifacts) return { artifacts: [], collabArtifacts: [], di: [], dropped: [] };
+  const artifacts = [], collabArtifacts = [], dropped = [], live = new Set();
+  for (const a of k.artifacts) {
+    let xml = a.xml, ok = true;
+    if (a.ends) {
+      for (const [attr, end] of Object.entries(a.ends)) {
+        let id = end.id;
+        if (end.node) { const n = s.nodes.find(x => x.uid === end.node); id = n ? displayIdOf(n) : null; }
+        if (end.flow) { const e = s.edges.find(x => x.uid === end.flow); id = e ? displayIdOf(e) : null; }
+        if (id == null) { ok = false; break; }
+        xml = xml.replace(new RegExp(`\\b${attr}="[^"]*"`), `${attr}="${escAttr(id)}"`);
+      }
+    }
+    const idm = /\bid="([^"]*)"/.exec(a.xml);
+    if (!ok) { dropped.push(idm ? idm[1] : ''); continue; }
+    if (idm) live.add(idm[1]);
+    (a.inCollab ? collabArtifacts : artifacts).push(xml);
+  }
+  return { artifacts, collabArtifacts, di: (k.di || []).filter(d => live.has(d.ref)).map(d => d.xml), dropped };
+}
+// T-1327: the kept comments, each handed out once: before its element (take), the rest at the end of the process.
+function keptCommentsPlan(s) {
+  const all = ((s && s.procKept && s.procKept.comments) || []).map(c => ({ ...c, done: false }));
+  const line = c => `    <!--${safeCommentData(c.text)}-->`;
+  return {
+    take(kind, key) {
+      const out = [];
+      for (const c of all) if (!c.done && c.at && c.at[kind] === key) { c.done = true; out.push(line(c)); }
+      return out;
+    },
+    rest() { return all.filter(c => !c.done).map(c => { c.done = true; return line(c); }); },
+  };
 }
 
 // T-1120 (P2): draw the kept pools, read-only, and route the message flows — ONE layout for the canvas and
@@ -14638,8 +15024,13 @@ function parseBpmnXml(text) {
       nodeWork.push([foreignDisplayTag(local), el, local]);
     }
   }
+  // T-1271: the list above is built one tag at a time; put it back in the order the file declares the nodes, which is
+  // the order state.nodes, the display-id numbering and the export follow. A designer-written map is already in its
+  // own order, so it re-saves byte-identically; a third-party one is no longer regrouped by kind.
+  nodeWork.sort((a, b) => a[1] === b[1] ? 0 : (a[1].compareDocumentPosition(b[1]) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1);
 
   {
+    const nodeWorkEls = new Set(nodeWork.map(w => w[1]));   // T-1325: a subprocess's own nodes are not its kept children
     for (const [tag, el, foreignTag] of nodeWork) {
       const displayId = el.getAttribute('id') || '';
       // T-1218: an unnamed start or end event stays unnamed. The id used to stand in as its name, so the
@@ -14883,6 +15274,13 @@ function parseBpmnXml(text) {
       // Derive slug from name if not encoded (T-1218: an unnamed start/end event reads its carried slug, else its id)
       const slug = unnamedEvent ? (aef.slug || deriveSlug(displayId)) : deriveSlug(name);
       if (tag === 'startEvent' || tag === 'endEvent') delete aef.slug;
+      const aefKept = nodeAefKeptXml(el);   // T-1268
+      const originalId = readOriginalId(el, !!(uidEl && uidEl.getAttribute('value')));   // T-1261
+      // T-1325: what the designer does not read on this element. A gateway's default names a flow by id; it is
+      // resolved to the flow's uid once the flows are read (below), and written as that flow's current id.
+      const kept = elementKept(el, NODE_READ_ATTRS, c => nodeWorkEls.has(c));
+      const defaultRef = el.getAttribute('default');
+      const keptNode = (kept || defaultRef) ? { type, ...(foreignTag ? { foreignTag } : {}), ...(kept || { attrs: [], children: [], ext: [] }), ...(defaultRef ? { defaultRef } : {}) } : null;
 
       // Default position if none was encoded — simple flow layout per lane
       if (x == null || isNaN(x) || y == null || isNaN(y)) {
@@ -14903,6 +15301,9 @@ function parseBpmnXml(text) {
         ...(foreignTag ? { foreignTag } : {}),
         ...(linkDef ? { linkDef } : {}),
         ...(nativeEventDefs.length ? { nativeEventDefs } : {}),
+        ...(aefKept ? { aefKept } : {}),
+        ...(keptNode ? { kept: keptNode } : {}),
+        ...(originalId ? { originalId } : {}),
       });
       displayIdToUid.set(displayId, uid);
     }
@@ -14948,18 +15349,30 @@ function parseBpmnXml(text) {
 
   // ---- edges ----
   const edges = [];
+  const flowIdToUid = new Map();   // T-1325: resolves a gateway's kept default flow
   for (const el of byBpmn(proc, 'sequenceFlow')) {
     const uidEl = byAef(el, 'uid')[0];
     const uid = uidEl?.getAttribute('value') || deriveUid('e', el.getAttribute('id') || '');
+    if (el.getAttribute('id')) flowIdToUid.set(el.getAttribute('id'), uid);
     const srcDisplayId = el.getAttribute('sourceRef');
     const tgtDisplayId = el.getAttribute('targetRef');
     const source = displayIdToUid.get(srcDisplayId) || srcDisplayId;
     const target = displayIdToUid.get(tgtDisplayId) || tgtDisplayId;
     const edge = { uid, id: uid, source, target };
+    const originalId = readOriginalId(el, !!(uidEl && uidEl.getAttribute('value')));   // T-1261
+    if (originalId) edge.originalId = originalId;
     const name = el.getAttribute('name');
     if (name) edge.name = name;
     const condEl = byBpmn(el, 'conditionExpression')[0];
-    if (condEl) edge.condition = (condEl.textContent || '').trim();
+    if (condEl) {
+      edge.condition = (condEl.textContent || '').trim();
+      // T-1265: the expression's language decides how the engine evaluates it (absent = the engine default, JUEL in
+      // Camunda), so a dropped language="javascript" silently changes what the flow does.
+      const lang = condEl.getAttribute('language');
+      if (lang) edge.conditionLanguage = lang;
+      const condId = condEl.getAttribute('id');
+      if (condId) edge.conditionId = condId;
+    }
     const anchorsEl = byAef(el, 'anchors')[0];
     if (anchorsEl) {
       const sp = anchorsEl.getAttribute('sourcePort');
@@ -14986,7 +15399,22 @@ function parseBpmnXml(text) {
       }
       if (wps.length) edge.waypoints = wps;
     }
+    const kept = elementKept(el, FLOW_READ_ATTRS);   // T-1325
+    if (kept) edge.kept = kept;
+    // T-1326: a flow's documentation (only nodes read theirs), written first in the flow as tBaseElement orders it
+    const fdocs = Array.from(el.children).filter(c => c.namespaceURI === IO_EXPORT_ROOT_NS.bpmn && c.localName === 'documentation').map(keptElementXml);
+    if (fdocs.length) edge.keptDocs = fdocs;
     edges.push(edge);
+  }
+  // T-1325: a gateway's default flow, by uid from here on (its id is rewritten on save). A default naming no flow in
+  // the file is dropped: written back, it would point at nothing.
+  for (const n of nodes) {
+    const k = n.kept;
+    if (!k || !k.defaultRef) continue;
+    const u = flowIdToUid.get(k.defaultRef);
+    delete k.defaultRef;
+    if (u) k.defaultFlow = u;
+    if (!k.defaultFlow && !k.attrs.length && !k.children.length && !k.ext.length) delete n.kept;
   }
 
   // ---- pool ----
@@ -15000,10 +15428,40 @@ function parseBpmnXml(text) {
   const collab = captureCollaboration(doc, proc, partEl, displayIdToUid);   // T-1119
   const dataKept = captureProcessData(doc, proc, displayIdToUid);         // T-1096
   const eventRoots = captureEventRoots(doc, nodes, collab);              // T-1222
+  // T-1326: our participant only when it names this process (the [0] fallback may be another pool, kept by T-1119)
+  const ourPart = partEl && partEl.getAttribute('processRef') === proc.getAttribute('id') ? partEl : null;
+  const procKept = captureProcessLevelKept(doc, proc, displayIdToUid, flowIdToUid, ourPart);   // T-1326
+  // T-1262 (F4): the file's own identity, kept only where it differs from what export derives from the workflow id,
+  // so a designer-written map records nothing (and a rename still renames its Process_/Definitions_ ids). The process
+  // id is an engine's deployment key and callers' calledElement target; isExecutable decides what an engine deploys.
+  const fileIds = (() => {
+    const w = workflowMeta.id, root = doc.documentElement, ids = {};
+    const pid = proc.getAttribute('id'), did = root.getAttribute('id'), tns = root.getAttribute('targetNamespace');
+    const cEl = ourPart && ourPart.parentNode && ourPart.parentNode.localName === 'collaboration' ? ourPart.parentNode : null;
+    const cid = cEl && cEl.getAttribute('id'), ex = proc.getAttribute('isExecutable');
+    if (pid && pid !== `Process_${w}`) ids.proc = pid;
+    if (did && did !== `Definitions_${w}`) ids.defs = did;
+    if (tns && tns !== AEF_TARGET_NS) ids.tns = tns;
+    if (cid && cid !== `Collaboration_${w}`) ids.collab = cid;
+    if (ex !== 'true') ids.exec = ex == null ? '' : ex;   // '' = the file had none, and gets none
+    return Object.keys(ids).length ? ids : null;
+  })();
+  // T-1327: what this file loses on save, for the import notice. A file the designer wrote has its geometry by
+  // construction, so only another tool's DI is "redrawn".
+  const SUBPROC_TAGS = new Set(['subProcess', 'transaction', 'adHocSubProcess']);
+  const hoisted = nodeWork.filter(w => w[1].parentNode && SUBPROC_TAGS.has(w[1].parentNode.localName));
+  _importNotKeptReport = {
+    diRedrawn: sourceCarriedDi && doc.documentElement.getAttribute('exporter') !== BPMN_EXPORTER,
+    hoistedNodes: hoisted.length,
+    hoistingSubs: new Set(hoisted.map(w => w[1].parentNode)).size,
+    nestedLanes: byBpmn(proc, 'childLaneSet').reduce((a, c) => a + byBpmn(c, 'lane').length, 0),
+  };
 
   // Snap y-coords to lane centers for nodes that lacked explicit positions
   const result = {
-    pool: { id: partEl?.getAttribute('id') || proc.getAttribute('id') || 'Pool_imported',
+    // T-1262: with no participant to read, the pool is the designer's own Pool_<id>, never the process id, which
+    // the process itself now keeps (one id, two elements).
+    pool: { id: partEl?.getAttribute('id') || `Pool_${workflowMeta.id}`,
             name: partEl?.getAttribute('name') || procName },
     workflowMeta,
     lanes,
@@ -15034,6 +15492,11 @@ function parseBpmnXml(text) {
     ...(eventRoots.length ? { eventRoots } : {}),
     // T-1249: the process-level <aef:meta> (mapping v1.1: mappingVersion, aef:prefixes), verbatim (null: byte-identical).
     ...(procMetaKept ? { procMetaKept } : {}),
+    // T-1326: artifacts, process documentation/attributes/extensions and root attributes (null: byte-identical).
+    ...(procKept ? { procKept } : {}),
+    // T-1262: definitions/process/collaboration ids, targetNamespace and isExecutable as the file had them (null:
+    // byte-identical; see exportIdsOf).
+    ...(fileIds ? { fileIds } : {}),
   };
   // Use a temporary state so laneCenterY() resolves correctly during patching
   const prev = state;
@@ -15071,6 +15534,8 @@ function parseBpmnXml(text) {
       _laneReconcileCount++;
     }
   }
+  // T-1264: what of the file's own geometry differs from ours, at the positions now final (routing reads `state`)
+  if (sourceCarriedDi) { state = result; captureImportedDi(doc, result, displayIdToUid, flowIdToUid); }
   state = prev;
   return result;
 }
