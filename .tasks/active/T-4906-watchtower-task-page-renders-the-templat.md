@@ -126,9 +126,9 @@ The root is that the template's guidance in Verification is written as `#` comme
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Watchtower: the raw Task Body block on /tasks/T-XXXX is not auto-highlighted (`class="nohighlight"`), so `#` guidance lines render at normal weight and size; checked in the served page
-- [ ] Template: the guidance in `## Verification` of .tasks/templates/default.md (and the create-task.sh fallback) is one HTML comment block instead of `# …` lines, so GitHub hides it; `extract_verification_block` returns no commands for an untouched template (the build-task refusal for "no verification command" still fires)
-- [ ] Tests: extractor on the new template yields 0 commands; a filled-in command below the comment still runs; the served task page carries `nohighlight` on the body block
+- [x] Watchtower: the raw Task Body block on /tasks/T-XXXX is not auto-highlighted (`class="nohighlight"`), so `#` guidance lines render at normal weight and size; checked in the served page
+- [x] Template: the guidance in `## Verification` of .tasks/templates/default.md (and the create-task.sh fallback) is one HTML comment block instead of `# …` lines, so GitHub hides it; `extract_verification_block` returns no commands for an untouched template (the build-task refusal for "no verification command" still fires) — the fallback's Verification is empty, nothing to change there
+- [x] Tests: extractor on the new template yields 0 commands; a filled-in command below the comment still runs; the served task page carries `nohighlight` on the body block — t4906_verification_render.bats 4/4
 - [ ] Watchtower restarted and `bin/fw watchtower current` clean; vendored copy synced; template index regenerated
 
 ### Human
@@ -320,6 +320,16 @@ The root is that the template's guidance in Verification is written as `#` comme
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+
+bats tests/unit/t4906_verification_render.bats > /tmp/.t4906.out 2>&1
+bin/fw watchtower current
+bin/fw vendor self --check --task T-4906
+
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| verification-open | Task Body expanded, ## Verification guidance | ok | ok | ok | guidance lines at body size, no bold headings |
 
 ## RCA
 

@@ -489,13 +489,33 @@ def _link_plain_text(text):
     to text that is shown as-is (description, Agent criterion). Escaping first
     keeps `<script>` and friends as text.
     """
-    return _auto_link_files(_html_escape(text))
+    return _link_task_ids(_auto_link_files(_html_escape(text)))
+
+
+# T-4904: a bare task id in already-escaped HTML. Not preceded by a path or word
+# character (so `.tasks/active/T-12-x.md` stays one path) and not inside an existing
+# <a>…</a>, whose text or href may already carry the id.
+_TASK_ID_IN_HTML_RE = re_mod.compile(r"(?<![\w/.#-])(T-\d{1,6})(?![\w-])")
+_ANCHOR_RE = re_mod.compile(r"<a\b[^>]*>.*?</a>", re_mod.S)
+
+
+def _link_task_ids(html):
+    """T-4904: link every bare `T-NNNN` in escaped HTML to its task page, as the
+    review page does (T-1575). Text inside existing anchors is left alone."""
+    out, pos = [], 0
+    for a in _ANCHOR_RE.finditer(html):
+        out.append(_TASK_ID_IN_HTML_RE.sub(r'<a href="/tasks/\1">\1</a>', html[pos:a.start()]))
+        out.append(a.group(0))
+        pos = a.end()
+    out.append(_TASK_ID_IN_HTML_RE.sub(r'<a href="/tasks/\1">\1</a>', html[pos:]))
+    return "".join(out)
 
 
 def _link_task_body(body):
     """T-4044: the raw Task Body with file paths linked in `## Context` and
-    `### Agent` only. Every line is escaped; other sections are not linked, so
-    the Verification and Human text stays exactly as it was."""
+    `### Agent` only. Every line is escaped; other sections get no path links, so
+    the Verification and Human text stays exactly as it was.
+    T-4904: task ids are linked in every section (the text itself is unchanged)."""
     out = []
     in_scope = False
     for line in body.split("\n"):
@@ -505,7 +525,7 @@ def _link_task_body(body):
                 in_scope = heading.group(2) == "Context"
             else:
                 in_scope = heading.group(2) == "Agent"
-        out.append(_link_plain_text(line) if in_scope else _html_escape(line))
+        out.append(_link_plain_text(line) if in_scope else _link_task_ids(_html_escape(line)))
     return "\n".join(out)
 
 

@@ -105,8 +105,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `_link_task_body` (web/blueprints/tasks.py) links every `T-NNNN` in every section of the escaped body to `/tasks/T-NNNN`; file-path linking in Context/Agent is unchanged; ids inside an existing link or a path are not double-linked
-- [ ] Unit test: ids are linked in Context, ACs, Verification and Updates; HTML in the body stays escaped; a path containing a task id (`.tasks/active/T-12-x.md`) keeps a single path link
+- [x] `_link_task_body` (web/blueprints/tasks.py) links every `T-NNNN` in every section of the escaped body to `/tasks/T-NNNN`; file-path linking in Context/Agent is unchanged; ids inside an existing link or a path are not double-linked
+- [x] Unit test: ids are linked in Context, ACs, Verification and Updates; HTML in the body stays escaped; a path containing a task id (`.tasks/active/T-12-x.md`) keeps a single path link — test_task_body_links_t4904.py 5/5 (incl. text unchanged apart from the links); 26 existing web test files, 326/326
 - [ ] The served page /tasks/T-4884 shows T-4890 as a link (checked with curl after a Watchtower restart; `bin/fw watchtower current` clean); vendored copy synced
 
 ### Human
@@ -299,6 +299,17 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+
+python3 -m pytest -q tests/unit/test_task_body_links_t4904.py > /tmp/.t4904.out 2>&1
+curl -sf "$(bin/fw watchtower url)/tasks/T-4884" -o /tmp/.t4904.html && grep -q '<a href="/tasks/T-4890">T-4890</a>' /tmp/.t4904.html
+bin/fw watchtower current
+bin/fw vendor self --check --task T-4904
+
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| body-links-open | Task Body expanded, task-id links | ok | ok | ok | T-4890 mentions are links; body otherwise unchanged |
 
 ## RCA
 

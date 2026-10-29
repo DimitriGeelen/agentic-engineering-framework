@@ -119,6 +119,9 @@ date_finished: null
 
 ## Verification
 
+<!-- T-4906: guidance is an HTML comment so GitHub does not render its `#` lines as
+     headings; the completion gate strips HTML comments before running anything.
+     Write your commands BELOW this comment, one per line.
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -254,6 +257,7 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+-->
 
 ## RCA
 
