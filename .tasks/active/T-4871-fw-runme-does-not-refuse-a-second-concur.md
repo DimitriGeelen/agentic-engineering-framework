@@ -93,6 +93,8 @@ bvp_scores_proposed:
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+**Second occurrence (ring20-dashboard be.50 report, msg c20890c2, 2026-10-29):** the operator started their upgrade runme a second time mid-run. Their own upgrade script refused it via flock before writing anything. But `fw runme` had already truncated the shared `run.log`, so the first run's log lines are lost; only its own summary file survived. The need is unchanged: refuse the second start before touching run.log.
+
 ## Acceptance Criteria
 
 ### Agent
