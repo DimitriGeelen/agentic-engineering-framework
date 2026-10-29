@@ -124,7 +124,7 @@ Source: observation OBS-185 (.context/inbox.yaml):
 - [x] Any inner read-only command the everyday idioms need is admitted on its own BEFORE substitution-aware judging lands (OBS-185's order) — `pwd` added; the T-3096 fw read-only surface already covered `fw watchtower url`
 - [x] `is_bash_safe_command` extracts every `$(…)` and backtick substitution outside single quotes (arithmetic `$((…))` excluded, nesting handled) and requires each inner command to be safe; extraction failure fails closed
 - [x] Tests: the four OBS-185 shapes gated; `curl -sf "$(bin/fw watchtower url)/page"`, `cd $(git rev-parse --show-toplevel)`, `echo "built $(date -u +%F)"`, `echo $((1+2))` and single-quoted `$(…)` text stay safe; existing safe-commands and hook tests pass — t4792_command_substitution.bats 16/16; 98 existing files, 1097/1097
-- [ ] Changed with the safe-swap procedure; vendored copy synced (owner stays human: the operator closes it)
+- [x] Changed with the safe-swap procedure; vendored copy synced (owner stays human: the operator closes it)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
