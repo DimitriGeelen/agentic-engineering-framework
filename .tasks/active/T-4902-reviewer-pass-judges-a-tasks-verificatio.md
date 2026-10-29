@@ -110,10 +110,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Shown by test that a delegation-converted `[REVIEWER]` criterion naming no scanner check is NOT auto-ticked by a static PASS (T-4778 behaviour pinned for this case)
-- [ ] New detector `ac-negative-evidence` in lib/reviewer/static_scan.py: a `[REVIEWER]` criterion whose body (lines until the next criterion) carries `NEGATIVE FINDING`/`NEGATIVE RESULT`, or an Evidence line with FAIL/FAILS/FAILED, gets a finding on that criterion, so its auto-tick is refused; registered in scan_task and SCANNED_PATTERN_IDS
-- [ ] Tests: negative evidence blocks the tick of a criterion that names a scanner check; the same criterion without it still ticks; a criterion whose evidence says WORKS is unaffected
-- [ ] The verdict block's PASS wording states it means "no anti-pattern found", not "the criteria hold"
+- [x] Shown by test that a delegation-converted `[REVIEWER]` criterion naming no scanner check is NOT auto-ticked by a static PASS (T-4778 behaviour pinned for this case)
+- [x] New detector `ac-negative-evidence` in lib/reviewer/static_scan.py: a `[REVIEWER]` criterion whose body (lines until the next criterion) carries `NEGATIVE FINDING`/`NEGATIVE RESULT`, or an Evidence line with FAIL/FAILS/FAILED, gets a finding on that criterion, so its auto-tick is refused; registered in scan_task and SCANNED_PATTERN_IDS — severity partial, so the overall verdict is CONCERN
+- [x] Tests: negative evidence blocks the tick of a criterion that names a scanner check; the same criterion without it still ticks; a criterion whose evidence says WORKS is unaffected — test_reviewer_negative_evidence_t4902.py 8/8 (incl. three negative phrasings and per-criterion scoping)
+- [x] The verdict block's PASS wording states it means "no anti-pattern found", not "the criteria hold" — a separate **Scope** line, so parsers of the **Overall** line are unaffected
 - [ ] Existing reviewer tests pass; vendored copy synced; ring20-dashboard told
 
 ### Human
@@ -300,6 +300,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+python3 -m pytest -q tests/unit/test_reviewer_negative_evidence_t4902.py tests/unit/test_reviewer_auto_tick.py > /tmp/.t4902.out 2>&1
+bin/fw vendor self --check --task T-4902
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -315,6 +318,20 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** in ring20-dashboard's pilot, `fw reviewer` gave PASS to a criterion whose own evidence said "NEGATIVE FINDING: endpoints return 404", and its PASS/CONCERN tracked the shape of the Verification commands, not whether criteria held.
+
+**Root cause:**
+- The feared outcome, auto-ticking delegated criteria on a static PASS, was already closed by T-4778 (in v1.8.15): such criteria name no scanned check, so they are routed to the judge. Pinned now by a test.
+- What remained: the auto-tick reads only a criterion's title line, and no detector read its evidence. So a `[REVIEWER]` criterion that names a scanned check could be ticked over its own recorded negative evidence.
+- Separately, PASS reads as "the criteria hold" when it means "no anti-pattern found".
+
+**Why structurally allowed:** the static scan has always judged form, not truth. That was documented in CLAUDE.md, but not in the verdict block a reader actually sees.
+
+**Prevention:**
+- The `ac-negative-evidence` detector adds a finding on any such criterion, which refuses its tick and makes the verdict CONCERN.
+- The verdict block now carries a **Scope** line saying what PASS means.
+- Tests pin both, plus the T-4778 delegated case.
 
 ## Evolution
 
