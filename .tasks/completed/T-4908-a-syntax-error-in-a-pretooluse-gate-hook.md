@@ -9,10 +9,10 @@ description: >
   it from outside the hooks. Need: a gate hook that cannot be parsed must never take
   effect, and the repair path must stay open.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, hooks, antifragility]
 components: []
 related_tasks: []
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T18:08:07Z
-last_update: 2026-10-29T18:47:41Z
-date_finished:
+last_update: 2026-10-29T18:54:36Z
+date_finished: 2026-10-29T18:54:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -410,3 +410,15 @@ bin/fw vendor self --check --task T-4908
 
 ### 2026-10-29T18:47:41Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-29T18:54:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6e721f9b
+- **Timestamp:** 2026-10-29T18:54:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none

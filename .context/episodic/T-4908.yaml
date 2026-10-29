@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4908: A syntax error in a PreToolUse gate hook locks every session out of the repo, including the repair (T-4907 worker, 2026-10-29)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-29T18:55:13Z
+# ============================================================================
+
+task_id: T-4908
+task_name: "A syntax error in a PreToolUse gate hook locks every session out of the repo, including the repair (T-4907 worker, 2026-10-29)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-29T18:08:07Z
+completed: 2026-10-29T18:54:36Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-29T19:54:15+01:00
+last_commit: 2026-10-29T19:54:34+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a gate hook that cannot parse no longer locks the repo — the dispatcher allows exactly its repair and refuses the rest loudly. vendor self — hook-dispatch.sh. ACs done
+
+# Key outcomes
+outcomes:
+  - 'lib/hook-dispatch.sh detects a hook that cannot run because it, or a file it sources, has a bash syntax error: the hook''s exit is non-zero and its stderr carries bash''s "syntax error" text, which names the broken file'
+  - 'In that state the dispatcher allows exactly the repair: a Bash `git checkout -- <broken file>` or `git restore [--source=HEAD] [--] <broken file>` (optionally after `cd <project> &&`), or a Write/Edit whose target is the broken file. Everything else is refused (exit 2) with a loud message naming the file, the line and the exact repair command'
+  - 'Each such event is logged to .context/working/.hook-crashes.log (broken-hook <name> <file>), so `fw doctor` sees it'
+  - 'Regression tests reproduce today''s case: a gate hook with a syntax error refuses an ordinary write, allows `git checkout -- <file>` of the broken file and an Edit of it, and refuses a checkout of a different file. A hook that sources a broken library is handled the same. A healthy hook''s exit codes pass through unchanged — t4908_broken_hook_repair_path.bats 8/8 (also: a repair chained with anything else is refused)'
+  - 'Changed with the safe-swap procedure (copy, bash -n, swap, smoke, auto-restore); vendored copy synced; existing hook-dispatch tests pass'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/hook-dispatch.sh'
+  - '.tasks/active/T-4908-a-syntax-error-in-a-pretooluse-gate-hook.md'
+  - 'lib/hook-dispatch.sh'
+  - 'tests/unit/t4908_broken_hook_repair_path.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-29T19:54:15'
+    action: 'T-4908: a gate hook that cannot parse no longer locks the repo — the dispatcher allows exactly its repair and refuses the rest loudly'
+  - time: '2026-10-29T19:54:25'
+    action: 'T-4908: vendor self — hook-dispatch.sh'
+  - time: '2026-10-29T19:54:34'
+    action: 'T-4908: ACs done'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 46 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, hooks, antifragility]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 46
+  commits: 4
+  files_changed: 7
+  lines_added: 394
+  lines_removed: 17
+  footprint_refreshed_at: '2026-10-29T18:55:20Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4908-a-syntax-error-in-a-pretooluse-gate-hook.md
+generated_by: context-agent-hybrid
