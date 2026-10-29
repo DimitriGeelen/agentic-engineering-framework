@@ -1,8 +1,17 @@
 ---
 id: T-4892
-name: "Warn when SIDECAR_DM_ADDRESS_KEYS names the host-shared TermLink key (a project would adopt the whole host's old DM mail)"
+name: "Warn when SIDECAR_DM_ADDRESS_KEYS names the host-shared TermLink key (a project
+  would adopt the whole host's old DM mail)"
 description: >
-  832 be.50 report (msg 1e2df855): setting FW_SIDECAR_DM_ADDRESS_KEYS=d1993c2c3ec44c94 (the .107 host key every session registered under before T-4454) makes fw sidecar alerts list other agents' old mail (termlink, framework agent, 055 consults) as this project's. Risk: a project adopts and acts on mail that is not its own. Possible direction: fw sidecar alerts / fw doctor warn when a configured address key equals the host fingerprint (dm.identity_is_host_shared already measures it). Also from the same report: the config description could say the env form is FW_SIDECAR_DM_ADDRESS_KEYS (bare name ignored) or point to fw config set. Filed during the release freeze (T-4869): backlog.
+  832 be.50 report (msg 1e2df855): setting FW_SIDECAR_DM_ADDRESS_KEYS=d1993c2c3ec44c94
+  (the .107 host key every session registered under before T-4454) makes fw sidecar
+  alerts list other agents' old mail (termlink, framework agent, 055 consults) as
+  this project's. Risk: a project adopts and acts on mail that is not its own. Possible
+  direction: fw sidecar alerts / fw doctor warn when a configured address key equals
+  the host fingerprint (dm.identity_is_host_shared already measures it). Also from
+  the same report: the config description could say the env form is FW_SIDECAR_DM_ADDRESS_KEYS
+  (bare name ignored) or point to fw config set. Filed during the release freeze (T-4869):
+  backlog.
 
 status: captured
 workflow_type: build
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T00:21:34Z
-last_update: 2026-10-29T00:21:34Z
-date_finished: null
+last_update: '2026-10-29T00:30:33Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-29T00:30:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=296,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4892: Warn when SIDECAR_DM_ADDRESS_KEYS names the host-shared TermLink key (a project would adopt the whole host's old DM mail)
