@@ -145,11 +145,11 @@ Next steps:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Reproduced: a fixture consumer with an `in_file:` marker in a vendored file loses the block on `fw vendor`, and the run exits 0 with only a mid-log WARN
-- [ ] Missing markers end the vendor/upgrade output with an ACTION REQUIRED block naming each file, marker, pre-vendor copy (`.context/working/vendor-backup/<ts>/…`) and a re-apply hint
-- [ ] `.fwvendor-preserve.yaml` accepts `on_missing: fail` (default `warn`): with `fail`, `fw vendor` / `fw upgrade` exit non-zero after the vendor has completed (no rollback); with `warn` or unset, the exit code is unchanged
-- [ ] `fw doctor` WARNs for every declared `in_file:` marker missing from the vendored file, naming file and marker; silent when all are present or there is no manifest
-- [ ] Tests for the four cases above (warn default exit 0 plus banner; fail exits non-zero; doctor WARN while missing and silence once re-applied; no manifest unaffected); existing vendor_preserve and upgrade-simulation tests pass
+- [x] Reproduced: a fixture consumer with an `in_file:` marker in a vendored file loses the block on `fw vendor`, and the run exits 0 with only a mid-log WARN
+- [x] Missing markers end the vendor/upgrade output with an ACTION REQUIRED block naming each file, marker, pre-vendor copy (`.context/working/vendor-backup/<ts>/…`) and a re-apply hint
+- [x] `.fwvendor-preserve.yaml` accepts `on_missing: fail` (default `warn`): with `fail`, `fw vendor` / `fw upgrade` exit non-zero after the vendor has completed (no rollback); with `warn` or unset, the exit code is unchanged
+- [x] `fw doctor` WARNs for every declared `in_file:` marker missing from the vendored file, naming file and marker; silent when all are present or there is no manifest
+- [x] Tests for the four cases above (warn default exit 0 plus banner; fail exits non-zero; doctor WARN while missing and silence once re-applied; no manifest unaffected); existing vendor_preserve and upgrade-simulation tests pass
 - [ ] Vendored copy synced; 1409 told how to opt in to `on_missing: fail`
 
 ### Human
@@ -335,8 +335,21 @@ Next steps:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 bats tests/unit/t4870_in_file_patch_lost.bats > /tmp/.t4870.out 2>&1 && ! grep -q "^not ok" /tmp/.t4870.out
+test "$(grep -c '# skip' /tmp/.t4870.out)" -eq 0
+timeout 300 bats tests/unit/t3850_vendor_preserve_locals.bats > /tmp/.t4870b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4870b.out
+bash -n bin/fw && bash -n lib/upgrade.sh
+bin/fw vendor self --check --task T-4870
 
 ## RCA
+
+**Symptom:** 1409's `/arbeiter` page returned 404 after the be.46 and be.50 upgrades. The 4-line block registering it in `web/blueprints/__init__.py` was gone, although it was declared as an `in_file:` marker.
+
+**Root cause:** for an `in_file:` entry the vendor installs the upstream file, which never contains a consumer's patch. `vendor_preserve.py post` printed one `MARKER MISSING` line and returned 4, which `do_vendor` treats as success. The upgrade exited 0.
+
+**Why structurally allowed:** the signal was one WARN line in the middle of a long log, and nothing that runs after the upgrade (doctor, audit) re-checked the markers. A consumer could only find out from a broken page.
+
+**Prevention:** an ACTION REQUIRED block is now printed at the end of both `fw vendor` and `fw upgrade`. `fw doctor` WARNs until every declared marker is back (`vendor_preserve.py check`). `on_missing: fail` gives a non-zero exit for projects that want one. All of this is pinned by `tests/unit/t4870_in_file_patch_lost.bats`.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).

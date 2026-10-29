@@ -1426,6 +1426,7 @@ do_upgrade() {
     local strict=false
     local failed_steps=0
     local _strict_abort_step=""
+    local _t4870_patches_lost=0
     # T-2095: --no-self-vendor once skipped the inline self-vendor call. T-4688
     # removed that call (it wrote into the upgrade SOURCE); the flag stays
     # accepted so forwarded/scripted invocations keep parsing.
@@ -2548,7 +2549,17 @@ CRONREGEOF
             do_vendor --target "$target_dir" --source "$FRAMEWORK_ROOT" ${_vendor_extra[@]+"${_vendor_extra[@]}"} 2>&1 | sed 's/^/  /'
             _vendor_rc=${PIPESTATUS[0]}
         fi
-        if [ "$_vendor_rc" -ne 0 ]; then
+        if [ "$_vendor_rc" -eq 4 ] && [ "$dry_run" != true ]; then
+            # T-4870: the vendor completed, but in-file patches the project declared
+            # are gone and it set `on_missing: fail`. Not a partial sync.
+            echo -e "  ${RED}FAIL${NC}  in-file patches lost (on_missing: fail) — see ACTION REQUIRED above"
+            failed_steps=$((failed_steps + 1))
+            _t4870_patches_lost=1
+            if [ "$strict" = true ]; then
+                _strict_abort_step="4b (vendor: in-file patches lost)"
+                return 1
+            fi
+        elif [ "$_vendor_rc" -ne 0 ]; then
             echo -e "  ${YELLOW}WARN${NC}  do_vendor exited $_vendor_rc — vendor sync may be partial (F5)"
             failed_steps=$((failed_steps + 1))
             if [ "$strict" = true ]; then
@@ -3629,6 +3640,11 @@ EOF
         # above, not after the doctor advisory where the be.15 field run found it.
         _t4692_emit_commit_list "$target_dir" "$_t4692_before" "$_t4697_log" "$_t4717_why"
         _t4814_emit_upstream_list "$target_dir" ${_t4814_upstream[@]+"${_t4814_upstream[@]}"}
+        # T-4870: lost in-file patches are repeated here, after the counters, so
+        # they are not one WARN line in the middle of the log (1409, twice).
+        if [ -f "$FRAMEWORK_ROOT/lib/vendor_preserve.py" ]; then
+            python3 "$FRAMEWORK_ROOT/lib/vendor_preserve.py" report --target "$target_dir" || true
+        fi
 
         if [ "$changes" -gt 0 ]; then
             echo ""
@@ -3648,6 +3664,10 @@ EOF
         fi
         _t3862_recall_prereqs "$target_dir"
         _t4069_stale_wrapper_notice "$target_dir"
+        # T-4870: on_missing: fail — the upgrade finished every step, then says no.
+        if [ "$_t4870_patches_lost" = 1 ]; then
+            return 4
+        fi
     fi
 }
 

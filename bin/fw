@@ -879,7 +879,7 @@ do_vendor() {
     # Located beside this bin/fw first, then FRAMEWORK_ROOT, then the source:
     # an upgrade hands off between copies, and a helper missing from one of
     # them must not disable the check (the fail-safe branch below refuses).
-    local _vp_py="" _vp_cand
+    local _vp_py="" _vp_cand _vp_post_rc=0 _vp_action=""  # T-4870: last two read at the end
     for _vp_cand in "${FW_BIN_DIR:-$FRAMEWORK_ROOT/bin}/../lib/vendor_preserve.py" \
             "$FRAMEWORK_ROOT/lib/vendor_preserve.py" "$vendor_source/lib/vendor_preserve.py"; do
         if [ -f "$_vp_cand" ]; then _vp_py="$_vp_cand"; break; fi
@@ -1251,10 +1251,14 @@ UPSTREAM
             if [ -n "${_vendor_origin:-}" ]; then printf '%s\n' .upstream; fi
             if [ -n "${_vd_rel:-}" ]; then printf '%s\n' "$_vd_rel"; fi
         } > "$_vp_dir/written"
-        local _vp_post_rc=0
         python3 "$_vp_py" post "${_vp_args[@]}" --written "$_vp_dir/written" || _vp_post_rc=$?
+        # T-4870: 4/5 = declared in-file patches were removed. post printed the
+        # ACTION REQUIRED block mid-log; keep a copy to repeat as the last thing.
+        if [ "$_vp_post_rc" -eq 4 ] || [ "$_vp_post_rc" -eq 5 ]; then
+            _vp_action=$(python3 "$_vp_py" report --target "$target" 2>&1) || true
+        fi
         rm -rf "$_vp_dir"
-        if [ "$_vp_post_rc" -ne 0 ] && [ "$_vp_post_rc" -ne 4 ]; then
+        if [ "$_vp_post_rc" -ne 0 ] && [ "$_vp_post_rc" -ne 4 ] && [ "$_vp_post_rc" -ne 5 ]; then
             echo -e "${RED}ERROR${NC}  post-vendor preserve step failed (exit $_vp_post_rc)" >&2
             return 1
         fi
@@ -1317,6 +1321,14 @@ UPSTREAM
     echo "The project now contains its own framework at .agentic-framework/"
     echo "Hooks should reference: .agentic-framework/bin/fw hook <name>"
     _fw_stale_wrapper_notice "$target"
+    # T-4870: the lost-patch block goes last, where it is read. Exit 4 only when
+    # the project asked for it (on_missing: fail); the vendor itself completed.
+    if [ -n "$_vp_action" ]; then
+        echo "$_vp_action"
+    fi
+    if [ "$_vp_post_rc" -eq 5 ]; then
+        return 4
+    fi
 }
 
 # T-4069/T-4083: best-effort "claude-fw started before this change" notice. Loads
@@ -3018,6 +3030,24 @@ PY
     # enabled; then a dispatcher that cannot import means every push is dropped.
     source "$FRAMEWORK_ROOT/lib/notify.sh"
     fw_notify_doctor_check
+
+    # Check: declared in-file patches still in the vendored copy (T-4870). An
+    # upgrade replaces a patched vendored file with the framework's; this WARNs
+    # until every in_file marker in .fwvendor-preserve.yaml is back. Silent when
+    # the project declares none (exit 2), which includes the framework repo.
+    if [ -f "$FRAMEWORK_ROOT/lib/vendor_preserve.py" ] && [ -f "$PROJECT_ROOT/.fwvendor-preserve.yaml" ]; then
+        local _vpm_out="" _vpm_rc=0
+        _vpm_out=$(python3 "$FRAMEWORK_ROOT/lib/vendor_preserve.py" check --target "$PROJECT_ROOT" 2>&1) || _vpm_rc=$?
+        if [ "$_vpm_rc" -eq 0 ]; then
+            echo -e "  ${GREEN}OK${NC}  In-file patches (.fwvendor-preserve.yaml): all markers present"
+        elif [ "$_vpm_rc" -eq 1 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  In-file patches lost from .agentic-framework/ (T-4870) — re-apply them:"
+            printf '%s\n' "$_vpm_out" | sed 's/^/         /'
+            echo "         Pre-vendor copies: .context/working/vendor-backup/<latest>/; last vendor's list:"
+            echo "         python3 .agentic-framework/lib/vendor_preserve.py report --target ."
+            warnings=$((warnings + 1))
+        fi
+    fi
 
     _doctor_phase "port3000 hygiene ratchet"  # T-3452
     # Check: port-3000 hygiene ratchet (T-2894, set-level sibling of T-2732's
