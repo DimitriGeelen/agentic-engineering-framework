@@ -4197,6 +4197,24 @@ check_unit_suite_report() {
         _us_rerun="agents/audit/integration-suite.sh"
     fi
     local _us_cron="${_us_kind}-nightly" _us_rel=".context/audits/${_us_kind}/LATEST.yaml"
+    # T-4897: re-run with this project's own scheduled command, which carries the
+    # consumer's FW_UNIT_SUITE_DIR. The bare default ran an empty corpus at 055.
+    local _us_cron_cmd=""
+    _us_cron_cmd="$(python3 - "$CONTEXT_DIR/cron-registry.yaml" "$_us_cron" <<'PY' 2>/dev/null
+import sys, yaml
+try:
+    jobs = yaml.safe_load(open(sys.argv[1])) or []
+except Exception:
+    sys.exit(0)
+if isinstance(jobs, dict):
+    jobs = jobs.get("jobs") or []
+for j in jobs:
+    if isinstance(j, dict) and j.get("id") == sys.argv[2] and j.get("command"):
+        print(" ".join(str(j["command"]).split()))
+        break
+PY
+)"
+    [ -n "$_us_cron_cmd" ] && _us_rerun="$_us_cron_cmd"
     local _report="${FW_UNIT_SUITE_REPORT:-$CONTEXT_DIR/audits/${_us_kind}/LATEST.yaml}"
     local _baseline="${FW_UNIT_SUITE_BASELINE:-$CONTEXT_DIR/audits/${_us_kind}/baseline.yaml}"
     if [ ! -f "$_report" ]; then

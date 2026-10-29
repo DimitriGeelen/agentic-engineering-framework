@@ -9,7 +9,7 @@ description: >
   task on empty runs). Need: the refusal prints the same command line the cron registry
   uses for this project (suite dir included).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T12:20:29Z
-last_update: '2026-10-29T12:30:19Z'
+last_update: 2026-10-29T14:05:42Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -65,6 +65,23 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=294,acs=4)
     rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-29T12:30:34Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4897: Pre-push unit-suite refusal names a re-run command without the FW_UNIT_SUITE_DIR the project's cron uses (055)
@@ -77,8 +94,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] check_unit_suite_report's re-run hint is the `command:` of this project's own `<kind>-nightly` entry in .context/cron-registry.yaml when one exists (so a consumer's FW_UNIT_SUITE_DIR is included); otherwise the old default path
+- [x] Regression test: a fixture registry whose unit-suite-nightly command carries FW_UNIT_SUITE_DIR=... produces a hint with that exact command; no registry entry gives the default — tests/unit/t4897_unit_suite_rerun_hint.bats 3/3; existing grader tests 53/53
+- [ ] Vendored copy synced; 055 told
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -264,6 +282,10 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+bats tests/unit/t4897_unit_suite_rerun_hint.bats > /tmp/.t4897.out 2>&1
+bash -n agents/audit/audit.sh
+bin/fw vendor self --check --task T-4897
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -279,6 +301,14 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** at 055 the pre-push refused on a recorded unit-suite run. The refusal's suggested re-run command was a bare `agents/audit/unit-suite.sh`, which in a consumer runs the empty default corpus (T-4896).
+
+**Root cause:** check_unit_suite_report hard-coded the framework repo's own invocation for every project. A consumer's correct command, with its FW_UNIT_SUITE_DIR, lives only in its cron registry.
+
+**Why structurally allowed:** the hint text was written for, and only ever tested in, the framework repo, where the bare path is right.
+
+**Prevention:** the hint is now read from the project's own `<kind>-nightly` registry entry, falling back to the default. `t4897_unit_suite_rerun_hint.bats` pins both cases. T-4896 also makes a wrong re-run harmless (NOT EVALUATED rather than a fake green).
 
 ## Evolution
 
@@ -360,3 +390,6 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4897-pre-push-unit-suite-refusal-names-a-re-r.md
 - **Context:** Initial task creation
+
+### 2026-10-29T14:05:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
