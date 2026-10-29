@@ -5,10 +5,10 @@ name: "Bash task gate judges a command substitution by its outer command only (o
 description: >
   Promoted from observation OBS-185
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
-horizon: later
+horizon: now
 tags: [post-freeze]
 components: []
 related_tasks: []
@@ -39,7 +39,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-26T23:04:32Z
-last_update: 2026-10-28T15:18:41Z
+last_update: 2026-10-29T19:27:01Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,6 +100,18 @@ bvp_scores_proposed:
 
 ## Context
 
+**Background / trigger:** Observation OBS-185 (quoted below), measured with no active task. `echo $(bash deploy.sh)`, `echo $(git commit -m …)`, `` echo `bash deploy.sh` `` and `ls $(python3 mutate.py)` were all allowed. T-2834 closed the chain-operator leg of this class and deliberately left this one open. The operator ranked it among the first gate holes after the v1.8.15 release (walk Q2b).
+
+**Problem / hypothesis:** The read-only classifier (`agents/context/lib/safe-commands.sh`) judges a command by its outer command and treats `$(…)` and backticks as plain text. So an unsafe command nested inside a safe one (`echo`, `ls`) runs with no task and no gate. Only a whole-line `VAR=$(…)` assignment (F-15) checks the inner command today. OBS-185 also warns that judging inner commands must not break the framework's own idioms: `curl -sf "$(bin/fw watchtower url)/page"` and `cd $(git rev-parse --show-toplevel)`.
+
+**Goal:** A command nested in `$(…)` or backticks is judged as a command in its own right, without breaking the everyday read-only idioms.
+
+**Expected outcome:**
+- Every `$(…)` and backtick substitution on a line, outside single quotes, must itself be read-only for the line to count as read-only.
+- The four OBS-185 shapes are refused with no task.
+- The documented idioms stay allowed (the inner read-only commands are allow-listed first if needed).
+- Arithmetic `$((…))` and text in single quotes are not treated as commands.
+
 Source: observation OBS-185 (.context/inbox.yaml):
 
 > T-2834 leaves one leg of the same class open, measured and deliberate: command substitution. is_bash_safe_command now splits on chain operators, but treats dollar-paren and backticks as ordinary text, so an unsafe command nested inside a safe one is judged by the outer command alone. Measured with no active task (scratchpad/obs180/probe7.sh): 'echo $(bash deploy.sh)', 'echo $(git commit -m B:x)', 'echo backtick-bash-deploy.sh-backtick' and 'ls $(python3 mutate.py)' are all ALLOWED. Not fixed in T-2834 because the obvious fix -- treat substitution contents as another segment -- also blocks the framework's own documented verification idiom 'curl -sf "$(bin/fw watchtower url)/page"' (fw watchtower is not on the allowlist) and 'cd $(git rev-parse --show-toplevel)', both currently allowed. That would deny service precisely in the no-active-task recovery state where friction hurts most. Fixing this properly needs the allowlist widened to cover the read-only fw/git verbs used inside substitutions FIRST, then substitution-aware splitting -- in that order, or the fix regresses everyday use. Severity lower than the chain leg (OBS-184): substitution nesting is a shape agents rarely produce by accident, whereas A-and-B is ubiquitous. Cited by name in the safe-commands.sh design comment, so this note is load-bearing documentation, not just a backlog item.
@@ -108,8 +120,11 @@ Source: observation OBS-185 (.context/inbox.yaml):
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Measured first: how the classifier judges the inner read-only commands on their own (`bin/fw watchtower url`, `git rev-parse --show-toplevel`, `date`, `pwd`, `basename`) and the four OBS-185 shapes
+- [ ] Any inner read-only command the everyday idioms need is admitted on its own BEFORE substitution-aware judging lands (OBS-185's order)
+- [ ] `is_bash_safe_command` extracts every `$(…)` and backtick substitution outside single quotes (arithmetic `$((…))` excluded, nesting handled) and requires each inner command to be safe; extraction failure fails closed
+- [ ] Tests: the four OBS-185 shapes gated; `curl -sf "$(bin/fw watchtower url)/page"`, `cd $(git rev-parse --show-toplevel)`, `echo "built $(date -u +%F)"`, `echo $((1+2))` and single-quoted `$(…)` text stay safe; existing safe-commands and hook tests pass
+- [ ] Changed with the safe-swap procedure; vendored copy synced (owner stays human: the operator closes it)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -395,3 +410,7 @@ Source: observation OBS-185 (.context/inbox.yaml):
 ### 2026-10-28T15:18:41Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 - **Change:** tags: +post-freeze
+
+### 2026-10-29T19:27:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
