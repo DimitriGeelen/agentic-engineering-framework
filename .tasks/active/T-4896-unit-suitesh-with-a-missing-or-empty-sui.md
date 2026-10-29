@@ -99,7 +99,7 @@ bvp_scores_proposed:
 - [x] An existing LATEST.yaml (and the dated report and LAST-COMPLETE.yaml) is left byte-identical by such a run
 - [x] The message names the suite dir and tells a consumer to set FW_UNIT_SUITE_DIR as its cron line does
 - [x] Regression test: missing dir and empty dir each exit 3 and leave a pre-existing LATEST.yaml untouched; a dir with one passing .bats file still runs and writes LATEST.yaml — tests/unit/t4896_unit_suite_empty_dir.bats 3/3; the 15 other files that drive unit-suite.sh pass (95 bats + 2 pytest)
-- [ ] Vendored copy synced
+- [x] Vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
