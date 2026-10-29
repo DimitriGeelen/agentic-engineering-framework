@@ -114,7 +114,7 @@ bvp_scores_proposed:
 - [x] New detector `ac-negative-evidence` in lib/reviewer/static_scan.py: a `[REVIEWER]` criterion whose body (lines until the next criterion) carries `NEGATIVE FINDING`/`NEGATIVE RESULT`, or an Evidence line with FAIL/FAILS/FAILED, gets a finding on that criterion, so its auto-tick is refused; registered in scan_task and SCANNED_PATTERN_IDS — severity partial, so the overall verdict is CONCERN
 - [x] Tests: negative evidence blocks the tick of a criterion that names a scanner check; the same criterion without it still ticks; a criterion whose evidence says WORKS is unaffected — test_reviewer_negative_evidence_t4902.py 8/8 (incl. three negative phrasings and per-criterion scoping)
 - [x] The verdict block's PASS wording states it means "no anti-pattern found", not "the criteria hold" — a separate **Scope** line, so parsers of the **Overall** line are unaffected
-- [ ] Existing reviewer tests pass; vendored copy synced; ring20-dashboard told
+- [x] Existing reviewer tests pass; vendored copy synced; ring20-dashboard told — 381 pytest + 86 bats reviewer tests pass; told (msg 11e8fb2f)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
