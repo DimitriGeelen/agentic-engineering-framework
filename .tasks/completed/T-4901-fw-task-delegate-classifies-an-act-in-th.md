@@ -12,12 +12,12 @@ description: >
   or change real external state (add/create/delete/send on a live service) as act-in-the-world,
   with this criterion as a regression fixture.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, delegation, governance, field-report]
-components: []
+components: [lib/delegation.py, tests/unit/test_delegation_classifier.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T13:57:42Z
-last_update: 2026-10-29T14:28:26Z
-date_finished:
+last_update: 2026-10-29T14:32:05Z
+date_finished: 2026-10-29T14:32:05Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -398,3 +398,20 @@ bin/fw vendor self --check --task T-4901
 
 ### 2026-10-29T14:28:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-29T14:32:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5f343f4c
+- **Timestamp:** 2026-10-29T14:32:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — lib/delegation.py _ACT_IN_THE_WORLD_RE recognises (a) acting on a live system ("on live", "live :PORT", "live service/server/site/…") and (b) creating, deleting or changing a real external entity (add
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/delegation.py in: lib/delegation.py _ACT_IN_THE_WORLD_RE recognises (a) acting on a live system ("on live", "live :PORT", "live service/server/site/…") and (b) creating`
