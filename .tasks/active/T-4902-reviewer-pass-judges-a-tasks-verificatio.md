@@ -1,8 +1,17 @@
 ---
 id: T-4902
-name: "Reviewer PASS judges a task's Verification commands, not the criterion: can pass a criterion whose own evidence block says NEGATIVE (ring20-dashboard)"
+name: "Reviewer PASS judges a task's Verification commands, not the criterion: can
+  pass a criterion whose own evidence block says NEGATIVE (ring20-dashboard)"
 description: >
-  ring20-dashboard pilot (msg b398cef0): fw reviewer T-XXX (static scan, --no-write) returned PASS/CONCERN on the shape of ## Verification (empty-output-success, SIGPIPE, AC/verify mismatch), never on the criterion. Their T-372 got PASS although its criterion block carries 'Evidence ... NEGATIVE FINDING: endpoints return 404'. 4 PASS / 6 CONCERN did not track whether criteria held. First step: check whether T-4778 (in v1.8.15: auto-tick only with positive evidence from a named catalogue check) already prevents a tick in these cases; then decide whether a NEGATIVE evidence block in a criterion must block PASS, and whether PASS needs evidence touching the criterion's Expected.
+  ring20-dashboard pilot (msg b398cef0): fw reviewer T-XXX (static scan, --no-write)
+  returned PASS/CONCERN on the shape of ## Verification (empty-output-success, SIGPIPE,
+  AC/verify mismatch), never on the criterion. Their T-372 got PASS although its criterion
+  block carries 'Evidence ... NEGATIVE FINDING: endpoints return 404'. 4 PASS / 6
+  CONCERN did not track whether criteria held. First step: check whether T-4778 (in
+  v1.8.15: auto-tick only with positive evidence from a named catalogue check) already
+  prevents a tick in these cases; then decide whether a NEGATIVE evidence block in
+  a criterion must block PASS, and whether PASS needs evidence touching the criterion's
+  Expected.
 
 status: captured
 workflow_type: build
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T13:57:43Z
-last_update: 2026-10-29T13:57:43Z
-date_finished: null
+last_update: '2026-10-29T14:00:38Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-29T14:00:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4902: Reviewer PASS judges a task's Verification commands, not the criterion: can pass a criterion whose own evidence block says NEGATIVE (ring20-dashboard)
