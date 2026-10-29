@@ -96,7 +96,7 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] check_unit_suite_report's re-run hint is the `command:` of this project's own `<kind>-nightly` entry in .context/cron-registry.yaml when one exists (so a consumer's FW_UNIT_SUITE_DIR is included); otherwise the old default path
 - [x] Regression test: a fixture registry whose unit-suite-nightly command carries FW_UNIT_SUITE_DIR=... produces a hint with that exact command; no registry entry gives the default — tests/unit/t4897_unit_suite_rerun_hint.bats 3/3; existing grader tests 53/53
-- [ ] Vendored copy synced; 055 told
+- [x] Vendored copy synced; 055 told (msg 45676f5d)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
