@@ -1,12 +1,12 @@
 # T-1549 — Layer B v0 Heuristic Scan Results
 
-**Run:** 2026-10-28T04:23:03.753517+00:00
-**Corpus:** 3977 completed tasks
-**Bug-class identified:** 722 (18%)
+**Run:** 2026-10-29T04:23:03.246112+00:00
+**Corpus:** 4008 completed tasks
+**Bug-class identified:** 737 (18%)
 
 ## H1 — Bug-class tasks with no `## RCA` section
 
-**Flagged:** 479 / 722 bug-class tasks (66%)
+**Flagged:** 487 / 737 bug-class tasks (66%)
 
 **Last 30 days sample (FP triage candidates):**
 
@@ -35,15 +35,15 @@
 - `T-3718-testt3657acknowledgedrefusalspy-4-reds-a` — test_t3657_acknowledged_refusals.py 4 reds (acknowledged refused verdict rows:
 - `T-3719-four-single-unit-reds-onboardingcurricul` — Four single unit reds: onboarding_curriculum_ungated (1), t3113_upgrade_worktree
 - `T-3740-post-commit-fabric-advisory-loops-every-` — post-commit fabric advisory loops every changed file over every fabric card
-- ... +86 more in last 30 days
+- ... +94 more in last 30 days
 
 ## H2 — Learning IDs referenced across ≥3 tasks within 30 days
 
-- `P-011` — referenced by 5733 tasks: T-100143-c2-doctoraudit-branch-hygiene-warns, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100157-fw-doctor-calls-fwconsumeryamls-defined- …
-- `L-387` — referenced by 5366 tasks: T-100142-c1-fw-integrate-run-deletes-landed-sourc, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind- …
-- `L-291` — referenced by 2253 tasks: T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100157-fw-doctor-calls-fwconsumeryamls-defined-, T-100158-integrate-run-zone-3-go-live-line-refere, T-100159-reviewer-disposition-detector-truncates- …
-- `L-398` — referenced by 1919 tasks: T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100157-fw-doctor-calls-fwconsumeryamls-defined-, T-100158-integrate-run-zone-3-go-live-line-refere, T-100159-reviewer-disposition-detector-truncates- …
-- `P-010` — referenced by 1340 tasks: T-100185-createtaskbats-inception-tests-fail-unde, T-100190-auditsh-metrics-history-writer-non-atomi, T-100191-sweep-atomic-write-pattern-for-all-conte, T-100196-safe-go-live-path-reconciling-fw-go-live, T-1101-inception-fw-inception-decide-silent---f …
+- `P-011` — referenced by 5826 tasks: T-100143-c2-doctoraudit-branch-hygiene-warns, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100157-fw-doctor-calls-fwconsumeryamls-defined- …
+- `L-387` — referenced by 5459 tasks: T-100142-c1-fw-integrate-run-deletes-landed-sourc, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind- …
+- `L-291` — referenced by 2284 tasks: T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100157-fw-doctor-calls-fwconsumeryamls-defined-, T-100158-integrate-run-zone-3-go-live-line-refere, T-100159-reviewer-disposition-detector-truncates- …
+- `L-398` — referenced by 1950 tasks: T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100157-fw-doctor-calls-fwconsumeryamls-defined-, T-100158-integrate-run-zone-3-go-live-line-refere, T-100159-reviewer-disposition-detector-truncates- …
+- `P-010` — referenced by 1351 tasks: T-100185-createtaskbats-inception-tests-fail-unde, T-100190-auditsh-metrics-history-writer-non-atomi, T-100191-sweep-atomic-write-pattern-for-all-conte, T-100196-safe-go-live-path-reconciling-fw-go-live, T-1101-inception-fw-inception-decide-silent---f …
 - `L-399` — referenced by 116 tasks: T-100202-task-id-allocator-inflation--split-view-, T-1895-template--claudemd-reviewer-example-for-, T-1908-safe-commandssh-env-var-prefix-breaks-fw, T-1908-safe-commandssh-env-var-prefix-breaks-fw, T-1983-go-scope-traceability--inception-decisio …
 - `P-013` — referenced by 64 tasks: T-1125-termlink-u-003-send-file-reports-ok-on-h, T-1125-termlink-u-003-send-file-reports-ok-on-h, T-1495-pickup-watchtower-discovery-watchtowerur, T-1763-fix-ac-body-parser--html-comment-example, T-1766-render-surface-human-ac-gate--block-work …
 - `L-006` — referenced by 56 tasks: T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou …
@@ -57,7 +57,7 @@
 
 ## H3 — Bug-class with no RCA AND no learning captured
 
-**Flagged:** 265 / 722 (36%)
+**Flagged:** 265 / 737 (35%)
 
 This is the strongest symptom-fix signal: fix shipped, no root cause stated, no learning captured for next time.
 
@@ -71,12 +71,12 @@ T-1548 (the inception that birthed this scan): bug_class=False has_rca=False lea
 
 | Metric | Value |
 |---|---|
-| Total completed tasks | 3977 |
-| Bug-class tasks | 722 (18%) |
-| H1 flagged | 479 |
+| Total completed tasks | 4008 |
+| Bug-class tasks | 737 (18%) |
+| H1 flagged | 487 |
 | H2 repeat-learning patterns | 179 |
 | H3 flagged (strongest signal) | 265 |
-| Last-30-days bug-class | 111 |
+| Last-30-days bug-class | 119 |
 
 ## Read-out — GO/NO-GO for Layer B v1 (cron + register + Watchtower)
 
