@@ -93,6 +93,8 @@ bvp_scores_proposed:
 
 ## Context
 
+**Confirmed (dimitri-mint-dev, msg 2899a595, 2026-10-29):** `glob.glob('/home/dimitri-mint-dev/**/preferences.yaml', recursive=True)` did not finish. Their 900 s timeout killed it (real 15m0s, user 5m10s, sys 2m08s). The root is a home directory of ~500 GB (VirtualBox VMs, .cache, .steam, Downloads), so the pre-push structure check hits its 300 s read cap on every push. Their suggestion: restrict the glob to `.context/` (or `git ls-files`) and prune ignored or out-of-repo directories.
+
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria

@@ -58,6 +58,8 @@ date_finished: null
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+**Also from 832 (msg 48e82957):** `fw config get SIDECAR_DM_ADDRESS_KEYS` exits 1 with no output for an unset registered key, while a set key exits 0. So a script reading an unset registered key gets a failure, not its empty default. Decide whether that is intended, and look at it with this task. (`fw config list` shows only set keys, by design.)
+
 ## Acceptance Criteria
 
 ### Agent
