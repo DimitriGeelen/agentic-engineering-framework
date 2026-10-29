@@ -21,6 +21,12 @@ Two halves, called from do_vendor around the copy:
         them, checks every `in_file:` marker, and writes the vendor stamp
         (.fw-vendor-stamp.json: sha256 of every file the vendor wrote) so the
         NEXT vendor can tell a local edit from an upstream one.
+        Exit 4 = in_file markers missing (on_missing: warn, the default);
+        5 = the same with `on_missing: fail`. Either prints ACTION REQUIRED.
+
+  report  Re-print the last vendor's ACTION REQUIRED block (T-4870).
+  check   Check declared in_file markers against the vendored tree now;
+          exit 0 present / 1 missing / 2 nothing declared (fw doctor).
 
 "Local" is decided against the stamp when there is one. Without a stamp (the
 first vendor after this shipped), a file the source lacks is local only if its
@@ -42,6 +48,7 @@ Manifest shape (paths relative to .agentic-framework/; a leading
         markers: ["ring20-local: ntfy topic", "ring20-local: retry"]
       - file: web/blueprints/core.py
         marker: 're:register_blueprint\(approvals_bp\)'
+    on_missing: warn        # or fail: vendor/upgrade exits non-zero (T-4870)
 
 Marker semantics (T-4679): a marker is a LITERAL substring by default -- no
 escaping, `(` and `.` mean themselves. Prefix it with `re:` to make it a Python
@@ -93,6 +100,9 @@ def _mini_yaml(text):
             if s.endswith(":"):
                 section, cur, open_key = s[:-1], None, None
                 data[section] = []
+            elif ":" in s:  # top-level scalar (on_missing:, T-4870)
+                k, v = s.split(":", 1)
+                data[k.strip()], section = _scalar(v.split(" #", 1)[0]), None
             continue
         if section is None:
             continue
@@ -164,7 +174,15 @@ def load_manifest(target):
         if isinstance(marks, str):
             marks = [marks]
         in_file.setdefault(_strip_prefix(f), []).extend(str(m) for m in marks if m)
-    return {"files": files, "in_file": in_file}
+    # T-4870: what a missing in_file marker after vendoring means for the exit code.
+    # `warn` (default) keeps vendor/upgrade green — for consumers that re-apply their
+    # patches after `fw upgrade` (ring20: 18, ring20-dashboard: 29) — but prints an
+    # ACTION REQUIRED block, and `fw doctor` WARNs until the patch is back. `fail` makes the
+    # vendor exit non-zero once it has completed (1409 asked for this).
+    on_missing = str(data.get("on_missing") or "warn").strip().lower()
+    if on_missing not in ("warn", "fail"):
+        raise SystemExit(f"ERROR  {MANIFEST}: on_missing must be 'warn' or 'fail', got {on_missing!r}")
+    return {"files": files, "in_file": in_file, "on_missing": on_missing}
 
 
 def preserved(rel, manifest):
@@ -324,7 +342,8 @@ def cmd_pre(a):
     excludes = read_lines(a.excludes)
     dest = os.path.join(a.target, VENDOR_DIR)
     manifest = load_manifest(a.target)
-    plan = {"backup": None, "restore": [], "in_file": {}, "manifest": bool(manifest)}
+    plan = {"backup": None, "restore": [], "in_file": {}, "manifest": bool(manifest),
+            "on_missing": (manifest or {}).get("on_missing", "warn")}
 
     if not os.path.isdir(dest):
         json.dump(plan, open(a.plan, "w"))
@@ -481,6 +500,7 @@ def cmd_post(a):
             print(f"  KEPT-LOCAL  {rel}")
 
     missing = 0
+    lost = []   # T-4870: (file, marker, pre-vendor copy) for the ACTION REQUIRED block
     for rel, marks in sorted(plan.get("in_file", {}).items()):
         path = os.path.join(dest, rel)
         try:
@@ -493,6 +513,7 @@ def cmd_post(a):
             if found:
                 continue
             missing += 1
+            lost.append({"file": f"{VENDOR_DIR}/{rel}", "marker": m, "copy": copy})
             if err:
                 print(f"  MARKER INVALID  {rel}: \"{m}\" — invalid regex: {err}; fix the "
                       f"pattern in {MANIFEST}; pre-vendor copy: {copy}")
@@ -508,7 +529,10 @@ def cmd_post(a):
         if missing:
             print(f"  WARN  {missing} in-file patch(es) must be re-applied — see MARKER MISSING "
                   "above.")
-            rc = 4
+            rc = 5 if plan.get("on_missing") == "fail" else 4
+    _write_missing_record(a.target, lost, plan.get("on_missing", "warn"))
+    if lost:
+        print_action_required(lost, plan.get("on_missing", "warn"))
 
     src = walk(a.source, includes, excludes)
     files = {rel: digest(p) for rel, p in sorted(src.items())}
@@ -548,6 +572,100 @@ def cmd_post(a):
     return rc
 
 
+# ------------------------------------------------- lost in-file patches (T-4870)
+MISSING_RECORD = os.path.join(".context", "working", "vendor-missing-markers.json")
+
+
+def _write_missing_record(target, lost, on_missing):
+    """Leave the lost-marker list where `report` can re-print it at the end of
+    a long vendor/upgrade log; remove a stale record when nothing is lost."""
+    path = os.path.join(target, MISSING_RECORD)
+    if not lost:
+        try:
+            os.remove(path)
+        except OSError:
+            pass
+        return
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        rec = {"schema": 1, "on_missing": on_missing, "lost": lost,
+               "written_at": datetime.datetime.now(datetime.timezone.utc)
+               .strftime("%Y-%m-%dT%H:%M:%SZ")}
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(rec, fh, indent=1)
+            fh.write("\n")
+    except OSError as exc:  # the block on stdout still carries the message
+        print(f"  NOTE  could not write {MISSING_RECORD}: {exc}")
+
+
+def print_action_required(lost, on_missing):
+    print("")
+    print("  " + "=" * 68)
+    print(f"  ACTION REQUIRED: {len(lost)} local in-file patch(es) were REMOVED by this vendor")
+    print("  " + "=" * 68)
+    print("  The framework copy of these files replaced your patched copy. Your code")
+    print(f"  is no longer in them. Declared in {MANIFEST} (in_file:).")
+    for ent in lost:
+        print(f"    - {ent['file']}")
+        print(f"        marker:          {ent['marker']}")
+        print(f"        pre-vendor copy: {ent['copy']}")
+    print("  Re-apply each patch from its pre-vendor copy, for example:")
+    first = lost[0]
+    print(f"    diff {first['copy']} {first['file']}")
+    print("  Then check:  .agentic-framework/bin/fw doctor   (WARNs until every marker is back)")
+    if on_missing == "fail":
+        print(f"  on_missing: fail is set in {MANIFEST}, so this vendor exits non-zero.")
+        print("  The vendor itself completed; nothing was rolled back.")
+    else:
+        print(f"  To make vendor/upgrade exit non-zero on this, set `on_missing: fail` in {MANIFEST}.")
+    print("  " + "=" * 68)
+
+
+def cmd_report(a):
+    """Re-print the ACTION REQUIRED block from the last vendor's record. Exit 0 when
+    there is nothing to report, 1 when a block was printed."""
+    try:
+        rec = json.load(open(os.path.join(a.target, MISSING_RECORD), encoding="utf-8"))
+        lost = rec.get("lost") or []
+    except (OSError, ValueError, AttributeError):
+        return 0
+    if not lost:
+        return 0
+    print_action_required(lost, rec.get("on_missing", "warn"))
+    return 1
+
+
+def cmd_check(a):
+    """Check every declared in_file marker against the vendored tree now.
+    Exit 0 all present, 1 some missing (one line each), 2 nothing declared.
+    All present also clears a stale record, so a re-applied patch is noticed."""
+    try:
+        manifest = load_manifest(a.target)
+    except SystemExit as exc:
+        print(str(exc))
+        return 1
+    if not manifest or not manifest["in_file"]:
+        return 2
+    missing = []
+    for rel, marks in sorted(manifest["in_file"].items()):
+        try:
+            body = open(os.path.join(a.target, VENDOR_DIR, rel),
+                        encoding="utf-8", errors="replace").read()
+        except OSError:
+            body = None
+        for m in marks:
+            found, _how, err = marker_check(m, body)
+            if not found:
+                missing.append((rel, m, err))
+    if not missing:
+        _write_missing_record(a.target, [], manifest["on_missing"])
+        return 0
+    for rel, m, err in missing:
+        why = f"invalid regex: {err}" if err else "missing"
+        print(f"{VENDOR_DIR}/{rel}: \"{m}\" {why}")
+    return 1
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description="fw vendor consumer-local protection (T-3850)")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -563,8 +681,11 @@ def main(argv=None):
             p.add_argument("--dry-run", action="store_true")
         else:
             p.add_argument("--written")
+    for name in ("report", "check"):
+        sub.add_parser(name).add_argument("--target", required=True)
     a = ap.parse_args(argv)
-    return cmd_pre(a) if a.cmd == "pre" else cmd_post(a)
+    return {"pre": cmd_pre, "post": cmd_post, "report": cmd_report,
+            "check": cmd_check}[a.cmd](a)
 
 
 if __name__ == "__main__":
