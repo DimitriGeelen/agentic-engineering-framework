@@ -113,7 +113,7 @@ bvp_scores_proposed:
 - [x] Reproduced on current code with dimitri-mint-dev's repro (run.log lacks body, cleanup and RUNME EXIT) — rc 0, run.log held only START and STEP 1/1 (even the "+ …" echo line was lost to the missing flush)
 - [x] lib/runme.sh generates the steps inside one subshell `( set -euo pipefail; …steps… )`; the exit status of the subshell is the script's exit status
 - [x] Regression tests: the repro logs `body`, `cleanup` and `RUNME EXIT 0`; a failing step after the user's trap still logs the user's cleanup and `RUNME EXIT <non-zero>`; `cd` in step 1 still applies in step 2; an exported variable carries across steps — t4905_runme_step_exit_trap.bats 5/5 (also `exit 3` becomes the run's code)
-- [ ] Existing runme tests pass; vendored copy synced; dimitri-mint-dev told the task id is fixed
+- [x] Existing runme tests pass; vendored copy synced; dimitri-mint-dev told the task id is fixed — 7 runme test files, 71/71; told (msg d35dfddb)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
