@@ -9,7 +9,7 @@ description: >
   it from outside the hooks. Need: a gate hook that cannot be parsed must never take
   effect, and the repair path must stay open.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T18:08:07Z
-last_update: '2026-10-29T18:15:51Z'
+last_update: 2026-10-29T18:47:41Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -105,8 +105,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] lib/hook-dispatch.sh detects a hook that cannot run because it, or a file it sources, has a bash syntax error: the hook's exit is non-zero and its stderr carries bash's "syntax error" text, which names the broken file
+- [x] In that state the dispatcher allows exactly the repair: a Bash `git checkout -- <broken file>` or `git restore [--source=HEAD] [--] <broken file>` (optionally after `cd <project> &&`), or a Write/Edit whose target is the broken file. Everything else is refused (exit 2) with a loud message naming the file, the line and the exact repair command
+- [x] Each such event is logged to .context/working/.hook-crashes.log (broken-hook <name> <file>), so `fw doctor` sees it
+- [x] Regression tests reproduce today's case: a gate hook with a syntax error refuses an ordinary write, allows `git checkout -- <file>` of the broken file and an Edit of it, and refuses a checkout of a different file. A hook that sources a broken library is handled the same. A healthy hook's exit codes pass through unchanged — t4908_broken_hook_repair_path.bats 8/8 (also: a repair chained with anything else is refused)
+- [ ] Changed with the safe-swap procedure (copy, bash -n, swap, smoke, auto-restore); vendored copy synced; existing hook-dispatch tests pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -292,6 +295,11 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+bats tests/unit/t4908_broken_hook_repair_path.bats > /tmp/.t4908.out 2>&1
+bats tests/unit/hook_dispatcher.bats tests/unit/t4303_hook_routes_when_binfw_unparseable.bats tests/unit/t4335_g118_repair_path.bats > /tmp/.t4908b.out 2>&1
+bash -n lib/hook-dispatch.sh
+bin/fw vendor self --check --task T-4908
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -307,6 +315,17 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** on 2026-10-29 a half-finished two-step edit left `agents/context/check-active-task.sh` with a bash syntax error. Every write in the repo was refused by every session, including `git checkout` of the broken file, and only the operator could restore it from outside the hooks.
+
+**Root cause:** `lib/hook-dispatch.sh` passed the hook's exit code straight through. bash exits 2 on a syntax error, which is the same code a gate uses to refuse, so a gate that could not run looked exactly like a gate refusing everything, its own repair included.
+
+**Why structurally allowed:** the dispatcher already covered a missing hook (T-1360: allow, log) and an unparseable `bin/fw` (G-118: degraded route), but not a hook script that exists and does not parse. Nothing told "the gate said no" apart from "the gate could not speak".
+
+**Prevention:**
+- The dispatcher recognises bash's own `<file>: line N: syntax error` and then allows exactly the repair: restore that file from git, or edit that file. Everything else is refused loudly and logged as `broken-hook` to `.hook-crashes.log`. Regression tests pin each case.
+- Limit: a library sourced with `2>/dev/null || true` (section-extract.sh, safe-commands.sh) hides its syntax error. The gate then carries on, so that shape does not lock the repo.
+- Learning L recorded at T-4907: edit gate hooks via copy, `bash -n`, swap, smoke test, auto-restore.
 
 ## Evolution
 
@@ -388,3 +407,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4908-a-syntax-error-in-a-pretooluse-gate-hook.md
 - **Context:** Initial task creation
+
+### 2026-10-29T18:47:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
