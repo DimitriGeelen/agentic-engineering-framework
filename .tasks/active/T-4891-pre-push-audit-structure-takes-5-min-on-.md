@@ -1,8 +1,18 @@
 ---
 id: T-4891
-name: "Pre-push audit structure takes ~5 min on a consumer whose project root is a home dir: retire_when check globs the whole tree (dimitri-mint-dev be.50)"
+name: "Pre-push audit structure takes ~5 min on a consumer whose project root is a
+  home dir: retire_when check globs the whole tree (dimitri-mint-dev be.50)"
 description: >
-  dimitri-mint-dev be.50 report (msg ed646372, 2026-10-29): git push sat 5-6 min in the pre-push hook; process tree showed audit.sh --section structure -> timeout --foreground -k 5 300 python3 - /home/dimitri-mint-dev near its 300 s cap. Their PROJECT_ROOT is their home directory. Suspect (unconfirmed): agents/audit/audit.sh ~line 2094, the T-2169 retire_when advisory (structure section), runs glob.glob(<root>/**/preference-index.yaml|preferences.yaml, recursive=True) over the whole tree, which walks .cache and every other directory. The only other single-root python check in structure (arc_py_import, ~2444) scans just lib/web/agents/bin/tools. Not a be.50 regression (code from 2026-06). Need: confirm with their timing, then bound the search to where the file can live; also consider a progress line before slow pre-push sections.
+  dimitri-mint-dev be.50 report (msg ed646372, 2026-10-29): git push sat 5-6 min in
+  the pre-push hook; process tree showed audit.sh --section structure -> timeout --foreground
+  -k 5 300 python3 - /home/dimitri-mint-dev near its 300 s cap. Their PROJECT_ROOT
+  is their home directory. Suspect (unconfirmed): agents/audit/audit.sh ~line 2094,
+  the T-2169 retire_when advisory (structure section), runs glob.glob(<root>/**/preference-index.yaml|preferences.yaml,
+  recursive=True) over the whole tree, which walks .cache and every other directory.
+  The only other single-root python check in structure (arc_py_import, ~2444) scans
+  just lib/web/agents/bin/tools. Not a be.50 regression (code from 2026-06). Need:
+  confirm with their timing, then bound the search to where the file can live; also
+  consider a progress line before slow pre-push sections.
 
 status: captured
 workflow_type: build
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T00:03:09Z
-last_update: 2026-10-29T00:03:09Z
-date_finished: null
+last_update: '2026-10-29T00:15:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-29T00:15:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4891: Pre-push audit structure takes ~5 min on a consumer whose project root is a home dir: retire_when check globs the whole tree (dimitri-mint-dev be.50)
