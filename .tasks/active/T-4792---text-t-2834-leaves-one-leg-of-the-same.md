@@ -120,10 +120,10 @@ Source: observation OBS-185 (.context/inbox.yaml):
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Measured first: how the classifier judges the inner read-only commands on their own (`bin/fw watchtower url`, `git rev-parse --show-toplevel`, `date`, `pwd`, `basename`) and the four OBS-185 shapes
-- [ ] Any inner read-only command the everyday idioms need is admitted on its own BEFORE substitution-aware judging lands (OBS-185's order)
-- [ ] `is_bash_safe_command` extracts every `$(…)` and backtick substitution outside single quotes (arithmetic `$((…))` excluded, nesting handled) and requires each inner command to be safe; extraction failure fails closed
-- [ ] Tests: the four OBS-185 shapes gated; `curl -sf "$(bin/fw watchtower url)/page"`, `cd $(git rev-parse --show-toplevel)`, `echo "built $(date -u +%F)"`, `echo $((1+2))` and single-quoted `$(…)` text stay safe; existing safe-commands and hook tests pass
+- [x] Measured first: how the classifier judges the inner read-only commands on their own (`bin/fw watchtower url`, `git rev-parse --show-toplevel`, `date`, `pwd`, `basename`) and the four OBS-185 shapes — all inner commands already safe except `pwd`; all OBS-185 shapes (plus a nested one) passed as safe
+- [x] Any inner read-only command the everyday idioms need is admitted on its own BEFORE substitution-aware judging lands (OBS-185's order) — `pwd` added; the T-3096 fw read-only surface already covered `fw watchtower url`
+- [x] `is_bash_safe_command` extracts every `$(…)` and backtick substitution outside single quotes (arithmetic `$((…))` excluded, nesting handled) and requires each inner command to be safe; extraction failure fails closed
+- [x] Tests: the four OBS-185 shapes gated; `curl -sf "$(bin/fw watchtower url)/page"`, `cd $(git rev-parse --show-toplevel)`, `echo "built $(date -u +%F)"`, `echo $((1+2))` and single-quoted `$(…)` text stay safe; existing safe-commands and hook tests pass — t4792_command_substitution.bats 16/16; 98 existing files, 1097/1097
 - [ ] Changed with the safe-swap procedure; vendored copy synced (owner stays human: the operator closes it)
 
 ### Human
@@ -310,6 +310,10 @@ Source: observation OBS-185 (.context/inbox.yaml):
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+bats tests/unit/t4792_command_substitution.bats > /tmp/.t4792.out 2>&1
+bash -n agents/context/lib/safe-commands.sh
+bin/fw vendor self --check --task T-4792
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -325,6 +329,17 @@ Source: observation OBS-185 (.context/inbox.yaml):
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** with no active task, `echo $(bash deploy.sh)`, `echo $(git commit …)`, `` echo `bash x` ``, `ls $(python3 mutate.py)` and a nested `echo $(echo $(bash x))` all passed the read-only check, so the inner command ran with no gate (OBS-185, re-measured here).
+
+**Root cause:** `is_bash_safe_command` split a line on chain operators (T-2834) but treated `$(…)` and backticks as plain argument text. Only the whole-line `VAR=$(…)` form (F-15) judged its inner command.
+
+**Why structurally allowed:** T-2834 left this leg open on purpose. Judging substitutions would have refused the framework's own `curl -sf "$(bin/fw watchtower url)/page"` idiom, so the fix waited for the read-only allowlist to cover those inner commands first. T-3096 then admitted `fw watchtower url`, but nothing reopened this leg.
+
+**Prevention:**
+- Every substitution outside single quotes is extracted (`_fw_command_substitutions`: escape-, quote- and arithmetic-aware) and judged recursively by the same function.
+- An unparseable line fails closed.
+- `t4792_command_substitution.bats` pins six refused shapes and eight idioms that stay allowed.
 
 ## Evolution
 
