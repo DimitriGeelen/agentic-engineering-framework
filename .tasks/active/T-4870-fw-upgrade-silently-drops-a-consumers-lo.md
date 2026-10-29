@@ -14,10 +14,10 @@ description: >
   to consumer CLAUDE.md by T-4833 conflicts with 1409's own project rule (consumer
   opt-out may be wanted). Filed during the release freeze (T-4869): backlog.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [post-freeze, upgrade, consumer]
 components: []
 related_tasks: []
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T11:13:28Z
-last_update: '2026-10-28T11:15:40Z'
+last_update: 2026-10-29T21:10:10Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,7 +93,21 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Background / trigger:** 1409-sprind patches one upstream file, `web/blueprints/__init__.py`, with a 4-line block (their T-2754) that registers their own Watchtower page `/arbeiter`. They listed it as an `in_file:` marker in `.fwvendor-preserve.yaml`. Two upgrades removed the block, at be.46 (ebdca0c0b) and be.50 (97362b0b7), and both times the page returned 404. Each time they found out afterwards (upgrade report msg c5d95213; pickup P-010, msg fe78b067). It shipped in v1.8.15 as a known issue.
+
+**Problem / hypothesis:**
+- For an `in_file:` entry the vendor installs the upstream file, which never contains a consumer's patch. `lib/vendor_preserve.py post` then reports `MARKER MISSING` and returns 4, and `bin/fw` do_vendor deliberately treats 4 as success.
+- So the only signal is one WARN line in the middle of a long upgrade log. The upgrade exits 0, and nothing afterwards (doctor, audit) notices that the patch is gone.
+- A hard failure by default is wrong too: ring20 and ring20-dashboard re-apply their in-file patches themselves after `fw upgrade` (18 and 29 patches), so a non-zero exit would stop their `set -e` upgrade scripts before the re-apply.
+
+**Goal:** A consumer can never lose a declared in-file patch without being told clearly, and a project that wants the upgrade to fail on it can say so.
+
+**Expected outcome:**
+- When markers are missing after vendoring, the upgrade ends with a clear ACTION REQUIRED block: the file, the marker, the pre-vendor copy and the exact re-apply hint.
+- `fw doctor` WARNs about every declared in-file marker that is missing from the vendored tree, until it is re-applied.
+- A project that sets `on_missing: fail` in `.fwvendor-preserve.yaml` gets a non-zero vendor/upgrade exit, after the vendor has completed, with nothing rolled back.
+- Projects without the setting keep today's exit code, so the re-apply-afterwards flows keep working.
+- Tested end to end with 1409's shape.
 
 **Second occurrence (1409 pickup P-010, msg fe78b067, 2026-10-29):** the be.50 upgrade (their 97362b0b7) removed the 1409-local T-2754 block in `web/blueprints/__init__.py` again, and `/arbeiter` returned 404. The first time was ebdca0c0b (be.46+27). `.fwvendor-preserve.yaml` protects the files (`files:`), but `lib/vendor_preserve.py` post only reports a missing `in_file` marker and blocks nothing. 1409's three directions: (1) an upstream workers page, filed separately as T-4889; (2) a local-blueprint extension point, which is T-4649 extension point 1; (3) vendor_preserve post exits non-zero when an `in_file` marker disappears. Direction 3 is the narrow fix for this task.
 
@@ -101,8 +115,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduced: a fixture consumer with an `in_file:` marker in a vendored file loses the block on `fw vendor`, and the run exits 0 with only a mid-log WARN
+- [ ] Missing markers end the vendor/upgrade output with an ACTION REQUIRED block naming each file, marker, pre-vendor copy (`.context/working/vendor-backup/<ts>/…`) and a re-apply hint
+- [ ] `.fwvendor-preserve.yaml` accepts `on_missing: fail` (default `warn`): with `fail`, `fw vendor` / `fw upgrade` exit non-zero after the vendor has completed (no rollback); with `warn` or unset, the exit code is unchanged
+- [ ] `fw doctor` WARNs for every declared `in_file:` marker missing from the vendored file, naming file and marker; silent when all are present or there is no manifest
+- [ ] Tests for the four cases above (warn default exit 0 plus banner; fail exits non-zero; doctor WARN while missing and silence once re-applied; no manifest unaffected); existing vendor_preserve and upgrade-simulation tests pass
+- [ ] Vendored copy synced; 1409 told how to opt in to `on_missing: fail`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -384,3 +402,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4870-fw-upgrade-silently-drops-a-consumers-lo.md
 - **Context:** Initial task creation
+
+### 2026-10-29T21:10:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
