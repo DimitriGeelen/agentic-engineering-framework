@@ -62,10 +62,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] policy/designer-pin.yaml pins 0.32.0: version, sha256 8ed494c1…c604 and bytes 1298447 as 832 announced (msg d8513a55), source_tag designer-v0.32.0, artifact/vendored paths, and the validator_* keys for dist/aef-authoring-kit-0.32.0 read from the tag; notes line extended with 0.32.0
-- [ ] `fw designer sync --from-tag designer-v0.32.0` verifies the build (pin, MANIFEST at the tag, independent sha256) and the validator's three anchors, then vendors both read-only; the vendored copy under .agentic-framework/ carries only 0.32.0 (vendor/designer/ keeps older builds as history, by convention)
-- [ ] `fw designer` reports PRESENT for 0.32.0; Watchtower serves /designer/app from the new build after a restart (`bin/fw watchtower current` clean)
-- [ ] Vendored copy synced; 832 told the pin reads 0.32.0
+- [x] policy/designer-pin.yaml pins 0.32.0: version, sha256 8ed494c1…c604 and bytes 1298447 as 832 announced (msg d8513a55), source_tag designer-v0.32.0, artifact/vendored paths, and the validator_* keys for dist/aef-authoring-kit-0.32.0 read from the tag; notes line extended with 0.32.0
+- [x] `fw designer sync --from-tag designer-v0.32.0` verifies the build (pin, MANIFEST at the tag, independent sha256) and the validator's three anchors, then vendors both read-only; the vendored copy under .agentic-framework/ carries only 0.32.0 (vendor/designer/ keeps older builds as history, by convention)
+- [x] `fw designer` reports PRESENT for 0.32.0; Watchtower serves /designer/app from the new build after a restart (`bin/fw watchtower current` clean)
+- [x] Vendored copy synced; 832 told the pin reads 0.32.0 (msg 11f89a0d)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -250,6 +250,11 @@ date_finished: null
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+
+python3 -c "import yaml,sys; d=yaml.safe_load(open('policy/designer-pin.yaml')); sys.exit(0 if d['version']=='0.32.0' else 1)"
+bin/fw designer > /tmp/.t4900.out 2>&1 && grep -q "PRESENT" /tmp/.t4900.out
+bin/fw vendor self --check --task T-4900
+bin/fw watchtower current
 
 ## RCA
 
