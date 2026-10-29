@@ -818,8 +818,22 @@ release_tag_and_release() {
         # appended, ranged from the previous release (not GitHub's own guess,
         # which compared v1.8.12...v1.8.15 and skipped v1.8.14).
         local gh_flags=(--title "$next" --generate-notes --notes-start-tag "$latest" --latest)
+        local linked_notes=""
         if [ "$notes_ok" = "yes" ]; then
-            gh_flags+=(--notes-file "$root/$notes_rel")
+            # T-4903: task ids in the notes link to the task files at the release tag.
+            local link_repo="$gh_repo"
+            if [ -z "$link_repo" ]; then
+                link_repo="$(git -C "$root" remote -v 2>/dev/null | awk '/github\.com/ {print $2; exit}' \
+                    | sed -E 's#^(https://|git@)github\.com[:/]##; s#\.git$##')"
+            fi
+            linked_notes="$(mktemp "${TMPDIR:-/tmp}/fw-release-notes.XXXXXX")"
+            if [ -n "$link_repo" ] && python3 "$(dirname "${BASH_SOURCE[0]}")/gh_links.py" \
+                    "$root" "$next" "$link_repo" < "$root/$notes_rel" > "$linked_notes" 2>/dev/null \
+                    && [ -s "$linked_notes" ]; then
+                gh_flags+=(--notes-file "$linked_notes")
+            else
+                gh_flags+=(--notes-file "$root/$notes_rel")
+            fi
         fi
         if [ -n "$gh_repo" ]; then
             gh_flags+=(--repo "$gh_repo")
@@ -829,6 +843,7 @@ release_tag_and_release() {
         else
             echo -e "  ${YELLOW}WARN: gh release create failed (non-fatal)${NC}" >&2
         fi
+        [ -n "$linked_notes" ] && rm -f "$linked_notes"
     else
         echo -e "${YELLOW}gh CLI not found — skipping GitHub Release${NC}"
     fi

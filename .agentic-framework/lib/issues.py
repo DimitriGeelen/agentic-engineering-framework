@@ -38,8 +38,10 @@ import yaml
 # T-4093: arc ids are normalised by the canonical helper (T-3516), never re-derived here.
 try:
     from lib.arc_membership import parse_arc_id_value
+    from lib import gh_links
 except ImportError:  # run as `python3 lib/issues.py` (lib/ is sys.path[0])
     from arc_membership import parse_arc_id_value
+    import gh_links
 
 DEFAULT_REPO = "DimitriGeelen/agentic-engineering-framework"
 FOOTER = ("*These status updates are automated, but Dimitri personally looks at every issue "
@@ -193,6 +195,12 @@ def _run(cmd, **kw):
 
 
 def _gh(args, stdin=None):
+    # T-4903: every comment we post links its task ids to the task files on GitHub, at a
+    # commit GitHub already has (immutable: task files move from active/ to completed/).
+    if stdin and len(args) >= 2 and args[0] == "issue" and args[1] == "comment":
+        root = os.environ.get("PROJECT_ROOT") or os.getcwd()
+        ref = os.environ.get("FW_ISSUES_LINK_REF") or gh_links.github_ref(root)
+        stdin = gh_links.link_task_ids(stdin, root, ref, _repo())
     try:
         return _run(["gh", *args], input=stdin)
     except FileNotFoundError:
