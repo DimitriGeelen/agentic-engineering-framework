@@ -1,6 +1,7 @@
 """T-4088: fw issues close — internal issues only, one comment, idempotent. Stubbed gh, no network."""
 import json
 import os
+import re
 import stat
 import subprocess
 import sys
@@ -110,7 +111,9 @@ def test_fixed_comment_footer_ledger_and_close(env, repo):
     assert r.returncode == 0, r.stderr
     body = (stub / "body.txt").read_text()
     assert body.startswith("<!-- aef-intake:stage=closed-fixed -->")
-    assert f"Fixed under **T-518** in commit {on}" in body and body.rstrip().endswith(FOOTER)
+    # T-4903: the id is bare or linked to its task file, depending on whether a GitHub remote resolves
+    assert re.search(r"Fixed under \*\*(T-518|\[T-518\]\(https://github\.com/[^)]+\))\*\* in commit " + on, body)
+    assert body.rstrip().endswith(FOOTER)
     row = rows(ledger)[0]
     assert row["issue"] == 8 and row["stage"] == "closed-fixed" and row["commit"] == on
     assert row["comment"].startswith("https://")

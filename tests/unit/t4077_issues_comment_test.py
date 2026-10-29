@@ -1,6 +1,7 @@
 """T-4077: fw issues comment — stubbed gh on PATH, no network, fixtures in tmp_path."""
 import json
 import os
+import re
 import stat
 import subprocess
 import sys
@@ -85,7 +86,9 @@ def test_template_footer_marker_and_ledger(env):
     assert r.returncode == 0, r.stderr
     body = (stub / "body.txt").read_text()
     assert body.startswith("<!-- aef-intake:stage=in-progress -->")
-    assert "**[AEF intake] In progress**" in body and "**T-4040**" in body
+    # T-4903: the id is bare or linked to its task file, depending on whether a GitHub remote resolves
+    assert "**[AEF intake] In progress**" in body
+    assert re.search(r"\*\*(T-4040|\[T-4040\]\(https://github\.com/[^)]+\))\*\*", body)
     assert body.rstrip().endswith(FOOTER)
     row = rows(ledger)[0]
     assert row["issue"] == 86 and row["stage"] == "in-progress" and row["tasks"] == ["T-4040"]
