@@ -1,8 +1,14 @@
 ---
 id: T-4896
-name: "unit-suite.sh with a missing or empty suite dir reports rc 0 and overwrites LATEST.yaml, so pre-push passes on a run that tested nothing (055)"
+name: "unit-suite.sh with a missing or empty suite dir reports rc 0 and overwrites
+  LATEST.yaml, so pre-push passes on a run that tested nothing (055)"
 description: >
-  055 v1.8.15 report (msg 4d0d63dd): agents/audit/unit-suite.sh run by hand in a consumer without FW_UNIT_SUITE_DIR defaults to <framework>/tests/unit, which a vendored copy does not carry. It ran 0 files in 1 s, reported runner_exit=0 and overwrote .context/audits/unit-suite/LATEST.yaml; the pre-push audit could then pass on that empty run. A false green at a gate. Need: a missing suite dir or one with 0 test files is NOT EVALUATED (non-zero, says why), and an empty run never replaces a real LATEST.yaml.
+  055 v1.8.15 report (msg 4d0d63dd): agents/audit/unit-suite.sh run by hand in a consumer
+  without FW_UNIT_SUITE_DIR defaults to <framework>/tests/unit, which a vendored copy
+  does not carry. It ran 0 files in 1 s, reported runner_exit=0 and overwrote .context/audits/unit-suite/LATEST.yaml;
+  the pre-push audit could then pass on that empty run. A false green at a gate. Need:
+  a missing suite dir or one with 0 test files is NOT EVALUATED (non-zero, says why),
+  and an empty run never replaces a real LATEST.yaml.
 
 status: captured
 workflow_type: build
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T12:20:29Z
-last_update: 2026-10-29T12:20:29Z
-date_finished: null
+last_update: '2026-10-29T12:30:19Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-29T12:30:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4896: unit-suite.sh with a missing or empty suite dir reports rc 0 and overwrites LATEST.yaml, so pre-push passes on a run that tested nothing (055)
