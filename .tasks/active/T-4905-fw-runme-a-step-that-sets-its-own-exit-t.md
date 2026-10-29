@@ -110,9 +110,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Reproduced on current code with dimitri-mint-dev's repro (run.log lacks body, cleanup and RUNME EXIT)
-- [ ] lib/runme.sh generates the steps inside one subshell `( set -euo pipefail; …steps… )`; the exit status of the subshell is the script's exit status
-- [ ] Regression tests: the repro logs `body`, `cleanup` and `RUNME EXIT 0`; a failing step after the user's trap still logs the user's cleanup and `RUNME EXIT <non-zero>`; `cd` in step 1 still applies in step 2; an exported variable carries across steps
+- [x] Reproduced on current code with dimitri-mint-dev's repro (run.log lacks body, cleanup and RUNME EXIT) — rc 0, run.log held only START and STEP 1/1 (even the "+ …" echo line was lost to the missing flush)
+- [x] lib/runme.sh generates the steps inside one subshell `( set -euo pipefail; …steps… )`; the exit status of the subshell is the script's exit status
+- [x] Regression tests: the repro logs `body`, `cleanup` and `RUNME EXIT 0`; a failing step after the user's trap still logs the user's cleanup and `RUNME EXIT <non-zero>`; `cd` in step 1 still applies in step 2; an exported variable carries across steps — t4905_runme_step_exit_trap.bats 5/5 (also `exit 3` becomes the run's code)
 - [ ] Existing runme tests pass; vendored copy synced; dimitri-mint-dev told the task id is fixed
 
 ### Human
@@ -299,6 +299,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+bats tests/unit/t4905_runme_step_exit_trap.bats > /tmp/.t4905.out 2>&1
+bats tests/unit/t3675_runme.bats > /tmp/.t4905b.out 2>&1
+bin/fw vendor self --check --task T-4905
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -314,6 +318,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** runmes whose commands set their own EXIT trap (mount/umount cleanup) ended with no `RUNME EXIT`, no exit event and their last output lines missing. `fw runme watch` waited until its timeout, and `pending` reported RUN ENDED WITHOUT RECORD for successful runs (dimitri-mint-dev t192, t195; repro in P-025).
+
+**Root cause:** the generated script set runme's EXIT trap (record plus `sleep 0.3` flush of the `tee` into run.log) and then ran every step in the same shell. A shell has one EXIT trap, so the step's `trap … EXIT` replaced runme's.
+
+**Why structurally allowed:** runme's tests used steps that never touch traps. The script treated operator commands as data while running them as code in its own shell state.
+
+**Prevention:** all steps run in one subshell. Their traps stay local, while `cd`/`export` still carry across steps and the subshell's status is the run's status. `t4905_runme_step_exit_trap.bats` pins the repro, a failing step, `cd` and `export` carry, and `exit N`.
 
 ## Evolution
 
