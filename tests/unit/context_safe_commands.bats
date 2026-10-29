@@ -170,9 +170,12 @@ setup() {
     [ "$status" -eq 1 ]
 }
 
-@test "safe-commands: python3 parse check is safe" {
+@test "safe-commands: python3 -c is NOT read-only, even a parse check (T-4788)" {
+    # T-4788 (OBS-200): inline Python can write through forms no text blocklist sees
+    # (Path.write_text, os.replace, subprocess, exec), so python3 -c is gated like any
+    # command that may write. With an active task it still runs (t4788 bats).
     run is_bash_safe_command "python3 -c \"import yaml; yaml.safe_load(open('f'))\""
-    [ "$status" -eq 0 ]
+    [ "$status" -eq 1 ]
 }
 
 @test "safe-commands: npm list is safe" {

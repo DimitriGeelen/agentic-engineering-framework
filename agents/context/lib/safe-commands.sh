@@ -1932,15 +1932,16 @@ _fw_single_command_is_safe() {
             ;;
 
         # Category 6: Validation
+        # T-4788 (OBS-200): `python3 -c` is NOT read-only. It used to pass unless the
+        # script text matched a short write-indicator list (open(..'w', .write(,
+        # shutil., os.rename/remove/unlink/makedirs/system). Path.write_text,
+        # write_bytes, os.replace (our own atomic-write idiom), subprocess and
+        # exec() matched none of it, so with no active task those writes skipped
+        # every gate. A blocklist over an interpreter's source cannot be completed,
+        # so the interpreter is simply gated like any other command that may write:
+        # it runs whenever a task is active and its gates pass.
         python3|python)
-            # Only safe if it's a parse/check command (no file writes)
-            if grep -qE '^\s*(python3?)\s+-c\s' <<< "$cmd"; then
-                # Check for write indicators in the inline script
-                if grep -qE "(open\(.*, *['\"]w|\.write\(|shutil\.|os\.(rename|remove|unlink|makedirs|system))" <<< "$cmd"; then
-                    return 1
-                fi
-                return 0
-            fi
+            return 1
             ;;
         bash|sh)
             # bash -n (syntax check only) is safe

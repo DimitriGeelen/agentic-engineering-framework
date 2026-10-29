@@ -119,11 +119,11 @@ Source: observation OBS-200 (.context/inbox.yaml):
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Reproduced on current code: with no active task, the hook allows `python3 -c` scripts using `Path(..).write_text`, `.write_bytes` and `os.replace` (rc 0)
-- [ ] agents/context/lib/safe-commands.sh no longer classifies `python3 -c` / `python -c` as read-only (the textual write-indicator blocklist is removed, not extended)
-- [ ] With no active task the hook refuses all three measured forms plus a `subprocess` and an `exec(...)` form; with an active task whose gates pass, an ordinary `python3 -c "import json; print(1)"` is allowed
-- [ ] Existing safe-commands / hook tests updated where they pinned `python3 -c` as safe, each change stated; regression test file added
-- [ ] Vendored copy synced; owner set back to agent (it was human only because the task was promoted from an observation)
+- [x] Reproduced on current code: with no active task, the hook allows `python3 -c` scripts using `Path(..).write_text`, `.write_bytes` and `os.replace` (rc 0) — also subprocess and exec forms rc 0; redirect control rc 2
+- [x] agents/context/lib/safe-commands.sh no longer classifies `python3 -c` / `python -c` as read-only (the textual write-indicator blocklist is removed, not extended)
+- [x] With no active task the hook refuses all three measured forms plus a `subprocess` and an `exec(...)` form; with an active task whose gates pass, an ordinary `python3 -c "import json; print(1)"` is allowed — tests/unit/t4788_python_c_not_readonly.bats 7/7
+- [x] Existing safe-commands / hook tests updated where they pinned `python3 -c` as safe, each change stated; regression test file added — one test changed: context_safe_commands.bats "python3 parse check is safe" now asserts NOT safe (49/49); all 97 safe-commands/hook test files otherwise pass (1087 ok)
+- [ ] Vendored copy synced (owner stays human: the agent may not change ownership; the operator closes it)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -309,6 +309,11 @@ Source: observation OBS-200 (.context/inbox.yaml):
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 
+bats tests/unit/t4788_python_c_not_readonly.bats > /tmp/.t4788.out 2>&1
+bats tests/unit/context_safe_commands.bats > /tmp/.t4788b.out 2>&1
+bash -n agents/context/lib/safe-commands.sh
+bin/fw vendor self --check --task T-4788
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -324,6 +329,14 @@ Source: observation OBS-200 (.context/inbox.yaml):
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** with no active task, `python3 -c` scripts that write files (Path.write_text/write_bytes, os.replace, subprocess, exec) passed the task gate: rc 0, no gate ran, no audit trail. Measured in OBS-200 and reproduced here.
+
+**Root cause:** the read-only classifier (`safe-commands.sh`, `python3|python` branch) treated an inline interpreter script as a read unless its text matched a five-pattern write blocklist. An interpreter can write in unboundedly many ways, so no blocklist over its source text can be complete.
+
+**Why structurally allowed:** the classifier's tests pinned the blocklist's positives (`open(...,'w')` is refused) and one negative (a parse check is safe), never the shape of the gap. A blocklist looks complete to every test written from inside it. Same family as the Tier 0 scope boundary (T-2742): a text predicate cannot see semantics.
+
+**Prevention:** `python3 -c` is no longer read-only. It is judged like any command that may write, so it needs an active task whose gates pass. `t4788_python_c_not_readonly.bats` pins five write forms (including two no blocklist named) plus the allowed active-task case.
 
 ## Evolution
 
