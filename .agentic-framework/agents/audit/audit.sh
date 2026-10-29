@@ -2056,7 +2056,7 @@ fi
 if [ "${FW_RETIRE_WHEN_ADVISORY:-1}" != "0" ] \
    && [ -f "$PROJECT_ROOT/policy/value-drivers.yaml" ] \
    && command -v python3 >/dev/null 2>&1; then
-    retire_when_findings=$(python3 - "$PROJECT_ROOT" <<'PY' 2>/dev/null
+    retire_when_findings=$(python3 - "$PROJECT_ROOT" "$FRAMEWORK_ROOT" <<'PY' 2>/dev/null
 import sys, os, glob, subprocess, time
 try:
     import yaml
@@ -2064,6 +2064,7 @@ except ImportError:
     sys.exit(0)
 
 project_root = sys.argv[1]
+framework_root = sys.argv[2]
 vd_path = os.path.join(project_root, "policy", "value-drivers.yaml")
 try:
     with open(vd_path) as fh:
@@ -2089,14 +2090,15 @@ def recall_signals():
             s += 1
     except Exception:
         pass
-    # (b) preference index file
-    found_b = False
-    for name in ("preference-index.yaml", "preferences.yaml"):
-        if glob.glob(os.path.join(project_root, "**", name), recursive=True):
-            found_b = True
-            break
-    if found_b:
-        s += 1
+    # (b) preference index file — among tracked files only (T-4891): a recursive
+    # glob over a home-directory root never finished and held every pre-push.
+    try:
+        sys.path.insert(0, os.path.join(framework_root, "lib"))
+        from tracked_files import find_named
+        if find_named(project_root, ("preference-index.yaml", "preferences.yaml")):
+            s += 1
+    except Exception:
+        pass
     # (c) auto-sync code in agents/ or lib/
     try:
         for d in ("agents", "lib"):
