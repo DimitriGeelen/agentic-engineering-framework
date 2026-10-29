@@ -400,6 +400,20 @@ bin/fw vendor self --check --task T-4906
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** Both causes are fixed at the source.
+- In Watchtower, the raw Task Body block is excluded from highlight.js, which was drawing every `#` guidance line as a bold section heading.
+- For GitHub, the task template's Verification guidance is now one HTML comment, which GitHub hides. The completion gate already strips HTML comments, so a fresh task still has no command, and a command written below the comment still runs.
+
+Older task files keep their `#` lines, so on GitHub only tasks created from now on benefit. In Watchtower, every task is fixed.
+
+**Evidence:**
+- Live page `/tasks/T-4884` serves `<code class="nohighlight">` (curl after restart; `bin/fw watchtower current` clean).
+- `tests/unit/t4906_verification_render.bats`, 4/4: no Markdown heading outside the comment; the gate extracts 0 commands from the template; a command below the comment is extracted; `nohighlight` is present.
+- Template-sync tests 10/10; the shipped-template index was regenerated.
+- Screenshots at 1024/1440/1920 with the Task Body expanded: `.context/visual/T-4906/verification-open@*.png`.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.

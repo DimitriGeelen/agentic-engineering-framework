@@ -10,7 +10,7 @@ description: >
   same task-id linking as the review page. Render-surface change: needs the [REVIEW]
   criterion and the visual verification table.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T16:18:08Z
-last_update: '2026-10-29T16:30:52Z'
+last_update: 2026-10-29T20:44:23Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -380,6 +380,16 @@ bin/fw vendor self --check --task T-4904
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The task page now links every task id in its body to that task, in every section, as the review page already did. The change only wraps ids in links: the text is otherwise byte-identical, HTML stays escaped, a path that contains a task id stays one path, and ids already inside a link are not linked twice.
+
+**Evidence:**
+- Live page `/tasks/T-4884` shows T-4890 as a link 5 times (curl after restart; `bin/fw watchtower current` clean).
+- `tests/unit/test_task_body_links_t4904.py`, 5/5, including "text unchanged apart from the links".
+- The 26 existing web test files touching the task page pass, 326/326.
+- Screenshots at 1024/1440/1920 with the Task Body expanded: `.context/visual/T-4904/body-links-open@*.png`.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -407,3 +417,6 @@ bin/fw vendor self --check --task T-4904
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4904-watchtower-task-detail-page-taskst-xxxx-.md
 - **Context:** Initial task creation
+
+### 2026-10-29T20:44:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
