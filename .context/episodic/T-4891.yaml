@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4891: Pre-push audit structure takes ~5 min on a consumer whose project root is a home dir: retire_when check globs the whole tree (dimitri-mint-dev be.50)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-29T00:47:43Z
+# ============================================================================
+
+task_id: T-4891
+task_name: "Pre-push audit structure takes ~5 min on a consumer whose project root is a home dir: retire_when check globs the whole tree (dimitri-mint-dev be.50)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-29T00:03:09Z
+completed: 2026-10-29T00:47:18Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-29T01:03:20+01:00
+last_commit: 2026-10-29T01:47:16+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file dimitri-mint-dev be.50 finding — pre-push structure audit ~5 min; suspect retire_when recursive glob over a home-dir root. confirmed by dimitri-mint-dev (glob over 500 GB home never finishes; 2899a595); T-4892 note on config get exit 1 (832). retire_when preference signal searches tracked files (git ls-files), never walks PROJECT_ROOT — pre-push no longer stalls 5 min on a home-dir root. vendor self — sync audit.sh and lib/tracked_files.py. be.51 cut (4bd9b17ac); dimitri-mint-dev and 1409 asked to test it
+
+# Key outcomes
+outcomes:
+  - 'The retire_when F-RECALL signal (b) in agents/audit/audit.sh no longer runs a recursive glob over PROJECT_ROOT. It finds `preference-index.yaml` / `preferences.yaml` among the files git tracks (`git ls-files`, bounded by a timeout); outside a git repo it searches only `.context/` and `policy/`'
+  - 'Same verdict as before for a tracked file in any directory (signal found) and for no such file (not found); an ignored or untracked copy, for example under a home directory''s `.cache`, no longer counts and is never walked'
+  - 'Unit test: a fixture project with a large untracked tree plus a tracked `preferences.yaml` at depth finds it quickly, and the same without the tracked file finds nothing; the check never walks the tree (pinned by failing os.walk/glob/rglob in the test) and a gitignored `.cache/preferences.yaml` does not count'
+  - 'Vendored copy synced (`bin/fw vendor self --check` clean for this task); be.51 tagged with T-4891; dimitri-mint-dev and 1409 asked to test be.51'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-29 — ship in this release as be.51'
+    chose: 'fix now and cut be.51 with T-4891 only (operator, answer "a, go ahead with be.51"). dimitri-mint-dev re-checks its push time, and 1409 runs its pending full suite on be.51. T-4870 stays a known issue for after the release.'
+    rationale: 'confirmed in the field; costs every push 5 min on a home-directory root; small fix; the gate tester had not started, so no confirmation round is lost.'
+    alternatives_rejected: ['(b) ship be.50 with T-4891 as a known issue.']
+  - decision: '2026-10-29 — search tracked files, not the tree'
+    chose: '`git ls-files` for the two names; outside git, only `.context/` and `policy/`.'
+    rationale: 'a preference index that counts as a recall signal is project content, so it is tracked. Git answers from the index, and ignored trees (.cache, VM images) are never touched.'
+    alternatives_rejected: ['keep the glob but prune known heavy directories (an endless denylist); `.context/` only (would drop a tracked file elsewhere, changing the verdict).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/tracked_files.py'
+  - '.fabric/components/lib-tracked_files.yaml'
+  - '.tasks/active/T-4891-pre-push-audit-structure-takes-5-min-on-.md'
+  - '.tasks/active/T-4892-warn-when-sidecardmaddresskeys-names-the.md'
+  - 'agents/audit/audit.sh'
+  - 'docs/reports/field-test-v1.8.15-results.md'
+  - 'lib/tracked_files.py'
+  - 'tests/unit/test_tracked_files_t4891.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-29T01:03:20'
+    action: 'T-4891: file dimitri-mint-dev be.50 finding — pre-push structure audit ~5 min; suspect retire_when recursive glob over a home-dir root'
+  - time: '2026-10-29T01:25:21'
+    action: 'T-4891: confirmed by dimitri-mint-dev (glob over 500 GB home never finishes; 2899a595); T-4892 note on config get exit 1 (832)'
+  - time: '2026-10-29T01:28:59'
+    action: 'T-4891: retire_when preference signal searches tracked files (git ls-files), never walks PROJECT_ROOT — pre-push no longer stalls 5 min on a home-dir root'
+  - time: '2026-10-29T01:29:13'
+    action: 'T-4891: vendor self — sync audit.sh and lib/tracked_files.py'
+  - time: '2026-10-29T01:47:16'
+    action: 'T-4891: be.51 cut (4bd9b17ac); dimitri-mint-dev and 1409 asked to test it'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 44 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, audit, performance, field-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 44
+  commits: 6
+  files_changed: 12
+  lines_added: 762
+  lines_removed: 28
+  footprint_refreshed_at: '2026-10-29T00:47:54Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4891-pre-push-audit-structure-takes-5-min-on-.md
+generated_by: context-agent-hybrid

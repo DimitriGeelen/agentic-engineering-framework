@@ -51035,3 +51035,21 @@ scan_id: R-e45ba6e4
 task_id: T-4884
 payload:
   task_file: .tasks/active/T-4884-prompt-hook-never-surfaces-peer-message-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-29T00:47:29Z'
+scan_id: R-8e9c2f4f
+task_id: T-4891
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-29T00:47:29Z'
+scan_id: R-8e9c2f4f
+task_id: T-4891
+payload:
+  task_file: .tasks/active/T-4891-pre-push-audit-structure-takes-5-min-on-.md
