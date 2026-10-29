@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4903: Task references posted to GitHub (release notes, issue updates, any GitHub post) link to the task file on GitHub
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-29T16:49:29Z
+# ============================================================================
+
+task_id: T-4903
+task_name: "Task references posted to GitHub (release notes, issue updates, any GitHub post) link to the task file on GitHub"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-29T14:28:18Z
+completed: 2026-10-29T16:46:48Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-29T17:28:02+01:00
+last_commit: 2026-10-29T17:46:34+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  task ids in GitHub posts (issue comments, release notes) link to the task file at an immutable ref; T-4904 filed (Watchtower task page). vendor self — gh_links.py, issues.py, release.sh. ACs done — v1.8.15 release body re-published with linked task ids
+
+# Key outcomes
+outcomes:
+  - 'lib/gh_links.py `link_task_ids(text, root, ref, repo)` turns every bare `T-NNNN` into `[T-NNNN](https://github.com/<repo>/blob/<ref>/<path to the task file at ref>)`; it leaves ids alone inside code spans, fenced code blocks, existing links and URLs, and leaves an id unlinked when no task file exists at that ref'
+  - 'Every GitHub post made by lib/issues.py (stage, release, close and close-note comments) passes through it, at an immutable ref: a commit already on the GitHub remote — all of them go through `_gh(["issue","comment",…])`, which links the body at the commit of the GitHub remote''s bleeding-edge'
+  - '`fw release` passes the notes file through it at the new release tag before `gh release create --notes-file`'
+  - 'Unit tests: linking, the left-alone cases, a missing task, and the issues and release wiring (gh stubbed) — test_gh_links_t4903.py 11/11, t4903_release_notes_task_links.bats 1/1; the issues suites (180 tests) pass after two template assertions accept the linked form'
+  - 'The v1.8.15 GitHub release body is re-published with linked task ids (operator already approved the text; only links added) — 90 distinct ids, 109 links, none left plain; a sampled link (T-4891) returns 200'
+  - 'Watchtower still renders bare T-NNNN as /tasks/T-NNNN links (T-1575), checked on a live page — yes on /review/T-4875 (T-3621, T-4866 linked); NOT on the task detail page /tasks/T-4884 (plain text), filed as T-4904'
+  - 'Vendored copy synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'vendor self — gh_links.py, issues.py, release.sh'
+    source: git-mined
+  - description: 'task ids in GitHub posts (issue comments, release notes) link to the task file at an immutable ref; T-4904 filed (Watchtower task page)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/gh_links.py'
+  - '.agentic-framework/lib/issues.py'
+  - '.agentic-framework/lib/release.sh'
+  - '.tasks/active/T-4903-task-references-posted-to-github-release.md'
+  - '.tasks/active/T-4904-watchtower-task-detail-page-taskst-xxxx-.md'
+  - 'lib/gh_links.py'
+  - 'lib/issues.py'
+  - 'lib/release.sh'
+  - 'tests/unit/t4077_issues_comment_test.py'
+  - 'tests/unit/t4088_issues_close_test.py'
+  - 'tests/unit/t4903_release_notes_task_links.bats'
+  - 'tests/unit/test_gh_links_t4903.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-29T17:28:02'
+    action: 'T-4903: task ids in GitHub posts (issue comments, release notes) link to the task file at an immutable ref; T-4904 filed (Watchtower task page)'
+  - time: '2026-10-29T17:28:40'
+    action: 'T-4903: vendor self — gh_links.py, issues.py, release.sh'
+  - time: '2026-10-29T17:46:34'
+    action: 'T-4903: ACs done — v1.8.15 release body re-published with linked task ids'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 138 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [release, issues, github, usability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 138
+  commits: 4
+  files_changed: 15
+  lines_added: 1297
+  lines_removed: 16
+  footprint_refreshed_at: '2026-10-29T16:50:52Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4903-task-references-posted-to-github-release.md
+generated_by: context-agent-hybrid
