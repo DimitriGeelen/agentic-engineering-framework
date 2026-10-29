@@ -654,7 +654,9 @@
 {% if task_content %}
 <details>
     <summary><strong>Task Body</strong></summary>
-    <pre><code>{{ task_body_html | safe }}</code></pre>
+    {# T-4906: nohighlight — base.html runs hljs.highlightAll(), which auto-detected the
+       body as Markdown and drew every `#` guidance line in Verification as a bold heading. #}
+    <pre><code class="nohighlight">{{ task_body_html | safe }}</code></pre>
 </details>
 {% endif %}
 
