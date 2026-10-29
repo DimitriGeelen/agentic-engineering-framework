@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4898: Write human-readable release notes for v1.8.15 and put them on the GitHub release (after operator OK)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-29T12:55:29Z
+# ============================================================================
+
+task_id: T-4898
+task_name: "Write human-readable release notes for v1.8.15 and put them on the GitHub release (after operator OK)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-29T12:42:21Z
+completed: 2026-10-29T12:55:08Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-29T13:49:33+01:00
+last_commit: 2026-10-29T13:55:06+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  draft v1.8.15 release notes (worker draft + post-release confirmations), for operator review. notes approved by operator and published on the v1.8.15 GitHub release
+
+# Key outcomes
+outcomes:
+  - 'docs/releases/v1.8.15-notes.md written in the style of v1.8.14-notes.md: summary, highlights by theme (consumer-facing), field-test summary with who tested what, known issues with workarounds (T-4870, T-3297), upgrade steps, link to the field report'
+  - 'Operator has read the draft and said OK (2026-10-29, "ok")'
+  - 'The GitHub release v1.8.15 shows those notes (gh release edit --notes-file), and its changelog link compares v1.8.14...v1.8.15 (the notes'' Links section carries the v1.8.14...v1.8.15 compare link; body 12,405 chars)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4898-write-human-readable-release-notes-for-v.md'
+  - 'docs/releases/v1.8.15-notes.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-29T13:49:33'
+    action: 'T-4898: draft v1.8.15 release notes (worker draft + post-release confirmations), for operator review'
+  - time: '2026-10-29T13:55:06'
+    action: 'T-4898: notes approved by operator and published on the v1.8.15 GitHub release'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12
+  commits: 3
+  files_changed: 5
+  lines_added: 673
+  lines_removed: 4
+  footprint_refreshed_at: '2026-10-29T12:55:34Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4898-write-human-readable-release-notes-for-v.md
+generated_by: context-agent-hybrid
