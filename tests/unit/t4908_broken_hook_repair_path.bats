@@ -72,6 +72,20 @@ _tool_payload() { python3 -c "import json,sys; print(json.dumps({'tool_name':sys
     [ "$status" -eq 0 ]
 }
 
+@test "under set -euo pipefail (as bin/fw runs it) a refusal keeps its message" {
+    # Found live on 2026-10-29: bin/fw runs `set -euo pipefail`, and a hook exiting 2
+    # ended the dispatcher before it replayed the captured stderr, so every refusal
+    # reached Claude Code as exit 2 with "No stderr output".
+    run env FRAMEWORK_ROOT="$T/fw" PROJECT_ROOT="$T/proj" AGENTS_DIR="$T/fw/agents" FW_LIB_DIR="$T/fw/lib" \
+        bash -c "set -euo pipefail; source '$DISPATCH'; fw_hook_run refuser" <<<"$(_tool_payload Write "$T/proj/x.sh")"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"refused"* ]]
+    run env FRAMEWORK_ROOT="$T/fw" PROJECT_ROOT="$T/proj" AGENTS_DIR="$T/fw/agents" FW_LIB_DIR="$T/fw/lib" \
+        bash -c "set -euo pipefail; source '$DISPATCH'; fw_hook_run gate" <<<"$(_tool_payload Write "$T/proj/x.sh")"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"cannot run"* ]]
+}
+
 @test "healthy gates: a refusal (2) and an allow (0) pass through unchanged" {
     _hook refuser "$(_tool_payload Write "$T/proj/x.sh")"
     [ "$status" -eq 2 ]

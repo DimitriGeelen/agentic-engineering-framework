@@ -73,18 +73,20 @@ fw_hook_run() {
             # shellcheck disable=SC1091
             source "$FW_LIB_DIR/hook-telemetry.sh"
         fi
+        # `|| _hook_rc=$?`, never `cmd; rc=$?`: bin/fw runs under `set -e`, so a hook
+        # that refuses (exit 2) would end this function before its captured message
+        # is replayed — a refusal with no reason (seen live on 2026-10-29).
+        _hook_rc=0
         if [ -n "$_hook_err" ]; then
-            bash "$_hook_script" "$@" <<<"$_hook_payload" 2>"$_hook_err"
-            _hook_rc=$?
+            bash "$_hook_script" "$@" <<<"$_hook_payload" 2>"$_hook_err" || _hook_rc=$?
             cat "$_hook_err" >&2
         else
-            bash "$_hook_script" "$@" <<<"$_hook_payload"
-            _hook_rc=$?
+            bash "$_hook_script" "$@" <<<"$_hook_payload" || _hook_rc=$?
         fi
         if [ "$_hook_rc" -ne 0 ] && [ -n "$_hook_err" ] && \
            _hook_broken="$(grep -m1 -oE '^/[^:]+: line [0-9]+: syntax error' "$_hook_err")"; then
-            _fw_hook_broken_mode "$_hook_name" "$_hook_broken" "$_hook_payload"
-            _hook_rc=$?
+            _hook_rc=0
+            _fw_hook_broken_mode "$_hook_name" "$_hook_broken" "$_hook_payload" || _hook_rc=$?
         fi
         [ -n "$_hook_err" ] && rm -f "$_hook_err"
         type fw_record_hook_fire >/dev/null 2>&1 && fw_record_hook_fire "$_hook_name" "$_hook_rc" 2>/dev/null || true
@@ -136,7 +138,7 @@ args = [a for a in w[2:] if a not in ("--", "--worktree") and not a.startswith("
 if w[1] == "checkout" and "--" not in w[2:]:
     print("deny"); sys.exit()
 print("repair" if len(args) == 1 and same(args[0], base) else "deny")
-' "$file" "${PROJECT_ROOT:-}" 2>/dev/null)"
+' "$file" "${PROJECT_ROOT:-}" 2>/dev/null)" || verdict="deny"
     if [ "$verdict" = "repair" ]; then
         echo "fw hook: $name cannot run ($file line $line has a syntax error) — allowing this repair of that file (T-4908)." >&2
         return 0
