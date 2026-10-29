@@ -526,6 +526,40 @@ release_tag_and_release() {
         fi
     fi
 
+    # ── Release-notes leg (T-4899) ────────────────────────────────────────
+    # v1.8.15 went to GitHub with only an auto "Full Changelog" link: the release
+    # was created with --generate-notes, which lists merged PRs, and this repo has
+    # none. Operator 2026-10-29: human-readable notes are part of the standing
+    # release process. A repo that keeps docs/releases/ must have a committed
+    # docs/releases/<version>-notes.md before anything is tagged or pushed.
+    # Repos without that folder are not affected.
+    local notes_rel="docs/releases/${next}-notes.md" notes_ok=""
+    if [ -d "$root/docs/releases" ]; then
+        local notes_bytes=0
+        [ -f "$root/$notes_rel" ] && notes_bytes=$(wc -c < "$root/$notes_rel" | tr -d ' ')
+        if [ "$notes_bytes" -lt "${RELEASE_NOTES_MIN_BYTES:-400}" ]; then
+            notes_ok="missing"
+        elif ! git -C "$root" ls-files --error-unmatch "$notes_rel" >/dev/null 2>&1 \
+             || ! git -C "$root" diff --quiet HEAD -- "$notes_rel" 2>/dev/null; then
+            notes_ok="uncommitted"
+        else
+            notes_ok="yes"
+            echo "Release notes: $notes_rel"
+        fi
+        if [ "$notes_ok" != "yes" ]; then
+            if $dry_run; then
+                echo -e "${YELLOW}Release notes $notes_rel: $notes_ok${NC} (a real run would refuse)"
+            else
+                echo -e "${RED}REFUSING to release $next:${NC} release notes $notes_rel are $notes_ok." >&2
+                echo "  Write human-readable notes for consumers (summary, highlights, behaviour changes," >&2
+                echo "  how it was tested, known issues, upgrading; see the earlier docs/releases/*-notes.md)," >&2
+                echo "  commit them, and show them to the operator with the release question (T-4899)." >&2
+                echo "  No tag, VERSION or master change was made." >&2
+                return 1
+            fi
+        fi
+    fi
+
     # ── VERSION reconciliation leg (T-3242, tag-as-canonical) ────────────
     # VERSION was derived from a resetting commit counter and DECREASED across
     # consecutive releases (1.6.176 → 1.6.72 between v1.6.767 and v1.6.768).
@@ -780,7 +814,13 @@ release_tag_and_release() {
     # Create GitHub Release (best-effort)
     if command -v gh >/dev/null 2>&1; then
         echo -e "${CYAN}Creating GitHub Release $next...${NC}"
-        local gh_flags=(--generate-notes --latest)
+        # T-4899: the human-readable notes lead; GitHub's generated changelog is
+        # appended, ranged from the previous release (not GitHub's own guess,
+        # which compared v1.8.12...v1.8.15 and skipped v1.8.14).
+        local gh_flags=(--title "$next" --generate-notes --notes-start-tag "$latest" --latest)
+        if [ "$notes_ok" = "yes" ]; then
+            gh_flags+=(--notes-file "$root/$notes_rel")
+        fi
         if [ -n "$gh_repo" ]; then
             gh_flags+=(--repo "$gh_repo")
         fi
