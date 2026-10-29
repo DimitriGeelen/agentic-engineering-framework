@@ -1,0 +1,114 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4885: Record v1.8.15 be.50 field reports (freeze exit)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-29T09:08:09Z
+# ============================================================================
+
+task_id: T-4885
+task_name: "Record v1.8.15 be.50 field reports (freeze exit)"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-28T23:12:49Z
+completed: 2026-10-29T09:07:54Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-29T00:13:47+01:00
+last_commit: 2026-10-29T10:07:52+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  record be.50 section — 055 G WORKS (698140ea), 1409 interim; freeze exit waits on 1409's full suite. 1409 be.50 row — known issue T-4870 re-applied, /arbeiter 200, 22 passed (c8c444c3). dimitri-mint-dev clean be.48 -> be.50 (18e26779) — 1 of 3 clean be.50 upgrades. dimitri-mint-dev row — pre-push slowness finding (T-4891). ring20-dashboard clean be.49 -> be.50, all four new fixes WORKS (c20890c2) — 2 of 3; T-4871 second occurrence. 832 clean be.48 -> be.50 (1e2df855) — 3 of 3 clean be.50 upgrades, rule b met; T-4892 filed post-freeze. ring20 clean be.48 -> be.50 (90ae5b45), 4th clean upgrade; 1409 be.50 suite running (8e7e0c39); T-4893 filed post-freeze. 1409 be.50 full suite — 0 new reds (c0131c69); release gate met, waits on T-4891 confirmation. T-4891 confirmed on be.51 by dimitri-mint-dev — push 14 s, was 5-6 min (79fe2789); 1409 refused push open. 1409 refused push diagnosed — audit lock contention with cron (T-3297 class), not a be.50 regression (8aefa204). ring20 clean be.50 -> be.51 (101f83e4), push time unchanged as expected. per-task field evidence for the 7 GitHub-linked fixes (rule b, not exercised by name). record operator release decision for v1.8.15. ACs done — be.50/be.51 reports recorded, v1.8.15 released
+
+# Key outcomes
+outcomes:
+  - 'docs/reports/field-test-v1.8.15-results.md has a be.50 section recording each be.50 report as it arrives (tester, from → to, doctor, own tests, verdicts, message ids), starting with 055''s point G (msg 698140ea) and 1409''s interim (8e456671, 3b77df39)'
+  - 'The freeze exit status line is updated after each report: what is still owed and by whom'
+  - 'Each reporter gets a short acknowledgement on their thread'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'per-task field evidence for the 7 GitHub-linked fixes (rule b, not exercised by name)'
+    source: git-mined
+  - description: 'ring20-dashboard clean be.49 -> be.50, all four new fixes WORKS (c20890c2) — 2 of 3; T-4871 second occurrence'
+    source: git-mined
+  - description: '1409 be.50 row — known issue T-4870 re-applied, /arbeiter 200, 22 passed (c8c444c3)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/releases/decisions.jsonl'
+  - '.tasks/active/T-4871-fw-runme-does-not-refuse-a-second-concur.md'
+  - '.tasks/active/T-4885-record-v1815-be50-field-reports-freeze-e.md'
+  - '.tasks/active/T-4892-warn-when-sidecardmaddresskeys-names-the.md'
+  - '.tasks/active/T-4893-fw-sidecar-alerts-counts-a-peers-own-aut.md'
+  - 'docs/reports/field-test-v1.8.15-results.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-29T00:13:47'
+    action: 'T-4885: record be.50 section — 055 G WORKS (698140ea), 1409 interim; freeze exit waits on 1409''s full suite'
+  - time: '2026-10-29T00:28:53'
+    action: 'T-4885: 1409 be.50 row — known issue T-4870 re-applied, /arbeiter 200, 22 passed (c8c444c3)'
+  - time: '2026-10-29T01:01:19'
+    action: 'T-4885: dimitri-mint-dev clean be.48 -> be.50 (18e26779) — 1 of 3 clean be.50 upgrades'
+  - time: '2026-10-29T01:03:33'
+    action: 'T-4885: dimitri-mint-dev row — pre-push slowness finding (T-4891)'
+  - time: '2026-10-29T01:20:33'
+    action: 'T-4885: ring20-dashboard clean be.49 -> be.50, all four new fixes WORKS (c20890c2) — 2 of 3; T-4871 second occurrence'
+  - time: '2026-10-29T01:21:41'
+    action: 'T-4885: 832 clean be.48 -> be.50 (1e2df855) — 3 of 3 clean be.50 upgrades, rule b met; T-4892 filed post-freeze'
+  - time: '2026-10-29T01:50:45'
+    action: 'T-4885: ring20 clean be.48 -> be.50 (90ae5b45), 4th clean upgrade; 1409 be.50 suite running (8e7e0c39); T-4893 filed post-freeze'
+  - time: '2026-10-29T02:42:41'
+    action: 'T-4885: 1409 be.50 full suite — 0 new reds (c0131c69); release gate met, waits on T-4891 confirmation'
+  - time: '2026-10-29T09:34:09'
+    action: 'T-4885: T-4891 confirmed on be.51 by dimitri-mint-dev — push 14 s, was 5-6 min (79fe2789); 1409 refused push open'
+  - time: '2026-10-29T09:36:39'
+    action: 'T-4885: 1409 refused push diagnosed — audit lock contention with cron (T-3297 class), not a be.50 regression (8aefa204)'
+  - time: '2026-10-29T09:46:24'
+    action: 'T-4885: ring20 clean be.50 -> be.51 (101f83e4), push time unchanged as expected'
+  - time: '2026-10-29T09:59:18'
+    action: 'T-4885: per-task field evidence for the 7 GitHub-linked fixes (rule b, not exercised by name)'
+  - time: '2026-10-29T10:01:11'
+    action: 'T-4885: record operator release decision for v1.8.15'
+  - time: '2026-10-29T10:07:52'
+    action: 'T-4885: ACs done — be.50/be.51 reports recorded, v1.8.15 released'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 14 commit(s), 595 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 595
+  commits: 15
+  files_changed: 9
+  lines_added: 1251
+  lines_removed: 19
+  footprint_refreshed_at: '2026-10-29T09:08:16Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4885-record-v1815-be50-field-reports-freeze-e.md
+generated_by: context-agent-hybrid
