@@ -1,8 +1,14 @@
 ---
 id: T-4904
-name: "Watchtower task detail page (/tasks/T-XXXX) shows task ids in the body as plain text; link them like the review page does"
+name: "Watchtower task detail page (/tasks/T-XXXX) shows task ids in the body as plain
+  text; link them like the review page does"
 description: >
-  Operator 2026-10-29 asked that task references be links everywhere, internally too. Checked live while doing T-4903: /review/T-4875 renders T-3621 and T-4866 as /tasks/ links (T-1575 render path), but /tasks/T-4884 shows its nine mentions of T-4890 as plain text. Need: the task detail page body (and its description line) uses the same task-id linking as the review page. Render-surface change: needs the [REVIEW] criterion and the visual verification table.
+  Operator 2026-10-29 asked that task references be links everywhere, internally too.
+  Checked live while doing T-4903: /review/T-4875 renders T-3621 and T-4866 as /tasks/
+  links (T-1575 render path), but /tasks/T-4884 shows its nine mentions of T-4890
+  as plain text. Need: the task detail page body (and its description line) uses the
+  same task-id linking as the review page. Render-surface change: needs the [REVIEW]
+  criterion and the visual verification table.
 
 status: captured
 workflow_type: build
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T16:18:08Z
-last_update: 2026-10-29T16:18:08Z
-date_finished: null
+last_update: '2026-10-29T16:30:52Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-29T16:30:34Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-29T16:30:52Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4904: Watchtower task detail page (/tasks/T-XXXX) shows task ids in the body as plain text; link them like the review page does
