@@ -409,7 +409,7 @@ bin/fw vendor self --check --task T-4906
 Older task files keep their `#` lines, so on GitHub only tasks created from now on benefit. In Watchtower, every task is fixed.
 
 **Evidence:**
-- Live page `/tasks/T-4884` serves `<code class="nohighlight">` (curl after restart; `bin/fw watchtower current` clean).
+- Live page http://192.168.10.107:3000/tasks/T-4884 serves `<code class="nohighlight">` (curl after restart; `bin/fw watchtower current` clean).
 - `tests/unit/t4906_verification_render.bats`, 4/4: no Markdown heading outside the comment; the gate extracts 0 commands from the template; a command below the comment is extracted; `nohighlight` is present.
 - Template-sync tests 10/10; the shipped-template index was regenerated.
 - Screenshots at 1024/1440/1920 with the Task Body expanded: `.context/visual/T-4906/verification-open@*.png`.

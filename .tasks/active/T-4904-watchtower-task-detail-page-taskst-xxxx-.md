@@ -385,7 +385,7 @@ bin/fw vendor self --check --task T-4904
 **Rationale:** The task page now links every task id in its body to that task, in every section, as the review page already did. The change only wraps ids in links: the text is otherwise byte-identical, HTML stays escaped, a path that contains a task id stays one path, and ids already inside a link are not linked twice.
 
 **Evidence:**
-- Live page `/tasks/T-4884` shows T-4890 as a link 5 times (curl after restart; `bin/fw watchtower current` clean).
+- Live page http://192.168.10.107:3000/tasks/T-4884 shows T-4890 as a link 5 times (curl after restart; `bin/fw watchtower current` clean).
 - `tests/unit/test_task_body_links_t4904.py`, 5/5, including "text unchanged apart from the links".
 - The 26 existing web test files touching the task page pass, 326/326.
 - Screenshots at 1024/1440/1920 with the Task Body expanded: `.context/visual/T-4904/body-links-open@*.png`.
