@@ -51305,3 +51305,57 @@ scan_id: R-0f188270
 task_id: T-4902
 payload:
   task_file: .tasks/active/T-4902-reviewer-pass-judges-a-tasks-verificatio.md
+---
+kind: scan_emitted
+timestamp: '2026-10-29T20:50:00Z'
+scan_id: R-8351508e
+task_id: T-4904
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-29T20:50:00Z'
+scan_id: R-8351508e
+task_id: T-4904
+payload:
+  task_file: .tasks/active/T-4904-watchtower-task-detail-page-taskst-xxxx-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-29T20:51:54Z'
+scan_id: R-79320e57
+task_id: T-4906
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-29T20:51:54Z'
+scan_id: R-79320e57
+task_id: T-4906
+payload:
+  task_file: .tasks/active/T-4906-watchtower-task-page-renders-the-templat.md
+---
+kind: scan_emitted
+timestamp: '2026-10-29T22:54:08Z'
+scan_id: R-27897e6a
+task_id: T-4870
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-29T22:54:08Z'
+scan_id: R-27897e6a
+task_id: T-4870
+payload:
+  task_file: .tasks/active/T-4870-fw-upgrade-silently-drops-a-consumers-lo.md

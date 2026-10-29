@@ -1,0 +1,99 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4870: fw upgrade silently drops a consumer's local block inside a vendored file (1409 lost its blueprint registration)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-29T22:54:23Z
+# ============================================================================
+
+task_id: T-4870
+task_name: "fw upgrade silently drops a consumer's local block inside a vendored file (1409 lost its blueprint registration)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-28T11:13:28Z
+completed: 2026-10-29T22:53:35Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-10-28T12:13:29+01:00
+last_commit: 2026-10-29T23:41:58+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file (post-freeze) — upgrade drops a consumer's local block silently (1409 msg c5d95213). record second silent loss of 1409's local block on be.50 (P-010); file T-4889 workers page as post-freeze backlog. four-part context, design (loud by default, fail opt-in, doctor WARN), ACs. WIP (untested) — on_missing parsed and carried in the plan; lost markers collected; next steps recorded in the task. lost in-file patches — ACTION REQUIRED block at the end of vendor/upgrade, fw doctor WARN, on_missing: fail opt-in. refresh vendored copies
+
+# Key outcomes
+outcomes:
+  - 'Reproduced: a fixture consumer with an `in_file:` marker in a vendored file loses the block on `fw vendor`, and the run exits 0 with only a mid-log WARN'
+  - 'Missing markers end the vendor/upgrade output with an ACTION REQUIRED block naming each file, marker, pre-vendor copy (`.context/working/vendor-backup/<ts>/…`) and a re-apply hint'
+  - '`.fwvendor-preserve.yaml` accepts `on_missing: fail` (default `warn`): with `fail`, `fw vendor` / `fw upgrade` exit non-zero after the vendor has completed (no rollback); with `warn` or unset, the exit code is unchanged'
+  - '`fw doctor` WARNs for every declared `in_file:` marker missing from the vendored file, naming file and marker; silent when all are present or there is no manifest'
+  - 'Tests for the four cases above (warn default exit 0 plus banner; fail exits non-zero; doctor WARN while missing and silence once re-applied; no manifest unaffected); existing vendor_preserve and upgrade-simulation tests pass'
+  - 'Vendored copy synced; 1409 told how to opt in to `on_missing: fail`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/lib/vendor_preserve.py'
+  - '.tasks/active/T-4870-fw-upgrade-silently-drops-a-consumers-lo.md'
+  - '.tasks/active/T-4889-upstream-watchtower-workers-page-arbeite.md'
+  - 'bin/fw'
+  - 'lib/upgrade.sh'
+  - 'lib/vendor_preserve.py'
+  - 'tests/unit/t4870_in_file_patch_lost.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T12:13:29'
+    action: 'T-4870: file (post-freeze) — upgrade drops a consumer''s local block silently (1409 msg c5d95213)'
+  - time: '2026-10-29T00:28:24'
+    action: 'T-4870: record second silent loss of 1409''s local block on be.50 (P-010); file T-4889 workers page as post-freeze backlog'
+  - time: '2026-10-29T22:11:56'
+    action: 'T-4870: four-part context, design (loud by default, fail opt-in, doctor WARN), ACs'
+  - time: '2026-10-29T22:14:12'
+    action: 'T-4870: WIP (untested) — on_missing parsed and carried in the plan; lost markers collected; next steps recorded in the task'
+  - time: '2026-10-29T23:40:56'
+    action: 'T-4870: lost in-file patches — ACTION REQUIRED block at the end of vendor/upgrade, fw doctor WARN, on_missing: fail opt-in'
+  - time: '2026-10-29T23:41:58'
+    action: 'T-4870: refresh vendored copies'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 2140 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [post-freeze, upgrade, consumer]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2140
+  commits: 7
+  files_changed: 12
+  lines_added: 1430
+  lines_removed: 34
+  footprint_refreshed_at: '2026-10-29T22:54:32Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4870-fw-upgrade-silently-drops-a-consumers-lo.md
+generated_by: context-agent-hybrid
