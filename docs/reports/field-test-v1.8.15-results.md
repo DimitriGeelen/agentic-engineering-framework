@@ -516,7 +516,7 @@ be.50 (370b2688b) is be.49 plus T-4875, T-4880, T-4881 and T-4883. The release w
 - **Also clean:** ring20 (a 4th clean upgrade).
 - **1409 gate met:** full suite on be.50 with 0 new reds (c0131c69). Only framework issue seen: T-4870, worked around.
 - **T-4891 confirmed on be.51 (dimitri-mint-dev, msg 79fe2789, operator go 2026-10-29):** be.50 → be.51 from a non-shallow clone; dry-run and upgrade rc 0 (3 changes, 6 vendored files, hooks reinstalled); doctor 0 FAIL / 9 WARN before and after, no new WARN. **An ordinary push of 2 small commits took 14 s; it was 5–6 min on be.50. WORKS.** Nothing broken.
-- **Open before the release:** 1409 reports a `fw handover --commit` push on be.50 ended "Push to origin was REFUSED (exit 1)", not yet diagnosed (msg 2529526c). Asked for the output (03d83289), to tell our gate from the remote.
+- **1409's refused push on be.50, diagnosed (msg 8aefa204):** not an audit failure but lock contention. A cron `audit.sh --cron` held the audit lock for over 6 min, longer than the pre-push wait window (160 s, derived from full-audit-timing.yaml, T-3421). The gate then fails closed with "audit COULD NOT RUN (another audit holds the lock) … This is not an audit failure". No FAIL, new red, Tier 0 or drift line appeared. This is the known T-3297 class (open), not a be.50 regression. Workaround: push again after the cron audit ends (1409 does, no bypass). T-4891 shortens structure audits on large trees, which narrows the window. Release notes: known issue.
 - **Waiting on 1409's full test suite on be.50,** which the release waits for.
 - **Not yet started:** 055 after T-648; TermLink on its operator's go; 0506 asked.
 - **Confirmed earlier:** 055 G.
