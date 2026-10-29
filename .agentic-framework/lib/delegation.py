@@ -238,7 +238,28 @@ _ACT_IN_THE_WORLD_RE = re.compile(
         \benter\s+(your\s+)?(password|passphrase|api[- ]?key|token|credential) |
         \bpaste\s+(your\s+)?(api[- ]?key|token|secret)              |
         \b2fa\b | \bmfa\b | \bone-time\s+code\b                     |
-        \bssh\s+key\b | \bgpg\s+key\b
+        \bssh\s+key\b | \bgpg\s+key\b                                |
+        # ── T-4901: acting on a LIVE system, or creating/removing a real entity ──
+        #
+        # ring20-dashboard's T-510, "Add client on live :5000 succeeds … Expected:
+        # toast 'Client X added', QR modal", went to the reviewer: doing it creates
+        # a real WireGuard client. Neither family above names it: nothing is
+        # published or installed, yet the effect lives outside the repo and a
+        # static scan can neither perform nor observe it. Two shapes:
+        #   (a) the criterion acts on a live system ("on live", "live :5000",
+        #       "the live server");
+        #   (b) it creates, deletes or changes a real external entity (a client,
+        #       user, account, peer, certificate, VM, container, DNS record …).
+        # A false positive here only keeps a criterion with the operator, which is
+        # the safe direction (CLAUDE.md: "When in doubt, make it Human").
+        \bon\s+(the\s+)?live\b                                      |
+        \bin\s+(the\s+)?live\s+(system|service|server|site|environment|instance)\b |
+        \blive\s+(:\d+|port\s+\d+|service|server|system|site|host|instance|environment|endpoint|dashboard|app)\b |
+        \b(add|adds|added|adding|create|creates|created|creating|delete|deletes|deleted|deleting|
+           remove|removes|removed|removing|revoke|revokes|revoked|revoking|rotate|rotates|rotated|rotating|
+           provision|provisions|provisioned|provisioning|register|registers|registered|registering)
+           \s+(a\s+|an\s+|the\s+|new\s+|one\s+)?
+           (client|user|account|peer|certificate|cert|vm|container|domain|dns\s+record|wireguard|vpn|mailbox|subscription)s?\b
     )
     """
 )
