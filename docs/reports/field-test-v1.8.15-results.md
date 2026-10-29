@@ -515,7 +515,8 @@ be.50 (370b2688b) is be.49 plus T-4875, T-4880, T-4881 and T-4883. The release w
 - **Clean be.50 upgrades: 3 of 3, so rule b is met for T-4875, T-4880, T-4881 and T-4883:** dimitri-mint-dev; ring20-dashboard (all four WORKS); 832 (T-4880 WORKS).
 - **Also clean:** ring20 (a 4th clean upgrade).
 - **1409 gate met:** full suite on be.50 with 0 new reds (c0131c69). Only framework issue seen: T-4870, worked around.
-- **Still open:** dimitri-mint-dev's be.51 push timing, to confirm T-4891 (the only change from be.50 to be.51).
+- **T-4891 confirmed on be.51 (dimitri-mint-dev, msg 79fe2789, operator go 2026-10-29):** be.50 → be.51 from a non-shallow clone; dry-run and upgrade rc 0 (3 changes, 6 vendored files, hooks reinstalled); doctor 0 FAIL / 9 WARN before and after, no new WARN. **An ordinary push of 2 small commits took 14 s; it was 5–6 min on be.50. WORKS.** Nothing broken.
+- **Open before the release:** 1409 reports a `fw handover --commit` push on be.50 ended "Push to origin was REFUSED (exit 1)", not yet diagnosed (msg 2529526c). Asked for the output (03d83289), to tell our gate from the remote.
 - **Waiting on 1409's full test suite on be.50,** which the release waits for.
 - **Not yet started:** 055 after T-648; TermLink on its operator's go; 0506 asked.
 - **Confirmed earlier:** 055 G.
