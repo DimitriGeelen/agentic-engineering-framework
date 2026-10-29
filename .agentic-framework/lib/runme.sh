@@ -76,6 +76,13 @@ runme_new() {
             code="${sig#*:}"; sig="${sig%%:*}"
             echo "trap '_stopped=1; trap \"\" PIPE; _ev stopped \"\" $code $sig; printf \"%s RUNME STOPPED $sig\\n%s RUNME EXIT $code\\n\" \"\$(date +%T)\" \"\$(date +%T)\" >> \"\$LOG\" 2>/dev/null; exit $code' $sig"
         done
+        # T-4905: all steps run in ONE subshell. A step that sets its own EXIT trap (the
+        # mount/umount cleanup idiom) used to replace the EXIT trap above, so the run
+        # ended with no RUNME EXIT, no exit event and no tee flush (dimitri-mint-dev
+        # P-025). Inside the subshell the step's traps stay local and still fire when the
+        # steps end; cd/export still carry from step to step; the subshell's status is
+        # the script's status, which the EXIT trap above records.
+        echo '('
         echo 'set -euo pipefail'
         local c i=0
         for c in "${cmds[@]}"; do
@@ -84,6 +91,7 @@ runme_new() {
             printf 'echo "+ %s"\n' "$(printf '%s' "$c" | sed 's/[\\"$`]/\\&/g')"
             printf '%s\n' "$c"
         done
+        echo ')'
     } > "$script"
     chmod 755 "$script"
     echo "Run this (one line, copy-paste):"
