@@ -621,6 +621,14 @@ date_finished: null
 
 ## Context
 
+**Background / trigger:** <what happened, who reported it, evidence>
+
+**Problem / hypothesis:** <what we think is wrong and why>
+
+**Goal:** <what we are trying to achieve>
+
+**Expected outcome:** <what will be different when this is done>
+
 ## Acceptance Criteria
 
 - [ ] [Criterion]

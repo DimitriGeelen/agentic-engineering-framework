@@ -55,7 +55,14 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+<!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
+**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+
+**Problem / hypothesis:** <what we think is wrong and why>
+
+**Goal:** <what we are trying to achieve>
+
+**Expected outcome:** <what will be different when this is done>
 
 ## Acceptance Criteria
 
