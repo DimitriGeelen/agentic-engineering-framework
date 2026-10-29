@@ -164,7 +164,15 @@ def load_manifest(target):
         if isinstance(marks, str):
             marks = [marks]
         in_file.setdefault(_strip_prefix(f), []).extend(str(m) for m in marks if m)
-    return {"files": files, "in_file": in_file}
+    # T-4870: what a missing in_file marker after vendoring means for the exit code.
+    # `warn` (default) keeps vendor/upgrade green — for consumers that re-apply their
+    # patches after `fw upgrade` (ring20: 18, ring20-dashboard: 29) — but prints an
+    # ACTION REQUIRED block and leaves a record `fw doctor` reads. `fail` makes the
+    # vendor exit non-zero once it has completed (1409 asked for this).
+    on_missing = str(data.get("on_missing") or "warn").strip().lower()
+    if on_missing not in ("warn", "fail"):
+        raise SystemExit(f"ERROR  {MANIFEST}: on_missing must be 'warn' or 'fail', got {on_missing!r}")
+    return {"files": files, "in_file": in_file, "on_missing": on_missing}
 
 
 def preserved(rel, manifest):
@@ -324,7 +332,8 @@ def cmd_pre(a):
     excludes = read_lines(a.excludes)
     dest = os.path.join(a.target, VENDOR_DIR)
     manifest = load_manifest(a.target)
-    plan = {"backup": None, "restore": [], "in_file": {}, "manifest": bool(manifest)}
+    plan = {"backup": None, "restore": [], "in_file": {}, "manifest": bool(manifest),
+            "on_missing": (manifest or {}).get("on_missing", "warn")}
 
     if not os.path.isdir(dest):
         json.dump(plan, open(a.plan, "w"))
@@ -481,6 +490,7 @@ def cmd_post(a):
             print(f"  KEPT-LOCAL  {rel}")
 
     missing = 0
+    lost = []   # T-4870: (file, marker, pre-vendor copy) for the ACTION REQUIRED block
     for rel, marks in sorted(plan.get("in_file", {}).items()):
         path = os.path.join(dest, rel)
         try:
@@ -493,6 +503,7 @@ def cmd_post(a):
             if found:
                 continue
             missing += 1
+            lost.append({"file": f"{VENDOR_DIR}/{rel}", "marker": m, "copy": copy})
             if err:
                 print(f"  MARKER INVALID  {rel}: \"{m}\" — invalid regex: {err}; fix the "
                       f"pattern in {MANIFEST}; pre-vendor copy: {copy}")

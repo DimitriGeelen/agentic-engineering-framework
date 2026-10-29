@@ -109,6 +109,19 @@ bvp_scores_proposed:
 - Projects without the setting keep today's exit code, so the re-apply-afterwards flows keep working.
 - Tested end to end with 1409's shape.
 
+**Progress (2026-10-29, session ended at the budget limit):** WIP in `lib/vendor_preserve.py`, committed as WIP and UNTESTED:
+1. `load_manifest` parses and validates `on_missing: warn|fail`, defaulting to `warn`.
+2. `cmd_pre` puts `on_missing` into the plan.
+3. `cmd_post` collects `lost` entries (`{file, marker, copy}`) but does not use them yet.
+
+Next steps:
+- (a) In cmd_post, after the IN-FILE summary, set `rc = 5 if on_missing == "fail" else 4`. Add `_write_missing_record(target, lost, on_missing)`, which writes or removes `.context/working/vendor-missing-markers.json`, and `print_action_required(lost, on_missing)`.
+- (b) Add a `check --target` subcommand: re-check the manifest markers against the vendored files; exit 0 / 1 missing / 2 no manifest.
+- (c) `bin/fw` do_vendor (~line 1257): accept 4 and 5, re-print the block at the end, and return 4 only for 5.
+- (d) `lib/upgrade.sh` step 4b (~line 2549): rc 4 means "in-file patches lost (on_missing: fail)", not "partial", and the block is repeated in the final summary.
+- (e) A doctor check that calls `vendor_preserve.py check`.
+- (f) Tests, plus `bash -n` and the pytest suite, BEFORE the next push. Then vendor self.
+
 **Second occurrence (1409 pickup P-010, msg fe78b067, 2026-10-29):** the be.50 upgrade (their 97362b0b7) removed the 1409-local T-2754 block in `web/blueprints/__init__.py` again, and `/arbeiter` returned 404. The first time was ebdca0c0b (be.46+27). `.fwvendor-preserve.yaml` protects the files (`files:`), but `lib/vendor_preserve.py` post only reports a missing `in_file` marker and blocks nothing. 1409's three directions: (1) an upstream workers page, filed separately as T-4889; (2) a local-blueprint extension point, which is T-4649 extension point 1; (3) vendor_preserve post exits non-zero when an `in_file` marker disappears. Direction 3 is the narrow fix for this task.
 
 ## Acceptance Criteria
