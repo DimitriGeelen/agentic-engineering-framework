@@ -58,6 +58,19 @@ runme_new() {
         [ -n "$desc" ] && echo "# $desc"
         echo "LOG='$log'"
         echo "EVENTS='$events'"
+        # T-4871: one run at a time. A second start used to empty the running run's log
+        # and append to it in parallel (ring20-dashboard, twice). The lock is taken before
+        # the log is touched; mkdir + pid file, not flock, so macOS needs nothing extra.
+        echo "LOCKD='$dir/.running'"
+        echo 'if ! mkdir "$LOCKD" 2>/dev/null; then'
+        echo '    _lpid=$(cat "$LOCKD/pid" 2>/dev/null || true)'
+        echo '    if [ -n "$_lpid" ] && kill -0 "$_lpid" 2>/dev/null; then'
+        echo '        echo "runme '"$name"': already running (pid $_lpid) — not started again; see $LOG" >&2; exit 75'
+        echo '    fi'
+        echo '    echo "runme '"$name"': taking over a stale lock (pid ${_lpid:-unknown} is gone)" >&2'
+        echo '    rm -rf "$LOCKD"; mkdir "$LOCKD" 2>/dev/null || { echo "runme '"$name"': lost the race for $LOCKD; see $LOG" >&2; exit 75; }'
+        echo 'fi'
+        echo 'echo $$ > "$LOCKD/pid"'
         echo ': > "$LOG"'
         # T-3741: the script announces itself — every event goes to run.log AND, as one JSON
         # line, to the project's events.jsonl, so a watcher wakes on the event, not on a guess.
@@ -66,7 +79,7 @@ runme_new() {
         echo 'exec > >(while IFS= read -r l; do printf "%s %s\n" "$(date +%T)" "$l"; done | tee -a "$LOG") 2>&1'
         echo 'echo "RUNME START '"$name"' $(date -u +%FT%TZ) user=$(id -un) host=$(hostname)"; _ev start'
         echo '_stopped=""'
-        echo 'trap '"'"'rc=$?; [ -n "$_stopped" ] || { echo "RUNME EXIT $rc"; _ev exit "" "$rc"; }; sleep 0.3'"'"' EXIT'
+        echo 'trap '"'"'rc=$?; [ -n "$_stopped" ] || { echo "RUNME EXIT $rc"; _ev exit "" "$rc"; }; rm -rf "$LOCKD"; sleep 0.3'"'"' EXIT'
         # T-3741: a Ctrl-C, kill or closed terminal is STOPPED, not "ended without record".
         # The signal reaches the whole foreground group, so the tee that writes run.log is
         # already dead: echoing into it raises SIGPIPE and the script would die unrecorded.
