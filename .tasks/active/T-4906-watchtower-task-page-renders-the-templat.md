@@ -12,7 +12,7 @@ description: >
   comment lines and HTML comments are not shown as content. Render-surface change:
   [REVIEW] criterion and visual verification table.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T16:58:16Z
-last_update: '2026-10-29T17:00:58Z'
+last_update: '2026-10-29T20:32:59Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,6 +85,22 @@ bvp_scores_proposed:
       (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-29T20:32:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=0 (no-signal); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4906: Watchtower task page renders the template's '# ...' comment lines in ## Verification as huge bold H1 headings (and shows <!-- --> guidance blocks as raw text)
@@ -110,10 +126,18 @@ The root is that the template's guidance in Verification is written as `#` comme
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Watchtower: the raw Task Body block on /tasks/T-XXXX is not auto-highlighted (`class="nohighlight"`), so `#` guidance lines render at normal weight and size; checked in the served page
+- [ ] Template: the guidance in `## Verification` of .tasks/templates/default.md (and the create-task.sh fallback) is one HTML comment block instead of `# …` lines, so GitHub hides it; `extract_verification_block` returns no commands for an untouched template (the build-task refusal for "no verification command" still fires)
+- [ ] Tests: extractor on the new template yields 0 commands; a filled-in command below the comment still runs; the served task page carries `nohighlight` on the body block
+- [ ] Watchtower restarted and `bin/fw watchtower current` clean; vendored copy synced; template index regenerated
 
 ### Human
+- [ ] [REVIEW] Verification text reads at normal size in Watchtower and on GitHub
+  **Steps:**
+  1. Open http://192.168.10.107:3000/tasks/T-4906 and expand "Task Body"; scroll to `## Verification`.
+  2. Open a task created after this change on GitHub (for example T-4906's successor tasks), and look at its Verification section.
+  **Expected:** in both, the Verification guidance is not shown as large bold headings; commands read as normal text or code.
+  **If not:** note the page and a screenshot; the agent reopens T-4906.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -393,3 +417,6 @@ The root is that the template's guidance in Verification is written as `#` comme
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4906-watchtower-task-page-renders-the-templat.md
 - **Context:** Initial task creation
+
+### 2026-10-29T20:32:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -89,16 +89,34 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Background / trigger:** The operator asked, 2026-10-29, that task references be links everywhere ("can we please make this dynamic? I hope for the watchtower it is already the case"). While doing T-4903 (GitHub links) I checked Watchtower live. `/review/T-4875` links T-3621 and T-4866 to their task pages, but `/tasks/T-4884` shows its nine mentions of T-4890 as plain text.
+
+**Problem / hypothesis:** The task detail page builds its "Task Body" with `_link_task_body` (`web/blueprints/tasks.py`). That function links only file paths, only in `## Context` and `### Agent`, and escapes everything else as plain text. The review page goes through `render_markdown_safe`, which links task ids (T-1575). The two pages use different render paths, so a task id is a link on one and plain text on the other.
+
+**Goal:** On a task's own page, every task id in its body is a link to that task, like on the review page.
+
+**Expected outcome:**
+- In the Task Body on `/tasks/T-XXXX`, every `T-NNNN` becomes a link to `/tasks/T-NNNN`, in every section.
+- File-path linking in Context and Agent is unchanged.
+- No text is lost or double-escaped.
+- The operator sees the links on a live page.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `_link_task_body` (web/blueprints/tasks.py) links every `T-NNNN` in every section of the escaped body to `/tasks/T-NNNN`; file-path linking in Context/Agent is unchanged; ids inside an existing link or a path are not double-linked
+- [ ] Unit test: ids are linked in Context, ACs, Verification and Updates; HTML in the body stays escaped; a path containing a task id (`.tasks/active/T-12-x.md`) keeps a single path link
+- [ ] The served page /tasks/T-4884 shows T-4890 as a link (checked with curl after a Watchtower restart; `bin/fw watchtower current` clean); vendored copy synced
 
 ### Human
+- [ ] [REVIEW] Task ids on a task page are links and the page reads as before otherwise
+  **Steps:**
+  1. Open http://192.168.10.107:3000/tasks/T-4884 and expand "Task Body".
+  2. Click a mention of T-4890.
+  **Expected:** the task ids are clickable and open the right task; the rest of the body looks as before.
+  **If not:** note the task and the place in the body; the agent reopens T-4904.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
