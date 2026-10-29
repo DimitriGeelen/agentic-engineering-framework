@@ -10,6 +10,7 @@
 load ../test_helper
 
 setup() {
+    export FW_TEST_SKIP_TASK_CONTEXT_GATE=1  # T-4907: this file tests another gate; its fixture tasks carry no ## Context
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
     export PROJECT_ROOT="$TEST_TEMP_DIR"

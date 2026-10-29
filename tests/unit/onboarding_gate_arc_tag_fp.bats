@@ -22,6 +22,7 @@
 # positive — because "stop refusing things" would satisfy the first alone.
 
 load ../test_helper
+export FW_TEST_SKIP_TASK_CONTEXT_GATE=1  # T-4907: this file tests another gate; its fixture tasks carry no ## Context
 
 GATE="$FRAMEWORK_ROOT/agents/context/check-onboarding-gate.py"
 

@@ -1544,6 +1544,53 @@ if [ -n "$ACTIVE_FILE" ]; then
     esac
 fi
 
+# --- Task context gate (T-4907) ---
+# Operator 2026-10-29: tasks did not say why they exist — the reason sat in a one-line
+# frontmatter description and ## Context was the template's empty comment. Every
+# non-inception task must state Background / trigger, Problem / hypothesis, Goal and
+# Expected outcome before source is edited under it ("a, before work starts"). Placed
+# beside G-020 and with the same scope: task files themselves stay writable, which is
+# the remedy. lib/task_context.py is the one decision point. Exit 1 = incomplete;
+# any other result (no python3, unreadable file) lets the write through with a NOTE,
+# so a broken helper can never lock every session out of the repo.
+# Test-only opt-out: hook tests of OTHER gates use minimal fixture tasks with no
+# ## Context; they export FW_TEST_SKIP_TASK_CONTEXT_GATE=1. Honoured only under bats
+# (BATS_TEST_FILENAME set), so it does nothing in a real session.
+if [ -n "$ACTIVE_FILE" ] && [ "${WORKFLOW_TYPE:-}" != "inception" ] && \
+   [ -f "$FRAMEWORK_ROOT/lib/task_context.py" ] && \
+   ! { [ "${FW_TEST_SKIP_TASK_CONTEXT_GATE:-0}" = "1" ] && [ -n "${BATS_TEST_FILENAME:-}" ]; }; then
+    T4907_RC=0
+    T4907_OUT=$(python3 -I "$FRAMEWORK_ROOT/lib/task_context.py" "$ACTIVE_FILE" 2>/dev/null) || T4907_RC=$?
+    if [ "$T4907_RC" -eq 1 ]; then
+        if [ "$TOOL_NAME" = "Bash" ] && [ -n "${BASH_CMD:-}" ] && \
+           type is_task_metadata_update_command &>/dev/null && \
+           is_task_metadata_update_command "$BASH_CMD"; then
+            echo "NOTE: $CURRENT_TASK has no human-readable context (T-4907) — allowing metadata-only 'fw task update'." >&2
+            exit 0
+        fi
+        T4907_MISSING="${T4907_OUT#missing: }"
+        echo "" >&2
+        echo "BLOCKED: Task $CURRENT_TASK has no human-readable context (missing: $T4907_MISSING)." >&2
+        echo "" >&2
+        echo "Every task must say why it exists before source is edited under it" >&2
+        echo "(T-4907, operator ruling 2026-10-29: \"before work starts\")." >&2
+        echo "" >&2
+        echo "To unblock: edit the task file's ## Context with the Write/Edit TOOL (the task" >&2
+        echo "file is exempt) and fill all four parts in plain language:" >&2
+        echo "  **Background / trigger:** what happened, who reported it, evidence" >&2
+        echo "  **Problem / hypothesis:** what we think is wrong and why" >&2
+        echo "  **Goal:** what we are trying to achieve" >&2
+        echo "  **Expected outcome:** what will be different when this is done" >&2
+        echo "Or shelve it: $(_fw_cmd) task update $CURRENT_TASK --horizon later" >&2
+        echo "" >&2
+        echo "$(_blocked_subject)" >&2
+        echo "Policy: T-4907 (task context gate)" >&2
+        exit 2
+    elif [ "$T4907_RC" -ne 0 ]; then
+        echo "NOTE: task context check for $CURRENT_TASK could not run (rc=$T4907_RC) — write allowed (T-4907)." >&2
+    fi
+fi
+
 # --- Fabric awareness advisory (T-244) ---
 # If the file is a registered fabric component with dependents, show a note.
 # Advisory only — never blocks. Runs only for non-exempt paths.

@@ -15,6 +15,7 @@
 load ../git_fence
 
 setup() {
+    export FW_TEST_SKIP_TASK_CONTEXT_GATE=1  # T-4907: this file tests another gate; its fixture tasks carry no ## Context
     _FW_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
     GATE="$_FW_ROOT/agents/context/check-active-task.sh"
     GOV="$_FW_ROOT/agents/context/check-worktree-governance-write.sh"

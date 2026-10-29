@@ -311,7 +311,7 @@ The `horizon` field controls when a task should be considered for work:
 - Both produce an info message. No override needed — if you want to start work, it's `now`; if you shelve it, it's not `started-work`.
 
 **Body sections:**
-- Context (brief, link to design docs for substantial tasks)
+- Context — **four labelled parts, in plain language** (operator ruling 2026-10-29, T-4907): **Background / trigger** (what happened, who reported it, evidence), **Problem / hypothesis** (what we think is wrong and why), **Goal** (what we are trying to achieve), **Expected outcome** (what will be different when done). A reader opening the task must see why it exists without reading the messages that led to it. Enforced before work starts: `check-active-task.sh` refuses source edits under a non-inception task whose Context lacks any of the four (beside G-020; the task file itself stays writable). One decision point: `lib/task_context.py`. Inceptions are exempt (they carry a Problem Statement). Link design docs for substantial tasks.
 - Acceptance Criteria (checkboxes — completion gate P-010)
 - Verification (shell commands — verification gate P-011, see below)
 - Decisions (only when choosing between alternatives; most tasks have none)

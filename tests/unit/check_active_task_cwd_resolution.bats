@@ -16,6 +16,7 @@
 #   cwd=MAINFIX(==PROJECT_ROOT) active → allowed (exit 0) [no-op re-anchor]
 
 setup() {
+    export FW_TEST_SKIP_TASK_CONTEXT_GATE=1  # T-4907: this file tests another gate; its fixture tasks carry no ## Context
     # Hermetic: derive FRAMEWORK_ROOT from this test file's own location (L-490).
     FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     HOOK="$FRAMEWORK_ROOT/agents/context/check-active-task.sh"

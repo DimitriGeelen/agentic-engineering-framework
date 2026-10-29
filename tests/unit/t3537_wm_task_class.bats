@@ -21,6 +21,7 @@
 # the shape of OBS-560, where 34 green tests shipped a false green.
 
 setup() {
+    export FW_TEST_SKIP_TASK_CONTEXT_GATE=1  # T-4907: this file tests another gate; its fixture tasks carry no ## Context
     FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$BATS_TEST_DIRNAME/../.." && pwd)}"
     HOOK="$FRAMEWORK_ROOT/agents/context/check-active-task.sh"
     [ -f "$HOOK" ] || skip "hook script not found"

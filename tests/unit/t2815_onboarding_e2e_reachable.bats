@@ -16,6 +16,7 @@
 load ../test_helper
 
 setup() {
+    export FW_TEST_SKIP_TASK_CONTEXT_GATE=1  # T-4907: this file tests another gate; its fixture tasks carry no ## Context
     TEST_TEMP_DIR="$(mktemp -d -t fw-onboarding-e2e-XXXXXX)"
     export FRAMEWORK_ROOT
 }
@@ -96,6 +97,7 @@ YAML
         PATH="/usr/local/bin:/usr/bin:/bin" \
         HOME="$TEST_TEMP_DIR/home" \
         CLAUDECODE=1 \
+        FW_TEST_SKIP_TASK_CONTEXT_GATE=1 BATS_TEST_FILENAME="$BATS_TEST_FILENAME" \
         bash -c "echo '$input' | '$proj/.agentic-framework/agents/context/check-active-task.sh'"
     echo "hook exit: $status"
     echo "$output"

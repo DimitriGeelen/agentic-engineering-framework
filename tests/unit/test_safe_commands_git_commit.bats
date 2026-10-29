@@ -24,6 +24,7 @@
 #   - is_bash_safe_command("git commit")    → 1  (unit level — gate-handled)
 
 setup() {
+    export FW_TEST_SKIP_TASK_CONTEXT_GATE=1  # T-4907: this file tests another gate; its fixture tasks carry no ## Context
     # T-2462: resolve FRAMEWORK_ROOT from THIS test file's own location, not a
     # hardcoded /opt/999 fallback. Hardcoding main made the e2e tests exercise
     # main's hook+safe-commands even when run from a worktree checkout — so a fix
