@@ -129,7 +129,7 @@ The root is that the template's guidance in Verification is written as `#` comme
 - [x] Watchtower: the raw Task Body block on /tasks/T-XXXX is not auto-highlighted (`class="nohighlight"`), so `#` guidance lines render at normal weight and size; checked in the served page
 - [x] Template: the guidance in `## Verification` of .tasks/templates/default.md (and the create-task.sh fallback) is one HTML comment block instead of `# …` lines, so GitHub hides it; `extract_verification_block` returns no commands for an untouched template (the build-task refusal for "no verification command" still fires) — the fallback's Verification is empty, nothing to change there
 - [x] Tests: extractor on the new template yields 0 commands; a filled-in command below the comment still runs; the served task page carries `nohighlight` on the body block — t4906_verification_render.bats 4/4
-- [ ] Watchtower restarted and `bin/fw watchtower current` clean; vendored copy synced; template index regenerated
+- [x] Watchtower restarted and `bin/fw watchtower current` clean; vendored copy synced; template index regenerated
 
 ### Human
 - [ ] [REVIEW] Verification text reads at normal size in Watchtower and on GitHub

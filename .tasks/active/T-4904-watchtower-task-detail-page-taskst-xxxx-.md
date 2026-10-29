@@ -107,7 +107,7 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] `_link_task_body` (web/blueprints/tasks.py) links every `T-NNNN` in every section of the escaped body to `/tasks/T-NNNN`; file-path linking in Context/Agent is unchanged; ids inside an existing link or a path are not double-linked
 - [x] Unit test: ids are linked in Context, ACs, Verification and Updates; HTML in the body stays escaped; a path containing a task id (`.tasks/active/T-12-x.md`) keeps a single path link — test_task_body_links_t4904.py 5/5 (incl. text unchanged apart from the links); 26 existing web test files, 326/326
-- [ ] The served page /tasks/T-4884 shows T-4890 as a link (checked with curl after a Watchtower restart; `bin/fw watchtower current` clean); vendored copy synced
+- [x] The served page /tasks/T-4884 shows T-4890 as a link (checked with curl after a Watchtower restart; `bin/fw watchtower current` clean); vendored copy synced — 5 links to T-4890 on the live page
 
 ### Human
 - [ ] [REVIEW] Task ids on a task page are links and the page reads as before otherwise
