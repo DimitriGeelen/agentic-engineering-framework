@@ -51269,3 +51269,21 @@ scan_id: R-6e721f9b
 task_id: T-4908
 payload:
   task_file: .tasks/active/T-4908-a-syntax-error-in-a-pretooluse-gate-hook.md
+---
+kind: scan_emitted
+timestamp: '2026-10-29T19:15:59Z'
+scan_id: R-3765697d
+task_id: T-4905
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-29T19:15:59Z'
+scan_id: R-3765697d
+task_id: T-4905
+payload:
+  task_file: .tasks/active/T-4905-fw-runme-a-step-that-sets-its-own-exit-t.md
