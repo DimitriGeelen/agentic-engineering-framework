@@ -1,0 +1,119 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4907: Every task carries a human-readable context: background/trigger, problem or hypothesis, goal, expected outcome — template sections plus a structural gate
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-29T18:09:00Z
+# ============================================================================
+
+task_id: T-4907
+task_name: "Every task carries a human-readable context: background/trigger, problem or hypothesis, goal, expected outcome — template sections plus a structural gate"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-29T16:58:28Z
+completed: 2026-10-29T18:08:41Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-29T18:07:01+01:00
+last_commit: 2026-10-29T19:08:39+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context in the new format, ACs, operator decision (gate before work starts). every task states background, problem, goal and expected outcome; source edits refused until it does (operator ruling: before work starts). vendor self — task_context, template, hook, create-task. ACs done; T-4908 filed (hook syntax error locks the repo) with full context
+
+# Key outcomes
+outcomes:
+  - '.tasks/templates/default.md `## Context` carries four labelled lines with placeholder text: **Background / trigger:**, **Problem / hypothesis:**, **Goal:**, **Expected outcome:**'
+  - 'A shared check (lib/task_context.py, CLI + import) says a task''s context is complete when the section holds all four labels, each followed by real text. Placeholder text is `<…>`-only, empty, or a copy of the template; HTML comments are ignored. Inception tasks are exempt'
+  - 'agents/context/check-active-task.sh refuses source writes under a non-inception task whose context is incomplete, next to the G-020 AC check, with a block message naming the missing parts and the remedy (Edit tool on the task file, which stays exempt); metadata-only `fw task update` stays allowed, as for G-020 — fails open (NOTE) if the helper cannot run, so it cannot lock the repo'
+  - 'Tests: complete context passes; each missing label blocks; placeholder-only blocks; HTML comments ignored; inception exempt; the hook blocks a source write and allows a .tasks/ edit — test_task_context_t4907.py 12/12, t4907_context_gate.bats 6/6 (incl. the test-only opt-out doing nothing outside bats)'
+  - 'CLAUDE.md §Task System documents the four parts and the gate (T-4907, operator ruling 2026-10-29)'
+  - 'Vendored copy synced; existing gate tests (G-020 / check-active-task) still pass — all 64 hook test files pass; 17 that test other gates opt out explicitly under bats (`FW_TEST_SKIP_TASK_CONTEXT_GATE=1`, ignored outside bats)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'ACs done; T-4908 filed (hook syntax error locks the repo) with full context'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/.tasks/templates/default.md'
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.agentic-framework/agents/task-create/create-task.sh'
+  - '.agentic-framework/lib/task_context.py'
+  - '.agentic-framework/lib/upgrade_template_shipped.py'
+  - '.tasks/active/T-4907-every-task-carries-a-human-readable-cont.md'
+  - '.tasks/active/T-4908-a-syntax-error-in-a-pretooluse-gate-hook.md'
+  - '.tasks/templates/default.md'
+  - 'CLAUDE.md'
+  - 'agents/context/check-active-task.sh'
+  - 'agents/task-create/create-task.sh'
+  - 'lib/task_context.py'
+  - 'lib/upgrade_template_shipped.py'
+  - 'tests/unit/check_active_task_cwd_resolution.bats'
+  - 'tests/unit/check_active_task_switch_focus.bats'
+  - 'tests/unit/drift_gate_not_shadowed_by_safelist.bats'
+  - 'tests/unit/focus_drift_gate.bats'
+  - 'tests/unit/inception_open_questions_gate.bats'
+  - 'tests/unit/onboarding_gate_arc_tag_fp.bats'
+  - 'tests/unit/onboarding_gate_owner_human_exempt.bats'
+  - 'tests/unit/t2815_onboarding_e2e_reachable.bats'
+  - 'tests/unit/t2944_g020_comment_strip.bats'
+  - 'tests/unit/t3179_partial_complete_commit.bats'
+  - 'tests/unit/t3537_wm_task_class.bats'
+  - 'tests/unit/t4182_closure_commit_drift.bats'
+  - 'tests/unit/t4266_init_bootstrap_advice_focus.bats'
+  - 'tests/unit/t4639_git_config_write_gate.bats'
+  - 'tests/unit/t4820_worktree_focus_deadlock.bats'
+  - 'tests/unit/t4825_focus_drift_body_is_data.bats'
+  - 'tests/unit/t4907_context_gate.bats'
+  - 'tests/unit/test_safe_commands_git_commit.bats'
+  - 'tests/unit/test_task_context_t4907.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-29T18:07:01'
+    action: 'T-4907: context in the new format, ACs, operator decision (gate before work starts)'
+  - time: '2026-10-29T19:07:37'
+    action: 'T-4907: every task states background, problem, goal and expected outcome; source edits refused until it does (operator ruling: before work starts)'
+  - time: '2026-10-29T19:07:57'
+    action: 'T-4907: vendor self — task_context, template, hook, create-task'
+  - time: '2026-10-29T19:08:39'
+    action: 'T-4907: ACs done; T-4908 filed (hook syntax error locks the repo) with full context'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 70 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [governance, task-template, usability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 70
+  commits: 6
+  files_changed: 36
+  lines_added: 1811
+  lines_removed: 19
+  footprint_refreshed_at: '2026-10-29T18:09:03Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4907-every-task-carries-a-human-readable-cont.md
+generated_by: context-agent-hybrid
