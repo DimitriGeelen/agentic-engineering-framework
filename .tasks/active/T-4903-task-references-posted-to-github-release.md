@@ -98,13 +98,13 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] lib/gh_links.py `link_task_ids(text, root, ref, repo)` turns every bare `T-NNNN` into `[T-NNNN](https://github.com/<repo>/blob/<ref>/<path to the task file at ref>)`; it leaves ids alone inside code spans, fenced code blocks, existing links and URLs, and leaves an id unlinked when no task file exists at that ref
-- [ ] Every GitHub post made by lib/issues.py (stage, release, close and close-note comments) passes through it, at an immutable ref: a commit already on the GitHub remote
-- [ ] `fw release` passes the notes file through it at the new release tag before `gh release create --notes-file`
-- [ ] Unit tests: linking, the left-alone cases, a missing task, and the issues and release wiring (gh stubbed)
-- [ ] The v1.8.15 GitHub release body is re-published with linked task ids (operator already approved the text; only links added)
-- [ ] Watchtower still renders bare T-NNNN as /tasks/T-NNNN links (T-1575), checked on a live page
-- [ ] Vendored copy synced
+- [x] lib/gh_links.py `link_task_ids(text, root, ref, repo)` turns every bare `T-NNNN` into `[T-NNNN](https://github.com/<repo>/blob/<ref>/<path to the task file at ref>)`; it leaves ids alone inside code spans, fenced code blocks, existing links and URLs, and leaves an id unlinked when no task file exists at that ref
+- [x] Every GitHub post made by lib/issues.py (stage, release, close and close-note comments) passes through it, at an immutable ref: a commit already on the GitHub remote — all of them go through `_gh(["issue","comment",…])`, which links the body at the commit of the GitHub remote's bleeding-edge
+- [x] `fw release` passes the notes file through it at the new release tag before `gh release create --notes-file`
+- [x] Unit tests: linking, the left-alone cases, a missing task, and the issues and release wiring (gh stubbed) — test_gh_links_t4903.py 11/11, t4903_release_notes_task_links.bats 1/1; the issues suites (180 tests) pass after two template assertions accept the linked form
+- [x] The v1.8.15 GitHub release body is re-published with linked task ids (operator already approved the text; only links added) — 90 distinct ids, 109 links, none left plain; a sampled link (T-4891) returns 200
+- [x] Watchtower still renders bare T-NNNN as /tasks/T-NNNN links (T-1575), checked on a live page — yes on /review/T-4875 (T-3621, T-4866 linked); NOT on the task detail page /tasks/T-4884 (plain text), filed as T-4904
+- [x] Vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,6 +289,10 @@ cost_estimate_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+
+python3 -m pytest -q tests/unit/test_gh_links_t4903.py > /tmp/.t4903.out 2>&1
+bats tests/unit/t4903_release_notes_task_links.bats > /tmp/.t4903b.out 2>&1
+bin/fw vendor self --check --task T-4903
 
 ## RCA
 
