@@ -273,9 +273,93 @@ _fw_has_process_subst() {
     return 1
 }
 
+# --- T-4792: command substitutions on a line -----------------------------------
+# _fw_command_substitutions CMD emits the inner text of every top-level `$(…)` and
+# backtick substitution in CMD that bash would run, each NUL-terminated, then a final
+# "\x01OK" record when the whole line was read. Single-quoted text is literal; inside
+# double quotes `$(…)` still runs; `\$(` is escaped; `$((` is arithmetic (its contents
+# are still scanned, so a substitution nested inside arithmetic is found). An
+# unbalanced `$(` or backtick ends without the OK record, and the caller refuses.
+_fw_command_substitutions() {
+    python3 -I -c '
+import sys
+s = sys.argv[1]
+out = []
+def close_paren(i):
+    depth, sq, dq = 1, False, False
+    while i < len(s):
+        c = s[i]
+        if sq:
+            if c == "\x27": sq = False
+        elif c == "\\":
+            i += 1
+        elif c == "\x22":
+            dq = not dq
+        elif c == "\x27" and not dq:
+            sq = True
+        elif not dq and c == "(":
+            depth += 1
+        elif not dq and c == ")":
+            depth -= 1
+            if depth == 0:
+                return i
+        elif dq and s.startswith("$(", i):
+            j = close_paren(i + 2)
+            if j < 0:
+                return -1
+            i = j
+        i += 1
+    return -1
+i, sq, dq = 0, False, False
+while i < len(s):
+    c = s[i]
+    if sq:
+        if c == "\x27": sq = False
+        i += 1; continue
+    if c == "\\":
+        i += 2; continue
+    if c == "\x22":
+        dq = not dq; i += 1; continue
+    if c == "\x27" and not dq:
+        sq = True; i += 1; continue
+    if s.startswith("$((", i):
+        i += 3; continue
+    if s.startswith("$(", i):
+        j = close_paren(i + 2)
+        if j < 0:
+            sys.exit(0)
+        out.append(s[i + 2:j]); i = j + 1; continue
+    if c == "`":
+        j = i + 1
+        while j < len(s) and s[j] != "`":
+            j += 2 if s[j] == "\\" else 1
+        if j >= len(s):
+            sys.exit(0)
+        out.append(s[i + 1:j]); i = j + 1; continue
+    i += 1
+for o in out:
+    sys.stdout.write(o + "\0")
+sys.stdout.write("\x01OK\0")
+' "$1" 2>/dev/null
+}
+
 is_bash_safe_command() {
     # T-4511: process substitution runs a command anywhere on the line.
     _fw_has_process_subst "$1" && return 1
+    # T-4792 (OBS-185): a command substitution runs its command too. `echo $(bash x)`
+    # used to read as safe because only the outer `echo` was judged. Every `$(…)` and
+    # backtick substitution outside single quotes must itself be read-only, judged by
+    # this same function (so nesting and chains inside it are covered). Arithmetic
+    # `$((…))` is not a substitution. Anything the extractor cannot parse fails closed.
+    if [[ "$1" == *'$('* || "$1" == *'`'* ]]; then
+        local _sub _subs_ok=""
+        while IFS= read -r -d '' _sub; do
+            if [ "$_sub" = $'\x01OK' ]; then _subs_ok=1; continue; fi
+            [[ "$_sub" =~ ^[[:space:]]*$ ]] && continue
+            is_bash_safe_command "$_sub" || return 1
+        done < <(_fw_command_substitutions "$1")
+        [ -n "$_subs_ok" ] || return 1
+    fi
     local _cmd="$1" _seg _n=0
     # T-4343: the cwd the git arm resolves -C / --git-dir against. Top level starts at
     # the shell's cwd from the hook payload. A nested call (F-15 `X=$(...)`) inherits
@@ -1927,7 +2011,7 @@ _fw_single_command_is_safe() {
             _fw_fetch_writes_file "$cmd" && return 1
             return 0
             ;;
-        date|uname|ps|ss|id|whoami|hostname|env|printenv|df|du|free|uptime|lsb_release|nproc)
+        date|uname|ps|ss|id|whoami|hostname|env|printenv|df|du|free|uptime|lsb_release|nproc|pwd)
             return 0
             ;;
 
