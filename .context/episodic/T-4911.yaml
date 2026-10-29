@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4911: Record dimitri-mint-dev's completed v1.8.15 field test (G budget relaunch, T-4781)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-29T23:12:46Z
+# ============================================================================
+
+task_id: T-4911
+task_name: "Record dimitri-mint-dev's completed v1.8.15 field test (G budget relaunch, T-4781)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-29T23:10:26Z
+completed: 2026-10-29T23:12:27Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-30T00:12:25+01:00
+last_commit: 2026-10-30T00:12:25+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  record dimitri-mint-dev's completed v1.8.15 field test (G budget relaunch WORKS, T-4781 WORKS); T-4912 filed for the cosmetic -c
+
+# Key outcomes
+outcomes:
+  - '`docs/reports/field-test-v1.8.15-results.md` has a section citing msg 400f6ed2 with G WORKS, T-4781 WORKS, the glm-5.2 finding (not a framework default) and the cosmetic `-c` finding'
+  - 'The cosmetic `-c` finding is filed as its own task (horizon later) — T-4912'
+  - 'A reply has been delivered (client_msg_id 2561045b, RECEIVED) to dimitri-mint-dev in conversation aef-v1815-be3: thanks, where the result is recorded, and that the glm-5.2 pin is in their own copy'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4911-record-dimitri-mint-devs-completed-v1815.md'
+  - '.tasks/active/T-4912-claude-fw-after-a-fresh-budget-restart-p.md'
+  - 'docs/reports/field-test-v1.8.15-results.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-30T00:12:25'
+    action: 'T-4911: record dimitri-mint-dev''s completed v1.8.15 field test (G budget relaunch WORKS, T-4781 WORKS); T-4912 filed for the cosmetic -c'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 6
+  lines_added: 853
+  lines_removed: 4
+  footprint_refreshed_at: '2026-10-29T23:12:56Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4911-record-dimitri-mint-devs-completed-v1815.md
+generated_by: context-agent-hybrid
