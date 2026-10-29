@@ -4,10 +4,10 @@ name: "python3 -c write forms skip the Bash task gate entirely"
 description: >
   Promoted from observation OBS-200
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
-horizon: later
+horizon: now
 tags: [post-freeze]
 components: []
 related_tasks: []
@@ -38,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-26T23:03:17Z
-last_update: 2026-10-28T15:18:39Z
+last_update: 2026-10-29T18:20:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,6 +100,17 @@ bvp_scores_proposed:
 
 ## Context
 
+**Background / trigger:** Observation OBS-200 (2026-10-26, quoted below) measured it against the real hook. With no active task, `python3 -c` commands that write a file via `pathlib.Path(x).write_text()`, `.write_bytes()` or `os.replace()` were allowed (rc=0), while the redirect control was refused (rc=2). The operator ranked this gate hole first after the v1.8.15 release (walk Q2b, answer b).
+
+**Problem / hypothesis:** `agents/context/lib/safe-commands.sh` (the `python3|python` branch of the read-only classifier) treats `python3 -c …` as a read unless the script text matches a short list of write patterns (`open(…'w'`, `.write(`, `shutil.`, `os.rename/remove/unlink/makedirs/system`). Anything not on that list, such as `write_text`, `write_bytes`, `os.replace` (the framework's own atomic-write idiom), `subprocess`, `Path.unlink` or `exec(…)`, passes as a read. The hook then exits 0 before the no-active-task check, G-020, the context gate and the focus-drift gate. A blocklist over an interpreter's source text cannot be completed.
+
+**Goal:** An inline Python script can never skip the task gates by being called a read.
+
+**Expected outcome:**
+- `python3 -c` / `python -c` is no longer on the read-only list. It is judged like any other command that may write: allowed when a task is active and its gates pass, refused with no active task.
+- The three measured forms, plus `subprocess` and `exec` variants, are refused without a task.
+- With an active task, ordinary `python3 -c "import json; …"` still runs.
+
 Source: observation OBS-200 (.context/inbox.yaml):
 
 > OBS: python3 -c write forms skip the Bash task gate entirely. is_bash_safe_command safe-lists 'python3 -c' behind a TEXTUAL write-indicator deny-list (open(...,'w' | .write( | shutil. | os.(rename|remove|unlink|makedirs|system)). Three common write idioms match none of it and also carry no shell redirect, so has_bash_write_pattern returns false too — both predicates pass and check-active-task.sh exits 0 before the no-active-task check, the task-is-active check, G-020 and the T-1730 focus-drift gate. MEASURED against the real hook in a sandbox with current_task: null — pathlib.Path(x).write_text(), .write_bytes(), and os.replace() all returned rc=0; the redirect control returned rc=2, so the harness demonstrably reaches and fires the gate. Note os.replace is the framework's OWN documented atomic-write idiom (T-100191, L-493), so this is not an exotic form. Same family as OBS-184/185 (chain-splitting) and the Tier 0 scope boundary: a textual predicate over a command string cannot see semantics. Failure direction here is the DANGEROUS one — false negative, gates skipped, no audit trail. Deny-list is unclosable by enumeration; the fix direction is to stop safe-listing an interpreter, or require -c scripts to be write-free by construction rather than by pattern.
@@ -108,8 +119,11 @@ Source: observation OBS-200 (.context/inbox.yaml):
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduced on current code: with no active task, the hook allows `python3 -c` scripts using `Path(..).write_text`, `.write_bytes` and `os.replace` (rc 0)
+- [ ] agents/context/lib/safe-commands.sh no longer classifies `python3 -c` / `python -c` as read-only (the textual write-indicator blocklist is removed, not extended)
+- [ ] With no active task the hook refuses all three measured forms plus a `subprocess` and an `exec(...)` form; with an active task whose gates pass, an ordinary `python3 -c "import json; print(1)"` is allowed
+- [ ] Existing safe-commands / hook tests updated where they pinned `python3 -c` as safe, each change stated; regression test file added
+- [ ] Vendored copy synced; owner set back to agent (it was human only because the task was promoted from an observation)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -395,3 +409,7 @@ Source: observation OBS-200 (.context/inbox.yaml):
 ### 2026-10-28T15:18:39Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 - **Change:** tags: +post-freeze
+
+### 2026-10-29T18:20:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)

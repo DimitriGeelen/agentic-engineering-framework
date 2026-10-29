@@ -91,7 +91,20 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Background / trigger:** The operator, 2026-10-29: the text under the Verification heading is "a huge font and bold in comparison with the other ones. That doesn't look too well." Asked where, the answer was both: on GitHub (the task file page) and in Watchtower, on every task.
+
+**Problem / hypothesis:** Confirmed causes, one per surface:
+- **Watchtower:** `web/templates/base.html:1073` runs `hljs.highlightAll()` on every `<pre><code>`. It auto-detects the raw Task Body as Markdown, and every `# …` guidance line in `## Verification` becomes an `hljs-section` (bold, coloured; the theme sets `font-weight:700`). The body itself is escaped (`_link_task_body`), so the styling is the highlighter's, not the page's.
+- **GitHub:** it renders the task file as Markdown, so the same `# …` lines become real `<h1>` headings.
+
+The root is that the template's guidance in Verification is written as `#` comment lines inside a Markdown document.
+
+**Goal:** Verification reads as a short list of commands with quiet guidance, on GitHub and in Watchtower alike.
+
+**Expected outcome:**
+- In Watchtower, the Task Body is not auto-highlighted as Markdown, so guidance lines keep normal weight and size.
+- On GitHub, the template no longer produces H1 headings in Verification: the guidance becomes an HTML comment (hidden), or the commands sit in a fenced code block, with the P-011 completion gate taught to read that form and existing tasks still working.
+- The operator confirms both views.
 
 ## Acceptance Criteria
 
