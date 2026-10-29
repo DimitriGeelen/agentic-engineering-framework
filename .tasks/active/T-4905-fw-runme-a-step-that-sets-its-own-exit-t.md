@@ -14,7 +14,7 @@ description: >
   step in a subshell, minding steps that rely on cd/export carrying over. Regression:
   the repro logs body, cleanup and RUNME EXIT 0.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T16:53:34Z
-last_update: '2026-10-29T17:00:58Z'
+last_update: 2026-10-29T19:11:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,14 +93,27 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Background / trigger:** dimitri-mint-dev pickup P-025 (msg f927d2db, 2026-10-29, their T-201 / G-013). Two operator runmes, t192-snapshot-sizes and t195-dupes (2026-10-27), reached their DONE marker but logged no `RUNME EXIT`. Both began with the usual cleanup idiom `M=$(mktemp -d); trap "umount \"$M\"; rmdir \"$M\"" EXIT; mount …`. Their repro: `fw runme new x -- 'trap "echo cleanup" EXIT; echo body'` leaves run.log with only RUNME START and STEP 1/1.
+
+**Problem / hypothesis:** `lib/runme.sh` writes runme's own EXIT trap (print `RUNME EXIT rc`, log the exit event, `sleep 0.3` so the `tee` into run.log flushes) and then pastes every step into the same shell. A step that sets its own EXIT trap replaces runme's. So there is no `RUNME EXIT` and no exit event; `fw runme watch` waits until its timeout; `fw runme pending` says RUN ENDED WITHOUT RECORD, so a successful run looks killed; and without the flush the last output lines (here "body" and "cleanup") are lost.
+
+**Goal:** Whatever traps the operator's commands set, every runme run ends with its own record and complete output.
+
+**Expected outcome:**
+- All steps run together in one subshell. A step's traps stay inside it and still fire when the steps end.
+- `cd` and `export` still carry from step to step, as runme scripts rely on.
+- runme's EXIT, INT, TERM and HUP handling is untouched.
+- The repro logs body, cleanup and `RUNME EXIT 0`.
+- dimitri-mint-dev's T-201 verification passes after their next upgrade.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduced on current code with dimitri-mint-dev's repro (run.log lacks body, cleanup and RUNME EXIT)
+- [ ] lib/runme.sh generates the steps inside one subshell `( set -euo pipefail; …steps… )`; the exit status of the subshell is the script's exit status
+- [ ] Regression tests: the repro logs `body`, `cleanup` and `RUNME EXIT 0`; a failing step after the user's trap still logs the user's cleanup and `RUNME EXIT <non-zero>`; `cd` in step 1 still applies in step 2; an exported variable carries across steps
+- [ ] Existing runme tests pass; vendored copy synced; dimitri-mint-dev told the task id is fixed
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -382,3 +395,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4905-fw-runme-a-step-that-sets-its-own-exit-t.md
 - **Context:** Initial task creation
+
+### 2026-10-29T19:11:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
