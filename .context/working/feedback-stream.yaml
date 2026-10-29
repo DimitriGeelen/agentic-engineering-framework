@@ -51377,3 +51377,21 @@ scan_id: R-9b2a49f8
 task_id: T-4911
 payload:
   task_file: .tasks/active/T-4911-record-dimitri-mint-devs-completed-v1815.md
+---
+kind: scan_emitted
+timestamp: '2026-10-29T23:27:46Z'
+scan_id: R-d17c8472
+task_id: T-4871
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-29T23:27:46Z'
+scan_id: R-d17c8472
+task_id: T-4871
+payload:
+  task_file: .tasks/active/T-4871-fw-runme-does-not-refuse-a-second-concur.md

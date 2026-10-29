@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4871: fw runme does not refuse a second concurrent start of the same runme; two runs interleave one run.log
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-29T23:28:01Z
+# ============================================================================
+
+task_id: T-4871
+task_name: "fw runme does not refuse a second concurrent start of the same runme; two runs interleave one run.log"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-28T11:15:03Z
+completed: 2026-10-29T23:27:16Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-10-28T12:15:04+01:00
+last_commit: 2026-10-30T00:26:54+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file (post-freeze) — fw runme concurrent starts (ring20-dashboard msg 4c7cd097). a runme refuses a second concurrent start before touching run.log (mkdir lock + pid, stale takeover, released at exit). refresh vendored copies
+
+# Key outcomes
+outcomes:
+  - 'Generated `runme.sh` takes a per-runme lock before `: > "$LOG"`; a second concurrent start exits 75 with "already running (pid N)", leaves run.log untouched and writes no `start` event'
+  - 'The lock is released when the run ends normally, fails or is stopped by a signal; a stale lock (pid not alive) is taken over with a note'
+  - 'Tests: concurrent second start refused with the first log intact; sequential re-run works; stale lock taken over; lock released after a failing step; existing runme tests pass'
+  - 'ring20-dashboard told (they can drop their own flock workaround after the next be-tag) — msg 7f5d3fbb via the hub (HUB_ACCEPTED; receipt follows when they pick it up)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/runme.sh'
+  - '.tasks/active/T-4871-fw-runme-does-not-refuse-a-second-concur.md'
+  - 'lib/runme.sh'
+  - 'tests/unit/t4871_runme_single_run.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T12:15:04'
+    action: 'T-4871: file (post-freeze) — fw runme concurrent starts (ring20-dashboard msg 4c7cd097)'
+  - time: '2026-10-30T00:26:48'
+    action: 'T-4871: a runme refuses a second concurrent start before touching run.log (mkdir lock + pid, stale takeover, released at exit)'
+  - time: '2026-10-30T00:26:54'
+    action: 'T-4871: refresh vendored copies'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2172 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [post-freeze, runme]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2172
+  commits: 4
+  files_changed: 7
+  lines_added: 621
+  lines_removed: 14
+  footprint_refreshed_at: '2026-10-29T23:28:14Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4871-fw-runme-does-not-refuse-a-second-concur.md
+generated_by: context-agent-hybrid
