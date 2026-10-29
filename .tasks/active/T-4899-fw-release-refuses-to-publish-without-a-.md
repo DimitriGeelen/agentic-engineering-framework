@@ -89,7 +89,7 @@ bvp_scores_proposed:
 - [x] The GitHub release is created with `--notes-file docs/releases/<version>-notes.md` and `--notes-start-tag <previous release tag>`, so the changelog link compares the right range
 - [x] Unit test pins: missing notes → refusal with the path named, no tag created; present notes → the gh call gets --notes-file and the previous tag (gh stubbed) — tests/unit/t4899_release_notes_gate.bats, 6/6; the 11 existing release test files 104/104
 - [x] CLAUDE.md §Release-Train Branch Model states the rule: a release needs a human-readable notes file, reviewed by the operator with the release question
-- [ ] Vendored copy synced
+- [x] Vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
