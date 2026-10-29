@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4896: unit-suite.sh with a missing or empty suite dir reports rc 0 and overwrites LATEST.yaml, so pre-push passes on a run that tested nothing (055)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-29T14:05:17Z
+# ============================================================================
+
+task_id: T-4896
+task_name: "unit-suite.sh with a missing or empty suite dir reports rc 0 and overwrites LATEST.yaml, so pre-push passes on a run that tested nothing (055)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-29T12:20:29Z
+completed: 2026-10-29T14:04:48Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-29T15:04:33+01:00
+last_commit: 2026-10-29T15:04:46+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  unit-suite.sh with a missing or test-less suite dir is NOT EVALUATED (exit 3) and never replaces LATEST.yaml — no more empty-run green at pre-push. vendor self — unit-suite.sh. vendored AC ticked
+
+# Key outcomes
+outcomes:
+  - 'agents/audit/unit-suite.sh refuses with "NOT EVALUATED" and exit 3 when the suite dir does not exist or holds no test files (*.bats, test_*.py, *_test.py), before taking its lock or writing any report'
+  - 'An existing LATEST.yaml (and the dated report and LAST-COMPLETE.yaml) is left byte-identical by such a run'
+  - 'The message names the suite dir and tells a consumer to set FW_UNIT_SUITE_DIR as its cron line does'
+  - 'Regression test: missing dir and empty dir each exit 3 and leave a pre-existing LATEST.yaml untouched; a dir with one passing .bats file still runs and writes LATEST.yaml — tests/unit/t4896_unit_suite_empty_dir.bats 3/3; the 15 other files that drive unit-suite.sh pass (95 bats + 2 pytest)'
+  - 'Vendored copy synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/unit-suite.sh'
+  - '.tasks/active/T-4896-unit-suitesh-with-a-missing-or-empty-sui.md'
+  - 'agents/audit/unit-suite.sh'
+  - 'tests/unit/t4896_unit_suite_empty_dir.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-29T15:04:33'
+    action: 'T-4896: unit-suite.sh with a missing or test-less suite dir is NOT EVALUATED (exit 3) and never replaces LATEST.yaml — no more empty-run green at pre-push'
+  - time: '2026-10-29T15:04:39'
+    action: 'T-4896: vendor self — unit-suite.sh'
+  - time: '2026-10-29T15:04:46'
+    action: 'T-4896: vendored AC ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 104 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, unit-suite, false-green, field-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 104
+  commits: 4
+  files_changed: 7
+  lines_added: 262
+  lines_removed: 12
+  footprint_refreshed_at: '2026-10-29T14:05:22Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4896-unit-suitesh-with-a-missing-or-empty-sui.md
+generated_by: context-agent-hybrid
