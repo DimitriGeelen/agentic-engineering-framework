@@ -1563,8 +1563,11 @@ release.** Operator, verbatim: *"We are not going to start new development work 
 have tested everything and can do a proper release."* and *"new requests can come in, but
 they come on the backlog."*
 
-**State now: FREEZE ACTIVE** (entered 2026-10-28, for v1.8.15). Check this line, the
-handover's first section and `fw decisions` at session start.
+**State now: NO FREEZE.** The v1.8.15 freeze (entered 2026-10-28) was lifted by the
+operator on 2026-10-29, after v1.8.15 was released with its exit condition met (T-4895).
+First post-freeze work: T-4788 and T-4792 (operator ruling 2b). The rest of this section
+is the procedure for the next freeze. Check this line, the handover's first section and
+`fw decisions` at session start.
 
 | During the freeze | Allowed? |
 |---|---|

@@ -6582,3 +6582,38 @@ decisions:
     date: 2026-10-28
     task: T-4802
     rationale: "A passes the shared worker-contract vectors (22 pass, 0 fail); ring20's poold tests and a sealed end-to-end job exercise the parts they use; B/C prove AEF's own workers, a different question, and are new development during the freeze."
+
+  - id: D-941
+    decision: "the retry runs in the runner (`agents/audit/unit-suite.sh` `_finish`, through the same `_run_one` job: per-file TMPDIR, cap, env scrub), before the tree guard's after-snapshot; the decision of which files to retry and the recording are in a new helper `agents/audit/unit_suite_flaky.py`. The first run's reds stay in `failed` and the leg/runner exit codes are unchanged; the report gains `suspected_flaky` + `flake_retry`. The audit's only change: at pre-push with a readable baseline, a NEW red named in `suspected_flaky` counts as flaky (WARN) instead of new (FAIL)."
+    scope: project
+    date: 2026-10-28
+    task: T-4875
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-942
+    decision: "UNIT_SUITE_FLAKE_RETRY_MAX (default 5, 0 = off). When more files hold a NEW red than the cap, NONE is retried. Per-file: only a retry that finishes with rc 0 (st done; a fast-tier skip or a timeout is not a pass) downgrades, and then all of that file's NEW reds. Baselined reds (expired included) are never retried. No readable baseline (slow/perf tiers, the integration suite) = no retry. An interrupted run is not retried. In the audit's incomplete-LATEST fallback, a red LATEST recorded again is removed from the flaky set (it failed twice). flakes.jsonl is gitignored like runs.log (it points into the gitignored failures/ dir)."
+    scope: project
+    date: 2026-10-28
+    task: T-4875
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-943
+    decision: "fix now and cut be.51 with T-4891 only (operator, answer \"a, go ahead with be.51\"). dimitri-mint-dev re-checks its push time, and 1409 runs its pending full suite on be.51. T-4870 stays a known issue for after the release."
+    scope: project
+    date: 2026-10-29
+    task: T-4891
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-944
+    decision: "`git ls-files` for the two names; outside git, only `.context/` and `policy/`."
+    scope: project
+    date: 2026-10-29
+    task: T-4891
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-945
+    decision: "Release freeze for v1.8.15 lifted (T-4895)"
+    scope: project
+    date: 2026-10-29
+    task: T-4895
+    rationale: "Operator, 2026-10-29, verbatim: 'So then we can lift the freeze, right?' after confirming the exit condition was met (every active tester on be.48+ reported, no open failure; v1.8.15 released). First post-freeze work: T-4788 and T-4792."
