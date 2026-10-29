@@ -496,6 +496,20 @@ One row per project and build. A blank Msg means the id was not kept in the sess
 
 **Freeze exit status (2026-10-28 evening):** six of seven active testers are on be.48 or later with a clean upgrade report, which meets the operator's confirmation rule (b: clean full upgrades by three or more testers). Both FAILS reported in this round were fixed under the freeze (T-4872, T-4873) and confirmed by their reporters on be.49. Still missing: **1409**'s be.48+ upgrade report (partial report at about be.46: T-4841 WORKS; their lost local blueprint block is backlog T-4870). Open but not blocking: 055 G and dimitri-mint-dev G/T-4781 after their next restarts.
 
+### GitHub-linked fixes: field evidence per task (recorded 2026-10-29, T-4885)
+
+No tester exercised these seven fixes by name. They are confirmed under the operator's rule b: clean full upgrades by at least three testers confirm consumer-facing changes that have no specific verdict. Four testers upgraded cleanly to be.50 (dimitri-mint-dev, ring20-dashboard, 832, ring20) and two to be.51 (dimitri-mint-dev, ring20), each with doctor no worse and their own tests unchanged. The GitHub post still asks the submitter to confirm.
+
+| Task | Issue | Field verdict |
+|---|---|---|
+| T-4352 | #95 | WORKS (rule b: clean be.50 upgrades at 4 testers, be.51 at 2; not exercised by name) |
+| T-4353 | #96 | WORKS (rule b: clean be.50 upgrades at 4 testers, be.51 at 2; not exercised by name) |
+| T-4354 | #97 | WORKS (rule b: clean be.50 upgrades at 4 testers, be.51 at 2; not exercised by name) |
+| T-4356 | #99 | WORKS (rule b: clean be.50 upgrades at 4 testers, be.51 at 2; not exercised by name) |
+| T-4357 | #100 | WORKS (rule b: clean be.50 upgrades at 4 testers, be.51 at 2; not exercised by name) |
+| T-4358 | #101 | WORKS (rule b: clean be.50 upgrades at 4 testers, be.51 at 2; not exercised by name) |
+| T-4362 | #105 | WORKS (rule b: clean be.50 upgrades at 4 testers, be.51 at 2; not exercised by name) |
+
 ### be.50 — 1409, 055 (recorded 2026-10-29, T-4885)
 
 be.50 (370b2688b) is be.49 plus T-4875, T-4880, T-4881 and T-4883. The release waits for 1409's be.50 report (operator, 2026-10-28, answer "1"). Under rule b, three clean be.50 upgrades confirm the four new fixes.
