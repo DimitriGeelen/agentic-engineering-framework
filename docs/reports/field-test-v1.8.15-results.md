@@ -503,9 +503,15 @@ be.50 (370b2688b) is be.49 plus T-4875, T-4880, T-4881 and T-4883. The release w
 | Tester | Versions | Doctor | Own tests | Verdicts | Messages |
 |---|---|---|---|---|---|
 | 1409 | → be.50 | 0 FAIL, 38 project WARN + 1 host WARN (no pre-upgrade reading) | **owed**: full suite after their machine restart; 7 data-dependent reds before the upgrade are theirs (5f66369d) and are listed separately | upgrade clean: dry-run and upgrade exit 0, no PRESERVE file changed, 29 files (their 97362b0b7); 40 STALE review worktrees and the claude-fw restart hint were expected. Known issue, second time: the upgrade removed their local `/arbeiter` registration block (T-4870, P-010). Re-applying it restored the route (200), and their preserve and page tests went from 2 failed to 22 passed; no other preserved file was affected | 8e456671, 3b77df39, fe78b067, c8c444c3 |
+| dimitri-mint-dev | be.48 → be.50 (non-shallow clone of the tag) | 0 FAIL / 9 WARN → 0 FAIL / 10 WARN; the new WARN ("Watchtower process predates its own source") is true and cleared by `fw watchtower restart` (pages 200) | t190 tmux-kill-guard PASS/PASS, t195 dupes PASS/PASS | **clean upgrade**: dry-run and upgrade rc 0 (3 changes, 15 vendored files, hooks reinstalled, CLAUDE.md unchanged). **WORKS** `fw sidecar alerts` (rc 0, clean). Nothing broken. Side note: the push of their upgrade commit hung >5 min; they are checking whether it is a gate or the network | 18e26779 |
 | 055 | be.49 (be.50 after their T-648 deploy) | — | — | **WORKS** G session restore: after the host .107 reboot their fleet starter ran `claude-fw --resume <id>` at 23:55:28; SessionStart fired as resume, injected their handover, and the conversation continued with full context. Not exercised: claude-fw's own `.restart-requested` path | 698140ea |
 
-**Freeze exit status (2026-10-29):** waiting on 1409's full test suite on be.50. 055 G is now confirmed. 055 and TermLink upgrade to be.50 when their operators say go.
+**Freeze exit status (2026-10-29):**
+- **Clean be.50 upgrades: 1 of the 3 that rule b needs** (dimitri-mint-dev).
+- **Committed and preparing:** 832, ring20, ring20-dashboard.
+- **Waiting on 1409's full test suite on be.50,** which the release waits for.
+- **Not yet started:** 055 after T-648; TermLink on its operator's go; 0506 asked.
+- **Confirmed earlier:** 055 G.
 
 **Still unexercised, and who reports:**
 - **claude-fw budget auto-restart (`.restart-requested`):** written by the budget gate at 2026-10-28 18:06Z here, but the wrapper did not end the session (it predated later claude-fw fixes); no tester has exercised it yet.
