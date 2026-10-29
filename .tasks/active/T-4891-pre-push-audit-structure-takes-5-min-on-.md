@@ -104,7 +104,7 @@ bvp_scores_proposed:
 - [x] The retire_when F-RECALL signal (b) in agents/audit/audit.sh no longer runs a recursive glob over PROJECT_ROOT. It finds `preference-index.yaml` / `preferences.yaml` among the files git tracks (`git ls-files`, bounded by a timeout); outside a git repo it searches only `.context/` and `policy/`
 - [x] Same verdict as before for a tracked file in any directory (signal found) and for no such file (not found); an ignored or untracked copy, for example under a home directory's `.cache`, no longer counts and is never walked
 - [x] Unit test: a fixture project with a large untracked tree plus a tracked `preferences.yaml` at depth finds it quickly, and the same without the tracked file finds nothing; the check never walks the tree (pinned by failing os.walk/glob/rglob in the test) and a gitignored `.cache/preferences.yaml` does not count
-- [ ] Vendored copy synced (`bin/fw vendor self --check` clean for this task); be.51 tagged with T-4891; dimitri-mint-dev and 1409 asked to test be.51
+- [x] Vendored copy synced (`bin/fw vendor self --check` clean for this task); be.51 tagged with T-4891; dimitri-mint-dev and 1409 asked to test be.51
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
