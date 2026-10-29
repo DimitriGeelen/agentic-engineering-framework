@@ -183,7 +183,7 @@ SCANNED_PATTERN_IDS = frozenset({
     "reviewer-prose-mismatch", "l387-sigpipe-risk", "decaying-task-path-ref",
     "audience-mismatch", "defer-as-hedge", "disposition-incomplete",
     "review-link-homework", "ac-evidence-untick", "write-set-underdeclared",
-    "worktree-handoff-durability", "silent-zero-store-grep",
+    "worktree-handoff-durability", "silent-zero-store-grep", "ac-negative-evidence",
 })
 
 ROUTE_TO_JUDGE = "route to fw reviewer judge"
@@ -2517,6 +2517,72 @@ def detect_ac_evidence_untick(
     return findings
 
 
+# ───────── ac-negative-evidence detector (T-4902) ─────────
+# ring20-dashboard (their T-2585): a criterion carried "Evidence … NEGATIVE FINDING:
+# endpoints return 404" and the scan still said PASS. The auto-tick reads only a
+# criterion's title line, so a [REVIEWER] criterion that names a scanned check could be
+# ticked over its own recorded evidence that it does not hold. A finding on that
+# criterion refuses the tick (auto-tick condition 4) and routes it to the judge.
+_NEGATIVE_EVIDENCE_RE = re.compile(
+    r"\bNEGATIVE\s+(FINDING|RESULT|EVIDENCE)\b"
+    r"|^\s*(?:[-*]\s*)?\**\s*Evidence\b[^\n]*\b(FAIL|FAILS|FAILED|BROKEN|DOES NOT HOLD)\b",
+    re.MULTILINE,
+)
+
+
+def detect_ac_negative_evidence(ac_section: str) -> list[Finding]:
+    """A [REVIEWER] criterion whose own body records negative evidence."""
+    findings: list[Finding] = []
+    if not ac_section:
+        return findings
+    counter = 0
+    current_subhead = "ACs"
+    current: tuple[int, str, str] | None = None   # (index, subhead, title)
+    body: list[str] = []
+
+    def flush() -> None:
+        if current is None:
+            return
+        idx, sub, title = current
+        if not _REVIEWER_PREFIX_RE.match(title):
+            return
+        text = "\n".join(body)
+        m = _NEGATIVE_EVIDENCE_RE.search(text)
+        if not m:
+            return
+        findings.append(
+            Finding(
+                pattern_id="ac-negative-evidence",
+                pattern_name="[REVIEWER] criterion records negative evidence about itself (T-4902)",
+                detection_confidence="high",
+                lie_severity="partial",
+                location=f"AC#{idx} ({sub})",
+                evidence=f"marker={m.group(0).strip()[:80]}; ac={title[:120]}",
+                ac_index=idx,
+                ac_subhead=sub,
+                ac_text=title.strip()[:200],
+            )
+        )
+
+    for raw in ac_section.splitlines():
+        if re.match(r"^#{2,}\s+\S", raw.strip()):
+            flush()
+            current, body = None, []
+            current_subhead = raw.strip().lstrip("# ").strip()
+            counter = 0
+            continue
+        m = _AC_LINE_RE.match(raw)
+        if m:
+            flush()
+            counter += 1
+            current, body = (counter, current_subhead, m.group("body")), []
+            continue
+        if current is not None:
+            body.append(raw)
+    flush()
+    return findings
+
+
 # ───────── write-set-underdeclared detector (T-2504, T-2324 IW-4) ─────────
 #
 # Catches tasks that declare `write_set:` but whose body references file paths
@@ -2939,6 +3005,9 @@ def scan_task(
     # v1.6 +4: T-2155 — ac-evidence-untick (T-1761 prevention); Agent AC
     # plainly references an existing artifact but the checkbox is still `[ ]`.
     findings.extend(detect_ac_evidence_untick(ac_section, task_path))
+    # T-4902: a [REVIEWER] criterion whose own body records negative evidence
+    # (NEGATIVE FINDING, Evidence … FAIL) is never auto-ticked.
+    findings.extend(detect_ac_negative_evidence(ac_section))
     # v1.7 +1: T-2504 — write-set-underdeclared (T-2324 IW-4); write_set:
     # declared but body references source-dir paths not covered by any glob.
     findings.extend(detect_write_set_underdeclared(meta, body))
@@ -3017,6 +3086,10 @@ def render_verdict_md(verdict: Verdict) -> str:
         f"- **Timestamp:** {verdict.timestamp}",
         f"- **Catalogue:** {verdict.catalogue_version}",
         f"- **Overall:** {verdict.overall}",
+        # T-4902: a static scan finds anti-patterns; it runs nothing and does not
+        # decide whether a criterion holds (ring20-dashboard read PASS as that).
+        "- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, "
+        "not that the criteria hold",
         f"- **Needs Human:** {'yes' if verdict.needs_human else 'no'}",
     ]
     if verdict.risk_declared:
