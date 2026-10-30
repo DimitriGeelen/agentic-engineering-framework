@@ -119,13 +119,13 @@ So the operator's ruling D-626 ("agent can use the reviewer agent … and with a
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/delegation.py` routes `deterministic` to REVIEWER-JUDGES (one class, one close path); `fw task delegate` converts nothing any more, and reports deterministic criteria as reviewer-judged
-- [ ] `fw task delegate T-XXX --reroute-converted` moves criteria an earlier delegation converted (matched against the task's own delegate record in `.context/working/delegations.jsonl`, never by guess) from `### Agent` back under `### Human` with their text unchanged, logged; authored `[REVIEWER]` Agent criteria are left alone; `--dry-run` previews
-- [ ] `fw reviewer judge` plans and dispatches those criteria, and a recorded green verdict ticks them at close through the existing ledger rules (no ledger rule loosened)
-- [ ] Judge brief (operator decision i): a criterion whose literal is out of date (old counts, retired page, wrong path) gets amber with a proposed restatement, never green on intent
-- [ ] The texts `fw task delegate` and the static scan print name `fw reviewer judge` as the close path; CLAUDE.md's delegation paragraph matches
-- [ ] Tests: deterministic → REVIEWER-JUDGES; reroute moves only delegated lines and is idempotent; judge plans a rerouted criterion; existing delegation, judge and ledger tests pass (updated where they pinned the old routing)
-- [ ] Vendored copy synced; ring20-dashboard told how to reroute their criteria
+- [x] `lib/delegation.py` routes `deterministic` to REVIEWER-JUDGES (one class, one close path); `fw task delegate` converts nothing any more, and reports deterministic criteria as reviewer-judged
+- [x] `fw task delegate T-XXX --reroute-converted` moves criteria an earlier delegation converted (matched against the task's own delegate record in `.context/working/delegations.jsonl`, never by guess) from `### Agent` back under `### Human` with their text unchanged, logged; authored `[REVIEWER]` Agent criteria are left alone; `--dry-run` previews
+- [x] `fw reviewer judge` plans and dispatches those criteria, and a recorded green verdict ticks them at close through the existing ledger rules (no ledger rule loosened)
+- [x] Judge brief (operator decision i): a criterion whose literal is out of date (old counts, retired page, wrong path) gets amber with a proposed restatement, never green on intent
+- [x] The texts `fw task delegate` and the static scan print name `fw reviewer judge` as the close path; CLAUDE.md's delegation paragraph matches
+- [x] Tests: deterministic → REVIEWER-JUDGES; reroute moves only delegated lines and is idempotent; judge plans a rerouted criterion; existing delegation, judge and ledger tests pass (updated where they pinned the old routing)
+- [x] Vendored copy synced; ring20-dashboard told how to reroute their criteria (msg df697f36, via the hub)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -314,8 +314,20 @@ So the operator's ruling D-626 ("agent can use the reviewer agent … and with a
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t4916_delegate_reroute.bats tests/unit/t3445_delegation_close_path.bats tests/unit/t4778_reviewer_autotick_evidence.bats > /tmp/.t4916.out 2>&1 && ! grep -q "^not ok" /tmp/.t4916.out
+test "$(grep -c '# skip' /tmp/.t4916.out)" -eq 0
+timeout 900 python3 -m pytest -q -p no:cacheprovider tests/unit/test_delegation_classifier.py tests/unit/test_reviewer_auto_tick.py tests/unit/test_t3579_verdict_ledger.py > /tmp/.t4916py.out 2>&1 && grep -q passed /tmp/.t4916py.out
+bin/fw vendor self --check --task T-4916
 
 ## RCA
+
+**Symptom:** ring20-dashboard (msg 616b90f3) could not close any of about 153 criteria that `fw task delegate` had converted. The static scan never ticked them, `fw reviewer judge` found "No REVIEWER_JUDGES criteria", and the verdict ledger refused them.
+
+**Root cause:** two changes, each right alone. T-3445 made deterministic criteria close by converting them to `[REVIEWER]` Agent criteria for the T-1985 static-scan auto-tick. T-4778 later required an auto-ticked criterion to name a scanner check, which converted criteria never do. Judge and the ledger only ever read `### Human` reviewer-judged criteria. Nobody re-traced the delegation path end to end after T-4778, so the delegated close path silently ended.
+
+**Why structurally allowed:** the test that pinned the delegated close path (t3445) relied on a static-scan PASS ticking the criteria. When T-4778 changed that, the suite was not run against the delegation fixtures, or was updated without asking where the criteria would close now. The close-path promise also lived in printed text (`delegation_cli.py`: "PASS auto-ticks the converted criteria"), which no test reads.
+
+**Prevention:** one class, one path. Deterministic criteria are reviewer-judged, so the only close path for any delegated criterion is the verdict ledger, the same one render, taste and unclassified criteria use. t3445 now asserts that delegation writes nothing and that the close is refused without a verdict. t4916 asserts that `fw reviewer judge` plans rerouted criteria, so a future narrowing of judge's intake breaks a test instead of a consumer.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
