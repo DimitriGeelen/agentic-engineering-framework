@@ -586,6 +586,16 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
         "red gives the operator a false judgement of work that may be perfectly good; return "
         "`not-evaluated` with the reason instead (operator ruling, T-3986).",
         "",
+        "Judge the criterion AS WRITTEN. When its literal is out of date (a count from months "
+        "ago, a page that no longer exists, a path or command that has moved, such as `bin/fw` "
+        "where only `.agentic-framework/bin/fw` exists) do NOT return green on what it probably "
+        "meant: that would rewrite an operator-written criterion without the operator seeing it. "
+        "Return **amber**, say which part is out of date, and give a proposed restatement as "
+        "a line `PROPOSED RESTATEMENT: <the criterion as it should read now>` together with "
+        "whether the evidence meets that restatement. The operator accepts or rejects the "
+        "restatement once (operator ruling 2026-10-30, T-4916, decision i). Evidence blocks "
+        "already written under a criterion are input: check them, do not take them on trust.",
+        "",
         f"## Independence: {_rung_label(rung, seat)}",
         "",
         f"Rung {rung} was chosen by the IW-7 impact-risk model ({rung_reason or 'default'}).",

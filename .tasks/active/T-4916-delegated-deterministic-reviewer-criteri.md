@@ -7,7 +7,7 @@ description: >
   auto-ticks converted criteria; T-4778 limited auto-tick to named scanner checks;
   judge/ledger accept only REVIEWER-JUDGES. Dead end.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "616b90f3"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T23:39:54Z
-last_update: '2026-10-29T23:45:38Z'
+last_update: 2026-10-30T01:11:25Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -119,8 +119,13 @@ So the operator's ruling D-626 ("agent can use the reviewer agent … and with a
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `lib/delegation.py` routes `deterministic` to REVIEWER-JUDGES (one class, one close path); `fw task delegate` converts nothing any more, and reports deterministic criteria as reviewer-judged
+- [ ] `fw task delegate T-XXX --reroute-converted` moves criteria an earlier delegation converted (matched against the task's own delegate record in `.context/working/delegations.jsonl`, never by guess) from `### Agent` back under `### Human` with their text unchanged, logged; authored `[REVIEWER]` Agent criteria are left alone; `--dry-run` previews
+- [ ] `fw reviewer judge` plans and dispatches those criteria, and a recorded green verdict ticks them at close through the existing ledger rules (no ledger rule loosened)
+- [ ] Judge brief (operator decision i): a criterion whose literal is out of date (old counts, retired page, wrong path) gets amber with a proposed restatement, never green on intent
+- [ ] The texts `fw task delegate` and the static scan print name `fw reviewer judge` as the close path; CLAUDE.md's delegation paragraph matches
+- [ ] Tests: deterministic → REVIEWER-JUDGES; reroute moves only delegated lines and is idempotent; judge plans a rerouted criterion; existing delegation, judge and ledger tests pass (updated where they pinned the old routing)
+- [ ] Vendored copy synced; ring20-dashboard told how to reroute their criteria
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -381,6 +386,10 @@ So the operator's ruling D-626 ("agent can use the reviewer agent … and with a
 
 ## Decisions
 
+- **2026-10-30, operator, "b and i":**
+  - **(b)** Deterministic criteria are reviewer-judged from the start: one class, one close path, rather than teaching `judge` a second class (a).
+  - **(i)** A criterion whose literal is out of date is held open (amber) with the reviewer's proposed restatement for the operator to accept. It is never passed on intent (ii).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -406,3 +415,6 @@ So the operator's ruling D-626 ("agent can use the reviewer agent … and with a
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4916-delegated-deterministic-reviewer-criteri.md
 - **Context:** Initial task creation
+
+### 2026-10-30T01:11:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

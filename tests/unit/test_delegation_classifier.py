@@ -67,8 +67,9 @@ DETERMINISTIC = [
 def test_deterministic(c):
     cl = classify(c)
     assert cl.cls == "deterministic", cl
-    assert cl.delegation_class == REVIEWER_CLOSEABLE
-    assert cl.convertible
+    # T-4916 (operator "b"): reviewer-judged, one close path; nothing converts any more.
+    assert cl.delegation_class == REVIEWER_JUDGES
+    assert not cl.convertible
 
 
 # ── taste ────────────────────────────────────────────────────────────────────
@@ -352,8 +353,8 @@ def test_strategic_marker_suppresses_deterministic():
 
 
 def test_every_class_maps_to_exactly_one_delegation_class():
+    # T-4916: no class routes to REVIEWER_CLOSEABLE any more (the counter stays, at 0).
     assert set(CLASS_TO_DELEGATION.values()) == {
-        REVIEWER_CLOSEABLE,
         REVIEWER_JUDGES,
         AGENT_SELF,
         OPERATOR_ONLY,
@@ -363,7 +364,7 @@ def test_every_class_maps_to_exactly_one_delegation_class():
     assert set(CARVE_OUTS) == {"tier0-or-bypass", "act-in-the-world", "sovereignty-field"}
     for c in ("render-surface", "taste", "unclassified", "inception-decision"):
         assert CLASS_TO_DELEGATION[c] == REVIEWER_JUDGES, c
-    assert CLASS_TO_DELEGATION["deterministic"] == REVIEWER_CLOSEABLE
+    assert CLASS_TO_DELEGATION["deterministic"] == REVIEWER_JUDGES
 
 
 @pytest.mark.parametrize("risk", [ACT[1], TIER0[0], SOVEREIGN[0]])
@@ -383,9 +384,10 @@ def test_judged_bucket_is_never_convertible():
             assert not classify_convertible(k), k
 
 
-def test_only_deterministic_is_convertible():
+def test_nothing_is_convertible():
+    """T-4916: every delegable class closes on a verdict; none converts to an Agent criterion."""
     convertible = [k for k in CLASS_TO_DELEGATION if classify_convertible(k)]
-    assert convertible == ["deterministic"]
+    assert convertible == []
 
 
 def classify_convertible(cls_name):
@@ -475,7 +477,8 @@ def test_surface_scan_counts_sum(tmp_path):
     assert rep["open_criteria"] == 2
     assert sum(rep["by_delegation"].values()) == rep["open_criteria"]
     assert sum(rep["by_class"].values()) == rep["open_criteria"]
-    assert rep["by_delegation"][REVIEWER_CLOSEABLE] == 1
-    assert rep["by_delegation"][REVIEWER_JUDGES] == 1
-    # Judged criteria are reported, never delegable: only convertible ones list the task.
+    # T-4916: both are reviewer-judged, and a task with judged criteria is the one
+    # `fw reviewer judge` can close, so it is listed.
+    assert rep["by_delegation"][REVIEWER_CLOSEABLE] == 0
+    assert rep["by_delegation"][REVIEWER_JUDGES] == 2
     assert rep["delegable_tasks"] == ["T-1"]

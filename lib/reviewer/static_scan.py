@@ -186,7 +186,10 @@ SCANNED_PATTERN_IDS = frozenset({
     "worktree-handoff-durability", "silent-zero-store-grep", "ac-negative-evidence",
 })
 
-ROUTE_TO_JUDGE = "route to fw reviewer judge"
+# T-4916: judge reads `### Human` criteria. One that `fw task delegate` converted to an
+# Agent criterion before T-4916 gets there with `fw task delegate <id> --reroute-converted`.
+ROUTE_TO_JUDGE = ("route to fw reviewer judge (converted by fw task delegate? "
+                  "--reroute-converted first, T-4916)")
 
 
 def _ac_named_checks(ac_text: str) -> list[str]:

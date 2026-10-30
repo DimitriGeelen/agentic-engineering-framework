@@ -222,7 +222,7 @@ def test_t4778_no_tick_on_empty_pass_without_named_check():
     ac = _make_parsed_ac("[REVIEWER] Hub restarted on the remote host")
     tick, reason = ss._auto_tick_decision(ac, [], [], "PASS")
     assert tick is False
-    assert reason == "no check this scan ran; route to fw reviewer judge"
+    assert reason.startswith("no check this scan ran; route to fw reviewer judge")
 
 
 def test_t4778_suppressed_finding_on_named_check_blocks():

@@ -1,18 +1,18 @@
 #!/usr/bin/env bats
 # T-3445 — the delegated close path, end to end, on two fixtures.
+# Rewritten for T-4916 (operator 2026-10-30, "b"): deterministic criteria are no
+# longer converted to `[REVIEWER]` Agent criteria for the static-scan auto-tick
+# (T-4778 left converted criteria with no close path). They stay under ### Human,
+# reviewer-judged, and close on a recorded green verdict through the verdict ledger
+# (test_t3579_verdict_ledger.py pins that half). Every step here is the shipped
+# code — `fw task delegate`, `fw reviewer`, `update-task.sh`. Nothing is stubbed.
 #
-# The classifier has its own unit tests; this file pins the thing those cannot
-# see: that a criterion the classifier called `deterministic` actually reaches
-# `work-completed` through the real reviewer and the real close gates, with no
-# human tick anywhere in the chain. Every step is the shipped code — `fw task
-# delegate`, `fw reviewer` (auto-tick v1.5, T-1985), `update-task.sh`. Nothing
-# is stubbed, because the defect this guards against lives at the joins.
-#
-# Fixture 1 — two deterministic Human criteria. Delegate converts both, takes
-#             ownership, reviewer PASSes, close moves the file to completed/.
-# Fixture 2 — the same two plus one taste criterion. Delegate converts two,
-#             keeps the third, leaves ownership with the operator, and the close
-#             is REFUSED by the sovereignty gate.
+# Fixture 1 — two deterministic Human criteria. Delegate reports both
+#             reviewer-judged and writes nothing; the static scan ticks nothing;
+#             the close is refused until a verdict exists.
+# Fixture 2 — the same two plus one taste criterion: all three reviewer-judged,
+#             ownership stays with the operator, and the close is REFUSED by the
+#             sovereignty gate.
 #
 # On fixture 2 and the task spec: AC 3 says the mixed fixture's close "lands
 # partial-complete". It cannot, and that is not a defect in this code. The
@@ -110,77 +110,40 @@ _make_task() {
     echo "$f"
 }
 
-# ── Fixture 1: fully delegable → closes with no human tick ───────────────────
+# ── T-4916: deterministic criteria are reviewer-judged, never converted ─────
+#
+# Operator ruling 2026-10-30 ("b"). These criteria used to convert to `[REVIEWER]`
+# Agent criteria for the T-1985 auto-tick; T-4778 narrowed auto-tick to named
+# scanner checks, which left converted criteria with no close path. They now stay
+# under ### Human and close on a recorded green verdict (`fw reviewer judge` and the
+# verdict ledger, pinned by test_t3579_verdict_ledger.py). Rerouting criteria an
+# earlier delegation converted: t4916_delegate_reroute.bats.
 
-@test "two deterministic Human criteria: delegate converts both and takes ownership" {
+@test "two deterministic Human criteria: delegate reports both reviewer-judged and writes nothing" {
     local f; f="$(_make_task T-9001 plain)"
+    local before; before="$(md5sum < "$f")"
 
     run "$FW" task delegate T-9001
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q "converted 2, reviewer-judged 0, left human 0"
-    echo "$output" | grep -q "owner: human → agent"
-
-    grep -q "^owner: agent" "$f"
-
-    # Both criteria moved under ### Agent as [REVIEWER], unticked, verbatim.
-    local agent_block
-    agent_block="$(awk '/^### Agent/{f=1;next} /^### Human/{f=0} f' "$f")"
-    echo "$agent_block" | grep -q '^- \[ \] \[REVIEWER\] Doctor names the new config key'
-    echo "$agent_block" | grep -q '^- \[ \] \[REVIEWER\] Ledger row is appended'
-    echo "$agent_block" | grep -q 'one row appended to the ledger, exit code 0'
-
-    # Nothing left under ### Human: the count is the verdict, not a bare `!`.
-    local human_left
-    human_left="$(awk '/^### Human/{f=1;next} /^## /{f=0} f' "$f" | grep -c '^- \[' || true)"
-    [ "$human_left" -eq 0 ]
-
-    # The reviewer-PASS line is in ## Verification, exactly once.
-    local vline
-    # Anchored: the Updates entry also names the command in prose, and an
-    # unanchored count would read that as a duplicate verification line.
-    vline="$(grep -c '^bin/fw reviewer T-9001 >' "$f" || true)"
-    [ "$vline" -eq 1 ]
-
-    grep -q 'D-626' "$f"
-    grep -q '"task":"T-9001"' "$PROJECT_ROOT/.context/working/delegations.jsonl"
+    echo "$output" | grep -q "converted 0, reviewer-judged 2, left human 0"
+    echo "$output" | grep -q "reviewer judge T-9001"
+    [ "$(md5sum < "$f")" = "$before" ]
+    grep -q "^owner: human" "$f"
 }
 
-@test "delegated task: reviewer PASS auto-ticks the converted criteria" {
+@test "the static reviewer scan ticks no reviewer-judged criterion" {
     local f; f="$(_make_task T-9001 plain)"
     run "$FW" task delegate T-9001
     [ "$status" -eq 0 ]
-
     run "$FW" reviewer T-9001
-    [ "$status" -eq 0 ]
-    echo "$output" | grep -q "Overall:.*PASS"
-
     local ticked
-    ticked="$(grep -c '^- \[x\] \[REVIEWER\]' "$f" || true)"
-    [ "$ticked" -eq 2 ]
+    ticked="$(awk '/^### Human/{f=1;next} /^## /{f=0} f' "$f" | grep -c '^- \[x\]' || true)"
+    [ "$ticked" -eq 0 ]
 }
 
-@test "delegated task closes with no human tick" {
-    _make_task T-9001 plain > /dev/null
-    run "$FW" task delegate T-9001
-    [ "$status" -eq 0 ]
-    run "$FW" reviewer T-9001
-    [ "$status" -eq 0 ]
-
-    run "$UPDATE_TASK" T-9001 --status work-completed
-    [ "$status" -eq 0 ]
-
-    # The file moved to completed/ — the whole point.
-    local in_completed in_active
-    in_completed="$(ls "$PROJECT_ROOT/.tasks/completed" | grep -c '^T-9001-' || true)"
-    in_active="$(ls "$PROJECT_ROOT/.tasks/active" | grep -c '^T-9001-' || true)"
-    [ "$in_completed" -eq 1 ]
-    [ "$in_active" -eq 0 ]
-}
-
-@test "the close is driven by the reviewer verdict, not by delegation alone" {
-    # Control leg: skip `fw reviewer`, so the converted criteria stay unticked.
-    # Without this the suite could not tell "the reviewer closed it" from
-    # "delegation closed it", which is the claim being made.
+@test "the close is refused while reviewer-judged criteria have no verdict" {
+    # Without a recorded green verdict nothing ticks them, so delegation alone can
+    # never close the task — the claim the verdict ledger exists to make true.
     _make_task T-9001 plain > /dev/null
     run "$FW" task delegate T-9001
     [ "$status" -eq 0 ]
@@ -193,40 +156,29 @@ _make_task() {
     [ "$in_active" -eq 1 ]
 }
 
-# ── Fixture 2: one carve-out → stays the operator's ──────────────────────────
+# ── Fixture 2: taste beside deterministic → all reviewer-judged ─────────────
 
-@test "a taste criterion is not converted and ownership stays human" {
+@test "a taste criterion beside deterministic ones: all three reviewer-judged, owner stays human" {
     local f; f="$(_make_task T-9002 taste)"
 
     run "$FW" task delegate T-9002
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q "converted 2, reviewer-judged 1, left human 0"
+    echo "$output" | grep -q "converted 0, reviewer-judged 3, left human 0"
     echo "$output" | grep -q "taste"
 
     grep -q "^owner: human" "$f"
 
     local human_left
-    human_left="$(awk '/^### Human/{f=1;next} /^## /{f=0} f' "$f" | grep -c '^- \[' || true)"
-    [ "$human_left" -eq 1 ]
-    awk '/^### Human/{f=1;next} /^## /{f=0} f' "$f" | grep -q 'reads clearly'
-
-    # And the refusal is named in the task's own Updates entry.
-    grep -q 'taste: AC#3' "$f"
+    human_left="$(awk '/^### Human/{f=1;next} /^## /{f=0} f' "$f" | grep -c '^- \[ \]' || true)"
+    [ "$human_left" -eq 3 ]
 }
 
-@test "a partially delegated task does not close: the sovereignty gate refuses it" {
+@test "a task with open reviewer-judged criteria does not close: the sovereignty gate refuses it" {
     local f; f="$(_make_task T-9002 taste)"
     run "$FW" task delegate T-9002
     [ "$status" -eq 0 ]
     run "$FW" reviewer T-9002
-    [ "$status" -eq 0 ]
 
-    # The reviewer still ticks what was delegated …
-    local ticked
-    ticked="$(grep -c '^- \[x\] \[REVIEWER\]' "$f" || true)"
-    [ "$ticked" -eq 2 ]
-
-    # … and the task is still the operator's, so the close is refused.
     run "$UPDATE_TASK" T-9002 --status work-completed
     [ "$status" -ne 0 ]
     echo "$output" | grep -q "Sovereignty gate"
@@ -235,7 +187,7 @@ _make_task() {
     in_active="$(ls "$PROJECT_ROOT/.tasks/active" | grep -c '^T-9002-' || true)"
     [ "$in_active" -eq 1 ]
     untouched="$(awk '/^### Human/{f=1;next} /^## /{f=0} f' "$f" | grep -c '^- \[ \]' || true)"
-    [ "$untouched" -eq 1 ]
+    [ "$untouched" -eq 3 ]
 }
 
 # ── Refusals ─────────────────────────────────────────────────────────────────
@@ -246,11 +198,11 @@ _make_task() {
 
     run "$FW" task delegate T-9002 --dry-run
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q "reviewer-judgeable (not converted)"
+    echo "$output" | grep -q "reviewer-judged (fw reviewer judge)"
     [ "$(md5sum < "$f")" = "$before" ]
 
     run "$FW" task delegate T-9002 --dry-run --json
-    echo "$output" | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['reviewer_judgeable']==[3], d"
+    echo "$output" | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['reviewer_judgeable']==[1,2,3], d"
 
     # The judged criterion stays unticked under ### Human after a real run.
     run "$FW" task delegate T-9002
@@ -307,7 +259,7 @@ assert r["reviewer_judged_count"] == 1
 
     run "$FW" task delegate T-9001 --dry-run
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q "converted 2, reviewer-judged 1, left human 0"
+    echo "$output" | grep -q "converted 0, reviewer-judged 3, left human 0"
     echo "$output" | grep -q "nothing written"
 
     local after; after="$(md5sum "$f" | cut -d' ' -f1)"
@@ -318,7 +270,7 @@ assert r["reviewer_judged_count"] == 1
     [ "$ledger" -eq 0 ]
 }
 
-@test "delegate is idempotent: a second run converts nothing and adds no second verification line" {
+@test "delegate is idempotent and never writes a reviewer-PASS verification line (T-4916)" {
     local f; f="$(_make_task T-9001 plain)"
     run "$FW" task delegate T-9001
     [ "$status" -eq 0 ]
@@ -328,8 +280,6 @@ assert r["reviewer_judged_count"] == 1
     echo "$output" | grep -q "converted 0"
 
     local vline
-    # Anchored: the Updates entry also names the command in prose, and an
-    # unanchored count would read that as a duplicate verification line.
     vline="$(grep -c '^bin/fw reviewer T-9001 >' "$f" || true)"
-    [ "$vline" -eq 1 ]
+    [ "$vline" -eq 0 ]
 }

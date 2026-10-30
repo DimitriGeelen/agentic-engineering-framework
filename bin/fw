@@ -6191,10 +6191,10 @@ PYTASK_VERIFY
             fi
             ;;
         delegate)
-            # T-3445 (mechanism for D-626): reviewer-closeable delegation. Classifies
-            # a task's open `### Human` criteria, converts the deterministic ones to
-            # `[REVIEWER]` Agent criteria, refuses the six carve-outs, and moves
-            # ownership only when nothing is left for the operator to answer.
+            # T-3445 (mechanism for D-626): classifies a task's open `### Human`
+            # criteria and reports who closes each one. Since T-4916 nothing converts:
+            # reviewer-judged criteria close on a verdict (`fw reviewer judge`), and
+            # --reroute-converted moves back what an earlier delegation converted.
             #
             # PYTHONPATH=$FRAMEWORK_ROOT so `python3 -m lib.delegation_cli` resolves
             # in vendored consumers where lib/ lives at .agentic-framework/lib/ —

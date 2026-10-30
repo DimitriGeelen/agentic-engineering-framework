@@ -94,7 +94,11 @@ DELEGATION_CLASSES = (REVIEWER_CLOSEABLE, REVIEWER_JUDGES, AGENT_SELF, OPERATOR_
 
 # THE one encoding of class -> routing. Every reader imports it (T-3557).
 CLASS_TO_DELEGATION = {
-    "deterministic": REVIEWER_CLOSEABLE,
+    # T-4916 (operator 2026-10-30, "b"): deterministic criteria are reviewer-judged too —
+    # one class, one close path. They used to convert to `[REVIEWER]` Agent criteria for
+    # the T-1985 auto-tick, which T-4778 narrowed to named scanner checks; converted
+    # criteria then had no close path at all (ring20-dashboard, ~153 criteria).
+    "deterministic": REVIEWER_JUDGES,
     "agent-self": AGENT_SELF,
     "taste": REVIEWER_JUDGES,
     "inception-decision": REVIEWER_JUDGES,
@@ -105,11 +109,13 @@ CLASS_TO_DELEGATION = {
     "sovereignty-field": OPERATOR_ONLY,
 }
 
-# Only `deterministic` converts. `agent-self` is a ROUTING defect (the criterion
-# should never have been a Human criterion at all — T-2143); fixing it is an
-# author-time edit, not an act of delegation, so this verb reports it and leaves
-# it alone.
-CONVERTIBLE_CLASSES = frozenset({"deterministic"})
+# Nothing converts any more (T-4916): every delegable class stays under `### Human` and
+# closes on an independent recorded verdict (`fw reviewer judge`). Criteria an earlier
+# delegation DID convert go back with `fw task delegate T-XXX --reroute-converted`.
+# `agent-self` is a ROUTING defect (the criterion should never have been a Human
+# criterion at all — T-2143); fixing it is an author-time edit, not an act of
+# delegation, so this verb reports it and leaves it alone.
+CONVERTIBLE_CLASSES: frozenset = frozenset()
 
 # The risk classes: the only ones that stay human (T-3557 IW-1/IW-5).
 CARVE_OUTS = (
@@ -542,7 +548,7 @@ def classify(
       4. render-surface     (REVIEWER-JUDGES — task-level, T-1766)
       5. inception-decision (REVIEWER-JUDGES — the reviewer judges if a human is needed)
       6. taste              (REVIEWER-JUDGES — T-1947 vocabulary)
-      7. deterministic      (REVIEWER-CLOSEABLE — same five gates as the reviewer's detector)
+      7. deterministic      (REVIEWER-JUDGES since T-4916 — same five gates as the reviewer's detector)
       8. agent-self         (T-2143: wrong audience, not a delegation question)
       9. unclassified       (REVIEWER-JUDGES — no longer the human tie-break)
     """
@@ -754,7 +760,7 @@ def surface_scan(project_root: Path, framework_root: Optional[Path] = None) -> d
             for _, cl in tc.rows:
                 by_class[cl.cls] = by_class.get(cl.cls, 0) + 1
                 by_delegation[cl.delegation_class] += 1
-            if any(cl.convertible for _, cl in tc.rows):
+            if any(cl.reviewer_judges for _, cl in tc.rows):  # T-4916: closeable by judge
                 delegable_tasks.append(tc.task_id)
 
     return {
