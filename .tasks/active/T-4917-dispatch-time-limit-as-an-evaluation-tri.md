@@ -31,6 +31,26 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 <!-- What problem are we exploring? For whom? Why now? -->
 
+`fw termlink dispatch` ends a worker at `--timeout` with a blind watchdog in `agents/termlink run.sh`: `(sleep "$TIMEOUT" && kill "$CLAUDE_PID")`, plus the LOOP_PID and HARNESS_PID variants. The default is 600 s when `--timeout` is omitted. The watchdog does not look at whether the worker is progressing.
+
+**Evidence (1409-sprind, msg d9271ba5, 2026-10-30, their T-3405, operator-approved):**
+- Since 2026-10-27, 279 TermLink workers ended in their project; 19 were killed by the watchdog.
+- 13 of the 19 were build workers at 3–4 h whose code was done and who were waiting for a long verification run.
+- 3 were reviewers killed by the 600 s default.
+- Detached children (a 50-min full test tier) died with them, so each restart cost about 1 h.
+
+**Their operator, verbatim:** "we are really losing valuable work because of timegrenzen … It can be an indicator to kill it if you think there's no value, nothing is progressing … it should be a trigger, but it should not be called kill because timegrenzen."
+
+**Their suggested direction (a proposal, not a spec):**
+1. `--timeout` becomes a review span. When it elapses, record an evaluation (result.jsonl growth, commits in the worker's project dir, CPU of the worker's process tree, live child processes) and notify the orchestrator.
+2. Kill only on an evaluated standstill, by the orchestrator, with the reason logged and state preserved first.
+3. A separate high hard ceiling (e.g. `--hard-timeout`, default 48 h) for hung workers.
+4. No blind 600 s default.
+
+**Their project-side mitigation (live, no framework edit):** all dispatches pass `--timeout 172800`; the watchdog sleeps were removed by PID; and they run an evaluator every 3 h that wakes the orchestrator on standstill and never kills. Its path is `/opt/1409-sprind/.context/working/orchestrator/zeitgrenze_bewertung.py` (msg a0aa3b15). Signals: result.jsonl age, last commit in the worker's project dir, CPU of the run.sh process tree, live or queued child verification runs. **Not read:** standing rule, no reading other projects' files. Ask the operator, or ask 1409 to send the content in a message, if it is needed.
+
+**Constraint to keep:** T-577 (orphaned or hung workers must be ended). The hard ceiling is what keeps that protection.
+
 ## Assumptions
 
 <!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
