@@ -7,12 +7,12 @@ description: >
   auto-ticks converted criteria; T-4778 limited auto-tick to named scanner checks;
   judge/ledger accept only REVIEWER-JUDGES. Dead end.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, reviewer, delegation]
-components: []
+components: [bin/fw, lib/delegation.py, lib/delegation_cli.py, lib/reviewer/static_scan.py, tests/unit/t3445_delegation_close_path.bats, tests/unit/test_delegation_classifier.py]
 related_tasks: [T-4778, T-3445, T-3579]
 origin: {kind: "peer", source: "ring20-dashboard", ref: "616b90f3"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -42,8 +42,8 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "616b90f3"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T23:39:54Z
-last_update: 2026-10-30T01:11:25Z
-date_finished:
+last_update: 2026-10-30T01:26:54Z
+date_finished: 2026-10-30T01:26:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -430,3 +430,21 @@ bin/fw vendor self --check --task T-4916
 
 ### 2026-10-30T01:11:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-30T01:26:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-dfcb6ed6
+- **Timestamp:** 2026-10-30T01:27:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `fw task delegate T-XXX --reroute-converted` moves criteria an earlier delegation converted (matched against the task's own delegate record in `.context/working/delegations.jsonl`, never by guess) fro
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/delegations.jsonl in: `fw task delegate T-XXX --reroute-converted` moves criteria an earlier delegation converted (matched against the task's own delegate record in `.conte`

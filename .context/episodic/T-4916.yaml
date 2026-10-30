@@ -1,0 +1,110 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4916: Delegated deterministic [REVIEWER] criteria have no close path since T-4778 (delegate promises auto-tick; judge and ledger refuse them)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-30T01:27:46Z
+# ============================================================================
+
+task_id: T-4916
+task_name: "Delegated deterministic [REVIEWER] criteria have no close path since T-4778 (delegate promises auto-tick; judge and ledger refuse them)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-29T23:39:54Z
+completed: 2026-10-30T01:26:54Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-10-30T00:40:58+01:00
+last_commit: 2026-10-30T02:26:52+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file the delegated-[REVIEWER] close-path dead end (ring20-dashboard 616b90f3); T-4913: dimitri-mint-dev dropped its registry copy. ring20-dashboard design input (stale literals vs intent) recorded as an open question. deterministic criteria are reviewer-judged (no conversion); delegate --reroute-converted moves converted ones back; judge brief: stale literal -> amber + proposed restatement (operator b, i). refresh vendored copies. reroute drops the conversion's PASS line once every converted criterion is back (an authored [REVIEWER] criterion does not keep it). ACs, verification, RCA
+
+# Key outcomes
+outcomes:
+  - '`lib/delegation.py` routes `deterministic` to REVIEWER-JUDGES (one class, one close path); `fw task delegate` converts nothing any more, and reports deterministic criteria as reviewer-judged'
+  - '`fw task delegate T-XXX --reroute-converted` moves criteria an earlier delegation converted (matched against the task''s own delegate record in `.context/working/delegations.jsonl`, never by guess) from `### Agent` back under `### Human` with their text unchanged, logged; authored `[REVIEWER]` Agent criteria are left alone; `--dry-run` previews'
+  - '`fw reviewer judge` plans and dispatches those criteria, and a recorded green verdict ticks them at close through the existing ledger rules (no ledger rule loosened)'
+  - 'Judge brief (operator decision i): a criterion whose literal is out of date (old counts, retired page, wrong path) gets amber with a proposed restatement, never green on intent'
+  - 'The texts `fw task delegate` and the static scan print name `fw reviewer judge` as the close path; CLAUDE.md''s delegation paragraph matches'
+  - 'Tests: deterministic → REVIEWER-JUDGES; reroute moves only delegated lines and is idempotent; judge plans a rerouted criterion; existing delegation, judge and ledger tests pass (updated where they pinned the old routing)'
+  - 'Vendored copy synced; ring20-dashboard told how to reroute their criteria (msg df697f36, via the hub)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/delegation.py'
+  - '.agentic-framework/lib/delegation_cli.py'
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/reviewer/static_scan.py'
+  - '.tasks/active/T-4913-fw-doctor-is-silent-when-a-project-level.md'
+  - '.tasks/active/T-4916-delegated-deterministic-reviewer-criteri.md'
+  - 'CLAUDE.md'
+  - 'bin/fw'
+  - 'lib/delegation.py'
+  - 'lib/delegation_cli.py'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/reviewer/static_scan.py'
+  - 'tests/unit/t3445_delegation_close_path.bats'
+  - 'tests/unit/t4916_delegate_reroute.bats'
+  - 'tests/unit/test_delegation_classifier.py'
+  - 'tests/unit/test_reviewer_auto_tick.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-30T00:40:58'
+    action: 'T-4916: file the delegated-[REVIEWER] close-path dead end (ring20-dashboard 616b90f3); T-4913: dimitri-mint-dev dropped its registry copy'
+  - time: '2026-10-30T00:43:05'
+    action: 'T-4916: ring20-dashboard design input (stale literals vs intent) recorded as an open question'
+  - time: '2026-10-30T02:25:16'
+    action: 'T-4916: deterministic criteria are reviewer-judged (no conversion); delegate --reroute-converted moves converted ones back; judge brief: stale literal -> amber + proposed restatement (operator b, i)'
+  - time: '2026-10-30T02:25:20'
+    action: 'T-4916: refresh vendored copies'
+  - time: '2026-10-30T02:26:05'
+    action: 'T-4916: reroute drops the conversion''s PASS line once every converted criterion is back (an authored [REVIEWER] criterion does not keep it)'
+  - time: '2026-10-30T02:26:09'
+    action: 'T-4916: refresh vendored copies'
+  - time: '2026-10-30T02:26:52'
+    action: 'T-4916: ACs, verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 107 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, reviewer, delegation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 107
+  commits: 8
+  files_changed: 20
+  lines_added: 1218
+  lines_removed: 178
+  footprint_refreshed_at: '2026-10-30T01:27:55Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4916-delegated-deterministic-reviewer-criteri.md
+generated_by: context-agent-hybrid
