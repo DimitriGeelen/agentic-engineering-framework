@@ -657,10 +657,11 @@ def cmd_reroute(args, path: Path, text: str, task_id: str) -> int:
     kept, at = _human_insert_index(kept)
     moved = [ln for b in blocks for ln in b]
     out = kept[:at] + moved + kept[at:]
-    left = [c for c in parse_criteria("\n".join(out))
-            if c.subhead.lower().startswith("agent") and not c.ticked and c.prefix == "REVIEWER"]
-    if not wanted and not left:
-        want = verification_line(task_id)   # the conversion's reviewer-PASS line; its job is gone
+    if not wanted:
+        # Every criterion the conversion moved is back, so the reviewer-PASS line it wrote
+        # has no job left. An authored `[REVIEWER]` Agent criterion was never delegation's
+        # and carries its own verification, so it does not keep this line alive.
+        want = verification_line(task_id)
         out = [ln for ln in out if ln.strip() != want]
     out = _append_updates(out, [
         "",
