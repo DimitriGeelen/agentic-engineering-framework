@@ -7,9 +7,11 @@ Two verbs, one module because they share the classifier:
     fw reviewer surface [--json] [--warn-threshold N]
 
 `delegate` is the act D-626 authorises: it classifies a human-owned task's open
-Human criteria, converts the deterministic ones to `[REVIEWER]` Agent criteria
-keeping Steps/Expected/If-not verbatim, leaves every carve-out alone, and moves
-ownership only when nothing is left for the operator to answer.
+Human criteria and reports who closes each one. Until T-4916 it converted the
+deterministic ones to `[REVIEWER]` Agent criteria for the static-scan auto-tick;
+T-4778 narrowed that tick, which left them no close path, so now every delegable
+class stays under `### Human` and closes on a recorded verdict (`fw reviewer
+judge`). `delegate --reroute-converted` moves back what an earlier run converted.
 
 It writes ownership directly rather than shelling `fw task update --owner agent`
 on purpose. `owner: human` is sticky under R-033 and that path needs
@@ -247,8 +249,8 @@ def _update_entry(task_id: str, converted: list[dict], refused: list[dict]) -> l
         f"- **Converted to [REVIEWER] Agent criteria:** {conv}",
         f"- **Left under ### Human:** {ref} (reviewer-judgeable ones are reported, "
         f"not converted — T-3557; nothing closes without an independent verdict)",
-        f"- **Close path:** `{_fw()} reviewer {task_id}` PASS auto-ticks the converted "
-        f"criteria (T-1985); the normal close gates do the rest.",
+        f"- **Close path:** `{_fw()} reviewer judge {task_id}`; a recorded green verdict "
+        f"ticks each criterion at close (T-3579, T-4916).",
     ]
 
 
@@ -309,6 +311,8 @@ def cmd_delegate(args) -> int:
         return 2
 
     text = path.read_text(encoding="utf-8", errors="replace")
+    if getattr(args, "reroute_converted", False):
+        return cmd_reroute(args, path, text, task_id)
     meta = frontmatter(text)
     workflow = str(meta.get("workflow_type") or "")
     rs = _render_surface(path)
@@ -336,7 +340,7 @@ def cmd_delegate(args) -> int:
             if cl.delegation_class == AGENT_SELF:
                 mark = f"{CYAN}agent-self{NC}"
             elif cl.delegation_class == REVIEWER_JUDGES:
-                mark = f"{CYAN}reviewer-judgeable (not converted){NC}"
+                mark = f"{CYAN}reviewer-judged (fw reviewer judge){NC}"
             print(f"  AC#{c.index:<3} {cl.cls:<18} {mark}  {c.title[:72]}")
             print(f"        {cl.reason}")
         if not rows:
@@ -380,8 +384,8 @@ def cmd_delegate(args) -> int:
         if args.json:
             print(json.dumps(record, indent=2))
         else:
-            print(f"  {YELLOW}nothing delegable — no criterion converted, no file "
-                  f"written{NC}")
+            print(f"  {CYAN}nothing to convert — since T-4916 delegable criteria stay under "
+                  f"### Human and close on an independent verdict; no file written{NC}")
             _print_outcome(converted, refused, owner, new_owner, task_id, remaining_human)
         return 0
 
@@ -520,13 +524,166 @@ def _print_outcome(converted, refused, owner, new_owner, task_id, remaining_huma
           f"left human {len(refused) - judged}")
     if new_owner != owner:
         print(f"  owner: {owner} → {new_owner}")
-        print(f"  next: {_fw()} reviewer {task_id}   (PASS auto-ticks the converted criteria)")
+        print(f"  next: {_fw()} reviewer judge {task_id}")
+    elif judged:
+        # T-4916: the close path for every reviewer-judged criterion. A recorded green
+        # verdict ticks it at close and hands ownership over when nothing else is open.
+        print(f"  owner: {owner} (unchanged; the verdict ledger decides at close)")
+        print(f"  next: {_fw()} reviewer judge {task_id} --dry-run   (then without --dry-run)")
     elif remaining_human:
         print(f"  owner: {owner} (unchanged — {remaining_human} Human criterion/criteria "
               f"remain, so the task stays the operator's)")
         print(f"  next: {_fw()} task review {task_id}")
     else:
         print(f"  owner: {owner} (unchanged)")
+
+
+# ── reroute (T-4916) ─────────────────────────────────────────────────────────
+
+
+def _bare_title(title: str) -> str:
+    """A criterion title without its `[REVIEW]`/`[REVIEWER]`/`[RUBBER-STAMP]` prefix."""
+    return _PREFIX_SUB_RE.sub("", "- [ ] " + title.strip(), count=1).strip()
+
+
+def _converted_records(task_id: str) -> list[dict]:
+    """This task's real (not dry-run) delegations that converted something, oldest first."""
+    out = []
+    try:
+        with (_project_root() / LEDGER).open(encoding="utf-8") as fh:
+            for line in fh:
+                try:
+                    rec = json.loads(line)
+                except ValueError:
+                    continue
+                if (isinstance(rec, dict) and rec.get("task") == task_id
+                        and not rec.get("dry_run") and rec.get("converted")):
+                    out.append(rec)
+    except OSError:
+        pass
+    return out
+
+
+def _human_insert_index(lines: list[str]) -> tuple[list[str], int]:
+    """(lines, index) to append criteria at the end of the `### Human` block, creating
+    the subhead at the end of `## Acceptance Criteria` when there is none. Subheads
+    inside HTML comments (the template's worked examples) do not count."""
+    from lib.delegation import _SUBHEAD_RE, _comment_mask, ac_section_bounds
+
+    start, end = ac_section_bounds(lines)
+    if start < 0:
+        return lines, -1
+    mask = _comment_mask(lines)
+    human_at = None
+    for i in range(start, end):
+        m = _SUBHEAD_RE.match(lines[i].strip())
+        if m and not mask[i] and m.group(1).lstrip("# ").strip().lower().startswith("human"):
+            human_at = i
+            break
+    if human_at is None:
+        at = end
+        while at > start and not lines[at - 1].strip():
+            at -= 1
+        lines = lines[:at] + ["", "### Human"] + lines[at:]
+        return lines, at + 2
+    stop = end
+    for j in range(human_at + 1, end):
+        if _SUBHEAD_RE.match(lines[j].strip()) and not mask[j]:
+            stop = j
+            break
+    while stop > human_at + 1 and not lines[stop - 1].strip():
+        stop -= 1
+    return lines, stop
+
+
+def cmd_reroute(args, path: Path, text: str, task_id: str) -> int:
+    """Move criteria an earlier `delegate` converted back under `### Human` (T-4916).
+
+    Matched against this task's own records in delegations.jsonl, never by guess: an
+    authored `[REVIEWER]` Agent criterion (T-1878) is not delegation's to move. The
+    criterion's text is carried over unchanged, so its verdict digest is too. The
+    owner the conversion changed is restored, so the verdict ledger hands it over
+    again at close when nothing else is open.
+    """
+    records = _converted_records(task_id)
+    wanted = [_bare_title(c.get("title", "")) for r in records for c in r["converted"]]
+    wanted = [w for w in wanted if w]
+    agent = [c for c in parse_criteria(text)
+             if c.subhead.lower().startswith("agent") and not c.ticked and c.prefix == "REVIEWER"]
+    moves: list[Criterion] = []
+    for c in agent:
+        bare = _bare_title(c.title)
+        for k, w in enumerate(wanted):
+            if bare.startswith(w):
+                moves.append(c)
+                del wanted[k]
+                break
+    meta = frontmatter(text)
+    owner = str(meta.get("owner") or "")
+    restore = ""
+    for r in reversed(records):
+        if r.get("owner_after") != r.get("owner_before"):
+            if owner == r.get("owner_after"):
+                restore = str(r.get("owner_before") or "")
+            break
+
+    if not args.json:
+        print(f"{BOLD}Reroute — {task_id}{NC} ({len(records)} converting delegation(s) on record)")
+        for c in moves:
+            print(f"  Agent AC#{c.index:<3} → ### Human   {c.title.strip()[:72]}")
+        if not moves:
+            print("  nothing to reroute (no unticked criterion an earlier delegation converted)")
+        if restore:
+            print(f"  owner: {owner} → {restore} (as before the conversion)")
+    record = {"ts": _now(), "task": task_id, "ruling": RULING, "dry_run": bool(args.dry_run),
+              "class": "reroute", "rerouted": [{"index": c.index, "title": c.title[:120]}
+                                               for c in moves],
+              "owner_before": owner, "owner_after": restore or owner,
+              "converted": [], "refused": []}
+    if args.dry_run or not moves:
+        if args.json:
+            print(json.dumps(record, indent=2))
+        elif args.dry_run and moves:
+            print(f"  {CYAN}--dry-run: nothing written{NC}")
+        return 0
+
+    lines = text.split("\n")
+    cut: set[int] = set()
+    blocks: list[list[str]] = []
+    for c in moves:
+        blocks.append(list(c.lines))
+        cut.update(range(c.start, c.end))
+    kept = [ln for i, ln in enumerate(lines) if i not in cut]
+    kept, at = _human_insert_index(kept)
+    moved = [ln for b in blocks for ln in b]
+    out = kept[:at] + moved + kept[at:]
+    left = [c for c in parse_criteria("\n".join(out))
+            if c.subhead.lower().startswith("agent") and not c.ticked and c.prefix == "REVIEWER"]
+    if not wanted and not left:
+        want = verification_line(task_id)   # the conversion's reviewer-PASS line; its job is gone
+        out = [ln for ln in out if ln.strip() != want]
+    out = _append_updates(out, [
+        "",
+        f"### {_now()} — delegate reroute [fw-task-delegate]",
+        f"- **Ruling:** {RULING} / T-4916 (operator 2026-10-30, b) — converted criteria go back "
+        f"under ### Human and close on an independent verdict",
+        f"- **Moved:** {', '.join('Agent AC#%d' % c.index for c in moves)}",
+        f"- **Close path:** `{_fw()} reviewer judge {task_id}`",
+    ])
+    out = _set_frontmatter(out, "last_update", _now())
+    if restore:
+        out = _set_frontmatter(out, "owner", restore)
+    path.write_text("\n".join(out), encoding="utf-8")
+    ledger = _project_root() / LEDGER
+    ledger.parent.mkdir(parents=True, exist_ok=True)
+    with ledger.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(record, separators=(",", ":")) + "\n")
+    if args.json:
+        print(json.dumps(record, indent=2))
+    else:
+        print(f"  {GREEN}wrote{NC} {path}\n  {GREEN}ledger{NC} {LEDGER}")
+        print(f"  next: {_fw()} reviewer judge {task_id} --dry-run")
+    return 0
 
 
 # ── surface ──────────────────────────────────────────────────────────────────
@@ -576,7 +733,7 @@ def cmd_surface(args) -> int:
         shown = report["delegable_tasks"][:10]
         more = len(report["delegable_tasks"]) - len(shown)
         print(f"  delegable now: {', '.join(shown)}" + (f" (+{more} more)" if more > 0 else ""))
-        print(f"  Run: {_fw()} task delegate <id> --dry-run")
+        print(f"  Run: {_fw()} reviewer judge <id> --dry-run")
     return 0
 
 
@@ -640,6 +797,8 @@ def main(argv=None) -> int:
     d = sub.add_parser("delegate", help="delegate a task's deterministic Human criteria")
     d.add_argument("task_id")
     d.add_argument("--dry-run", action="store_true", help="classify and print; write nothing")
+    d.add_argument("--reroute-converted", action="store_true",
+                   help="T-4916: move criteria an earlier delegation converted back under ### Human")
     d.add_argument("--json", action="store_true")
     d.set_defaults(fn=cmd_delegate)
 
