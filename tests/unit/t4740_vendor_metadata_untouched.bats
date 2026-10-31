@@ -13,19 +13,24 @@ load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo
 # The source is a small fixture repo (FRAMEWORK.md, a designer pin and its
 # build, an origin remote for .upstream). After the first vendor every watched
 # file is backdated, so any rewrite shows as a moved mtime.
+#
+# T-4909: build names follow the real convention, <stem>-<numeric version>.<ext>
+# (aef-workflow-designer-0.32.0.html). The pin-bump prune cuts the name at the first
+# `-<digit>`; the old `-v1`/`-v2` fixture names never matched it, which the earlier
+# legs' failure (the stamp leg, also T-4909) hid from 2026-10-28.
 
 load ../test_helper
 
 FW_BIN="$FRAMEWORK_ROOT/bin/fw"
-WATCHED=(vendor/designer/aef-workflow-designer-v1.html .fw-vendor-stamp.json VERSION
+WATCHED=(vendor/designer/aef-workflow-designer-1.0.0.html .fw-vendor-stamp.json VERSION
          FRAMEWORK.md .gitignore .upstream .fw-not-a-project)
 
 _mk_source() {
     local s="$1"
     mkdir -p "$s/policy" "$s/vendor/designer"
     echo "# fixture framework" > "$s/FRAMEWORK.md"
-    echo 'vendored_path: "vendor/designer/aef-workflow-designer-v1.html"' > "$s/policy/designer-pin.yaml"
-    echo "<html>v1</html>" > "$s/vendor/designer/aef-workflow-designer-v1.html"
+    echo 'vendored_path: "vendor/designer/aef-workflow-designer-1.0.0.html"' > "$s/policy/designer-pin.yaml"
+    echo "<html>v1</html>" > "$s/vendor/designer/aef-workflow-designer-1.0.0.html"
     git -C "$s" init -q
     git -C "$s" remote add origin https://example.invalid/aef-t4740.git
     git -C "$s" add -A
@@ -75,7 +80,7 @@ _moved() {
     [ -z "$moved" ] || { echo "rewritten by a no-op re-vendor: $moved"; false; }
     [ "$(cat "$c/.agentic-framework/.fw-vendor-stamp.json")" = "$stamp_before" ]
     # The designer build stays read-only.
-    [ "$(stat -c %a "$c/.agentic-framework/vendor/designer/aef-workflow-designer-v1.html")" = 444 ]
+    [ "$(stat -c %a "$c/.agentic-framework/vendor/designer/aef-workflow-designer-1.0.0.html")" = 444 ]
 }
 
 @test "T-4740: a real change still rewrites the affected file and only that file" {
@@ -88,12 +93,12 @@ _moved() {
 
     # Designer build content changes under the same pin: build + stamp move.
     _backdate "$c"; before="$(_mtimes "$c")"
-    echo "<html>v1 rebuilt</html>" > "$s/vendor/designer/aef-workflow-designer-v1.html"
+    echo "<html>v1 rebuilt</html>" > "$s/vendor/designer/aef-workflow-designer-1.0.0.html"
     _vendor "$c" "$s"
     moved="$(_moved "$c" "$before")"
-    [ "$moved" = ".fw-vendor-stamp.json vendor/designer/aef-workflow-designer-v1.html " ] || { echo "moved: $moved"; false; }
-    grep -q "v1 rebuilt" "$v/vendor/designer/aef-workflow-designer-v1.html"
-    [ "$(stat -c %a "$v/vendor/designer/aef-workflow-designer-v1.html")" = 444 ]
+    [ "$moved" = ".fw-vendor-stamp.json vendor/designer/aef-workflow-designer-1.0.0.html " ] || { echo "moved: $moved"; false; }
+    grep -q "v1 rebuilt" "$v/vendor/designer/aef-workflow-designer-1.0.0.html"
+    [ "$(stat -c %a "$v/vendor/designer/aef-workflow-designer-1.0.0.html")" = 444 ]
 
     # Upstream URL changes: .upstream and the stamp (which digests it) move.
     _backdate "$c"; before="$(_mtimes "$c")"
@@ -120,9 +125,9 @@ _moved() {
     grep -q 'T-1841' "$v/.fw-not-a-project"
 
     # Pin bump: the new build lands, the superseded one is pruned.
-    echo "<html>v2</html>" > "$s/vendor/designer/aef-workflow-designer-v2.html"
-    echo 'vendored_path: "vendor/designer/aef-workflow-designer-v2.html"' > "$s/policy/designer-pin.yaml"
+    echo "<html>v2</html>" > "$s/vendor/designer/aef-workflow-designer-2.0.0.html"
+    echo 'vendored_path: "vendor/designer/aef-workflow-designer-2.0.0.html"' > "$s/policy/designer-pin.yaml"
     _vendor "$c" "$s"
-    [ -f "$v/vendor/designer/aef-workflow-designer-v2.html" ]
-    [ ! -e "$v/vendor/designer/aef-workflow-designer-v1.html" ]
+    [ -f "$v/vendor/designer/aef-workflow-designer-2.0.0.html" ]
+    [ ! -e "$v/vendor/designer/aef-workflow-designer-1.0.0.html" ]
 }

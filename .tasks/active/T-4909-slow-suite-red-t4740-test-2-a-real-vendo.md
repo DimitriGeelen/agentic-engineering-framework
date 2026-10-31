@@ -5,10 +5,10 @@ description: >
   t4740_vendor_metadata_untouched.bats test 2 red in the nightly slow suite since
   2026-10-28; untracked until now.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, unit-suite, vendor]
 components: []
 related_tasks: [T-4740]
@@ -40,7 +40,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T23:09:12Z
-last_update: '2026-10-29T23:15:37Z'
+last_update: 2026-10-31T11:14:54Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,8 +98,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Cause established by reproduction and written into `## RCA`: why the vendor stamp does not move when the pinned designer build changes, and which commit changed that
+- [x] Fixed at the right end: either the stamp records the designer build again (a change moves it) or the test asserts what the vendor actually guarantees, with the reason in `## Decisions`
+- [x] `tests/unit/t4740_vendor_metadata_untouched.bats` passes 3 runs in a row; the other vendor tests (t3850, t4870) still pass
+- [ ] Vendored copy synced if source changed
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,8 +290,22 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 bats tests/unit/t4740_vendor_metadata_untouched.bats tests/unit/t3850_vendor_preserve_locals.bats tests/unit/t4870_in_file_patch_lost.bats > /tmp/.t4909.out 2>&1 && ! grep -q "^not ok" /tmp/.t4909.out
+test "$(grep -c '# skip' /tmp/.t4909.out)" -eq 0
+bash -n bin/fw
+bin/fw vendor self --check --task T-4909
 
 ## RCA
+
+**Symptom:** `t4740_vendor_metadata_untouched.bats` test 2 failed in the nightly slow suite from 2026-10-28. When the pinned designer build changed, the build was rewritten but `.fw-vendor-stamp.json` did not move ("6 files, unchanged").
+
+**Root cause:** T-4836 (dee563551, 2026-10-27) made `do_vendor`'s pinned-file loop handle two keys, `vendored_path` and `validator_path`, and collect them in `_vd_rels`. The list of files written outside the include dirs, which feeds the stamp, still read the single `_vd_rel`. After the loop that variable holds the last key's value: empty when the pin has no validator, the validator when it has one. Either way the designer build dropped out of the stamp. So the next vendor could not tell a local edit of the build from an upstream one. Fixed: the list prints every entry of `_vd_rels`.
+
+A second fault sat behind the first: the test's pin-bump leg used `-v1`/`-v2` names, which the prune's `<stem>-<version>` cut never matches. It could only show once the stamp leg passed. Fixed in the fixture (see Decisions).
+
+**Why structurally allowed:** the slow-suite red was only seen in the nightly report, and the pre-push ratchet grades the main suite. Nobody owned it for three days until T-4870's wider run surfaced it, and then it was filed by hand. The failure also masked the next assertion in the same test, so the test reported one fault while it held two.
+
+**Prevention:** the t4740 test now covers both legs and passes 3 runs in a row. A slow-suite red with no task is the same gap T-4910 sits in. Making a new nightly red auto-file a task (or appear in the session-start alerts) is left as a follow-up observation rather than built here.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -360,6 +376,10 @@ bvp_scores_proposed:
 
 ## Decisions
 
+- **2026-10-31, two faults, two ends.**
+  - The stamp leg was a real `bin/fw` regression: the stamp should record every pinned file, as T-3850/T-4740 intended. The fix is in code.
+  - The pin-bump prune leg was a fixture fault. The prune is correct for real build names (`<stem>-<numeric version>.<ext>`), and the fixture's `-v1`/`-v2` names did not follow that convention. The fix is in the test, not by widening the prune glob, because a wider glob could delete files that only share the stem.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -385,3 +405,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4909-slow-suite-red-t4740-test-2-a-real-vendo.md
 - **Context:** Initial task creation
+
+### 2026-10-31T11:14:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

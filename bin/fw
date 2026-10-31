@@ -879,7 +879,7 @@ do_vendor() {
     # Located beside this bin/fw first, then FRAMEWORK_ROOT, then the source:
     # an upgrade hands off between copies, and a helper missing from one of
     # them must not disable the check (the fail-safe branch below refuses).
-    local _vp_py="" _vp_cand _vp_post_rc=0 _vp_action=""  # T-4870: last two read at the end
+    local _vp_py="" _vp_cand _vp_post_rc=0 _vp_action="" _vd_w  # T-4870: _vp_post_rc/_vp_action read at the end
     for _vp_cand in "${FW_BIN_DIR:-$FRAMEWORK_ROOT/bin}/../lib/vendor_preserve.py" \
             "$FRAMEWORK_ROOT/lib/vendor_preserve.py" "$vendor_source/lib/vendor_preserve.py"; do
         if [ -f "$_vp_cand" ]; then _vp_py="$_vp_cand"; break; fi
@@ -1249,7 +1249,10 @@ UPSTREAM
         {
             printf '%s\n' VERSION .fw-not-a-project .gitignore FRAMEWORK.md
             if [ -n "${_vendor_origin:-}" ]; then printf '%s\n' .upstream; fi
-            if [ -n "${_vd_rel:-}" ]; then printf '%s\n' "$_vd_rel"; fi
+            # T-4909: every pinned file (build and validator). Since T-4836 made the copy
+            # loop handle two keys, the single $_vd_rel held only the LAST one (empty when
+            # the pin has no validator_path), so the build dropped out of the stamp.
+            for _vd_w in ${_vd_rels[@]+"${_vd_rels[@]}"}; do printf '%s\n' "$_vd_w"; done
         } > "$_vp_dir/written"
         python3 "$_vp_py" post "${_vp_args[@]}" --written "$_vp_dir/written" || _vp_post_rc=$?
         # T-4870: 4/5 = declared in-file patches were removed. post printed the
