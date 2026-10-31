@@ -69,6 +69,7 @@ date_finished: null
 2. safe-commands: a hook payload needs a `cwd` before a `git` clause is accepted ("the shell's cwd is unknown").
 3. Do not edit tasks while `fw upgrade` runs: a rollback restores `.tasks/` from the snapshot.
 4. T-4926: commands with `$'…'`, escaped `\"` or `$((…)` subshell forms that were read-only may now need an active task.
+5. 0506 (msg 1e4be051): right after the upgrade, the T-4907 gate refuses the next source edit until the focused task's `## Context` has all four parts. Say so in the notes, and consider a line in `fw upgrade`'s closing next-steps.
 
 ## Acceptance Criteria
 
