@@ -5212,3 +5212,9 @@ X'` returning empty group."
   task: T-4920
   date: 2026-10-31
   context: Added via context agent
+- id: L-713
+  learning: "Review-dispatch tests compare run.sh with agents/termlink/termlink.sh AS COMMITTED (verdict_ledger._canonical_runtime). An uncommitted edit to termlink.sh makes every harness-seat test fail with 'run.sh is not the dispatch runtime termlink.sh writes' — commit the change, then judge the suite; those reds are not regressions"
+  source: P-001
+  task: T-4933
+  date: 2026-10-31
+  context: Added via context agent

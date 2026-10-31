@@ -101,8 +101,8 @@ cost_estimate_proposed:
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] Root cause confirmed from the dispatch dirs, written in `## RCA` (both failing runs on disk, T-4906 and T-4904, are render judges; T-4792 had no opencode seat, so there is no non-render failure to confirm)
-- [ ] Every evidence file the brief cites under `.context/` is present at the same relative path inside the harness seat's export, copied before the export is fingerprinted, so the seat reads it without leaving its directory and the unchanged-export check still holds
-- [ ] A test pins the copy: a fixture dispatch with cited evidence files gets them inside the export, and nothing else from `.context/` is copied
+- [x] Every evidence file the brief cites under `.context/` is present at the same relative path inside the harness seat's export, copied before the export is fingerprinted, so the seat reads it without leaving its directory and the unchanged-export check still holds
+- [x] A test pins the copy: a fixture dispatch with cited evidence files gets them inside the export, and nothing else from `.context/` is copied
 - [ ] One real `fw reviewer judge` run with the opencode seat ends with a printed verdict from that seat (outcome recorded here)
 - [ ] `bin/fw vendor self --check --task T-4933` clean
 
