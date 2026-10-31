@@ -127,9 +127,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/sidecar/inject.py` checks the project's `.claude/settings.json` and `settings.local.json` for a UserPromptSubmit hook running `sidecar-receiver-adapter` before typing; without one it types nothing and records `INJECT_BLOCKED` (once per message and reason) with a reason naming the fix
-- [ ] Tests: hook absent → nothing typed, blocked with the reason, mail still awaiting hand-over; hook in settings.json or settings.local.json → injection as before; unreadable settings → treated as absent; existing inject tests pass
-- [ ] Vendored copy synced; 0506 told
+- [x] `lib/sidecar/inject.py` checks the project's `.claude/settings.json` and `settings.local.json` for a UserPromptSubmit hook running `sidecar-receiver-adapter` before typing; without one it types nothing and records `INJECT_BLOCKED` (once per message and reason) with a reason naming the fix
+- [x] Tests: hook absent → nothing typed, blocked with the reason, mail still awaiting hand-over; hook in settings.json or settings.local.json → injection as before; unreadable settings → treated as absent; existing inject tests pass (all sidecar suites: 657 passed)
+- [x] Vendored copy synced; 0506 told (msg 93a49c52)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -314,8 +314,20 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 python3 -m pytest -q -p no:cacheprovider tests/unit/test_sidecar_inject_prompt_hook_t4890.py tests/unit/test_sidecar_receiver_t3693.py > /tmp/.t4890.out 2>&1 && grep -q passed /tmp/.t4890.out
+bin/fw vendor self --check --task T-4890
 
 ## RCA
+
+**Symptom:** in 0506, the receiver typed "[sidecar] N peer messages waiting … the prompt hook shows it above" into the session every ~2 minutes, across sessions and reboots, and the messages were never shown.
+
+**Root cause:** the typed line is only a doorbell: the UserPromptSubmit hook (`sidecar-receiver-adapter`) is what prints the mail and records HANDED_OVER. 0506's settings.json lacked that hook, and `_deliver_locked` never checked for it. With no hand-over recorded, the retry rule (`REINJECT_AFTER_S`) re-typed the line indefinitely.
+
+**Why structurally allowed:** the injector and the hook were designed as a pair and tested as a pair, in fixtures where both existed. Nothing modelled a project where settings drifted (an old copy, a hand edit) and the hook went missing while the receiver kept running.
+
+**Prevention:** `inject.prompt_hook_missing()` is checked before typing. Without the hook nothing is typed, and `INJECT_BLOCKED` records the reason and the fix (`fw upgrade`) once per message. The mail stays awaiting hand-over (listed by `fw sidecar alerts`), and the sender gets the existing no-recipient receipt. Five tests pin it.
+
+**Boundary:** a project with no `.claude/settings.json` at all is not judged: it is not a Claude Code session, or it is a fixture.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
