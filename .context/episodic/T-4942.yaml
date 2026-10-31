@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4942: fw reviewer restatement misses a PROPOSED RESTATEMENT written only in the verdict's evidence report
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T23:20:06Z
+# ============================================================================
+
+task_id: T-4942
+task_name: "fw reviewer restatement misses a PROPOSED RESTATEMENT written only in the verdict's evidence report"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-31T23:06:51Z
+completed: 2026-10-31T23:19:45Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T00:15:17+01:00
+last_commit: 2026-11-01T00:15:46+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  restatement read from sha-checked evidence when guidance has none; accept --text on a marker-less amber; brief puts the marker in guidance. criteria, RCA, verification
+
+# Key outcomes
+outcomes:
+  - '`list` and `accept` find a marker in an evidence file of the row when guidance has none; a file whose sha256 does not match the row, or that lies outside `.context/reviews/evidence/`, is not read'
+  - 'The judge brief says the `PROPOSED RESTATEMENT:` line goes in `--guidance` (a harness seat: in its printed GUIDANCE)'
+  - '`accept --text` on an amber row with no marker writes the text and records `proposed: ""` and `edited: true`; without `--text` it still refuses'
+  - 'Tests cover all three (5 new, 24 total; 675 reviewer tests pass); existing restatement tests stay green; `bin/fw vendor self --check --task T-4942` clean'
+  - 'ring20-dashboard told the be-tag (v1.8.16-be.10, msg ccd37f9c)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/reviewer/restatement_cli.py'
+  - '.tasks/active/T-4942-fw-reviewer-restatement-misses-a-propose.md'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/reviewer/restatement_cli.py'
+  - 'tests/unit/test_t4930_restatement.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T00:15:17'
+    action: 'T-4942: restatement read from sha-checked evidence when guidance has none; accept --text on a marker-less amber; brief puts the marker in guidance'
+  - time: '2026-11-01T00:15:46'
+    action: 'T-4942: criteria, RCA, verification'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12
+  commits: 3
+  files_changed: 9
+  lines_added: 672
+  lines_removed: 24
+  footprint_refreshed_at: '2026-10-31T23:20:16Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4942-fw-reviewer-restatement-misses-a-propose.md
+generated_by: context-agent-hybrid

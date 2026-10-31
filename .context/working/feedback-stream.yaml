@@ -51979,3 +51979,21 @@ scan_id: R-eac245bc
 task_id: T-4939
 payload:
   task_file: .tasks/active/T-4939-fw-reviewer-restatement-accept-copies-re.md
+---
+kind: scan_emitted
+timestamp: '2026-10-31T23:19:54Z'
+scan_id: R-31f19b44
+task_id: T-4942
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-31T23:19:54Z'
+scan_id: R-31f19b44
+task_id: T-4942
+payload:
+  task_file: .tasks/active/T-4942-fw-reviewer-restatement-misses-a-propose.md
