@@ -7,10 +7,10 @@ description: >
   0 truncated run.log. Keep a finished run's log (rotate to run.log.1) instead of
   truncating.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [runme]
 components: []
 related_tasks: [T-4871]
@@ -42,7 +42,7 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "21ce0bab"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T23:31:10Z
-last_update: '2026-10-29T23:45:38Z'
+last_update: 2026-10-31T11:08:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,8 +100,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A generated `runme.sh` rotates an existing non-empty `run.log` (run.log → run.log.1 → .2 → .3, oldest dropped) after taking the T-4871 lock and before starting the new log; the new run starts with a fresh `run.log`
+- [x] A refused concurrent start (T-4871) rotates nothing
+- [x] Tests: a re-run keeps the finished run's log as run.log.1 with its RUNME EXIT; three generations kept, the fourth dropped; refused start leaves the logs as they were; existing runme tests pass
+- [ ] Vendored copy synced; ring20-dashboard told
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,6 +292,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t4914_runme_keep_finished_log.bats tests/unit/t4871_runme_single_run.bats > /tmp/.t4914.out 2>&1 && ! grep -q "^not ok" /tmp/.t4914.out
+test "$(grep -c '# skip' /tmp/.t4914.out)" -eq 0
+bash -n lib/runme.sh
+bin/fw vendor self --check --task T-4914
 
 ## RCA
 
@@ -387,3 +393,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4914-fw-runme-a-re-run-after-a-finished-run-e.md
 - **Context:** Initial task creation
+
+### 2026-10-31T11:08:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
