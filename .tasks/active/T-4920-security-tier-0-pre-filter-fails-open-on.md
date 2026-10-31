@@ -85,9 +85,9 @@ The patterns behind this filter include git push/reset/clean, `rm -`, the Tier 0
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The race is reproduced on our copy before the fix (the old pre-filter pipeline, run many times under `set -uo pipefail`, lets at least one matching command through, or the attempt and its count are recorded if it does not show in N runs)
-- [ ] `check-tier0.sh` pre-filter uses a here-string; patterns and exit codes unchanged; no `| grep -q` left in the hook; swapped in by the safe-swap procedure
-- [ ] Regression test: the block extracted from the hook file, N runs under the hook's options, 0 matching commands waved through; a plain command still exits 0 on the fast path; existing Tier 0 tests pass
+- [x] The race is reproduced on our copy before the fix (the old pre-filter pipeline, run many times under `set -uo pipefail`, lets at least one matching command through, or the attempt and its count are recorded if it does not show in N runs). Recorded: the short-command race was 0 in 20,000 here, but the long-command form reproduces deterministically on the real old hook (allowed from about 120 KB of padding).
+- [x] `check-tier0.sh` pre-filter uses a here-string; patterns and exit codes unchanged; no `| grep -q` left in the hook; swapped in by the safe-swap procedure
+- [x] Regression test: the block extracted from the hook file, N runs under the hook's options, 0 matching commands waved through; a plain command still exits 0 on the fast path; existing Tier 0 tests pass
 - [ ] Census task filed for the same class elsewhere (hooks and scripts under pipefail, and the Verification template guidance); 832 told both task ids
 - [ ] Vendored copy synced
 
@@ -278,8 +278,28 @@ The patterns behind this filter include git push/reset/clean, `rm -`, the Tier 0
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t4920_tier0_prefilter_no_pipe.bats > /tmp/.t4920.out 2>&1 && ! grep -q "^not ok" /tmp/.t4920.out
+test "$(grep -c '# skip' /tmp/.t4920.out)" -eq 0
+bash -n agents/context/check-tier0.sh
+bin/fw vendor self --check --task T-4920
 
 ## RCA
+
+**Symptom:** 832 saw an agent's Tier 0 self-approval allowed (rc 0) twice and an `inception decide` pass once in its core test tier, each green when rerun alone. Reproduced here end to end on the real hook: `git push --force origin main` was blocked (exit 2), and the same command with a 200 KB comment appended was allowed (exit 0).
+
+**Root cause:** the fast-path pre-filter fed grep through a pipe, `! printf '%s\n%s\n' "$COMMAND" "$T0_DEQUOTED" | grep -qEi …`, under `set -uo pipefail`. `grep -q` exits at the first match. printf, still writing, takes SIGPIPE. pipefail returns 141 for the pipeline, and `!` reads that as "no dangerous pattern", so the hook exits 0 before the detailed check runs. For short commands this is a timing race (832: about 1 in 80,000; 0 in 20,000 here). Past the pipe buffer it is deterministic: measured on the old hook, blocked at 100 KB of padding and allowed at 120 KB and above, every time.
+
+**Why structurally allowed:** the pre-filter was written as a speed optimisation, and its failure direction was never considered: every error in it means "allow". The tests only used short commands, where the race almost never shows, so the suite was green. The same `cmd | grep -q` under pipefail is taught as safe below 64 KB by the task template's Verification guidance, so the pattern looked sanctioned.
+
+**Prevention:**
+- grep now reads a here-string, so there is no pipe and no SIGPIPE.
+- `tests/unit/t4920_tier0_prefilter_no_pipe.bats` covers:
+  - padded destructive commands, which fail on the old hook and pass on the fixed one;
+  - a static check that no pipe into `grep -q` comes back into the hook's code;
+  - 2,000 runs of the pre-filter form under the hook's options.
+- The rest of the class, 133 sites in 42 shell files plus the template guidance, is T-4921, which starts with the gates.
+
+A first measurement here reported a 200 KB command as allowed for the wrong reason: Python's argv was too long, the payload came out empty, and the hook allows an empty command. The test builds its padding inside Python to avoid that trap.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
