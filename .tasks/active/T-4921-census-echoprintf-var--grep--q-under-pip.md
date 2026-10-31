@@ -100,11 +100,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Census recorded in `## RCA`: every hook (agents/context/, agents/git/, lib/hook-dispatch.sh) with a pipe into `grep -q`, whether it runs under pipefail, and the failure direction per site (open = allows, closed = false refusal)
-- [ ] Every such site in a pipefail hook reads a here-string instead; behaviour otherwise unchanged; `bash -n` clean; `check-active-task.sh` swapped by the safe-swap procedure
-- [ ] Each fail-open site proven on the old code and fixed on the new with a long or multi-line input (the T-4920 shape), in a regression test that also forbids new pipes into `grep -q` in pipefail hooks
-- [ ] The task template's Verification guidance recommends a here-string and no longer calls `echo "$out" | grep -q` safe under 64 KB; `lib/upgrade_template_shipped.py` regenerated
-- [ ] Existing tests for the touched hooks pass; vendored copy synced; 832 told
+- [x] Census recorded in `## RCA`: every hook (agents/context/, agents/git/, lib/hook-dispatch.sh) with a pipe into `grep -q`, whether it runs under pipefail, and the failure direction per site (open = allows, closed = false refusal)
+- [x] Every such site in a pipefail hook reads a here-string instead; behaviour otherwise unchanged; `bash -n` clean; `check-active-task.sh` swapped by the safe-swap procedure
+- [x] Each fail-open site proven on the old code and fixed on the new with a long or multi-line input (the T-4920 shape), in a regression test that also forbids new pipes into `grep -q` in pipefail hooks. The visual-verification `git commit` site needs staged files to probe, so it is covered by the static lint only.
+- [x] The task template's Verification guidance recommends a here-string and no longer calls `echo "$out" | grep -q` safe under 64 KB; `lib/upgrade_template_shipped.py` regenerated
+- [x] Existing tests for the touched hooks pass: 152 files and 1,730 tests. The two reds were fixed here: the T-4851 parser T-4920 broke, and a parallel-run race in the new test. Vendored copy synced; 832 told (msg 6d6e0298).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -293,8 +293,45 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 bats tests/unit/t4921_hooks_no_pipe_into_grep_q.bats tests/unit/t4851_degraded_gate_classes.bats > /tmp/.t4921.out 2>&1 && ! grep -q "^not ok" /tmp/.t4921.out
+test "$(grep -c '# skip' /tmp/.t4921.out)" -eq 0
+for f in agents/context/check-project-boundary.sh agents/context/check-active-task.sh lib/hook-degraded.sh; do bash -n "$f" || exit 1; done
+bin/fw vendor self --check --task T-4921
 
 ## RCA
+
+**Census (2026-10-31).** Every hook in agents/context/, agents/git/lib/ and lib/hook-degraded.sh with a pipe into `grep -q`, and the effect of a misread match ("open" = the gate allows, "closed" = a false refusal):
+
+| File | Pipefail | Site | Misread match → |
+|---|---|---|---|
+| check-tier0.sh | yes | pre-filter | **open** (fixed in T-4920) |
+| lib/hook-degraded.sh | yes (sourced) | Tier 0 fallback (exact T-4920 pipe) | **open** |
+| lib/hook-degraded.sh | yes (sourced) | boundary fallback, 3 greps | **open**: proven, a multi-line write to /etc passed the "fail-closed" path |
+| check-project-boundary.sh | yes | pre-filter (2 greps) | **open** where both misread |
+| check-visual-verification.sh | yes | `git commit` detection | **open** (gate skipped) |
+| check-visual-verification.sh | yes | `--no-verify` bypass; screenshot check | closed |
+| check-agent-dispatch.sh | yes | `"tool_name": "Agent"` | open in principle; one JSON line, so it did not show at 150–400 KB |
+| check-active-task.sh | yes | settings.json path; 2× onboarding tag (`head -20`) | short one-write values; latent |
+| secret-scan.sh, large-file-scan.sh | yes | allowlist match | closed |
+| budget-gate.sh | yes | wrap-up allowlist | closed |
+| continuous-driver.sh | yes | session registered | closed |
+| git/lib/hooks.sh, pre-compact.sh, post-compact-resume.sh | no | — | not affected (no pipefail) |
+
+**A second defect found on the way:** check-project-boundary.sh passed the command to its Python matcher in an environment variable (`_BOUNDARY_CMD`). Linux caps a single env string at 128 KB (MAX_ARG_STRLEN), so for any longer command python3 failed to start, the matcher gave no verdict, and the hook took the degraded path. That path failed open through the pipe bug above. Measured on the real hook: `cp notes.txt /etc/…` was blocked short, but allowed with a 150 KB comment or 20,000 extra lines.
+
+**Symptom:** none reported directly. 832's T-1347 report led to T-4920, and the same class was found here by census and probes.
+
+**Root cause:** `cmd | grep -q PAT` under `set -o pipefail` reads a match as "no match" whenever grep exits before the writer finishes (SIGPIPE, 141). The task template taught that form as safe below 64 KB, which is false for multi-line values. Separately, a payload-sized value was passed through the environment, which has a hard per-string limit.
+
+**Why structurally allowed:** the degraded fallbacks were written to fail closed (T-4652), but nobody tested them with large or multi-line input, which is the one input shape where their own pipes misread. No lint forbade a pipe into `grep -q` in hooks.
+
+**Prevention:**
+- All 12 sites in 9 files use here-strings.
+- The matcher reads its command from a temp file, removed after use.
+- `t4921_hooks_no_pipe_into_grep_q.bats`:
+  - shows the boundary bypass is blocked and the degraded fallback fails closed; both tests fail on the old code;
+  - forbids any pipe into `grep -q` in a pipefail hook or in hook-degraded.sh.
+- The template now recommends `grep -q PAT <<<"$out"`; the close gate's guard detector accepts the here-string form.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
