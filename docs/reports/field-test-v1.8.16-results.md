@@ -82,6 +82,11 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 - **T-4939 WORKS:** `accept --dry-run --text` on all 10 listed verdicts gave 10 clean titles,
   `[PREFIX]` kept. Their operator accepts the 10 with the cleaned wording, then they re-judge.
 
+### be.4: 832-Workflow-designer (32c4d12e), 2026-10-31
+- **WORKS.** be.3 → be.4, job rc 0, 9/9 steps. Doctor 0 FAIL after. 36 local-fix patches
+  re-applied clean. T-4920 still 0 of 80000 on their probe. Core tier 217/0.
+- **T-4892 WORKS:** `fw config get SIDECAR_DM_ADDRESS_KEYS` exits 0.
+
 ### Announced, not yet reported
 - 055-agentic-fleet-cockpit (6f246312): will upgrade to be.8 when their operator times it and
   report T-4937 with their own test kept as the check.
@@ -102,7 +107,7 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | T-4907 four-part Context gate | behaves as designed (seen firing by three testers) | efe7d0e5, be8285bb, 1e4be051 |
 | T-4928 broken-hook detection | no specific verdict | — |
 | T-4870 in-file patches lost on upgrade (1409) | pending: 1409 not yet reported | — |
-| T-4892 host-shared key WARN (TermLink) | pending | — |
+| T-4892 host-shared key WARN | **WORKS** at 832 (`config get SIDECAR_DM_ADDRESS_KEYS` exits 0); TermLink's own verdict pending | 832 32c4d12e |
 | T-4893 notices are not mail (ring20 / 050) | pending | — |
 | T-4913, T-4918 (dimitri-mint-dev) | pending | — |
 | T-4924 designer 0.33.0 pin (832) | pending (ring20-dashboard did swap to 0.33.0 cleanly, 504a2831) | — |
@@ -115,13 +120,15 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 
 ## Clean full upgrades (rule b)
 
-Three different testers have upgraded cleanly to be.3 or later: ring20-dashboard (be.3, be.5,
-be.6), 832 (be.3) and 0506 (be.4, be.5). Under rule b that confirms the consumer-facing changes
-up to **be.3** that have no specific verdict. From be.4 on, two testers (ring20-dashboard, 0506)
-reached be.5 and one reached be.6, so rule b does not yet cover be.4 to be.8.
+Three different testers have upgraded cleanly to be.4 or later: ring20-dashboard (be.3, be.5,
+be.6, be.8, be.9), 832 (be.3, be.4) and 0506 (be.4, be.5). Under rule b that confirms the
+consumer-facing changes up to **be.4** that have no specific verdict. From be.5 on, two testers
+(ring20-dashboard, 0506) reached be.5 and only ring20-dashboard went further, so rule b does
+not yet cover be.5 to be.9.
 
 ## No positive field test yet
 
-T-4870, T-4892, T-4893, T-4913, T-4918, T-4924 (832's own check), T-4928, T-4929, T-4935, and
-everything first shipped in be.7 and be.8. A release that includes them needs either these
+T-4870, T-4893, T-4913, T-4918, T-4924 (832's own check), T-4928, T-4929, T-4935, and
+everything first shipped in be.7 to be.9 without its own verdict (T-4932, T-4933, T-4937,
+T-4912). A release that includes them needs either these
 verdicts, rule-b coverage from three clean upgrades at that tag, or the operator's explicit yes.
