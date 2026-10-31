@@ -90,7 +90,7 @@ cost_estimate_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** ring20-dashboard's first real `fw reviewer judge` runs on be.3 (msgs 5dad0709, 4674c02d, their T-645). The reviewer returned amber with a clean `PROPOSED RESTATEMENT:`, which T-4916 decision (i) asks the operator to accept or reject once. Nothing implements accepting it. Demand is high: of their first 8 judged criteria, 7 were amber with a restatement and 1 was red (a real DNS fault, routed to its owner). The reviewer also corrected one wrong statement in their evidence. Interim path agreed: their operator edits the criterion text and commits it, naming the amber row it accepts (task, AC, dispatch id), then they re-run judge; the agent edits no criterion text.
 
 **Problem / hypothesis:** <what we think is wrong and why>
 
