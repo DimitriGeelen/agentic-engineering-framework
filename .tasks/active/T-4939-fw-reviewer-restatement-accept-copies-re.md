@@ -90,10 +90,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The judge brief asks for `PROPOSED RESTATEMENT:` alone on its line, the criterion text only, and the evidence judgement on the next line
-- [ ] `accept --text "…"` writes that text (same checks: not empty, ≤400 characters, no checkbox), records `proposed` (the reviewer's) and `new_title` (written) and `edited: true`; without `--text` behaviour is unchanged
-- [ ] `--dry-run` with `--text` shows the edited before/after; the agent refusal still applies to a real write with `--text`
-- [ ] Tests cover `--text`, the record fields, and the brief wording; existing T-4930 tests stay green; `bin/fw vendor self --check --task T-4939` clean
+- [x] The judge brief asks for `PROPOSED RESTATEMENT:` alone on its line, the criterion text only, and the evidence judgement on the next line
+- [x] `accept --text "…"` writes that text (same checks: not empty, ≤400 characters, no checkbox), records `proposed` (the reviewer's) and `new_title` (written) and `edited: true`; without `--text` behaviour is unchanged
+- [x] `--dry-run` with `--text` shows the edited before/after; the agent refusal still applies to a real write with `--text`
+- [x] Tests cover `--text`, the record fields, and the brief wording (4 new, 19 total; 670 judge/restatement tests pass); existing T-4930 tests stay green; `bin/fw vendor self --check --task T-4939` clean
 - [ ] ring20-dashboard told the be-tag and how to use `--text`
 
 ### Human
@@ -280,6 +280,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_t4930_restatement.py > /tmp/.t4939 2>&1 && grep -q " passed" /tmp/.t4939 && ! grep -qE "failed|error" /tmp/.t4939
+grep -q "holds the criterion text ONLY" lib/reviewer/judge_cli.py
+bin/fw vendor self --check --task T-4939
 
 ## RCA
 
@@ -296,6 +299,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** `accept --dry-run V-20261031-3c654f59` (ring20-dashboard T-645) would have written "The evidence meets the restatement; operator to accept or reject it." into the operator's criterion title; at least 4 more of their 10 listed restatements had a similar tail.
+
+**Root cause:** the brief asked for the restatement "together with whether the evidence meets that restatement", and reviewers wrote both on the marker's line. T-4930's extractor took the whole rest of the line, and accept gave the operator no way to set the text.
+
+**Why structurally allowed:** T-4930's tests used restatements written cleanly on their own line; no real reviewer output had been through the verb, because this repo had 0 restatement rows. The first real use (14 ambers at ring20-dashboard) found it with a dry run, before anything was written.
+
+**Prevention:** the brief now asks for the restatement alone on its line; `--text` gives the operator the final word on the wording, and `list` tells the operator to check for a trailing comment. Tests pin both. Learning: a verb that copies model output into an operator-owned record needs an operator edit path from the start, not only a reject.
 
 ## Evolution
 
