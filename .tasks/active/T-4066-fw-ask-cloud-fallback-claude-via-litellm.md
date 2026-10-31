@@ -44,7 +44,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev", ref: "arc-001"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T18:07:26Z
-last_update: '2026-10-22T07:45:55Z'
+last_update: '2026-10-31T13:15:28Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,6 +101,24 @@ bvp_scores_proposed:
       (no-signal); D4=0 (no-signal); F-RECALL=3 (body:fw-recall-or-memory-link);
       F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=1 
       (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-31T13:15:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 3
+      D4: 0
+      F-RECALL: 3
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=2 (body:learning-ref); D2=2 (body:telemetry-or-audit-entry); 
+      D3=3 (body:component-discoverability); D4=0 (no-signal); F-RECALL=3 
+      (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
