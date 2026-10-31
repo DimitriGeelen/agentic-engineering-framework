@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4920: SECURITY: Tier 0 pre-filter fails open on SIGPIPE (printf | grep -q under pipefail lets a destructive command through unchecked)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T12:56:09Z
+# ============================================================================
+
+task_id: T-4920
+task_name: "SECURITY: Tier 0 pre-filter fails open on SIGPIPE (printf | grep -q under pipefail lets a destructive command through unchecked)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-31T12:42:44Z
+completed: 2026-10-31T12:55:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-31T13:49:53+01:00
+last_commit: 2026-10-31T13:55:40+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  SECURITY — Tier 0 pre-filter reads a here-string; printf|grep -q under pipefail failed open (race for short commands, deterministic past ~120 KB). refresh vendored copies. follow-up census filed as T-4921 (echo/printf | grep -q under pipefail elsewhere; template guidance). verification, RCA, ticks. 832 told (be.2)
+
+# Key outcomes
+outcomes:
+  - 'The race is reproduced on our copy before the fix (the old pre-filter pipeline, run many times under `set -uo pipefail`, lets at least one matching command through, or the attempt and its count are recorded if it does not show in N runs). Recorded: the short-command race was 0 in 20,000 here, but the long-command form reproduces deterministically on the real old hook (allowed from about 120 KB of padding).'
+  - '`check-tier0.sh` pre-filter uses a here-string; patterns and exit codes unchanged; no `| grep -q` left in the hook; swapped in by the safe-swap procedure'
+  - 'Regression test: the block extracted from the hook file, N runs under the hook''s options, 0 matching commands waved through; a plain command still exits 0 on the fast path; existing Tier 0 tests pass'
+  - 'Census task filed for the same class elsewhere (hooks and scripts under pipefail, and the Verification template guidance); 832 told both task ids (T-4921; msgs 5a2bbd70, 3bf7d701; fix on v1.8.16-be.2)'
+  - 'Vendored copy synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-tier0.sh'
+  - '.tasks/active/T-4920-security-tier-0-pre-filter-fails-open-on.md'
+  - '.tasks/active/T-4921-census-echoprintf-var--grep--q-under-pip.md'
+  - 'agents/context/check-tier0.sh'
+  - 'tests/unit/t4920_tier0_prefilter_no_pipe.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-31T13:49:53'
+    action: 'T-4920: SECURITY — Tier 0 pre-filter reads a here-string; printf|grep -q under pipefail failed open (race for short commands, deterministic past ~120 KB)'
+  - time: '2026-10-31T13:50:03'
+    action: 'T-4920: refresh vendored copies'
+  - time: '2026-10-31T13:50:37'
+    action: 'T-4920: follow-up census filed as T-4921 (echo/printf | grep -q under pipefail elsewhere; template guidance)'
+  - time: '2026-10-31T13:51:05'
+    action: 'T-4920: verification, RCA, ticks'
+  - time: '2026-10-31T13:55:40'
+    action: 'T-4920: 832 told (be.2)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12
+  commits: 6
+  files_changed: 8
+  lines_added: 981
+  lines_removed: 15
+  footprint_refreshed_at: '2026-10-31T12:56:17Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4920-security-tier-0-pre-filter-fails-open-on.md
+generated_by: context-agent-hybrid

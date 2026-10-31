@@ -51575,3 +51575,21 @@ scan_id: R-3b5d7fc6
 task_id: T-4894
 payload:
   task_file: .tasks/active/T-4894-fw-upgrade-refuses-at-step-1-when-a-cons.md
+---
+kind: scan_emitted
+timestamp: '2026-10-31T12:55:57Z'
+scan_id: R-d7c1d88e
+task_id: T-4920
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-31T12:55:57Z'
+scan_id: R-d7c1d88e
+task_id: T-4920
+payload:
+  task_file: .tasks/active/T-4920-security-tier-0-pre-filter-fails-open-on.md
