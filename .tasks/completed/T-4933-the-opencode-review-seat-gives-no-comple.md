@@ -7,12 +7,12 @@ description: >
   each time, so reassignment had no third vendor. Investigate the seat (model pin
   glm-5.3 per T-4506, worker launch, isolation).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, reviewer, opencode]
-components: []
+components: [agents/termlink/termlink.sh, lib/review_seat_evidence.py, tests/unit/t4933_review_seat_evidence_test.py]
 related_tasks: [T-4506]
 origin: {kind: "agent"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -42,8 +42,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-31T15:18:57Z
-last_update: 2026-10-31T16:29:34Z
-date_finished:
+last_update: 2026-10-31T17:25:30Z
+date_finished: 2026-10-31T17:25:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -103,8 +103,8 @@ cost_estimate_proposed:
 - [x] Root cause confirmed from the dispatch dirs, written in `## RCA` (both failing runs on disk, T-4906 and T-4904, are render judges; T-4792 had no opencode seat, so there is no non-render failure to confirm)
 - [x] Every evidence file the brief cites under `.context/` is present at the same relative path inside the harness seat's export, copied before the export is fingerprinted, so the seat reads it without leaving its directory and the unchanged-export check still holds
 - [x] A test pins the copy: a fixture dispatch with cited evidence files gets them inside the export, and nothing else from `.context/` is copied
-- [ ] One real `fw reviewer judge` run with the opencode seat ends with a printed verdict from that seat (outcome recorded here)
-- [ ] `bin/fw vendor self --check --task T-4933` clean
+- [x] One real `fw reviewer judge` run with the opencode seat ends with a printed verdict from that seat (outcome recorded here). Run 1 after the evidence fix (judge-t-4906-r3-009d93fcc2fc): 10 files copied, no rejected reads, real screenshot analysis, then stopped at the 900 s limit before printing; so the brief now states the limit. Run 2 (judge-t-4906-r3-377ac32d3f95): printed and recorded amber V-20261031-ada83649 (committed 076b2e4e3), the first opencode verdict on a render judge.
+- [x] `bin/fw vendor self --check --task T-4933` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,6 +290,9 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/unit/t4933_review_seat_evidence_test.py tests/unit/t3582_harness_kinds_test.py > /tmp/.t4933 2>&1 && grep -q " passed" /tmp/.t4933 && ! grep -qE "failed|error" /tmp/.t4933
+grep -q '"V-20261031-ada83649"' .context/reviews/verdicts.jsonl
+bin/fw vendor self --check --task T-4933
 
 ## RCA
 
@@ -398,3 +401,16 @@ cost_estimate_proposed:
 ### 2026-10-31T16:29:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-31T17:25:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5c2d93b7
+- **Timestamp:** 2026-10-31T17:25:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4933: The opencode review seat gives no completion on every fw reviewer judge run (3 of 3 on 2026-10-31)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T17:26:05Z
+# ============================================================================
+
+task_id: T-4933
+task_name: "The opencode review seat gives no completion on every fw reviewer judge run (3 of 3 on 2026-10-31)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-31T15:18:57Z
+completed: 2026-10-31T17:25:30Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-31T17:41:09+01:00
+last_commit: 2026-10-31T18:10:19+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  harness review seats get the evidence their brief cites — copied into the .context-less export before it is fingerprinted. criteria 2-3 ticked; learning on canonical-runtime test reds. harness brief states the seat's time limit and that cited evidence is in the export (live run reached evidence, then timed out without printing)
+
+# Key outcomes
+outcomes:
+  - 'Root cause confirmed from the dispatch dirs, written in `## RCA` (both failing runs on disk, T-4906 and T-4904, are render judges; T-4792 had no opencode seat, so there is no non-render failure to confirm)'
+  - 'Every evidence file the brief cites under `.context/` is present at the same relative path inside the harness seat''s export, copied before the export is fingerprinted, so the seat reads it without leaving its directory and the unchanged-export check still holds'
+  - 'A test pins the copy: a fixture dispatch with cited evidence files gets them inside the export, and nothing else from `.context/` is copied'
+  - 'One real `fw reviewer judge` run with the opencode seat ends with a printed verdict from that seat (outcome recorded here). Run 1 after the evidence fix (judge-t-4906-r3-009d93fcc2fc): 10 files copied, no rejected reads, real screenshot analysis, then stopped at the 900 s limit before printing; so the brief now states the limit. Run 2 (judge-t-4906-r3-377ac32d3f95): printed and recorded amber V-20261031-ada83649 (committed 076b2e4e3), the first opencode verdict on a render judge.'
+  - '`bin/fw vendor self --check --task T-4933` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/lib/review_seat_evidence.py'
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.context/project/learnings.yaml'
+  - '.fabric/components/lib-review_seat_evidence.yaml'
+  - '.fabric/components/tests-unit-t4933_review_seat_evidence_test.yaml'
+  - '.tasks/active/T-4933-the-opencode-review-seat-gives-no-comple.md'
+  - 'agents/termlink/termlink.sh'
+  - 'lib/review_seat_evidence.py'
+  - 'lib/reviewer/judge_cli.py'
+  - 'tests/unit/t4933_review_seat_evidence_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-31T17:41:09'
+    action: 'T-4933: harness review seats get the evidence their brief cites — copied into the .context-less export before it is fingerprinted'
+  - time: '2026-10-31T17:54:51'
+    action: 'T-4933: criteria 2-3 ticked; learning on canonical-runtime test reds'
+  - time: '2026-10-31T18:10:19'
+    action: 'T-4933: harness brief states the seat''s time limit and that cited evidence is in the export (live run reached evidence, then timed out without printing)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 126 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, reviewer, opencode]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 126
+  commits: 5
+  files_changed: 18
+  lines_added: 1192
+  lines_removed: 22
+  footprint_refreshed_at: '2026-10-31T17:26:14Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4933-the-opencode-review-seat-gives-no-comple.md
+generated_by: context-agent-hybrid
