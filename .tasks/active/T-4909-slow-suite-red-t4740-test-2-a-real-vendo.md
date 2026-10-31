@@ -101,7 +101,7 @@ bvp_scores_proposed:
 - [x] Cause established by reproduction and written into `## RCA`: why the vendor stamp does not move when the pinned designer build changes, and which commit changed that
 - [x] Fixed at the right end: either the stamp records the designer build again (a change moves it) or the test asserts what the vendor actually guarantees, with the reason in `## Decisions`
 - [x] `tests/unit/t4740_vendor_metadata_untouched.bats` passes 3 runs in a row; the other vendor tests (t3850, t4870) still pass
-- [ ] Vendored copy synced if source changed
+- [x] Vendored copy synced if source changed
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
