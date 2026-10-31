@@ -63,12 +63,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 14
-  commits: 3
-  files_changed: 11
-  lines_added: 1252
-  lines_removed: 21
-  footprint_refreshed_at: '2026-10-31T14:23:36Z'
-  footprint_refreshed_by_commit: pre-commit
+  commits: 2
+  files_changed: 4
+  lines_added: 899
+  lines_removed: 8
+  footprint_refreshed_at: '2026-10-31T14:23:39Z'
+  footprint_refreshed_by_commit: 53351b58a
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4927-security-safe-commands-treats-every--as-.md

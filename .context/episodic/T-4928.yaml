@@ -73,12 +73,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 14
-  commits: 5
-  files_changed: 15
-  lines_added: 1578
-  lines_removed: 20
-  footprint_refreshed_at: '2026-10-31T14:23:37Z'
-  footprint_refreshed_by_commit: pre-commit
+  commits: 4
+  files_changed: 8
+  lines_added: 1225
+  lines_removed: 7
+  footprint_refreshed_at: '2026-10-31T14:23:39Z'
+  footprint_refreshed_by_commit: 53351b58a
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4928-hook-dispatch-enters-broken-hook-mode-on.md
