@@ -111,11 +111,11 @@ Side note from the same report: a `!` command typed in a Claude Code session inh
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw inception correct T-XXX defer --reason "…"` reopens a GO/NO-GO inception: the file moves back to active/, status `captured`, horizon `later`, date_finished cleared (the state `decide defer` leaves, T-1865), the Decision block reads DEFER with "Corrected: from GO/NO-GO", an Updates entry and a ledger row are written, one commit with the decision subject
-- [ ] Same sovereignty gate and mandatory reason as go/no-go corrections: refused under `CLAUDECODE=1` without `--i-am-human`/`--from-watchtower`, and nothing is moved or written when refused
-- [ ] No more "move the task back and decide again" text: usage and errors name `correct … defer`
-- [ ] Tests: GO→DEFER reopen end to end on a fixture repo; agent refusal leaves the file in completed/; existing correct tests pass
-- [ ] Vendored copy synced; dimitri-mint-dev told
+- [x] `fw inception correct T-XXX defer --reason "…"` reopens a GO/NO-GO inception: the file moves back to active/, status `captured`, horizon `later`, date_finished cleared (the state `decide defer` leaves, T-1865), the Decision block reads DEFER with "Corrected: from GO/NO-GO", an Updates entry and a ledger row are written, one commit with the decision subject
+- [x] Same sovereignty gate and mandatory reason as go/no-go corrections: refused under `CLAUDECODE=1` without `--i-am-human`/`--from-watchtower`, and nothing is moved or written when refused
+- [x] No more "move the task back and decide again" text: usage and errors name `correct … defer`
+- [x] Tests: GO→DEFER reopen end to end on a fixture repo; agent refusal leaves the file in completed/; existing correct tests pass
+- [x] Vendored copy synced; dimitri-mint-dev told
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -304,8 +304,20 @@ Side note from the same report: a `!` command typed in a Claude Code session inh
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t4324_inception_correct.bats tests/unit/inception_decide_atomicity.bats > /tmp/.t4918.out 2>&1 && ! grep -q "^not ok" /tmp/.t4918.out
+test "$(grep -c '# skip' /tmp/.t4918.out)" -eq 0
+bash -n lib/inception.sh
+bin/fw vendor self --check --task T-4918
 
 ## RCA
+
+**Symptom:** dimitri-mint-dev's operator recorded GO on an inception by mistake (they meant DEFER). `fw inception correct T-205 defer` refused and said to "move the task back and decide again". The second step, `fw task update --status started-work`, was refused as an invalid transition (work-completed → started-work), so they had to edit the frontmatter by hand.
+
+**Root cause:** T-4324 deliberately left DEFER out of `correct`, on the grounds that reopening an exploration is a different act, and replaced it with prose. Nothing implemented the route the prose described: the status machine has no transition out of work-completed, and no verb reopens a decided inception.
+
+**Why structurally allowed:** a refusal message promised a route, and no test ever followed it to its end. T-4324's tests checked that correct refused DEFER, not that the suggested alternative worked. This is the same "a message promises a path that does not exist" class as T-4916, which found it in delegation the day before.
+
+**Prevention:** `correct … defer` is now the supported route. It sits behind the same operator-only gate and needs a mandatory reason. It moves the task back to active/ and leaves it parked exactly as `decide defer` does (captured, horizon later, date_finished cleared), and records the correction in the task, the ledger (`"reopened": true`) and one commit with the decision subject. Tests follow it end to end, the agent refusal leaves the file untouched in completed/, and no message mentions the old dead-end route any more.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
