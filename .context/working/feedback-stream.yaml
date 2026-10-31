@@ -51907,3 +51907,21 @@ scan_id: R-3b929370
 task_id: T-4937
 payload:
   task_file: .tasks/active/T-4937-destructive-command-gate-tmux-kill-rule-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-31T17:38:20Z'
+scan_id: R-bb563297
+task_id: T-4930
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-31T17:38:20Z'
+scan_id: R-bb563297
+task_id: T-4930
+payload:
+  task_file: .tasks/active/T-4930-no-verb-or-watchtower-control-for-the-op.md

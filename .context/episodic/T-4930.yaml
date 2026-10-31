@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4930: No verb or Watchtower control for the operator to accept or reject a reviewer's PROPOSED RESTATEMENT (T-4916 decision i)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T17:38:32Z
+# ============================================================================
+
+task_id: T-4930
+task_name: "No verb or Watchtower control for the operator to accept or reject a reviewer's PROPOSED RESTATEMENT (T-4916 decision i)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-31T14:26:15Z
+completed: 2026-10-31T17:38:11Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-31T15:58:31+01:00
+last_commit: 2026-10-31T17:20:50+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  background from ring20-dashboard (7 of 8 judged criteria amber with a restatement; interim path in use). fw reviewer restatement list|accept|reject — the operator accepts or rejects a PROPOSED RESTATEMENT once; decisions in .context/reviews/restatements.jsonl. CLAUDE.md names fw reviewer restatement where decision i is described. file follow-up T-4936 (Watchtower controls for a PROPOSED RESTATEMENT)
+
+# Key outcomes
+outcomes:
+  - '`fw reviewer restatement list [--task T-XXX] [--json]` lists amber rows in the verdict ledger (interim refusals carry no digest, so they cannot be checked against the criterion and are not read) whose guidance has a `PROPOSED RESTATEMENT:` line, latest per criterion, only while the row''s digest still matches the criterion and no decision is recorded'
+  - '`accept <verdict-id>` replaces the criterion''s title (checkbox, tick state and leading `[PREFIX]` kept), adds a `**Restated:**` line naming the verdict and the old title, writes the file atomically, and appends `{verdict_id, task, ac, decision: accepted, old_digest, new_title, by, ts}` to `.context/reviews/restatements.jsonl`'
+  - '`reject <verdict-id> --reason "…"` appends a rejected row and changes no task file; a decided restatement no longer lists'
+  - 'accept and reject refuse under `CLAUDECODE=1` without `--i-am-human` (recorded `by: agent-override` when given); `--dry-run` shows the before/after and writes nothing, for anyone'
+  - 'Refusals: unknown verdict id, a non-amber row, a row without a restatement, a criterion edited since the verdict (digest moved), an already-decided verdict, and a restatement that is empty, over 400 characters or contains a checkbox (only the marker''s own line is ever taken, so a multi-line restatement cannot reach the file)'
+  - 'The judge brief tells the reviewer that a criterion carrying `**Restated:**` is judged by its restated title, which supersedes an older literal in its Expected clause'
+  - 'bats/pytest tests cover list, accept, reject, the agent refusal and every refusal above; `bin/fw vendor self --check --task T-4930` clean (tests/unit/test_t4930_restatement.py, 15 tests)'
+  - 'ring20-dashboard told the verb exists and which be-tag carries it (v1.8.16-be.8, msg e940ca91)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/reviewer/restatement_cli.py'
+  - '.fabric/components/lib-reviewer-restatement_cli.yaml'
+  - '.fabric/components/tests-unit-test_t4930_restatement.yaml'
+  - '.tasks/active/T-4930-no-verb-or-watchtower-control-for-the-op.md'
+  - '.tasks/active/T-4936-watchtower-accept-or-reject-a-reviewer-p.md'
+  - 'CLAUDE.md'
+  - 'bin/fw'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/reviewer/restatement_cli.py'
+  - 'tests/unit/test_t4930_restatement.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-31T15:58:31'
+    action: 'T-4930: background from ring20-dashboard (7 of 8 judged criteria amber with a restatement; interim path in use)'
+  - time: '2026-10-31T17:19:45'
+    action: 'T-4930: fw reviewer restatement list|accept|reject — the operator accepts or rejects a PROPOSED RESTATEMENT once; decisions in .context/reviews/restatements.jsonl'
+  - time: '2026-10-31T17:20:25'
+    action: 'T-4930: CLAUDE.md names fw reviewer restatement where decision i is described'
+  - time: '2026-10-31T17:20:50'
+    action: 'T-4930: file follow-up T-4936 (Watchtower controls for a PROPOSED RESTATEMENT)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 191 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [reviewer, delegation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 191
+  commits: 5
+  files_changed: 15
+  lines_added: 1366
+  lines_removed: 19
+  footprint_refreshed_at: '2026-10-31T17:38:43Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4930-no-verb-or-watchtower-control-for-the-op.md
+generated_by: context-agent-hybrid

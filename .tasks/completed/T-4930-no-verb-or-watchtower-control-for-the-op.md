@@ -9,12 +9,12 @@ description: >
   edits the criterion text; the changed digest makes the old amber row stale and the
   next judge run evaluates the new text.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [reviewer, delegation]
-components: []
+components: [bin/fw, lib/reviewer/restatement_cli.py, tests/unit/test_t4930_restatement.py]
 related_tasks: [T-4916]
 origin: {kind: "peer", source: "ring20-dashboard", ref: "5dad0709"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -44,8 +44,8 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "5dad0709"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-31T14:26:15Z
-last_update: 2026-10-31T16:05:21Z
-date_finished:
+last_update: 2026-10-31T17:38:11Z
+date_finished: 2026-10-31T17:38:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -108,8 +108,8 @@ cost_estimate_proposed:
 - [x] accept and reject refuse under `CLAUDECODE=1` without `--i-am-human` (recorded `by: agent-override` when given); `--dry-run` shows the before/after and writes nothing, for anyone
 - [x] Refusals: unknown verdict id, a non-amber row, a row without a restatement, a criterion edited since the verdict (digest moved), an already-decided verdict, and a restatement that is empty, over 400 characters or contains a checkbox (only the marker's own line is ever taken, so a multi-line restatement cannot reach the file)
 - [x] The judge brief tells the reviewer that a criterion carrying `**Restated:**` is judged by its restated title, which supersedes an older literal in its Expected clause
-- [ ] bats/pytest tests cover list, accept, reject, the agent refusal and every refusal above; `bin/fw vendor self --check --task T-4930` clean
-- [ ] ring20-dashboard told the verb exists and which be-tag carries it
+- [x] bats/pytest tests cover list, accept, reject, the agent refusal and every refusal above; `bin/fw vendor self --check --task T-4930` clean (tests/unit/test_t4930_restatement.py, 15 tests)
+- [x] ring20-dashboard told the verb exists and which be-tag carries it (v1.8.16-be.8, msg e940ca91)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -401,3 +401,21 @@ bin/fw vendor self --check --task T-4930
 ### 2026-10-31T16:05:21Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-31T17:38:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-bb563297
+- **Timestamp:** 2026-10-31T17:38:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `accept <verdict-id>` replaces the criterion's title (checkbox, tick state and leading `[PREFIX]` kept), adds a `**Restated:**` line naming the verdict and the old title, writes the file atomically, a
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/reviews/restatements.jsonl in: `accept <verdict-id>` replaces the criterion's title (checkbox, tick state and leading `[PREFIX]` kept), adds a `**Restated:**` line naming the verdic`
