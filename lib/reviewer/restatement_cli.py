@@ -7,7 +7,9 @@ inside the amber row's `guidance`: nothing listed what was waiting, nothing reco
 decision, and a rejection left no trace.
 
   list   [--task T-XXX] [--json]          pending restatements
-  accept <verdict-id> [--dry-run]         restate the criterion, record the decision
+  accept <verdict-id> [--text "…"] [--dry-run]
+                                          restate the criterion, record the decision;
+                                          --text sets the exact wording (T-4939)
   reject <verdict-id> --reason "…"        record the decision, change no task file
 
 A restatement is pending while its amber row is the latest verdict for that criterion,
@@ -198,8 +200,13 @@ def _append(root: Path, rec: dict) -> None:
         fh.write(json.dumps(rec, sort_keys=True) + "\n")
 
 
-def accept(root: Path, verdict_id: str, *, dry_run: bool = False, i_am_human: bool = False) -> dict:
-    row, new, path, crit, text = _resolve(root, verdict_id)
+def accept(root: Path, verdict_id: str, *, dry_run: bool = False, i_am_human: bool = False,
+           text_override: str | None = None) -> dict:
+    """`text_override` (T-4939): the operator's own wording. Reviewers often write their
+    evidence judgement on the restatement's line, and the extractor cannot tell where the
+    criterion ends, so the operator can set the exact text; the record keeps both."""
+    row, proposal, path, crit, text = _resolve(root, verdict_id)
+    new = proposal if text_override is None else text_override.strip()
     _check_text(new)
     ts = _now()
     lines = text.split("\n")
@@ -207,7 +214,8 @@ def accept(root: Path, verdict_id: str, *, dry_run: bool = False, i_am_human: bo
     out = lines[:crit.start] + new_lines + lines[crit.end:]
     rec = {"verdict_id": verdict_id, "task": row["task"], "ac": int(row["ac"]),
            "decision": "accepted", "old_digest": row.get("ac_digest"),
-           "old_title": crit.title.strip(), "new_title": new_lines[0].strip(), "ts": ts}
+           "old_title": crit.title.strip(), "new_title": new_lines[0].strip(),
+           "proposed": proposal, "edited": text_override is not None, "ts": ts}
     if dry_run:
         return {**rec, "dry_run": True, "before": crit.lines[0], "after": new_lines[:2]}
     rec["by"] = _who(i_am_human, "accepting")
@@ -242,6 +250,8 @@ def main(argv: list[str] | None = None) -> int:
     ac.add_argument("verdict_id")
     ac.add_argument("--dry-run", action="store_true")
     ac.add_argument("--i-am-human", action="store_true")
+    ac.add_argument("--text", help="write this wording instead of the reviewer's (T-4939); "
+                                   "the record keeps the reviewer's proposal too")
     rj = sub.add_parser("reject", help="record a rejection; no task file changes (operator)")
     rj.add_argument("verdict_id")
     rj.add_argument("--reason", required=True)
@@ -263,10 +273,13 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"  now:      {it['current']}")
                 print(f"  proposed: {it['proposed']}")
             print(f"\n{len(items)} pending. Decide each: fw reviewer restatement accept <id> "
-                  f"| reject <id> --reason \"…\"")
+                  f"[--text \"exact wording\"] | reject <id> --reason \"…\". Check the proposed "
+                  f"text first: anything after the criterion on its line (a reviewer's comment) "
+                  f"would be written too, so use --text to set the wording.")
             return 0
         if a.cmd == "accept":
-            res = accept(root, a.verdict_id, dry_run=a.dry_run, i_am_human=a.i_am_human)
+            res = accept(root, a.verdict_id, dry_run=a.dry_run, i_am_human=a.i_am_human,
+                         text_override=a.text)
             if a.dry_run:
                 print(f"DRY RUN {a.verdict_id} ({res['task']} AC {res['ac']}): nothing written")
                 print(f"  before: {res['before']}")

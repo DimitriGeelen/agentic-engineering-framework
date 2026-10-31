@@ -199,3 +199,48 @@ def test_cli_list_and_refusal_exit_codes(proj):
     out = subprocess.run([sys.executable, "-m", "lib.reviewer.restatement_cli", "accept", "V-1"],
                          cwd=ROOT, env=env, capture_output=True, text=True)
     assert out.returncode == 2 and "REFUSED" in out.stderr
+
+
+# ── T-4939 (ring20-dashboard msg cbc6bab6): commentary on the restatement's line ──
+
+TAILED = ("PROPOSED RESTATEMENT: [REVIEW] The page lists every project. The evidence meets the "
+          "restatement; operator to accept or reject it.")
+
+
+def test_accept_text_override_writes_operator_wording_and_records_both(proj):
+    root, task = proj
+    _add_rows(root, _row("V-7", 1, _digest(TASK, 1), ts="2026-10-31T12:00:00Z", guidance=TAILED))
+    rec = rc.accept(root, "V-7", text_override="[REVIEW] The page lists every project")
+    text = task.read_text()
+    assert "- [ ] [REVIEW] The page lists every project\n" in text
+    assert "operator to accept" not in text
+    assert rec["edited"] is True and rec["proposed"].endswith("operator to accept or reject it.")
+    stored = json.loads((root / rc.DECISIONS).read_text().splitlines()[-1])
+    assert stored["edited"] is True and stored["new_title"].endswith("lists every project")
+
+
+def test_accept_without_text_is_unchanged_and_records_not_edited(proj):
+    root, _ = proj
+    rec = rc.accept(root, "V-1")
+    assert rec["edited"] is False and rec["proposed"] == "[REVIEW] The page lists every registered project"
+
+
+def test_text_override_is_checked_and_dry_run_shows_it(proj, monkeypatch):
+    root, task = proj
+    with pytest.raises(rc.Refused, match="checkbox"):
+        rc.accept(root, "V-1", text_override="a - [x] b")
+    with pytest.raises(rc.Refused, match="empty"):
+        rc.accept(root, "V-1", text_override="   ")
+    res = rc.accept(root, "V-1", dry_run=True, text_override="Edited wording")
+    assert res["after"][0].endswith("[REVIEW] Edited wording") and task.read_text() == TASK
+    monkeypatch.setenv("CLAUDECODE", "1")
+    with pytest.raises(rc.Refused, match="operator's decision"):
+        rc.accept(root, "V-1", text_override="Edited wording")
+
+
+def test_brief_asks_for_the_restatement_alone_on_its_line():
+    from lib.reviewer import judge_cli
+    crit = [{"index": 1, "ac_index": 1, "body": "- [ ] [REVIEW] x", "render": False,
+             "title": "x", "digest": "d"}]
+    brief = judge_cli._build_brief("T-9", crit, rung=3, kind="claude", revision="abc")
+    assert "holds the criterion text ONLY" in brief and "on the NEXT line" in brief
