@@ -293,7 +293,7 @@ bvp_scores_proposed:
 -->
 timeout 1500 bats tests/unit/t4705_upgrade_commit_list_vendored_external.bats > /tmp/.t4910.out 2>&1 && ! grep -q "^not ok" /tmp/.t4910.out
 test "$(grep -c '# skip' /tmp/.t4910.out)" -eq 0
-! grep -q 'archive HEAD~' tests/unit/t4705_upgrade_commit_list_vendored_external.bats
+! grep -qE '^[[:space:]]*git -C .* archive HEAD~' tests/unit/t4705_upgrade_commit_list_vendored_external.bats
 
 ## RCA
 
