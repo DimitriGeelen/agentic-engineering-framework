@@ -8,10 +8,10 @@ description: >
   strips only reviewer verdict/escalation annotations (T-3853). Classify title + Steps/Expected/If-not
   only.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, delegation, classifier]
 components: []
 related_tasks: [T-4901, T-3853]
@@ -43,7 +43,7 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "4c89079d"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-31T14:21:33Z
-last_update: '2026-10-31T14:30:20Z'
+last_update: 2026-10-31T14:50:14Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,20 +89,23 @@ cost_estimate_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** ring20-dashboard's be.3 field test (msg 4c89079d). Their criterion T-372 ("Concern action buttons work in browser") now classifies act-in-the-world. The trigger phrase the classifier quoted, "POSTs to", came from their own dated Evidence block under the criterion, not from the criterion.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** confirmed by reading `lib/delegation.py`. `Criterion.producer_text` removes only the reviewer's annotations (`**Reviewer verdict` / `**Reviewer escalation`, T-3853). An Evidence block an agent writes under a criterion is classified as if the criterion's author had written it, so evidence wording can change who closes the criterion.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** a criterion is classified on what its author wrote: the title plus Steps, Expected and If-not.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:**
+- `producer_text` drops `**Evidence…**` blocks up to the next field of the criterion (`**Steps`, `**Expected`, `**If not`, `**Why`, `**Origin`).
+- A criterion's class no longer depends on evidence text written under it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `Criterion.producer_text` excludes Evidence blocks (a line starting `**Evidence`, through to the next criterion field or the end), as it already excludes reviewer annotations
+- [ ] Tests: a deterministic criterion with an Evidence block saying "POSTs to … approve" stays deterministic/reviewer-judged; the same words in the criterion's own Expected still classify act-in-the-world; existing delegation classifier tests pass
+- [ ] Vendored copy synced; ring20-dashboard told
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -385,3 +388,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4929-delegation-classifier-reads-agent-writte.md
 - **Context:** Initial task creation
+
+### 2026-10-31T14:50:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

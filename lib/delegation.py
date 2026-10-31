@@ -361,6 +361,9 @@ def task_touches_render_surface_cheap(
 #: Lines the framework writes UNDER a criterion (lib/verdict_ledger.py: `_cite`,
 #: `_route_to_operator`). Not the producer's text, so never classified (T-3853).
 GENERATED_ANNOTATION_RE = re.compile(r"^\s*\*\*Reviewer (verdict|escalation)\b")
+#: T-4929: evidence written under a criterion, and the criterion's own fields that end it.
+EVIDENCE_START_RE = re.compile(r"^\s*\*\*Evidence\b", re.IGNORECASE)
+CRITERION_FIELD_RE = re.compile(r"^\s*\*\*(Steps|Expected|If\s+not|Why|Origin)\b", re.IGNORECASE)
 
 
 @dataclass
@@ -390,8 +393,23 @@ class Criterion:
 
         T-3853: the classifier read the reviewer's escalation note as part of the
         criterion, so 'authorize' in the framework's own words made a layout check
-        operator-only. Classify only what the producer wrote."""
-        return "\n".join(ln for ln in self.lines if not GENERATED_ANNOTATION_RE.match(ln))
+        operator-only. Classify only what the producer wrote.
+
+        T-4929 (ring20-dashboard): an `**Evidence…**` block an agent writes under a
+        criterion is not the criterion either — 'POSTs to' in their evidence made a
+        browser check act-in-the-world. It is skipped up to the criterion's next own
+        field (Steps / Expected / If not / Why / Origin) or the end."""
+        out, in_evidence = [], False
+        for ln in self.lines:
+            if EVIDENCE_START_RE.match(ln):
+                in_evidence = True
+                continue
+            if in_evidence and CRITERION_FIELD_RE.match(ln):
+                in_evidence = False
+            if in_evidence or GENERATED_ANNOTATION_RE.match(ln):
+                continue
+            out.append(ln)
+        return "\n".join(out)
 
     @property
     def expected(self) -> str:

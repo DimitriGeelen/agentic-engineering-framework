@@ -482,3 +482,42 @@ def test_surface_scan_counts_sum(tmp_path):
     assert rep["by_delegation"][REVIEWER_CLOSEABLE] == 0
     assert rep["by_delegation"][REVIEWER_JUDGES] == 2
     assert rep["delegable_tasks"] == ["T-1"]
+
+
+# ── T-4929: evidence written under a criterion is not the criterion ─────────
+# ring20-dashboard (msg 4c89079d): 'POSTs to' in their own dated Evidence block made a
+# browser check classify act-in-the-world. Only title + Steps/Expected/If-not count.
+
+def test_evidence_block_does_not_change_the_class():
+    c = crit(
+        "[REVIEW] Doctor reports the new key",
+        STEPS,
+        "  **Expected:** output contains the key and exit code is 0",
+        "  **Evidence (2026-10-31):** HOLDS — the button POSTs to /api/concerns/approve",
+        "  and the operator's account is used to register a new user",
+        IFNOT,
+    )
+    cl = classify(c)
+    assert cl.cls == "deterministic", cl
+    assert "Evidence" not in c.producer_text and "POSTs to" not in c.producer_text
+    assert "**If not:**" in c.producer_text            # the criterion's own field after it survives
+
+
+def test_the_same_words_in_the_criterion_itself_still_count():
+    # Control: the act-in-the-world words the evidence carried, in the criterion's own
+    # Steps, still route to the operator.
+    c = crit(
+        "[REVIEW] Article is live",
+        "  **Steps:**\n  1. Publish the draft",
+        "  **Expected:** the page returns 200",
+        IFNOT,
+    )
+    assert classify(c).delegation_class == OPERATOR_ONLY
+    with_evidence = crit(
+        "[REVIEW] Doctor reports the new key",
+        STEPS,
+        "  **Expected:** exit code is 0",
+        "  **Evidence:** checked after we publish the draft",
+        IFNOT,
+    )
+    assert classify(with_evidence).delegation_class != OPERATOR_ONLY
