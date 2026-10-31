@@ -76,7 +76,7 @@ date_finished: null
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] `tests/lint/template-sigpipe-hint-ordering.bats` pins the here-string capture form and the adjacent retraction of `echo "$out" | grep -q`; ordering and labelling checks unchanged; no check requires the retracted 64 KB rule
-- [ ] `bin/fw test invariants` passes with 0 reds; the push of bleeding-edge succeeds
+- [x] `bin/fw test invariants` passes with 0 reds; the push of bleeding-edge succeeds (50045bc15..fed0cc050)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
