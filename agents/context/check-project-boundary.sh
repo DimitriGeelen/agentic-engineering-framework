@@ -51,14 +51,20 @@ BOUNDARY_HOME="${BOUNDARY_HOME%/}"
 BOUNDARY_EXTRA_READ=""
 _bd_extra_raw=$(fw_config BOUNDARY_EXTRA_READ_PATHS "" 2>/dev/null || true)
 IFS=':' read -r -a _bd_extra_list <<< "$_bd_extra_raw"
+# T-4935 (GitHub #104 reply): each entry counts as written (normalised, links not
+# followed) AND as resolved. Command paths are compared as typed, so a listed symlink
+# kept only in resolved form never matched the link path the operator runs.
 for _bd_p in "${_bd_extra_list[@]}"; do
     case "$_bd_p" in /?*) ;; *) continue ;; esac
-    _bd_p=$(realpath -m "$_bd_p" 2>/dev/null || echo "$_bd_p")
-    _bd_p="${_bd_p%/}"
-    [ -n "$_bd_p" ] || continue
-    BOUNDARY_EXTRA_READ="${BOUNDARY_EXTRA_READ:+$BOUNDARY_EXTRA_READ:}$_bd_p"
+    for _bd_q in "$(realpath -m -s "$_bd_p" 2>/dev/null || echo "$_bd_p")" \
+                 "$(realpath -m "$_bd_p" 2>/dev/null || echo "$_bd_p")"; do
+        _bd_q="${_bd_q%/}"
+        [ -n "$_bd_q" ] || continue
+        case ":$BOUNDARY_EXTRA_READ:" in *":$_bd_q:"*) continue ;; esac
+        BOUNDARY_EXTRA_READ="${BOUNDARY_EXTRA_READ:+$BOUNDARY_EXTRA_READ:}$_bd_q"
+    done
 done
-unset _bd_extra_raw _bd_extra_list _bd_p
+unset _bd_extra_raw _bd_extra_list _bd_p _bd_q
 
 # Read stdin (JSON from Claude Code)
 INPUT=$(cat)

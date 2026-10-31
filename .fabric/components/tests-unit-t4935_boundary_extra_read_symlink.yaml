@@ -1,0 +1,21 @@
+id: tests/unit/t4935_boundary_extra_read_symlink.bats
+name: t4935_boundary_extra_read_symlink
+type: script
+subsystem: tests
+location: tests/unit/t4935_boundary_extra_read_symlink.bats
+tags: []
+
+purpose: "T-4935 (GitHub #104 reply IC_kwDORdtOLc8AAAABhRyejw): a BOUNDARY_EXTRA_READ_PATHS entry that is a symbolic link was stored only in resolved form, while the command's path is compared as typed, so the link path the operator runs stayed…"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-31
+created_by: unknown
