@@ -11,10 +11,10 @@ description: >
   and notices in lib/sidecar/dm.py unacted. Filed during the release freeze (T-4869):
   backlog.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [post-freeze, sidecar]
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T00:50:15Z
-last_update: '2026-10-31T13:15:38Z'
+last_update: 2026-10-31T13:39:41Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -109,12 +109,24 @@ bvp_scores_proposed:
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+**Background / trigger:** ring20's be.50 report (msg 90ae5b45): `fw sidecar alerts` listed 9 unanswered DMs from 050-email-archive, 7 of which were 050's own "Got it, on it now…" auto-acknowledgements.
+
+**Problem / hypothesis:** confirmed 2026-10-31 with ring20 (msg 5a3aa616), who read the envelopes on their own rail. The acks are `msg_type: chat` with metadata `client_msg_id`, `from_project` and `observed_addr`, which is exactly the shape of 050's real mail. There is no kind, notice, auto_ack, in_reply_to or receipt field. The only regularity is a `[bridge-ref:<id>]` body prefix, repeated across re-sends of one ack. That bridge is 050's own code (nothing in the framework emits `bridge-ref`). So the reader cannot tell an ack from mail without guessing at text. The framework already excludes posts marked as notices (`metadata.notice` or `kind: notice`, which `fw sidecar send --notice` writes).
+
+**Goal:** acks stop showing as unanswered mail, fixed where they are produced, not by content guessing in the reader (gap homing, T-1333).
+
+**Expected outcome:**
+- A test pins the contract a sender can rely on: a peer post marked as a notice is never listed and never closes the mail before it. An unmarked ack is still mail (the documented limitation).
+- 050 is asked to mark its acks.
+- ring20 is told the outcome.
+
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Cause established with the reporter's envelope evidence (msg 5a3aa616) and the producer located (050's bridge, not framework code)
+- [x] Tests pin that a notice-marked peer ack (`notice: true` or `kind: notice`) is never listed and is not an answer, and that an unmarked ack still is mail; the existing unacted suite passes (15 passed)
+- [x] 050-email-archive asked to send its acks as notices (`fw sidecar send --notice`, or `metadata.kind: notice`); ring20 told the outcome (msgs ecb69063, d9e618e1)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -299,8 +311,17 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 python3 -m pytest -q -p no:cacheprovider tests/unit/test_sidecar_dm_unacted_t4880.py > /tmp/.t4893.out 2>&1 && grep -q passed /tmp/.t4893.out
 
 ## RCA
+
+**Symptom:** ring20's `fw sidecar alerts` listed 050's automatic acknowledgements as unanswered mail (7 of 9).
+
+**Root cause:** 050's bridge sends its acks as ordinary chat posts, with the same metadata as its real mail and no marker (envelope evidence: ring20 msg 5a3aa616). The framework's unanswered-mail rule (`dm._is_mail`) excludes receipts and notice-marked posts, but cannot tell an unmarked ack from mail.
+
+**Why structurally allowed:** the sidecar protocol has a notice marker (`--notice`, T-4348), but a peer posting through its own bridge is not obliged to use it, and nothing tells the sender its acks look like mail on the other side.
+
+**Prevention:** the fix is homed with the producer (T-1333): 050 is asked to mark its acks as notices. On our side, tests pin that a notice-marked peer ack is never listed and never closes the mail before it, so a sender can rely on that. A text heuristic for `[bridge-ref:` was rejected: it would guess, and a real message starting the same way would vanish. Until 050 changes, a reader settles a stray ack with `.context/sidecar/dm-handled`.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -396,3 +417,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4893-fw-sidecar-alerts-counts-a-peers-own-aut.md
 - **Context:** Initial task creation
+
+### 2026-10-31T13:39:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)

@@ -211,3 +211,25 @@ def test_alerts_failed_dm_listing_is_not_checked(monkeypatch):
     with pytest.raises(Exception, match="dm rails") as ei:
         alerts.collect()
     assert type(ei.value).__name__ == "Unreadable"
+
+
+# T-4893 (ring20 be.50, msgs 90ae5b45 / 5a3aa616): 7 of 9 "unanswered" DMs from 050 were
+# its own 'Got it, on it now...' auto-acks. ring20 read the envelopes: msg_type chat,
+# metadata only client_msg_id/from_project/observed_addr — no marker tells an ack from
+# mail, so the fix is on the sending side. This pins what a sender can rely on.
+def test_a_peer_ack_marked_as_notice_is_never_mail_nor_an_answer():
+    for marker in ({"notice": True}, {"kind": "notice"}):
+        rails = {AGENT_RAIL: [
+            _post(0, 50, "real request", from_project="050-email-archive"),
+            _post(1, 49, "[bridge-ref:x] Got it, on it now", from_project="050-email-archive", **marker),
+        ]}
+        rows = _unacted(rails)
+        assert [r["offset"] for r in rows] == [0], marker  # the request stays open; the ack is not listed
+
+
+def test_an_unmarked_peer_ack_is_still_mail():
+    # The limitation T-4893 documents: without a marker an ack is indistinguishable from mail.
+    rails = {AGENT_RAIL: [
+        _post(0, 49, "[bridge-ref:x] Got it, on it now", from_project="050-email-archive"),
+    ]}
+    assert [r["offset"] for r in _unacted(rails)] == [0]
