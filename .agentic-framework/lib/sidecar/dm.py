@@ -381,6 +381,19 @@ UNACTED_WINDOW_DAYS = 30
 _UNACTED_READ_LIMIT = 1000
 
 
+def host_shared_address_keys(*, runner=subprocess.run, timeout: int = 15) -> set[str]:
+    """T-4892: configured `SIDECAR_DM_ADDRESS_KEYS` entries that ARE the host-shared
+    fingerprint. Every project on the machine signed with that key before T-4454, so its
+    rails carry other agents' mail too; listing it as ours made `fw sidecar alerts`
+    adopt their old mail (832, be.50). Empty when the host key cannot be measured."""
+    extra = identity._config("SIDECAR_DM_ADDRESS_KEYS", "")
+    keys = {k.strip() for k in extra.split(",") if k.strip()}
+    if not keys:
+        return set()
+    host = _host_fingerprint(runner=runner, timeout=timeout)
+    return {host} & keys if host else set()
+
+
 def address_keys() -> set[str]:
     """Every key a DM addressed to THIS project may be keyed by: our own
     fingerprint, the T-4311 host key while a transition is on, and any older
