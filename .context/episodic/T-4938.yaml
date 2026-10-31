@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4938: v1.8.16 field-test record: collect be.1-be.8 verdicts into docs/reports/field-test-v1.8.16-results.md
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T17:43:06Z
+# ============================================================================
+
+task_id: T-4938
+task_name: "v1.8.16 field-test record: collect be.1-be.8 verdicts into docs/reports/field-test-v1.8.16-results.md"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-31T17:40:40Z
+completed: 2026-10-31T17:42:52Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-31T18:42:50+01:00
+last_commit: 2026-10-31T18:42:50+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  v1.8.16 field-test record — 7 reports (ring20-dashboard be.3/5/6, 832 be.3, 0506 be.4/5), fix status, rule-b coverage up to be.3
+
+# Key outcomes
+outcomes:
+  - 'Every v1.8.16 verdict in this project''s receiver store is found by a scan of the stored messages (not from memory) and listed with tester, be-tag, verdict, the fixes it names, and message id (scan: 9 messages, 7 reports + 2 announcements)'
+  - 'A table lists every consumer-facing task that landed in be.1 to be.8 (from `git log` per tag range; handover, estimator sweeps and test-only tasks left out) with its field status'
+  - 'The report says plainly which fixes have no positive field test yet'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'v1.8.16 field-test record — 7 reports (ring20-dashboard be.3/5/6, 832 be.3, 0506 be.4/5), fix status, rule-b coverage up to be.3'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3046-message-triage-slice-1--static-msgtype-r.md'
+  - '.tasks/active/T-4648-session-handover-maintenance.md'
+  - '.tasks/active/T-4938-v1816-field-test-record-collect-be1-be8-.md'
+  - 'docs/reports/field-test-v1.8.16-results.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-31T18:42:50'
+    action: 'T-4938: v1.8.16 field-test record — 7 reports (ring20-dashboard be.3/5/6, 832 be.3, 0506 be.4/5), fix status, rule-b coverage up to be.3'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 7
+  lines_added: 613
+  lines_removed: 12
+  footprint_refreshed_at: '2026-10-31T17:43:16Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4938-v1816-field-test-record-collect-be1-be8-.md
+generated_by: context-agent-hybrid
