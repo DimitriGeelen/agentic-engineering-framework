@@ -286,7 +286,21 @@ _rung_label = review_policy.rung_label
 
 # ── evidence: screenshots of the pages the task touched ──────────────────────
 
-_ROUTE_RE = re.compile(r"""@\w+\.route\(\s*["'](/[^"'<>]*)["']""")
+_ROUTE_RE = re.compile(r"""@\w+\.route\(\s*["'](/[^"'<>]*)["']([^)]*)\)""")
+_METHODS_RE = re.compile(r"""methods\s*=\s*[\[(]([^\])]*)[\])]""")
+
+
+def _get_routes(src: str) -> list[str]:
+    """Paths of the routes a browser GET can render. T-4932: a route declared with
+    `methods=` that lacks GET (`/api/task/create`, POST only) answers 405, and requiring
+    a screenshot of it made every seat return not-evaluated. No `methods=` is Flask's GET."""
+    out = []
+    for path, rest in _ROUTE_RE.findall(src):
+        m = _METHODS_RE.search(rest)
+        if m and "GET" not in re.findall(r"[A-Za-z]+", m.group(1).upper()):
+            continue
+        out.append(path)
+    return out
 # T-4455: a criterion names pages as a backticked path with a query (`/search?q=a b`) or as
 # a full URL on this project's Watchtower, backticked or bare (http://<host>:3000/cron).
 _BACKTICK_RE = re.compile(r"`([^`\n]+)`")
@@ -363,7 +377,7 @@ def _pages_for(root: Path, task_id: str, task_text: str, criteria: list[dict]) -
             hit = rel in changed or any(
                 Path(f).name in src for f in changed if f.startswith("web/templates/"))
             if hit:
-                pages += [r for r in _ROUTE_RE.findall(src) if "<" not in r]
+                pages += [r for r in _get_routes(src) if "<" not in r]
     seen, out = set(), []
     for p in pages:
         if p not in seen:

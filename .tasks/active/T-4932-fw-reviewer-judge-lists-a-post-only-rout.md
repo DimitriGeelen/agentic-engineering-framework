@@ -7,10 +7,10 @@ description: >
   on GET); both evaluating seats returned not-evaluated because a required page was
   not seen (V-20261031-57ac850c). Pages a GET cannot render must not be required.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, reviewer, judge]
 components: []
 related_tasks: [T-4904, T-3580]
@@ -42,7 +42,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-31T15:18:57Z
-last_update: '2026-10-31T15:30:22Z'
+last_update: 2026-10-31T16:21:10Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,20 +88,22 @@ cost_estimate_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** `fw reviewer judge T-4904` on 2026-10-31 planned screenshots for every route of the changed blueprint `web/blueprints/tasks.py`, including `/api/task/create`, which is declared `methods=["POST"]` and answers 405 to a GET. Both evaluating seats returned not-evaluated because a required page was not seen (V-20261031-57ac850c), so T-4904's render criterion could not be judged.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `_ROUTE_RE` in `lib/reviewer/judge_cli.py` captures the path of every `@bp.route(...)` and ignores its `methods=` argument. A route that a browser GET cannot render becomes a page the reviewer is required to have seen.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the page plan lists only routes a GET can render.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** routes declared without `GET` in `methods=` are left out of the plan; routes with no `methods=` (Flask's default, GET) or with GET listed stay in. T-4904 can be re-judged.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `_pages_for` drops a blueprint route whose `methods=` list lacks GET, including a decorator split over several lines, and keeps routes with no `methods=` or with GET among them
+- [x] A pytest pins all three shapes against a fixture blueprint, and the existing T-4455 page-plan tests stay green
+- [x] On this repo, the plan for a task that changed `web/blueprints/tasks.py` no longer contains `/api/task/create`
+- [ ] T-4904 re-judged after the fix, outcome recorded in its task file
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,6 +289,8 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/unit/t4932_judge_get_routes_test.py tests/unit/t4455_pages_for_test.py > /tmp/.t4932 2>&1 && grep -q " passed" /tmp/.t4932 && ! grep -qE "failed|error" /tmp/.t4932
+bin/fw vendor self --check --task T-4932
 
 ## RCA
 
@@ -303,6 +307,13 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** judging T-4904, both evaluating seats returned not-evaluated: the plan required a screenshot of `/api/task/create`, which answers 405 to a GET.
+
+**Root cause:** `_ROUTE_RE` captured the path of every `@bp.route(...)` and never read its `methods=` argument, so a POST-only API route counted as a page.
+
+**Why structurally allowed:** the T-4455 tests fed the planner criterion text only; no test gave it a changed blueprint containing a non-GET route. Earlier render tasks happened to touch blueprints whose routes were all pages.
+
+**Prevention:** `tests/unit/t4932_judge_get_routes_test.py` pins GET, default, POST-only, multi-line and tuple `methods=` shapes against a fixture blueprint, and checks this repo's `tasks.py` plan has no `/api/task/create`.
 
 ## Evolution
 
@@ -384,3 +395,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4932-fw-reviewer-judge-lists-a-post-only-rout.md
 - **Context:** Initial task creation
+
+### 2026-10-31T16:21:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

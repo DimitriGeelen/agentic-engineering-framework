@@ -1,0 +1,21 @@
+id: tests/unit/t4932_judge_get_routes_test.py
+name: t4932_judge_get_routes_test
+type: script
+subsystem: tests
+location: tests/unit/t4932_judge_get_routes_test.py
+tags: []
+
+purpose: "T-4932: `fw reviewer judge` required a screenshot of `/api/task/create`, a POST-only route (405 on GET), so both seats judging T-4904 returned not-evaluated. Only routes a GET can render belong in the page plan."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-31
+created_by: unknown
