@@ -38,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-31T15:24:15Z
-last_update: 2026-10-31T15:24:15Z
+last_update: 2026-10-31T15:32:14Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -71,9 +71,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Both scanners treat `'` as opening `$'…'` only after an odd run of unescaped `$`
-- [ ] Tests: `echo $$'\' ; touch X #'` not read-only; `echo $$'abc'` and `echo $$$'a\'b'` read-only; T-4926 tests still pass; existing safe-commands suites pass
-- [ ] Safe-swapped; vendored; ring20-dashboard told
+- [x] Both scanners treat `'` as opening `$'…'` only after an odd run of unescaped `$`
+- [x] Tests: `echo $$'\' ; touch X #'` not read-only; `echo $$'abc'` and `echo $$$'a\'b'` read-only; T-4926 tests still pass; existing safe-commands suites pass
+- [x] Safe-swapped; vendored; ring20-dashboard told (on v1.8.16-be.6)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -259,6 +259,18 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t4926_safe_commands_quote_parity.bats > /tmp/.t4934.out 2>&1 && ! grep -q "^not ok" /tmp/.t4934.out
+bin/fw vendor self --check --task T-4934
+
+## RCA
+
+**Symptom:** on the installed v1.8.16-be.5, `echo $$'\' ; touch X #'` was classified read-only; bash runs the `touch` (ring20-dashboard, msg f7af90f0, classification only).
+
+**Root cause:** T-4926 recognised `$'…'` whenever a `'` followed an unescaped `$`. In `$$'`, the second `$` belongs to `$$` (the PID), so the quote is plain. The scanners took it for ANSI-C, treated `\'` as an escaped quote, and swallowed the next clause.
+
+**Why structurally allowed:** T-4926 was tested with single `$` forms and escaped `\$`, never with a `$` run. The fix for one parser differential introduced another, the risk T-4926's own RCA named: hand-written parsers.
+
+**Prevention:** the length of the run of unescaped `$` decides (odd means ANSI-C), in both scanners. Test 6 in `t4926_safe_commands_quote_parity.bats` pins the probe and two controls (`$$'abc'`, `$$$'a\'b'`). All 57 classifier suites pass (765 tests); one control failed once under 8-way parallel load, then passed alone and 3/3 in a row. A real bash tokenizer remains the structural fix if a further differential appears.
 
 ## RCA
 
