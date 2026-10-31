@@ -51773,3 +51773,29 @@ scan_id: R-33f27e3a
 task_id: T-4929
 payload:
   task_file: .tasks/active/T-4929-delegation-classifier-reads-agent-writte.md
+---
+kind: scan_emitted
+timestamp: '2026-10-31T15:08:40Z'
+scan_id: R-c0ce58c4
+task_id: T-4917
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-31T15:08:40Z'
+scan_id: R-c0ce58c4
+task_id: T-4917
+payload:
+  task_file: .tasks/active/T-4917-dispatch-time-limit-as-an-evaluation-tri.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-10-31T15:08:40Z'
+scan_id: RC-bb8b8ae4
+task_id: T-4917
+payload:
+  overall: CONFIRMED
+  claim_count: 1
