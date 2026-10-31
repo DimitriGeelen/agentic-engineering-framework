@@ -84,7 +84,7 @@ fw_hook_run() {
             bash "$_hook_script" "$@" <<<"$_hook_payload" || _hook_rc=$?
         fi
         if [ "$_hook_rc" -ne 0 ] && [ -n "$_hook_err" ] && \
-           _hook_broken="$(grep -m1 -oE '^/[^:]+: line [0-9]+: syntax error' "$_hook_err")"; then
+           _hook_broken="$(_fw_hook_really_broken "$_hook_err")"; then
             _hook_rc=0
             _fw_hook_broken_mode "$_hook_name" "$_hook_broken" "$_hook_payload" || _hook_rc=$?
         fi
@@ -96,6 +96,30 @@ fw_hook_run() {
 # T-4908: decide a tool call while a hook cannot run. $2 is bash's
 # "<file>: line N: syntax error" for the file that does not parse. Allowed: the repair
 # (restore that file from git, or Write/Edit it). Everything else: exit 2, loudly.
+# T-4928 (ring20-dashboard forwarded review, finding 3): stderr TEXT used to decide
+# broken mode — any "/x: line N: syntax error" line opened the repair path for /x. Now a
+# line counts only when its file is a framework hook or library (agents/ or lib/ under
+# FRAMEWORK_ROOT, or under the project's .agentic-framework/) AND `bash -n` really fails
+# on it. Prints the first such "<file>: line N: syntax error"; returns 1 if none.
+_fw_hook_really_broken() {
+    local err="$1" line file real ok root
+    while IFS= read -r line; do
+        file="${line%%: line *}"
+        real="$(realpath -e -- "$file" 2>/dev/null)" || continue
+        ok=0
+        for root in "${FRAMEWORK_ROOT:-}" "${PROJECT_ROOT:+$PROJECT_ROOT/.agentic-framework}"; do
+            [ -n "$root" ] || continue
+            root="$(realpath -e -- "$root" 2>/dev/null)" || continue
+            case "$real" in "$root"/agents/*|"$root"/lib/*) ok=1 ;; esac
+        done
+        [ "$ok" -eq 1 ] || continue
+        bash -n "$real" 2>/dev/null && continue
+        printf '%s\n' "$line"
+        return 0
+    done < <(grep -oE '^/[^:]+: line [0-9]+: syntax error' "$err" 2>/dev/null)
+    return 1
+}
+
 _fw_hook_broken_mode() {
     local name="$1" broken="$2" payload="$3"
     local file="${broken%%: line *}" line
