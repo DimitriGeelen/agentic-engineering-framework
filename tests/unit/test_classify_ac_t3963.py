@@ -35,7 +35,7 @@ def _direct(text):
 
 def test_cli_equals_classify_for_three_classes():
     for text, want in ((FORCE, "OPERATOR-ONLY"), (TASTE, "REVIEWER-JUDGES"),
-                       (DETERMINISTIC, "REVIEWER-CLOSEABLE")):
+                       (DETERMINISTIC, "REVIEWER-JUDGES")):   # T-4916/T-4919: reviewer-judged
         row = _cli("--text", text, "--json")[0]
         assert (row["class"], row["delegation_class"]) == _direct(text)
         assert row["delegation_class"] == want, row
