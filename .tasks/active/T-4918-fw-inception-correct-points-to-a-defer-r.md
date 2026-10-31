@@ -7,10 +7,10 @@ description: >
   and says move the task back and decide again; the second step is an invalid transition,
   so the documented route needs a hand edit.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, inception]
 components: []
 related_tasks: [T-4324]
@@ -42,7 +42,7 @@ origin: {kind: "pickup", source: "dimitri-mint-dev", ref: "P-027"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-30T01:07:40Z
-last_update: '2026-10-30T01:15:29Z'
+last_update: 2026-10-31T12:23:42Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -111,8 +111,11 @@ Side note from the same report: a `!` command typed in a Claude Code session inh
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw inception correct T-XXX defer --reason "…"` reopens a GO/NO-GO inception: the file moves back to active/, status `captured`, horizon `later`, date_finished cleared (the state `decide defer` leaves, T-1865), the Decision block reads DEFER with "Corrected: from GO/NO-GO", an Updates entry and a ledger row are written, one commit with the decision subject
+- [ ] Same sovereignty gate and mandatory reason as go/no-go corrections: refused under `CLAUDECODE=1` without `--i-am-human`/`--from-watchtower`, and nothing is moved or written when refused
+- [ ] No more "move the task back and decide again" text: usage and errors name `correct … defer`
+- [ ] Tests: GO→DEFER reopen end to end on a fixture repo; agent refusal leaves the file in completed/; existing correct tests pass
+- [ ] Vendored copy synced; dimitri-mint-dev told
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -398,3 +401,7 @@ Side note from the same report: a `!` command typed in a Claude Code session inh
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4918-fw-inception-correct-points-to-a-defer-r.md
 - **Context:** Initial task creation
+
+### 2026-10-31T12:23:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

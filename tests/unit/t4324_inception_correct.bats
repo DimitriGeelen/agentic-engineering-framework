@@ -133,3 +133,44 @@ PY
     run show_inception_help
     [[ "$output" == *"correct <T-XXX> go|no-go"* ]]
 }
+
+# T-4918 (dimitri-mint-dev P-027): the old refusal sent operators to "move the task back
+# and decide again", but `fw task update` refuses work-completed -> started-work, so the
+# only way out was a hand edit. `correct ... defer` now reopens it itself.
+@test "T-4918: correct GO -> DEFER reopens the inception, parked in active/, one commit" {
+    f=$(_make_task T-9010 completed inception GO)
+    run do_inception_correct T-9010 defer --reason "meant DEFER, mis-clicked GO"
+    [ "$status" -eq 0 ]
+    a="$TASKS_DIR/active/T-9010-test.md"
+    [ -f "$a" ]
+    [ ! -e "$f" ]
+    grep -q '^status: captured$' "$a"
+    grep -q '^horizon: later$' "$a"
+    grep -q '^date_finished:$' "$a"
+    grep -q '^\*\*Decision\*\*: DEFER$' "$a"
+    grep -q '^\*\*Corrected\*\*: from GO' "$a"
+    grep -q 'exploration reopened' "$a"
+    grep -q '"to": "DEFER", "reason": "meant DEFER, mis-clicked GO", "by": "cli", "reopened": true' \
+        "$TEST_TEMP_DIR/.context/inception-corrections.jsonl"
+    [ "$(git -C "$TEST_TEMP_DIR" log -1 --format=%s)" = "T-9010: inception decision DEFER (corrected from GO)" ]
+    # The move is in that commit: nothing about the task is left uncommitted.
+    [ -z "$(git -C "$TEST_TEMP_DIR" status --porcelain -- .tasks)" ]
+}
+
+@test "T-4918: an agent cannot reopen as DEFER; the file stays in completed/" {
+    f=$(_make_task T-9011 completed inception GO)
+    before=$(cat "$f")
+    CLAUDECODE=1 run do_inception_correct T-9011 defer --reason r
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"Agents must not correct"* ]]
+    [ -f "$f" ]
+    [ ! -e "$TASKS_DIR/active/T-9011-test.md" ]
+    [ "$(cat "$f")" = "$before" ]
+}
+
+@test "T-4918: no refusal text sends operators to 'move the task back' any more" {
+    ! grep -q "move the task back and decide again" "$FRAMEWORK_ROOT/lib/inception.sh" || false
+    run do_inception_correct T-9012 maybe --reason r
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"go, no-go or defer"* ]]
+}
