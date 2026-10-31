@@ -1,0 +1,108 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4921: Census: echo/printf \"$var\" | grep -q under pipefail can fail open elsewhere (133 sites in 42 shell files); Verification template's 64K rule is wrong for multi-line values
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T13:13:57Z
+# ============================================================================
+
+task_id: T-4921
+task_name: "Census: echo/printf \"$var\" | grep -q under pipefail can fail open elsewhere (133 sites in 42 shell files); Verification template's 64K rule is wrong for multi-line values"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-31T12:50:16Z
+completed: 2026-10-31T13:12:47Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-31T14:11:47+01:00
+last_commit: 2026-10-31T14:12:46+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  SECURITY — no pipe into grep -q in pipefail hooks; boundary matcher reads the command from a file (a >128 KB env var stopped it, and its degraded fallback failed open); template guidance recommends here-strings. refresh vendored copies. census, RCA, verification, ACs
+
+# Key outcomes
+outcomes:
+  - 'Census recorded in `## RCA`: every hook (agents/context/, agents/git/, lib/hook-dispatch.sh) with a pipe into `grep -q`, whether it runs under pipefail, and the failure direction per site (open = allows, closed = false refusal)'
+  - 'Every such site in a pipefail hook reads a here-string instead; behaviour otherwise unchanged; `bash -n` clean; `check-active-task.sh` swapped by the safe-swap procedure'
+  - 'Each fail-open site proven on the old code and fixed on the new with a long or multi-line input (the T-4920 shape), in a regression test that also forbids new pipes into `grep -q` in pipefail hooks. The visual-verification `git commit` site needs staged files to probe, so it is covered by the static lint only.'
+  - 'The task template''s Verification guidance recommends a here-string and no longer calls `echo "$out" | grep -q` safe under 64 KB; `lib/upgrade_template_shipped.py` regenerated'
+  - 'Existing tests for the touched hooks pass: 152 files and 1,730 tests. The two reds were fixed here: the T-4851 parser T-4920 broke, and a parallel-run race in the new test. Vendored copy synced; 832 told (msg 6d6e0298).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/.tasks/templates/default.md'
+  - '.agentic-framework/agents/context/budget-gate.sh'
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.agentic-framework/agents/context/check-agent-dispatch.sh'
+  - '.agentic-framework/agents/context/check-project-boundary.sh'
+  - '.agentic-framework/agents/context/check-visual-verification.sh'
+  - '.agentic-framework/agents/context/continuous-driver.sh'
+  - '.agentic-framework/agents/git/lib/large-file-scan.sh'
+  - '.agentic-framework/agents/git/lib/secret-scan.sh'
+  - '.agentic-framework/lib/hook-degraded.sh'
+  - '.agentic-framework/lib/upgrade_template_shipped.py'
+  - '.tasks/active/T-4921-census-echoprintf-var--grep--q-under-pip.md'
+  - '.tasks/templates/default.md'
+  - 'agents/context/budget-gate.sh'
+  - 'agents/context/check-active-task.sh'
+  - 'agents/context/check-agent-dispatch.sh'
+  - 'agents/context/check-project-boundary.sh'
+  - 'agents/context/check-visual-verification.sh'
+  - 'agents/context/continuous-driver.sh'
+  - 'agents/git/lib/large-file-scan.sh'
+  - 'agents/git/lib/secret-scan.sh'
+  - 'lib/hook-degraded.sh'
+  - 'lib/upgrade_template_shipped.py'
+  - 'tests/unit/t4851_degraded_gate_classes.bats'
+  - 'tests/unit/t4921_hooks_no_pipe_into_grep_q.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-31T14:11:47'
+    action: 'T-4921: SECURITY — no pipe into grep -q in pipefail hooks; boundary matcher reads the command from a file (a >128 KB env var stopped it, and its degraded fallback failed open); template guidance recommends here-strings'
+  - time: '2026-10-31T14:12:05'
+    action: 'T-4921: refresh vendored copies'
+  - time: '2026-10-31T14:12:46'
+    action: 'T-4921: census, RCA, verification, ACs'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 22 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, security, pipefail]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 22
+  commits: 4
+  files_changed: 28
+  lines_added: 417
+  lines_removed: 97
+  footprint_refreshed_at: '2026-10-31T13:14:06Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4921-census-echoprintf-var--grep--q-under-pip.md
+generated_by: context-agent-hybrid

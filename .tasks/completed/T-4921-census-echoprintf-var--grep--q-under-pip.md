@@ -8,12 +8,12 @@ description: >
   early, SIGPIPE + pipefail flips the result. Gates first, then the rest; fix the
   template guidance.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, security, pipefail]
-components: []
+components: [C-007, agents/context/check-active-task.sh, agents/context/check-agent-dispatch.sh, agents/context/check-project-boundary.sh, agents/context/check-visual-verification.sh, agents/context/continuous-driver.sh, agents/git/lib/large-file-scan.sh, agents/git/lib/secret-scan.sh, lib/upgrade_template_shipped.py]
 related_tasks: [T-4920]
 origin: {kind: "peer", source: "832-Workflow-designer", ref: "6810a67d"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -43,8 +43,8 @@ origin: {kind: "peer", source: "832-Workflow-designer", ref: "6810a67d"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-31T12:50:16Z
-last_update: '2026-10-31T12:58:41Z'
-date_finished:
+last_update: 2026-10-31T13:12:47Z
+date_finished: 2026-10-31T13:12:47Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -430,3 +430,16 @@ bin/fw vendor self --check --task T-4921
 
 ### 2026-10-31T12:58:40Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-31T13:12:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1d4a8ebc
+- **Timestamp:** 2026-10-31T13:13:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
