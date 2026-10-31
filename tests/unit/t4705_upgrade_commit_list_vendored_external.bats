@@ -73,14 +73,21 @@ _vendored_count() {
 }
 
 @test "T-4712 large vendored diff left uncommitted by an earlier upgrade: the re-run still lists it" {
-    # Vendor the consumer from an older framework commit (git archive, never the working tree).
+    # Vendor the consumer from an "older" framework: HEAD (git archive, never the working
+    # tree) with 120 lib/*.py files marked by an inert trailing comment, so the upgrade
+    # rewrites exactly those. T-4910: this used to be `archive HEAD~300`, a moving anchor —
+    # at this repo's commit rate HEAD~300 is ~3 days back, and by 2026-10-27 that window
+    # held only ~33 vendored files, so `first -ge 100` failed without testing T-4712 at all.
     mkdir -p "$S/old"
-    git -C "$FW_ROOT" archive HEAD~300 | tar -x -C "$S/old"
+    git -C "$FW_ROOT" archive HEAD | tar -x -C "$S/old"
+    find "$S/old/lib" -maxdepth 1 -name '*.py' | LC_ALL=C sort | head -120 \
+        | while IFS= read -r f; do printf '\n# t4910: older vendored copy\n' >> "$f"; done
+    [ "$(grep -l '# t4910: older vendored copy' "$S"/old/lib/*.py | wc -l)" -eq 120 ]
     run env -u PROJECT_ROOT -u FRAMEWORK_ROOT HOME="$S/home" FW_VERB_TELEMETRY=0 \
         bash -c "cd '$S' && '$S/old/bin/fw' vendor --target '$PROJ' --source '$S/old'"
     [ "$status" -eq 0 ]
     git -C "$PROJ" add -A
-    git -C "$PROJ" -c user.email=t@t -c user.name=t commit -qm "T-000: vendored from HEAD~300"
+    git -C "$PROJ" -c user.email=t@t -c user.name=t commit -qm "T-000: vendored from an older copy"
     echo "user notes" > "$PROJ/notes-t4712.txt"   # dirty before, not the upgrade's
 
     _upgrade_from_outside

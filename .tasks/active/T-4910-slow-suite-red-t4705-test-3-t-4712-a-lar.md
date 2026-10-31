@@ -6,10 +6,10 @@ description: >
   t4705_upgrade_commit_list_vendored_external.bats test 3 red in the nightly slow
   suite since 2026-10-27; untracked until now.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, unit-suite, upgrade]
 components: []
 related_tasks: [T-4712]
@@ -41,7 +41,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T23:09:13Z
-last_update: '2026-10-29T23:15:37Z'
+last_update: 2026-10-31T11:21:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,8 +99,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Cause established by measurement and written into `## RCA`: whether the first upgrade's list shrank because the fixture's `HEAD~300` diff shrank (moving anchor) or because the T-4712 guarantee regressed
+- [x] The fixture controls its own size: the large uncommitted vendored diff is created by the test itself, independent of the live repository's history
+- [x] The T-4712 guarantee still asserted: the re-run upgrade lists at least as many vendored files as the first, with one `git add` line
+- [x] `tests/unit/t4705_upgrade_commit_list_vendored_external.bats` passes 2 runs in a row
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,8 +291,19 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 1500 bats tests/unit/t4705_upgrade_commit_list_vendored_external.bats > /tmp/.t4910.out 2>&1 && ! grep -q "^not ok" /tmp/.t4910.out
+test "$(grep -c '# skip' /tmp/.t4910.out)" -eq 0
+! grep -q 'archive HEAD~' tests/unit/t4705_upgrade_commit_list_vendored_external.bats
 
 ## RCA
+
+**Symptom:** `t4705_upgrade_commit_list_vendored_external.bats` test 3 (T-4712) failed in the nightly slow suite from 2026-10-27, at `[ "${first:-0}" -ge 100 ]`. The first upgrade listed fewer than 100 vendored files.
+
+**Root cause:** the fixture built its "large vendored diff" by vendoring from `git archive HEAD~300` of the live repository. At this repository's commit rate (handover, sweep and task commits included), `HEAD~300` was about three days back, and on 2026-10-31 only 33 vendored-path files differed between it and HEAD. The size of the diff was a property of recent history, not of the test, so the test went red once a quieter stretch of code changes fell inside the window. Measured: `HEAD~300` = c13367ac6 (2026-10-28), 33 files under agents/, lib/, bin/, web/ and policy/. The T-4712 guarantee itself had not regressed: with a controlled diff the re-run lists at least as many files as the first run, with one `git add` line, 2 runs out of 2.
+
+**Why structurally allowed:** this is the mutable-corpus anchor the task template warns about (T-3326): a unit test pinned to live repository state. Nothing lints for `HEAD~N` in tests. The red sat in the slow suite with no owner for four days, the same gap T-4909 names.
+
+**Prevention:** the fixture now makes its own diff: 120 `lib/*.py` files of an archive of HEAD get an inert trailing comment, the count is asserted, and no history depth is involved. The Verification line refuses `archive HEAD~` in this file. A corpus-wide lint for `HEAD~<n>` in tests/ is the wider fix and is left as an observation.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -386,3 +399,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4910-slow-suite-red-t4705-test-3-t-4712-a-lar.md
 - **Context:** Initial task creation
+
+### 2026-10-31T11:21:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
