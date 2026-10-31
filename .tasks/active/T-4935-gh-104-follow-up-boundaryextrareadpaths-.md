@@ -1,6 +1,7 @@
 ---
 id: T-4935
-name: "GH #104 follow-up: BOUNDARY_EXTRA_READ_PATHS entry that is a symlink still blocks the link path"
+name: "GH #104 follow-up: BOUNDARY_EXTRA_READ_PATHS entry that is a symlink still
+  blocks the link path"
 description: >
   GitHub issue #104 reply by MikeEchoVoid (reply IC_kwDORdtOLc8AAAABhRyejw,
   2026-10-30): the T-4361 setting works, but an entry that is a symbolic link is
@@ -43,8 +44,8 @@ related_tasks: [T-4361]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-31T15:51:54Z
-last_update: 2026-10-31T15:51:54Z
-date_finished: null
+last_update: '2026-10-31T16:00:20Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -55,6 +56,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-31T16:00:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 2
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=2 
+      (body:telemetry-or-audit-entry); D3=0 (no-signal); D4=0 (no-signal); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4935: GH #104 follow-up: BOUNDARY_EXTRA_READ_PATHS entry that is a symlink still blocks the link path
