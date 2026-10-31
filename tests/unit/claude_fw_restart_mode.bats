@@ -87,6 +87,11 @@ run_decision() {
     grep -q 'Restart mode: continue' "$SRC"
 }
 
+@test "the fresh banner and the header explain the stale -c in ps (T-4912)" {
+    grep -q 'Note: ps still lists claude-fw with its launch arguments; the new claude process runs without -c.' "$SRC"
+    grep -q '^# In ps, the claude-fw line keeps its launch arguments' "$SRC"
+}
+
 @test "wrapper parses" {
     bash -n "$SRC"
 }

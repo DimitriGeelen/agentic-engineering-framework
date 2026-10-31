@@ -5,6 +5,8 @@
 # written by checkpoint.sh when auto-handover fires at critical budget.
 # If found (and fresh), auto-restarts (fresh by default, T-3166). Any -c / --continue
 # is resolved to `--resume <this session's conversation>`, never a worker's (T-4497).
+# In ps, the claude-fw line keeps its launch arguments for its whole life; after a
+# fresh restart the claude child line (no -c / --resume) is what is running (T-4912).
 #
 # Usage:
 #   claude-fw [claude-args...]          # Run with auto-restart enabled
@@ -1700,6 +1702,9 @@ while true; do
             echo "  Restart mode: continue (--resume of this session's recorded conversation — transcript restored, context NOT freed; T-4497)"
         else
             echo "  Restart mode: fresh (new session, seeded from the handover)"
+            # T-4912: bash cannot rewrite its own argv, so ps keeps showing this
+            # wrapper's launch arguments (a -c included) after a fresh restart.
+            echo "  Note: ps still lists claude-fw with its launch arguments; the new claude process runs without -c."
         fi
         echo "  Reason: context budget critical — the previous session was ended on purpose, not a crash."
         echo "  Handover: $(_handover_id "$(cd "$(dirname "$signal_file")/../.." && pwd)") (.context/handovers/LATEST.md)"

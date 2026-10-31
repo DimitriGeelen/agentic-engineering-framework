@@ -6,10 +6,10 @@ description: >
   Cosmetic, reported by dimitri-mint-dev (msg 400f6ed2): the process command line
   after a fresh restart keeps the launch's -c.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [claude-fw, cosmetic]
 components: []
 related_tasks: [T-3166, T-4497]
@@ -41,7 +41,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev", ref: "400f6ed2"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T23:11:45Z
-last_update: '2026-10-29T23:15:37Z'
+last_update: 2026-10-31T19:46:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,8 +99,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The process carrying the stale `-c` is identified from code and live `ps` (supervisor vs `claude` child), written in `## RCA`
+- [ ] The fresh-restart banner and the usage header say that `ps` keeps showing claude-fw's own launch arguments and that the new `claude` runs without `-c`; restart behaviour is unchanged
+- [ ] A test pins both lines; `bash -n bin/claude-fw`; existing claude-fw restart tests stay green; `bin/fw vendor self --check --task T-4912` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -386,3 +387,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4912-claude-fw-after-a-fresh-budget-restart-p.md
 - **Context:** Initial task creation
+
+### 2026-10-31T19:46:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
