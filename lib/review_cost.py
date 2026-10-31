@@ -69,6 +69,48 @@ def policy_path() -> Path:
     return local if local.is_file() else fw / "policy" / "review-backends.yaml"
 
 
+def registry_shadow() -> dict | None:
+    """T-4913: a project-level registry REPLACES the framework's as a whole file, so later
+    framework changes (new backends, T-4437 isolation blocks, model re-pins) never reach the
+    project and nothing says so (dimitri-mint-dev: a 1.8.3 copy ran review seats without
+    isolation). None when no project copy shadows the framework file; else the paths and
+    what the copy lacks. Missing `isolation` blocks are listed first: they are a security gap.
+    """
+    proj, fw = _roots()
+    local = proj / "policy" / "review-backends.yaml"
+    framework = fw / "policy" / "review-backends.yaml"
+    if not local.is_file():
+        return None
+    try:
+        if local.resolve() == framework.resolve():
+            return None
+    except OSError:
+        pass
+    out = {"loaded": str(local.resolve()), "framework": str(framework.resolve()),
+           "missing_backends": [], "missing_isolation": [], "missing_keys": {}, "error": ""}
+    try:
+        theirs = (yaml.safe_load(local.read_text(encoding="utf-8")) or {}).get("backends") or []
+        ours = (yaml.safe_load(framework.read_text(encoding="utf-8")) or {}).get("backends") or []
+    except (OSError, yaml.YAMLError, AttributeError) as e:
+        out["error"] = f"cannot compare: {type(e).__name__}"
+        return out
+    mine = {b.get("id"): b for b in theirs if isinstance(b, dict)}
+    for b in ours:
+        if not isinstance(b, dict) or not b.get("id"):
+            continue
+        t = mine.get(b["id"])
+        if t is None:
+            out["missing_backends"].append(b["id"])
+            continue
+        lacks = sorted(k for k in b if k not in t)
+        if "isolation" in lacks:
+            out["missing_isolation"].append(b["id"])
+            lacks.remove("isolation")
+        if lacks:
+            out["missing_keys"][b["id"]] = lacks
+    return out
+
+
 def ledger(name: str) -> Path:
     return _roots()[0] / ".context" / "costs" / name
 
@@ -602,6 +644,7 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("credential", help="resolve a backend's credential (T-3766): <backend> [--check] [--exec -- cmd...]")
     sub.add_parser("isolated-run", help="run external review seats outside the repo, tools off, one at a time (T-4437)")
     sub.add_parser("audit")
+    sub.add_parser("registry-shadow", help="T-4913: does a project registry shadow the framework's? (fw doctor)")
     hk = sub.add_parser("check-command"); hk.add_argument("--task", default="")
 
     a = ap.parse_args(argv)
@@ -645,6 +688,22 @@ def main(argv: list[str] | None = None) -> int:
         elif a.cmd == "backend" and a.sub == "set":
             b = set_backend(bid=a.id, cost_class=a.cls, approval_required=a.approval_required, i_am_human=a.i_am_human)
             print(f"Set {b['id']}: class={b['cost_class']} approval_required={str(b['approval_required']).lower()} — logged")
+        elif a.cmd == "registry-shadow":
+            r = registry_shadow()
+            if r is None:
+                print("OK\tno project registry shadows the framework's review registry")
+                return 0
+            print(f"SHADOW\tproject registry {r['loaded']} replaces the framework's {r['framework']}")
+            if r["error"]:
+                print(f"MISSING\t{r['error']}")
+            if r["missing_isolation"]:
+                print("MISSING\tisolation block (T-4437, review seats run unisolated): "
+                      + ", ".join(r["missing_isolation"]))
+            if r["missing_backends"]:
+                print("MISSING\tbackends: " + ", ".join(r["missing_backends"]))
+            for bid, keys in sorted(r["missing_keys"].items()):
+                print(f"MISSING\t{bid}: {', '.join(keys)}")
+            return 1
         elif a.cmd == "audit":
             for lvl, msg in audit_lines():
                 print(f"{lvl}\t{msg}")

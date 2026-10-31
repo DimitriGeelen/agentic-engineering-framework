@@ -4439,6 +4439,21 @@ except Exception:
         done < <(PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 "$FRAMEWORK_ROOT/lib/review_model_preflight.py" 2>/dev/null)
     fi
     fi  # T-2452/F6: end --quick guard for litellm/ollama curls
+    # Check: a project-level review registry shadowing the framework's (T-4913). It replaces
+    # the framework file whole, so later hardening (T-4437 isolation) and re-pins never
+    # reach the project. dimitri-mint-dev ran review seats unisolated this way for weeks.
+    if [ -f "$FRAMEWORK_ROOT/lib/review_cost.py" ] && [ -f "$PROJECT_ROOT/policy/review-backends.yaml" ]; then
+        local _rcs_out="" _rcs_rc=0 _rcs_line
+        _rcs_out=$(PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 "$FRAMEWORK_ROOT/lib/review_cost.py" registry-shadow 2>/dev/null) || _rcs_rc=$?
+        if [ "$_rcs_rc" -eq 1 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  review registry shadowed by a project copy (T-4913):"
+            while IFS= read -r _rcs_line; do
+                echo "         ${_rcs_line#*	}"
+            done <<< "$_rcs_out"
+            echo "         Drop the copy, or bring it level with the framework file named above."
+            warnings=$((warnings + 1))
+        fi
+    fi
 
     # Check: TypeScript build health (optional)
     if [ -d "$FRAMEWORK_ROOT/lib/ts/src" ]; then

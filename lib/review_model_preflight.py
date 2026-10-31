@@ -58,6 +58,18 @@ def _binary(b: dict) -> str:
     return shutil.which("opencode") or ""
 
 
+def _loaded_registry() -> str:
+    """T-4913: the absolute path of the registry actually loaded. A bare
+    'policy/review-backends.yaml' read as the vendored file to a project whose own copy
+    held the stale pin (dimitri-mint-dev, 2026-10-29)."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    try:
+        import review_cost as rc_
+        return str(rc_.policy_path().resolve())
+    except Exception:  # noqa: BLE001 — a message helper must never fail the check
+        return "policy/review-backends.yaml"
+
+
 def check(backends: list[dict], lister: Lister | None = None,
           which: Callable[[dict], str] | None = None) -> list[dict]:
     """One result per opencode-backed registry entry that pins a `<provider>/<name>` model."""
@@ -89,7 +101,7 @@ def check(backends: list[dict], lister: Lister | None = None,
             out.append({**r, "status": "retired", "listed": listed,
                         "detail": f"{model} is not in `opencode models {provider}` "
                                   f"(listed: {', '.join(listed)}) — re-pin it in "
-                                  f"policy/review-backends.yaml"})
+                                  f"{_loaded_registry()}"})
     return out
 
 

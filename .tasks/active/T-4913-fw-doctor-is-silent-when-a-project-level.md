@@ -7,10 +7,10 @@ description: >
   vendored one; retired glm-5.2 pin and no T-4437 isolation blocks; doctor's retired-pin
   WARN named an ambiguous path.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, doctor, review]
 components: []
 related_tasks: [T-4506, T-4437]
@@ -42,7 +42,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev", ref: "405be7ae"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T23:31:09Z
-last_update: '2026-10-29T23:45:38Z'
+last_update: 2026-10-31T12:17:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -104,8 +104,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `lib/review_cost.py` has one function (and a `registry-shadow` subcommand) that reports when a project-level `policy/review-backends.yaml` is loaded instead of the framework's, with the absolute path of each, the backends the framework has and the copy lacks, and per shared backend the keys the copy lacks; a missing `isolation` block is listed first
+- [ ] `fw doctor` WARNs on a shadowing registry with that report, and says nothing when there is no project copy or project and framework are the same file (the framework repo)
+- [ ] The retired-pin message names the absolute path of the registry that was loaded
+- [ ] Tests: fixture project registry lacking a backend and an isolation block → WARN lines name both; identical copy → shadow reported, nothing missing; no copy → silent; preflight message carries the loaded path
+- [ ] Vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -391,3 +394,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4913-fw-doctor-is-silent-when-a-project-level.md
 - **Context:** Initial task creation
+
+### 2026-10-31T12:17:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
