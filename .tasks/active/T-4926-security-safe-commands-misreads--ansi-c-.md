@@ -101,8 +101,8 @@ A clause the classifier misses is never judged, so a write runs without an activ
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `_fw_chain_split` honours `$'…'` (backslash escapes, `\'` does not close) and backslash escapes inside `"…"`; the Python extractor honours `$'…'`; `_fw_has_process_subst` stops honouring single quotes on a line with `$'`
-- [ ] Regression test: `cat $'a\'b' ; touch X`, `echo "a\"" ; touch X`, `echo $'\'' $(touch X)` and `cat $'\'' <(touch X)` are not read-only; read-only controls (`cat README.md`, `echo $'a\tb'`, `echo "a\"b"`, `git status 2>&1`) stay read-only; the existing safe-commands suites pass
+- [x] `_fw_chain_split` honours `$'…'` (backslash escapes, `\'` does not close) and backslash escapes inside `"…"`; the Python extractor honours `$'…'`; `_fw_has_process_subst` stops honouring single quotes on a line with `$'`
+- [x] Regression test: `cat $'a\'b' ; touch X`, `echo "a\"" ; touch X`, `echo $'\'' $(touch X)` and `cat $'\'' <(touch X)` are not read-only; read-only controls (`cat README.md`, `echo $'a\tb'`, `echo "a\"b"`, `git status 2>&1`) stay read-only; the existing safe-commands suites pass
 - [ ] Swapped in by the safe-swap procedure (copy, `bash -n`, swap, smoke test, restore on failure); vendored copy synced; ring20-dashboard told
 
 ### Human
@@ -289,6 +289,29 @@ A clause the classifier misses is never judged, so a write runs without an activ
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t4926_safe_commands_quote_parity.bats > /tmp/.t4926.out 2>&1 && ! grep -q "^not ok" /tmp/.t4926.out
+test "$(grep -c '# skip' /tmp/.t4926.out)" -eq 0
+bash -n agents/context/lib/safe-commands.sh
+bin/fw vendor self --check --task T-4926
+
+## RCA
+
+**Symptom:** a forwarded security review (ring20-dashboard, msg ddc0cd83) said the read-only classifier and bash could disagree about quoting. Probing the real classifier found six command lines that hide a write and were classified read-only. Four are this task's: `cat $'a\'b' ; touch X`, `echo "a\"" ; touch X`, `echo $'\'' $(touch X)` and `cat $'\'' <(touch X)`. The other two (`echo \\$'a\'b' …` and the `$((` case) went to T-4927. Bash runs every hidden part; this was confirmed with a harmless echo script.
+
+**Root cause:** three hand-written quote trackers in `agents/context/lib/safe-commands.sh` each modelled bash quoting partially.
+- `_fw_chain_split` closed a quote at the next matching character. In `"…"` a backslash escapes `"`, and in `$'…'` a backslash escapes `'`, so the splitter closed the string early, reopened a quote at the real closing quote, and swallowed the next clause.
+- The Python substitution extractor had the `$'…'` flaw.
+- `_fw_has_process_subst` honoured single quotes that `$'…'` can fake.
+
+A clause the splitter swallows is never judged.
+
+**Why structurally allowed:** the trackers were tested with ordinary quoting, never with escaped quotes or ANSI-C strings, the exact inputs where a hand-written tracker diverges from bash. Each was added for one bug (T-2879, T-4409, T-4511, T-4792), and none was tested against the others or against bash.
+
+**Prevention:**
+- The splitter and the extractor follow bash's rules: backslash escapes inside `"…"` and `$'…'`, and `$'` is recognised only after an unescaped `$`.
+- The process-substitution scan stops honouring single quotes on a line with `$'`, failing toward the gate.
+- `tests/unit/t4926_safe_commands_quote_parity.bats` fails on the old library and passes on the new; 57 existing classifier suites (760 tests) pass.
+- Remaining risk: these are still hand-written parsers. A real bash tokenizer would remove the class; consider it if a third differential appears.
 
 ## RCA
 

@@ -72,8 +72,8 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The extractor treats `$((` as arithmetic only when the paren opened at `$((`'s second `(` closes at the character before the outer `)`; otherwise it emits the text as a command substitution
-- [ ] Regression test: `echo $((touch X); echo)` not read-only; `echo $((1+2))` read-only; `echo $(( $(touch X) ))` not read-only; existing safe-commands suites pass
+- [x] The extractor treats `$((` as arithmetic only when the paren opened at `$((`'s second `(` closes at the character before the outer `)`; otherwise it emits the text as a command substitution
+- [x] Regression test: `echo $((touch X); echo)` not read-only; `echo $((1+2))` read-only; `echo $(( $(touch X) ))` not read-only; existing safe-commands suites pass (57 files, 760 tests)
 - [ ] Swapped in with T-4926's safe swap; vendored copy synced; ring20-dashboard told
 
 ### Human
@@ -260,6 +260,18 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t4926_safe_commands_quote_parity.bats > /tmp/.t4927.out 2>&1 && ! grep -q "^not ok" /tmp/.t4927.out
+bin/fw vendor self --check --task T-4927
+
+## RCA
+
+**Symptom:** `echo $((touch X); echo)` was classified read-only; bash runs it as a command substitution whose first command is a subshell (confirmed with a harmless echo script). Reported by ring20-dashboard's forwarded review (msg ddc0cd83, finding 2).
+
+**Root cause:** the Python substitution extractor in `safe-commands.sh` skipped every `$((` as arithmetic. Bash decides by the closing: arithmetic only when the text ends `))`.
+
+**Why structurally allowed:** T-4792 wrote the extractor to find substitutions inside arithmetic (which it does), and assumed `$((` always opens arithmetic. No test used the subshell-first form.
+
+**Prevention:** `$((` is arithmetic only when the inner paren closes right before the outer one (the same rule bash applies); otherwise the text is extracted and judged as a command substitution. Pinned by test 3 in `tests/unit/t4926_safe_commands_quote_parity.bats`, which fails on the old library. The change shipped in T-4926's commit and safe swap (same file).
 
 ## RCA
 
