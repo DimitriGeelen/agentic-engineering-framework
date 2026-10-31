@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4894: fw upgrade refuses at step 1 when a consumer's CLAUDE.md governance predates the vendored template, calling old framework text local edits (0506)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T12:40:10Z
+# ============================================================================
+
+task_id: T-4894
+task_name: "fw upgrade refuses at step 1 when a consumer's CLAUDE.md governance predates the vendored template, calling old framework text local edits (0506)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-29T09:19:50Z
+completed: 2026-10-31T12:39:34Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-10-29T10:19:56+01:00
+last_commit: 2026-10-31T13:39:33+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file 0506 finding — upgrade refuses on pre-template CLAUDE.md governance text (c6f1e494). fw upgrade step 1 sets aside governance lines an older framework template carried; refuses only on real local lines. refresh vendored copies. ACs, verification, RCA; fabric card for lib/governance_known.py
+
+# Key outcomes
+outcomes:
+  - 'A helper returns, from at-risk lines on stdin, only those no version of the framework''s `lib/templates/claude-project.md` ever contained (git history of the framework clone, renames followed); with no history it returns all of them'
+  - '`lib/upgrade.sh` step 1 uses it: only-old-framework-text proceeds with a note and the count; any real local line still refuses, the message naming only local lines plus the count of old-framework lines set aside'
+  - 'Tests: old template text only → no refusal; a genuine local line → refusal naming it and not the old text; no git history → today''s refusal; the existing T-4232 governance tests pass'
+  - 'Vendored copy synced; 0506 told (msgs f7e33a08 and the correction bc33ad97: the fix is in the next be-tag, not be.1)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/governance_known.py'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.fabric/components/lib-governance_known.yaml'
+  - '.tasks/active/T-4894-fw-upgrade-refuses-at-step-1-when-a-cons.md'
+  - 'lib/governance_known.py'
+  - 'lib/upgrade.sh'
+  - 'tests/unit/t4232_claudemd_governance_consumer_edits.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-29T10:19:56'
+    action: 'T-4894: file 0506 finding — upgrade refuses on pre-template CLAUDE.md governance text (c6f1e494)'
+  - time: '2026-10-31T13:38:43'
+    action: 'T-4894: fw upgrade step 1 sets aside governance lines an older framework template carried; refuses only on real local lines'
+  - time: '2026-10-31T13:38:48'
+    action: 'T-4894: refresh vendored copies'
+  - time: '2026-10-31T13:39:33'
+    action: 'T-4894: ACs, verification, RCA; fabric card for lib/governance_known.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 3079 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, upgrade, field-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3079
+  commits: 5
+  files_changed: 10
+  lines_added: 759
+  lines_removed: 14
+  footprint_refreshed_at: '2026-10-31T12:40:17Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4894-fw-upgrade-refuses-at-step-1-when-a-cons.md
+generated_by: context-agent-hybrid

@@ -51557,3 +51557,21 @@ scan_id: R-1b5acf4b
 task_id: T-4918
 payload:
   task_file: .tasks/active/T-4918-fw-inception-correct-points-to-a-defer-r.md
+---
+kind: scan_emitted
+timestamp: '2026-10-31T12:39:56Z'
+scan_id: R-3b5d7fc6
+task_id: T-4894
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-31T12:39:56Z'
+scan_id: R-3b5d7fc6
+task_id: T-4894
+payload:
+  task_file: .tasks/active/T-4894-fw-upgrade-refuses-at-step-1-when-a-cons.md
