@@ -106,9 +106,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Localised: which dm rails the live watcher reads (rail keys and cursor movement after 22:53Z), written under Updates with evidence
-- [ ] Fixes (scoped from the localisation) with tests; every test that reads the changed files passes; `bin/fw vendor self --check --task T-4941` clean
-- [ ] G-125 updated with what was fixed and what remains
+- [x] Localised: which dm rails the live watcher reads (rail keys and cursor movement after 22:53Z), written under Updates with evidence
+- [x] Fixes (scoped from the localisation: the measurement, plus the T-4494 test reading live config; the start-env finding was a misread, see Updates) with tests (5 new; 493 sidecar/dm tests and the T-4205 tripwire bats pass); every test that reads the changed files passes; `bin/fw vendor self --check --task T-4941` clean
+- [x] G-125 updated with what was fixed and what remains
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -294,6 +294,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_t4941_host_fingerprint_signing.py tests/unit/test_sidecar_dm_host_shared_t4252.py tests/unit/test_sidecar_restart_identity_t4494.py tests/unit/test_t4892_host_shared_keys.py > /tmp/.t4941 2>&1 && grep -q " passed" /tmp/.t4941 && ! grep -qE "failed|error" /tmp/.t4941
+timeout 300 bats tests/unit/t4205_termlink_tripwire.bats > /tmp/.t4941b 2>&1 && ! grep -q "^not ok" /tmp/.t4941b
+bin/fw vendor self --check --task T-4941
 
 ## RCA
 
@@ -310,6 +313,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** `fw sidecar alerts` (and doctor) reported "this project signs with the host-shared TermLink key" for AEF, and dm mail was shown as summaries only, though AEF signs with its own key (bdd184bd, `termlink identity sign`: source identity_file).
+
+**Root cause:** `dm._host_fingerprint()` removed the identity env and re-read `termlink whoami`, whose session block is selected by a pid walk to the registered session, not by the env. Inside a session registered with the project key, both readings gave the project key, so `identity_is_host_shared()` was always True.
+
+**Why structurally allowed:** the T-4252 tests faked `whoami` as following the identity env, the one assumption that is false for real termlink, so the tests could not see it. The WARN had fired on AEF since T-4892 and was taken as true, which led to T-4931 (an identity switch that was already in effect since T-4454/T-4494).
+
+**Prevention:** the host default is now the key termlink signs with when no selector is set (`identity sign --json`, `source: host_default`), with the old reading only as a fallback when `sign` is unavailable. `tests/unit/test_t4941_host_fingerprint_signing.py` fakes termlink the real way (whoami ignores env, sign follows it). Separately, the T-4494 default-off test no longer reads the live `.framework.yaml`. Learning: identify a process by its full command line and parent before reading its environment (the second finding of this task was a misread pid).
 
 ## Evolution
 
