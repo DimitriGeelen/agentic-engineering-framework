@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4941: Sidecar identity: host-shared check measures the pid-walk session (false positive), and fw sidecar start passes a Claude session's env (identity, TMUX, CLAUDE_*) to the watcher
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T23:38:56Z
+# ============================================================================
+
+task_id: T-4941
+task_name: "Sidecar identity: host-shared check measures the pid-walk session (false positive), and fw sidecar start passes a Claude session's env (identity, TMUX, CLAUDE_*) to the watcher"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-31T22:56:44Z
+completed: 2026-10-31T23:38:34Z
+duration_days: 0
+updates_count: 5
+first_commit: 2026-11-01T00:38:03+01:00
+last_commit: 2026-11-01T00:38:32+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  host-shared check measures the signing key (termlink identity sign, source host_default) instead of the pid-walk session; T-4494 test no longer reads the live .framework.yaml; G-125 corrected and mitigated. criteria, RCA, verification
+
+# Key outcomes
+outcomes:
+  - 'Localised: which dm rails the live watcher reads (rail keys and cursor movement after 22:53Z), written under Updates with evidence'
+  - 'Fixes (scoped from the localisation: the measurement, plus the T-4494 test reading live config; the start-env finding was a misread, see Updates) with tests (5 new; 493 sidecar/dm tests and the T-4205 tripwire bats pass); every test that reads the changed files passes; `bin/fw vendor self --check --task T-4941` clean'
+  - 'G-125 updated with what was fixed and what remains'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/dm.py'
+  - '.context/project/concerns.yaml'
+  - '.fabric/components/tests-unit-test_t4941_host_fingerprint_signing.yaml'
+  - '.tasks/active/T-4931-give-aef-its-own-termlink-identity-for-s.md'
+  - '.tasks/active/T-4941-sidecar-identity-host-shared-check-measu.md'
+  - 'lib/sidecar/dm.py'
+  - 'tests/lib/termlink-tripwire/termlink'
+  - 'tests/unit/test_sidecar_restart_identity_t4494.py'
+  - 'tests/unit/test_t4941_host_fingerprint_signing.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T00:38:03'
+    action: 'T-4941: host-shared check measures the signing key (termlink identity sign, source host_default) instead of the pid-walk session; T-4494 test no longer reads the live .framework.yaml; G-125 corrected and mitigated'
+  - time: '2026-11-01T00:38:32'
+    action: 'T-4941: criteria, RCA, verification'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 41 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 41
+  commits: 3
+  files_changed: 12
+  lines_added: 348
+  lines_removed: 35
+  footprint_refreshed_at: '2026-10-31T23:39:12Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4941-sidecar-identity-host-shared-check-measu.md
+generated_by: context-agent-hybrid
