@@ -20,6 +20,8 @@ verb="${words[0]:-}"
 sub="${words[1]:-}"
 case "$verb $sub" in
     "hub fingerprint"|"hub probe"|"channel list"|"remote ping"|"fleet doctor"|"agent identity") kind=probe ;;
+    # T-4941: local key reads; `identity sign` signs a local file and publishes nothing.
+    "identity sign"|"identity show") kind=probe ;;
 esac
 case "$verb" in
     ""|discover|whoami|version|help|info|list) kind=probe ;;

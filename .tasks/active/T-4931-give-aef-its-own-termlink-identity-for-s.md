@@ -385,6 +385,11 @@ cost_estimate_proposed:
 
 ## Updates
 
+### 2026-11-01 — correction (T-4941)
+- Finding 3 below is wrong: the pid read (2086273) was a short-lived process from the vendored `.agentic-framework/` copy, not AEF's watcher. The real sidecar (receiver 1996226, supervisor 1996389, watcher 1996471, source tree) has no session variables, the project key, and the APPLIED marker: the switch took effect as designed.
+- Finding 1 was real and is fixed in T-4941: the host default is now measured with `termlink identity sign`, so `identity_is_host_shared()` is False for AEF (ours bdd184bd, host d1993c) and the false WARN is gone.
+- Localised in T-4941: DM rails are read only by the alerts/inbox CLI; nothing addressed to AEF is unread on the old host-key rails (the 3 unread notes there are aef-greenfield-test -> 832).
+
 ### 2026-10-31T23:10Z — runme ran; switch is not what this task assumed (stopped after 3 hypotheses)
 - The operator ran `.context/runme/t4931-aef-identity/runme.sh` (exit 0): SIDECAR_RAIL_IDENTITY=1, SIDECAR_HOST_DM_TRANSITION=1, sidecar stopped and started, watcher live. The clean `alerts` in that run was a false negative: termlink was briefly unreachable after the restart (`identity fp: - (termlink unreachable)`), so there was nothing to compare.
 - Signing keys, measured with `termlink identity sign --json`: with `.context/rail-identity.key` selected, fingerprint **bdd184bd89f318e4** (`source: identity_file`); with the selectors removed, **d1993c2c3ec44c94** (`source: host_default`). AEF's existing dm cursors are keyed on d1993c… (`fw sidecar status`).

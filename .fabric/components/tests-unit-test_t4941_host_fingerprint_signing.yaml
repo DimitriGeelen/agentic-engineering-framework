@@ -1,0 +1,21 @@
+id: tests/unit/test_t4941_host_fingerprint_signing.py
+name: test_t4941_host_fingerprint_signing
+type: script
+subsystem: tests
+location: tests/unit/test_t4941_host_fingerprint_signing.py
+tags: []
+
+purpose: "T-4941: the host-shared check compared two readings of `termlink whoami`'s session block, which a pid walk selects whatever the identity env says."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-31
+created_by: unknown

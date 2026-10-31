@@ -41,6 +41,7 @@ import json
 import os
 import shutil
 import subprocess
+import tempfile
 from datetime import datetime, timedelta, timezone
 
 from . import identity, inbox
@@ -118,9 +119,42 @@ def identity_is_host_shared(*, runner=subprocess.run, timeout: int = 15) -> bool
     return _host_fingerprint(runner=runner, timeout=timeout) == ours
 
 
+def _signing_host_fingerprint(*, runner=subprocess.run, timeout: int = 15) -> str | None:
+    """The key termlink SIGNS with when no identity selector is set, from
+    `termlink identity sign --json` (fingerprint + source=host_default).
+
+    T-4941: `whoami`'s session block is chosen by a pid walk, so stripping the
+    identity env does not change it; inside a session registered with the
+    project key, ours and the "host default" then always matched and every
+    agent session read as host-shared. Signing a scratch file is the one call
+    whose answer follows the env. None when the call is unavailable."""
+    env = {k: v for k, v in os.environ.items() if k not in _IDENTITY_ENV}
+    try:
+        with tempfile.NamedTemporaryFile("w", prefix="fw-host-fp-", delete=True) as fh:
+            fh.write("fw host fingerprint probe\n")
+            fh.flush()
+            proc = runner([_binary(), "identity", "sign", fh.name, "--json"],
+                          capture_output=True, text=True, timeout=timeout, env=env)
+    except (OSError, subprocess.SubprocessError, TypeError):
+        return None
+    if getattr(proc, "returncode", 1) != 0:
+        return None
+    try:
+        data = json.loads(proc.stdout or "{}")
+    except (json.JSONDecodeError, TypeError):
+        return None
+    if not isinstance(data, dict) or data.get("source") != "host_default":
+        return None
+    return data.get("fingerprint") or None
+
+
 def _host_fingerprint(*, runner=subprocess.run, timeout: int = 15) -> str | None:
-    """The fingerprint termlink reports with every identity selector stripped:
-    the host default, measured rather than hard-coded."""
+    """The host default key, measured rather than hard-coded: the key termlink
+    signs with when no selector is set (T-4941), else, where `identity sign` is
+    unavailable, the fingerprint `whoami` reports with every selector stripped."""
+    fp = _signing_host_fingerprint(runner=runner, timeout=timeout)
+    if fp:
+        return fp
     saved = {k: os.environ.pop(k) for k in _IDENTITY_ENV if k in os.environ}
     try:
         return identity_fingerprint(runner=runner, timeout=timeout)

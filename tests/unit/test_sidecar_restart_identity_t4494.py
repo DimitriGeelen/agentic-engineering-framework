@@ -111,7 +111,10 @@ def test_switch_on_still_selects_a_missing_key_with_marker(project):
     assert got["self"] == got["child"] == got["marker"] == str(key)
 
 
-def test_switch_default_stays_off():
+def test_switch_default_stays_off(tmp_path, monkeypatch):
+    # T-4941: the registry default, read from an empty project. Reading the real
+    # repo's .framework.yaml made this test follow whatever the operator set there.
+    monkeypatch.setattr(identity.receiver, "_root", lambda: tmp_path)
     assert identity.enabled({}) is False
 
 

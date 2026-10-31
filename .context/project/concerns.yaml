@@ -5666,22 +5666,22 @@ concerns:
     own tmux socket or clean server env (sent 2026-10-22). Close when T-4636..T-4638 land with tests.
 - id: G-125
   type: gap
-  title: The sidecar's host-shared-identity check measures the wrong key, and fw sidecar start passes a Claude
-    session's environment to the watcher — AEF cannot tell whether it has its own TermLink identity
-  description: 'Found running T-4931 (2026-10-31). dm.identity_is_host_shared compares ours with the host default,
-    but both are read from termlink whoami''s session block, found by walking up the process tree; stripping the
-    identity env does not change that session, so inside a registered session the check always says host-shared
+  title: The sidecar's host-shared-identity check measured the wrong key, so every agent session with its own key
+    read as host-shared (false T-4892 WARN)
+  description: 'Found running T-4931 (2026-10-31). dm.identity_is_host_shared compared ours with the host default,
+    but both were read from termlink whoami''s session block, found by walking up the process tree; stripping the
+    identity env does not change that session, so inside a registered session the check always said host-shared
     (signing keys actually differ: bdd184bd identity_file vs d1993c host_default, measured with termlink identity
-    sign). Separately, fw sidecar start run from a shell inside a Claude session passed TERMLINK_IDENTITY_FILE, TMUX,
-    TMUX_PANE, TERMLINK_SESSION_ID, CLAUDECODE and CLAUDE_CODE_* to the supervisor (T-4416 says none may reach it),
-    so apply() set no APPLIED marker and the transition reads no old host-key dm rails.'
+    sign). CORRECTION 2026-11-01: the second claim first recorded here (fw sidecar start passing a Claude session''s
+    env to the watcher) was wrong; the pid read was a short-lived process from the vendored copy. The live sidecar
+    has no session vars and the APPLIED marker (T-4941 Updates).'
   severity: medium
-  status: open
+  status: mitigated
   detected_in: T-4931
   observed: '2026-10-31'
   reported_by: agent (T-4931 runme verification)
-  blast_radius: AEF's dm mail routing and the T-4892 WARN on every consumer that runs a claude-fw session; any
-    sidecar restarted from inside an agent session
-  detection_gap: the WARN was trusted as a true reading since T-4892; nothing compares the whoami session key with
-    the key termlink actually signs with, and nothing checks the watcher's environment after start
-  what_remains: T-4941 (localise which rails the live watcher reads, then fix the measurement and the start env)
+  blast_radius: the T-4892 host-shared WARN and dm draining scope on every consumer that runs a claude-fw session
+  detection_gap: the WARN was trusted as a true reading since T-4892; nothing compared the whoami session key with
+    the key termlink actually signs with
+  what_remains: T-4941 fixed the measurement (termlink identity sign, source host_default; whoami fallback when sign
+    is unavailable). Close once a consumer on the next be-tag confirms the WARN no longer fires with its own key.

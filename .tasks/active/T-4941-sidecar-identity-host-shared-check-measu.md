@@ -14,7 +14,7 @@ description: >
   no APPLIED marker and the transition reads no old host rails. Unlocalised: confirm
   which rails the live watcher reads before fixing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-31T22:56:44Z
-last_update: '2026-10-31T23:15:14Z'
+last_update: 2026-10-31T23:30:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,20 +94,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Running T-4931's identity switch on 2026-10-31 (operator runme, 22:53Z) showed three things, recorded in T-4931's Updates and as gap G-125. (1) `fw sidecar alerts` warns "host-shared key" from inside this session although the project key signs differently (`termlink identity sign`: bdd184bd identity_file vs d1993c host_default). (2) The restarted watcher carries this Claude session's environment (TERMLINK_IDENTITY_FILE, TMUX, TMUX_PANE, TERMLINK_SESSION_ID, CLAUDECODE, CLAUDE_CODE_*). (3) Because the identity file was inherited, `apply()` set no APPLIED marker, so `legacy_host_fingerprint()` reads no old host-key rails.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `dm.identity_fingerprint()` reads `termlink whoami`'s session block, which comes from a process-tree walk, not from the signing key; stripping the identity env cannot change that session, so "ours" and "host" always agree inside a registered session. Not yet confirmed: which dm rails the live watcher actually reads now, and therefore whether mail to the old host key is being missed.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** know which rails AEF reads and with which key, then make the host-shared check and the old-rail transition measure the signing key, and keep a Claude session's environment out of sidecar processes.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** a confirmed account of the live watcher's rails, then fixes with tests: the check compares signing-key fingerprints, the transition reads old host rails whenever the project key differs from the host key, and `fw sidecar start` scrubs session env the way `respawn_env` does.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Localised: which dm rails the live watcher reads (rail keys and cursor movement after 22:53Z), written under Updates with evidence
+- [ ] Fixes (scoped from the localisation) with tests; every test that reads the changed files passes; `bin/fw vendor self --check --task T-4941` clean
+- [ ] G-125 updated with what was fixed and what remains
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -386,7 +387,21 @@ bvp_scores_proposed:
 
 ## Updates
 
+### 2026-11-01 — correction: finding (2) below and T-4931 finding 3 were wrong
+- The live AEF sidecar runs from the source tree (`/opt/999-…/lib/sidecar/`): receiver 1996226, supervisor 1996389, watcher 1996471. All three have 0 session variables, `TERMLINK_IDENTITY_FILE` set and `FW_SIDECAR_RAIL_IDENTITY_APPLIED` set: `respawn_env` (T-4416) and `apply()` (T-4311) worked as designed.
+- The pid inspected on 2026-10-31 (2086273) matched `.agentic-framework/lib/sidecar/watcher.py`, the vendored copy, and has since exited: a short-lived process, not AEF's watcher. My `pgrep` pattern named the wrong tree. Lesson: identify a process by its full command line and parent before reading its environment.
+- Scope of this task is therefore finding (1) only, plus the T-4494 test that read the live `.framework.yaml`.
+
+### 2026-11-01 — localised
+- The watcher never reads dm rails (`lib/sidecar/watcher.py` does not import `dm`). DM mail is read only by `fw sidecar alerts`/`inbox`, in whatever process runs them.
+- From this Claude session, `dm.address_keys()` = {bdd184bd89f318e4 (identity_fingerprint, from `termlink whoami`'s session), 3bba15e681b3a078 (SIDECAR_DM_ADDRESS_KEYS)}; `legacy_host_fingerprint()` = None (no APPLIED marker in this process); `rails_for_key()` = 0 rails. No rail is keyed on bdd184bd yet.
+- All 28 stored dm cursors are keyed on the host key d1993c2c3ec44c94. Unread there: `dm:90d4553895d5a9a6:d1993c…` 6 posts past cursor 99 = 3 notes plus 3 receipts, all `aef-greenfield-test -> 832` (other projects' mail on the shared host rail, the T-4252 harm), and `dm:d1993c…:deadbeef…` 2 posts (test rail). Nothing addressed to AEF is unread.
+- So not reading the host rails is correct, and the APPLIED-marker gap (finding 3 of T-4931) loses no AEF mail. The real defects: (1) `_host_fingerprint()` strips the identity env but reads `termlink whoami`'s session block, which a pid walk selects regardless of env, so `identity_is_host_shared()` is True inside any registered session and the T-4892 WARN is a false positive here; (2) `fw sidecar start` passed this session's env (TMUX, TMUX_PANE, TERMLINK_SESSION_ID, CLAUDECODE, CLAUDE_CODE_*) to the supervisor, against T-4416.
+
 ### 2026-10-31T22:56:44Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4941-sidecar-identity-host-shared-check-measu.md
 - **Context:** Initial task creation
+
+### 2026-10-31T23:30:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
