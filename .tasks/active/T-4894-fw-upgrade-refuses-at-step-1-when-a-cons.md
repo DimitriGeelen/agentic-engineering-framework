@@ -14,10 +14,10 @@ description: >
   saying so in the message. Field-reported: allowed under the freeze, but low urgency
   (a known workaround exists).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, upgrade, field-report]
 components: []
 related_tasks: []
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T09:19:50Z
-last_update: '2026-10-29T09:30:43Z'
+last_update: 2026-10-31T12:33:51Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,12 +95,27 @@ bvp_scores_proposed:
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+**Background / trigger:** 0506's v1.8.15 upgrade report (msg c6f1e494). Their first dry run from v1.7.832 refused at step 1/10: "15 line(s) in the CLAUDE.md governance section would be deleted". Every one of those lines was old framework text. Their governance block predated even the vendored 1.7.832 template, because an earlier re-vendor never refreshed CLAUDE.md. Their workaround was to reset the section to the stock 1.7.832 text; then the upgrade ran clean.
+
+**Problem / hypothesis:** confirmed by reading `lib/upgrade.sh` (step 1, T-4232 guard). A line is "at risk" when it is in the governance section and not in the new template. The only exemption is a section byte-identical to the template the project was LAST vendored from. A section from any older template fails that test, so verbatim framework text is reported as a local edit that "would be deleted". The message tells the operator to move it into a project-owned region, which is wrong advice for framework text.
+
+**Goal:** the refusal fires only for lines the framework never shipped. Old framework text is replaced without a refusal and named as such.
+
+**Expected outcome:**
+- Before refusing, the at-risk lines are filtered against every version of `lib/templates/claude-project.md` in the framework clone's git history.
+- If nothing else is left, the upgrade proceeds with a note saying how many old-framework lines it replaces.
+- If real local lines remain, it refuses and names only those, adding how many old-framework lines it set aside.
+- Without git history (shallow or no git) the behaviour is today's.
+- Tested with a fixture whose governance holds an old template line and, separately, a genuine local line.
+
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A helper returns, from at-risk lines on stdin, only those no version of the framework's `lib/templates/claude-project.md` ever contained (git history of the framework clone, renames followed); with no history it returns all of them
+- [ ] `lib/upgrade.sh` step 1 uses it: only-old-framework-text proceeds with a note and the count; any real local line still refuses, the message naming only local lines plus the count of old-framework lines set aside
+- [ ] Tests: old template text only → no refusal; a genuine local line → refusal naming it and not the old text; no git history → today's refusal; the existing T-4232 governance tests pass
+- [ ] Vendored copy synced; 0506 told
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -382,3 +397,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4894-fw-upgrade-refuses-at-step-1-when-a-cons.md
 - **Context:** Initial task creation
+
+### 2026-10-31T12:33:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

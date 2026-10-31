@@ -2105,12 +2105,32 @@ $project_owned"
                 fi
                 [ "$current_governance" = "$_gv_base_tail" ] && _gv_stock=true
             fi
+            # T-4894: a line some older framework template carried is framework text, not a
+            # local edit (0506: governance older than even the vendored template). Set those
+            # aside; with no git history to read, the helper sets nothing aside.
+            local _gv_known=0 _gv_kerr
+            if [ "$_gv_stock" != true ] && [ -f "$FRAMEWORK_ROOT/lib/governance_known.py" ]; then
+                _gv_kerr=$(mktemp)
+                _gv_at_risk=$(printf '%s\n' "$_gv_at_risk" \
+                    | python3 "$FRAMEWORK_ROOT/lib/governance_known.py" filter "$FRAMEWORK_ROOT" 2>"$_gv_kerr") \
+                    || _gv_at_risk=$(_fw_governance_at_risk "$project_claude" "$governance_tail")
+                _gv_known=$(sed -n 's/^known=\([0-9]*\)$/\1/p' "$_gv_kerr" | tail -1)
+                rm -f "$_gv_kerr"
+                _gv_known=${_gv_known:-0}
+                if [ -z "$_gv_at_risk" ]; then
+                    _gv_stock=true
+                    echo -e "  ${CYAN}NOTE${NC}  $_gv_known governance line(s) are text from an older framework template; the rebuild replaces them (T-4894)"
+                fi
+            fi
             if [ "$_gv_stock" != true ]; then
                 local _gv_n
                 _gv_n=$(printf '%s\n' "$_gv_at_risk" | wc -l | tr -d ' ')
                 echo -e "  ${RED}REFUSED${NC}  $_gv_n line(s) in the CLAUDE.md governance section would be deleted" >&2
                 printf '%s\n' "$_gv_at_risk" | head -8 | sed 's/^/        /' >&2
                 [ "$_gv_n" -gt 8 ] && echo "        ... ($((_gv_n - 8)) more)" >&2
+                if [ "$_gv_known" -gt 0 ]; then
+                    echo -e "        ($_gv_known more line(s) are text from an older framework template; those are not at risk — T-4894)" >&2
+                fi
                 echo -e "        These are not in the framework template and not inside a project-owned region." >&2
                 echo -e "        Move them into a region below the governance section, between" >&2
                 echo -e "        \`<!-- project-owned: begin -->\` and \`<!-- project-owned: end -->\`, then re-run \`fw upgrade\`." >&2

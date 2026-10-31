@@ -118,3 +118,49 @@ CONSUMER-RULE: run runme.sh for operator commands.
     [ "$status" -eq 0 ]
     [ "$output" = "CONSUMER-ONLY" ]
 }
+
+# T-4894 (0506, msg c6f1e494): governance older than even the vendored template held only
+# framework text, yet step 1 called it 15 local edits. A line some older template version
+# carried is now set aside before the refusal.
+_old_template_line() {
+    # A non-blank line an older committed template had and the current one lacks.
+    local first
+    first=$(git -C "$FRAMEWORK_ROOT" log --format=%H -- lib/templates/claude-project.md | tail -1)
+    git -C "$FRAMEWORK_ROOT" show "$first:lib/templates/claude-project.md" \
+        | grep -vE '^[[:space:]]*$|^#' \
+        | grep -Fxv -f "$FRAMEWORK_ROOT/lib/templates/claude-project.md" | head -1
+}
+
+@test "T-4894: governance holding only older framework text upgrades, with a note" {
+    local old; old="$(_old_template_line)"
+    [ -n "$old" ]
+    local edited
+    edited=$(printf '%s\n' "$TEMPLATE_GOV"; printf '%s\n' "$old")
+    write_consumer_claude "$edited"
+    run do_upgrade "$PROJ" --dry-run
+    [[ "$output" != *"REFUSED"*"governance section would be deleted"* ]]
+    [[ "$output" == *"text from an older framework template; the rebuild replaces them (T-4894)"* ]]
+}
+
+@test "T-4894: a real local line still refuses, naming it and not the old framework text" {
+    local old; old="$(_old_template_line)"
+    [ -n "$old" ]
+    local edited
+    edited=$(printf '%s\n' "$TEMPLATE_GOV"; printf '%s\n' "$old" "CONSUMER-RULE-4894: our own line")
+    write_consumer_claude "$edited"
+    run do_upgrade "$PROJ" --dry-run
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"1 line(s) in the CLAUDE.md governance section would be deleted"* ]]
+    [[ "$output" == *"CONSUMER-RULE-4894: our own line"* ]]
+    [[ "$output" == *"1 more line(s) are text from an older framework template"* ]]
+}
+
+@test "T-4894: with no git history to read, nothing is set aside" {
+    local nogit="$TEST_TEMP_DIR/nogit"
+    mkdir -p "$nogit"
+    run bash -c "printf '%s\n' 'line one' 'line two' | python3 '$FRAMEWORK_ROOT/lib/governance_known.py' filter '$nogit'"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"line one"* ]]
+    [[ "$output" == *"line two"* ]]
+    [[ "$output" == *"known=0"* ]]
+}
