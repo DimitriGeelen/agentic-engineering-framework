@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4918: fw inception correct points to a DEFER reopen route that fw task update refuses (work-completed -> started-work)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T12:28:13Z
+# ============================================================================
+
+task_id: T-4918
+task_name: "fw inception correct points to a DEFER reopen route that fw task update refuses (work-completed -> started-work)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-30T01:07:40Z
+completed: 2026-10-31T12:27:47Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-10-30T02:08:03+01:00
+last_commit: 2026-10-31T13:27:46+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file dimitri-mint-dev P-027 (inception correct names a DEFER reopen route the status machine refuses). fw inception correct ... defer reopens a GO/NO-GO inception (back to active/, parked), replacing the 'move it back and decide again' dead end. refresh vendored copies. ACs, verification, RCA
+
+# Key outcomes
+outcomes:
+  - '`fw inception correct T-XXX defer --reason "…"` reopens a GO/NO-GO inception: the file moves back to active/, status `captured`, horizon `later`, date_finished cleared (the state `decide defer` leaves, T-1865), the Decision block reads DEFER with "Corrected: from GO/NO-GO", an Updates entry and a ledger row are written, one commit with the decision subject'
+  - 'Same sovereignty gate and mandatory reason as go/no-go corrections: refused under `CLAUDECODE=1` without `--i-am-human`/`--from-watchtower`, and nothing is moved or written when refused'
+  - 'No more "move the task back and decide again" text: usage and errors name `correct … defer`'
+  - 'Tests: GO→DEFER reopen end to end on a fixture repo; agent refusal leaves the file in completed/; existing correct tests pass'
+  - 'Vendored copy synced; dimitri-mint-dev told'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/inception.sh'
+  - '.tasks/active/T-4918-fw-inception-correct-points-to-a-defer-r.md'
+  - 'lib/inception.sh'
+  - 'tests/unit/t4324_inception_correct.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-30T02:08:03'
+    action: 'T-4918: file dimitri-mint-dev P-027 (inception correct names a DEFER reopen route the status machine refuses)'
+  - time: '2026-10-31T13:27:10'
+    action: 'T-4918: fw inception correct ... defer reopens a GO/NO-GO inception (back to active/, parked), replacing the ''move it back and decide again'' dead end'
+  - time: '2026-10-31T13:27:15'
+    action: 'T-4918: refresh vendored copies'
+  - time: '2026-10-31T13:27:46'
+    action: 'T-4918: ACs, verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 2120 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, inception]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2120
+  commits: 5
+  files_changed: 7
+  lines_added: 687
+  lines_removed: 47
+  footprint_refreshed_at: '2026-10-31T12:28:22Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4918-fw-inception-correct-points-to-a-defer-r.md
+generated_by: context-agent-hybrid

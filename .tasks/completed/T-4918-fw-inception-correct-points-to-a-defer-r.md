@@ -7,12 +7,12 @@ description: >
   and says move the task back and decide again; the second step is an invalid transition,
   so the documented route needs a hand edit.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, inception]
-components: []
+components: [lib/inception.sh]
 related_tasks: [T-4324]
 origin: {kind: "pickup", source: "dimitri-mint-dev", ref: "P-027"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -42,8 +42,8 @@ origin: {kind: "pickup", source: "dimitri-mint-dev", ref: "P-027"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-30T01:07:40Z
-last_update: 2026-10-31T12:23:42Z
-date_finished:
+last_update: 2026-10-31T12:27:47Z
+date_finished: 2026-10-31T12:27:47Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -417,3 +417,21 @@ bin/fw vendor self --check --task T-4918
 ### 2026-10-31T12:23:42Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-31T12:27:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1b5acf4b
+- **Timestamp:** 2026-10-31T12:28:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `timeout 600 bats tests/unit/t4324_inception_correct.bats tests/unit/inception_decide_atomicity.bats > /tmp/.t4918.out 2>&1 && ! grep -q "^not ok" /tmp/.t4918.out`
