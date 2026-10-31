@@ -22,6 +22,7 @@ never edits criterion text on its own initiative.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -52,11 +53,38 @@ def _now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def proposed(row: dict) -> str | None:
-    """The restatement in an amber row's guidance, cleaned; None when there is none.
+EVIDENCE_PREFIX = ".context/reviews/evidence/"
 
+
+def _evidence_texts(row: dict, root: Path | None):
+    """The row's evidence files whose content still hashes to the row's evidence_sha256 and
+    that lie under the evidence directory (T-4942: a file changed since the verdict, or one
+    outside it, is never read)."""
+    if root is None:
+        return
+    shas = row.get("evidence_sha256") or {}
+    for rel in row.get("evidence") or []:
+        rel = str(rel)
+        if not rel.startswith(EVIDENCE_PREFIX) or ".." in Path(rel).parts or rel not in shas:
+            continue
+        try:
+            data = (root / rel).read_bytes()
+        except OSError:
+            continue
+        if hashlib.sha256(data).hexdigest() == shas[rel]:
+            yield data.decode("utf-8", errors="replace")
+
+
+def proposed(row: dict, root: Path | None = None) -> str | None:
+    """The restatement an amber row carries, cleaned; None when there is none.
+
+    Read from the row's guidance first; T-4942: a reviewer sometimes wrote the line only in
+    its evidence report, so with `root` the row's sha-checked evidence files are read next.
     Takes the rest of the marker's line; quotes or backticks wrapping the whole text go."""
     m = MARKER_RE.search(str(row.get("guidance") or ""))
+    if not m:
+        m = next((mm for t in _evidence_texts(row, root) for mm in [MARKER_RE.search(t)] if mm),
+                 None)
     if not m:
         return None
     text = m.group(1).strip()
@@ -111,7 +139,7 @@ def pending(root: Path, task: str | None = None) -> list[dict]:
     for (t, ac), row in sorted(_latest_rows(root, task).items()):
         if row.get("outcome") != "amber" or str(row.get("id")) in decided:
             continue
-        new = proposed(row)
+        new = proposed(row, root)
         if new is None:
             continue
         _path, crit, _ = _criterion(root, t, ac)
@@ -130,14 +158,19 @@ def _find(root: Path, verdict_id: str) -> dict:
     return rows[-1]
 
 
-def _resolve(root: Path, verdict_id: str):
-    """(row, restatement, path, crit, text) for a restatement that may still be decided."""
+def _resolve(root: Path, verdict_id: str, *, need_marker: bool = True):
+    """(row, restatement, path, crit, text) for a restatement that may still be decided.
+    `need_marker=False` (T-4942, accept --text): an amber with no marker anywhere resolves
+    with restatement '' — the operator's text is what gets written."""
     row = _find(root, verdict_id)
     if row.get("outcome") != "amber":
         raise Refused(f"{verdict_id} is {row.get('outcome')}, not amber")
-    new = proposed(row)
+    new = proposed(row, root)
     if new is None:
-        raise Refused(f"{verdict_id} has no PROPOSED RESTATEMENT line")
+        if need_marker:
+            raise Refused(f"{verdict_id} has no PROPOSED RESTATEMENT line (in its guidance or "
+                          f"its evidence); to restate it anyway give the wording with --text")
+        new = ""
     if verdict_id in _decided(root):
         d = _decided(root)[verdict_id]
         raise Refused(f"{verdict_id} was already {d.get('decision')} ({d.get('ts', '')})")
@@ -205,7 +238,8 @@ def accept(root: Path, verdict_id: str, *, dry_run: bool = False, i_am_human: bo
     """`text_override` (T-4939): the operator's own wording. Reviewers often write their
     evidence judgement on the restatement's line, and the extractor cannot tell where the
     criterion ends, so the operator can set the exact text; the record keeps both."""
-    row, proposal, path, crit, text = _resolve(root, verdict_id)
+    row, proposal, path, crit, text = _resolve(root, verdict_id,
+                                                need_marker=text_override is None)
     new = proposal if text_override is None else text_override.strip()
     _check_text(new)
     ts = _now()

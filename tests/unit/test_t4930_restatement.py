@@ -244,3 +244,70 @@ def test_brief_asks_for_the_restatement_alone_on_its_line():
              "title": "x", "digest": "d"}]
     brief = judge_cli._build_brief("T-9", crit, rung=3, kind="claude", revision="abc")
     assert "holds the criterion text ONLY" in brief and "on the NEXT line" in brief
+
+
+# ── T-4942 (ring20-dashboard msg dbffa3dc): marker only in the evidence report ──
+
+import hashlib  # noqa: E402
+
+
+def _evidence_row(root, vid, body, *, tamper=False, outside=False):
+    rel = (".context/other/" if outside else ".context/reviews/evidence/T-9001/") + f"AC1-{vid}.md"
+    p = root / rel
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(body)
+    sha = hashlib.sha256(body.encode()).hexdigest()
+    if tamper:
+        p.write_text(body + "\nedited later\n")
+    row = _row(vid, 1, _digest(TASK, 1), ts="2026-10-31T13:00:00Z",
+               guidance="Operator: accept the PROPOSED RESTATEMENT in the evidence report.")
+    row["evidence"], row["evidence_sha256"] = [rel], {rel: sha}
+    return row
+
+
+EVID = "## AC1\nchecked x\nPROPOSED RESTATEMENT: [REVIEW] The page lists all projects\nmeets it\n"
+
+
+def test_marker_found_in_sha_checked_evidence(proj):
+    root, task = proj
+    _add_rows(root, _evidence_row(root, "V-8", EVID))
+    assert [i["verdict_id"] for i in rc.pending(root)] == ["V-8"]
+    assert rc.pending(root)[0]["proposed"] == "[REVIEW] The page lists all projects"
+    rc.accept(root, "V-8")
+    assert "- [ ] [REVIEW] The page lists all projects\n" in task.read_text()
+
+
+def test_marker_in_guidance_pointer_line_is_not_taken_as_the_restatement(proj):
+    # the guidance mentions "PROPOSED RESTATEMENT" but has no marker line of its own
+    root, _ = proj
+    _add_rows(root, _evidence_row(root, "V-8", EVID))
+    assert rc.pending(root)[0]["proposed"].startswith("[REVIEW] The page lists")
+
+
+def test_tampered_or_outside_evidence_is_not_read(proj):
+    root, _ = proj
+    _add_rows(root, _evidence_row(root, "V-9", EVID, tamper=True))
+    assert rc.pending(root) == []
+    _add_rows(root, _evidence_row(root, "V-10", EVID, outside=True))
+    assert rc.pending(root) == []
+    with pytest.raises(rc.Refused, match="no PROPOSED RESTATEMENT"):
+        rc.accept(root, "V-10")
+
+
+def test_accept_text_on_a_markerless_amber(proj):
+    root, task = proj
+    _add_rows(root, _row("V-11", 1, _digest(TASK, 1), ts="2026-10-31T14:00:00Z",
+                         guidance="The count is stale; no wording proposed."))
+    with pytest.raises(rc.Refused, match="--text"):
+        rc.accept(root, "V-11")
+    rec = rc.accept(root, "V-11", text_override="The page lists every project")
+    assert rec["proposed"] == "" and rec["edited"] is True
+    assert "- [ ] [REVIEW] The page lists every project\n" in task.read_text()
+
+
+def test_brief_puts_the_marker_in_guidance():
+    from lib.reviewer import judge_cli
+    crit = [{"index": 1, "ac_index": 1, "body": "- [ ] [REVIEW] x", "render": False,
+             "title": "x", "digest": "d"}]
+    brief = judge_cli._build_brief("T-9", crit, rung=3, kind="claude", revision="abc")
+    assert "not only in your evidence report (T-4942)" in brief
