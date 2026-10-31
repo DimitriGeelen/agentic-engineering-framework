@@ -50,9 +50,10 @@ show_inception_help() {
     echo "  start <name>                      Create inception task + set focus"
     echo "  status                            Show all inception tasks"
     echo "  decide <T-XXX> go|no-go|defer     Record go/no-go decision"
-    echo "  correct <T-XXX> go|no-go --reason '<why>'"
+    echo "  correct <T-XXX> go|no-go|defer --reason '<why>'"
     echo "                                    Re-record a mistaken decision, also on a"
-    echo "                                    completed inception (operator-only, logged, T-4324)"
+    echo "                                    completed inception (operator-only, logged, T-4324);"
+    echo "                                    defer reopens it, parked in active/ (T-4918)"
     echo "  sweep [--dry-run]                 Retroactively finalize inceptions with"
     echo "                                    recorded decisions but unchecked Human ACs"
     echo "  retrofit-rec [--apply]            T-1716 retrofit: scan active inceptions"
@@ -537,8 +538,8 @@ do_inception_decide() {
             echo -e "${RED}ERROR: $task_id is archived (work-completed): ${_archived#"$PROJECT_ROOT"/}${NC}" >&2
             echo -e "'fw inception decide' records a verdict on an open exploration only." >&2
             if grep -q "^workflow_type: inception" "$_archived"; then
-                echo -e "To re-record a wrong GO/NO-GO on it (operator only, logged):" >&2
-                echo -e "  $(_emit_user_command "inception correct $task_id go|no-go --reason 'why the recorded verdict was wrong'")" >&2
+                echo -e "To re-record a wrong GO/NO-GO on it, or reopen it as DEFER (operator only, logged):" >&2
+                echo -e "  $(_emit_user_command "inception correct $task_id go|no-go|defer --reason 'why the recorded verdict was wrong'")" >&2
             else
                 echo -e "It is not an inception task, so there is no verdict to record." >&2
             fi
@@ -980,22 +981,23 @@ EOF
 # moves the task to completed/ in the same call, so a mis-clicked verdict could only be
 # undone by hand-reverting commits (T-2899, 2026-10-18). This re-records the verdict in
 # place, active or completed, with a mandatory reason. Same sovereignty gate as decide.
-# The task stays where it is: GO and NO-GO both complete an inception. A correction to
-# DEFER is not offered — that reopens the exploration, which is a different act.
+# The task stays where it is: GO and NO-GO both complete an inception. T-4918: a correction
+# to DEFER reopens it — back to active/, parked (captured, horizon later: the state
+# `decide defer` leaves, T-1865). The old text sent operators to `fw task update`, which
+# refuses work-completed -> started-work, so the only way out was a hand edit.
 do_inception_correct() {
     local task_id="${1:-}"
     local decision="${2:-}"
     shift 2 2>/dev/null || true
 
     if [ -z "$task_id" ] || [ -z "$decision" ]; then
-        echo -e "${RED}Usage: fw inception correct T-XXX go|no-go --reason 'why the recorded verdict was wrong'${NC}" >&2
+        echo -e "${RED}Usage: fw inception correct T-XXX go|no-go|defer --reason 'why the recorded verdict was wrong'${NC}" >&2
         exit 1
     fi
     case "$decision" in
-        go|no-go) ;;
+        go|no-go|defer) ;;
         *)
-            echo -e "${RED}Correction must be: go or no-go${NC}" >&2
-            echo "  To reopen an exploration (DEFER), move the task back and decide again." >&2
+            echo -e "${RED}Correction must be: go, no-go or defer (defer reopens the exploration)${NC}" >&2
             exit 1
             ;;
     esac
@@ -1051,12 +1053,41 @@ do_inception_correct() {
     timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
     local ledger="$PROJECT_ROOT/.context/inception-corrections.jsonl"
 
+    # T-4918: DEFER reopens. Move a completed task back first, so the rewrite below and the
+    # commit both name the active path; the old path goes into the commit as the removal.
+    local old_file="$task_file"
+    if [ "$new_upper" = "DEFER" ] && [[ "$task_file" == */completed/* ]]; then
+        local _act="$PROJECT_ROOT/.tasks/active/$(basename "$task_file")"
+        if ! git -C "$PROJECT_ROOT" mv -- "$task_file" "$_act" 2>/dev/null; then
+            mv -- "$task_file" "$_act" || { echo -e "${RED}ERROR: could not move $task_id back to active/${NC}" >&2; exit 1; }
+        fi
+        task_file="$_act"
+    fi
+
     python3 - "$task_file" "$task_id" "$old_upper" "$new_upper" "$reason" "$timestamp" "$who" "$ledger" << 'PYCORRECT'
 import json, os, re, sys
 
 task_file, tid, old, new, reason, ts, who, ledger = sys.argv[1:9]
 with open(task_file) as f:
     lines = f.read().split('\n')
+if new == 'DEFER':
+    # T-4918: parked, as `decide defer` leaves it (T-1865). Frontmatter only.
+    want = {'status': 'captured', 'horizon': 'later', 'date_finished': ''}
+    seen, close_at, done = 0, None, set()
+    for i, line in enumerate(lines):
+        if line.strip() == '---':
+            seen += 1
+            if seen == 2:
+                close_at = i
+                break
+            continue
+        k = line.split(':', 1)[0]
+        if seen == 1 and k in want and not line.startswith((' ', '\t')):
+            lines[i] = f'{k}: {want[k]}' if want[k] else f'{k}:'
+            done.add(k)
+    if close_at is not None:
+        add = [f'{k}: {v}' if v else f'{k}:' for k, v in want.items() if k not in done]
+        lines[close_at:close_at] = add
 
 block = ['## Decision', '', f'**Decision**: {new}', '', f'**Rationale**: {reason}', '',
          f'**Date**: {ts}', '', f'**Corrected**: from {old} ({who}, T-4324)']
@@ -1079,7 +1110,9 @@ if not written:
 if out and out[-1] != '':
     out.append('')
 out.extend([f'### {ts} — inception-decision-correction [inception-workflow]',
-            f'- **Action:** Corrected inception decision {old} → {new}',
+            f'- **Action:** Corrected inception decision {old} → {new}'
+            + (' — exploration reopened: back in active/, parked (captured, horizon later)'
+               if new == 'DEFER' else ''),
             f'- **Reason:** {reason}', f'- **By:** {who}', ''])
 with open(task_file, 'w') as f:
     f.write('\n'.join(out))
@@ -1087,19 +1120,29 @@ with open(task_file, 'w') as f:
 os.makedirs(os.path.dirname(ledger), exist_ok=True)
 with open(ledger, 'a') as f:
     f.write(json.dumps({"ts": ts, "task": tid, "from": old, "to": new,
-                        "reason": reason, "by": who}) + '\n')
+                        "reason": reason, "by": who, "reopened": new == 'DEFER'}) + '\n')
 PYCORRECT
 
     # Commit with the subject the decision readers grep (operator_pending._commit_decision,
     # watchtower_decision_revert.ANY_DECISION), so git history agrees with the file.
-    # Only these two paths are committed, whatever else is staged.
+    # Only these paths are committed, whatever else is staged (plus, for a reopen, the
+    # completed/ path the move removed — T-4918).
     local _msg="$task_id: inception decision $new_upper (corrected from $old_upper)"
-    if git -C "$PROJECT_ROOT" add -- "$task_file" "$ledger" 2>/dev/null && \
-       git -C "$PROJECT_ROOT" commit -q -m "$_msg" -- "$task_file" "$ledger" >/dev/null 2>&1; then
+    local -a _paths=("$task_file" "$ledger")
+    local _staged=0
+    git -C "$PROJECT_ROOT" add -- "$task_file" "$ledger" 2>/dev/null || _staged=1
+    if [ "$old_file" != "$task_file" ]; then
+        _paths+=("$old_file")
+        # `git mv` already staged the removal; a plain-mv fallback has not. Either way the
+        # old path must not be passed to `git add`, which refuses a path that is gone.
+        git -C "$PROJECT_ROOT" rm -q --cached --ignore-unmatch -- "$old_file" 2>/dev/null || _staged=1
+    fi
+    if [ "$_staged" -eq 0 ] && \
+       git -C "$PROJECT_ROOT" commit -q -m "$_msg" -- "${_paths[@]}" >/dev/null 2>&1; then
         echo "Committed: $_msg"
     else
         echo -e "${YELLOW}WARN: correction written but not committed. Commit it with:${NC}" >&2
-        echo "  cd $PROJECT_ROOT && git commit -m \"$_msg\" -- $task_file $ledger" >&2
+        echo "  cd $PROJECT_ROOT && git add -- $task_file $ledger && git commit -m \"$_msg\" -- ${_paths[*]}" >&2
     fi
 
     echo -e "${GREEN}Inception decision corrected${NC}: $task_id $old_upper → $new_upper"
