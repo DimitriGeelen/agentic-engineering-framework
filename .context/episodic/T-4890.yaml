@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4890: Sidecar receiver injects a banner that promises a prompt hook the project does not have (0506)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T13:51:51Z
+# ============================================================================
+
+task_id: T-4890
+task_name: "Sidecar receiver injects a banner that promises a prompt hook the project does not have (0506)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-28T23:37:54Z
+completed: 2026-10-31T13:51:14Z
+duration_days: 3
+updates_count: 3
+first_commit: 2026-10-31T14:50:41+01:00
+last_commit: 2026-10-31T14:51:12+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the sidecar injector types nothing when no UserPromptSubmit hook would surface the mail; INJECT_BLOCKED names the fix. refresh vendored copies. verification, RCA, ACs
+
+# Key outcomes
+outcomes:
+  - '`lib/sidecar/inject.py` checks the project''s `.claude/settings.json` and `settings.local.json` for a UserPromptSubmit hook running `sidecar-receiver-adapter` before typing; without one it types nothing and records `INJECT_BLOCKED` (once per message and reason) with a reason naming the fix'
+  - 'Tests: hook absent → nothing typed, blocked with the reason, mail still awaiting hand-over; hook in settings.json or settings.local.json → injection as before; unreadable settings → treated as absent; existing inject tests pass (all sidecar suites: 657 passed)'
+  - 'Vendored copy synced; 0506 told (msg 93a49c52)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'the sidecar injector types nothing when no UserPromptSubmit hook would surface the mail; INJECT_BLOCKED names the fix'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/inject.py'
+  - '.tasks/active/T-4890-sidecar-receiver-injects-a-banner-that-p.md'
+  - 'lib/sidecar/inject.py'
+  - 'tests/unit/test_sidecar_inject_prompt_hook_t4890.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-31T14:50:41'
+    action: 'T-4890: the sidecar injector types nothing when no UserPromptSubmit hook would surface the mail; INJECT_BLOCKED names the fix'
+  - time: '2026-10-31T14:50:46'
+    action: 'T-4890: refresh vendored copies'
+  - time: '2026-10-31T14:51:12'
+    action: 'T-4890: verification, RCA, ACs'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 3733 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [post-freeze, sidecar, bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3733
+  commits: 4
+  files_changed: 7
+  lines_added: 316
+  lines_removed: 13
+  footprint_refreshed_at: '2026-10-31T13:51:59Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4890-sidecar-receiver-injects-a-banner-that-p.md
+generated_by: context-agent-hybrid
