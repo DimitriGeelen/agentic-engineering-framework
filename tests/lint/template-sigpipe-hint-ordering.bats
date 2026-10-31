@@ -35,7 +35,7 @@ _lineno() { grep -n -- "$1" "$TPL" | head -1 | cut -d: -f1; }
 @test "T-3000: the file-redirect form appears before the capture-then-grep form" {
     local redirect capture
     redirect=$(_lineno '> /tmp/.out 2>&1 && grep -q')
-    capture=$(_lineno 'out=$(cmd 2>&1); echo "$out" | grep -q')
+    capture=$(_lineno 'out=$(cmd 2>&1); grep -q "PATTERN" <<<"$out"')   # T-4921/T-4922: here-string
 
     [ -n "$redirect" ] || { echo "file-redirect form absent from template" >&2; return 1; }
     [ -n "$capture" ]  || { echo "capture-then-grep form absent from template" >&2; return 1; }
@@ -55,21 +55,24 @@ _lineno() { grep -n -- "$1" "$TPL" | head -1 | cut -d: -f1; }
         echo "'Safe pattern' still labels a form in the template" >&2; return 1; }
 }
 
-@test "T-3000: the size bound is adjacent to the form it qualifies" {
-    # The T-2743 correction was 20 lines below the form it retracts, and read as a
-    # new hint rather than a retraction. Adjacency is what makes it a caveat
-    # instead of a footnote. 12 lines is slack for the example line plus rationale;
-    # it fails long before the 20-line gap that caused the original miss.
-    local capture bound gap
-    capture=$(_lineno 'out=$(cmd 2>&1); echo "$out" | grep -q')
-    bound=$(_lineno '65536-byte pipe buffer')
+@test "T-4922: the retraction of echo|grep -q is adjacent to the capture form that replaced it" {
+    # T-3000 pinned a 64 KB bound next to `echo "$out" | grep -q`. T-4921 (832 T-1340)
+    # showed the bound is false for multi-line values — a builtin writes per line, so
+    # grep -q can exit early at ANY size — and the same pipe made gates fail open
+    # (T-4920, T-4921). The capture form is now a here-string; what must sit next to it
+    # is the retraction of the old form. Same adjacency rule as T-3000 (max 12 lines):
+    # a correction 20 lines away reads as a new hint, not a retraction.
+    local capture warn gap
+    capture=$(_lineno 'out=$(cmd 2>&1); grep -q "PATTERN" <<<"$out"')
+    warn=$(_lineno 'Do NOT write `echo "$out" | grep -q PAT`')
 
-    [ -n "$bound" ] || { echo "the 65536-byte bound is no longer stated" >&2; return 1; }
-    [ "$bound" -gt "$capture" ] || { echo "bound at $bound precedes the form at $capture" >&2; return 1; }
+    [ -n "$capture" ] || { echo "the here-string capture form is absent" >&2; return 1; }
+    [ -n "$warn" ] || { echo "the retraction of echo|grep -q is no longer stated" >&2; return 1; }
+    [ "$warn" -gt "$capture" ] || { echo "retraction at $warn precedes the form at $capture" >&2; return 1; }
 
-    gap=$(( bound - capture ))
+    gap=$(( warn - capture ))
     [ "$gap" -le 12 ] || {
-        echo "size bound is $gap lines below the form it qualifies (max 12)" >&2; return 1; }
+        echo "retraction is $gap lines below the form it qualifies (max 12)" >&2; return 1; }
 }
 
 @test "T-3000: every rule the block accumulated is still stated" {
@@ -79,8 +82,8 @@ _lineno() { grep -n -- "$1" "$TPL" | head -1 | cut -d: -f1; }
     for pat in \
         'set -eo pipefail' \
         'SIGPIPE' \
-        '65536-byte pipe buffer' \
-        'no intermediate tail/awk/sed' \
+        'not safe "below 64 KB"' \
+        'grep -q "PATTERN" <<<"$out"' \
         'FW_ALLOW_UNJUDGED_TEST_RUN=1' \
         'DOES NOT REHEARSE THE GATE'
     do
