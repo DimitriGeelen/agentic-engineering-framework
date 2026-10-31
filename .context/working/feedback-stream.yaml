@@ -51467,3 +51467,21 @@ scan_id: R-bed603e9
 task_id: T-4914
 payload:
   task_file: .tasks/active/T-4914-fw-runme-a-re-run-after-a-finished-run-e.md
+---
+kind: scan_emitted
+timestamp: '2026-10-31T11:20:25Z'
+scan_id: R-f9656f33
+task_id: T-4909
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-31T11:20:25Z'
+scan_id: R-f9656f33
+task_id: T-4909
+payload:
+  task_file: .tasks/active/T-4909-slow-suite-red-t4740-test-2-a-real-vendo.md
