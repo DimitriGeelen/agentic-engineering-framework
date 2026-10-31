@@ -77,6 +77,11 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
   Found with `--dry-run`; nothing was written. Fixed as T-4939 in be.9 (`accept --text`, and
   the brief asks for the restatement alone on its line).
 
+### be.9: ring20-dashboard (d1777dc8), 2026-10-31
+- be.8 → be.9, ALL OK. 29/29 zero fuzz. Doctor 0 FAIL. Fast lane 17067 before and after.
+- **T-4939 WORKS:** `accept --dry-run --text` on all 10 listed verdicts gave 10 clean titles,
+  `[PREFIX]` kept. Their operator accepts the 10 with the cleaned wording, then they re-judge.
+
 ### Announced, not yet reported
 - 055-agentic-fleet-cockpit (6f246312): will upgrade to be.8 when their operator times it and
   report T-4937 with their own test kept as the check.
@@ -104,9 +109,9 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | T-4929 Evidence blocks not classified | no specific verdict | — |
 | T-4935 GitHub #104 symlink entry | pending: posted available-for-testing on #104 | — |
 | T-4930 `restatement list` | **WORKS** | ring20-dashboard cbc6bab6 |
-| T-4930 `restatement accept` | FAILED on real output; fixed by T-4939 (be.9), pending re-test | ring20-dashboard cbc6bab6 |
+| T-4930 `restatement accept` | FAILED on real output (cbc6bab6); with T-4939 `--text` **WORKS** | ring20-dashboard d1777dc8 |
 | T-4932, T-4933, T-4937 (be.8) | pending | — |
-| T-4939 `accept --text` (be.9) | pending | — |
+| T-4939 `accept --text` (be.9) | **WORKS** (10/10 clean titles, dry run) | ring20-dashboard d1777dc8 |
 
 ## Clean full upgrades (rule b)
 
