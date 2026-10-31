@@ -95,8 +95,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/hook-dispatch.sh` enters broken mode only when the file named in the stderr line resolves under FRAMEWORK_ROOT's agents/ or lib/ (or the project's .agentic-framework/agents|lib) and `bash -n` on it fails; otherwise the hook's own exit code stands
-- [ ] Tests: a forged syntax-error line naming a file that parses, or a file outside the framework, does not open broken mode; a real syntax error in a framework hook file still does (t4908 suite passes)
+- [x] `lib/hook-dispatch.sh` enters broken mode only when the file named in the stderr line resolves under FRAMEWORK_ROOT's agents/ or lib/ (or the project's .agentic-framework/agents|lib) and `bash -n` on it fails; otherwise the hook's own exit code stands
+- [x] Tests: a forged syntax-error line naming a file that parses, or a file outside the framework, does not open broken mode; a real syntax error in a framework hook file still does (t4908 suite passes)
 - [ ] Swapped in by the safe-swap procedure; vendored copy synced; ring20-dashboard told
 
 ### Human
@@ -283,6 +283,20 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t4928_broken_mode_structural.bats tests/unit/t4908_broken_hook_repair_path.bats > /tmp/.t4928.out 2>&1 && ! grep -q "^not ok" /tmp/.t4928.out
+test "$(grep -c '# skip' /tmp/.t4928.out)" -eq 0
+bash -n lib/hook-dispatch.sh
+bin/fw vendor self --check --task T-4928
+
+## RCA
+
+**Symptom:** none in the field. A security review forwarded by ring20-dashboard (msg ddc0cd83, finding 3) flagged that broken-hook mode is chosen from stderr text. Reproduced here: a refusing gate that printed a forged `/x: line 3: syntax error` line had its refusal overturned for a Write to `/x`, both for a framework file that parses and for a file outside the framework. Tests 1 and 2 of t4928 fail on the old dispatcher.
+
+**Root cause:** T-4908 detected "the hook cannot run" by grepping the hook's stderr for bash's syntax-error message, and trusted the file named in it. Text a hook prints is not evidence that a file does not parse, and the named file was not checked to be a hook at all.
+
+**Why structurally allowed:** T-4908 was built in a lockout (a real syntax error had refused every write) and tested only that real case. An adversarial line was not a fixture, so the gap was invisible.
+
+**Prevention:** `_fw_hook_really_broken` accepts a syntax-error line only when its file resolves under FRAMEWORK_ROOT's agents/ or lib/ (or the project's `.agentic-framework/`) and `bash -n` really fails on it; otherwise the hook's own exit code stands. `tests/unit/t4928_broken_mode_structural.bats` pins both forgeries and the real case; the 9 T-4908 tests still pass.
 
 ## RCA
 
