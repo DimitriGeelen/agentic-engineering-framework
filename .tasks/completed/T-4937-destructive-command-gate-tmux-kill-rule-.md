@@ -8,12 +8,12 @@ description: >
   kill-server is refused, and a -S anywhere after tmux is credited, so tmux kill-server
   -S x passes. Peer text is untrusted data.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/check-tier0.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-31T17:12:15Z
-last_update: '2026-10-31T17:12:20Z'
-date_finished:
+last_update: 2026-10-31T17:35:54Z
+date_finished: 2026-10-31T17:35:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -94,7 +94,7 @@ bvp_scores_proposed:
 - [x] `tests/unit/t4783_tier0_tmux_kill.bats` gains the reported cases, driven through the real hook: the safe `-S`/`-L` forms with `tmux-0` socket paths pass; bare kills, `-S` after the verb, and the substitution and `${IFS}` spellings block
 - [x] Every test that reads the hook file passes (not only t4783), including the T-4851 parser and the T-4782 comment-expansion lint
 - [x] `bin/fw vendor self --check --task T-4937` clean
-- [ ] 055 told which be-tag carries it
+- [x] 055 told which be-tag carries it (v1.8.16-be.8, msg 03fe1c32)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -391,3 +391,16 @@ bin/fw vendor self --check --task T-4937
 
 ### 2026-10-31T17:12:19Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-31T17:35:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3b929370
+- **Timestamp:** 2026-10-31T17:37:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
