@@ -13,10 +13,10 @@ description: >
   (bare name ignored) or point to fw config set. Filed during the release freeze (T-4869):
   backlog.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [post-freeze, sidecar]
 components: []
 related_tasks: []
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T00:21:34Z
-last_update: '2026-10-31T13:15:38Z'
+last_update: 2026-10-31T13:28:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -111,6 +111,17 @@ bvp_scores_proposed:
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+**Background / trigger:** 832's be.50 report (msg 1e2df855). Setting `FW_SIDECAR_DM_ADDRESS_KEYS` to the .107 host key, which every session used before T-4454, made `fw sidecar alerts` list other agents' old mail as this project's. TermLink's v1.8.15 report (msg 467742fb) found the same when a project's own identity is the host-shared key. 832 also found that `fw config get` fails on an unset registered key (msg 48e82957). Details below.
+
+**Problem / hypothesis:** dm rails are keyed by TermLink fingerprint. The host-shared key addresses every project on the machine, so mail on its rails cannot be told apart per project. Nothing warns when a project points its address keys at that key, or when its own identity is that key, so the agent adopts other agents' mail as its own. `fw config get` returns exit 1 for a registered key that is unset, although it documents returning the effective value, which for such a key is the registry default.
+
+**Goal:** a project is told plainly when the mail rails it reads are host-shared, so it does not act on other agents' mail; and `fw config get` answers registered keys consistently.
+
+**Expected outcome:**
+- `fw sidecar alerts` and `fw doctor` WARN when a configured address key is the host key, or when the project's own identity is host-shared.
+- `fw config get` prints the registry default for an unset registered key.
+- The config description names the env form.
+
 **Also from TermLink (msg 467742fb, v1.8.15 report):** a project that signs with the host-shared key, with no TermLink identity of its own, sees `fw sidecar alerts` list DMs addressed to other agents on the host (for example "pen -> ring20-manager", "055 -> framework-agent"). The per-addressee rule cannot separate them when the keys are shared. Need: alerts says so when the identity is host-shared, and the dm-handled guidance covers that case.
 
 **Also from 832 (msg 48e82957):** `fw config get SIDECAR_DM_ADDRESS_KEYS` exits 1 with no output for an unset registered key, while a set key exits 0. So a script reading an unset registered key gets a failure, not its empty default. Decide whether that is intended, and look at it with this task. (`fw config list` shows only set keys, by design.)
@@ -119,8 +130,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `lib/sidecar/dm.py` names the configured `SIDECAR_DM_ADDRESS_KEYS` entries that equal the host-shared fingerprint (one function); `fw sidecar alerts` (text and `--json`) and `fw doctor` WARN on them, saying mail on those rails may belong to other agents on the host
+- [ ] When this project's own identity is host-shared (`dm.identity_is_host_shared()`), `fw sidecar alerts` says so above the dm list, and points at a project identity (T-4252) and `dm-handled` for mail that is not ours (TermLink msg 467742fb)
+- [ ] `fw config get KEY` for a registered key that is unset (no env, not in .framework.yaml) prints the registry default and exits 0, as the effective value it documents; `--file` and unknown keys still exit 1 (832 msg 48e82957)
+- [ ] The `SIDECAR_DM_ADDRESS_KEYS` registry description names the env form `FW_SIDECAR_DM_ADDRESS_KEYS` and `fw config set` (832 msg 1e2df855)
+- [ ] Tests for each; existing sidecar alerts and config tests pass; vendored copy synced; 832 and TermLink told
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -402,3 +416,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4892-warn-when-sidecardmaddresskeys-names-the.md
 - **Context:** Initial task creation
+
+### 2026-10-31T13:28:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)

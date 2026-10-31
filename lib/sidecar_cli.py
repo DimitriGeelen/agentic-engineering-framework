@@ -363,6 +363,26 @@ def _issue_reply_lines() -> list:
         return []
 
 
+def _host_shared_lines() -> list[str]:
+    """T-4892: WARN lines when the dm rails this project reads are host-shared — its own
+    identity is the host default (TermLink, msg 467742fb), or a configured address key is
+    the host key (832, msg 1e2df855). Mail on such rails may be another agent's. Never
+    raises: a check that cannot run says nothing rather than blocking the mail list."""
+    out = []
+    try:
+        if dm.identity_is_host_shared():
+            out.append("WARN  this project signs with the host-shared TermLink key: dm mail listed "
+                       "below may be addressed to other agents on this host. Give the project its "
+                       "own identity (T-4252); add mail that is not ours to " + dm.HANDLED_FILE)
+        for k in sorted(dm.host_shared_address_keys()):
+            out.append(f"WARN  SIDECAR_DM_ADDRESS_KEYS lists the host-shared key {k}: every session "
+                       f"on this host signed with it before T-4454, so mail on its rails may belong "
+                       f"to other agents. Remove it unless a peer really addresses this project there")
+    except Exception:  # noqa: BLE001
+        return []
+    return out
+
+
 def cmd_alerts(args) -> int:
     """T-3856: session-start mail check — both routes, read-only, never silent."""
     from lib.sidecar import alerts
@@ -379,13 +399,18 @@ def cmd_alerts(args) -> int:
             for line in _orphan_lines(orphans):
                 print(line)
         return 3
+    shared = _host_shared_lines()  # T-4892: rails that are not this project's alone
     if args.json:
         print(json.dumps({"checked": True, "mail": [
             {k: v for k, v in r.items() if not k.startswith("_")} for r in rows],
-            "orphan_inboxes": orphans}, indent=2))
+            "orphan_inboxes": orphans, "host_shared": shared}, indent=2))
     elif not rows:
+        for line in shared:
+            print(line)
         print("peer mail: nothing unseen")
     else:
+        for line in shared:
+            print(line)
         n_dm = sum(1 for r in rows if r["route"] == "dm")
         parts = [f"{len(rows) - n_dm} unseen"] if len(rows) > n_dm else []
         if n_dm:

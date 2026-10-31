@@ -4185,6 +4185,21 @@ sys.exit(0 if '$_tl_topic' in names else 1)
                 done <<< "$_dm_rows"
             fi
 
+            # T-4892 (832, msg 1e2df855): SIDECAR_DM_ADDRESS_KEYS naming the host-shared
+            # key makes `fw sidecar alerts` adopt other agents' mail as this project's.
+            # A config error the project can fix, so a WARN (unlike the INFO above).
+            local _dm_hk
+            _dm_hk=$(PROJECT_ROOT="$PROJECT_ROOT" python3 -c '
+import sys
+sys.path.insert(0, sys.argv[1])
+from lib.sidecar import dm
+print(" ".join(sorted(dm.host_shared_address_keys())))' "$FRAMEWORK_ROOT" 2>/dev/null) || _dm_hk=""
+            if [ -n "$_dm_hk" ]; then
+                echo -e "  ${YELLOW}WARN${NC}  SIDECAR_DM_ADDRESS_KEYS lists the host-shared key $_dm_hk: its rails carry other agents' mail too (T-4892)"
+                echo "         Remove it unless a peer really addresses this project there: fw config set SIDECAR_DM_ADDRESS_KEYS <keys>"
+                warnings=$((warnings + 1))
+            fi
+
             # T-3544/OBS-567: the same question asked of the INBOUND consult
             # inbox, which is the rail peers are actually told to use and the
             # one both of the incidents above arrived on. 832 waited six days;

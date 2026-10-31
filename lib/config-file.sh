@@ -330,12 +330,25 @@ _config_get() {
         effective_key="${key#$_continuous_mode_prefix}"
     fi
 
+    # T-4892 (832, msg 48e82957): for a registered key the effective value of an unset
+    # key is its registry default — what fw_config returns — not "not found". Only the
+    # plain form; --file asks about the file alone, and unknown keys still exit 1.
+    local _cg_default_ok=0
+    if [ -n "${canon:-}" ] && [ "$file_only" -eq 0 ]; then
+        _cg_default_ok=1
+    fi
+
     if [ ! -f "$target_yaml" ]; then
+        if [ "$_cg_default_ok" -eq 1 ]; then
+            _fw_registry_default "$canon"; echo
+            return 0
+        fi
         echo -e "${RED:-}No config file found at $target_yaml${NC:-}" >&2
         exit 1
     fi
 
-    python3 - "$target_yaml" "$effective_key" << 'PYGET'
+    local _cg_rc=0
+    python3 - "$target_yaml" "$effective_key" << 'PYGET' || _cg_rc=$?
 import sys, yaml
 
 yaml_file = sys.argv[1]
@@ -354,6 +367,11 @@ for part in parts:
 
 print(current)
 PYGET
+    if [ "$_cg_rc" -eq 1 ] && [ "$_cg_default_ok" -eq 1 ]; then
+        _fw_registry_default "$canon"; echo
+        return 0
+    fi
+    return "$_cg_rc"
 }
 
 _config_list() {
