@@ -94,7 +94,7 @@ bvp_scores_proposed:
 - [x] `accept --text "…"` writes that text (same checks: not empty, ≤400 characters, no checkbox), records `proposed` (the reviewer's) and `new_title` (written) and `edited: true`; without `--text` behaviour is unchanged
 - [x] `--dry-run` with `--text` shows the edited before/after; the agent refusal still applies to a real write with `--text`
 - [x] Tests cover `--text`, the record fields, and the brief wording (4 new, 19 total; 670 judge/restatement tests pass); existing T-4930 tests stay green; `bin/fw vendor self --check --task T-4939` clean
-- [ ] ring20-dashboard told the be-tag and how to use `--text`
+- [x] ring20-dashboard told the be-tag and how to use `--text` (v1.8.16-be.9, msg 4633758c); their be.8 result recorded in docs/reports/field-test-v1.8.16-results.md
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

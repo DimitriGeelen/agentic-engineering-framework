@@ -20,6 +20,7 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | be.6 | aeed2c1db | T-4929, T-4934 (`$$'` bypass) |
 | be.7 | 3877bf7a4 | T-4935 (GitHub #104: a listed symlink in `BOUNDARY_EXTRA_READ_PATHS`) |
 | be.8 | 2bf6d227b | T-4930 (`fw reviewer restatement`), T-4932, T-4933, T-4937 (Tier 0 tmux kill rule) |
+| be.9 | 64acfecfa | T-4912 (claude-fw `ps` note), T-4939 (`restatement accept --text`) |
 
 ## Upgrade reports
 
@@ -65,6 +66,17 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 - **WORKS T-4934** (their probe file 11/11). **T-4914** seen working in real use: a first
   attempt stopped at their own disk preflight, and its log survived the re-run as run.log.1.
 
+### be.8: ring20-dashboard (cbc6bab6), 2026-10-31
+- be.6 → be.8, ALL OK, no rollback. 29/29 zero fuzz. Doctor 0 FAIL. Fast lane 17068 passed
+  before and after.
+- **T-4930 `restatement list` WORKS:** 10 of their 14 ambers listed; the other 4 correctly left
+  out (one criterion edited after its verdict, three with the restatement only in the evidence
+  report).
+- **T-4930 `accept` FAILS for real reviewer output:** the reviewer's evidence judgement on the
+  same line as the restatement would have been written into the criterion title (5 of 10).
+  Found with `--dry-run`; nothing was written. Fixed as T-4939 in be.9 (`accept --text`, and
+  the brief asks for the restatement alone on its line).
+
 ### Announced, not yet reported
 - 055-agentic-fleet-cockpit (6f246312): will upgrade to be.8 when their operator times it and
   report T-4937 with their own test kept as the check.
@@ -91,7 +103,10 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | T-4924 designer 0.33.0 pin (832) | pending (ring20-dashboard did swap to 0.33.0 cleanly, 504a2831) | — |
 | T-4929 Evidence blocks not classified | no specific verdict | — |
 | T-4935 GitHub #104 symlink entry | pending: posted available-for-testing on #104 | — |
-| T-4930, T-4932, T-4933, T-4937 (be.8) | pending: be.8 cut 2026-10-31 | — |
+| T-4930 `restatement list` | **WORKS** | ring20-dashboard cbc6bab6 |
+| T-4930 `restatement accept` | FAILED on real output; fixed by T-4939 (be.9), pending re-test | ring20-dashboard cbc6bab6 |
+| T-4932, T-4933, T-4937 (be.8) | pending | — |
+| T-4939 `accept --text` (be.9) | pending | — |
 
 ## Clean full upgrades (rule b)
 
