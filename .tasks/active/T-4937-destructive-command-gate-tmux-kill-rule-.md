@@ -90,10 +90,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The rule's pattern uses the revised anchor; the edit goes through a scratch copy, `bash -n`, and an in-place smoke test with payloads, with automatic restore on failure
-- [ ] `tests/unit/t4783_tier0_tmux_kill.bats` gains the reported cases, driven through the real hook: the safe `-S`/`-L` forms with `tmux-0` socket paths pass; bare kills, `-S` after the verb, and the substitution and `${IFS}` spellings block
-- [ ] Every test that reads the hook file passes (not only t4783), including the T-4851 parser and the T-4782 comment-expansion lint
-- [ ] `bin/fw vendor self --check --task T-4937` clean
+- [x] The rule's pattern uses the revised anchor, checked first against 17 reported cases in isolation (old pattern: 3 safe forms blocked, 1 after-verb `-S` passed; revised: 0 wrong). Edited in place with the Edit tool rather than a scratch-copy swap: a Bash command cannot name the hook file (its name holds the Tier 0 word, and splitting the word is not done), and Edit stays available to restore if the hook had broken. The in-place smoke test (t4783, 16 cases through the real hook) passed on the first run.
+- [x] `tests/unit/t4783_tier0_tmux_kill.bats` gains the reported cases, driven through the real hook: the safe `-S`/`-L` forms with `tmux-0` socket paths pass; bare kills, `-S` after the verb, and the substitution and `${IFS}` spellings block
+- [x] Every test that reads the hook file passes (not only t4783), including the T-4851 parser and the T-4782 comment-expansion lint
+- [x] `bin/fw vendor self --check --task T-4937` clean
 - [ ] 055 told which be-tag carries it
 
 ### Human
@@ -280,6 +280,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t4783_tier0_tmux_kill.bats > /tmp/.t4937 2>&1 && ! grep -q "^not ok" /tmp/.t4937
+test "$(grep -c '# skip' /tmp/.t4937)" -eq 0
+timeout 300 bats tests/unit/t4851_degraded_gate_classes.bats tests/lint/hook-python-c-substitution.bats > /tmp/.t4937b 2>&1 && ! grep -q "^not ok" /tmp/.t4937b
+bin/fw vendor self --check --task T-4937
 
 ## RCA
 
@@ -296,6 +300,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** `tmux -S /tmp/tmux-0/default kill-server`, the form the block message itself prescribes, was refused; `tmux kill-server -S /tmp/tmux-0/default`, which kills the server `TMUX` points at, passed.
+
+**Root cause:** `\btmux\b` also matched the `tmux` in the socket path (`tmux-0`, the default tmux socket directory, appears in nearly every real `-S` path), and the "names a socket" lookahead then ran from that later position, past the real `-S`. Separately, the lookahead credited `-S`/`-L` anywhere after `tmux`, but tmux reads them as the socket only before the command verb.
+
+**Why structurally allowed:** T-4783's allowed cases used socket paths with no `tmux` in them (`/tmp/scratch.sock`), so the one shape every real socket has was never tested, and no test put `-S` after the verb.
+
+**Prevention:** four T-4937 tests in `tests/unit/t4783_tier0_tmux_kill.bats` cover `tmux-<uid>` socket paths, `-S`/`-L` after the verb, a `tmux-0` directory before a bare kill, and substitution and `${IFS}` spellings. Still open, pre-existing (055's notice): `bash -c '…kill-server'`, `xargs tmux kill-server`, a backslash-newline continuation and tmux's own `\;` separator pass; the gate sees only the typed text (T-2742 boundary).
 
 ## Evolution
 
