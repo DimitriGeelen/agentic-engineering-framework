@@ -38,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-31T12:42:44Z
-last_update: 2026-10-31T12:42:44Z
+last_update: 2026-10-31T12:55:13Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,8 +88,8 @@ The patterns behind this filter include git push/reset/clean, `rm -`, the Tier 0
 - [x] The race is reproduced on our copy before the fix (the old pre-filter pipeline, run many times under `set -uo pipefail`, lets at least one matching command through, or the attempt and its count are recorded if it does not show in N runs). Recorded: the short-command race was 0 in 20,000 here, but the long-command form reproduces deterministically on the real old hook (allowed from about 120 KB of padding).
 - [x] `check-tier0.sh` pre-filter uses a here-string; patterns and exit codes unchanged; no `| grep -q` left in the hook; swapped in by the safe-swap procedure
 - [x] Regression test: the block extracted from the hook file, N runs under the hook's options, 0 matching commands waved through; a plain command still exits 0 on the fast path; existing Tier 0 tests pass
-- [ ] Census task filed for the same class elsewhere (hooks and scripts under pipefail, and the Verification template guidance); 832 told both task ids
-- [ ] Vendored copy synced
+- [x] Census task filed for the same class elsewhere (hooks and scripts under pipefail, and the Verification template guidance); 832 told both task ids (T-4921; msgs 5a2bbd70, 3bf7d701; fix on v1.8.16-be.2)
+- [x] Vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
