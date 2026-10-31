@@ -22,6 +22,7 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | be.8 | 2bf6d227b | T-4930 (`fw reviewer restatement`), T-4932, T-4933, T-4937 (Tier 0 tmux kill rule) |
 | be.9 | 64acfecfa | T-4912 (claude-fw `ps` note), T-4939 (`restatement accept --text`) |
 | be.10 | c10740e74 | T-4942 (restatement read from sha-checked evidence; `--text` on a marker-less amber) |
+| be.11 | 3ba10f67e | T-4941 (host-shared identity check measures the signing key; false WARN gone) |
 
 ## Upgrade reports
 
@@ -119,6 +120,7 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | T-4932, T-4933, T-4937 (be.8) | pending | — |
 | T-4939 `accept --text` (be.9) | **WORKS** (10/10 clean titles, dry run) | ring20-dashboard d1777dc8 |
 | T-4942 marker in evidence (be.10) | pending; reported by ring20-dashboard (dbffa3dc) | — |
+| T-4941 host-shared check (be.11) | pending; a consumer with its own key should no longer see the WARN | — |
 
 ## Clean full upgrades (rule b)
 
