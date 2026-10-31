@@ -7,12 +7,12 @@ description: >
   0 truncated run.log. Keep a finished run's log (rotate to run.log.1) instead of
   truncating.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [runme]
-components: []
+components: [lib/runme.sh]
 related_tasks: [T-4871]
 origin: {kind: "peer", source: "ring20-dashboard", ref: "21ce0bab"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -42,8 +42,8 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "21ce0bab"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T23:31:10Z
-last_update: 2026-10-31T11:08:17Z
-date_finished:
+last_update: 2026-10-31T11:10:25Z
+date_finished: 2026-10-31T11:10:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -397,3 +397,16 @@ bin/fw vendor self --check --task T-4914
 ### 2026-10-31T11:08:17Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-31T11:10:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-bed603e9
+- **Timestamp:** 2026-10-31T11:10:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

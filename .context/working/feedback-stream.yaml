@@ -51431,3 +51431,39 @@ scan_id: R-dfcb6ed6
 task_id: T-4916
 payload:
   task_file: .tasks/active/T-4916-delegated-deterministic-reviewer-criteri.md
+---
+kind: scan_emitted
+timestamp: '2026-10-30T06:17:04Z'
+scan_id: R-2bc264cd
+task_id: T-3046
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-30T06:17:04Z'
+scan_id: R-2bc264cd
+task_id: T-3046
+payload:
+  task_file: .tasks/active/T-3046-message-triage-slice-1--static-msgtype-r.md
+---
+kind: scan_emitted
+timestamp: '2026-10-31T11:10:44Z'
+scan_id: R-bed603e9
+task_id: T-4914
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-31T11:10:44Z'
+scan_id: R-bed603e9
+task_id: T-4914
+payload:
+  task_file: .tasks/active/T-4914-fw-runme-a-re-run-after-a-finished-run-e.md

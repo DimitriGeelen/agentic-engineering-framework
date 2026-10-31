@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4914: fw runme: a re-run after a finished run empties run.log, losing the finished run's evidence
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T11:10:56Z
+# ============================================================================
+
+task_id: T-4914
+task_name: "fw runme: a re-run after a finished run empties run.log, losing the finished run's evidence"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-29T23:31:10Z
+completed: 2026-10-31T11:10:25Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-10-31T12:10:03+01:00
+last_commit: 2026-10-31T12:10:24+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a runme re-run keeps the finished run's log (run.log.1..3) instead of emptying it. refresh vendored copies. ring20-dashboard told
+
+# Key outcomes
+outcomes:
+  - 'A generated `runme.sh` rotates an existing non-empty `run.log` (run.log → run.log.1 → .2 → .3, oldest dropped) after taking the T-4871 lock and before starting the new log; the new run starts with a fresh `run.log`'
+  - 'A refused concurrent start (T-4871) rotates nothing'
+  - 'Tests: a re-run keeps the finished run''s log as run.log.1 with its RUNME EXIT; three generations kept, the fourth dropped; refused start leaves the logs as they were; existing runme tests pass'
+  - 'Vendored copy synced; ring20-dashboard told (msg 967c341a, via the hub)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/runme.sh'
+  - '.tasks/active/T-4914-fw-runme-a-re-run-after-a-finished-run-e.md'
+  - 'lib/runme.sh'
+  - 'tests/unit/t4914_runme_keep_finished_log.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-31T12:10:03'
+    action: 'T-4914: a runme re-run keeps the finished run''s log (run.log.1..3) instead of emptying it'
+  - time: '2026-10-31T12:10:09'
+    action: 'T-4914: refresh vendored copies'
+  - time: '2026-10-31T12:10:24'
+    action: 'T-4914: ring20-dashboard told'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2139 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [runme]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2139
+  commits: 4
+  files_changed: 7
+  lines_added: 235
+  lines_removed: 11
+  footprint_refreshed_at: '2026-10-31T11:11:04Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4914-fw-runme-a-re-run-after-a-finished-run-e.md
+generated_by: context-agent-hybrid
