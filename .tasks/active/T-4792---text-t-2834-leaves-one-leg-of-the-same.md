@@ -39,7 +39,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-26T23:04:32Z
-last_update: '2026-10-31T13:15:37Z'
+last_update: 2026-10-31T15:07:52Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -190,6 +190,11 @@ Source: observation OBS-185 (.context/inbox.yaml):
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] Close-readiness: the work meets its Agent criteria and the Verification section passes (T-4792, reviewer-judged, T-4156)
+  **Steps:**
+  1. Run `cd /opt/999-Agentic-Engineering-Framework && bin/fw reviewer judge T-4792`
+  **Expected:** an independent reviewer records a green verdict for this criterion's current text
+  **If not:** remediate the findings the reviewer lists, then re-run the judge
 
 <!--
   Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
@@ -463,3 +468,7 @@ bin/fw vendor self --check --task T-4792
 ### 2026-10-29T19:27:01Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-10-31T15:07:52Z — delegate ready-to-close [fw-task-delegate]
+- **Ruling:** D-626 / T-3557 / T-4156 — no Human criteria, Agent criteria done: one reviewer-judged close-readiness criterion added; owner unchanged.
+- **Close path:** `bin/fw reviewer judge T-4792`; a green verdict ticks it, red/amber returns findings to remediate.
