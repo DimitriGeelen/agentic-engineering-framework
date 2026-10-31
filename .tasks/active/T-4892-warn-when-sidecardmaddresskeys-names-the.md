@@ -130,11 +130,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/sidecar/dm.py` names the configured `SIDECAR_DM_ADDRESS_KEYS` entries that equal the host-shared fingerprint (one function); `fw sidecar alerts` (text and `--json`) and `fw doctor` WARN on them, saying mail on those rails may belong to other agents on the host
-- [ ] When this project's own identity is host-shared (`dm.identity_is_host_shared()`), `fw sidecar alerts` says so above the dm list, and points at a project identity (T-4252) and `dm-handled` for mail that is not ours (TermLink msg 467742fb)
-- [ ] `fw config get KEY` for a registered key that is unset (no env, not in .framework.yaml) prints the registry default and exits 0, as the effective value it documents; `--file` and unknown keys still exit 1 (832 msg 48e82957)
-- [ ] The `SIDECAR_DM_ADDRESS_KEYS` registry description names the env form `FW_SIDECAR_DM_ADDRESS_KEYS` and `fw config set` (832 msg 1e2df855)
-- [ ] Tests for each; existing sidecar alerts and config tests pass; vendored copy synced; 832 and TermLink told
+- [x] `lib/sidecar/dm.py` names the configured `SIDECAR_DM_ADDRESS_KEYS` entries that equal the host-shared fingerprint (one function); `fw sidecar alerts` (text and `--json`) and `fw doctor` WARN on them, saying mail on those rails may belong to other agents on the host
+- [x] When this project's own identity is host-shared (`dm.identity_is_host_shared()`), `fw sidecar alerts` says so above the dm list, and points at a project identity (T-4252) and `dm-handled` for mail that is not ours (TermLink msg 467742fb)
+- [x] `fw config get KEY` for a registered key that is unset (no env, not in .framework.yaml) prints the registry default and exits 0, as the effective value it documents; `--file` and unknown keys still exit 1 (832 msg 48e82957)
+- [x] The `SIDECAR_DM_ADDRESS_KEYS` registry description names the env form `FW_SIDECAR_DM_ADDRESS_KEYS` and `fw config set` (832 msg 1e2df855). Registry only: the Watchtower /config copy is a separate paraphrase, and the parity lint compares keys only.
+- [x] Tests for each; existing sidecar alerts and config tests pass (8 bats files, 489 pytest); vendored copy synced; 832 and TermLink told (msgs 983e2b61, e90e54ce)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -319,8 +319,28 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 300 python3 -m pytest -q -p no:cacheprovider tests/unit/test_t4892_host_shared_keys.py > /tmp/.t4892.out 2>&1 && grep -q passed /tmp/.t4892.out
+timeout 300 bats tests/unit/t4892_config_get_registry_default.bats > /tmp/.t4892b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4892b.out
+test "$(grep -c '# skip' /tmp/.t4892b.out)" -eq 0
+bin/fw vendor self --check --task T-4892
 
 ## RCA
+
+**Symptom:** 832 set `SIDECAR_DM_ADDRESS_KEYS` to the old host key, and `fw sidecar alerts` then listed other agents' mail (termlink, framework agent, 055 consults) as this project's. TermLink, whose own identity was host-shared, saw the same.
+
+**Root cause:** dm rails are keyed by TermLink fingerprint. The host-shared key addressed every project on the machine before T-4454. Both the address-key list and the identity check took a key at face value, and nothing compared it with the measured host fingerprint, although `dm.identity_is_host_shared()` already measured exactly that.
+
+**Why structurally allowed:** `SIDECAR_DM_ADDRESS_KEYS` was added (T-4880) to catch peers writing to old keys. Its description invited listing old keys without saying that one of them, the host key, is everyone's. Doctor's host-shared check (T-4257) was INFO-only and covered the identity, not the configured list.
+
+**Prevention:**
+- `dm.host_shared_address_keys()` is the one check.
+- `fw sidecar alerts` WARNs when the project's identity is host-shared or a host key is configured; `fw doctor` WARNs on a configured host key.
+- The registry description now says never to list the host key, and names the env form.
+- Tests pin each.
+
+Separately, `fw config get` returns the registry default for an unset registered key, as its T-4807 contract states.
+
+**Noted, not changed:** the new alerts line fires for AEF itself: our own sidecar identity is host-shared. Giving AEF a project identity is a coordination change with peers, and the operator decides it.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
