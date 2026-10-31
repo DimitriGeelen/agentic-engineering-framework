@@ -557,6 +557,37 @@ def _blocked(msg_id: str, trigger: str, reason: str) -> None:
     receiver.record_event(msg_id, "INJECT_BLOCKED", trigger=trigger, reason=reason)
 
 
+PROMPT_HOOK = "sidecar-receiver-adapter"
+NO_PROMPT_HOOK = ("no prompt hook: .claude/settings.json registers no UserPromptSubmit hook "
+                  f"running `{PROMPT_HOOK}`, so nothing would show the mail and the line "
+                  "would be re-typed forever. Restore it with `fw upgrade` (T-4890)")
+
+
+def prompt_hook_missing(root: Path | None = None) -> bool:
+    """T-4890 (0506): True when this project HAS Claude Code settings but neither
+    settings.json nor settings.local.json registers the UserPromptSubmit hook that surfaces
+    injected mail (lib/sidecar/hooks.py). Without it the typed line promises a hook that is
+    not there: no hand-over is ever recorded, so the retry re-types it every
+    REINJECT_AFTER_S. A project with no settings.json at all is not judged (not a Claude
+    Code session, or a fixture); an unreadable settings file counts as no hook."""
+    d = (root or receiver._root()) / ".claude"
+    if not (d / "settings.json").is_file():
+        return False
+    for name in ("settings.json", "settings.local.json"):
+        try:
+            data = json.loads((d / name).read_text(encoding="utf-8"))
+        except FileNotFoundError:
+            continue
+        except (OSError, ValueError):
+            continue
+        groups = ((data.get("hooks") or {}).get("UserPromptSubmit") or []) if isinstance(data, dict) else []
+        for g in groups:
+            for h in (g.get("hooks") or []) if isinstance(g, dict) else []:
+                if isinstance(h, dict) and PROMPT_HOOK in str(h.get("command") or ""):
+                    return False
+    return True
+
+
 def _deliver_locked(trigger: str, runner) -> dict:
     from . import waiting as waiting_mod
     now = datetime.now(timezone.utc)
@@ -581,6 +612,14 @@ def _deliver_locked(trigger: str, runner) -> dict:
         report["reason"] = "injection disabled (receiver started with --no-inject)"
         for m in waiting:
             _blocked(m, trigger, report["reason"])
+        report["no_recipient"] = list(waiting)
+        return report
+    if prompt_hook_missing():
+        # T-4890: never type a line no hook will act on. The mail stays awaiting
+        # hand-over, so `fw sidecar alerts` still lists it.
+        report["reason"] = NO_PROMPT_HOOK
+        for m in waiting:
+            _blocked(m, trigger, NO_PROMPT_HOOK)
         report["no_recipient"] = list(waiting)
         return report
     urgent = [m for m in waiting if (receiver.read_message(m) or {}).get("urgent")]
