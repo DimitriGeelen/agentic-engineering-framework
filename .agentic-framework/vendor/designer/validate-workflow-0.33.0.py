@@ -1093,6 +1093,31 @@ class XmlValidator:
         # strip '{namespace}' prefix from an ElementTree tag
         return tag.rsplit("}", 1)[-1] if "}" in tag else tag
 
+    # T-1339 (T-1266 GO, slice 1): the designer now saves another tool's nested nodes and flows inside their
+    # subprocess, transaction or adHocSubProcess. A walk of the process's direct children would not see them.
+    SUBPROC_KINDS = ("subProcess", "transaction", "adHocSubProcess")
+    # A container's own content, which is not a flow element of it.
+    SUBPROC_OWN = {"incoming", "outgoing", "standardLoopCharacteristics", "multiInstanceLoopCharacteristics",
+                   "completionCondition"}
+
+    def _flow_children(self, process):
+        """The process's children, each subprocess-kind child followed by the elements inside it (depth first,
+        document order). For a process with no nested content this is list(process)."""
+        def walk(parent, top):
+            for child in list(parent):
+                local = self._local(child.tag)
+                if not top and local in self.SUBPROC_OWN:
+                    continue
+                yield child
+                if local in self.SUBPROC_KINDS:
+                    yield from walk(child, False)
+        return list(walk(process, True))
+
+    def _nested_ids(self, process):
+        """ids of the elements inside a subprocess-kind container (not the process's own children)."""
+        top = {id(c) for c in list(process)}
+        return {c.get("id") for c in self._flow_children(process) if id(c) not in top and c.get("id")}
+
     def validate(self, root):
         # section 7: root is bpmn:definitions containing a bpmn:process
         process = root.find("{%s}process" % BPMN_NS)
@@ -1141,7 +1166,7 @@ class XmlValidator:
         gateways = []
         gateway_default = {}   # T-1284: exclusiveGateway id -> its `default` attribute, when present
         parallel_gateways = []
-        for child in list(process):
+        for child in self._flow_children(process):   # T-1339: and inside subprocesses
             local = self._local(child.tag)
             if local == "sequenceFlow":
                 seq_flows.append(child)
@@ -1364,8 +1389,11 @@ class XmlValidator:
         # them were ALREADY exit=2, so this adds an error to files that were invalid anyway
         # and flips no verdict. The two that would have flipped were repaired first, as
         # their own task (T-909).
+        # T-1339: a node inside a subprocess is not reported. Other tools (Camunda Modeler, T-1266 F3) list no nested
+        # node in the process's lanes; whether a nested node takes its container's lane is a slice 2 rule.
+        nested_ids = self._nested_ids(process)
         for node_id in sorted(flow_node_ids):
-            if node_id not in assigned:
+            if node_id not in assigned and node_id not in nested_ids:
                 self.err(
                     "E-XML-NODE-UNASSIGNED",
                     "node '%s'" % node_id,
@@ -1685,7 +1713,7 @@ class XmlValidator:
         """Flow nodes of a process as ({id: element}, [id, ...]) in document order."""
         node_el = {}
         doc_order = []
-        for child in list(process):
+        for child in self._flow_children(process):   # T-1339: and inside subprocesses
             local = self._local(child.tag)
             if local == "sequenceFlow" or local in XML_NON_FLOWNODE_TAGS:
                 continue
@@ -2108,7 +2136,7 @@ class XmlValidator:
                     # hand and lm already resolved.
                     node_lane_default[ref] = lane_default
                     node_lane_id[ref] = lane.get("id") or "?"
-        for child in list(process):
+        for child in self._flow_children(process):   # T-1339: and inside subprocesses
             local = self._local(child.tag)
             nid = child.get("id")
             if nid is None:
