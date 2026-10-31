@@ -10,10 +10,10 @@ description: >
   to peers; verify alerts/doctor no longer WARN; turn the transition off when peers
   address the new key.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [sidecar, identity]
 components: []
 related_tasks: [T-4252, T-4311, T-4892]
@@ -45,7 +45,7 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-31T15:06:53Z
-last_update: '2026-10-31T15:15:21Z'
+last_update: 2026-10-31T22:29:10Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,20 +91,22 @@ cost_estimate_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-4892 added a WARN to `fw sidecar alerts` and `fw doctor` for a project that signs sidecar traffic with the host-shared TermLink key. It fires for AEF itself on every session start ("this project signs with the host-shared TermLink key"), and `fw sidecar inbox --show` cannot drain dm mail because the dm rails are shared with every project on this host. The operator said yes to the switch on 2026-10-31 (answer "2 yes").
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** AEF's `SIDECAR_RAIL_IDENTITY` is 0, so every sidecar call signs with the host key and AEF's `dm:*` rails are everyone's. The project key already exists (`.context/rail-identity.key`). `lib/sidecar/identity.py:apply()` installs the identity once per sidecar process, so the running watcher (pid 520441/520719, supervised, started about 8.6 h before this was written) keeps the old key until it restarts. Switching only the setting would leave a split identity, which is why the switch and the restart go together.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** AEF signs with its own key, keeps reading the old host rails during the transition, and peers learn the new address.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** after the operator's one runme (config set, `fw sidecar stop`, `fw sidecar start`): `fw sidecar whoami` shows the project key, `fw sidecar alerts` no longer prints the host-shared WARN, the watcher is live, and old host-rail mail is still read (`SIDECAR_HOST_DM_TRANSITION=1`). Peers are told; the transition is turned off later, once peers address the new key (separate step).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A runme for the operator sets `SIDECAR_RAIL_IDENTITY 1`, stops and starts the sidecar, and prints whoami, status and alerts; handed off as one line and watched
+- [ ] After the run: `fw sidecar alerts` has no host-shared-key WARN, `fw sidecar status` shows the watcher live, `SIDECAR_HOST_DM_TRANSITION` is still 1
+- [ ] Every peer AEF talks to (ring20-dashboard, 055, 832, 0506, 1409, dimitri-mint-dev, 010-termlink, ring20, 050) is told the new key and that old-rail mail is still read
+- [ ] A follow-up task exists to turn the transition off once peers address the new key
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -387,3 +389,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4931-give-aef-its-own-termlink-identity-for-s.md
 - **Context:** Initial task creation
+
+### 2026-10-31T22:29:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
