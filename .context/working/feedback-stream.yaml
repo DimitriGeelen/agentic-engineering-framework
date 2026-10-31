@@ -51647,3 +51647,21 @@ scan_id: R-ce0dae25
 task_id: T-4892
 payload:
   task_file: .tasks/active/T-4892-warn-when-sidecardmaddresskeys-names-the.md
+---
+kind: scan_emitted
+timestamp: '2026-10-31T13:41:56Z'
+scan_id: R-04b1e675
+task_id: T-4893
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-31T13:41:56Z'
+scan_id: R-04b1e675
+task_id: T-4893
+payload:
+  task_file: .tasks/active/T-4893-fw-sidecar-alerts-counts-a-peers-own-aut.md
