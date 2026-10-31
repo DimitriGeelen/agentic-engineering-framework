@@ -48,3 +48,11 @@ _ro()  { is_bash_safe_command "$1" >/dev/null 2>&1; }
     [ "$(printf '%s\n' "$output" | grep -c 'touch x')" -eq 1 ]
     printf '%s\n' "$output" | grep -qx ' touch x'
 }
+
+# T-4934 (ring20-dashboard msg f7af90f0): T-4926 itself read `$$'` as an ANSI-C string.
+# `$$` is the PID; the quote after it is plain, so only an ODD run of `$` opens $'…'.
+@test "\$\$' is the PID and a plain quote, not an ANSI-C string (T-4934)" {
+    ! _ro "echo \$\$'\\' ; touch /tmp/t4926-x #'" || false
+    _ro "echo \$\$'abc'"
+    _ro "echo \$\$\$'a\\'b'"
+}
