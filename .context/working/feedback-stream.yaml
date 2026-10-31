@@ -51683,3 +51683,21 @@ scan_id: R-811a5bdb
 task_id: T-4890
 payload:
   task_file: .tasks/active/T-4890-sidecar-receiver-injects-a-banner-that-p.md
+---
+kind: scan_emitted
+timestamp: '2026-10-31T14:03:12Z'
+scan_id: R-e813c36a
+task_id: T-4924
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-31T14:03:12Z'
+scan_id: R-e813c36a
+task_id: T-4924
+payload:
+  task_file: .tasks/active/T-4924-re-pin-workflow-designer-0320---0330-832.md

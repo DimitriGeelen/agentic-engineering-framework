@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4924: Re-pin Workflow Designer 0.32.0 -> 0.33.0 (832 msg 6fa49ac6)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T14:03:29Z
+# ============================================================================
+
+task_id: T-4924
+task_name: "Re-pin Workflow Designer 0.32.0 -> 0.33.0 (832 msg 6fa49ac6)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-31T13:59:04Z
+completed: 2026-10-31T14:03:01Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-31T15:02:00+01:00
+last_commit: 2026-10-31T15:03:00+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  re-pin Workflow Designer 0.32.0 -> 0.33.0 (832 msg 6fa49ac6); pull-at-tag verified (MANIFEST, pin, kit SHA256SUMS); T-4925 filed for nested-subprocess import. refresh vendored copies (designer 0.33.0). verification and ACs
+
+# Key outcomes
+outcomes:
+  - '`policy/designer-pin.yaml` pins 0.33.0: version, sha256 `6d1c6a3c13478bd13d185747b6738a9b748da3cb5483151d21d0f5d4ebf7e5f5` and bytes 1306427 as 832 announced, source_tag `designer-v0.33.0`, artifact/vendored paths, and the validator_* keys for `dist/aef-authoring-kit-0.33.0` read from the tag; notes line extended with 0.33.0'
+  - '`fw designer sync --from-tag designer-v0.33.0` verifies the build (pin, MANIFEST at the tag, independent sha256) and the validator''s three anchors, then vendors both read-only. Watchtower /designer/app serves the exact bytes (sha256 6d1c6a3c…, 1306427 B).'
+  - 'The importer question (nested flow nodes inside subProcess/transaction/adHocSubProcess) answered from our code, or filed as its own task. Answered: `tools/corpus_spec.py` parse_map reads only direct children; filed as T-4925.'
+  - 'Vendored copy synced; 832 told the task id and the result (msgs 63f1bec2, 17b6b6bb)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/designer-pin.yaml'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.33.0.html'
+  - '.agentic-framework/vendor/designer/validate-workflow-0.33.0.py'
+  - '.tasks/active/T-4924-re-pin-workflow-designer-0320---0330-832.md'
+  - '.tasks/active/T-4925-corpusspecparsemap-reads-only-a-processs.md'
+  - 'policy/designer-pin.yaml'
+  - 'vendor/designer/aef-workflow-designer-0.33.0.html'
+  - 'vendor/designer/validate-workflow-0.33.0.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-31T15:02:00'
+    action: 'T-4924: re-pin Workflow Designer 0.32.0 -> 0.33.0 (832 msg 6fa49ac6); pull-at-tag verified (MANIFEST, pin, kit SHA256SUMS); T-4925 filed for nested-subprocess import'
+  - time: '2026-10-31T15:02:09'
+    action: 'T-4924: refresh vendored copies (designer 0.33.0)'
+  - time: '2026-10-31T15:03:00'
+    action: 'T-4924: verification and ACs'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 4
+  files_changed: 11
+  lines_added: 19314
+  lines_removed: 53
+  footprint_refreshed_at: '2026-10-31T14:03:38Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4924-re-pin-workflow-designer-0320---0330-832.md
+generated_by: context-agent-hybrid

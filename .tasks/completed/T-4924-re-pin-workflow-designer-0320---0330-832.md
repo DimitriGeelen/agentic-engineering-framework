@@ -4,12 +4,12 @@ name: "Re-pin Workflow Designer 0.32.0 -> 0.33.0 (832 msg 6fa49ac6)"
 description: >
   Re-pin Workflow Designer 0.32.0 -> 0.33.0 (832 msg 6fa49ac6)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [policy/designer-pin.yaml]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-31T13:59:04Z
-last_update: 2026-10-31T13:59:04Z
-date_finished: null
+last_update: 2026-10-31T14:03:01Z
+date_finished: 2026-10-31T14:03:01Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -367,3 +367,21 @@ bin/fw vendor self --check --task T-4924
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4924-re-pin-workflow-designer-0320---0330-832.md
 - **Context:** Initial task creation
+
+### 2026-10-31T14:03:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e813c36a
+- **Timestamp:** 2026-10-31T14:03:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — The importer question (nested flow nodes inside subProcess/transaction/adHocSubProcess) answered from our code, or filed as its own task. Answered: `tools/corpus_spec.py` parse_map reads only direct c
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tools/corpus_spec.py in: The importer question (nested flow nodes inside subProcess/transaction/adHocSubProcess) answered from our code, or filed as its own task. Answered: `t`
