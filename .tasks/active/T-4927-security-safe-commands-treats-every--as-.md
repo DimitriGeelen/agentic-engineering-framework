@@ -103,7 +103,7 @@ cost_estimate_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] The extractor treats `$((` as arithmetic only when the paren opened at `$((`'s second `(` closes at the character before the outer `)`; otherwise it emits the text as a command substitution
 - [x] Regression test: `echo $((touch X); echo)` not read-only; `echo $((1+2))` read-only; `echo $(( $(touch X) ))` not read-only; existing safe-commands suites pass (57 files, 760 tests)
-- [ ] Swapped in with T-4926's safe swap; vendored copy synced; ring20-dashboard told
+- [x] Swapped in with T-4926's safe swap; vendored copy synced; ring20-dashboard told (msg 9f4a4197; on v1.8.16-be.5)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

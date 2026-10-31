@@ -97,7 +97,7 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] `lib/hook-dispatch.sh` enters broken mode only when the file named in the stderr line resolves under FRAMEWORK_ROOT's agents/ or lib/ (or the project's .agentic-framework/agents|lib) and `bash -n` on it fails; otherwise the hook's own exit code stands
 - [x] Tests: a forged syntax-error line naming a file that parses, or a file outside the framework, does not open broken mode; a real syntax error in a framework hook file still does (t4908 suite passes)
-- [ ] Swapped in by the safe-swap procedure; vendored copy synced; ring20-dashboard told
+- [x] Swapped in by the safe-swap procedure; vendored copy synced; ring20-dashboard told (msg 9f4a4197; on v1.8.16-be.5)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

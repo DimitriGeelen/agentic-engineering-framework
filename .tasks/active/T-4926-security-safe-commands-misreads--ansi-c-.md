@@ -113,7 +113,7 @@ A clause the classifier misses is never judged, so a write runs without an activ
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] `_fw_chain_split` honours `$'…'` (backslash escapes, `\'` does not close) and backslash escapes inside `"…"`; the Python extractor honours `$'…'`; `_fw_has_process_subst` stops honouring single quotes on a line with `$'`
 - [x] Regression test: `cat $'a\'b' ; touch X`, `echo "a\"" ; touch X`, `echo $'\'' $(touch X)` and `cat $'\'' <(touch X)` are not read-only; read-only controls (`cat README.md`, `echo $'a\tb'`, `echo "a\"b"`, `git status 2>&1`) stay read-only; the existing safe-commands suites pass
-- [ ] Swapped in by the safe-swap procedure (copy, `bash -n`, swap, smoke test, restore on failure); vendored copy synced; ring20-dashboard told
+- [x] Swapped in by the safe-swap procedure (copy, `bash -n`, swap, smoke test, restore on failure); vendored copy synced; ring20-dashboard told (msgs 0f521641, 9f4a4197; on v1.8.16-be.5)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
