@@ -138,8 +138,15 @@ fi
 T0_DEQUOTED=$(printf '%s' "$COMMAND" | tr -d "\"'\\\\\$")
 # Round 6: ANSI-C quoting ($'tier\x30') is decoded in Python, so any $' skips
 # the fast path.
-if [[ "$COMMAND" != *"\$'"* ]] && ! printf '%s\n%s\n' "$COMMAND" "$T0_DEQUOTED" | grep -qEi \
-    'git\s+(push|reset|clean|checkout|restore|branch)\s|git\s+-|git\s+commit\b[^;|&]*\s-[a-z]*n|(HOME|XDG_CONFIG_HOME|GIT_CONFIG[A-Z0-9_]*)=|hooksPath|include\.path|includeif|tier0|--no-v|rm\s+-|DROP\s|TRUNCATE\s|docker\s+system|kubectl\s+delete|find\s.*-delete|dd\s+if=|chmod\s.*\s000|mkfs|pkill\s|killall\s|kill-se|fw\s.*--force|fw\s.*inception\s.*decide'; then
+# T-4920 (832 T-1347, SECURITY): grep reads a here-string, never a pipe. Under this
+# hook's `set -o pipefail`, `printf … | grep -q` failed OPEN: grep -q exits at the first
+# matching line, printf takes SIGPIPE writing the second, the pipeline returns 141 and
+# `!` read that as "no dangerous pattern" — exit 0, command unchecked. A race for short
+# commands (832: ~1 in 80,000), deterministic past the 64 KB pipe buffer (a padded
+# `git push --force` was allowed 50/50). Do not reintroduce a pipe into grep -q here.
+if [[ "$COMMAND" != *"\$'"* ]] && ! grep -qEi \
+    'git\s+(push|reset|clean|checkout|restore|branch)\s|git\s+-|git\s+commit\b[^;|&]*\s-[a-z]*n|(HOME|XDG_CONFIG_HOME|GIT_CONFIG[A-Z0-9_]*)=|hooksPath|include\.path|includeif|tier0|--no-v|rm\s+-|DROP\s|TRUNCATE\s|docker\s+system|kubectl\s+delete|find\s.*-delete|dd\s+if=|chmod\s.*\s000|mkfs|pkill\s|killall\s|kill-se|fw\s.*--force|fw\s.*inception\s.*decide' \
+    <<<"$COMMAND"$'\n'"$T0_DEQUOTED"; then
     exit 0
 fi
 
