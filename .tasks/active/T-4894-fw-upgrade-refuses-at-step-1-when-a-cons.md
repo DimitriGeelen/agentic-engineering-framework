@@ -112,10 +112,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A helper returns, from at-risk lines on stdin, only those no version of the framework's `lib/templates/claude-project.md` ever contained (git history of the framework clone, renames followed); with no history it returns all of them
-- [ ] `lib/upgrade.sh` step 1 uses it: only-old-framework-text proceeds with a note and the count; any real local line still refuses, the message naming only local lines plus the count of old-framework lines set aside
-- [ ] Tests: old template text only → no refusal; a genuine local line → refusal naming it and not the old text; no git history → today's refusal; the existing T-4232 governance tests pass
-- [ ] Vendored copy synced; 0506 told
+- [x] A helper returns, from at-risk lines on stdin, only those no version of the framework's `lib/templates/claude-project.md` ever contained (git history of the framework clone, renames followed); with no history it returns all of them
+- [x] `lib/upgrade.sh` step 1 uses it: only-old-framework-text proceeds with a note and the count; any real local line still refuses, the message naming only local lines plus the count of old-framework lines set aside
+- [x] Tests: old template text only → no refusal; a genuine local line → refusal naming it and not the old text; no git history → today's refusal; the existing T-4232 governance tests pass
+- [x] Vendored copy synced; 0506 told (msgs f7e33a08 and the correction bc33ad97: the fix is in the next be-tag, not be.1)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -300,8 +300,20 @@ bvp_scores_proposed:
 # (your own task id). It checks only the files your commits changed, so another
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
+timeout 900 bats tests/unit/t4232_claudemd_governance_consumer_edits.bats > /tmp/.t4894.out 2>&1 && ! grep -q "^not ok" /tmp/.t4894.out
+test "$(grep -c '# skip' /tmp/.t4894.out)" -eq 0
+bash -n lib/upgrade.sh
+bin/fw vendor self --check --task T-4894
 
 ## RCA
+
+**Symptom:** 0506's first dry run from v1.7.832 refused at step 1/10, saying 15 governance lines "would be deleted" and should be moved into a project-owned region. All 15 were verbatim framework text from a template older than their vendored one.
+
+**Root cause:** the T-4232 guard counts a governance line as at risk when the NEW template lacks it. Its only exemption is a section identical to the template last vendored. An earlier re-vendor had refreshed the vendored template but not CLAUDE.md, so the section matched no exempt version, and old framework text was indistinguishable from a consumer's own edit.
+
+**Why structurally allowed:** the guard was written for the case it was born from (1409 losing its own rules) and tested with the current template only. "Older framework text" had no fixture, and nothing records which template version a CLAUDE.md was last built from.
+
+**Prevention:** at-risk lines are now filtered against every committed version of the template (renames followed) before the refusal, by `lib/governance_known.py`. Only-old-text proceeds with a NOTE. Real local lines still refuse, and only they are named. With no git history nothing is set aside, which is today's safe behaviour. The new t4232 tests pin all three cases, with the old line taken from the template's real history.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
