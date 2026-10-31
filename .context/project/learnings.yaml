@@ -5188,3 +5188,27 @@ X'` returning empty group."
   task: T-4840
   date: 2026-10-28
   context: Added via context agent
+- id: L-709
+  learning: "An audit or pre-push check must never walk PROJECT_ROOT recursively: a consumer root can be a home directory (dimitri-mint-dev: ~500 GB, a recursive glob never finished and every push waited the 300 s read cap). Search tracked files (git ls-files) or named framework dirs (.context, policy) instead."
+  source: P-001
+  task: T-4891
+  date: 2026-10-29
+  context: Added via context agent
+- id: L-710
+  learning: "Never edit a PreToolUse gate hook in place in more than one step: an intermediate state with a bash syntax error refuses every write in the repo, including the repair, and only the operator can restore it from outside the hooks (T-4907, 2026-10-29). Build the new hook in a copy, bash -n it, smoke-test it, then mv it into place with an automatic restore on failure."
+  source: P-001
+  task: T-4907
+  date: 2026-10-29
+  context: Added via context agent
+- id: L-711
+  learning: "Test a hook dispatcher the way production runs it: bin/fw runs under set -euo pipefail, and T-4908's dispatcher passed 8 bats tests that sourced it WITHOUT set -e while live every refusing hook ended the dispatcher before its captured stderr was replayed, so refusals reached Claude Code as exit 2 with no message. Capture exit codes with 'cmd || rc=$?', and include a set -e leg in the tests."
+  source: P-001
+  task: T-4908
+  date: 2026-10-29
+  context: Added via context agent
+- id: L-712
+  learning: "A gate that pipes into grep -q under set -o pipefail fails OPEN: grep -q exits at the first match, the writer takes SIGPIPE, the pipeline returns 141, and a leading ! reads it as no match. Racy for short input, deterministic past the pipe buffer (Tier 0 pre-filter allowed a padded force push from ~120 KB). Feed grep a here-string in gates. Test with long input, not only short commands."
+  source: P-001
+  task: T-4920
+  date: 2026-10-31
+  context: Added via context agent
