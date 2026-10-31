@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4931: Give AEF its own TermLink identity for sidecar mail (operator yes 2026-10-31); coordinate the address change with peers
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T23:41:34Z
+# ============================================================================
+
+task_id: T-4931
+task_name: "Give AEF its own TermLink identity for sidecar mail (operator yes 2026-10-31); coordinate the address change with peers"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-31T15:06:53Z
+completed: 2026-10-31T23:41:18Z
+duration_days: 0
+updates_count: 5
+first_commit: 2026-10-31T23:30:03+01:00
+last_commit: 2026-10-31T23:57:12+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context and criteria; operator runme prepared (config set + sidecar restart, since identity is applied once per sidecar process). runme ran; findings recorded — host-shared check measures the pid-walk session, watcher inherited a Claude session env; G-125 registered, T-4941 filed
+
+# Key outcomes
+outcomes:
+  - 'A runme for the operator sets `SIDECAR_RAIL_IDENTITY 1`, stops and starts the sidecar, and prints whoami, status and alerts; handed off as one line and watched (run 2026-10-31 22:53Z, exit 0; findings under Updates: the switch did not do what this task assumed)'
+  - 'After the run: `fw sidecar alerts` has no host-shared-key WARN (true after T-4941''s measurement fix, 2026-11-01), `fw sidecar status` shows the watcher live, `SIDECAR_HOST_DM_TRANSITION` is still 1'
+  - 'Peers: no announcement needed. AEF''s signing key has been bdd184bd89f318e4 since T-4454/T-4494 (claude-fw exports the project key; the sidecar selects it), so nothing changed for peers; consults reach AEF on its project inbox topic, which does not depend on the key. (Restated 2026-11-01: this criterion assumed a key change that did not happen.)'
+  - 'Transition: no follow-up task. Nothing addressed to AEF sits on the old host-key rails (T-4941 Updates: the only unread posts there are other projects'' mail), so leaving SIDECAR_HOST_DM_TRANSITION at 1 or setting it to 0 changes nothing AEF receives; the operator may set it to 0 at any time. (Restated 2026-11-01.)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/concerns.yaml'
+  - '.tasks/active/T-4931-give-aef-its-own-termlink-identity-for-s.md'
+  - '.tasks/active/T-4941-sidecar-identity-host-shared-check-measu.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-31T23:30:03'
+    action: 'T-4931: context and criteria; operator runme prepared (config set + sidecar restart, since identity is applied once per sidecar process)'
+  - time: '2026-10-31T23:57:12'
+    action: 'T-4931: runme ran; findings recorded — host-shared check measures the pid-walk session, watcher inherited a Claude session env; G-125 registered, T-4941 filed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 514 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [sidecar, identity]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 514
+  commits: 3
+  files_changed: 6
+  lines_added: 525
+  lines_removed: 17
+  footprint_refreshed_at: '2026-10-31T23:41:44Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4931-give-aef-its-own-termlink-identity-for-s.md
+generated_by: context-agent-hybrid

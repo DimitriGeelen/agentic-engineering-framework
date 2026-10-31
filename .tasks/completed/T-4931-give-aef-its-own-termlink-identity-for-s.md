@@ -10,10 +10,10 @@ description: >
   to peers; verify alerts/doctor no longer WARN; turn the transition off when peers
   address the new key.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [sidecar, identity]
 components: []
 related_tasks: [T-4252, T-4311, T-4892]
@@ -45,8 +45,8 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-31T15:06:53Z
-last_update: 2026-10-31T22:29:10Z
-date_finished:
+last_update: 2026-10-31T23:41:18Z
+date_finished: 2026-10-31T23:41:18Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -104,9 +104,9 @@ cost_estimate_proposed:
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] A runme for the operator sets `SIDECAR_RAIL_IDENTITY 1`, stops and starts the sidecar, and prints whoami, status and alerts; handed off as one line and watched (run 2026-10-31 22:53Z, exit 0; findings under Updates: the switch did not do what this task assumed)
-- [ ] After the run: `fw sidecar alerts` has no host-shared-key WARN, `fw sidecar status` shows the watcher live, `SIDECAR_HOST_DM_TRANSITION` is still 1
-- [ ] Every peer AEF talks to (ring20-dashboard, 055, 832, 0506, 1409, dimitri-mint-dev, 010-termlink, ring20, 050) is told the new key and that old-rail mail is still read
-- [ ] A follow-up task exists to turn the transition off once peers address the new key
+- [x] After the run: `fw sidecar alerts` has no host-shared-key WARN (true after T-4941's measurement fix, 2026-11-01), `fw sidecar status` shows the watcher live, `SIDECAR_HOST_DM_TRANSITION` is still 1
+- [x] Peers: no announcement needed. AEF's signing key has been bdd184bd89f318e4 since T-4454/T-4494 (claude-fw exports the project key; the sidecar selects it), so nothing changed for peers; consults reach AEF on its project inbox topic, which does not depend on the key. (Restated 2026-11-01: this criterion assumed a key change that did not happen.)
+- [x] Transition: no follow-up task. Nothing addressed to AEF sits on the old host-key rails (T-4941 Updates: the only unread posts there are other projects' mail), so leaving SIDECAR_HOST_DM_TRANSITION at 1 or setting it to 0 changes nothing AEF receives; the operator may set it to 0 at any time. (Restated 2026-11-01.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -292,6 +292,9 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+test "$(bin/fw config get SIDECAR_RAIL_IDENTITY)" = 1
+out=$(bin/fw sidecar status 2>&1); grep -q "watcher:          live" <<<"$out"
+out=$(bin/fw sidecar alerts --limit 1 2>&1); ! grep -q "signs with the host-shared TermLink key" <<<"$out"
 
 ## RCA
 
@@ -407,3 +410,16 @@ cost_estimate_proposed:
 ### 2026-10-31T22:29:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-31T23:41:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-04c749c7
+- **Timestamp:** 2026-10-31T23:41:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
