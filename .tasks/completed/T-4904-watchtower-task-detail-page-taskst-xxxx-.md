@@ -12,8 +12,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: [watchtower, usability]
 components: [lib/upgrade_template_shipped.py, web/blueprints/tasks.py, 
       web/templates/task_detail.html]
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T16:18:08Z
-last_update: '2026-10-30T16:45:18Z'
+last_update: 2026-10-31T16:28:09Z
 date_finished: 2026-10-29T20:49:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -120,7 +120,7 @@ bvp_scores_proposed:
 - [x] The served page /tasks/T-4884 shows T-4890 as a link (checked with curl after a Watchtower restart; `bin/fw watchtower current` clean); vendored copy synced — 5 links to T-4890 on the live page
 
 ### Human
-- [ ] [REVIEW] Task ids on a task page are links and the page reads as before otherwise
+- [x] [REVIEW] Task ids on a task page are links and the page reads as before otherwise
   **Steps:**
   1. Open http://192.168.10.107:3000/tasks/T-4884 and expand "Task Body".
   2. Click a mention of T-4890.
@@ -171,6 +171,7 @@ bvp_scores_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261031-4b4802fa — reviewer-judge-t-4904-r3-2d8e1b26d6ee:reviewer (rung rung-3-termlink-single-reviewer), digest efaef7df2bc7; dispatch judge-t-4904-r3-2d8e1b26d6ee; evidence: .context/reviews/evidence/T-4904/AC1-judge-t-4904-r3-2d8e1b26d6ee.md, .context/reviews/evidence/T-4904/01-tasks-t-4884-judge-t-4904-r3-2d8e1b26d6ee.png, .context/reviews/evidence/T-4904/02-inception-judge-t-4904-r3-2d8e1b26d6ee.png, .context/reviews/evidence/T-4904/03-assumptions-judge-t-4904-r3-2d8e1b26d6ee.png, .context/reviews/evidence/T-4904/04-tasks-judge-t-4904-r3-2d8e1b26d6ee.png, .context/reviews/evidence/T-4904/body-links-open@1024-judge-t-4904-r3-2d8e1b26d6ee.png, .context/reviews/evidence/T-4904/body-links-open@1440-judge-t-4904-r3-2d8e1b26d6ee.png, .context/reviews/evidence/T-4904/body-links-open@1920-judge-t-4904-r3-2d8e1b26d6ee.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
