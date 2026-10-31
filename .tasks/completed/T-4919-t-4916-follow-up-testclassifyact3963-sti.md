@@ -4,10 +4,10 @@ name: "T-4916 follow-up: test_classify_ac_t3963 still pins deterministic -> REVI
 description: >
   T-4916 follow-up: test_classify_ac_t3963 still pins deterministic -> REVIEWER-CLOSEABLE (blocks pre-push)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-31T11:48:19Z
-last_update: 2026-10-31T11:48:19Z
-date_finished: null
+last_update: 2026-10-31T11:49:27Z
+date_finished: 2026-10-31T11:49:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -358,3 +358,16 @@ timeout 300 python3 -m pytest -q -p no:cacheprovider tests/unit/test_classify_ac
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4919-t-4916-follow-up-testclassifyact3963-sti.md
 - **Context:** Initial task creation
+
+### 2026-10-31T11:49:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f09f4d75
+- **Timestamp:** 2026-10-31T11:49:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
