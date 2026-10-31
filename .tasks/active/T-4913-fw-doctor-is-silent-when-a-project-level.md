@@ -104,11 +104,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/review_cost.py` has one function (and a `registry-shadow` subcommand) that reports when a project-level `policy/review-backends.yaml` is loaded instead of the framework's, with the absolute path of each, the backends the framework has and the copy lacks, and per shared backend the keys the copy lacks; a missing `isolation` block is listed first
-- [ ] `fw doctor` WARNs on a shadowing registry with that report, and says nothing when there is no project copy or project and framework are the same file (the framework repo)
-- [ ] The retired-pin message names the absolute path of the registry that was loaded
-- [ ] Tests: fixture project registry lacking a backend and an isolation block → WARN lines name both; identical copy → shadow reported, nothing missing; no copy → silent; preflight message carries the loaded path
-- [ ] Vendored copy synced
+- [x] `lib/review_cost.py` has one function (and a `registry-shadow` subcommand) that reports when a project-level `policy/review-backends.yaml` is loaded instead of the framework's, with the absolute path of each, the backends the framework has and the copy lacks, and per shared backend the keys the copy lacks; a missing `isolation` block is listed first
+- [x] `fw doctor` WARNs on a shadowing registry with that report, and says nothing when there is no project copy or project and framework are the same file (the framework repo)
+- [x] The retired-pin message names the absolute path of the registry that was loaded
+- [x] Tests: fixture project registry lacking a backend and an isolation block → WARN lines name both; identical copy → shadow reported, nothing missing; no copy → silent; preflight message carries the loaded path
+- [x] Vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -297,8 +297,21 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t4913_review_registry_shadow.bats tests/unit/t3586_review_cost.bats > /tmp/.t4913.out 2>&1 && ! grep -q "^not ok" /tmp/.t4913.out
+test "$(grep -c '# skip' /tmp/.t4913.out)" -eq 0
+timeout 300 python3 -m pytest -q -p no:cacheprovider tests/unit/test_t4506_model_preflight.py > /tmp/.t4913py.out 2>&1 && grep -q passed /tmp/.t4913py.out
+bash -n bin/fw
+bin/fw vendor self --check --task T-4913
 
 ## RCA
+
+**Symptom:** dimitri-mint-dev's doctor WARNed that the retired pin `zai-coding-plan/glm-5.2` should be re-pinned "in policy/review-backends.yaml". They (and we) read that as the vendored file, which already had glm-5.3. The pin was in their project-level copy. That copy, made on 2026-10-09 from the 1.8.3 registry, also lacked every T-4437 isolation block, so their review seats ran without isolation from the day that hardening shipped.
+
+**Root cause:** `review_cost.policy_path()` prefers `<project>/policy/review-backends.yaml` over the framework's, and the override replaces the whole file. Nothing compared the two, so a copy froze the project at the day it was made. The pin WARN named a relative path that is ambiguous by construction when two files share it.
+
+**Why structurally allowed:** the override was designed as a data-edit escape hatch for the operator (T-3583). Its failure mode, silent staleness against security hardening, had no detector, and doctor's message was written from the framework repo's point of view, where the two paths are the same file.
+
+**Prevention:** `fw review registry-shadow` and a `fw doctor` WARN, outside `--quick`, name a shadowing copy and what it lacks: isolation first, then missing backends, then missing keys per backend. Every retired-pin message names the absolute path of the registry actually loaded. `tests/unit/t4913_review_registry_shadow.bats` covers all of this.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -368,6 +381,8 @@ bvp_scores_proposed:
 -->
 
 ## Decisions
+
+- **2026-10-31, detect, do not change the override model here.** One option was to make a project registry an overlay merged over the framework file, so new keys and isolation blocks flow in automatically. That changes which settings a consumer's review seats actually run with, and the operator owns that registry (T-3583), so it is a design decision, not a fix. This task only makes the shadowing visible. Even an identical copy is reported, because it will go stale at the next framework change. Overlay versus whole-file is left as an open question for the operator if the WARN keeps firing in the field.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
