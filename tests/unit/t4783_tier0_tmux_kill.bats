@@ -110,6 +110,31 @@ _allowed() {
     _allowed "git commit -m \"T-4783: block tmux kill-server without -S\" -- x"
 }
 
+# ── T-4937 (055 T-667): the socket path itself holds "tmux" (tmux-<uid>) ──
+
+@test "-S with a tmux-<uid> socket path is allowed (T-4937)" {
+    _allowed "tmux -S /tmp/tmux-0/default kill-server"
+    _allowed "tmux -S /tmp/x/tmux-0/default kill-session -t a"
+    _allowed "TMUX= tmux -S /tmp/ce2e-ab/tmux-0/default kill-server"
+    _allowed "/usr/bin/tmux -L e2e kill-ser"
+}
+
+@test "-S after the kill verb names no socket and is blocked (T-4937)" {
+    _blocked "tmux kill-server -S /tmp/tmux-0/default"
+    _blocked "tmux kill-session -t a -L x"
+}
+
+@test "a tmux-0 directory before a bare kill does not hide it (T-4937)" {
+    _blocked "cd /tmp/tmux-0 && tmux kill-server"
+    _blocked "tmux -S s list-sessions; tmux kill-server"
+}
+
+@test "tmux reached through a substitution or IFS is blocked (T-4937)" {
+    _blocked "\$(which tmux) kill-server"
+    _blocked "\`which tmux\` kill-server"
+    _blocked "tmux\${IFS}kill-server"
+}
+
 @test "kill-window and kill-pane are not in scope" {
     _allowed "tmux kill-pane -t x"
     _allowed "tmux kill-window -t x"
