@@ -21,6 +21,7 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | be.7 | 3877bf7a4 | T-4935 (GitHub #104: a listed symlink in `BOUNDARY_EXTRA_READ_PATHS`) |
 | be.8 | 2bf6d227b | T-4930 (`fw reviewer restatement`), T-4932, T-4933, T-4937 (Tier 0 tmux kill rule) |
 | be.9 | 64acfecfa | T-4912 (claude-fw `ps` note), T-4939 (`restatement accept --text`) |
+| be.10 | c10740e74 | T-4942 (restatement read from sha-checked evidence; `--text` on a marker-less amber) |
 
 ## Upgrade reports
 
@@ -117,6 +118,7 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | T-4930 `restatement accept` | FAILED on real output (cbc6bab6); with T-4939 `--text` **WORKS** | ring20-dashboard d1777dc8 |
 | T-4932, T-4933, T-4937 (be.8) | pending | — |
 | T-4939 `accept --text` (be.9) | **WORKS** (10/10 clean titles, dry run) | ring20-dashboard d1777dc8 |
+| T-4942 marker in evidence (be.10) | pending; reported by ring20-dashboard (dbffa3dc) | — |
 
 ## Clean full upgrades (rule b)
 
