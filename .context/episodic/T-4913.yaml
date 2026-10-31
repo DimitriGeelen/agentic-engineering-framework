@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4913: fw doctor is silent when a project-level policy/review-backends.yaml shadows the framework registry (stale pins, missing isolation blocks)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T12:21:31Z
+# ============================================================================
+
+task_id: T-4913
+task_name: "fw doctor is silent when a project-level policy/review-backends.yaml shadows the framework registry (stale pins, missing isolation blocks)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-29T23:31:09Z
+completed: 2026-10-31T12:21:02Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-10-31T13:20:26+01:00
+last_commit: 2026-10-31T13:21:00+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw doctor WARNs when a project review registry shadows the framework's (missing isolation first); retired-pin message names the loaded registry. refresh vendored copies. ACs, verification, RCA, decision
+
+# Key outcomes
+outcomes:
+  - '`lib/review_cost.py` has one function (and a `registry-shadow` subcommand) that reports when a project-level `policy/review-backends.yaml` is loaded instead of the framework''s, with the absolute path of each, the backends the framework has and the copy lacks, and per shared backend the keys the copy lacks; a missing `isolation` block is listed first'
+  - '`fw doctor` WARNs on a shadowing registry with that report, and says nothing when there is no project copy or project and framework are the same file (the framework repo)'
+  - 'The retired-pin message names the absolute path of the registry that was loaded'
+  - 'Tests: fixture project registry lacking a backend and an isolation block → WARN lines name both; identical copy → shadow reported, nothing missing; no copy → silent; preflight message carries the loaded path'
+  - 'Vendored copy synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/review_cost.py'
+  - '.agentic-framework/lib/review_model_preflight.py'
+  - '.tasks/active/T-4913-fw-doctor-is-silent-when-a-project-level.md'
+  - 'bin/fw'
+  - 'lib/review_cost.py'
+  - 'lib/review_model_preflight.py'
+  - 'tests/unit/t4913_review_registry_shadow.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-31T13:20:26'
+    action: 'T-4913: fw doctor WARNs when a project review registry shadows the framework''s (missing isolation first); retired-pin message names the loaded registry'
+  - time: '2026-10-31T13:20:31'
+    action: 'T-4913: refresh vendored copies'
+  - time: '2026-10-31T13:21:00'
+    action: 'T-4913: ACs, verification, RCA, decision'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 2209 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, doctor, review]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2209
+  commits: 5
+  files_changed: 12
+  lines_added: 790
+  lines_removed: 18
+  footprint_refreshed_at: '2026-10-31T12:21:39Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4913-fw-doctor-is-silent-when-a-project-level.md
+generated_by: context-agent-hybrid

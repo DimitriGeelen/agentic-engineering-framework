@@ -7,12 +7,12 @@ description: >
   vendored one; retired glm-5.2 pin and no T-4437 isolation blocks; doctor's retired-pin
   WARN named an ambiguous path.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, doctor, review]
-components: []
+components: [bin/fw, lib/review_cost.py, lib/review_model_preflight.py]
 related_tasks: [T-4506, T-4437]
 origin: {kind: "peer", source: "dimitri-mint-dev", ref: "405be7ae"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -42,8 +42,8 @@ origin: {kind: "peer", source: "dimitri-mint-dev", ref: "405be7ae"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T23:31:09Z
-last_update: 2026-10-31T12:17:57Z
-date_finished:
+last_update: 2026-10-31T12:21:02Z
+date_finished: 2026-10-31T12:21:02Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -413,3 +413,21 @@ bin/fw vendor self --check --task T-4913
 ### 2026-10-31T12:17:57Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-31T12:21:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b8b31757
+- **Timestamp:** 2026-10-31T12:21:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `lib/review_cost.py` has one function (and a `registry-shadow` subcommand) that reports when a project-level `policy/review-backends.yaml` is loaded instead of the framework's, with the absolute path 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/review-backends.yaml in: `lib/review_cost.py` has one function (and a `registry-shadow` subcommand) that reports when a project-level `policy/review-backends.yaml` is loaded i`
