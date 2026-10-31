@@ -6,12 +6,12 @@ description: >
   Cosmetic, reported by dimitri-mint-dev (msg 400f6ed2): the process command line
   after a fresh restart keeps the launch's -c.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [claude-fw, cosmetic]
-components: []
+components: [bin/claude-fw]
 related_tasks: [T-3166, T-4497]
 origin: {kind: "peer", source: "dimitri-mint-dev", ref: "400f6ed2"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -41,8 +41,8 @@ origin: {kind: "peer", source: "dimitri-mint-dev", ref: "400f6ed2"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T23:11:45Z
-last_update: 2026-10-31T19:46:07Z
-date_finished:
+last_update: 2026-10-31T20:06:46Z
+date_finished: 2026-10-31T20:06:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -99,9 +99,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The process carrying the stale `-c` is identified from code and live `ps` (supervisor vs `claude` child), written in `## RCA`
-- [ ] The fresh-restart banner and the usage header say that `ps` keeps showing claude-fw's own launch arguments and that the new `claude` runs without `-c`; restart behaviour is unchanged
-- [ ] A test pins both lines; `bash -n bin/claude-fw`; existing claude-fw restart tests stay green; `bin/fw vendor self --check --task T-4912` clean
+- [x] The process carrying the stale `-c` is identified from code and live `ps` (supervisor vs `claude` child), written in `## RCA`
+- [x] The fresh-restart banner and the usage header say that `ps` keeps showing claude-fw's own launch arguments and that the new `claude` runs without `-c`; restart behaviour is unchanged
+- [x] A test pins both lines; `bash -n bin/claude-fw`; existing claude-fw restart tests stay green; `bin/fw vendor self --check --task T-4912` clean (all 64 bats files that read claude-fw pass)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,6 +290,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bash -n bin/claude-fw
+timeout 300 bats tests/unit/claude_fw_restart_mode.bats > /tmp/.t4912 2>&1 && ! grep -q "^not ok" /tmp/.t4912
+bin/fw vendor self --check --task T-4912
 
 ## RCA
 
@@ -306,6 +309,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** after a fresh budget restart, `ps` still showed `claude-fw -c`, so the session looked resumed.
+
+**Root cause:** not a restart defect. The `-c` is on the long-lived wrapper process, not on the session. Evidence on this host, 2026-10-31: dimitri-mint-dev's wrapper shows `/bin/bash …/bin/claude-fw -c` (its tmux parent too), while the session it runs is `claude -n fw-dimitri-mint-dev-r1`, the fresh restart (`r1`) with no `-c`. In code, the fresh branch sets `CLAUDE_ARGS=()` (bin/claude-fw, the `FW_RESTART_MODE` block). A bash script cannot rewrite its own argv, so the wrapper keeps showing its launch arguments for its whole life.
+
+**Why structurally allowed:** the banner named the restart mode but not that `ps` would contradict it, and nothing told an operator which of the two process lines is the session.
+
+**Prevention:** the fresh banner and the usage header now say it, pinned by a test in `tests/unit/claude_fw_restart_mode.bats`. Re-exec'ing the wrapper with new arguments was rejected: it would drop the wrapper's loop state (restart counters, signal tracking) for a cosmetic gain.
 
 ## Evolution
 
@@ -391,3 +401,16 @@ bvp_scores_proposed:
 ### 2026-10-31T19:46:07Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-10-31T20:06:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5890d1b4
+- **Timestamp:** 2026-10-31T20:06:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
