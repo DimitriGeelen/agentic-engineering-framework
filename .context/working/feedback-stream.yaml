@@ -51853,3 +51853,21 @@ scan_id: R-76955032
 task_id: T-4935
 payload:
   task_file: .tasks/active/T-4935-gh-104-follow-up-boundaryextrareadpaths-.md
+---
+kind: scan_emitted
+timestamp: '2026-10-31T16:29:09Z'
+scan_id: R-b34fbf46
+task_id: T-4932
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-31T16:29:09Z'
+scan_id: R-b34fbf46
+task_id: T-4932
+payload:
+  task_file: .tasks/active/T-4932-fw-reviewer-judge-lists-a-post-only-rout.md

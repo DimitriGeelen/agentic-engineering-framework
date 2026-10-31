@@ -7,12 +7,12 @@ description: >
   on GET); both evaluating seats returned not-evaluated because a required page was
   not seen (V-20261031-57ac850c). Pages a GET cannot render must not be required.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, reviewer, judge]
-components: []
+components: [tests/unit/t4932_judge_get_routes_test.py]
 related_tasks: [T-4904, T-3580]
 origin: {kind: "agent"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -42,8 +42,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-31T15:18:57Z
-last_update: 2026-10-31T16:21:10Z
-date_finished:
+last_update: 2026-10-31T16:29:00Z
+date_finished: 2026-10-31T16:29:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -103,7 +103,7 @@ cost_estimate_proposed:
 - [x] `_pages_for` drops a blueprint route whose `methods=` list lacks GET, including a decorator split over several lines, and keeps routes with no `methods=` or with GET among them
 - [x] A pytest pins all three shapes against a fixture blueprint, and the existing T-4455 page-plan tests stay green
 - [x] On this repo, the plan for a task that changed `web/blueprints/tasks.py` no longer contains `/api/task/create`
-- [ ] T-4904 re-judged after the fix, outcome recorded in its task file
+- [x] T-4904 re-judged after the fix, outcome recorded in its task file (green V-20261031-4b4802fa on 4 screenshotted pages, no `/api/task/create`; T-4904 closed a9a4d6053)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -399,3 +399,21 @@ bin/fw vendor self --check --task T-4932
 ### 2026-10-31T16:21:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-31T16:29:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b34fbf46
+- **Timestamp:** 2026-10-31T16:29:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — On this repo, the plan for a task that changed `web/blueprints/tasks.py` no longer contains `/api/task/create`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/tasks.py in: On this repo, the plan for a task that changed `web/blueprints/tasks.py` no longer contains `/api/task/create``

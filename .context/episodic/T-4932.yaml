@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4932: fw reviewer judge lists a POST-only route (/api/task/create) as a required page, so reviewers refuse to judge a render criterion
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T16:29:21Z
+# ============================================================================
+
+task_id: T-4932
+task_name: "fw reviewer judge lists a POST-only route (/api/task/create) as a required page, so reviewers refuse to judge a render criterion"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-31T15:18:57Z
+completed: 2026-10-31T16:29:00Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-31T17:23:40+01:00
+last_commit: 2026-10-31T17:23:40+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  judge page plan keeps only routes a GET can render (POST-only /api/task/create made every seat not-evaluated)
+
+# Key outcomes
+outcomes:
+  - '`_pages_for` drops a blueprint route whose `methods=` list lacks GET, including a decorator split over several lines, and keeps routes with no `methods=` or with GET among them'
+  - 'A pytest pins all three shapes against a fixture blueprint, and the existing T-4455 page-plan tests stay green'
+  - 'On this repo, the plan for a task that changed `web/blueprints/tasks.py` no longer contains `/api/task/create`'
+  - 'T-4904 re-judged after the fix, outcome recorded in its task file (green V-20261031-4b4802fa on 4 screenshotted pages, no `/api/task/create`; T-4904 closed a9a4d6053)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.fabric/components/tests-unit-t4932_judge_get_routes_test.yaml'
+  - '.tasks/active/T-4932-fw-reviewer-judge-lists-a-post-only-rout.md'
+  - 'lib/reviewer/judge_cli.py'
+  - 'tests/unit/t4932_judge_get_routes_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-31T17:23:40'
+    action: 'T-4932: judge page plan keeps only routes a GET can render (POST-only /api/task/create made every seat not-evaluated)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 70 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, reviewer, judge]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 70
+  commits: 2
+  files_changed: 8
+  lines_added: 262
+  lines_removed: 19
+  footprint_refreshed_at: '2026-10-31T16:29:26Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4932-fw-reviewer-judge-lists-a-post-only-rout.md
+generated_by: context-agent-hybrid
