@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4910: Slow-suite red: t4705 test 3 (T-4712), a large uncommitted vendored diff is not listed by the re-run upgrade
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T11:46:24Z
+# ============================================================================
+
+task_id: T-4910
+task_name: "Slow-suite red: t4705 test 3 (T-4712), a large uncommitted vendored diff is not listed by the re-run upgrade"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-29T23:09:13Z
+completed: 2026-10-31T11:41:17Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-10-31T12:35:00+01:00
+last_commit: 2026-10-31T12:41:15+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t4705 T-4712 fixture makes its own 120-file vendored diff instead of the moving HEAD~300 anchor. verification guard matches the command, not the comment
+
+# Key outcomes
+outcomes:
+  - 'Cause established by measurement and written into `## RCA`: whether the first upgrade''s list shrank because the fixture''s `HEAD~300` diff shrank (moving anchor) or because the T-4712 guarantee regressed'
+  - 'The fixture controls its own size: the large uncommitted vendored diff is created by the test itself, independent of the live repository''s history'
+  - 'The T-4712 guarantee still asserted: the re-run upgrade lists at least as many vendored files as the first, with one `git add` line'
+  - '`tests/unit/t4705_upgrade_commit_list_vendored_external.bats` passes 2 runs in a row'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 't4705 T-4712 fixture makes its own 120-file vendored diff instead of the moving HEAD~300 anchor'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4910-slow-suite-red-t4705-test-3-t-4712-a-lar.md'
+  - 'tests/unit/t4705_upgrade_commit_list_vendored_external.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-31T12:35:00'
+    action: 'T-4910: t4705 T-4712 fixture makes its own 120-file vendored diff instead of the moving HEAD~300 anchor'
+  - time: '2026-10-31T12:41:15'
+    action: 'T-4910: verification guard matches the command, not the comment'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2192 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, unit-suite, upgrade]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2192
+  commits: 4
+  files_changed: 6
+  lines_added: 869
+  lines_removed: 13
+  footprint_refreshed_at: '2026-10-31T11:46:28Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4910-slow-suite-red-t4705-test-3-t-4712-a-lar.md
+generated_by: context-agent-hybrid
