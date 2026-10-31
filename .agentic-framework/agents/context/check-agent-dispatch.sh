@@ -52,7 +52,7 @@ except:
 # python3 itself could not run, and the `!= Agent` test below would allow every call.
 # Scan the raw payload in bash instead and block an Agent call (fail closed).
 if [ -z "${TOOL_NAME:-}" ]; then
-    if printf '%s' "$INPUT" | grep -qE '"tool_name"[[:space:]]*:[[:space:]]*"Agent"'; then
+    if grep -qE '"tool_name"[[:space:]]*:[[:space:]]*"Agent"' <<<"$INPUT"; then  # T-4921: no pipe into grep -q
         source "$FRAMEWORK_ROOT/lib/hook-degraded.sh"
         _hook_degraded_banner "check-agent-dispatch" "python3 could not decode the payload" \
             "The raw payload is an Agent call, so it is BLOCKED (fail closed)."

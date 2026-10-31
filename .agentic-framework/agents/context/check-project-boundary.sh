@@ -198,8 +198,9 @@ except Exception:
     # a quote (`"/"etc`), or a cd (bare `cd` goes HOME). A regex that names verbs is
     # exactly the parser differential this task removes, so the filter names
     # characters instead; what it skips cannot spell a path outside the cwd.
-    if ! echo "$COMMAND" | grep -qE '(cd\s+/|/opt/|/home/|/root/|/var/|/etc/|/usr/|>+\s*/|tee\s.*/|>\|\s*/|(^|[^[:alnum:]_.-])(cp|mv|install|ln|rsync|dd|sed|perl|truncate|chmod|chown|chgrp|touch|mkdir)\s.*/|\.agentic-framework/bin/fw)' \
-       && ! printf '%s' "$COMMAND" | grep -qE '[/~{$`\\"'"'"']|\.\.|(^|[^[:alnum:]_.-])(cd|pushd)([^[:alnum:]_.-]|$)'; then
+# T-4921: here-string, not a pipe — under pipefail a pipe into grep -q can read a match as no match (T-4920).
+    if ! grep -qE '(cd\s+/|/opt/|/home/|/root/|/var/|/etc/|/usr/|>+\s*/|tee\s.*/|>\|\s*/|(^|[^[:alnum:]_.-])(cp|mv|install|ln|rsync|dd|sed|perl|truncate|chmod|chown|chgrp|touch|mkdir)\s.*/|\.agentic-framework/bin/fw)' <<<"$COMMAND" \
+       && ! grep -qE '[/~{$`\\"'"'"']|\.\.|(^|[^[:alnum:]_.-])(cd|pushd)([^[:alnum:]_.-]|$)' <<<"$COMMAND"; then
         exit 0
     fi
 
@@ -218,7 +219,12 @@ except Exception:
     # Do not reintroduce a line-scoped short-circuit here.
 
     # Detailed analysis: detect cd to another project + write operations
-    export _BOUNDARY_CMD="$COMMAND"
+    # T-4921: the command goes to the matcher in a file, not an env var. Linux caps one
+    # env string at 128 KB (MAX_ARG_STRLEN): a longer command stopped python3 starting,
+    # the matcher gave no verdict, and every long command took the degraded path.
+    _BOUNDARY_CMD_FILE=$(mktemp "${TMPDIR:-/tmp}/fw-boundary-cmd.XXXXXX") \
+        && printf '%s' "$COMMAND" > "$_BOUNDARY_CMD_FILE" || _BOUNDARY_CMD_FILE=""
+    export _BOUNDARY_CMD_FILE
     export _BOUNDARY_CWD="$CMD_CWD"
     export _BOUNDARY_FW_LIB="$FRAMEWORK_ROOT/lib"   # T-3766: registered credential files
     export _BOUNDARY_HOME="$BOUNDARY_HOME"           # T-4361
@@ -226,7 +232,16 @@ except Exception:
     MATCH_RESULT=$(python3 << 'PYEOF'
 import re, sys, os, subprocess
 
-command = os.environ.get('_BOUNDARY_CMD', '')
+
+def _read_boundary_cmd():
+    # T-4921: from the file the shell wrote. Unreadable raises: no verdict, and the
+    # degraded path fails closed.
+    with open(os.environ['_BOUNDARY_CMD_FILE'], encoding='utf-8', errors='surrogateescape') as fh:
+        return fh.read()
+
+
+_BOUNDARY_CMD_RAW = _read_boundary_cmd()
+command = _BOUNDARY_CMD_RAW
 project_root = os.environ.get('PROJECT_ROOT', '')
 
 # Normalize project root (remove trailing slash)
@@ -990,7 +1005,7 @@ try:
     sys.path.insert(0, os.environ.get('_BOUNDARY_FW_LIB', ''))
     import shell_write_scan
     _rhits = shell_write_scan.scan_boundary_reads(
-        _read_scan_text(os.environ.get('_BOUNDARY_CMD', ''), project_root),
+        _read_scan_text(_BOUNDARY_CMD_RAW, project_root),
         os.environ.get('_BOUNDARY_CWD', '') or project_root, _read_outside)
 except Exception as e:   # fail closed, as Pattern 5 does
     _rhits = [type('H', (), {'reason': f'boundary read tokeniser unavailable ({type(e).__name__})',
@@ -1045,7 +1060,7 @@ try:
     sys.path.insert(0, os.environ.get('_BOUNDARY_FW_LIB', ''))
     import shell_write_scan
     _hits = shell_write_scan.scan_boundary(
-        os.environ.get('_BOUNDARY_CMD', ''),
+        _BOUNDARY_CMD_RAW,
         os.environ.get('_BOUNDARY_CWD', '') or project_root,
         _write_guarded, _cd_ok)
 except Exception as e:   # fail closed: an unreadable command is not a safe one
@@ -1058,10 +1073,11 @@ if _hits:
     sys.exit(0)
 
 # T-4751: a verdict that used the BOUNDARY_EXTRA_READ_PATHS exemption says so, for the log.
-_cmd_raw = _strip_heredocs(os.environ.get('_BOUNDARY_CMD', ''))
+_cmd_raw = _strip_heredocs(_BOUNDARY_CMD_RAW)
 print('SAFE|' + ' '.join(_cmd_raw[s_:e_] for s_, e_ in _EXTRA_SPANS) if _EXTRA_SPANS else 'SAFE')
 PYEOF
 )
+    [ -n "${_BOUNDARY_CMD_FILE:-}" ] && rm -f "$_BOUNDARY_CMD_FILE"
 
     # T-4652: the matcher always prints SAFE or BLOCKED; no output means it crashed.
     if [ -z "$MATCH_RESULT" ]; then

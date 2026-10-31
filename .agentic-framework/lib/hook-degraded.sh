@@ -51,7 +51,9 @@ hook_degraded_tier0() {
     # The fast path also scans a dequoted copy (tier""0) and sends ANSI-C quoting
     # ($'...') to python unread; while degraded, both are blocked here.
     local dq; dq=$(printf '%s' "$input" | tr -d "\"'\\\\\$")
-    if [[ "$input" == *"\$'"* ]] || printf '%s\n%s\n' "$input" "$dq" | grep -qEi -- "$pat"; then
+    # T-4921: here-strings, not pipes — under pipefail a pipe into grep -q reads a match as
+    # no match, which turned these fail-closed paths into fail-open ones (T-4920 class).
+    if [[ "$input" == *"\$'"* ]] || grep -qEi -- "$pat" <<<"$input"$'\n'"$dq"; then
         _hook_degraded_banner "check-tier0" "$why" "The raw payload matches a Tier 0 keyword, so the call is BLOCKED (fail closed)."
         echo "  This may over-block while degraded. Repair python3 (it must import json, re," >&2
         echo "  os, hashlib) or ask the operator to approve." >&2
@@ -71,7 +73,7 @@ hook_degraded_boundary() {
     [ -n "$home" ] && rest="${rest//"$home/.claude"/}"
     rest="${rest//\/root\/.claude/}"
     rest="${rest//\/root\/.local/}"
-    if printf '%s' "$rest" | grep -qE '(/opt/[A-Za-z0-9._-]|/home/[A-Za-z0-9._-]|/root/[A-Za-z0-9._-]|/srv/[A-Za-z0-9._-]|/mnt/[A-Za-z0-9._-])'; then
+    if grep -qE '(/opt/[A-Za-z0-9._-]|/home/[A-Za-z0-9._-]|/root/[A-Za-z0-9._-]|/srv/[A-Za-z0-9._-]|/mnt/[A-Za-z0-9._-])' <<<"$rest"; then
         _hook_degraded_banner "check-project-boundary" "$why" "The raw payload names an absolute path outside this project, so the call is BLOCKED (fail closed)."
         echo "  Project root: ${root:-unknown}" >&2
         echo "  This may over-block while degraded. Repair python3 (it must import json, re," >&2
@@ -90,9 +92,9 @@ hook_degraded_boundary() {
     local q=$'[\\\\"\']*'
     local wverb='(^|[^[:alnum:]_.-])(tee|cp|mv|install|ln|rsync|dd|sed|perl|truncate|chmod|chown|chgrp|touch|mkdir|rm|rmdir|unlink|shred|patch|tar|unzip|curl|wget)[[:space:]][^|;&]*'
     local wtool='"tool_name"[[:space:]]*:[[:space:]]*"(Write|Edit|MultiEdit|NotebookEdit)"'
-    if printf '%s' "$rest" | grep -qE -- ">[>|]?[[:space:]]*$q$sys|$wverb$sys|of=$q$sys|(^|[^[:alnum:]_])(cd|pushd)[[:space:]]+$q$sys" \
-       || { printf '%s' "$rest" | grep -qE -- "$wtool" \
-            && printf '%s' "$rest" | grep -qE -- "\"(file_path|notebook_path)\"[[:space:]]*:[[:space:]]*\"$sys"; }; then
+    if grep -qE -- ">[>|]?[[:space:]]*$q$sys|$wverb$sys|of=$q$sys|(^|[^[:alnum:]_])(cd|pushd)[[:space:]]+$q$sys" <<<"$rest" \
+       || { grep -qE -- "$wtool" <<<"$rest" \
+            && grep -qE -- "\"(file_path|notebook_path)\"[[:space:]]*:[[:space:]]*\"$sys" <<<"$rest"; }; then
         _hook_degraded_banner "check-project-boundary" "$why" "The raw payload writes under a system root (/etc /usr /var /boot), so the call is BLOCKED (fail closed)."
         echo "  Project root: ${root:-unknown}" >&2
         echo "  This may over-block while degraded. Repair python3 (it must import json, re," >&2

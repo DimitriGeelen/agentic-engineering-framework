@@ -80,7 +80,7 @@ _lf_build_allowlist() {
 _lf_is_allowed() {
     local path="$1" allow_re="$2"
     [ -z "$allow_re" ] && return 1
-    echo "$path" | grep -qE -e "$allow_re"
+    grep -qE -e "$allow_re" <<<"$path"  # T-4921: here-string, not a pipe (pipefail)
 }
 
 # Public: scan staged content. Iterates the staged path list (added or modified)
