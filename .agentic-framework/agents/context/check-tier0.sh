@@ -355,7 +355,10 @@ PATTERNS = [
     # prefers it over TMUX_TMPDIR, so a bare kill reaches the shared server.
     # A kill that names its own socket (-S path, -L name) passes; so does every
     # other verb. tmux accepts abbreviations, hence kill-ser.../kill-ses...
-    (r'\btmux\b(?![^;|&\n]*\s-[SL])[^;|&\n]*\bkill-se(?:r(?:v(?:e(?:r)?)?)?|s(?:s(?:i(?:o(?:n)?)?)?)?)\b',
+    # T-4937 (055 T-667): tmux counts only when no name or path character follows
+    # it, so the tmux-0 in a socket path is not read as the command (it hid the
+    # real -S), and -S/-L count only before the kill verb, where tmux reads them.
+    (r'\btmux(?![\w./-])(?![^;|&\n]*?\s-[SL][^;|&\n]*?\bkill-se)[^;|&\n]*\bkill-se(?:r(?:v(?:e(?:r)?)?)?|s(?:s(?:i(?:o(?:n)?)?)?)?)\b',
      'TMUX KILL WITHOUT SOCKET: tmux kill-server/kill-session with no -S/-L acts on the server TMUX points at (it wins over TMUX_TMPDIR), which inside an agent shell is the shared server every session runs on. Instead: name your own socket, tmux -S <socket> kill-server or tmux -L <name> kill-server'),
 
     # === Infrastructure destructive ===
