@@ -7,17 +7,17 @@ description: >
   watchdog kills at --timeout (600 s default); make the timeout a review span, kill
   only on evaluated standstill, plus a high hard ceiling.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: next
+horizon: null
 tags: [termlink, dispatch]
 components: []
 related_tasks: [T-577]
 origin: {kind: "peer", source: "1409-sprind", ref: "d9271ba5"}
 created: 2026-10-30T00:31:25Z
-last_update: '2026-10-30T00:45:43Z'
-date_finished:
+last_update: 2026-10-31T15:08:38Z
+date_finished: 2026-10-31T15:08:38Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -123,15 +123,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -180,9 +180,48 @@ bvp_scores_proposed:
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Measured loss in one consumer: 19 of 279 workers since 2026-10-27 killed by the blind watchdog in agents/termlink run.sh, 13 of them build workers at 3-4 h with code done waiting on verification, 3 reviewers killed by the 600 s default; detached children died too, ~1 h rework each. Their operator ruled the limit should be a trigger, not a kill. The hard-ceiling leg keeps T-577's protection against hung or orphaned workers, so the change does not reopen that class. Exploration should settle the evaluation signals and who may kill.
+
+**Date**: 2026-10-31T15:08:36Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-10-31T15:08:36Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Measured loss in one consumer: 19 of 279 workers since 2026-10-27 killed by the blind watchdog in agents/termlink run.sh, 13 of them build workers at 3-4 h with code done waiting on verification, 3 reviewers killed by the 600 s default; detached children died too, ~1 h rework each. Their operator ruled the limit should be a trigger, not a kill. The hard-ceiling leg keeps T-577's protection against hung or orphaned workers, so the change does not reopen that class. Exploration should settle the evaluation signals and who may kill.
+
+### 2026-10-31T15:08:37Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** Inception decision in progress
+
+### 2026-10-31T15:08:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c0ce58c4
+- **Timestamp:** 2026-10-31T15:08:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-bb8b8ae4
+- **Timestamp:** 2026-10-31T15:08:40Z
+- **Overall:** CONFIRMED
+- **Claims:** 1
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-577` | task | ✓ pass |
