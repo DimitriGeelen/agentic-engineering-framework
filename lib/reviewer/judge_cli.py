@@ -88,6 +88,9 @@ PANEL_SIZE = review_policy.PANEL_SIZE
 #: Screenshots taken per run. Pages beyond the cap are still REQUIRED: they are registered as
 #: not captured, so the ledger refuses a render green (round 3: no silent truncation).
 MAX_CAPTURE_PAGES = 6
+#: Seconds a review seat runs before the dispatcher stops it (T-4933: the brief states it, so a
+#: harness seat prints its verdicts before the stop instead of recording nothing).
+HARNESS_SEAT_TIMEOUT = 900
 DEGRADED_SINGLE_VENDOR = "degraded: single-vendor panel"
 UNKNOWN = "unknown"
 #: Seat outcomes that let a sequential panel go on to its next seat (T-3986).
@@ -681,7 +684,14 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
             f"You review revision `{revision or 'the registered revision'}`. Your working directory is "
             "an export of exactly that revision (without `.context/`). Do NOT modify any file in "
             "it: it is fingerprinted, and a seat that changed it has none of its greens counted. "
-            "Do not try to run `fw` or `git commit`: you need not.",
+            "Do not try to run `fw` or `git commit`: you need not. The evidence files cited "
+            "above (`.context/working/judge-evidence/…`, `.context/visual/…`) are copied into "
+            "the export at those same relative paths (T-4933); nothing else from `.context/` is.",
+            "",
+            f"Time limit: this run is stopped after {HARNESS_SEAT_TIMEOUT // 60} minutes, and a "
+            "stopped run records nothing. Print your verdict lines before then: by about two "
+            "thirds of that time, stop investigating and print what you have, using "
+            "`not-evaluated` (with the reason) for anything you could not finish checking.",
             "",
             "Scratch space: `$TMPDIR` is a writable directory of your own for this run (a test "
             "harness's temp files, a build cache). If what a criterion needs still cannot run, "
@@ -797,7 +807,8 @@ def _await_worker(fw: Path, did: str, root: Path, timeout: int) -> int:
 
 
 def _dispatch_real(*, task_id: str, brief: str, root: Path, name: str, vendor: str,
-                   timeout: int = 900, revision: str = "", run_id: str = "", seat: str = "") -> str:
+                   timeout: int = HARNESS_SEAT_TIMEOUT, revision: str = "", run_id: str = "",
+                   seat: str = "") -> str:
     """Spawn the review worker via `fw termlink dispatch --task-type review`, wait for it, and
     return its dispatch id (the wrapper appends a random suffix and registers it)."""
     fw = Path(os.environ.get("FRAMEWORK_ROOT") or root) / "bin" / "fw"

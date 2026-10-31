@@ -73,3 +73,13 @@ def test_run_sh_copies_before_fingerprinting():
     fp_at = src.index('TREE_FP_BEFORE="$(_tree_fp)"')
     export_at = src.index("archive --format=tar \"${FW_REVIEW_REVISION:-HEAD}\"")
     assert export_at < copy_at < fp_at
+
+
+def test_harness_brief_states_the_time_limit_and_the_copied_evidence():
+    from lib.reviewer import judge_cli
+    crit = [{"index": 1, "ac_index": 1, "body": "- [ ] [REVIEW] x", "render": False,
+             "title": "x", "digest": "d"}]
+    for kind, expect in (("opencode", True), ("claude", False)):
+        brief = judge_cli._build_brief("T-9", crit, rung=3, kind=kind, revision="abc")
+        assert ("Time limit: this run is stopped after 15 minutes" in brief) is expect
+        assert ("copied into the export at those same relative paths" in brief) is expect
