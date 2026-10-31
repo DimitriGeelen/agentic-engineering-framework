@@ -103,7 +103,7 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A runme for the operator sets `SIDECAR_RAIL_IDENTITY 1`, stops and starts the sidecar, and prints whoami, status and alerts; handed off as one line and watched
+- [x] A runme for the operator sets `SIDECAR_RAIL_IDENTITY 1`, stops and starts the sidecar, and prints whoami, status and alerts; handed off as one line and watched (run 2026-10-31 22:53Z, exit 0; findings under Updates: the switch did not do what this task assumed)
 - [ ] After the run: `fw sidecar alerts` has no host-shared-key WARN, `fw sidecar status` shows the watcher live, `SIDECAR_HOST_DM_TRANSITION` is still 1
 - [ ] Every peer AEF talks to (ring20-dashboard, 055, 832, 0506, 1409, dimitri-mint-dev, 010-termlink, ring20, 050) is told the new key and that old-rail mail is still read
 - [ ] A follow-up task exists to turn the transition off once peers address the new key
@@ -384,6 +384,15 @@ cost_estimate_proposed:
      legacy tasks lacking this section. -->
 
 ## Updates
+
+### 2026-10-31T23:10Z — runme ran; switch is not what this task assumed (stopped after 3 hypotheses)
+- The operator ran `.context/runme/t4931-aef-identity/runme.sh` (exit 0): SIDECAR_RAIL_IDENTITY=1, SIDECAR_HOST_DM_TRANSITION=1, sidecar stopped and started, watcher live. The clean `alerts` in that run was a false negative: termlink was briefly unreachable after the restart (`identity fp: - (termlink unreachable)`), so there was nothing to compare.
+- Signing keys, measured with `termlink identity sign --json`: with `.context/rail-identity.key` selected, fingerprint **bdd184bd89f318e4** (`source: identity_file`); with the selectors removed, **d1993c2c3ec44c94** (`source: host_default`). AEF's existing dm cursors are keyed on d1993c… (`fw sidecar status`).
+- Finding 1, measurement: `dm.identity_is_host_shared()` compares `identity_fingerprint()` with `_host_fingerprint()`, and both read `termlink whoami`'s session block, which is found by walking up the process tree. Removing the identity env does not change the session found, so inside a registered session both return bdd184bd… and the check reports host-shared. The host-shared WARN seen from this session is a false positive.
+- Finding 2, switch semantics: since T-4494, `identity.termlink_env()` already selects an existing configured key file with the switch OFF (claude-fw exports it, T-4454). So `SIDECAR_RAIL_IDENTITY=1` mainly adds the APPLIED marker when no selector is set.
+- Finding 3, inherited session env: the restarted watcher (pid 2086273) carries this Claude session's environment: TERMLINK_IDENTITY_FILE (so `apply()` set no APPLIED marker, and `legacy_host_fingerprint()` reads no old host rails), plus TMUX, TMUX_PANE, TERMLINK_SESSION_ID, CLAUDECODE and CLAUDE_CODE_*, which T-4416 says must not reach a sidecar process. The runme ran from a shell inside the session, and `fw sidecar start` passed that environment through.
+- Not done: no peer announcement (nothing verifiably changed for peers), no transition follow-up. Mail is not lost: dm rails keep unread posts behind a cursor; consults on the project inbox topic are unaffected by the key.
+- Filed T-4941 for findings 1 and 3 (and the missing marker), to be localised before any further switch.
 
 ### 2026-10-31T15:06:53Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
