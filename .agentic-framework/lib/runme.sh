@@ -71,6 +71,13 @@ runme_new() {
         echo '    rm -rf "$LOCKD"; mkdir "$LOCKD" 2>/dev/null || { echo "runme '"$name"': lost the race for $LOCKD; see $LOG" >&2; exit 75; }'
         echo 'fi'
         echo 'echo $$ > "$LOCKD/pid"'
+        # T-4914: a re-run after a finished run used to empty the log of the run that did
+        # the work (ring20-dashboard T-2585). Keep the last three runs; run.log stays one
+        # run, so watch and pending read it as before.
+        echo 'if [ -s "$LOG" ]; then'
+        echo '    for _g in 2 1; do [ -f "$LOG.$_g" ] && mv -f "$LOG.$_g" "$LOG.$((_g + 1))"; done'
+        echo '    mv -f "$LOG" "$LOG.1"'
+        echo 'fi'
         echo ': > "$LOG"'
         # T-3741: the script announces itself — every event goes to run.log AND, as one JSON
         # line, to the project's events.jsonl, so a watcher wakes on the event, not on a guess.
