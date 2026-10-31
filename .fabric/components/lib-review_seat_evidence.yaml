@@ -1,0 +1,21 @@
+id: lib/review_seat_evidence.py
+name: review_seat_evidence
+type: script
+subsystem: framework-core
+location: lib/review_seat_evidence.py
+tags: []
+
+purpose: "Copy the evidence a review brief cites into a harness seat's export (T-4933)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-31
+created_by: unknown

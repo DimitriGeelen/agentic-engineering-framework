@@ -1,0 +1,21 @@
+id: tests/unit/t4933_review_seat_evidence_test.py
+name: t4933_review_seat_evidence_test
+type: script
+subsystem: tests
+location: tests/unit/t4933_review_seat_evidence_test.py
+tags: []
+
+purpose: "T-4933: a harness review seat runs in a `git archive` export without `.context/`, so the screenshots its brief cites were missing and the opencode seat ended with no verdict on every render judge."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-31
+created_by: unknown

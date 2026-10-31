@@ -1874,6 +1874,13 @@ elif [ -n "$HARNESS" ]; then
     elif ! { mkdir -p "$TREE" && git -C "$PROJECT_DIR" archive --format=tar "${FW_REVIEW_REVISION:-HEAD}" -- . ':(exclude).context' | tar -x -C "$TREE"; }; then
         echo "FATAL: cannot export revision ${FW_REVIEW_REVISION:-HEAD} for the $WORKER_KIND worker" >> "$WDIR/stderr.log"
     else
+        # T-4933: the export has no `.context/`, so the screenshots the brief cites were not
+        # there, and opencode refuses reads outside its directory: every render judge ended
+        # with no verdict. Copy exactly the cited evidence files in, before the fingerprint.
+        if [ -f "$FRAMEWORK_ROOT/lib/review_seat_evidence.py" ] && [ -f "$WDIR/brief.md" ]; then
+            python3 "$FRAMEWORK_ROOT/lib/review_seat_evidence.py" "$WDIR/brief.md" "$PROJECT_DIR" "$TREE" >> "$WDIR/stderr.log" 2>&1 \
+                || echo "WARN: cited evidence not copied into the export (T-4933)" >> "$WDIR/stderr.log"
+        fi
         chmod -R a+rX "$WDIR" 2>/dev/null
         # T-3986 (832 T-1082): a seat whose sandbox could not write a temp file could not run a
         # browser harness, and voted on what it never saw. Every harness seat gets a writable

@@ -7,10 +7,10 @@ description: >
   each time, so reassignment had no third vendor. Investigate the seat (model pin
   glm-5.3 per T-4506, worker launch, isolation).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, reviewer, opencode]
 components: []
 related_tasks: [T-4506]
@@ -42,7 +42,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-31T15:18:57Z
-last_update: '2026-10-31T15:30:22Z'
+last_update: 2026-10-31T16:29:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,20 +88,23 @@ cost_estimate_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** On 2026-10-31 the opencode seat (glm-5.3) ended without a verdict on every `fw reviewer judge` run (T-4906, T-4904, T-4792), so reassignment never had a third vendor. In run judge-t-4904-r3-e9a5ec5a4169 it exited 0 after 2.5 minutes, printed no text, and `close_state` reads `no-verdict`. stderr shows opencode auto-rejecting `external_directory` permission for `/tmp/tl-dispatch/<id>/*`, and its last two tool calls (reads of `meta.json` and `env.json`) were rejected.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** A harness seat (codex, opencode, antigravity) runs inside `$WDIR/tree`, a `git archive` export that excludes `.context/` (`lib/termlink` run.sh, T-3582). The brief names the screenshots and visual evidence by `.context/...` paths that do not exist in the export, and opencode refuses reads outside its working directory. The seat searches (it tried `/root/.context`), finds nothing, and stops without printing even `not-evaluated`. Whether the non-render runs (T-4792) failed the same way is still to be checked.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** a harness seat can read every file its brief cites, and a seat that cannot evaluate still prints a verdict line.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the opencode seat returns a printed verdict (any outcome, `not-evaluated` included) on a judge run, so it counts as an evaluating or explicitly non-evaluating seat rather than "unavailable".
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause confirmed from the dispatch dirs, written in `## RCA` (both failing runs on disk, T-4906 and T-4904, are render judges; T-4792 had no opencode seat, so there is no non-render failure to confirm)
+- [ ] Every evidence file the brief cites under `.context/` is present at the same relative path inside the harness seat's export, copied before the export is fingerprinted, so the seat reads it without leaving its directory and the unchanged-export check still holds
+- [ ] A test pins the copy: a fixture dispatch with cited evidence files gets them inside the export, and nothing else from `.context/` is copied
+- [ ] One real `fw reviewer judge` run with the opencode seat ends with a printed verdict from that seat (outcome recorded here)
+- [ ] `bin/fw vendor self --check --task T-4933` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -303,6 +306,13 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** the opencode seat exited 0 with no printed text and `close_state: no-verdict` on render judges (T-4906 judge-t-4906-r3-fb577a0aa7cb, T-4904 judge-t-4904-r3-e9a5ec5a4169; earlier T-4791, T-4831, T-4832). The one opencode seat on record that left a verdict was T-4836's. T-4792 never had an opencode seat (its single seat was claude), so the "3 of 3" in this task's title over-counted.
+
+**Root cause:** harness seats run in `$WDIR/tree`, a `git archive` export with `.context` excluded (agents/termlink/termlink.sh, T-3582). The brief names every screenshot and visual-evidence file by a `.context/...` path, which does not exist in the export. opencode auto-rejects `external_directory` reads outside its cwd (stderr: "permission requested: external_directory (/tmp/tl-dispatch/<id>/*); auto-rejecting"). Both runs show the same trail: `ls`, a glob of `.context/**`, a search of `/` and `/root/.context`, then rejected reads, and the model stops without printing even `not-evaluated`.
+
+**Why structurally allowed:** the export rule (no `.context/`, so no dirty or secret state reaches the reviewer) and the evidence rule (cite screenshots under `.context/`) were each built and tested separately. The seat-health accounting reported only "unavailable: no completion", so five occurrences read as an unreliable vendor rather than a missing input. Claude seats run in the real tree, so the defect showed on harness seats only.
+
+**Prevention:** run.sh copies exactly the cited evidence files from the two evidence areas into the export before it is fingerprinted (`lib/review_seat_evidence.py`). `tests/unit/t4933_review_seat_evidence_test.py` pins what is copied (cited files only, no `..`, no symlink out, nothing outside the areas) and the ordering inside run.sh (export, copy, fingerprint).
 
 ## Evolution
 
@@ -384,3 +394,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4933-the-opencode-review-seat-gives-no-comple.md
 - **Context:** Initial task creation
+
+### 2026-10-31T16:29:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
