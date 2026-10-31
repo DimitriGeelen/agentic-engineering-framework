@@ -103,7 +103,7 @@ bvp_scores_proposed:
 - [x] A generated `runme.sh` rotates an existing non-empty `run.log` (run.log → run.log.1 → .2 → .3, oldest dropped) after taking the T-4871 lock and before starting the new log; the new run starts with a fresh `run.log`
 - [x] A refused concurrent start (T-4871) rotates nothing
 - [x] Tests: a re-run keeps the finished run's log as run.log.1 with its RUNME EXIT; three generations kept, the fourth dropped; refused start leaves the logs as they were; existing runme tests pass
-- [ ] Vendored copy synced; ring20-dashboard told
+- [x] Vendored copy synced; ring20-dashboard told (msg 967c341a, via the hub)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
