@@ -529,7 +529,7 @@ except:
 case "$FILE_PATH" in
     */settings.json)
         # Only block if it's the Claude Code settings file
-        if echo "$FILE_PATH" | grep -q '\.claude/settings\.json$'; then
+        if grep -q '\.claude/settings\.json$' <<<"$FILE_PATH"; then  # T-4921: no pipe into grep -q
             # T-3050: name the sanctioned route. This refusal used to end at
             # "requires human review" and offer no mechanism, so every agent that
             # tripped it escalated to the operator for a JSON paste-in — for a
@@ -1336,7 +1336,7 @@ if [ ! -f "$ONBOARDING_MARKER" ]; then
         # short-circuits the whole block on this repo. In a project without that
         # marker it fires, and the block message names onboarding tasks the
         # operator does not have.
-        if head -20 "$tf" | grep -qE '^tags:[[:space:]]*\[?([^]]*,)?[[:space:]]*onboarding[[:space:]]*(,|\]|$)' 2>/dev/null; then
+        if grep -qE '^tags:[[:space:]]*\[?([^]]*,)?[[:space:]]*onboarding[[:space:]]*(,|\]|$)' <<<"$(head -20 "$tf" 2>/dev/null)" 2>/dev/null; then  # T-4921
             tf_owner=$({ grep "^owner:" "$tf" 2>/dev/null || true; } | head -1 | sed 's/owner:[[:space:]]*//')
             [ "$tf_owner" = "human" ] && continue
             tf_status=$({ grep "^status:" "$tf" 2>/dev/null || true; } | head -1 | sed 's/status:[[:space:]]*//')
@@ -1351,7 +1351,7 @@ if [ ! -f "$ONBOARDING_MARKER" ]; then
     if [ -n "$INCOMPLETE_ONBOARDING" ]; then
         # Check if current task is an onboarding task
         CURRENT_IS_ONBOARDING=false
-        if [ -n "$ACTIVE_FILE" ] && head -20 "$ACTIVE_FILE" | grep -q '^tags:.*onboarding' 2>/dev/null; then
+        if [ -n "$ACTIVE_FILE" ] && grep -q '^tags:.*onboarding' <<<"$(head -20 "$ACTIVE_FILE" 2>/dev/null)" 2>/dev/null; then  # T-4921
             CURRENT_IS_ONBOARDING=true
         fi
 

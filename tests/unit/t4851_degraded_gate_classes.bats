@@ -89,9 +89,11 @@ EOF
 )"
 
 fast_path_alternatives() {
-    # the single-quoted regex on the line after `grep -qEi \` in the fast-path filter
+    # the single-quoted regex on the line after `grep -qEi \` in the fast-path filter.
+    # T-4920 moved the here-string to the next line, so the regex line now ends `' \`
+    # instead of `'; then`; accept both.
     awk '/grep -qEi \\$/ {getline; print; exit}' "$HOOK" \
-        | sed -E "s/^[[:space:]]*'//; s/'; then[[:space:]]*$//" \
+        | sed -E "s/^[[:space:]]*'//; s/'(; then| \\\\)[[:space:]]*$//" \
         | python3 -c '
 import sys
 s = sys.stdin.read().strip()

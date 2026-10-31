@@ -158,19 +158,16 @@ date_finished: null
 # writing, cmd takes SIGPIPE, the pipeline exits 141 — verification "fails" with
 # the pattern present. Captured 4× (T-1716, T-1838, T-1862, T-1863).
 #
-# THE EXCEPTION — capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Valid ONLY while "$out" fits the 65536-byte pipe buffer, and it is on you to
-# know that it does. Above that the form inverts and becomes the very failure
-# L-387 describes: echo blocks on the full pipe, grep -q exits, echo takes
-# SIGPIPE, rc=141 (T-2743 — measured on a 146,366-byte Watchtower page, 3/3 runs,
-# deterministic not racy; rendered routes run 50-200KB, so anything that curls a
-# page is over the line). It also discards cmd's exit code, so a 404 yields an
-# empty capture that grep merely fails to match rather than a failed line.
-# If you do use it: single pipe only, no intermediate tail/awk/sed stage between
-# capture and grep (T-2090) — the middle stage is what `grep -q` slams its stdin
-# on, and grep scans the whole captured string anyway, so the `tail -3` was
-# cosmetic. `echo "$out" | grep -q PAT`, nothing between.
+# THE EXCEPTION — capture first, grep the capture with a HERE-STRING:
+#     out=$(cmd 2>&1); grep -q "PATTERN" <<<"$out"
+# No pipe, so no SIGPIPE at any size. Do NOT write `echo "$out" | grep -q PAT`:
+# it is not safe "below 64 KB" as this file used to say (T-4921, 832 T-1340). The
+# builtin writes a multi-line value line by line, so grep -q can exit before the
+# last write at ANY size (measured 4 in 3,000 for a 40-line value), and above the
+# pipe buffer it fails every time (T-2743: 146,366-byte page, 3/3). In a gate that
+# allows on "no match" that is a fail-OPEN (T-4920: the Tier 0 pre-filter).
+# The capture still discards cmd's exit code, so a 404 yields an empty capture that
+# grep merely fails to match rather than a failed line — prefer THE DEFAULT above.
 #
 # TEST RUNNERS need a guard either way (T-2738). `set -e` is suppressed inside the
 # `if` condition the gate runs each line in, so in `cmd1; cmd2` only cmd2 is the
@@ -179,8 +176,8 @@ date_finished: null
 # to `grep -qE "[0-9]+ passed"` matches the same output. Keep the exit code:
 #     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
 # or add the guard the exit code used to supply:
-#     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-#     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+#     out=$(python3 -m pytest <file> -q 2>&1); grep -q passed <<<"$out" && ! grep -q failed <<<"$out"
+#     out=$(bats <file> 2>&1); grep -q '^ok 1 ' <<<"$out" && ! grep -q '^not ok' <<<"$out"
 # The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
 #
 # ── A SKIPPED BATS TEST REPORTS `ok` (T-3217) ─────────────────────────────────

@@ -60,10 +60,11 @@ except Exception:
 [ "$TOOL_NAME" = "Bash" ] || exit 0
 
 # Only act on git commit commands
-echo "$COMMAND" | grep -qE '(^|[^a-zA-Z0-9_-])git[[:space:]]+commit([[:space:]]|$)' || exit 0
+# T-4921: here-string, not a pipe — under pipefail a pipe into grep -q can read a match as no match (T-4920).
+grep -qE '(^|[^a-zA-Z0-9_-])git[[:space:]]+commit([[:space:]]|$)' <<<"$COMMAND" || exit 0
 
 # Bypass: --no-verify present
-echo "$COMMAND" | grep -qE '(--no-verify|[[:space:]]-n([[:space:]]|$))' && exit 0
+grep -qE '(--no-verify|[[:space:]]-n([[:space:]]|$))' <<<"$COMMAND" && exit 0
 
 # Get staged files
 STAGED=$(git -C "$PROJECT_ROOT" diff --cached --name-only 2>/dev/null)
@@ -140,7 +141,7 @@ SECTION_BODY=$(awk '
   inside { print }
 ' "$TASK_FILE")
 
-if ! echo "$SECTION_BODY" | grep -qE '\.(png|jpg|jpeg)([^a-zA-Z0-9]|$)'; then
+if ! grep -qE '\.(png|jpg|jpeg)([^a-zA-Z0-9]|$)' <<<"$SECTION_BODY"; then  # T-4921
   cat >&2 <<EOF
 BLOCKED: '## Visual Verification' section exists but has no image references.
 

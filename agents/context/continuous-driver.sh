@@ -229,8 +229,8 @@ fi
 # and asserting it would refuse every valid tmux target — the pane's existence was
 # already checked above, which is the equivalent precondition for that transport.
 if [ "$TRANSPORT" != "tmux" ]; then
-    timeout 20 termlink discover --name "$SESSION" --names --no-header 2>/dev/null \
-        | grep -Fxq "$SESSION" \
+    # T-4921: here-string, not a pipe — under pipefail a pipe into grep -q can misread a match.
+    grep -Fxq "$SESSION" <<<"$(timeout 20 termlink discover --name "$SESSION" --names --no-header 2>/dev/null)" \
         || _bail "refused" "target session '${SESSION}' is not registered"
 fi
 

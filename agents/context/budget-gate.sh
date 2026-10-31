@@ -171,7 +171,7 @@ _budget_json_field() {
 }
 _budget_cmd_wrapup() {
     case "$1" in *\\*|*\;*|*\&*|*\|*|*\`*|*\$*|*\<*|*\>*) return 1 ;; esac
-    printf '%s' "$1" | grep -qE '^[[:space:]]*(git[[:space:]]+(commit|add|push)|([[:alnum:]_./-]*/)?fw[[:space:]]+(handover|context[[:space:]]+focus))([[:space:]]|$)'
+    grep -qE '^[[:space:]]*(git[[:space:]]+(commit|add|push)|([[:alnum:]_./-]*/)?fw[[:space:]]+(handover|context[[:space:]]+focus))([[:space:]]|$)' <<<"$1"  # T-4921
 }
 _budget_path_wrapup() {
     case "$1" in ""|*..*) return 1 ;; *.context/*|*.tasks/*|*.claude/*) return 0 ;; esac

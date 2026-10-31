@@ -106,7 +106,7 @@ _secret_scan_read_catalogue() {
 _secret_scan_is_allowed() {
     local hit_line="$1" allow_re="$2"
     [ -z "$allow_re" ] && return 1
-    echo "$hit_line" | grep -qE -e "$allow_re"
+    grep -qE -e "$allow_re" <<<"$hit_line"  # T-4921: here-string, not a pipe (pipefail)
 }
 
 # Core scanner: takes a stream of "filepath:linenumber:linecontent" rows on stdin,
