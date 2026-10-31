@@ -1,19 +1,18 @@
 ---
-id: T-4928
-name: "Hook dispatch enters broken-hook mode on stderr text; decide structurally (bash
-  -n on the named framework hook file)"
+id: T-4926
+name: "SECURITY: safe-commands misreads $'...' (ANSI-C) quoting, so a write clause
+  after it is classified read-only"
 description: >
-  ring20-dashboard finding 3 (msg ddc0cd83): broken mode is chosen by grepping stderr
-  for 'syntax error'. Low exploitability (only a repair of the named file is allowed),
-  but stderr text should not decide; require bash -n to fail on a file under FRAMEWORK_ROOT.
+  ring20-dashboard finding 1 (msg ddc0cd83), confirmed: is_bash_safe_command classifies
+  cat $'a\'b' ; touch X as SAFE; bash runs the touch.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [security, hook-dispatch]
-components: []
-related_tasks: [T-4908]
+horizon: null
+tags: [bug, security, safe-commands]
+components: [agents/context/lib/safe-commands.sh]
+related_tasks: [T-4792]
 origin: {kind: "peer", source: "ring20-dashboard", ref: "ddc0cd83"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,9 +40,9 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "ddc0cd83"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-31T14:08:15Z
-last_update: '2026-10-31T14:14:04Z'
-date_finished:
+created: 2026-10-31T14:08:14Z
+last_update: 2026-10-31T14:22:07Z
+date_finished: 2026-10-31T14:22:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -55,10 +54,10 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-31T14:14:04Z'
+  - ts: '2026-10-31T14:09:50Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
-      D1: 0
+      D1: 3
       D2: 0
       D3: 0
       D4: 0
@@ -67,37 +66,54 @@ bvp_scores_proposed:
       F3: 0
       F1: 0
       F2: 0
-    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
-      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-31T14:15:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=341,acs=5)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4928: Hook dispatch enters broken-hook mode on stderr text; decide structurally (bash -n on the named framework hook file)
+# T-4926: SECURITY: safe-commands misreads $'...' (ANSI-C) quoting, so a write clause after it is classified read-only
 
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** finding 3 of the security review ring20-dashboard forwarded (msg ddc0cd83). `lib/hook-dispatch.sh` (T-4908) enters broken-hook mode when a refusing hook's stderr contains a line matching `^/[^:]+: line N: syntax error`. The file named in that line becomes the one file broken mode lets the agent repair.
+**Background / trigger:** ring20-dashboard forwarded a security review of vendored framework code on be.3 (msg ddc0cd83, finding 1). It claimed the read-only classifier in `agents/context/lib/safe-commands.sh` and bash can disagree about where a quoted string ends. Probed 2026-10-31 against the real `is_bash_safe_command`, classifying only, nothing executed:
+- `cat $'a\'b' ; touch X` is classified read-only;
+- `echo "a\"" ; touch X` is classified read-only (found here while probing);
+- a harmless script confirmed that bash runs the hidden clause.
 
-**Problem / hypothesis:** confirmed by reading; exploitability is low. Broken mode only allows a Write/Edit of exactly the named file, or `git checkout`/`git restore` of it. No hook was found that echoes payload text at the start of a stderr line. The realistic worst case is discarding one named file's uncommitted edits. Still, free stderr text decides a gate's mode, and the named file is not checked to be a hook or library at all.
+**Problem / hypothesis:** three quote trackers in the file do not follow bash's rules.
+- `_fw_chain_split` (the clause splitter) closes `'` and `"` on the next matching character. Inside `$'…'` a backslash escapes the next character, so `\'` does not close. Inside `"…"` a backslash escapes `"`.
+- The Python substitution extractor has the same `$'…'` flaw.
+- `_fw_has_process_subst` honours single quotes on lines without double quotes, so `$'…'` can hide a real `<(`.
 
-**Goal:** broken mode is entered only when a framework hook file really does not parse.
+A clause the classifier misses is never judged, so a write runs without an active task.
+
+**Goal:** the classifier splits and scans quoted text the way bash does; when unsure, it gates.
 
 **Expected outcome:**
-- Broken mode requires both conditions:
-  1. the named file is under FRAMEWORK_ROOT's `agents/` or `lib/`, or the vendored `.agentic-framework/` of the project;
-  2. `bash -n` on it fails.
-- Anything else keeps the hook's own refusal.
-- The 2026-10-29 case (a real syntax error in `check-active-task.sh`) still opens the repair path.
+- All three cases above are gated.
+- `$'…'` and backslash-in-double-quote handling match bash in all three trackers.
+- Commands that were read-only stay read-only.
+- Swapped in by the safe-swap procedure, because `check-active-task.sh` sources this file.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `lib/hook-dispatch.sh` enters broken mode only when the file named in the stderr line resolves under FRAMEWORK_ROOT's agents/ or lib/ (or the project's .agentic-framework/agents|lib) and `bash -n` on it fails; otherwise the hook's own exit code stands
-- [x] Tests: a forged syntax-error line naming a file that parses, or a file outside the framework, does not open broken mode; a real syntax error in a framework hook file still does (t4908 suite passes)
-- [x] Swapped in by the safe-swap procedure; vendored copy synced; ring20-dashboard told (msg 9f4a4197; on v1.8.16-be.5)
+- [x] `_fw_chain_split` honours `$'…'` (backslash escapes, `\'` does not close) and backslash escapes inside `"…"`; the Python extractor honours `$'…'`; `_fw_has_process_subst` stops honouring single quotes on a line with `$'`
+- [x] Regression test: `cat $'a\'b' ; touch X`, `echo "a\"" ; touch X`, `echo $'\'' $(touch X)` and `cat $'\'' <(touch X)` are not read-only; read-only controls (`cat README.md`, `echo $'a\tb'`, `echo "a\"b"`, `git status 2>&1`) stay read-only; the existing safe-commands suites pass
+- [x] Swapped in by the safe-swap procedure (copy, `bash -n`, swap, smoke test, restore on failure); vendored copy synced; ring20-dashboard told (msgs 0f521641, 9f4a4197; on v1.8.16-be.5)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -283,20 +299,29 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
-timeout 600 bats tests/unit/t4928_broken_mode_structural.bats tests/unit/t4908_broken_hook_repair_path.bats > /tmp/.t4928.out 2>&1 && ! grep -q "^not ok" /tmp/.t4928.out
-test "$(grep -c '# skip' /tmp/.t4928.out)" -eq 0
-bash -n lib/hook-dispatch.sh
-bin/fw vendor self --check --task T-4928
+timeout 300 bats tests/unit/t4926_safe_commands_quote_parity.bats > /tmp/.t4926.out 2>&1 && ! grep -q "^not ok" /tmp/.t4926.out
+test "$(grep -c '# skip' /tmp/.t4926.out)" -eq 0
+bash -n agents/context/lib/safe-commands.sh
+bin/fw vendor self --check --task T-4926
 
 ## RCA
 
-**Symptom:** none in the field. A security review forwarded by ring20-dashboard (msg ddc0cd83, finding 3) flagged that broken-hook mode is chosen from stderr text. Reproduced here: a refusing gate that printed a forged `/x: line 3: syntax error` line had its refusal overturned for a Write to `/x`, both for a framework file that parses and for a file outside the framework. Tests 1 and 2 of t4928 fail on the old dispatcher.
+**Symptom:** a forwarded security review (ring20-dashboard, msg ddc0cd83) said the read-only classifier and bash could disagree about quoting. Probing the real classifier found six command lines that hide a write and were classified read-only. Four are this task's: `cat $'a\'b' ; touch X`, `echo "a\"" ; touch X`, `echo $'\'' $(touch X)` and `cat $'\'' <(touch X)`. The other two (`echo \\$'a\'b' …` and the `$((` case) went to T-4927. Bash runs every hidden part; this was confirmed with a harmless echo script.
 
-**Root cause:** T-4908 detected "the hook cannot run" by grepping the hook's stderr for bash's syntax-error message, and trusted the file named in it. Text a hook prints is not evidence that a file does not parse, and the named file was not checked to be a hook at all.
+**Root cause:** three hand-written quote trackers in `agents/context/lib/safe-commands.sh` each modelled bash quoting partially.
+- `_fw_chain_split` closed a quote at the next matching character. In `"…"` a backslash escapes `"`, and in `$'…'` a backslash escapes `'`, so the splitter closed the string early, reopened a quote at the real closing quote, and swallowed the next clause.
+- The Python substitution extractor had the `$'…'` flaw.
+- `_fw_has_process_subst` honoured single quotes that `$'…'` can fake.
 
-**Why structurally allowed:** T-4908 was built in a lockout (a real syntax error had refused every write) and tested only that real case. An adversarial line was not a fixture, so the gap was invisible.
+A clause the splitter swallows is never judged.
 
-**Prevention:** `_fw_hook_really_broken` accepts a syntax-error line only when its file resolves under FRAMEWORK_ROOT's agents/ or lib/ (or the project's `.agentic-framework/`) and `bash -n` really fails on it; otherwise the hook's own exit code stands. `tests/unit/t4928_broken_mode_structural.bats` pins both forgeries and the real case; the 9 T-4908 tests still pass.
+**Why structurally allowed:** the trackers were tested with ordinary quoting, never with escaped quotes or ANSI-C strings, the exact inputs where a hand-written tracker diverges from bash. Each was added for one bug (T-2879, T-4409, T-4511, T-4792), and none was tested against the others or against bash.
+
+**Prevention:**
+- The splitter and the extractor follow bash's rules: backslash escapes inside `"…"` and `$'…'`, and `$'` is recognised only after an unescaped `$`.
+- The process-substitution scan stops honouring single quotes on a line with `$'`, failing toward the gate.
+- `tests/unit/t4926_safe_commands_quote_parity.bats` fails on the old library and passes on the new; 57 existing classifier suites (760 tests) pass.
+- Remaining risk: these are still hand-written parsers. A real bash tokenizer would remove the class; consider it if a third differential appears.
 
 ## RCA
 
@@ -390,10 +415,23 @@ bin/fw vendor self --check --task T-4928
 
 ## Updates
 
-### 2026-10-31T14:08:15Z — task-created [task-create-agent]
+### 2026-10-31T14:08:14Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4928-hook-dispatch-enters-broken-hook-mode-on.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4926-security-safe-commands-misreads--ansi-c-.md
 - **Context:** Initial task creation
 
-### 2026-10-31T14:14:03Z — status-update [task-update-agent]
+### 2026-10-31T14:09:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-31T14:22:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-dc3c4304
+- **Timestamp:** 2026-10-31T14:22:16Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

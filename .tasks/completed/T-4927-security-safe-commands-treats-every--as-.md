@@ -1,15 +1,15 @@
 ---
-id: T-4926
-name: "SECURITY: safe-commands misreads $'...' (ANSI-C) quoting, so a write clause
-  after it is classified read-only"
+id: T-4927
+name: "SECURITY: safe-commands treats every $(( as arithmetic, hiding a command substitution
+  like $((cmd); x)"
 description: >
-  ring20-dashboard finding 1 (msg ddc0cd83), confirmed: is_bash_safe_command classifies
-  cat $'a\'b' ; touch X as SAFE; bash runs the touch.
+  ring20-dashboard finding 2 (msg ddc0cd83), confirmed: echo $((touch X); echo) classified
+  SAFE; bash runs it as a command substitution.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, security, safe-commands]
 components: []
 related_tasks: [T-4792]
@@ -40,9 +40,9 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "ddc0cd83"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-31T14:08:14Z
-last_update: '2026-10-31T14:15:19Z'
-date_finished:
+created: 2026-10-31T14:08:15Z
+last_update: 2026-10-31T14:23:04Z
+date_finished: 2026-10-31T14:23:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -54,7 +54,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-31T14:09:50Z'
+  - ts: '2026-10-31T14:15:14Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 3
@@ -78,42 +78,32 @@ cost_estimate_proposed:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=341,acs=5)
+      (workflow:build); effort=8 (lines=317,acs=5)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4926: SECURITY: safe-commands misreads $'...' (ANSI-C) quoting, so a write clause after it is classified read-only
+# T-4927: SECURITY: safe-commands treats every $(( as arithmetic, hiding a command substitution like $((cmd); x)
 
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** ring20-dashboard forwarded a security review of vendored framework code on be.3 (msg ddc0cd83, finding 1). It claimed the read-only classifier in `agents/context/lib/safe-commands.sh` and bash can disagree about where a quoted string ends. Probed 2026-10-31 against the real `is_bash_safe_command`, classifying only, nothing executed:
-- `cat $'a\'b' ; touch X` is classified read-only;
-- `echo "a\"" ; touch X` is classified read-only (found here while probing);
-- a harmless script confirmed that bash runs the hidden clause.
+**Background / trigger:** finding 2 of ring20-dashboard's forwarded security review (msg ddc0cd83). Probed 2026-10-31: `echo $((touch X); echo)` is classified read-only by `is_bash_safe_command`, and a harmless script confirmed that bash runs it as a command substitution.
 
-**Problem / hypothesis:** three quote trackers in the file do not follow bash's rules.
-- `_fw_chain_split` (the clause splitter) closes `'` and `"` on the next matching character. Inside `$'…'` a backslash escapes the next character, so `\'` does not close. Inside `"…"` a backslash escapes `"`.
-- The Python substitution extractor has the same `$'…'` flaw.
-- `_fw_has_process_subst` honours single quotes on lines without double quotes, so `$'…'` can hide a real `<(`.
+**Problem / hypothesis:** the Python substitution extractor in `agents/context/lib/safe-commands.sh` skips every `$((` as arithmetic. Bash treats `$((` as arithmetic only when the inner `(` closes immediately before the outer `)`, i.e. the text ends in `))`. Otherwise it is a command substitution whose first command is a subshell, and the extractor never reports it, so it is never judged.
 
-A clause the classifier misses is never judged, so a write runs without an active task.
-
-**Goal:** the classifier splits and scans quoted text the way bash does; when unsure, it gates.
+**Goal:** `$((` is arithmetic only when bash would read it that way; otherwise the substitution is extracted and judged.
 
 **Expected outcome:**
-- All three cases above are gated.
-- `$'…'` and backslash-in-double-quote handling match bash in all three trackers.
-- Commands that were read-only stay read-only.
-- Swapped in by the safe-swap procedure, because `check-active-task.sh` sources this file.
+- `echo $((touch X); echo)` is gated.
+- `echo $((1+2))` and `echo $(( $(cat f) + 1 ))` keep their current verdicts. The second already reaches the nested `$(…)`, which is judged.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `_fw_chain_split` honours `$'…'` (backslash escapes, `\'` does not close) and backslash escapes inside `"…"`; the Python extractor honours `$'…'`; `_fw_has_process_subst` stops honouring single quotes on a line with `$'`
-- [x] Regression test: `cat $'a\'b' ; touch X`, `echo "a\"" ; touch X`, `echo $'\'' $(touch X)` and `cat $'\'' <(touch X)` are not read-only; read-only controls (`cat README.md`, `echo $'a\tb'`, `echo "a\"b"`, `git status 2>&1`) stay read-only; the existing safe-commands suites pass
-- [x] Swapped in by the safe-swap procedure (copy, `bash -n`, swap, smoke test, restore on failure); vendored copy synced; ring20-dashboard told (msgs 0f521641, 9f4a4197; on v1.8.16-be.5)
+- [x] The extractor treats `$((` as arithmetic only when the paren opened at `$((`'s second `(` closes at the character before the outer `)`; otherwise it emits the text as a command substitution
+- [x] Regression test: `echo $((touch X); echo)` not read-only; `echo $((1+2))` read-only; `echo $(( $(touch X) ))` not read-only; existing safe-commands suites pass (57 files, 760 tests)
+- [x] Swapped in with T-4926's safe swap; vendored copy synced; ring20-dashboard told (msg 9f4a4197; on v1.8.16-be.5)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -299,29 +289,18 @@ A clause the classifier misses is never judged, so a write runs without an activ
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
-timeout 300 bats tests/unit/t4926_safe_commands_quote_parity.bats > /tmp/.t4926.out 2>&1 && ! grep -q "^not ok" /tmp/.t4926.out
-test "$(grep -c '# skip' /tmp/.t4926.out)" -eq 0
-bash -n agents/context/lib/safe-commands.sh
-bin/fw vendor self --check --task T-4926
+timeout 300 bats tests/unit/t4926_safe_commands_quote_parity.bats > /tmp/.t4927.out 2>&1 && ! grep -q "^not ok" /tmp/.t4927.out
+bin/fw vendor self --check --task T-4927
 
 ## RCA
 
-**Symptom:** a forwarded security review (ring20-dashboard, msg ddc0cd83) said the read-only classifier and bash could disagree about quoting. Probing the real classifier found six command lines that hide a write and were classified read-only. Four are this task's: `cat $'a\'b' ; touch X`, `echo "a\"" ; touch X`, `echo $'\'' $(touch X)` and `cat $'\'' <(touch X)`. The other two (`echo \\$'a\'b' …` and the `$((` case) went to T-4927. Bash runs every hidden part; this was confirmed with a harmless echo script.
+**Symptom:** `echo $((touch X); echo)` was classified read-only; bash runs it as a command substitution whose first command is a subshell (confirmed with a harmless echo script). Reported by ring20-dashboard's forwarded review (msg ddc0cd83, finding 2).
 
-**Root cause:** three hand-written quote trackers in `agents/context/lib/safe-commands.sh` each modelled bash quoting partially.
-- `_fw_chain_split` closed a quote at the next matching character. In `"…"` a backslash escapes `"`, and in `$'…'` a backslash escapes `'`, so the splitter closed the string early, reopened a quote at the real closing quote, and swallowed the next clause.
-- The Python substitution extractor had the `$'…'` flaw.
-- `_fw_has_process_subst` honoured single quotes that `$'…'` can fake.
+**Root cause:** the Python substitution extractor in `safe-commands.sh` skipped every `$((` as arithmetic. Bash decides by the closing: arithmetic only when the text ends `))`.
 
-A clause the splitter swallows is never judged.
+**Why structurally allowed:** T-4792 wrote the extractor to find substitutions inside arithmetic (which it does), and assumed `$((` always opens arithmetic. No test used the subshell-first form.
 
-**Why structurally allowed:** the trackers were tested with ordinary quoting, never with escaped quotes or ANSI-C strings, the exact inputs where a hand-written tracker diverges from bash. Each was added for one bug (T-2879, T-4409, T-4511, T-4792), and none was tested against the others or against bash.
-
-**Prevention:**
-- The splitter and the extractor follow bash's rules: backslash escapes inside `"…"` and `$'…'`, and `$'` is recognised only after an unescaped `$`.
-- The process-substitution scan stops honouring single quotes on a line with `$'`, failing toward the gate.
-- `tests/unit/t4926_safe_commands_quote_parity.bats` fails on the old library and passes on the new; 57 existing classifier suites (760 tests) pass.
-- Remaining risk: these are still hand-written parsers. A real bash tokenizer would remove the class; consider it if a third differential appears.
+**Prevention:** `$((` is arithmetic only when the inner paren closes right before the outer one (the same rule bash applies); otherwise the text is extracted and judged as a command substitution. Pinned by test 3 in `tests/unit/t4926_safe_commands_quote_parity.bats`, which fails on the old library. The change shipped in T-4926's commit and safe swap (same file).
 
 ## RCA
 
@@ -415,10 +394,23 @@ A clause the splitter swallows is never judged.
 
 ## Updates
 
-### 2026-10-31T14:08:14Z — task-created [task-create-agent]
+### 2026-10-31T14:08:15Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4926-security-safe-commands-misreads--ansi-c-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4927-security-safe-commands-treats-every--as-.md
 - **Context:** Initial task creation
 
-### 2026-10-31T14:09:49Z — status-update [task-update-agent]
+### 2026-10-31T14:23:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-31T14:23:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-902ee642
+- **Timestamp:** 2026-10-31T14:23:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

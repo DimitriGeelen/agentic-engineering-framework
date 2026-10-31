@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4926: SECURITY: safe-commands misreads $'...' (ANSI-C) quoting, so a write clause after it is classified read-only
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T14:22:29Z
+# ============================================================================
+
+task_id: T-4926
+task_name: "SECURITY: safe-commands misreads $'...' (ANSI-C) quoting, so a write clause after it is classified read-only"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-31T14:08:14Z
+completed: 2026-10-31T14:22:07Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-31T15:13:16+01:00
+last_commit: 2026-10-31T15:13:21+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  SECURITY — read-only classifier follows bash quoting ($'...' and backslash in "..."); T-4927: $(( is arithmetic only when it ends )) — six write-hiding lines were read-only. refresh vendored copies
+
+# Key outcomes
+outcomes:
+  - '`_fw_chain_split` honours `$''…''` (backslash escapes, `\''` does not close) and backslash escapes inside `"…"`; the Python extractor honours `$''…''`; `_fw_has_process_subst` stops honouring single quotes on a line with `$''`'
+  - 'Regression test: `cat $''a\''b'' ; touch X`, `echo "a\"" ; touch X`, `echo $''\'''' $(touch X)` and `cat $''\'''' <(touch X)` are not read-only; read-only controls (`cat README.md`, `echo $''a\tb''`, `echo "a\"b"`, `git status 2>&1`) stay read-only; the existing safe-commands suites pass'
+  - 'Swapped in by the safe-swap procedure (copy, `bash -n`, swap, smoke test, restore on failure); vendored copy synced; ring20-dashboard told (msgs 0f521641, 9f4a4197; on v1.8.16-be.5)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-4926-security-safe-commands-misreads--ansi-c-.md'
+  - '.tasks/active/T-4927-security-safe-commands-treats-every--as-.md'
+  - 'agents/context/lib/safe-commands.sh'
+  - 'tests/unit/t4926_safe_commands_quote_parity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-31T15:13:16'
+    action: 'T-4926: SECURITY — read-only classifier follows bash quoting ($''...'' and backslash in "..."); T-4927: $(( is arithmetic only when it ends )) — six write-hiding lines were read-only'
+  - time: '2026-10-31T15:13:21'
+    action: 'T-4926: refresh vendored copies'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 13 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, security, safe-commands]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 13
+  commits: 3
+  files_changed: 12
+  lines_added: 1273
+  lines_removed: 21
+  footprint_refreshed_at: '2026-10-31T14:23:36Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4926-security-safe-commands-misreads--ansi-c-.md
+generated_by: context-agent-hybrid

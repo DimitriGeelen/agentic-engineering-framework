@@ -1,0 +1,75 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4927: SECURITY: safe-commands treats every $(( as arithmetic, hiding a command substitution like $((cmd); x)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T14:23:22Z
+# ============================================================================
+
+task_id: T-4927
+task_name: "SECURITY: safe-commands treats every $(( as arithmetic, hiding a command substitution like $((cmd); x)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-31T14:08:15Z
+completed: 2026-10-31T14:23:04Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ring20-dashboard finding 2 (msg ddc0cd83), confirmed: echo $((touch X); echo) classified SAFE; bash runs it as a command substitution.
+
+# Key outcomes
+outcomes:
+  - 'The extractor treats `$((` as arithmetic only when the paren opened at `$((`''s second `(` closes at the character before the outer `)`; otherwise it emits the text as a command substitution'
+  - 'Regression test: `echo $((touch X); echo)` not read-only; `echo $((1+2))` read-only; `echo $(( $(touch X) ))` not read-only; existing safe-commands suites pass (57 files, 760 tests)'
+  - 'Swapped in with T-4926''s safe swap; vendored copy synced; ring20-dashboard told (msg 9f4a4197; on v1.8.16-be.5)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, security, safe-commands]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 14
+  commits: 3
+  files_changed: 11
+  lines_added: 1252
+  lines_removed: 21
+  footprint_refreshed_at: '2026-10-31T14:23:36Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4927-security-safe-commands-treats-every--as-.md
+generated_by: context-agent-hybrid

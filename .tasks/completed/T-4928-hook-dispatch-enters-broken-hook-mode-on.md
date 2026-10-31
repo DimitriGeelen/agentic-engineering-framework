@@ -1,18 +1,19 @@
 ---
-id: T-4927
-name: "SECURITY: safe-commands treats every $(( as arithmetic, hiding a command substitution
-  like $((cmd); x)"
+id: T-4928
+name: "Hook dispatch enters broken-hook mode on stderr text; decide structurally (bash
+  -n on the named framework hook file)"
 description: >
-  ring20-dashboard finding 2 (msg ddc0cd83), confirmed: echo $((touch X); echo) classified
-  SAFE; bash runs it as a command substitution.
+  ring20-dashboard finding 3 (msg ddc0cd83): broken mode is chosen by grepping stderr
+  for 'syntax error'. Low exploitability (only a repair of the named file is allowed),
+  but stderr text should not decide; require bash -n to fail on a file under FRAMEWORK_ROOT.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, security, safe-commands]
+horizon: null
+tags: [security, hook-dispatch]
 components: []
-related_tasks: [T-4792]
+related_tasks: [T-4908]
 origin: {kind: "peer", source: "ring20-dashboard", ref: "ddc0cd83"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +42,8 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "ddc0cd83"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-31T14:08:15Z
-last_update: '2026-10-31T14:15:19Z'
-date_finished:
+last_update: 2026-10-31T14:22:33Z
+date_finished: 2026-10-31T14:22:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -54,10 +55,10 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-31T14:15:14Z'
+  - ts: '2026-10-31T14:14:04Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
-      D1: 3
+      D1: 0
       D2: 0
       D3: 0
       D4: 0
@@ -66,44 +67,37 @@ bvp_scores_proposed:
       F3: 0
       F1: 0
       F2: 0
-    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
-      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
-      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-31T14:15:19Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=317,acs=5)
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4927: SECURITY: safe-commands treats every $(( as arithmetic, hiding a command substitution like $((cmd); x)
+# T-4928: Hook dispatch enters broken-hook mode on stderr text; decide structurally (bash -n on the named framework hook file)
 
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** finding 2 of ring20-dashboard's forwarded security review (msg ddc0cd83). Probed 2026-10-31: `echo $((touch X); echo)` is classified read-only by `is_bash_safe_command`, and a harmless script confirmed that bash runs it as a command substitution.
+**Background / trigger:** finding 3 of the security review ring20-dashboard forwarded (msg ddc0cd83). `lib/hook-dispatch.sh` (T-4908) enters broken-hook mode when a refusing hook's stderr contains a line matching `^/[^:]+: line N: syntax error`. The file named in that line becomes the one file broken mode lets the agent repair.
 
-**Problem / hypothesis:** the Python substitution extractor in `agents/context/lib/safe-commands.sh` skips every `$((` as arithmetic. Bash treats `$((` as arithmetic only when the inner `(` closes immediately before the outer `)`, i.e. the text ends in `))`. Otherwise it is a command substitution whose first command is a subshell, and the extractor never reports it, so it is never judged.
+**Problem / hypothesis:** confirmed by reading; exploitability is low. Broken mode only allows a Write/Edit of exactly the named file, or `git checkout`/`git restore` of it. No hook was found that echoes payload text at the start of a stderr line. The realistic worst case is discarding one named file's uncommitted edits. Still, free stderr text decides a gate's mode, and the named file is not checked to be a hook or library at all.
 
-**Goal:** `$((` is arithmetic only when bash would read it that way; otherwise the substitution is extracted and judged.
+**Goal:** broken mode is entered only when a framework hook file really does not parse.
 
 **Expected outcome:**
-- `echo $((touch X); echo)` is gated.
-- `echo $((1+2))` and `echo $(( $(cat f) + 1 ))` keep their current verdicts. The second already reaches the nested `$(…)`, which is judged.
+- Broken mode requires both conditions:
+  1. the named file is under FRAMEWORK_ROOT's `agents/` or `lib/`, or the vendored `.agentic-framework/` of the project;
+  2. `bash -n` on it fails.
+- Anything else keeps the hook's own refusal.
+- The 2026-10-29 case (a real syntax error in `check-active-task.sh`) still opens the repair path.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] The extractor treats `$((` as arithmetic only when the paren opened at `$((`'s second `(` closes at the character before the outer `)`; otherwise it emits the text as a command substitution
-- [x] Regression test: `echo $((touch X); echo)` not read-only; `echo $((1+2))` read-only; `echo $(( $(touch X) ))` not read-only; existing safe-commands suites pass (57 files, 760 tests)
-- [x] Swapped in with T-4926's safe swap; vendored copy synced; ring20-dashboard told (msg 9f4a4197; on v1.8.16-be.5)
+- [x] `lib/hook-dispatch.sh` enters broken mode only when the file named in the stderr line resolves under FRAMEWORK_ROOT's agents/ or lib/ (or the project's .agentic-framework/agents|lib) and `bash -n` on it fails; otherwise the hook's own exit code stands
+- [x] Tests: a forged syntax-error line naming a file that parses, or a file outside the framework, does not open broken mode; a real syntax error in a framework hook file still does (t4908 suite passes)
+- [x] Swapped in by the safe-swap procedure; vendored copy synced; ring20-dashboard told (msg 9f4a4197; on v1.8.16-be.5)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,18 +283,20 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
-timeout 300 bats tests/unit/t4926_safe_commands_quote_parity.bats > /tmp/.t4927.out 2>&1 && ! grep -q "^not ok" /tmp/.t4927.out
-bin/fw vendor self --check --task T-4927
+timeout 600 bats tests/unit/t4928_broken_mode_structural.bats tests/unit/t4908_broken_hook_repair_path.bats > /tmp/.t4928.out 2>&1 && ! grep -q "^not ok" /tmp/.t4928.out
+test "$(grep -c '# skip' /tmp/.t4928.out)" -eq 0
+bash -n lib/hook-dispatch.sh
+bin/fw vendor self --check --task T-4928
 
 ## RCA
 
-**Symptom:** `echo $((touch X); echo)` was classified read-only; bash runs it as a command substitution whose first command is a subshell (confirmed with a harmless echo script). Reported by ring20-dashboard's forwarded review (msg ddc0cd83, finding 2).
+**Symptom:** none in the field. A security review forwarded by ring20-dashboard (msg ddc0cd83, finding 3) flagged that broken-hook mode is chosen from stderr text. Reproduced here: a refusing gate that printed a forged `/x: line 3: syntax error` line had its refusal overturned for a Write to `/x`, both for a framework file that parses and for a file outside the framework. Tests 1 and 2 of t4928 fail on the old dispatcher.
 
-**Root cause:** the Python substitution extractor in `safe-commands.sh` skipped every `$((` as arithmetic. Bash decides by the closing: arithmetic only when the text ends `))`.
+**Root cause:** T-4908 detected "the hook cannot run" by grepping the hook's stderr for bash's syntax-error message, and trusted the file named in it. Text a hook prints is not evidence that a file does not parse, and the named file was not checked to be a hook at all.
 
-**Why structurally allowed:** T-4792 wrote the extractor to find substitutions inside arithmetic (which it does), and assumed `$((` always opens arithmetic. No test used the subshell-first form.
+**Why structurally allowed:** T-4908 was built in a lockout (a real syntax error had refused every write) and tested only that real case. An adversarial line was not a fixture, so the gap was invisible.
 
-**Prevention:** `$((` is arithmetic only when the inner paren closes right before the outer one (the same rule bash applies); otherwise the text is extracted and judged as a command substitution. Pinned by test 3 in `tests/unit/t4926_safe_commands_quote_parity.bats`, which fails on the old library. The change shipped in T-4926's commit and safe swap (same file).
+**Prevention:** `_fw_hook_really_broken` accepts a syntax-error line only when its file resolves under FRAMEWORK_ROOT's agents/ or lib/ (or the project's `.agentic-framework/`) and `bash -n` really fails on it; otherwise the hook's own exit code stands. `tests/unit/t4928_broken_mode_structural.bats` pins both forgeries and the real case; the 9 T-4908 tests still pass.
 
 ## RCA
 
@@ -396,5 +392,21 @@ bin/fw vendor self --check --task T-4927
 
 ### 2026-10-31T14:08:15Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4927-security-safe-commands-treats-every--as-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4928-hook-dispatch-enters-broken-hook-mode-on.md
 - **Context:** Initial task creation
+
+### 2026-10-31T14:14:03Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-31T14:22:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-62fb3b11
+- **Timestamp:** 2026-10-31T14:22:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

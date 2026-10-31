@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4928: Hook dispatch enters broken-hook mode on stderr text; decide structurally (bash -n on the named framework hook file)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T14:22:55Z
+# ============================================================================
+
+task_id: T-4928
+task_name: "Hook dispatch enters broken-hook mode on stderr text; decide structurally (bash -n on the named framework hook file)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-31T14:08:15Z
+completed: 2026-10-31T14:22:33Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-31T15:16:26+01:00
+last_commit: 2026-10-31T15:16:55+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  broken-hook mode only when a framework hook/library really fails bash -n (stderr text alone no longer decides). refresh vendored copies. verification, RCA
+
+# Key outcomes
+outcomes:
+  - '`lib/hook-dispatch.sh` enters broken mode only when the file named in the stderr line resolves under FRAMEWORK_ROOT''s agents/ or lib/ (or the project''s .agentic-framework/agents|lib) and `bash -n` on it fails; otherwise the hook''s own exit code stands'
+  - 'Tests: a forged syntax-error line naming a file that parses, or a file outside the framework, does not open broken mode; a real syntax error in a framework hook file still does (t4908 suite passes)'
+  - 'Swapped in by the safe-swap procedure; vendored copy synced; ring20-dashboard told (msg 9f4a4197; on v1.8.16-be.5)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/hook-dispatch.sh'
+  - '.tasks/active/T-4928-hook-dispatch-enters-broken-hook-mode-on.md'
+  - 'lib/hook-dispatch.sh'
+  - 'tests/unit/t4928_broken_mode_structural.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-31T15:16:26'
+    action: 'T-4928: broken-hook mode only when a framework hook/library really fails bash -n (stderr text alone no longer decides)'
+  - time: '2026-10-31T15:16:31'
+    action: 'T-4928: refresh vendored copies'
+  - time: '2026-10-31T15:16:55'
+    action: 'T-4928: verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [security, hook-dispatch]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 14
+  commits: 5
+  files_changed: 15
+  lines_added: 1578
+  lines_removed: 20
+  footprint_refreshed_at: '2026-10-31T14:23:37Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4928-hook-dispatch-enters-broken-hook-mode-on.md
+generated_by: context-agent-hybrid
