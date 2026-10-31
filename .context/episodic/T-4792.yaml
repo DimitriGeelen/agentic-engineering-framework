@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4792: Bash task gate judges a command substitution by its outer command only (open leg of T-2834)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T15:15:23Z
+# ============================================================================
+
+task_id: T-4792
+task_name: "Bash task gate judges a command substitution by its outer command only (open leg of T-2834)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-26T23:04:32Z
+completed: 2026-10-31T15:14:54Z
+duration_days: 5
+updates_count: 5
+first_commit: 2026-10-28T16:18:41+01:00
+last_commit: 2026-10-31T16:14:22+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  post-freeze backlog, first after the release (operator decision-walk 2b, answer b). four-part context and real ACs. command substitutions are judged as commands — echo $(bash x) no longer passes as read-only (OBS-185); idioms like curl -sf "$(bin/fw watchtower url)/page" stay allowed. vendor self — safe-commands.sh. agent ACs done (owner human: operator closes). delegate ready-to-close (D-626) — one reviewer-judged close-readiness criterion; T-4931 filed (AEF identity, operator yes). reviewer verdict
+
+# Key outcomes
+outcomes:
+  - 'Measured first: how the classifier judges the inner read-only commands on their own (`bin/fw watchtower url`, `git rev-parse --show-toplevel`, `date`, `pwd`, `basename`) and the four OBS-185 shapes — all inner commands already safe except `pwd`; all OBS-185 shapes (plus a nested one) passed as safe'
+  - 'Any inner read-only command the everyday idioms need is admitted on its own BEFORE substitution-aware judging lands (OBS-185''s order) — `pwd` added; the T-3096 fw read-only surface already covered `fw watchtower url`'
+  - '`is_bash_safe_command` extracts every `$(…)` and backtick substitution outside single quotes (arithmetic `$((…))` excluded, nesting handled) and requires each inner command to be safe; extraction failure fails closed'
+  - 'Tests: the four OBS-185 shapes gated; `curl -sf "$(bin/fw watchtower url)/page"`, `cd $(git rev-parse --show-toplevel)`, `echo "built $(date -u +%F)"`, `echo $((1+2))` and single-quoted `$(…)` text stay safe; existing safe-commands and hook tests pass — t4792_command_substitution.bats 16/16; 98 existing files, 1097/1097'
+  - 'Changed with the safe-swap procedure; vendored copy synced (owner stays human: the operator closes it)'
+  - '[REVIEW] Close-readiness: the work meets its Agent criteria and the Verification section passes (T-4792, reviewer-judged, T-4156)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.context/reviews/evidence/T-4792/AC1-judge-t-4792-r3-eabb082eb8db.md'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-4792---text-t-2834-leaves-one-leg-of-the-same.md'
+  - '.tasks/active/T-4931-give-aef-its-own-termlink-identity-for-s.md'
+  - 'agents/context/lib/safe-commands.sh'
+  - 'tests/unit/t4792_command_substitution.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-28T16:18:41'
+    action: 'T-4792: post-freeze backlog, first after the release (operator decision-walk 2b, answer b)'
+  - time: '2026-10-29T21:10:49'
+    action: 'T-4792: four-part context and real ACs'
+  - time: '2026-10-29T21:17:56'
+    action: 'T-4792: command substitutions are judged as commands — echo $(bash x) no longer passes as read-only (OBS-185); idioms like curl -sf "$(bin/fw watchtower url)/page" stay allowed'
+  - time: '2026-10-29T21:18:03'
+    action: 'T-4792: vendor self — safe-commands.sh'
+  - time: '2026-10-29T21:18:12'
+    action: 'T-4792: agent ACs done (owner human: operator closes)'
+  - time: '2026-10-31T16:07:57'
+    action: 'T-4792: delegate ready-to-close (D-626) — one reviewer-judged close-readiness criterion; T-4931 filed (AEF identity, operator yes)'
+  - time: '2026-10-31T16:14:22'
+    action: 'T-4792: reviewer verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 6730 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [post-freeze]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6730
+  commits: 8
+  files_changed: 11
+  lines_added: 786
+  lines_removed: 23
+  footprint_refreshed_at: '2026-10-31T15:15:36Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4792---text-t-2834-leaves-one-leg-of-the-same.md
+generated_by: context-agent-hybrid
