@@ -98,9 +98,9 @@ _fw_chain_split() {
         # literal $ then a plain '…', and `\\$'x'` is a backslash then $'…'.
         _pd=$_fw_pd; _fw_pd=0
         case "$ch" in
-            "'") if [ "$_pd" = 1 ]; then q=A; else q="'"; fi; seg+="$ch" ;;
+            "'") if [ $(( _pd % 2 )) -eq 1 ]; then q=A; else q="'"; fi; seg+="$ch" ;;   # T-4934: $$' is PID + plain quote
             '"') q="$ch"; seg+="$ch" ;;
-            '$') seg+="$ch"; _fw_pd=1 ;;
+            '$') seg+="$ch"; _fw_pd=$(( _pd + 1 )) ;;   # T-4934: length of the run of unescaped $
             '\')     seg+="$ch"; i=$((i+1)); [ "$i" -lt "$n" ] && seg+="${cmd:i:1}" ;;
             '&'|'|')
                 # T-2879: an `&` that is part of a file-descriptor duplication is NOT a
@@ -311,6 +311,15 @@ def escaped(k):
     while k - 1 - n >= 0 and s[k - 1 - n] == "\\":
         n += 1
     return n % 2 == 1
+def ansi_open(i):
+    # T-4934: the quote at i opens an ANSI-C string only when the run of unescaped
+    # dollars right before it is odd: two dollars are the PID, then a plain quote.
+    n, k = 0, i - 1
+    while k >= 0 and s[k] == "$":
+        n += 1; k -= 1
+    if n and escaped(k + 1):
+        n -= 1
+    return n % 2 == 1
 def ansi_end(i):
     # T-4926: i is just past the opening quote of an ANSI-C string (dollar, quote).
     # A backslash escapes the next character, so an escaped quote does not close it.
@@ -332,7 +341,7 @@ def close_paren(i):
             i += 1
         elif c == "\x22":
             dq = not dq
-        elif c == "\x27" and not dq and i > 0 and s[i - 1] == "$" and not escaped(i - 1):
+        elif c == "\x27" and not dq and i > 0 and ansi_open(i):
             j = ansi_end(i + 1)
             if j < 0:
                 return -1
@@ -362,7 +371,7 @@ while i < len(s):
         i += 2; continue
     if c == "\x22":
         dq = not dq; i += 1; continue
-    if c == "\x27" and not dq and i > 0 and s[i - 1] == "$" and not escaped(i - 1):
+    if c == "\x27" and not dq and i > 0 and ansi_open(i):
         j = ansi_end(i + 1)          # T-4926: ANSI-C string, backslash escapes inside
         if j < 0:
             sys.exit(0)
