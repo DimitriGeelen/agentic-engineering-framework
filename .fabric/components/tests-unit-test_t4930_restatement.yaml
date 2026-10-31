@@ -1,0 +1,21 @@
+id: tests/unit/test_t4930_restatement.py
+name: test_t4930_restatement
+type: script
+subsystem: tests
+location: tests/unit/test_t4930_restatement.py
+tags: []
+
+purpose: "T-4930: `fw reviewer restatement` — the operator accepts or rejects a PROPOSED RESTATEMENT."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-31
+created_by: unknown

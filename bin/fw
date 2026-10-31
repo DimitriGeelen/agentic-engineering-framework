@@ -6895,6 +6895,13 @@ case "$cmd" in
                 PYTHONPATH="$FRAMEWORK_ROOT" \
                 python3 -m lib.reviewer.judge_cli "$@"
         fi
+        # T-4930: the operator accepts or rejects a reviewer's PROPOSED RESTATEMENT.
+        if [ "${1:-}" = "restatement" ]; then
+            shift
+            exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                PYTHONPATH="$FRAMEWORK_ROOT" \
+                python3 -m lib.reviewer.restatement_cli "$@"
+        fi
         # T-3579 (T-3557 slice 2): an independent reviewer's recorded verdict — the
         # writer slice 3 (`fw reviewer judge`) calls. record | apply | check-render | list.
         if [ "${1:-}" = "verdict" ]; then

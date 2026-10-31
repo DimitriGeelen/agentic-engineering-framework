@@ -9,10 +9,10 @@ description: >
   edits the criterion text; the changed digest makes the old amber row stale and the
   next judge run evaluates the new text.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [reviewer, delegation]
 components: []
 related_tasks: [T-4916]
@@ -44,7 +44,7 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "5dad0709"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-31T14:26:15Z
-last_update: '2026-10-31T14:30:20Z'
+last_update: 2026-10-31T16:05:21Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,18 +92,24 @@ cost_estimate_proposed:
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
 **Background / trigger:** ring20-dashboard's first real `fw reviewer judge` runs on be.3 (msgs 5dad0709, 4674c02d, their T-645). The reviewer returned amber with a clean `PROPOSED RESTATEMENT:`, which T-4916 decision (i) asks the operator to accept or reject once. Nothing implements accepting it. Demand is high: of their first 8 judged criteria, 7 were amber with a restatement and 1 was red (a real DNS fault, routed to its owner). The reviewer also corrected one wrong statement in their evidence. Interim path agreed: their operator edits the criterion text and commits it, naming the amber row it accepts (task, AC, dispatch id), then they re-run judge; the agent edits no criterion text.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** the restatement exists only as free text inside the amber row's `guidance`. To act on it the operator must find the row, copy the line, hand-edit the right criterion in the task file without disturbing its checkbox or prefix, and remember which verdict it answered. Nothing lists which restatements are waiting, nothing records the decision, and a reject leaves no trace, so the same amber keeps coming back.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** one operator command per decision: see what is waiting, accept (the criterion is restated and the decision recorded) or reject (recorded, with a reason). The agent never edits criterion text.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `fw reviewer restatement list` shows every pending restatement; `accept <verdict-id>` rewrites that criterion's title and records the decision in `.context/reviews/restatements.jsonl`; `reject <verdict-id> --reason …` records only. Both refuse an agent (`CLAUDECODE=1`) unless `--i-am-human`. The operator then commits and re-runs `fw reviewer judge`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw reviewer restatement list [--task T-XXX] [--json]` lists amber rows in the verdict ledger (interim refusals carry no digest, so they cannot be checked against the criterion and are not read) whose guidance has a `PROPOSED RESTATEMENT:` line, latest per criterion, only while the row's digest still matches the criterion and no decision is recorded
+- [x] `accept <verdict-id>` replaces the criterion's title (checkbox, tick state and leading `[PREFIX]` kept), adds a `**Restated:**` line naming the verdict and the old title, writes the file atomically, and appends `{verdict_id, task, ac, decision: accepted, old_digest, new_title, by, ts}` to `.context/reviews/restatements.jsonl`
+- [x] `reject <verdict-id> --reason "…"` appends a rejected row and changes no task file; a decided restatement no longer lists
+- [x] accept and reject refuse under `CLAUDECODE=1` without `--i-am-human` (recorded `by: agent-override` when given); `--dry-run` shows the before/after and writes nothing, for anyone
+- [x] Refusals: unknown verdict id, a non-amber row, a row without a restatement, a criterion edited since the verdict (digest moved), an already-decided verdict, and a restatement that is empty, over 400 characters or contains a checkbox (only the marker's own line is ever taken, so a multi-line restatement cannot reach the file)
+- [x] The judge brief tells the reviewer that a criterion carrying `**Restated:**` is judged by its restated title, which supersedes an older literal in its Expected clause
+- [ ] bats/pytest tests cover list, accept, reject, the agent refusal and every refusal above; `bin/fw vendor self --check --task T-4930` clean
+- [ ] ring20-dashboard told the verb exists and which be-tag carries it
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,6 +295,11 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_t4930_restatement.py > /tmp/.t4930 2>&1 && grep -q " passed" /tmp/.t4930 && ! grep -qE "failed|error" /tmp/.t4930
+out=$(bin/fw reviewer restatement list --json 2>&1); python3 -c 'import json,sys; json.loads(sys.argv[1])' "$out"
+out=$(CLAUDECODE=1 bin/fw reviewer restatement accept V-does-not-exist 2>&1); grep -q "REFUSED" <<<"$out"
+grep -q "Restated:" lib/reviewer/judge_cli.py
+bin/fw vendor self --check --task T-4930
 
 ## RCA
 
@@ -386,3 +397,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4930-no-verb-or-watchtower-control-for-the-op.md
 - **Context:** Initial task creation
+
+### 2026-10-31T16:05:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

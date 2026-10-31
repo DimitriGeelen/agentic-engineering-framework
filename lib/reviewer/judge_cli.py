@@ -593,7 +593,10 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
         "Return **amber**, say which part is out of date, and give a proposed restatement as "
         "a line `PROPOSED RESTATEMENT: <the criterion as it should read now>` together with "
         "whether the evidence meets that restatement. The operator accepts or rejects the "
-        "restatement once (operator ruling 2026-10-30, T-4916, decision i). Evidence blocks "
+        "restatement once (operator ruling 2026-10-30, T-4916, decision i). A criterion with a "
+        "`**Restated:**` line is one the operator already restated (`fw reviewer restatement "
+        "accept`, T-4930): judge it by its title, which supersedes an older literal left in its "
+        "Expected clause. Evidence blocks "
         "already written under a criterion are input: check them, do not take them on trust.",
         "",
         f"## Independence: {_rung_label(rung, seat)}",
