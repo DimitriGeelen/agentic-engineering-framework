@@ -78,10 +78,10 @@ It keeps a third-party file's subprocess structure on save. 832 states that desi
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `policy/designer-pin.yaml` pins 0.33.0: version, sha256 `6d1c6a3c13478bd13d185747b6738a9b748da3cb5483151d21d0f5d4ebf7e5f5` and bytes 1306427 as 832 announced, source_tag `designer-v0.33.0`, artifact/vendored paths, and the validator_* keys for `dist/aef-authoring-kit-0.33.0` read from the tag; notes line extended with 0.33.0
-- [ ] `fw designer sync --from-tag designer-v0.33.0` verifies the build (pin, MANIFEST at the tag, independent sha256) and the validator's three anchors, then vendors both read-only
-- [ ] The importer question (nested flow nodes inside subProcess/transaction/adHocSubProcess) answered from our code, or filed as its own task
-- [ ] Vendored copy synced; 832 told the task id and the result
+- [x] `policy/designer-pin.yaml` pins 0.33.0: version, sha256 `6d1c6a3c13478bd13d185747b6738a9b748da3cb5483151d21d0f5d4ebf7e5f5` and bytes 1306427 as 832 announced, source_tag `designer-v0.33.0`, artifact/vendored paths, and the validator_* keys for `dist/aef-authoring-kit-0.33.0` read from the tag; notes line extended with 0.33.0
+- [x] `fw designer sync --from-tag designer-v0.33.0` verifies the build (pin, MANIFEST at the tag, independent sha256) and the validator's three anchors, then vendors both read-only. Watchtower /designer/app serves the exact bytes (sha256 6d1c6a3c…, 1306427 B).
+- [x] The importer question (nested flow nodes inside subProcess/transaction/adHocSubProcess) answered from our code, or filed as its own task. Answered: `tools/corpus_spec.py` parse_map reads only direct children; filed as T-4925.
+- [x] Vendored copy synced; 832 told the task id and the result (msgs 63f1bec2, 17b6b6bb)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -267,6 +267,9 @@ It keeps a third-party file's subprocess structure on save. 832 states that desi
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -c "import yaml,sys; d=yaml.safe_load(open('policy/designer-pin.yaml')); sys.exit(0 if d['version']=='0.33.0' and d['bytes']==1306427 else 1)"
+bin/fw designer status > /tmp/.t4924.out 2>&1 && grep -q "PRESENT" /tmp/.t4924.out
+bin/fw vendor self --check --task T-4924
 
 ## RCA
 
