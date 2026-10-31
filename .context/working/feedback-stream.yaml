@@ -51961,3 +51961,21 @@ scan_id: R-5890d1b4
 task_id: T-4912
 payload:
   task_file: .tasks/active/T-4912-claude-fw-after-a-fresh-budget-restart-p.md
+---
+kind: scan_emitted
+timestamp: '2026-10-31T20:22:09Z'
+scan_id: R-eac245bc
+task_id: T-4939
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-10-31T20:22:09Z'
+scan_id: R-eac245bc
+task_id: T-4939
+payload:
+  task_file: .tasks/active/T-4939-fw-reviewer-restatement-accept-copies-re.md

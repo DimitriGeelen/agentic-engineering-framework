@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4939: fw reviewer restatement accept copies reviewer commentary that follows the restatement on the same line into the criterion title
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-31T20:22:21Z
+# ============================================================================
+
+task_id: T-4939
+task_name: "fw reviewer restatement accept copies reviewer commentary that follows the restatement on the same line into the criterion title"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-31T20:09:12Z
+completed: 2026-10-31T20:22:00Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-31T21:17:04+01:00
+last_commit: 2026-10-31T21:21:49+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  restatement accept --text sets the operator's exact wording (record keeps the reviewer's proposal); brief asks for the restatement alone on its line. CLAUDE.md names accept --text. criteria, RCA, verification. ring20-dashboard be.8 result in the v1.8.16 field report
+
+# Key outcomes
+outcomes:
+  - 'The judge brief asks for `PROPOSED RESTATEMENT:` alone on its line, the criterion text only, and the evidence judgement on the next line'
+  - '`accept --text "…"` writes that text (same checks: not empty, ≤400 characters, no checkbox), records `proposed` (the reviewer''s) and `new_title` (written) and `edited: true`; without `--text` behaviour is unchanged'
+  - '`--dry-run` with `--text` shows the edited before/after; the agent refusal still applies to a real write with `--text`'
+  - 'Tests cover `--text`, the record fields, and the brief wording (4 new, 19 total; 670 judge/restatement tests pass); existing T-4930 tests stay green; `bin/fw vendor self --check --task T-4939` clean'
+  - 'ring20-dashboard told the be-tag and how to use `--text` (v1.8.16-be.9, msg 4633758c); their be.8 result recorded in docs/reports/field-test-v1.8.16-results.md'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/reviewer/restatement_cli.py'
+  - '.tasks/active/T-4939-fw-reviewer-restatement-accept-copies-re.md'
+  - 'CLAUDE.md'
+  - 'docs/reports/field-test-v1.8.16-results.md'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/reviewer/restatement_cli.py'
+  - 'tests/unit/test_t4930_restatement.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-31T21:17:04'
+    action: 'T-4939: restatement accept --text sets the operator''s exact wording (record keeps the reviewer''s proposal); brief asks for the restatement alone on its line'
+  - time: '2026-10-31T21:17:18'
+    action: 'T-4939: CLAUDE.md names accept --text'
+  - time: '2026-10-31T21:17:46'
+    action: 'T-4939: criteria, RCA, verification'
+  - time: '2026-10-31T21:21:49'
+    action: 'T-4939: ring20-dashboard be.8 result in the v1.8.16 field report'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12
+  commits: 5
+  files_changed: 11
+  lines_added: 635
+  lines_removed: 29
+  footprint_refreshed_at: '2026-10-31T20:22:30Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4939-fw-reviewer-restatement-accept-copies-re.md
+generated_by: context-agent-hybrid
