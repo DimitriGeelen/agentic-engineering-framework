@@ -103,9 +103,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `Criterion.producer_text` excludes Evidence blocks (a line starting `**Evidence`, through to the next criterion field or the end), as it already excludes reviewer annotations
-- [ ] Tests: a deterministic criterion with an Evidence block saying "POSTs to … approve" stays deterministic/reviewer-judged; the same words in the criterion's own Expected still classify act-in-the-world; existing delegation classifier tests pass
-- [ ] Vendored copy synced; ring20-dashboard told
+- [x] `Criterion.producer_text` excludes Evidence blocks (a line starting `**Evidence`, through to the next criterion field or the end), as it already excludes reviewer annotations
+- [x] Tests: a deterministic criterion with an Evidence block saying "POSTs to … approve" stays deterministic/reviewer-judged; the same words in the criterion's own Steps still classify act-in-the-world; existing delegation classifier tests pass (47 classifier, 102 ledger/judge, 19 delegation bats)
+- [x] Vendored copy synced; ring20-dashboard told (msg de701c4a)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,6 +291,18 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 python3 -m pytest -q -p no:cacheprovider tests/unit/test_delegation_classifier.py > /tmp/.t4929.out 2>&1 && grep -q passed /tmp/.t4929.out
+bin/fw vendor self --check --task T-4929
+
+## RCA
+
+**Symptom:** ring20-dashboard's criterion T-372, a browser check, classified act-in-the-world. The phrase that triggered it, "POSTs to", was in their own Evidence block under the criterion.
+
+**Root cause:** `Criterion.producer_text` (T-3853) removed only the reviewer's verdict and escalation lines. Evidence written under a criterion by an agent was read as the author's criterion text.
+
+**Why structurally allowed:** T-3853 fixed the one annotation kind seen then (the reviewer's). Agent-written Evidence blocks became common later, with the T-4916 workflow (consumers asked to gather evidence per criterion), and no test had one.
+
+**Prevention:** `producer_text` skips `**Evidence…**` blocks up to the criterion's next own field. Tests pin that evidence text cannot change a class, while the same words in the criterion's own Steps still do.
 
 ## RCA
 
