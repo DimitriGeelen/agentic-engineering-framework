@@ -13,10 +13,10 @@ description: >
   there; possible direction only: refuse inject and log INJECT_BLOCKED reason=no-prompt-hook,
   or fall back to injecting the body. Filed during the release freeze (T-4869): backlog.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [post-freeze, sidecar, bug]
 components: []
 related_tasks: []
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-28T23:37:54Z
-last_update: '2026-10-31T13:15:37Z'
+last_update: 2026-10-31T13:46:28Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -112,12 +112,24 @@ bvp_scores_proposed:
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+**Background / trigger:** found in T-4884 (0506, msg 43828cf0). 0506 had `inject: true`, but its `.claude/settings.json` had no sidecar UserPromptSubmit/Stop hooks. The receiver kept typing "[sidecar] N peer messages waiting … the prompt hook shows it above" into the session. No hook printed the bodies, `finalize()` never ran and no HANDED_OVER was written, so the same messages were re-injected every ~2 minutes, across sessions and reboots. Upgrading restored the hooks (T-4884), but the receiver never checked.
+
+**Problem / hypothesis:** confirmed by reading `lib/sidecar/inject.py`. `_deliver_locked` checks that injection is enabled and that a target session exists, but never checks that the project registers the hook the typed line depends on (`sidecar-receiver-adapter` under UserPromptSubmit, `lib/sidecar/hooks.py`). Without that hook the line is a promise nothing keeps, and because no hand-over is ever recorded, the retry rule (REINJECT_AFTER_S) repeats it forever.
+
+**Goal:** the receiver never announces mail that nothing will show, and says why instead.
+
+**Expected outcome:**
+- With no UserPromptSubmit `sidecar-receiver-adapter` hook in `.claude/settings.json` or `settings.local.json`, nothing is typed. Each waiting message gets one `INJECT_BLOCKED` with reason `no prompt hook`, naming the fix (`fw upgrade`, or re-add the hook).
+- `fw sidecar alerts` still lists the mail, so it is not lost.
+- With the hook present, behaviour is unchanged.
+
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `lib/sidecar/inject.py` checks the project's `.claude/settings.json` and `settings.local.json` for a UserPromptSubmit hook running `sidecar-receiver-adapter` before typing; without one it types nothing and records `INJECT_BLOCKED` (once per message and reason) with a reason naming the fix
+- [ ] Tests: hook absent → nothing typed, blocked with the reason, mail still awaiting hand-over; hook in settings.json or settings.local.json → injection as before; unreadable settings → treated as absent; existing inject tests pass
+- [ ] Vendored copy synced; 0506 told
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -399,3 +411,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4890-sidecar-receiver-injects-a-banner-that-p.md
 - **Context:** Initial task creation
+
+### 2026-10-31T13:46:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
