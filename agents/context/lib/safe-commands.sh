@@ -74,16 +74,33 @@
 # (a newline reads as `;`), or empty after the last segment. Callers that only
 # want segments call it with one argument and get the unchanged stream.
 _fw_chain_split() {
-    local cmd="$1" seg="" q="" ch nxt i n=${#1} _ops="${2:-}" _op
+    local cmd="$1" seg="" q="" ch nxt i n=${#1} _ops="${2:-}" _op _pd _fw_pd=0
     for (( i=0; i<n; i++ )); do
         ch="${cmd:i:1}"
         if [ -n "$q" ]; then
             seg+="$ch"
-            [ "$ch" = "$q" ] && q=""
+            # T-4926 (ring20-dashboard security review): bash's quote rules, or a
+            # clause after the string is swallowed and never judged. Inside "…" and
+            # $'…' (q=A) a backslash escapes the next character, so \" and \' do not
+            # close; only plain '…' takes every character literally.
+            if [ "$ch" = '\' ] && [ "$q" != "'" ]; then
+                i=$((i+1)); [ "$i" -lt "$n" ] && seg+="${cmd:i:1}"
+                continue
+            fi
+            if [ "$q" = A ]; then
+                [ "$ch" = "'" ] && q=""
+            else
+                [ "$ch" = "$q" ] && q=""
+            fi
             continue
         fi
+        # T-4926: $'…' only when the `$` itself was unescaped (pd=1); `\$'x'` is a
+        # literal $ then a plain '…', and `\\$'x'` is a backslash then $'…'.
+        _pd=$_fw_pd; _fw_pd=0
         case "$ch" in
-            "'"|'"') q="$ch"; seg+="$ch" ;;
+            "'") if [ "$_pd" = 1 ]; then q=A; else q="'"; fi; seg+="$ch" ;;
+            '"') q="$ch"; seg+="$ch" ;;
+            '$') seg+="$ch"; _fw_pd=1 ;;
             '\')     seg+="$ch"; i=$((i+1)); [ "$i" -lt "$n" ] && seg+="${cmd:i:1}" ;;
             '&'|'|')
                 # T-2879: an `&` that is part of a file-descriptor duplication is NOT a
@@ -258,6 +275,9 @@ _fw_project_from_cwd() {
 _fw_has_process_subst() {
     local s="$1" i n=${#1} ch sq=0 honour_sq=1
     [[ "$s" == *'"'* ]] && honour_sq=0
+    # T-4926: in $'…' a backslash-escaped quote does not close the string, so this
+    # flat scan could end the quote early and miss a real `<(`. Same remedy as for "…".
+    [[ "$s" == *"\$'"* ]] && honour_sq=0
     for (( i=0; i<n; i++ )); do
         ch="${s:i:1}"
         if [ "$sq" -eq 1 ]; then
@@ -285,6 +305,23 @@ _fw_command_substitutions() {
 import sys
 s = sys.argv[1]
 out = []
+def escaped(k):
+    # True when s[k] is preceded by an odd run of backslashes.
+    n = 0
+    while k - 1 - n >= 0 and s[k - 1 - n] == "\\":
+        n += 1
+    return n % 2 == 1
+def ansi_end(i):
+    # T-4926: i is just past the opening quote of an ANSI-C string (dollar, quote).
+    # A backslash escapes the next character, so an escaped quote does not close it.
+    # Returns the index of the closing quote, or -1.
+    while i < len(s):
+        if s[i] == "\\":
+            i += 2; continue
+        if s[i] == "\x27":
+            return i
+        i += 1
+    return -1
 def close_paren(i):
     depth, sq, dq = 1, False, False
     while i < len(s):
@@ -295,6 +332,11 @@ def close_paren(i):
             i += 1
         elif c == "\x22":
             dq = not dq
+        elif c == "\x27" and not dq and i > 0 and s[i - 1] == "$" and not escaped(i - 1):
+            j = ansi_end(i + 1)
+            if j < 0:
+                return -1
+            i = j
         elif c == "\x27" and not dq:
             sq = True
         elif not dq and c == "(":
@@ -320,10 +362,24 @@ while i < len(s):
         i += 2; continue
     if c == "\x22":
         dq = not dq; i += 1; continue
+    if c == "\x27" and not dq and i > 0 and s[i - 1] == "$" and not escaped(i - 1):
+        j = ansi_end(i + 1)          # T-4926: ANSI-C string, backslash escapes inside
+        if j < 0:
+            sys.exit(0)
+        i = j + 1; continue
     if c == "\x27" and not dq:
         sq = True; i += 1; continue
     if s.startswith("$((", i):
-        i += 3; continue
+        # T-4927: arithmetic only when the inner paren closes right before the outer
+        # one, the way bash decides. Otherwise it is a command substitution whose first
+        # command is a subshell, and it is extracted and judged like any other.
+        j = close_paren(i + 2)
+        k = close_paren(i + 3)
+        if j < 0:
+            sys.exit(0)
+        if k == j - 1:
+            i += 3; continue
+        out.append(s[i + 2:j]); i = j + 1; continue
     if s.startswith("$(", i):
         j = close_paren(i + 2)
         if j < 0:
