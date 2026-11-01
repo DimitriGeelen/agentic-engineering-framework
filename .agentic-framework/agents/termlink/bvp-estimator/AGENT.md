@@ -17,6 +17,22 @@ For each task scanned, the estimator:
    differs from confirmed by `<2` on every driver, skip the write.
 6. Otherwise appends a timestamped entry to `bvp_scores_proposed:`.
 
+**Driver sets (T-4985).** Step 2 is per task: if the task's arc (by `arc_id:`
+or a legacy `arc:` tag) names `driver_set: <name>`, the drivers, name aliases
+and scoring specs come from `policy/value-drivers-<name>.yaml`, resolved and
+validated by `lib/driver_sets.py` alone. The set takes the live file's place,
+including winning collisions with the arc's `scoped_drivers:`. A set that
+cannot be resolved or loaded skips the task with the reason on stderr (the
+sweep counts it as `refused`); it is never scored against the live file. Each
+proposal records `driver_set:` (absent = the live file). An earlier score
+counts under the task's current set only when that set's entry for the id
+has the same `name` and scoring spec (a pure re-weight); otherwise it is
+unscored. Set drivers a task holds no counting score for are **backfilled** —
+re-estimated alone, with the other counting scores carried into the entry,
+past the step-5 delta rule, also on confirmed tasks — and `bvp_scores:` is
+never written. Default-set tasks whose scores all come from the live file
+keep steps 5-6 exactly as before.
+
 ## Engine — v1 heuristic
 
 The v1 engine is a pattern-based classifier reading the task body for

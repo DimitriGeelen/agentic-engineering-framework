@@ -121,10 +121,17 @@ def _rubric_sha() -> str:
 _RUBRIC_SHA_CACHE: str | None = None
 
 
-def _load_drivers() -> dict[str, int]:
-    if not POLICY_PATH.is_file():
-        return {"D1": 9, "D2": 7, "D3": 5, "D4": 3}
-    policy = yaml.safe_load(POLICY_PATH.read_text()) or {}
+def _load_drivers(policy: dict | None = None) -> dict[str, int]:
+    """`{driver id: weight}` from `policy`, or from the live file when None.
+
+    T-4985: the policy argument is how a task's driver set (lib/driver_sets.py)
+    reaches the estimator; the no-argument form stays the default-set reader
+    for the callers that load once per run.
+    """
+    if policy is None:
+        if not POLICY_PATH.is_file():
+            return {"D1": 9, "D2": 7, "D3": 5, "D4": 3}
+        policy = yaml.safe_load(POLICY_PATH.read_text()) or {}
     out: dict[str, int] = {}
     for d in (policy.get("protected_drivers") or []):
         if d.get("id"):
@@ -213,19 +220,27 @@ def _arc_scoped_drivers_for_task(fm: dict) -> dict[str, int]:
     return out
 
 
-def _load_driver_aliases() -> dict[str, str]:
+def _load_live_policy() -> dict:
+    """The live policy/value-drivers.yaml, {} when missing or unparseable —
+    the tolerant read the alias and spec loaders have always done."""
+    if not POLICY_PATH.is_file():
+        return {}
+    try:
+        return yaml.safe_load(POLICY_PATH.read_text()) or {}
+    except yaml.YAMLError:
+        return {}
+
+
+def _load_driver_aliases(policy: dict | None = None) -> dict[str, str]:
     """T-2343: return `{id: name}` for free drivers whose `name:` differs from `id`.
 
     Lets dispatch reach dedicated handlers when the policy `id` is opaque
     (e.g. F3 for V_PROMPT_QUALITY). Read-only; no policy mutation. Drivers
-    without a `name:` field are omitted (no alias needed).
+    without a `name:` field are omitted (no alias needed). `policy` is a
+    driver set (T-4985); None reads the live file.
     """
-    if not POLICY_PATH.is_file():
-        return {}
-    try:
-        policy = yaml.safe_load(POLICY_PATH.read_text()) or {}
-    except yaml.YAMLError:
-        return {}
+    if policy is None:
+        policy = _load_live_policy()
     aliases: dict[str, str] = {}
     for d in (policy.get("free_drivers") or []):
         d_id = d.get("id")
@@ -233,6 +248,147 @@ def _load_driver_aliases() -> dict[str, str]:
         if d_id and d_name and isinstance(d_name, str) and d_name != d_id:
             aliases[d_id] = d_name
     return aliases
+
+
+# ---- driver sets (T-4985) ---------------------------------------------------
+#
+# A task in an arc that names `driver_set: <name>` is scored under
+# policy/value-drivers-<name>.yaml instead of the live file (T-4961). Which set,
+# and whether it is valid, is decided by lib/driver_sets.py alone; nothing here
+# re-derives a resolution rule. A set that cannot be resolved or loaded is a
+# REFUSAL: the task is skipped with the reason, never scored against the live
+# file instead.
+
+class DriverSetRefused(Exception):
+    """The task's driver set could not be resolved or loaded."""
+
+
+_DRIVER_SETS_MOD = None
+
+
+def _driver_sets():
+    """lib/driver_sets.py, resolved from THIS FILE (framework-owned asset; same
+    reason as _expand_write_set), then FRAMEWORK_ROOT."""
+    global _DRIVER_SETS_MOD
+    if _DRIVER_SETS_MOD is None:
+        candidates = [Path(__file__).resolve().parents[3] / "lib"]
+        if os.environ.get("FRAMEWORK_ROOT"):
+            candidates.append(Path(os.environ["FRAMEWORK_ROOT"]) / "lib")
+        for lib_dir in candidates:
+            if (lib_dir / "driver_sets.py").is_file():
+                if str(lib_dir) not in sys.path:
+                    sys.path.insert(0, str(lib_dir))
+                break
+        import driver_sets  # type: ignore[import-not-found]
+        _DRIVER_SETS_MOD = driver_sets
+    return _DRIVER_SETS_MOD
+
+
+def _task_driver_set(fm: dict) -> tuple[str | None, dict | None]:
+    """(set name, set policy) for a task; (None, None) for the default set.
+
+    The default set keeps the estimator's own tolerant live-file reads, so a
+    project without a policy file scores exactly as before. Raises
+    DriverSetRefused, never falls back.
+    """
+    try:
+        ds = _driver_sets()
+    except Exception as exc:  # noqa: BLE001 — refusal, not a silent default
+        raise DriverSetRefused(
+            f"lib/driver_sets.py unavailable ({type(exc).__name__}: {exc})") from exc
+    try:
+        name = ds.resolve_set_name(fm, PROJECT_ROOT, arcs_dir=ARCS_DIR)
+        if name is None:
+            return None, None
+        return ds.load_for_task(fm, PROJECT_ROOT, arcs_dir=ARCS_DIR)
+    except ds.DriverSetError as exc:
+        raise DriverSetRefused(str(exc)) from exc
+
+
+def _policy_for_set(name: str | None, cache: dict | None = None) -> dict | None:
+    """Parsed policy of set `name` (None = live file), or None when it cannot
+    be loaded. Used to judge earlier scores, so a set that has since gone
+    missing makes its scores not count rather than raising."""
+    if cache is not None and name in cache:
+        return cache[name]
+    if name is None:
+        pol = _load_live_policy()
+    else:
+        try:
+            pol = _driver_sets().load_set(name, PROJECT_ROOT)
+        except Exception:  # noqa: BLE001
+            pol = None
+    if cache is not None:
+        cache[name] = pol
+    return pol
+
+
+def _policy_entry(policy: dict | None, driver_id: str) -> dict | None:
+    for section in ("protected_drivers", "free_drivers"):
+        for d in ((policy or {}).get(section) or []):
+            if isinstance(d, dict) and d.get("id") == driver_id:
+                return d
+    return None
+
+
+def _same_driver(current: dict | None, scored: dict | None) -> bool:
+    """C1 (T-4967 review): a score for an id carries over between two sets only
+    when both entries name the same driver with the same mechanism — a pure
+    re-weight. An id neither set defines (an arc-scoped driver) is not a set
+    question and carries over as before."""
+    if current is None and scored is None:
+        return True
+    if current is None or scored is None:
+        return False
+    return all(current.get(k) == scored.get(k)
+               for k in ("name", "scoring", "scoring_file"))
+
+
+def _counting_scores(fm: dict, driver_set: str | None
+                     ) -> tuple[dict[str, int], dict[str, int], bool]:
+    """(confirmed, proposed, foreign) scores that count under the task's set.
+
+    Each score is judged against the set it was scored under: a proposal
+    entry's `driver_set:` (absent = the live file); confirmed `bvp_scores:`
+    carry no set and are read as live-file scores. A score that does not count
+    is treated as unscored (unknown, never 0). Proposed values are the newest
+    counting value per driver across entries. `foreign` is True when any
+    earlier score was dropped because it was made under another meaning.
+    """
+    foreign = False
+    cache: dict = {}
+    current = _policy_for_set(driver_set, cache)
+
+    def counts(driver_id: str, scored_set) -> bool:
+        if scored_set == driver_set:
+            return True
+        scored = _policy_for_set(scored_set, cache)
+        if scored is None:
+            return False
+        return _same_driver(_policy_entry(current, driver_id),
+                            _policy_entry(scored, driver_id))
+
+    confirmed: dict[str, int] = {}
+    raw_conf = (fm or {}).get("bvp_scores")
+    for k, v in (raw_conf.items() if isinstance(raw_conf, dict) else []):
+        if isinstance(v, (int, float)) and not isinstance(v, bool):
+            if counts(k, None):
+                confirmed[k] = int(v)
+            else:
+                foreign = True
+    proposed: dict[str, int] = {}
+    entries = (fm or {}).get("bvp_scores_proposed")
+    for e in (entries if isinstance(entries, list) else []):
+        if not isinstance(e, dict) or not isinstance(e.get("scores"), dict):
+            continue
+        scored_set = e.get("driver_set") or None
+        for k, v in e["scores"].items():
+            if isinstance(v, (int, float)) and not isinstance(v, bool):
+                if counts(k, scored_set):
+                    proposed[k] = int(v)
+                else:
+                    foreign = True
+    return confirmed, proposed, foreign
 
 
 # ---- task parsing -----------------------------------------------------------
@@ -2564,20 +2720,17 @@ def score_declarative(spec: dict, fm: dict, body: str,
     return best, ev + [f"→{best} (declarative: highest matching level)"]
 
 
-def _load_driver_specs() -> dict[str, dict]:
+def _load_driver_specs(policy: dict | None = None) -> dict[str, dict]:
     """`{driver id and name: validated scoring spec}` from the policy file.
 
     Keyed by BOTH id and name so dispatch reaches a spec the same two ways the
     handler table is reached (id, or the T-2343 name alias). Specs that fail
     validation are omitted — an invalid spec is not a scorer, and the audit
-    rail (lib/bvp-scorability.sh) is what tells the operator so.
+    rail (lib/bvp-scorability.sh) is what tells the operator so. `policy` is a
+    driver set (T-4985); None reads the live file.
     """
-    if not POLICY_PATH.is_file():
-        return {}
-    try:
-        policy = yaml.safe_load(POLICY_PATH.read_text()) or {}
-    except yaml.YAMLError:
-        return {}
+    if policy is None:
+        policy = _load_live_policy()
     out: dict[str, dict] = {}
     for section in ("protected_drivers", "free_drivers"):
         for d in (policy.get(section) or []):
@@ -2724,9 +2877,28 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
     tags = list(fm.get("tags") or [])
     is_inception = (fm.get("workflow_type") or "").lower() == "inception"
 
+    # T-4985: the task's driver set. A named set's drivers REPLACE the passed-in
+    # (default-set) drivers; its aliases and specs replace the live ones. A
+    # refused set skips the task — it is never scored against the live file.
+    try:
+        set_name, set_policy = _task_driver_set(fm)
+    except DriverSetRefused as exc:
+        return {
+            "scores": {},
+            "evidence": {},
+            "version": ESTIMATOR_ID,
+            "rubric_sha": _rubric_sha(),
+            "latency_s": round(time.monotonic() - t0, 4),
+            "driver_set": None,
+            "drivers": {},
+            "refused": str(exc),
+        }
+    if set_policy is not None:
+        drivers = _load_drivers(set_policy)
+
     # T-2357: merge arc-scoped drivers (from the task's arc YAML's
-    # scoped_drivers:) into the dispatch driver set. Global drivers WIN on
-    # name collision — operator-approved policy weights take precedence over
+    # scoped_drivers:) into the dispatch driver set. Global drivers (the task's
+    # set, T-4985, in the place of the live file) WIN on name collision — operator-approved policy weights take precedence over
     # arc-scoped weights. Skipped for inceptions (voi_score is the composite).
     if not is_inception:
         arc_drivers = _arc_scoped_drivers_for_task(fm)
@@ -2746,12 +2918,12 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
     handlers = _handler_table()
     # T-2343: name-alias map for drivers whose policy id differs from their
     # canonical name (e.g. policy id F3, handler key V_PROMPT_QUALITY).
-    name_aliases = _load_driver_aliases()
+    name_aliases = _load_driver_aliases(set_policy)
     # T-3428: declarative `scoring:` specs, keyed by id AND name. Policy specs
     # first, then the task's arc-scoped specs — an arc may ship a mechanism for
     # a driver the policy file has never heard of. Arc keys do not overwrite
     # policy keys (same precedence as the weight merge above: global wins).
-    specs = _load_driver_specs()
+    specs = _load_driver_specs(set_policy)
     if not is_inception:
         for _k, _v in _arc_scoped_specs_for_task(fm).items():
             specs.setdefault(_k, _v)
@@ -2790,6 +2962,8 @@ def estimate_task(task_path: Path, drivers: dict[str, int]) -> dict:
         "version": ESTIMATOR_ID,
         "rubric_sha": _rubric_sha(),
         "latency_s": round(time.monotonic() - t0, 4),
+        "driver_set": set_name,
+        "drivers": dict(drivers),  # {id: weight} actually scored against
     }
 
 
@@ -2821,11 +2995,29 @@ def _short_rationale(evidence: dict[str, list[str]]) -> str:
 
 def write_proposed(task_path: Path, scores: dict[str, int],
                    evidence: dict[str, list[str]], rubric_sha: str,
-                   dry_run: bool = False) -> tuple[bool, str]:
+                   dry_run: bool = False, *, driver_set: str | None = None,
+                   driver_ids: list[str] | None = None,
+                   backfill_only: bool = False,
+                   refused: str | None = None) -> tuple[bool, str]:
     """Write the proposed entry to the task's frontmatter unless v2-delta says skip.
+
+    T-4985 (driver sets; T-4967 review C1, C2):
+      - the entry records `driver_set: <name>` (omitted for the default set);
+      - earlier scores count only when scored under a set whose entry for the
+        id is the same driver (`_counting_scores`); delta suppression compares
+        against counting confirmed scores only;
+      - a driver with no counting score (missing from the task's set history,
+        or scored under another meaning) is BACKFILLED — for a task under a
+        named set, or carrying scores from another set: when suppression would
+        skip, or with `backfill_only`, the entry re-estimates those drivers
+        only and carries the counting scores for the rest, so a later confirm
+        does not drop them. `bvp_scores:` is never written;
+      - `refused` (estimate_task's set refusal) writes nothing.
 
     Returns (wrote, reason).
     """
+    if refused:
+        return False, "driver-set-refused"
     text = task_path.read_text()
     m = _FM_RE.match(text)
     if not m:
@@ -2838,17 +3030,45 @@ def write_proposed(task_path: Path, scores: dict[str, int],
     else:
         fm = _str_safe_load(fm_text) or {}
 
-    confirmed = fm.get("bvp_scores") if fm else None
-    if _v2_delta_should_skip(scores, confirmed):
-        return False, "v2-delta-skip"
+    conf_ok, prop_ok, foreign = _counting_scores(fm or {}, driver_set)
+    covered = set(conf_ok) | set(prop_ok)
+    # Backfill is a driver-set mechanism: a task under a named set, or one
+    # carrying scores made under another set. A default-set task with every
+    # score from the live file keeps the pre-T-4985 behaviour exactly (the
+    # T-1923 sweep leaves its confirmed tasks alone).
+    missing = [d for d in scores if d not in covered] \
+        if (driver_set is not None or foreign) else []
+    backfill = backfill_only or _v2_delta_should_skip(scores, conf_ok)
+    if backfill and not missing:
+        return False, "no-missing-drivers" if backfill_only else "v2-delta-skip"
+
+    if backfill:
+        current = list(driver_ids) if driver_ids is not None else list(scores)
+        out_scores: dict[str, int] = {}
+        for d in current:
+            if d in missing:
+                out_scores[d] = scores[d]
+            elif d in conf_ok:
+                out_scores[d] = conf_ok[d]
+            elif d in prop_ok:
+                out_scores[d] = prop_ok[d]
+        rationale = (_short_rationale({d: evidence.get(d, []) for d in missing})
+                     + "; backfill (others carried)")
+    else:
+        out_scores = dict(scores)
+        rationale = _short_rationale(evidence)
 
     entry = {
         "ts": _utc_now(),
         "estimator": ESTIMATOR_ID,
-        "scores": dict(scores),
-        "rationale": _short_rationale(evidence),
+        "scores": out_scores,
+        "rationale": rationale,
         "rubric_sha": rubric_sha,
     }
+    if driver_set:
+        entry["driver_set"] = driver_set
+    if backfill:
+        entry["backfill"] = list(missing)
 
     existing = fm.get("bvp_scores_proposed") if fm else None
     if existing is None or not isinstance(existing, list):
@@ -2858,7 +3078,8 @@ def write_proposed(task_path: Path, scores: dict[str, int],
         # otherwise append.
         if existing and isinstance(existing[-1], dict) and \
            existing[-1].get("estimator") == ESTIMATOR_ID and \
-           existing[-1].get("scores") == entry["scores"]:
+           existing[-1].get("scores") == entry["scores"] and \
+           (existing[-1].get("driver_set") or None) == (driver_set or None):
             return False, "no-change-since-last"
         existing.append(entry)
         fm["bvp_scores_proposed"] = existing
@@ -3243,6 +3464,20 @@ def _resolve_task(task_id: str) -> Path | None:
     return None
 
 
+def _write_result(task_path: Path, result: dict, dry_run: bool = False,
+                  backfill_only: bool = False) -> tuple[bool, str]:
+    """write_proposed with the set provenance estimate_task returned (T-4985)."""
+    return write_proposed(
+        task_path, result["scores"], result["evidence"], result["rubric_sha"],
+        dry_run=dry_run, driver_set=result.get("driver_set"),
+        driver_ids=list(result.get("drivers") or {}), backfill_only=backfill_only,
+        refused=result.get("refused"))
+
+
+def _refusal_line(task_id, result: dict) -> str:
+    return f"{task_id}: skipped, driver set refused: {result['refused']}"
+
+
 def cmd_one(task_id: str, dry_run: bool = False, json_out: bool = False) -> int:
     task_path = _resolve_task(task_id)
     if not task_path:
@@ -3250,10 +3485,15 @@ def cmd_one(task_id: str, dry_run: bool = False, json_out: bool = False) -> int:
         return 1
     drivers = _load_drivers()
     result = estimate_task(task_path, drivers)
-    wrote, reason = write_proposed(
-        task_path, result["scores"], result["evidence"],
-        result["rubric_sha"], dry_run=dry_run
-    )
+    wrote, reason = _write_result(task_path, result, dry_run=dry_run)
+    if result.get("refused"):
+        # T-4985: scoring one task under a refused set is an error (exit 2),
+        # same surface as `fw bvp estimate` in the design's refusal table.
+        print(_refusal_line(task_id, result), file=sys.stderr)
+        if json_out:
+            result.update(wrote=False, reason=reason, task_id=task_id)
+            print(json.dumps(result, indent=2))
+        return 2
     result["wrote"] = wrote
     result["reason"] = reason
     result["task_id"] = task_id
@@ -3276,7 +3516,7 @@ def cmd_all(dry_run: bool = False, limit: int | None = None,
     if limit:
         task_files = task_files[:limit]
 
-    n_wrote = n_skip = n_err = 0
+    n_wrote = n_skip = n_err = n_refused = 0
     total_latency = 0.0
     for tp in task_files:
         fm, _ = parse_task(tp)
@@ -3287,10 +3527,11 @@ def cmd_all(dry_run: bool = False, limit: int | None = None,
             task_id = "-".join(task_id)
         try:
             result = estimate_task(tp, drivers)
-            wrote, reason = write_proposed(
-                tp, result["scores"], result["evidence"],
-                result["rubric_sha"], dry_run=dry_run
-            )
+            if result.get("refused"):
+                n_refused += 1
+                print(_refusal_line(task_id, result), file=sys.stderr)
+                continue
+            wrote, reason = _write_result(tp, result, dry_run=dry_run)
             total_latency += result["latency_s"]
             if wrote:
                 n_wrote += 1
@@ -3301,7 +3542,8 @@ def cmd_all(dry_run: bool = False, limit: int | None = None,
             print(f"ERROR on {tp.name}: {e}", file=sys.stderr)
 
     print(f"Estimated {n_wrote + n_skip + n_err} tasks: "
-          f"{n_wrote} wrote, {n_skip} skipped, {n_err} errored. "
+          f"{n_wrote} wrote, {n_skip} skipped, {n_err} errored, "
+          f"{n_refused} refused (driver set). "
           f"Total latency {total_latency:.2f}s.")
     return 0 if n_err == 0 else 1
 
@@ -3462,6 +3704,13 @@ def _commit_sweep_writes(written: set[Path], task_id: str, label: str) -> bool:
     return False
 
 
+def _last_backfill(task_path: Path) -> list[str]:
+    fm, _ = parse_task(task_path)
+    entries = fm.get("bvp_scores_proposed") or []
+    last = entries[-1] if entries and isinstance(entries[-1], dict) else {}
+    return [str(d) for d in (last.get("backfill") or [])]
+
+
 def cmd_sweep(stale_hours: int = 24,
               statuses: list[str] | None = None,
               cron: bool = False) -> int:
@@ -3473,6 +3722,13 @@ def cmd_sweep(stale_hours: int = 24,
       - `bvp_scores_proposed:` is older than stale_hours OR missing entirely
       - OR `unscored: true` is set (priority: SLA-fallback victims)
 
+    T-4985 (review C2): every other task in scope — confirmed, or with a
+    fresh proposal — is BACKFILLED when its driver set has drivers it holds
+    no counting score for (a set-only driver, or a score made under another
+    meaning): those drivers only, `bvp_scores:` untouched. A task whose set
+    is refused is skipped with the reason on stderr and counted in the
+    summary line; it is never scored against the live file.
+
     Output in --cron mode is quieter (just final summary). Without --cron,
     each task is printed.
     """
@@ -3481,6 +3737,7 @@ def cmd_sweep(stale_hours: int = 24,
     task_files = sorted((PROJECT_ROOT / ".tasks" / "active").glob("T-*.md"))
 
     n_scored = n_unscored_cleared = n_skipped = n_err = n_dirty = 0
+    n_backfilled = n_refused = 0
     dirty = _dirty_task_files() if cron else None  # T-4676
     written: set[Path] = set()
     for tp in task_files:
@@ -3493,17 +3750,28 @@ def cmd_sweep(stale_hours: int = 24,
                 continue
             if fm.get("status") not in statuses:
                 continue
-            if fm.get("bvp_scores"):
-                continue  # confirmed; not the sweep's job
+            confirmed = bool(fm.get("bvp_scores"))
             had_unscored = fm.get("unscored") is True
-            if not had_unscored and not _proposed_is_stale(fm, stale_hours):
-                n_skipped += 1
-                continue
+            # A confirmed task is never fully re-scored here; a fresh
+            # proposal is not either. Both may still be backfilled (T-4985).
+            backfill_only = confirmed or (
+                not had_unscored and not _proposed_is_stale(fm, stale_hours))
             result = estimate_task(tp, drivers)
-            wrote, reason = write_proposed(
-                tp, result["scores"], result["evidence"],
-                result["rubric_sha"], dry_run=False
-            )
+            if result.get("refused"):
+                n_refused += 1
+                print(_refusal_line(fm.get("id", tp.stem), result), file=sys.stderr)
+                continue
+            wrote, reason = _write_result(tp, result, backfill_only=backfill_only)
+            if backfill_only:
+                if wrote:
+                    written.add(tp.resolve())
+                    n_backfilled += 1
+                    if not cron:
+                        print(f"{fm.get('id', tp.stem)}: backfilled "
+                              f"{', '.join(_last_backfill(tp))}  [{reason}]")
+                elif not confirmed:
+                    n_skipped += 1
+                continue
             if had_unscored:
                 # Re-read to get the (post-write) frontmatter and clear flag
                 if _clear_unscored_flag(tp):
@@ -3525,7 +3793,8 @@ def cmd_sweep(stale_hours: int = 24,
     if dirty is not None:
         committed = _commit_sweep_writes(written, "T-1923", "bvp estimator sweep")
     print(f"sweep: scored {n_scored}, unscored-cleared {n_unscored_cleared}, "
-          f"skipped {n_skipped}, skipped-dirty {n_dirty}, errors {n_err} "
+          f"backfilled {n_backfilled}, skipped {n_skipped}, "
+          f"skipped-dirty {n_dirty}, refused {n_refused}, errors {n_err} "
           f"(stale_hours={stale_hours}, statuses={','.join(statuses)})")
     return 0 if n_err == 0 and committed else 1
 
@@ -3547,6 +3816,11 @@ def cmd_with_sla(task_id: str, timeout_s: int = 10) -> int:
     t0 = time.monotonic()
     try:
         result = estimate_task(task_path, drivers)
+        if result.get("refused"):
+            # T-4985: not an SLA miss — the sweep would refuse it too, so no
+            # unscored flag. Report and let resume continue.
+            print(_refusal_line(task_id, result), file=sys.stderr)
+            return 0
         elapsed = time.monotonic() - t0
         if elapsed >= timeout_s:
             # Estimator finished but blew the budget — flag for sweep
@@ -3556,10 +3830,7 @@ def cmd_with_sla(task_id: str, timeout_s: int = 10) -> int:
                   file=sys.stderr)
             return 0
         # Within budget — write normally + clear any stale unscored flag
-        write_proposed(
-            task_path, result["scores"], result["evidence"],
-            result["rubric_sha"], dry_run=False
-        )
+        _write_result(task_path, result)
         _clear_unscored_flag(task_path)
         return 0
     except Exception as e:
@@ -3583,6 +3854,9 @@ def cmd_determinism(task_id: str, runs: int = 3) -> int:
         return 1
     drivers = _load_drivers()
     runs_data = [estimate_task(task_path, drivers) for _ in range(runs)]
+    if runs_data[0].get("refused"):
+        print(_refusal_line(task_id, runs_data[0]), file=sys.stderr)
+        return 2
     base = runs_data[0]["scores"]
     max_delta = 0
     for r in runs_data[1:]:
@@ -3607,6 +3881,9 @@ def cmd_measure_a3(n: int = 20, output: Path | None = None) -> int:
     rows = []
     for tp in completed:
         result = estimate_task(tp, drivers)
+        if result.get("refused"):
+            print(_refusal_line(tp.stem, result), file=sys.stderr)
+            continue
         latencies.append(result["latency_s"])
         rows.append({
             "task": tp.stem.split("-")[0:2],
@@ -3615,6 +3892,9 @@ def cmd_measure_a3(n: int = 20, output: Path | None = None) -> int:
             "latency_s": result["latency_s"],
         })
 
+    if not latencies:
+        print("ERROR: every sampled task was refused (driver set)", file=sys.stderr)
+        return 1
     mean = sum(latencies) / len(latencies)
     p95 = sorted(latencies)[int(len(latencies) * 0.95)] if len(latencies) > 1 else latencies[0]
     summary = {
