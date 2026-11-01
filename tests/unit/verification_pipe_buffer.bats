@@ -84,7 +84,13 @@ _as_gate() {
 
 @test "T-2743: the template teaches the corrected form" {
     local tpl="$FRAMEWORK_ROOT/.tasks/templates/default.md"
-    run grep -q "65536-byte pipe buffer" "$tpl"
+    # T-4954: T-4921 replaced the "safe below 64 KB" rule (an echo | grep -q can lose at
+    # any size) with redirect-then-grep as the default and a here-string as the exception.
+    run grep -q "THE DEFAULT — redirect to a file, then grep the file" "$tpl"
+    [ "$status" -eq 0 ]
+    run grep -q "capture first, grep the capture with a HERE-STRING" "$tpl"
+    [ "$status" -eq 0 ]
+    run grep -q "pipe buffer it fails every time (T-2743" "$tpl"
     [ "$status" -eq 0 ]
     run grep -q "DOES NOT REHEARSE THE GATE" "$tpl"
     [ "$status" -eq 0 ]
