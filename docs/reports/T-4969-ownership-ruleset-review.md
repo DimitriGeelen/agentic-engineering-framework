@@ -74,3 +74,29 @@
 - codex's question (d): does `owner: human` mean *mandatory human sign-off*, or *a review gate that independent review may discharge*? D-626 (operator ruling 2026-09-23) already chose the second for reviewer-judged criteria, while tier-0, act-in-the-world and sovereignty criteria stay human (T-3557). The rule table should state that split explicitly.
 - Revision binding (opencode): the ledger already ties a verdict to the criterion's digest and revalidates it at every close. Whether it also ties it to the task revision is to be checked in step 2, not assumed.
 - Creation-time ownership (T-4371): both seats require independent inputs and a default of human.
+
+## Code review of the built change (operator: "test cases and an external review")
+
+Both seats got the diff (`0e701b394`, without author detail) and were asked for agent attack cases, which of them the change stops, and defects. Dispatches: `codereview-t4969-codex-e32842382101`, `codereview-t4969-opencode-873fc5079392`.
+
+**Agreed findings, all fixed:**
+1. **The log overclaimed.** "watchtower (record verified)" and "confirmed interactively" are forgeable by the same OS user: write the record, or drive a pty with `script`/`expect`. Both now read "... claimed" (`watchtower (record present, claimed)`, `operator CLI (--i-am-human, tty confirmation in an agent environment, claimed)`).
+2. **A symlinked record was followed.** It is now refused, and Watchtower writes its record through a temp file and `os.replace`, so a planted link is replaced, never followed.
+3. **Validate-then-delete was not atomic**, so two consumers could both pass. The record is now claimed with an atomic rename before it is read.
+4. **A failed log append was ignored**, yet the output still said "logged". The hand-over is now refused, owner unchanged, when the line cannot be written.
+5. **No task-id guard** before the id was used in a path in `update-task.sh`. The gate now requires `^T-[0-9]+$` first.
+6. The record's `by: watchtower` field is now checked, and non-finite or future timestamps are refused.
+
+**Not a defect:** both seats flagged `_escape` as undefined; it is defined at `web/blueprints/tasks.py:34` (T-2222).
+
+**Limits that remain, by design, and are logged honestly:** an agent that writes the record itself, unsets `CLAUDECODE`, or drives a pty gets through, and the log says "claimed". That is the stated threat model: stopping accidents and unsophisticated attempts, plus honest logging, not forgery resistance. It is the same residual T-3581 names for the verdict ledger. The general rule table and its after-the-fact audit (reconcile every owner diff in git with a log line) are T-4371 IW-4.
+
+**Attack cases now pinned in `tests/unit/t4969_owner_handover.bats`** (16 tests):
+- an agent-written record (logged as claimed, never "verified");
+- a symlinked record (refused, link target survives);
+- malformed records (`[]`, `null`, broken JSON, NaN, Infinity, future ts, missing `by`, wrong-case owner);
+- piped confirmation (refused);
+- pty-driven confirmation (logged as claimed);
+- two concurrent consumers (consumed once);
+- unwritable log (refused, owner unchanged);
+- the task-id guard.
