@@ -88,6 +88,18 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 - **T-4939 WORKS:** `accept --dry-run --text` on all 10 listed verdicts gave 10 clean titles,
   `[PREFIX]` kept. Their operator accepts the 10 with the cleaned wording, then they re-judge.
 
+### be.20: 050-email-archive (cedc1b89, f7527742), 2026-11-02
+- **Upgrade: FAILS on a HOME-less agent shell (filed T-4993).** be.16 → be.20 (99f36914b). `fw upgrade` died at step 4c/9 with `HOME: unbound variable` (lib/upgrade.sh:2623) after the vendor copy, so `.framework.yaml` was not updated. `fw doctor` dies the same way (bin/fw:2553). Their operator re-ran it with HOME set and it completed. Everything else worked:
+  - the dry run named exactly their 10 local edits, and the real run applied them;
+  - 8 of 10 patches re-merged clean; `lib/review.sh` conflicted on our `go|no-go|defer` fallback, filed as T-4994;
+  - 46/46 hooks present, Watchtower 200, guard suites 54/54.
+- **T-4988 + T-4989 WORKS (first real use, operator-committed grant file with the trailer).** The validator passed, `fw grants show` lists all four lines, and the read bridge is dropped.
+  - Reads work through both granted mounts; a write to the read mount is refused.
+  - Create, move and delete of their own probe file inside a create grant work, and each is logged.
+  - An append-open or move of an operator file passes the hook and is refused by the NAS (md5 unchanged): the intended split.
+  - Writes under `never_write` and at an ungranted mount root are refused.
+  - Notes, filed as T-4995: name the grant rule in the refusal; the audit log records hook decisions, not NAS outcomes.
+
 ### be.15: ring20-dashboard (9cbbdcdc), 2026-11-01
 - **WORKS.** be.10 → be.15, vendored, ~12 min, exit 0, no rollback. 29 local patches strict, zero fuzz; preserve dry run 31 == 31. Designer 0.33.0 → 0.34.0 swapped as printed. Doctor 0 FAIL; fast lane no new failures.
 - **T-4966 WORKS:** 13 `fw reviewer judge` runs, 3 at a time (their cap 9), 31 min, 36 verdict commits, 122 register rows. Every committed line of the four ledger files parses; verdict_ledger audit 183 rows, 0 failures; no torn line. Race rows (41) and carry-overs (59) are cosmetic, as expected.
