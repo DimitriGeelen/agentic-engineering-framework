@@ -104,8 +104,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Config key `REVIEW_PAID_BACKENDS` (values `allowed` default, `never`) in the registry (`lib/config.sh` FW_CONFIG_REGISTRY) with a description; read by the judge through `review_policy.config_value`
-- [ ] With `never`, `fw reviewer judge` plans no paid seats, calls no `fw review propose`, and each unfilled seat says "paid backends are not allowed in this project (REVIEW_PAID_BACKENDS=never)"; with the default, behaviour is unchanged; tests for both; every test that reads `judge_cli.py` passes; vendored copy in sync
+- [x] Config key `REVIEW_PAID_BACKENDS` (values `allowed` default, `never`) in the registry (`lib/config.sh` FW_CONFIG_REGISTRY) with a description; read by the judge through `review_policy.config_value`
+- [x] With `never`, `fw reviewer judge` plans no paid seats, calls no `fw review propose`, and each unfilled seat says "paid backends are not allowed in this project (REVIEW_PAID_BACKENDS=never)"; with the default, behaviour is unchanged; tests for both; every test that reads `judge_cli.py` passes; vendored copy in sync. Test `test_estate_only_project_files_no_paid_proposal` beside the existing paid-proposal tests (still green); 809 judge tests and the lint suite green (the key is also listed on the Watchtower config page, which the registry-parity lint requires); Watchtower restarted and current.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,6 +291,9 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 python3 -m pytest -q tests/unit/t3580_round3_test.py -k "paid or estate or proposal" > /tmp/.t4996.v 2>&1 && grep -q passed /tmp/.t4996.v
+bin/fw watchtower current
+bin/fw vendor self --check --task T-4996
 
 ## RCA
 
