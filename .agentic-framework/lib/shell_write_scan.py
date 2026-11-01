@@ -192,6 +192,9 @@ class _Ctx:
     # T-4487 boundary mode: a git diff-family word that may expand to --output; judged
     # once the whole command is read (refused when the command names a guarded path).
     pending_output: str = ""
+    # T-4983 boundary mode: a write target only known at run time (`echo x >> "$p"`); judged
+    # like pending_output — refused when the command names a guarded path anywhere.
+    pending_unresolved: str = ""
 
 
 # T-4149: bash's `\cX` (control-X) consumes the character after `c` — a quote included —
@@ -1040,6 +1043,11 @@ def _check_target(target: str, ctx: _Ctx, reason: str) -> None:
     if ok:
         if any((ctx.guarded or is_guarded_path)(p) for p in paths):
             ctx.hits.append(Hit(reason, target))
+    elif ctx.boundary and target != UNRESOLVED:
+        # T-4983: a path WORD the text cannot resolve ($VAR, `cmd`). The UNRESOLVED marker
+        # (xargs/find operands, git words that may be --output, patch contents) keeps its own
+        # handling (T-4487 pending_output), so it is not judged here.
+        ctx.pending_unresolved = ctx.pending_unresolved or reason
     elif ctx.mentions:
         ctx.hits.append(Hit(reason + " (target not resolvable from the text; command names a "
                             "guarded path)", target if target != UNRESOLVED else "<operands from stdin>"))
@@ -1818,7 +1826,9 @@ def scan_boundary(command: str, cwd: str | None, guarded, cd_ok) -> list[Hit]:
     and tilde expansion, redirections anywhere, option clusters, $(...)/`...`/<(...)
     bodies, unquoted heredoc bodies, static `sh -c`/`eval` scripts). `cd_ok(path)` judges
     absolute cd destinations. A target only known at run time ($VAR, a path read from a
-    file) is not judged — no mention gate applies here. Unparseable text is a hit.
+    file) is judged by a mention gate (T-4983): refused when the command names a guarded
+    path anywhere (`p=/out; echo x >> "$p"`), allowed otherwise (`o=$(mktemp); cmd > "$o"`).
+    Unparseable text is a hit.
     T-4487 exception: a git diff-family word that may expand to --output is refused when
     the command names a guarded path anywhere (`o=--output=/etc/x; git diff $o`). A value
     that only a file or the environment supplies (`git diff $(cat f)`) is still not seen."""
@@ -1830,6 +1840,11 @@ def scan_boundary(command: str, cwd: str | None, guarded, cd_ok) -> list[Hit]:
             if named:
                 ctx.hits.append(Hit(ctx.pending_output + " (an expanded argument may be --output; "
                                     "the command names a path outside the boundary)", named))
+        if ctx.pending_unresolved and not ctx.hits:
+            named = _names_guarded(command, cwd, ctx)
+            if named:
+                ctx.hits.append(Hit(ctx.pending_unresolved + " (write target only known at run "
+                                    "time; the command names a path outside the boundary)", named))
     except Exception as e:  # noqa: BLE001 — a scanner bug must not open the gate
         ctx.hits.append(Hit(f"boundary scanner error ({type(e).__name__}); refused rather than guessed"))
     return ctx.hits
