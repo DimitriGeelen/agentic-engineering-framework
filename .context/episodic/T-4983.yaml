@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4983: Boundary hook admits a write outside the project through a shell variable (p=/out; echo x >> \"$p\")
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T21:34:33Z
+# ============================================================================
+
+task_id: T-4983
+task_name: "Boundary hook admits a write outside the project through a shell variable (p=/out; echo x >> \"$p\")"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T21:06:50Z
+completed: 2026-11-01T21:34:09Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T22:33:30+01:00
+last_commit: 2026-11-01T22:34:07+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  boundary scan refuses a run-time write target ($VAR) when the command names an outside path (G-126); in-project, /tmp and mktemp variables stay allowed. vendor self — lib/shell_write_scan.py. criteria, verification, RCA
+
+# Key outcomes
+outcomes:
+  - '`scan_boundary` refuses an unresolved write target when the command names a guarded path anywhere (new `pending_unresolved`, judged by `_names_guarded`), and leaves it allowed otherwise; the docstring says so. Only path WORDS with `$`/backtick are judged; the UNRESOLVED marker (xargs/find operands, git words, patch contents) keeps its T-4487 handling, a first version that judged it too broke a T-4487 control'
+  - 'Tests (578 bats across every boundary/scanner file + 59 task-file-guard bats + 24 pytest, 0 skipped): `p=/out; echo x >> "$p"`, `export p=…`, `"${p}"` refused; `o=$(mktemp)`, an in-project variable, a `/tmp` variable allowed; every test that reads `lib/shell_write_scan.py` or `check-project-boundary.sh` passes; vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - '.tasks/active/T-4983-boundary-hook-admits-a-write-outside-the.md'
+  - 'lib/shell_write_scan.py'
+  - 'tests/unit/t4983_boundary_variable_write_target.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T22:33:30'
+    action: 'T-4983: boundary scan refuses a run-time write target ($VAR) when the command names an outside path (G-126); in-project, /tmp and mktemp variables stay allowed'
+  - time: '2026-11-01T22:33:40'
+    action: 'T-4983: vendor self — lib/shell_write_scan.py'
+  - time: '2026-11-01T22:34:07'
+    action: 'T-4983: criteria, verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 27 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 27
+  commits: 4
+  files_changed: 7
+  lines_added: 223
+  lines_removed: 29
+  footprint_refreshed_at: '2026-11-01T21:34:43Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4983-boundary-hook-admits-a-write-outside-the.md
+generated_by: context-agent-hybrid
