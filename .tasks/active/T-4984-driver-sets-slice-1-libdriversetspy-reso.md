@@ -118,9 +118,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/driver_sets.py` with `resolve_set_name`, `set_path`, `load_set`, `load_for_task`, `load_for_arc`, `validate_set` and `DriverSetError`, implementing the design's resolution rule and its review fixes: arc_id and `arc:` tags via `lib/arc_membership.py`; refusals for a missing or invalid file, a bad name, an unresolvable arc reference, arc_id and tags naming different sets, duplicate arc ids or slugs, duplicate YAML keys, and an empty `driver_set:`; `default` reserved for the live file
-- [ ] `validate_set`: same schema as the live file; D1-D4 entries equal to the live ones except `weight` and `rubric`; ids unique across both sections; integer weights 0-10; project-level keys (`auto_promote`, `inception_scoring_exception`) WARN; a file named `value-drivers-default.yaml` WARNs
-- [ ] `tests/unit/test_driver_sets.py` covers every refusal and the valid cases; an audit check FAILs on a named set that does not resolve; the T-2648 split-root lint exempts `value-drivers*.yaml` with a reason; lint suite green; vendored copy in sync
+- [x] `lib/driver_sets.py` with `resolve_set_name`, `set_path`, `load_set`, `load_for_task`, `load_for_arc`, `validate_set` and `DriverSetError`, implementing the design's resolution rule and its review fixes: arc_id and `arc:` tags via `lib/arc_membership.py`; refusals for a missing or invalid file, a bad name, an unresolvable arc reference, arc_id and tags naming different sets, duplicate arc ids or slugs, duplicate YAML keys, and an empty `driver_set:`; `default` reserved for the live file
+- [x] `validate_set`: same schema as the live file; D1-D4 entries equal to the live ones except `weight` and `rubric`; ids unique across both sections; integer weights 0-10; project-level keys (`auto_promote`, `inception_scoring_exception`) WARN; a file named `value-drivers-default.yaml` WARNs
+- [x] `tests/unit/test_driver_sets.py` covers every refusal and the valid cases; an audit check FAILs on a named set that does not resolve; the T-2648 split-root lint exempts `value-drivers*.yaml` with a reason; lint suite green; vendored copy in sync. Built by a dispatched worker (t4984-build) and reviewed by me: 66 tests, `audit_split_root_asset_lint.bats` 11/11 (pin and baseline updated with reasons), lint suite green, vendored copy in sync.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -306,6 +306,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_driver_sets.py > /tmp/.t4984.v1 2>&1 && grep -q passed /tmp/.t4984.v1
+timeout 600 bats tests/unit/audit_split_root_asset_lint.bats > /tmp/.t4984.v2 2>&1 && ! grep -q "^not ok" /tmp/.t4984.v2
+python3 lib/driver_sets.py audit "$PWD"
+bin/fw vendor self --check --task T-4984
 
 ## RCA
 
