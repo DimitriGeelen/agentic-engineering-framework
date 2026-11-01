@@ -261,6 +261,19 @@ Full text: `docs/reports/T-4965-review-codex.md`. Codex agrees with opencode on 
 
 Authority over deletes, temporary items and "created by the agent" must live off the host (the NAS and an executor), because nothing the root agent's host records can be trusted. Real protection of operator data also needs the agent kept away from the admin mount, which is 050's host decision. Recommendation for the inception: **GO for the reduced framework layer (read and create levels, typed fencing, steering, visibility); NO-GO for any framework-side delete or temp authority**, which instead becomes a request to the executor's owner (Ring20 Manager).
 
+## 050's operator answers and scope change (msg 34998006, 2026-11-01)
+
+- **(a) Executor:** Ring20 Manager. **(c) chmod/touch on own files:** not needed; it stays refused. **(b) Removing the agent's admin-mount access:** still open; the admin mount stays for now.
+- **Scope change, decided by their operator after Ring20 (their T-2581) went live:**
+  - `pen-create` may rename AND delete its OWN files without per-action approval. This is safe because the NAS pushes a phone notice to the operator for every delete or rename by `pen-create`, and the share has btrfs snapshots (hourly for 48 h, daily for 14 days).
+  - There is **no** `pen-delete` account, **no** Tier 0 delete flow and **no** temp-prefix rule. The NAS is the authority for ownership and deletes (review finding 2 of both seats).
+- **Live mounts:** a read-only mount of the whole share, and a create mount over two project directories, both proven over SMB by Ring20.
+- **What remains for AEF** is exactly the reduced layer:
+  1. an operator-owned grant file. Typed reads go through the read mount; typed writes, renames and deletes go through the create mount, and the NAS judges ownership;
+  2. refusal of typed writes to the admin mount;
+  3. doctor and Watchtower visibility.
+- **Consequence for the design:** §3 (our ledger), §4 (delete route, temp items, executor) and slice 4 are dropped. On the create mount the hook allows typed create, modify, rename and delete, because the NAS enforces ownership against both typed commands and scripts. The opaque-form refusals stay (variables, links, extractors, recursive copies across the boundary), as do the `never_write` admin root and the grant-file guard. Today their boundary hook blocks even `ls` on the read mount; the operator can bridge reads with `BOUNDARY_EXTRA_READ_PATHS`, and writes have no sanctioned path until the layer lands.
+
 ## Next
 
 1. ~~Design read~~ and ~~draft~~: done above (2026-11-01).

@@ -158,6 +158,14 @@ bvp_scores_proposed:
 
 **Recommendation:** GO for a reduced framework layer; NO-GO for any framework-side delete or temp authority
 
+**Update (050's operator, msg 34998006):** their side has adopted exactly this split. The NAS (`pen-create`, phone notice per delete or rename, btrfs snapshots) is the authority for ownership and deletes; there is no Tier 0 delete flow and no temp rule. What AEF builds:
+1. an operator-owned grant file mapping each path to its read or create mount; on create mounts, typed create, modify, rename and delete are allowed, and the NAS judges ownership;
+2. `never_write` for the admin mount;
+3. refusal of opaque forms;
+4. doctor and Watchtower visibility.
+
+That is about three slices, with no ledger and no executor.
+
 **Rationale (2026-11-01, after the design read and two independent reviews):** the framework can honestly fence *typed* commands under an operator-owned grant file. That covers the read and create levels, steering to the profile mounts, refusal of opaque forms (variables, links, archive extractors, recursive copies, replacing moves), and visibility. It cannot be the authority for deletes, temporary items or "created by the agent". The agent runs as root on 050's host, so every local record (ledger, approval, credential) can be forged or watched. Both reviewers found ways to steer a delete from a forged ledger row (opencode: sound with fixes; codex: unsound as drafted). That authority must live off the host: the NAS's own ownership plus an executor owned by Ring20 Manager, which checks approval, ownership and object identity itself. Real protection of operator files also needs the agent kept off the admin mount, which is 050's host decision. Report: `docs/reports/T-4965-scoped-access-grants.md` (§Design draft, §Review seat 1, §Review seat 2).
 
 *Filing-time rationale (kept for the record):* Requested by 050-email-archive (msg d7a70b98, Pen T-2500, priority not urgent): standing per-directory grants for one agent to paths outside its project (read; create + modify only what it created, via a created-by-agent ledger; create-project; deletes never standing, always Tier 0), operator-owned grant file the agent cannot edit, audit log of every outside write, grants shown in fw doctor and Watchtower. Today check-project-boundary.sh offers only BOUNDARY_EXTRA_READ_PATHS. This widens the project boundary, so the requester and the framework both want a co-designed spec and an independent external review before any build. Evidence for GO/NO-GO does not exist yet: no design read against the boundary hook, the Tier 1 write scanner and the Tier 0 grammar has been done. Next: design doc, external review, then GO/NO-GO.
