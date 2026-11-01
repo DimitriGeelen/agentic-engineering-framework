@@ -155,7 +155,8 @@ def test_harness_brief_says_run_project_code_from_a_copy():
 def _normaliser() -> str:
     src = TERMLINK.read_text()
     start = src.index("# Normalise every harness to one result.md")
-    body = src[src.index("<<'PYEOF'", start) + len("<<'PYEOF'\n"):]
+    head = src.index("<<'PYEOF'", start)
+    body = src[src.index("\n", head) + 1:]
     return body[:body.index("\nPYEOF")]
 
 
