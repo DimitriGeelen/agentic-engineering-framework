@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T17:13:15Z
-last_update: 2026-11-01T18:53:53Z
+last_update: 2026-11-01T18:58:23Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -130,6 +130,7 @@ bvp_scores_proposed:
   **Cause:** [REVIEW] criteria that describe what a page SHOWS are not classified `render-surface`, so `render` is False. Then (a) no screenshots are captured at all, so every seat judges blind, and (b) the vision gate never fires. The wider defect is (a).
 
   **Fix direction, to decide:** either the classifier recognises a criterion that names a page route or URL plus visual properties as render, or the judge treats "names a Watchtower route" as needing capture and vision. The first is a delegation-classifier change, which affects how the ledger's render rules apply.
+  **Also (ring20, msg 0424f9c1):** some claude seats rendered the page themselves (headless Chromium row counts on T-855, load timings on T-873, Playwright counts on T-901, measured bboxes on T-853). But nothing in the ledger records WHICH green saw the page, so a page-blind green and a page-seen green look the same. The design should record whether the verdict's evidence includes a capture.
 - [ ] Defect 1 fixed: a render review at a consumer with a vendored registry does not seat a `vision: false` kind; a test reproduces ring20's case
 - [ ] Defect 2 fixed without weakening the T-3986 tamper check (for example `PYTHONDONTWRITEBYTECODE=1` for harness seats, or bytecode excluded from the tamper diff); a test shows a seat that only imports project code keeps its verdict, and one that edits a source file still voids it
 
