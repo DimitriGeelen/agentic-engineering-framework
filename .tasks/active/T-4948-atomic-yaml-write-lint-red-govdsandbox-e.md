@@ -88,9 +88,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `unit_tier.py --write` and `govd_sandbox.emit_profile` write via same-dir temp + `os.replace`; output bytes unchanged
-- [ ] `lib/cron_commit.py` added to the lint's EXEMPT map with the reason (self-test fixture in a TemporaryDirectory)
-- [ ] `tests/unit/atomic_yaml_write_lint.bats` green; tests that read the two changed files pass; `bin/fw vendor self --check --task T-4948` clean
+- [x] `unit_tier.py --write` and `govd_sandbox.emit_profile` write via same-dir temp + `os.replace`; output bytes unchanged
+- [x] `lib/cron_commit.py` added to the lint's EXEMPT map with the reason (self-test fixture in a TemporaryDirectory)
+- [x] `tests/unit/atomic_yaml_write_lint.bats` green; tests that read the two changed files pass; `bin/fw vendor self --check --task T-4948` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -276,8 +276,19 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/atomic_yaml_write_lint.bats > /tmp/.t4948 2>&1 && ! grep -q "^not ok" /tmp/.t4948
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_govd_sandbox.py > /tmp/.t4948b 2>&1 && grep -q " passed" /tmp/.t4948b && ! grep -qE "failed|error" /tmp/.t4948b
+bin/fw vendor self --check --task T-4948
 
 ## RCA
+
+**Symptom:** the atomic YAML write lint red since October, naming three files.
+
+**Root cause:** two writers added after T-100191's sweep (unit_tier's tiers.yaml writer, T-4377; govd_sandbox's emit_profile) wrote in place; cron_commit's self-test dumped into a temp dir, which the lint cannot tell from a store.
+
+**Why structurally allowed:** the lint caught each on arrival, but the reds were baselined (owner T-3612) rather than fixed, and nothing forced a look until the expiry blocked pushes.
+
+**Prevention:** the lint is green again and guards new writers; the exemption carries its reason and the lint's second test checks it stays real.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
