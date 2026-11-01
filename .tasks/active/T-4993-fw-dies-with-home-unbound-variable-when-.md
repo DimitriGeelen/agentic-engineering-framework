@@ -95,8 +95,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `bin/fw` sets and exports HOME from the passwd entry of the running account when HOME is unset or empty, before anything reads it; an explicitly set HOME is never changed
-- [ ] A bats test runs `bin/fw` with HOME unset (doctor, and an upgrade dry run against a scratch consumer) and shows no `unbound variable`; a control shows a set HOME is kept; `tests/unit/upgrade_fresh_machine_simulation.bats` passes; vendored copy in sync
+- [x] `bin/fw` sets and exports HOME from the passwd entry of the running account when HOME is unset or empty, before anything reads it; an explicitly set HOME is never changed
+- [x] A bats test runs `bin/fw` with HOME unset (doctor, and an upgrade dry run against a scratch consumer) and shows no `unbound variable`; a control shows a set HOME is kept; `tests/unit/upgrade_fresh_machine_simulation.bats` passes; vendored copy in sync. The doctor test was red with the fix stashed. The upgrade dry run stops before step 4c, so it is labelled a smoke test, and the export test carries the guarantee. 23/23 ok with the fresh-machine simulation, 0 skipped.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -282,6 +282,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 bats tests/unit/t4993_fw_without_home.bats > /tmp/.t4993.v 2>&1 && ! grep -q "^not ok" /tmp/.t4993.v
+test "$(grep -c '# skip' /tmp/.t4993.v)" -eq 0
+bin/fw vendor self --check --task T-4993
 
 ## RCA
 
@@ -298,6 +301,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** in a HOME-less agent shell, `fw upgrade` died at step 4c with `HOME: unbound variable` after copying the vendor tree, leaving `.framework.yaml` not updated; `fw doctor` died the same way (050, be.20).
+
+**Root cause:** `bin/fw` runs under `set -u` and reads `$HOME` with no default, in 19 places plus 7 in `lib/upgrade.sh`.
+
+**Why structurally allowed:** every test and every interactive session has HOME set, and the fresh-machine simulation sets it explicitly. Nothing ran fw without it, while agent sandboxes and service accounts can legitimately run without one.
+
+**Prevention:** HOME is defaulted once at the single entry point, so later `$HOME` uses inherit it; `tests/unit/t4993_fw_without_home.bats` runs fw with HOME unset, with a negative control checked (red without the fix).
 
 ## Evolution
 
