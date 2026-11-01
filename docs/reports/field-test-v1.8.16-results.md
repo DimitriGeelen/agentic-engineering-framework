@@ -88,6 +88,12 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 - **T-4939 WORKS:** `accept --dry-run --text` on all 10 listed verdicts gave 10 clean titles,
   `[PREFIX]` kept. Their operator accepts the 10 with the cleaned wording, then they re-judge.
 
+### be.15: ring20-dashboard (9cbbdcdc), 2026-11-01
+- **WORKS.** be.10 → be.15, vendored, ~12 min, exit 0, no rollback. 29 local patches strict, zero fuzz; preserve dry run 31 == 31. Designer 0.33.0 → 0.34.0 swapped as printed. Doctor 0 FAIL; fast lane no new failures.
+- **T-4966 WORKS:** 13 `fw reviewer judge` runs, 3 at a time (their cap 9), 31 min, 36 verdict commits, 122 register rows. Every committed line of the four ledger files parses; verdict_ledger audit 183 rows, 0 failures; no torn line. Race rows (41) and carry-overs (59) are cosmetic, as expected.
+- **T-4944 finding (filed T-4978):** on two render criteria an opencode seat was still dispatched, printed a green, then exited 1, so the row was voided. Open: why the `vision: false` exclusion did not apply there, and why opencode exits 1.
+- Side note filed as T-4979: `verdict_ledger.py audit` exits non-zero when the only findings are void rows.
+
 ### be.14: 055-agentic-fleet-cockpit (ff520e66), 2026-11-01
 - **WORKS.** v1.8.15 → be.14, non-shallow clone of the tag, main checkout, operator's go. One local patch (their T-667, `check-tier0.sh`) is identical in effect to upstream T-4937: their tmux-kill test passes 15/15 against our hook, applied with `--allow-delete-locals`. Dry run then real run: 4 changes, rc 0.
 - Doctor before/after: the same single FAIL, which predates the upgrade (an audit stopped mid-run earlier that day). Their suite: 1745 passed (one live-fleet check unrelated); bats 157/157.
@@ -171,8 +177,8 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | T-4953 read-only pipe refusal (be.14) | pending; dimitri-mint-dev reported the card (9f92d563) | — |
 | T-4962 e2e release (be.14) | **WORKS** (f0c3a193 released on the first sweep) | 055 ff520e66 |
 | T-4963 direct-route reply settles (be.14) | pending; not exercised at 055 (cases settled by hand first) | — |
-| T-4966 parallel judges (be.15) | pending; ring20-dashboard will run parallel batches with "every committed register line parses + audit clean" as the fatal check (ff30b2b9) | — |
-| T-4944 vision-gated render greens (be.15) | pending | — |
+| T-4966 parallel judges (be.15) | **WORKS** (13 judges, 3 at a time; 0 torn lines; audit 0 failures) | ring20-dashboard 9cbbdcdc |
+| T-4944 vision-gated render greens (be.15) | open finding at ring20 (opencode still dispatched on render; T-4978) | ring20-dashboard 9cbbdcdc |
 
 ## Clean full upgrades (rule b)
 
