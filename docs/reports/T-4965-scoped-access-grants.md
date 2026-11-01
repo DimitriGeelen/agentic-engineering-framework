@@ -39,6 +39,28 @@ None exist yet. 050 would contribute cases:
 - Every agent runs as the same OS user as the operator. A grant file that "only the operator may edit" is protected by the hook against typed edits, not against a script, which is the same residual as T-3581.
 - On this share the ledger is the only proof of "created by the agent". If the ledger is wrong or lost, level 2 must fail closed: unknown files are treated as the operator's.
 
+## Model change (050's operator, 2026-11-01, msg ea6861ca)
+
+The main fence moves to the NAS. The framework's grants become the **second layer**.
+
+- **One NAS account per access profile:** `pen-read`, `pen-create` (create, plus modify its own through the NAS's CREATOR OWNER), `pen-write`, `pen-delete`.
+- **Three standing mounts on the host:** read, create and write. `pen-delete` has **no mount**: its credential sits in the secrets store and is fetched per action, only after a Tier 0 approval.
+- For each directory the agent uses the account that matches its grant. The NAS then enforces least privilege, **also against scripts and make**, which closes limit (1) above for those mounts.
+- "Created by the agent" becomes the NAS-side owner (`pen-create`). The ledger becomes an audit aid instead of the only proof. Fail-closed still applies.
+- The accounts and mounts are requested from Ring20 Manager (their T-2486).
+
+**Unchanged, and it limits the model:** the operator's admin mount stays; it is his own access. The agent runs as root on the same host, so for that path **the hook remains the only fence**. The design must say so plainly.
+
+**What 050 asks of the design now:**
+1. The grant file maps directory → profile, and the profile → mount.
+2. The hook blocks typed writes to the admin mount and steers each write to the matching profile mount.
+3. The Tier 0 flow releases the delete credential for exactly one action.
+4. The audit log.
+
+Item 3 is the most sensitive point: a credential handed to an agent process for one action. It needs the closest look in the external review.
+
+**Rename probe:** on hold; 050 will run it against the `pen-create` mount once that exists.
+
 ## Next
 
 1. Design read: `check-project-boundary.sh`, the Tier 1 write scanner (`check-active-task.sh` write patterns), and how Tier 0 approves a delete on an outside path.
