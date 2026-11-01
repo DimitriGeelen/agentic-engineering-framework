@@ -1,0 +1,107 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4969: Operator cannot hand a human-owned task to the agent: fw note promote prints a refused command, Watchtower owner route hits the same R-033 refusal
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T16:34:51Z
+# ============================================================================
+
+task_id: T-4969
+task_name: "Operator cannot hand a human-owned task to the agent: fw note promote prints a refused command, Watchtower owner route hits the same R-033 refusal"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-01T15:32:32Z
+completed: 2026-11-01T16:34:19Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T16:32:51+01:00
+last_commit: 2026-11-01T17:34:18+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file operator hand-over defect (055 report). external review (codex, opencode) of the ownership hand-over and ruleset — step 1 sound with refinements; step 2 questions for the operator. the operator can hand a human-owned task over — Watchtower ownership field (checked record), --i-am-human (interactive in an agent env), old bypass; one gate, every hand-over logged with how it was claimed (operator choice after external review). vendor sync. verification and RCA. code-review findings and the attack cases they became. harden the hand-over per external code review — honest 'claimed' log wording, symlinked record refused, atomic claim of the record, refuse when the log line cannot be written, task-id guard, by/ts checks; 8 attack cases added (16 tests); Visual Verification of the Ownership field. last criterion
+
+# Key outcomes
+outcomes:
+  - 'External review by two internal seats (codex, opencode) of the ownership proposal is recorded in `docs/reports/T-4969-ownership-ruleset-review.md`, with each answer and the cost logged; no host detail in the brief'
+  - 'The operator''s decision on the review is recorded under ## Decisions'
+  - 'The agreed step is built and pinned by tests; every test that reads `agents/task-create/update-task.sh` owner handling or `web/blueprints/tasks.py` owner route passes:'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-01 — how the operator hands over a human-owned task'
+    chose: '"Step 1 + refinements (Recommended)", the operator''s answer after the external review (`docs/reports/T-4969-ownership-ruleset-review.md`). One gate in `update-task.sh` with three doors, each logged in `.context/working/owner-handover.jsonl` with how the claim was made: - `--from-watchtower`: Watchtower''s ownership field; checked against a record Watchtower writes for that task and owner, valid for 120 s and consumed once. - `--i-am-human`: the operator''s CLI; in an agent environment it also needs an interactive confirmation. - `--skip-human-ownership`: kept, logged the same way. - The general rule table (step 2) becomes an inception folded into T-4371, stating D-626''s split explicitly.'
+    rationale: 'both reviewers judged step 1 sound and no wider than today''s bypass, and both asked for a checked Watchtower claim, a tty confirmation for agent-environment claims, one logged gate, and honest "verified/claimed" wording.'
+    alternatives_rejected: ['- "Step 1 only, plain": the flag alone would be `--i-am-human` in disguise. - "Inception first": the operator''s own field would stay broken meanwhile.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/observe/observe.sh'
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/web/blueprints/tasks.py'
+  - '.context/costs/reviews.jsonl'
+  - '.tasks/active/T-4969-operator-cannot-hand-a-human-owned-task-.md'
+  - 'agents/observe/observe.sh'
+  - 'agents/task-create/update-task.sh'
+  - 'docs/reports/T-4969-ownership-ruleset-review.md'
+  - 'tests/unit/t4969_owner_handover.bats'
+  - 'tests/web/test_t4969_owner_route_handover.py'
+  - 'web/blueprints/tasks.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T16:32:51'
+    action: 'T-4969: file operator hand-over defect (055 report)'
+  - time: '2026-11-01T17:03:10'
+    action: 'T-4969: external review (codex, opencode) of the ownership hand-over and ruleset — step 1 sound with refinements; step 2 questions for the operator'
+  - time: '2026-11-01T17:12:58'
+    action: 'T-4969: the operator can hand a human-owned task over — Watchtower ownership field (checked record), --i-am-human (interactive in an agent env), old bypass; one gate, every hand-over logged with how it was claimed (operator choice after external review)'
+  - time: '2026-11-01T17:13:40'
+    action: 'T-4969: vendor sync'
+  - time: '2026-11-01T17:14:48'
+    action: 'T-4969: verification and RCA'
+  - time: '2026-11-01T17:23:35'
+    action: 'T-4969: code-review findings and the attack cases they became'
+  - time: '2026-11-01T17:32:22'
+    action: 'T-4969: harden the hand-over per external code review — honest ''claimed'' log wording, symlinked record refused, atomic claim of the record, refuse when the log line cannot be written, task-id guard, by/ts checks; 8 attack cases added (16 tests); Visual Verification of the Ownership field'
+  - time: '2026-11-01T17:32:29'
+    action: 'T-4969: vendor sync'
+  - time: '2026-11-01T17:34:18'
+    action: 'T-4969: last criterion'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 9 commit(s), 61 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 61
+  commits: 10
+  files_changed: 14
+  lines_added: 1224
+  lines_removed: 85
+  footprint_refreshed_at: '2026-11-01T16:34:59Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4969-operator-cannot-hand-a-human-owned-task-.md
+generated_by: context-agent-hybrid

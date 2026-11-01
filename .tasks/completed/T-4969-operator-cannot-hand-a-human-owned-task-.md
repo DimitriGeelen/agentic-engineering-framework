@@ -15,12 +15,12 @@ description: >
   existing human-action protection, CLI with --i-am-human), logged; promote prints
   that path.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/observe/observe.sh, agents/task-create/update-task.sh, web/blueprints/tasks.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -49,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T15:32:32Z
-last_update: 2026-11-01T16:34:18Z
-date_finished:
+last_update: 2026-11-01T16:34:19Z
+date_finished: 2026-11-01T16:34:19Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -429,3 +429,22 @@ bin/fw vendor self --check --task T-4969
 ### 2026-11-01T15:57:21Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-01T16:34:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** server-side route logic only (no template/CSS/markup change); Ownership field rendering verified at 3 widths in ## Visual Verification; behaviour pinned by tests/web/test_t4969_owner_route_handover.py
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e45607a3
+- **Timestamp:** 2026-11-01T16:34:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — The agreed step is built and pinned by tests; every test that reads `agents/task-create/update-task.sh` owner handling or `web/blueprints/tasks.py` owner route passes:
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/tasks.py in: The agreed step is built and pinned by tests; every test that reads `agents/task-create/update-task.sh` owner handling or `web/blueprints/tasks.py` ow`

@@ -52473,3 +52473,21 @@ scan_id: R-899e18db
 task_id: T-4966
 payload:
   task_file: .tasks/active/T-4966-concurrent-fw-reviewer-judge-in-one-chec.md
+---
+kind: scan_emitted
+timestamp: '2026-11-01T16:34:41Z'
+scan_id: R-e45607a3
+task_id: T-4969
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-01T16:34:41Z'
+scan_id: R-e45607a3
+task_id: T-4969
+payload:
+  task_file: .tasks/active/T-4969-operator-cannot-hand-a-human-owned-task-.md
