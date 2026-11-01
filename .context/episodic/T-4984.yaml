@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4984: Driver sets slice 1: lib/driver_sets.py resolver and set-file contract
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T22:17:23Z
+# ============================================================================
+
+task_id: T-4984
+task_name: "Driver sets slice 1: lib/driver_sets.py resolver and set-file contract"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T21:08:37Z
+completed: 2026-11-01T22:17:00Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T23:10:20+01:00
+last_commit: 2026-11-01T23:16:59+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context and criteria. lib/driver_sets.py — one resolver and validator for per-arc driver sets (refusals per the reviewed design), tests, audit check, split-root lint exemption for value-drivers*.yaml (dispatched build, reviewed). split-root lint test — pin follows the value-drivers*.yaml exemption; baseline 23 -> 24 for T-4988's per-project access-grants guard (T-4988 broke this ratchet; my sweep missed it because the test greps the tree, not the hook by name). vendor self and fabric card for lib/driver_sets.py. criteria and verification
+
+# Key outcomes
+outcomes:
+  - '`lib/driver_sets.py` with `resolve_set_name`, `set_path`, `load_set`, `load_for_task`, `load_for_arc`, `validate_set` and `DriverSetError`, implementing the design''s resolution rule and its review fixes: arc_id and `arc:` tags via `lib/arc_membership.py`; refusals for a missing or invalid file, a bad name, an unresolvable arc reference, arc_id and tags naming different sets, duplicate arc ids or slugs, duplicate YAML keys, and an empty `driver_set:`; `default` reserved for the live file'
+  - '`validate_set`: same schema as the live file; D1-D4 entries equal to the live ones except `weight` and `rubric`; ids unique across both sections; integer weights 0-10; project-level keys (`auto_promote`, `inception_scoring_exception`) WARN; a file named `value-drivers-default.yaml` WARNs'
+  - '`tests/unit/test_driver_sets.py` covers every refusal and the valid cases; an audit check FAILs on a named set that does not resolve; the T-2648 split-root lint exempts `value-drivers*.yaml` with a reason; lint suite green; vendored copy in sync. Built by a dispatched worker (t4984-build) and reviewed by me: 66 tests, `audit_split_root_asset_lint.bats` 11/11 (pin and baseline updated with reasons), lint suite green, vendored copy in sync.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/driver_sets.py'
+  - '.fabric/components/lib-driver_sets.yaml'
+  - '.tasks/active/T-4984-driver-sets-slice-1-libdriversetspy-reso.md'
+  - 'agents/audit/audit.sh'
+  - 'lib/driver_sets.py'
+  - 'tests/unit/audit_split_root_asset_lint.bats'
+  - 'tests/unit/test_driver_sets.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T23:10:20'
+    action: 'T-4984: context and criteria'
+  - time: '2026-11-01T23:15:25'
+    action: 'T-4984: lib/driver_sets.py — one resolver and validator for per-arc driver sets (refusals per the reviewed design), tests, audit check, split-root lint exemption for value-drivers*.yaml (dispatched build, reviewed)'
+  - time: '2026-11-01T23:16:30'
+    action: 'T-4984: split-root lint test — pin follows the value-drivers*.yaml exemption; baseline 23 -> 24 for T-4988''s per-project access-grants guard (T-4988 broke this ratchet; my sweep missed it because the test greps the tree, not the hook by name)'
+  - time: '2026-11-01T23:16:34'
+    action: 'T-4984: vendor self and fabric card for lib/driver_sets.py'
+  - time: '2026-11-01T23:16:59'
+    action: 'T-4984: criteria and verification'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 68 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 68
+  commits: 6
+  files_changed: 11
+  lines_added: 1811
+  lines_removed: 22
+  footprint_refreshed_at: '2026-11-01T22:17:31Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4984-driver-sets-slice-1-libdriversetspy-reso.md
+generated_by: context-agent-hybrid
