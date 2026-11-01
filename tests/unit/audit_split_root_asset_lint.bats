@@ -145,13 +145,20 @@ EOF
     # policy/sandbox-profile.d), designer-pin dz/dc + bvp scoring guard (bin/fw x2),
     # T-4449 template-sync pre-commit leg (hooks.sh x2). The test never ratcheted
     # them in, so it sat red until now.
-    sites=$(grep -rnE '\$\{?PROJECT_ROOT\}?/(lib|agents|policy|web)/' \
+    #
+    # T-4950: baseline 22 -> 23, and *.txt excluded. The hook-line catalogues
+    # agents/git/lib/{framework,stock}-hook-lines.txt (T-4789) are data, recorded copies
+    # of hook lines, not shell that resolves anything; they added 12 lines. The
+    # designer-pin dz/dc reads moved from bin/fw to lib/doctor-drift.sh (net 0). +1:
+    # T-4913's bin/fw read of the project's own policy/review-backends.yaml, which
+    # detects a consumer registry shadowing the framework's (a per-project policy read).
+    sites=$(grep -rnE --exclude='*.txt' '\$\{?PROJECT_ROOT\}?/(lib|agents|policy|web)/' \
                 "$REPO_ROOT/agents/" "$REPO_ROOT/lib/" "$REPO_ROOT/bin/fw" 2>/dev/null \
             | grep -v ".agentic-framework" \
             | grep -v "FRAMEWORK_ROOT:-" || true)
     count=$(printf '%s\n' "$sites" | grep -c .)
-    if [ "$count" -ne 22 ]; then
-        echo "PROJECT_ROOT framework-asset sites: $count (baseline 22)" >&2
+    if [ "$count" -ne 23 ]; then
+        echo "PROJECT_ROOT framework-asset sites: $count (baseline 23)" >&2
         printf '%s\n' "$sites" >&2
         false
     fi
