@@ -5,16 +5,16 @@ description: >
   Inception: Per-arc value-driver sets (driver_set: product) — 010-termlink T-3638
   ask
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-11-01T12:39:56Z
-last_update: 2026-11-01T14:37:23Z
-date_finished:
+last_update: 2026-11-01T14:47:59Z
+date_finished: 2026-11-01T14:47:59Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -109,15 +109,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -176,7 +176,13 @@ Filing-time note (kept): not yet explored. 010-termlink (msg c39df4cd) asks that
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Operator, 2026-11-01, in chat: chose "GO, narrow". Scope: only the loading path. `driver_set:` on an arc (a task inherits its arc's set) resolves to `policy/value-drivers-<set>.yaml` and is read by bvp ranking and the estimator, with weights and caps per set. D1-D4 keep their meaning. No new gates. A design read of the four blocking points below and a short independent review come first, then build slices. Recording the decision itself stays the operator's, via Watchtower.
+
+Filing-time note (kept): not yet explored. 010-termlink (msg c39df4cd) asks that an arc or task name a driver set resolving to policy/value-drivers-<set>.yaml, used by bvp.sh ranking and the estimator, with D1-D4 meaning unchanged and weights per set. Today the live file wins collisions (estimator.py:2727-2736), D1-D4 cannot be scoped (arc-driver-review.sh check_b), scoped weights are capped (arc.sh:1567,1624) and bvp rank reads only the live file (bvp.sh:285-364). Needs a design read of those four points and the operator's view on whether two driver sets per project is wanted before GO or NO-GO; the peer scores by hand meanwhile, so nothing is blocked.
+
+**Date**: 2026-11-01T14:47:58Z
 
 ## Updates
 
@@ -185,3 +191,32 @@ Filing-time note (kept): not yet explored. 010-termlink (msg c39df4cd) asks that
 
 ### 2026-11-01T14:37:23Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-01T14:47:58Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Operator, 2026-11-01, in chat: chose "GO, narrow". Scope: only the loading path. `driver_set:` on an arc (a task inherits its arc's set) resolves to `policy/value-drivers-<set>.yaml` and is read by bvp ranking and the estimator, with weights and caps per set. D1-D4 keep their meaning. No new gates. A design read of the four blocking points below and a short independent review come first, then build slices. Recording the decision itself stays the operator's, via Watchtower.
+
+Filing-time note (kept): not yet explored. 010-termlink (msg c39df4cd) asks that an arc or task name a driver set resolving to policy/value-drivers-<set>.yaml, used by bvp.sh ranking and the estimator, with D1-D4 meaning unchanged and weights per set. Today the live file wins collisions (estimator.py:2727-2736), D1-D4 cannot be scoped (arc-driver-review.sh check_b), scoped weights are capped (arc.sh:1567,1624) and bvp rank reads only the live file (bvp.sh:285-364). Needs a design read of those four points and the operator's view on whether two driver sets per project is wanted before GO or NO-GO; the peer scores by hand meanwhile, so nothing is blocked.
+
+### 2026-11-01T14:47:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b829ee8e
+- **Timestamp:** 2026-11-01T14:48:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-0c9ea17c
+- **Timestamp:** 2026-11-01T14:48:00Z
+- **Overall:** UNVERIFIED
+- **Claims:** 0
+- No verifiable claims found in ## Recommendation
