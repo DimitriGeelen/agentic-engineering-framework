@@ -89,6 +89,19 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
   re-applied clean. T-4920 still 0 of 80000 on their probe. Core tier 217/0.
 - **T-4892 WORKS:** `fw config get SIDECAR_DM_ADDRESS_KEYS` exits 0.
 
+### be.4: 010-termlink (160ded67), 2026-11-01
+- **WORKS.** v1.8.15 → be.4 (181 commits), rehearsal on a fresh clone then the real run; dry
+  and real rc 0. CLAUDE.md byte-identical. Doctor FAIL 0 → 0.
+- **T-4870 WORKS:** 4 of their 8 preserved files changed upstream, each 3-way merged with 0
+  conflicts; all 8 byte-identical to their pre-upgrade copies afterwards, markers present.
+- **T-4920 + T-4921 WORKS:** synthetic hook payloads. Before: Tier 0 and boundary hooks
+  blocked a small payload but let a 136 KB one through (fail open). After: both block both.
+- Two of their fixtures changed with upstream behaviour, not defects: a shell fixture task
+  needed the four-part Context (T-4907; the test opt-out applies under bats only), and a
+  fixture asserting the pre-T-4916 refusal (their T-3636, for their operator).
+- The T-4892 host-shared WARN shows for them on be.4. That can be the false positive fixed in
+  be.11 (T-4941) or a true reading; told them (reply to 160ded67).
+
 ### Announced, not yet reported
 - 055-agentic-fleet-cockpit (6f246312): will upgrade to be.8 when their operator times it and
   report T-4937 with their own test kept as the check.
@@ -102,13 +115,13 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | T-4871 runme double start | **WORKS** | ring20-dashboard 4c89079d |
 | T-4914 run.log rotation | **WORKS** | ring20-dashboard 4c89079d, e24118cc |
 | T-4916 deterministic criteria reviewer-judged, `--reroute-converted` | **WORKS** | ring20-dashboard 4c89079d |
-| T-4920 Tier 0 pre-filter fail-open | **WORKS** | 832 be8285bb (0 of 80000) |
+| T-4920 Tier 0 pre-filter fail-open | **WORKS** | 832 be8285bb (0 of 80000); 010-termlink 160ded67 (136 KB probe) |
 | T-4926 + T-4927 read-only classifier quoting | **WORKS** | ring20-dashboard 504a2831 |
 | T-4934 `$$'` bypass | **WORKS** | ring20-dashboard e24118cc |
-| T-4921 hooks off pipes into `grep -q` | no specific verdict; clean upgrades only | 4c89079d, be8285bb, 1e4be051 |
+| T-4921 hooks off pipes into `grep -q` | **WORKS** (boundary hook blocks the 136 KB payload it let through on v1.8.15) | 010-termlink 160ded67 |
 | T-4907 four-part Context gate | behaves as designed (seen firing by three testers) | efe7d0e5, be8285bb, 1e4be051 |
 | T-4928 broken-hook detection | no specific verdict | — |
-| T-4870 in-file patches lost on upgrade (1409) | pending: 1409 not yet reported | — |
+| T-4870 in-file patches lost on upgrade (1409) | **WORKS** at 010-termlink (8/8 preserved, 4 three-way merges, 0 conflicts); 1409 not yet reported | 010-termlink 160ded67 |
 | T-4892 host-shared key WARN | **WORKS** at 832 (`config get SIDECAR_DM_ADDRESS_KEYS` exits 0); TermLink's own verdict pending | 832 32c4d12e |
 | T-4893 notices are not mail (ring20 / 050) | pending | — |
 | T-4913, T-4918 (dimitri-mint-dev) | pending | — |
@@ -132,7 +145,7 @@ not yet cover be.5 to be.9.
 
 ## No positive field test yet
 
-T-4870, T-4893, T-4913, T-4918, T-4924 (832's own check), T-4928, T-4929, T-4935, and
+T-4893, T-4913, T-4918, T-4924 (832's own check), T-4928, T-4929, T-4935, and
 everything first shipped in be.7 to be.9 without its own verdict (T-4932, T-4933, T-4937,
 T-4912). A release that includes them needs either these
 verdicts, rule-b coverage from three clean upgrades at that tag, or the operator's explicit yes.
