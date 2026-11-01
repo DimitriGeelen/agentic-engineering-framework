@@ -1,8 +1,18 @@
 ---
 id: T-4998
-name: "Backlog triage in the framework: a fw verb and a Watchtower /backlog page (010 + 055 proposal)"
+name: "Backlog triage in the framework: a fw verb and a Watchtower /backlog page (010
+  + 055 proposal)"
 description: >
-  010-termlink (msg f6aa307a, their operator): triage of their 343 open tasks (their T-3648, docs/reports/T-3648-backlog-triage.md): 109 done-not-closed, 122 parked >=60 days with no reason now, 47 live, 65 needing the operator or a reviewer. 055 is building, with 010, a check for outstanding tasks plus a Watchtower page; proposal: take the result into the framework. Framework findings: (1) a task file's git date is unreliable as activity because the BVP estimator rewrites files; the last commit NAMING the task is the better signal; (2) counting Human ACs must skip the template's example checkboxes inside HTML comments, or every task looks human-blocked. Related: AEF's own answer to 055 (T-4982): the core problem is a backlog with no pruning owner.
+  010-termlink (msg f6aa307a, their operator): triage of their 343 open tasks (their
+  T-3648, docs/reports/T-3648-backlog-triage.md): 109 done-not-closed, 122 parked
+  >=60 days with no reason now, 47 live, 65 needing the operator or a reviewer. 055
+  is building, with 010, a check for outstanding tasks plus a Watchtower page; proposal:
+  take the result into the framework. Framework findings: (1) a task file's git date
+  is unreliable as activity because the BVP estimator rewrites files; the last commit
+  NAMING the task is the better signal; (2) counting Human ACs must skip the template's
+  example checkboxes inside HTML comments, or every task looks human-blocked. Related:
+  AEF's own answer to 055 (T-4982): the core problem is a backlog with no pruning
+  owner.
 
 status: captured
 workflow_type: inception
@@ -12,8 +22,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-11-01T23:39:30Z
-last_update: 2026-11-01T23:39:30Z
-date_finished: null
+last_update: '2026-11-01T23:45:22Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +32,16 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-11-01T23:45:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=124,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4998: Backlog triage in the framework: a fw verb and a Watchtower /backlog page (010 + 055 proposal)
