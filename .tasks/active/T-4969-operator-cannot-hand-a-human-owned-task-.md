@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T15:32:32Z
-last_update: 2026-11-01T16:13:40Z
+last_update: 2026-11-01T16:14:47Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -295,6 +295,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t4969_owner_handover.bats tests/unit/t3586_skip_flag_policy.bats
+timeout 600 python3 -m pytest -q -p no:cacheprovider tests/web/test_t4969_owner_route_handover.py
+bin/fw watchtower current
+bin/fw vendor self --check --task T-4969
 
 ## RCA
 
@@ -311,6 +315,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** the operator could not hand a human-owned task to the agent. `fw note promote`'s printed command was refused five times at 055, and Watchtower's ownership field called the same command and failed the same way.
+
+**Root cause:** R-033 protected `owner: human` with one exception, a bypass flag, and did not distinguish the operator from an agent. Other operator-only actions got an operator path (`--from-watchtower`, `--i-am-human`, T-1259/T-1262); ownership never did. Watchtower's field and the promote hint were written against the rule's happy path and never exercised on a human-owned task.
+
+**Why structurally allowed:** no test ran an operator hand-over end to end. The T-3586 tests pin that an agent is refused, which is half the contract; nothing pinned that the operator succeeds. The promote hint was text that nothing executed.
+
+**Prevention:** `t4969_owner_handover.bats` pins both halves: every door succeeds for the operator and fails for an agent, and each refusal is paired with a control. `test_t4969_owner_route_handover.py` pins the Watchtower field end to end, and the promote message is checked for the working command. The wider ruleset (who, which direction, what evidence) goes to the T-4371 inception.
 
 ## Evolution
 
