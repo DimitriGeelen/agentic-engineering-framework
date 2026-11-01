@@ -52689,3 +52689,29 @@ scan_id: R-dcf0e611
 task_id: T-4967
 payload:
   task_file: .tasks/active/T-4967-driver-sets-slice-1-design-read--drivers.md
+---
+kind: scan_emitted
+timestamp: '2026-11-01T21:14:21Z'
+scan_id: R-f018891d
+task_id: T-4965
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-01T21:14:21Z'
+scan_id: R-f018891d
+task_id: T-4965
+payload:
+  task_file: .tasks/active/T-4965-scoped-operator-owned-outside-project-ac.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-11-01T21:14:21Z'
+scan_id: RC-363f17b9
+task_id: T-4965
+payload:
+  overall: CONFIRMED
+  claim_count: 6

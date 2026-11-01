@@ -1,0 +1,111 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4965: Scoped, operator-owned outside-project access grants (read / create / create-project) — 050 Pen T-2500 ask
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T21:14:30Z
+# ============================================================================
+
+task_id: T-4965
+task_name: "Scoped, operator-owned outside-project access grants (read / create / create-project) — 050 Pen T-2500 ask"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T13:34:31Z
+completed: 2026-11-01T21:14:20Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T14:35:16+01:00
+last_commit: 2026-11-01T22:14:21+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file scoped outside-project access grants inception (050 Pen T-2500 ask). research artifact — 050's requirements, mount facts and offered tests; known limits. 050's model change — NAS account per profile is the first fence, framework grants the second; admin mount stays hook-only. 050 prefers the runtime to run the approved delete; the agent never holds the credential. refined model — three NAS accounts (read, create, delete), two standing levels, delete credential the agent cannot read. operator decisions via 050 — rename is not delete; ledger-backed temporary items deletable without approval. design read (probe: rm/mv/cp on an extra read path are refused today; the scanner finds targets, not operation kinds) and design draft for review. IW-1, IW-2 answered pending review; IW-3 (delete credential vs root agent). opencode review (sound with fixes; delete route unsound as drafted) and answers; codex seat pending (usage limit). codex review (unsound as drafted) and answers; recommendation GO for the reduced framework layer, NO-GO for framework-side delete/temp authority; G-126 + T-4983 filed (boundary variable gap, confirmed); G-125 resolved (832 confirmed). problem statement; recommendation GO reduced layer / NO-GO framework-side delete authority, with evidence. 050's operator answers — NAS is the delete/ownership authority; scope shrinks to grant file, admin never_write, opaque-form refusals, visibility. inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'opencode review (sound with fixes; delete route unsound as drafted) and answers; codex seat pending (usage limit)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/concerns.yaml'
+  - '.context/reviews/human-ac-ticks.jsonl'
+  - '.tasks/active/T-4965-scoped-operator-owned-outside-project-ac.md'
+  - '.tasks/active/T-4983-boundary-hook-admits-a-write-outside-the.md'
+  - '.tasks/completed/T-4965-scoped-operator-owned-outside-project-ac.md'
+  - 'docs/reports/T-4965-review-codex.md'
+  - 'docs/reports/T-4965-review-opencode.md'
+  - 'docs/reports/T-4965-scoped-access-grants.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T14:35:16'
+    action: 'T-4965: file scoped outside-project access grants inception (050 Pen T-2500 ask)'
+  - time: '2026-11-01T15:41:09'
+    action: 'T-4965: research artifact — 050''s requirements, mount facts and offered tests; known limits'
+  - time: '2026-11-01T16:10:50'
+    action: 'T-4965: 050''s model change — NAS account per profile is the first fence, framework grants the second; admin mount stays hook-only'
+  - time: '2026-11-01T16:19:20'
+    action: 'T-4965: 050 prefers the runtime to run the approved delete; the agent never holds the credential'
+  - time: '2026-11-01T16:21:01'
+    action: 'T-4965: refined model — three NAS accounts (read, create, delete), two standing levels, delete credential the agent cannot read'
+  - time: '2026-11-01T18:14:16'
+    action: 'T-4965: operator decisions via 050 — rename is not delete; ledger-backed temporary items deletable without approval'
+  - time: '2026-11-01T21:30:54'
+    action: 'T-4965: design read (probe: rm/mv/cp on an extra read path are refused today; the scanner finds targets, not operation kinds) and design draft for review'
+  - time: '2026-11-01T21:31:35'
+    action: 'T-4965: IW-1, IW-2 answered pending review; IW-3 (delete credential vs root agent)'
+  - time: '2026-11-01T21:45:15'
+    action: 'T-4965: opencode review (sound with fixes; delete route unsound as drafted) and answers; codex seat pending (usage limit)'
+  - time: '2026-11-01T22:07:31'
+    action: 'T-4965: codex review (unsound as drafted) and answers; recommendation GO for the reduced framework layer, NO-GO for framework-side delete/temp authority; G-126 + T-4983 filed (boundary variable gap, confirmed); G-125 resolved (832 confirmed)'
+  - time: '2026-11-01T22:08:07'
+    action: 'T-4965: problem statement; recommendation GO reduced layer / NO-GO framework-side delete authority, with evidence'
+  - time: '2026-11-01T22:13:15'
+    action: 'T-4965: 050''s operator answers — NAS is the delete/ownership authority; scope shrinks to grant file, admin never_write, opaque-form refusals, visibility'
+  - time: '2026-11-01T22:14:21'
+    action: 'T-4965: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 13 commit(s), 459 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 459
+  commits: 14
+  files_changed: 10
+  lines_added: 1089
+  lines_removed: 28
+  footprint_refreshed_at: '2026-11-01T21:14:37Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4965-scoped-operator-owned-outside-project-ac.md
+generated_by: context-agent-hybrid
