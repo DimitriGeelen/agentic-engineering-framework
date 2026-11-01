@@ -1,8 +1,16 @@
 ---
 id: T-4995
-name: "Access grants: name the grant rule in boundary refusals; say audit.jsonl records hook decisions, not NAS outcomes (050 field notes)"
+name: "Access grants: name the grant rule in boundary refusals; say audit.jsonl records
+  hook decisions, not NAS outcomes (050 field notes)"
 description: >
-  050-email-archive field report (msg f7527742, first real use of T-4988/T-4989, all six checks as designed). Notes: (a) a refusal under a never_write root or at an ungranted path under a grant's via mount still prints the generic 'PROJECT BOUNDARY BLOCK ... outside project root'; naming the never_write entry or 'no grant covers this path' would make the reason obvious. (b) .context/grants/audit.jsonl records the hook's decision only: 'allowed-by-grant' is written even when the NAS then refuses the write (their case 4); say so in lib/access_grants.py's docstring and fw grants show.
+  050-email-archive field report (msg f7527742, first real use of T-4988/T-4989, all
+  six checks as designed). Notes: (a) a refusal under a never_write root or at an
+  ungranted path under a grant's via mount still prints the generic 'PROJECT BOUNDARY
+  BLOCK ... outside project root'; naming the never_write entry or 'no grant covers
+  this path' would make the reason obvious. (b) .context/grants/audit.jsonl records
+  the hook's decision only: 'allowed-by-grant' is written even when the NAS then refuses
+  the write (their case 4); say so in lib/access_grants.py's docstring and fw grants
+  show.
 
 status: captured
 workflow_type: build
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T23:25:06Z
-last_update: 2026-11-01T23:25:06Z
-date_finished: null
+last_update: '2026-11-01T23:30:26Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-01T23:30:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4995: Access grants: name the grant rule in boundary refusals; say audit.jsonl records hook decisions, not NAS outcomes (050 field notes)
