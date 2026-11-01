@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4959: Remove 12 leftover t1852 test arcs from .context/arcs (pre-T-4523 leak; shown as 6 fake arcs on /approvals)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T12:17:47Z
+# ============================================================================
+
+task_id: T-4959
+task_name: "Remove 12 leftover t1852 test arcs from .context/arcs (pre-T-4523 leak; shown as 6 fake arcs on /approvals)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T11:33:40Z
+completed: 2026-11-01T12:17:36Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-01T12:34:45+01:00
+last_commit: 2026-11-01T13:17:35+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context and criteria — leftover t1852 test arcs; removal handed to operator (runme). criteria met — operator removed the 12 leftover test arcs; Arc Closure lists 2 real arcs
+
+# Key outcomes
+outcomes:
+  - 'The 12 untracked `.context/arcs/t1852-*.yaml` files are removed; none was tracked in git (operator ran runme t4959-remove-test-arcs 2026-11-01 13:16, EXIT 0; the tracked-file check passed before rm)'
+  - '/approvals no longer shows a "start smoke" arc card (Arc Closure now lists 2 arcs, was 8)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4959-remove-12-leftover-t1852-test-arcs-from-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T12:34:45'
+    action: 'T-4959: context and criteria — leftover t1852 test arcs; removal handed to operator (runme)'
+  - time: '2026-11-01T13:17:35'
+    action: 'T-4959: criteria met — operator removed the 12 leftover test arcs; Arc Closure lists 2 real arcs'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 43 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 43
+  commits: 3
+  files_changed: 4
+  lines_added: 473
+  lines_removed: 7
+  footprint_refreshed_at: '2026-11-01T12:17:57Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4959-remove-12-leftover-t1852-test-arcs-from-.md
+generated_by: context-agent-hybrid
