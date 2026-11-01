@@ -6,7 +6,7 @@ description: >
   Inception: Scoped, operator-owned outside-project access grants (read / create /
   create-project) — 050 Pen T-2500 ask
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-11-01T13:34:31Z
-last_update: '2026-11-01T13:45:29Z'
+last_update: 2026-11-01T14:40:25Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -80,6 +80,15 @@ bvp_scores_proposed:
      §Disposition Gate. Bypass: --skip-disposition-gate "rationale" (direct) or
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
+
+- **IW-1: Can the boundary hook enforce per-directory read / create / create-project grants, from an operator-owned grant file, without widening anything a grant does not name?**
+  confidence: 0
+  disposition: deferred
+  rationale: design read of check-project-boundary.sh, the Tier 1 write scanner and the Tier 0 grammar not done yet (docs/reports/T-4965-scoped-access-grants.md)
+- **IW-2: How does level 2 ("modify only what the agent created") work when the filesystem cannot tell who created a file?**
+  confidence: 1
+  disposition: deferred
+  rationale: 050's mount facts: sshfs with no idmap, every file root:root mode 777, so ownership proves nothing; a created-by-agent ledger is required (requirements in docs/reports/T-4965-scoped-access-grants.md)
 
 ## Exploration Plan
 
@@ -172,3 +181,6 @@ Requested by 050-email-archive (msg d7a70b98, Pen T-2500, priority not urgent): 
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-11-01T14:40:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
