@@ -174,6 +174,8 @@ Codex findings, and what the design now says:
 
 2 and 3 ship under one be-tag; tell 010-termlink then.
 
+**Filed (2026-11-01):** slice 1 T-4984, slice 2 T-4985, slice 3 T-4986, slice 4 T-4987.
+
 Findings, and what the design now says:
 
 1. **An unresolvable arc reference falls back to the live set.** Accepted. If `arc_id:` names no arc, or every `arc:` tag names a missing arc, that is a refusal, the same as a parse error. Rule 5 is widened to "any arc reference that does not resolve".
