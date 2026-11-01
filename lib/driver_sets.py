@@ -188,8 +188,11 @@ class _ArcIndex:
                       if path in ps and len(ps) > 1)
 
 
-def _arc_index(project_root: Path) -> _ArcIndex:
-    arcs_dir = Path(project_root) / ".context" / "arcs"
+def _arc_index(project_root: Path, arcs_dir=None) -> _ArcIndex:
+    # `arcs_dir` overrides <root>/.context/arcs for a reader that carries its
+    # own arcs seam (the estimator's ARCS_DIR, T-4985); the rule is the same.
+    arcs_dir = Path(arcs_dir) if arcs_dir is not None \
+        else Path(project_root) / ".context" / "arcs"
     try:
         key = tuple(sorted((p.name, p.stat().st_mtime_ns, p.stat().st_size)
                            for p in arcs_dir.glob("*.yaml")))
@@ -255,13 +258,14 @@ def _task_arc_refs(task_fm: dict) -> tuple[str | None, list[str]]:
     return (arc_id or None), slugs
 
 
-def _resolve(task_fm: dict, project_root) -> tuple[str | None, str | None]:
+def _resolve(task_fm: dict, project_root, arcs_dir=None
+             ) -> tuple[str | None, str | None]:
     """(set name or None, label of the arc that chose it or None)."""
     root = Path(project_root)
     arc_id, slugs = _task_arc_refs(task_fm)
     if not arc_id and not slugs:
         return None, None
-    idx = _arc_index(root)
+    idx = _arc_index(root, arcs_dir)
 
     chosen: list[tuple[str, str | None, str]] = []  # (label, set, via)
     if arc_id:
@@ -302,9 +306,9 @@ def _resolve(task_fm: dict, project_root) -> tuple[str | None, str | None]:
     return name, label
 
 
-def resolve_set_name(task_fm: dict, project_root) -> str | None:
+def resolve_set_name(task_fm: dict, project_root, arcs_dir=None) -> str | None:
     """The driver set a task is scored under; None means the live file."""
-    return _resolve(task_fm, project_root)[0]
+    return _resolve(task_fm, project_root, arcs_dir)[0]
 
 
 # ---------------------------------------------------------------------------
@@ -479,9 +483,10 @@ def validate_set(policy, live_policy, path: Path | None = None
 # ---------------------------------------------------------------------------
 # Entry points for readers
 # ---------------------------------------------------------------------------
-def load_for_task(task_fm: dict, project_root) -> tuple[str | None, dict]:
+def load_for_task(task_fm: dict, project_root, arcs_dir=None
+                  ) -> tuple[str | None, dict]:
     """(set name or None, policy) for a task. Raises DriverSetError."""
-    name, label = _resolve(task_fm, project_root)
+    name, label = _resolve(task_fm, project_root, arcs_dir)
     try:
         return name, load_set(name, project_root)
     except DriverSetError as exc:

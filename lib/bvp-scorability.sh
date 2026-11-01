@@ -65,15 +65,16 @@ except Exception:
     sys.exit(2)
 
 
-def classify(entry):
-    """(ok, reason) for one driver entry."""
+def classify(entry, set_policy=None):
+    """(ok, reason) for one driver entry. `set_policy` is the arc's driver set
+    (T-4985); None reads the live file's aliases, as before."""
     d_id = entry.get("id") or entry.get("name")
     d_name = entry.get("name") or d_id
     table = est._handler_table()
     if d_id in table or d_name in table:
         return True, ""
     try:
-        alias = est._load_driver_aliases().get(d_id)
+        alias = est._load_driver_aliases(set_policy).get(d_id)
     except Exception:
         alias = None
     if alias and alias in table:
@@ -113,10 +114,32 @@ if arcs_dir.is_dir():
             continue
         if str(arc.get("status") or "").lower() in ("closed", "abandoned"):
             continue
+        # T-4985: an arc's scoped drivers are classified under the arc's
+        # driver set. A set that cannot be loaded is reported per driver with
+        # the reason — not classified against the live file.
+        set_policy = None
+        set_err = ""
+        if isinstance(arc, dict) and "driver_set" in arc:
+            try:
+                _lib = Path(est_path).resolve().parents[3] / "lib"
+                if str(_lib) not in sys.path:
+                    sys.path.insert(0, str(_lib))
+                import driver_sets
+                _name, set_policy = driver_sets.load_for_arc(arc, root)
+                if _name is None:
+                    set_policy = None
+            except Exception as e:  # noqa: BLE001
+                set_err = str(e).replace("\t", " ").replace("\n", " ")
         for sd in (arc.get("scoped_drivers") or []):
             if not isinstance(sd, dict):
                 continue
-            ok, reason = classify(sd)
+            if set_err:
+                rows.append((sd.get("id") or sd.get("name") or "?",
+                             sd.get("name") or "?",
+                             f".context/arcs/{arc_yaml.name}",
+                             f"driver-set-refused: {set_err}"))
+                continue
+            ok, reason = classify(sd, set_policy)
             if not ok:
                 rows.append((sd.get("id") or sd.get("name") or "?",
                              sd.get("name") or "?",

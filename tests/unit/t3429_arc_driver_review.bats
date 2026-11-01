@@ -289,3 +289,104 @@ YAML
     [ "$status" -eq 1 ]
     [[ "$output" == *"no driver matching 'nope'"* ]]
 }
+
+# ── T-4985: checks a and b read the ARC'S driver set (lib/driver_sets.py) ──
+
+# A product set: the live file with D2 re-weighted and one set-only free driver,
+# F-TRUST, carrying a valid scoring spec.
+write_product_set() {
+    python3 - "$PROJECT_ROOT/policy" <<'PY'
+import sys, yaml
+from pathlib import Path
+pol = Path(sys.argv[1])
+live = yaml.safe_load((pol / "value-drivers.yaml").read_text())
+for d in live["protected_drivers"]:
+    if d["id"] == "D2":
+        d["weight"] = 9
+live["free_drivers"].append({
+    "id": "F-TRUST", "name": "F-TRUST", "weight": 7,
+    "scoring": {"kind": "signals", "levels": {3: {"keywords": ["trust"]}}},
+})
+for k in ("auto_promote", "inception_scoring_exception"):
+    live.pop(k, None)
+(pol / "value-drivers-product.yaml").write_text(yaml.safe_dump(live, sort_keys=False))
+PY
+}
+
+@test "T-4985: check (b) refuses a scoped driver duplicating a free driver of the arc's set" {
+    write_product_set
+    write_arc arc-920 <<YAML
+id: arc-920
+name: fixture
+status: in-progress
+driver_set: product
+scoped_drivers: []
+proposed_scoped_drivers:
+  - name: F-TRUST
+    weight: 5
+$GOOD_RATIONALE
+$VALID_SCORING
+YAML
+    run_review arc-920 F-TRUST --dry-run
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"(b) distinct       FAIL"* ]]
+    [[ "$output" == *"free driver F-TRUST"* ]]
+}
+
+@test "T-4985: control — the same scoped driver on a default-set arc is distinct" {
+    write_product_set
+    ! grep -q "F-TRUST" "$PROJECT_ROOT/policy/value-drivers.yaml" || false
+    write_arc arc-921 <<YAML
+id: arc-921
+name: fixture
+status: in-progress
+scoped_drivers: []
+proposed_scoped_drivers:
+  - name: F-TRUST
+    weight: 5
+$GOOD_RATIONALE
+$VALID_SCORING
+YAML
+    run_review arc-921 F-TRUST --dry-run
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"(b) distinct       PASS"* ]]
+}
+
+@test "T-4985: a refused driver set FAILs checks a and b with the reason, no crash" {
+    write_arc arc-922 <<YAML
+id: arc-922
+name: fixture
+status: in-progress
+driver_set: missing
+scoped_drivers: []
+proposed_scoped_drivers:
+  - name: write-set-discipline
+    weight: 5
+$GOOD_RATIONALE
+$VALID_SCORING
+YAML
+    run_review arc-922 write-set-discipline --dry-run
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"(a) scorable       FAIL"* ]]
+    [[ "$output" == *"(b) distinct       FAIL"* ]]
+    [[ "$output" == *"driver set refused"* ]]
+    [[ "$output" == *"value-drivers-missing.yaml"* ]]
+    [[ "$output" == *"(c) distinguishes  PASS"* ]]
+}
+
+@test "T-4985: bvp-scorability reports a refused arc set per driver, not the live file" {
+    write_arc arc-923 <<YAML
+id: arc-923
+name: fixture
+status: in-progress
+driver_set: missing
+scoped_drivers:
+  - name: write-set-discipline
+    weight: 5
+$VALID_SCORING
+YAML
+    run bash -c "FRAMEWORK_ROOT='$FRAMEWORK_ROOT' source '$FRAMEWORK_ROOT/lib/bvp-scorability.sh'; \
+        fw_bvp_unscorable_drivers '$PROJECT_ROOT'"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"write-set-discipline"*"arc-923.yaml"*"driver-set-refused"* ]]
+}

@@ -18,7 +18,8 @@
 #                   lib/bvp-scorability.sh uses, so the reviewer and the audit
 #                   rail can never disagree about what "scorable" means.
 #   (b) DISTINCT  — the name/id does not duplicate D1-D4, a free_drivers[] entry
-#                   in policy/value-drivers.yaml, or an existing scoped_drivers[]
+#                   in the arc's driver set (policy/value-drivers.yaml, or the
+#                   file its `driver_set:` names — T-4985), or an existing scoped_drivers[]
 #                   entry on this arc. Case-insensitive, whitespace/punctuation
 #                   normalised to hyphens, so "Loop Closure" collides with
 #                   "loop-closure".
@@ -109,14 +110,38 @@ except Exception as e:  # noqa: BLE001
 proposed = [p for p in (arc.get("proposed_scoped_drivers") or []) if isinstance(p, dict)]
 scoped = [s for s in (arc.get("scoped_drivers") or []) if isinstance(s, dict)]
 
-try:
-    policy = yaml.safe_load((root / "policy" / "value-drivers.yaml").read_text()) or {}
-except Exception:
-    policy = {}
+# T-4985: the drivers this arc is reviewed against are the ARC'S driver set
+# (lib/driver_sets.py), not always the live file. An arc with no `driver_set:`
+# keeps the tolerant live-file read it always had. A named set that cannot be
+# loaded is a FAIL of checks a and b with the reason — never the live file.
+set_policy = None   # None = the live file (the estimator's own read)
+set_err = ""
+if isinstance(arc, dict) and "driver_set" in arc:
+    try:
+        _lib = Path(est_path).resolve().parents[3] / "lib"
+        if not (_lib / "driver_sets.py").is_file():
+            _lib = Path(os.environ.get("FRAMEWORK_ROOT") or root) / "lib"
+        if str(_lib) not in sys.path:
+            sys.path.insert(0, str(_lib))
+        import driver_sets
+        _set_name, set_policy = driver_sets.load_for_arc(arc, root)
+        if _set_name is None:
+            set_policy = None
+    except Exception as e:  # noqa: BLE001 — DriverSetError or import: a FAIL
+        set_err = f"driver set refused: {e}"
+if set_policy is not None:
+    policy = set_policy
+else:
+    try:
+        policy = yaml.safe_load((root / "policy" / "value-drivers.yaml").read_text()) or {}
+    except Exception:
+        policy = {}
 
 
 def check_a(entry):
     """Scorable: handler, inline scoring: spec, or scoring_file: that validates."""
+    if set_err:
+        return False, set_err
     if est is None:
         return False, f"estimator unimportable, cannot validate a scoring spec ({est_err})"
     d_id = entry.get("id") or entry.get("name")
@@ -128,7 +153,7 @@ def check_a(entry):
     if d_id in table or d_name in table:
         return True, f"handler exists for '{d_id if d_id in table else d_name}'"
     try:
-        alias = est._load_driver_aliases().get(d_id)
+        alias = est._load_driver_aliases(set_policy).get(d_id)
     except Exception:
         alias = None
     if alias and alias in table:
@@ -159,6 +184,8 @@ def check_a(entry):
 
 def check_b(entry):
     """Distinct from D1-D4, free drivers, and this arc's existing scoped drivers."""
+    if set_err:
+        return False, set_err
     keys = {norm(entry.get("name")), norm(entry.get("id"))} - {""}
     if not keys:
         return False, "entry has neither name: nor id:"

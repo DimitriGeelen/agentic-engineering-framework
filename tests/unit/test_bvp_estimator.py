@@ -1833,5 +1833,201 @@ def test_estimator_fidelity_latent_without_arc(tmp_path):
     assert "estimator-fidelity" not in result["scores"]
 
 
+# ----------------------------------------------------------------------------
+# T-4985: driver sets (slice 2) — the estimator scores a task under its arc's
+# driver set (lib/driver_sets.py), records the set on the proposal, counts an
+# earlier score under another set only for a pure re-weight (review C1), and
+# backfills set drivers a task has no counting score for (review C2).
+# ----------------------------------------------------------------------------
+
+import yaml as _yaml  # noqa: E402
+
+
+@pytest.fixture
+def set_project(tmp_path, monkeypatch):
+    """A project root with the live file, a `product` set (D1-D4 re-weighted,
+    one extra free driver F-TRUST with a scoring spec) and an arc that names
+    it. Returns a namespace of paths."""
+    pol = tmp_path / "policy"
+    pol.mkdir()
+    live = _yaml.safe_load((PROJECT_ROOT / "policy" / "value-drivers.yaml").read_text())
+    (pol / "value-drivers.yaml").write_text(_yaml.safe_dump(live, sort_keys=False))
+    product = _yaml.safe_load(_yaml.safe_dump(live))
+    for k in ("auto_promote", "inception_scoring_exception"):
+        product.pop(k, None)
+    reweight = {"D1": 4, "D2": 9, "D3": 6, "D4": 2}
+    for d in product["protected_drivers"]:
+        d["weight"] = reweight[d["id"]]
+    product["free_drivers"].append({
+        "id": "F-TRUST", "name": "F-TRUST", "weight": 7,
+        "scoring": {"kind": "signals",
+                    "levels": {3: {"keywords": ["trust"]},
+                               5: {"keywords": ["provenance chain"]}}},
+    })
+    (pol / "value-drivers-product.yaml").write_text(
+        _yaml.safe_dump(product, sort_keys=False))
+    arcs = tmp_path / ".context" / "arcs"
+    arcs.mkdir(parents=True)
+    (arcs / "prod.yaml").write_text(
+        "id: arc-950\nslug: prod\nstatus: in-progress\ndriver_set: product\n")
+    (arcs / "plain.yaml").write_text("id: arc-951\nslug: plain\nstatus: in-progress\n")
+    (tmp_path / ".tasks" / "active").mkdir(parents=True)
+    monkeypatch.setattr(estimator, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setattr(estimator, "POLICY_PATH", pol / "value-drivers.yaml")
+    monkeypatch.setattr(estimator, "ARCS_DIR", arcs)
+
+    class NS:
+        root = tmp_path
+        policy_dir = pol
+        arcs_dir = arcs
+        live_policy = live
+        product_policy = product
+        live_ids = [d["id"] for d in live["protected_drivers"] + live["free_drivers"]]
+    return NS
+
+
+def _set_task(root: Path, tid: str, fm_extra: str = "",
+              body: str = "We build a trust layer for the product.") -> Path:
+    path = root / ".tasks" / "active" / f"{tid}-set-fixture.md"
+    path.write_text(
+        "---\n"
+        f"id: {tid}\n"
+        "name: \"set fixture\"\n"
+        "status: started-work\n"
+        "workflow_type: build\n"
+        "owner: agent\n"
+        "horizon: now\n"
+        f"{fm_extra}"
+        "---\n\n" + body + "\n")
+    return path
+
+
+def test_t4985_product_arc_task_gets_product_weights_and_set_driver(set_project):
+    task = _set_task(set_project.root, "T-95001", "arc_id: prod\n")
+    result = estimator.estimate_task(task, estimator._load_drivers())
+    assert result["driver_set"] == "product"
+    assert "refused" not in result
+    assert result["drivers"]["D2"] == 9 and result["drivers"]["D1"] == 4
+    assert result["drivers"]["F-TRUST"] == 7
+    assert result["scores"]["F-TRUST"] == 3  # the set's own scoring spec
+
+
+def test_t4985_task_outside_the_arc_keeps_the_live_set(set_project):
+    task = _set_task(set_project.root, "T-95002", "arc_id: plain\n")
+    result = estimator.estimate_task(task, estimator._load_drivers())
+    assert result["driver_set"] is None
+    assert "F-TRUST" not in result["drivers"] and "F-TRUST" not in result["scores"]
+    live_d2 = next(d["weight"] for d in set_project.live_policy["protected_drivers"]
+                   if d["id"] == "D2")
+    assert result["drivers"]["D2"] == live_d2
+
+
+def test_t4985_tag_only_member_resolves_the_set(set_project):
+    task = _set_task(set_project.root, "T-95003", "tags: [arc:prod]\n")
+    result = estimator.estimate_task(task, estimator._load_drivers())
+    assert result["driver_set"] == "product"
+    assert "F-TRUST" in result["scores"]
+
+
+def test_t4985_set_wins_collision_with_arc_scoped_driver(set_project):
+    (set_project.arcs_dir / "prod.yaml").write_text(
+        "id: arc-950\nslug: prod\nstatus: in-progress\ndriver_set: product\n"
+        "scoped_drivers:\n  - id: F-TRUST\n    weight: 2\n  - id: D-DISJOINT\n    weight: 5\n")
+    task = _set_task(set_project.root, "T-95004", "arc_id: prod\n")
+    result = estimator.estimate_task(task, estimator._load_drivers())
+    assert result["drivers"]["F-TRUST"] == 7      # the set's weight, not the arc's 2
+    assert result["drivers"]["D-DISJOINT"] == 5   # non-colliding scoped driver merged
+
+
+def test_t4985_refused_set_skips_the_task_never_live(set_project, capsys):
+    (set_project.arcs_dir / "broken.yaml").write_text(
+        "id: arc-952\nslug: broken\nstatus: in-progress\ndriver_set: missing\n")
+    task = _set_task(set_project.root, "T-95005", "arc_id: broken\n")
+    before = task.read_text()
+    result = estimator.estimate_task(task, estimator._load_drivers())
+    assert result["refused"] and "value-drivers-missing.yaml" in result["refused"]
+    assert result["scores"] == {}
+    assert estimator._write_result(task, result) == (False, "driver-set-refused")
+    assert estimator.cmd_sweep(stale_hours=24, cron=False) == 0
+    err = capsys.readouterr()
+    assert "T-95005: skipped, driver set refused:" in err.err
+    assert "refused 1" in err.out
+    assert task.read_text() == before  # nothing written, no live-file proposal
+    assert estimator.cmd_one("T-95005") == 2
+
+
+def test_t4985_proposal_records_its_driver_set(set_project):
+    in_set = _set_task(set_project.root, "T-95006", "arc_id: prod\n")
+    out_set = _set_task(set_project.root, "T-95007", "arc_id: plain\n")
+    for path in (in_set, out_set):
+        result = estimator.estimate_task(path, estimator._load_drivers())
+        wrote, reason = estimator._write_result(path, result)
+        assert wrote, reason
+    fm_in, _ = estimator.parse_task(in_set)
+    fm_out, _ = estimator.parse_task(out_set)
+    assert fm_in["bvp_scores_proposed"][-1]["driver_set"] == "product"
+    assert "driver_set" not in fm_out["bvp_scores_proposed"][-1]
+
+
+def test_t4985_score_counts_across_sets_only_for_a_pure_reweight(set_project):
+    # The product set redefines F1 as a different driver under the same id.
+    product = set_project.product_policy
+    for d in product["free_drivers"]:
+        if d["id"] == "F1":
+            d["name"] = "SOMETHING-ELSE"
+    (set_project.policy_dir / "value-drivers-product.yaml").write_text(
+        _yaml.safe_dump(product, sort_keys=False))
+    fm = {"bvp_scores": {"D2": 4, "F1": 3},
+          "bvp_scores_proposed": [{"scores": {"D1": 2, "F1": 5, "F-RECALL": 1}}]}
+    conf, prop, foreign = estimator._counting_scores(fm, "product")
+    assert conf == {"D2": 4}                    # D2 re-weighted only: counts
+    assert prop == {"D1": 2, "F-RECALL": 1}     # F1 changed meaning: unscored
+    assert foreign is True
+    # Under the live set every live score counts, nothing is foreign.
+    conf, prop, foreign = estimator._counting_scores(fm, None)
+    assert conf == {"D2": 4, "F1": 3} and foreign is False
+
+
+def test_t4985_confirmed_task_switched_to_set_is_backfilled(set_project):
+    confirmed = {d: 2 for d in set_project.live_ids}
+    block = "bvp_scores:\n" + "".join(f"  {k}: {v}\n" for k, v in confirmed.items())
+    task = _set_task(set_project.root, "T-95008", "arc_id: prod\n" + block)
+    assert estimator.cmd_sweep(stale_hours=24, cron=False) == 0
+    fm, _ = estimator.parse_task(task)
+    assert fm["bvp_scores"] == confirmed        # confirmations never modified
+    entry = fm["bvp_scores_proposed"][-1]
+    assert entry["driver_set"] == "product"
+    assert entry["backfill"] == ["F-TRUST"]     # that driver only
+    assert entry["scores"]["F-TRUST"] == 3
+    for d, v in confirmed.items():              # the rest carried, not re-scored
+        assert entry["scores"][d] == v
+    # Second sweep: F-TRUST now has a counting score, nothing more is written.
+    n = len(fm["bvp_scores_proposed"])
+    assert estimator.cmd_sweep(stale_hours=24, cron=False) == 0
+    fm, _ = estimator.parse_task(task)
+    assert len(fm["bvp_scores_proposed"]) == n
+
+
+def test_t4985_backfill_bypasses_delta_suppression(set_project):
+    task = _set_task(set_project.root, "T-95009", "arc_id: prod\n")
+    result = estimator.estimate_task(task, estimator._load_drivers())
+    # Confirm exactly the re-estimate for every driver but F-TRUST: without
+    # the bypass the <2 delta rule would suppress the write entirely.
+    block = "bvp_scores:\n" + "".join(
+        f"  {k}: {v}\n" for k, v in result["scores"].items() if k != "F-TRUST")
+    task.write_text(task.read_text().replace("---\n\n", block + "---\n\n", 1))
+    wrote, reason = estimator._write_result(task, result)
+    assert wrote, reason
+    fm, _ = estimator.parse_task(task)
+    assert fm["bvp_scores_proposed"][-1]["backfill"] == ["F-TRUST"]
+    # A default-set task in the same state keeps the old suppression.
+    plain = _set_task(set_project.root, "T-95010", "arc_id: plain\n")
+    res2 = estimator.estimate_task(plain, estimator._load_drivers())
+    block2 = "bvp_scores:\n" + "".join(
+        f"  {k}: {v}\n" for k, v in list(res2["scores"].items())[:4])
+    plain.write_text(plain.read_text().replace("---\n\n", block2 + "---\n\n", 1))
+    assert estimator._write_result(plain, res2) == (False, "v2-delta-skip")
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-v"]))
