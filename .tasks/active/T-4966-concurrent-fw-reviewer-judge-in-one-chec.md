@@ -13,10 +13,10 @@ description: >
   Direction: every review-register append under the ledger lock, a concurrency test
   with two judges, then decide on 'fw reviewer judge T-A T-B --parallel N'.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T14:44:35Z
-last_update: '2026-11-01T14:45:35Z'
+last_update: 2026-11-01T15:32:47Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,20 +93,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** ring20-dashboard (msgs 8f73b60a, ca9e5114) judges about 120 tasks, one `fw reviewer judge` at a time, 7-10 min each. Their operator raised `TERMLINK_MAX_WORKERS` to 9, and they already run 3 judges at once. Batch 1: 6 tasks in 9 min 10 s, audit clean. They note, correctly, that a clean audit does not prove the absence of the register race.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** the verdict append and its commit hold one lock (`_ledger_lock`, T-3940). But `_append` for the review registers is called outside that lock by `register_dispatch` (review-dispatches.jsonl), `start` and `complete` (review-completions.jsonl) and `register_run` (review-runs.jsonl). Every verdict commit stages those files (T-4591). If a parallel judge is part-way through an append when another judge commits, a torn line can be committed. The completions file is checked append-only against git history (`history_fault`), so a committed torn line followed by the completed line makes that file refuse everywhere: every push blocked. Committing another run's rows under the wrong task is the milder form of the same race.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** every ledger and register append runs under the same lock as the verdict commits, so no commit can capture a partial or foreign-in-flight line. The lock becomes re-entrant within one process, so callers that already hold it (`record_for_worker`, `record_and_commit`) do not deadlock.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** concurrent `fw reviewer judge` on different tasks in one checkout is safe for the ledger files; a test with real concurrent writers proves it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `_ledger_lock` is re-entrant within one process (a nested acquire does not block), and `_append` always holds it, so every append to verdicts, recorded, review-dispatches, -runs and -completions is serialized with every verdict commit
+- [ ] A test runs several processes appending to the registers while another commits under the lock in a loop, and proves every committed blob of each register parses line by line (no torn line) and `history_fault` stays clean; plus a re-entrancy test
+- [ ] Every test that reads `lib/verdict_ledger.py` passes; `bin/fw vendor self --check --task T-4966` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -373,6 +374,13 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-11-01 — scope: corruption, not commit attribution
+- **Chose:** serialize every ledger and register append with every verdict commit (one re-entrant lock). This removes the torn-line risk. A negative control without the lock committed a torn completions line in 1 of 3 runs, and `history_fault` then refused the whole file.
+- **Not addressed, deliberately:** which commit carries a register row. ring20-dashboard (msg b6334f86) measured 22 of 68 register rows in another task's verdict commit when judges run in parallel, and completion rows carried into the next task's commit even when serial. The introducing-commit checks apply only to verdicts.jsonl rows, which are appended and committed together under the lock, so they always land in their own commit. Register rows are verified by signature (dispatches, runs) and append-only history (completions), never by the commit that carried them. So the attribution is cosmetic.
+- **Rejected:**
+  - A commit per register append: 3-4 extra commits per seat, from the runtime and worker contexts, to fix cosmetic attribution.
+  - Staging only one's own lines of a shared file (filtered `git apply --cached`): complex, and a new way to corrupt the ledger.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -389,3 +397,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4966-concurrent-fw-reviewer-judge-in-one-chec.md
 - **Context:** Initial task creation
+
+### 2026-11-01T15:22:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
