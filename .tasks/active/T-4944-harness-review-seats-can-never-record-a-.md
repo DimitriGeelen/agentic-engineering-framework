@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T00:05:46Z
-last_update: 2026-11-01T15:01:22Z
+last_update: 2026-11-01T15:11:47Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -107,7 +107,7 @@ cost_estimate_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] A probe records whether the codex and opencode seats, as launched by the review runtime, can see a supplied screenshot (a question only answerable from the image), in `docs/reports/T-4944-harness-seat-vision.md`
 - [x] The operator's provenance rule is recorded under ## Decisions with their words
-- [ ] The chosen rule is built and pinned by tests; every test that reads `lib/verdict_ledger.py` or `lib/reviewer/judge_cli.py` passes
+- [x] The chosen rule is built and pinned by tests; every test that reads `lib/verdict_ledger.py` or `lib/reviewer/judge_cli.py` passes (70 files: 954 pytest passed, bats clean; the one red, `tests/web/test_t4133_readiness_perf.py::test_edit_to_task_file_invalidates_its_entry`, is a pre-T-4916 fixture unrelated to this change, filed separately)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
