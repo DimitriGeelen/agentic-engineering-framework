@@ -226,20 +226,46 @@ def _now() -> str:
 
 
 def _append(rel: Path, row: dict, root: Path) -> None:
+    """Append one row, under the ledger lock (T-4966). Every verdict commit stages the review
+    registers too (T-4591); an append outside the lock could be caught half-written by a parallel
+    judge's commit, and a committed torn line breaks the append-only history check for good."""
     p = root / rel
     p.parent.mkdir(parents=True, exist_ok=True)
-    with p.open("a", encoding="utf-8") as fh:
-        fh.write(json.dumps(row, separators=(",", ":"), sort_keys=True) + "\n")
+    with _ledger_lock(root):
+        with p.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(row, separators=(",", ":"), sort_keys=True) + "\n")
 
 
+_LOCK_DEPTH = __import__("threading").local()
+
+
+@__import__("contextlib").contextmanager
 def _ledger_lock(root: Path):
     """T-3940: ONE lock held from a verdict row's append to its commit. verdicts.jsonl is a
     single shared file, so a pathspec cannot separate rows: a worker that appended and then
     committed later took every row other workers had appended meanwhile, and those rows failed
-    provenance forever ('introduced by other'). Every writer that commits rows holds this."""
+    provenance forever ('introduced by other'). Every writer that commits rows holds this.
+
+    T-4966: re-entrant within one thread. `_append` now always takes it, and callers that already
+    hold it (record_for_worker, record_and_commit, discard) must not deadlock on their own flock."""
     from lib import keylock
-    return keylock.exclusive(root / ".context" / "locks" / "verdict-ledger.lock",
-                             label="verdict ledger (append+commit)")
+    path = str((root / ".context" / "locks" / "verdict-ledger.lock").resolve())
+    held = getattr(_LOCK_DEPTH, "held", None)
+    if held is None:
+        held = _LOCK_DEPTH.held = {}
+    if held.get(path):
+        held[path] += 1
+        try:
+            yield
+        finally:
+            held[path] -= 1
+        return
+    with keylock.exclusive(path, label="verdict ledger (append+commit)"):
+        held[path] = 1
+        try:
+            yield
+        finally:
+            held[path] = 0
 
 
 def _ledger_paths(root: Path, extra: list[str] | None = None) -> list[str]:
