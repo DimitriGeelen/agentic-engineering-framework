@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T08:37:10Z
-last_update: '2026-11-01T08:45:20Z'
+last_update: 2026-11-01T11:33:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -294,6 +294,16 @@ cost_estimate_proposed:
 python3 -m pytest -q -p no:cacheprovider tests/unit/test_operator_facing_stderr.py tests/unit/test_t3552_arc_close_readiness.py > /tmp/.t4947 2>&1 && grep -q " passed" /tmp/.t4947 && ! grep -qE "failed|error" /tmp/.t4947
 bin/fw watchtower current
 bin/fw vendor self --check --task T-4947
+
+## Visual Verification
+
+Captured with `bin/fw ux shots T-4947 arc-closure=@.context/visual/T-4947/arc-closure.steps.yaml` (T-4958 crop: from `#section-arc-closure` to `#section-bvp-proposals` on http://192.168.10.107:3000/approvals). Images: `.context/visual/T-4947/arc-closure@1024.png`, `.context/visual/T-4947/arc-closure@1440.png`, `.context/visual/T-4947/arc-closure@1920.png`.
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| arc-closure | Demo evidence line (each of 8 arc cards) | ok | ok | ok | reads "none recorded — closure asks for a captured artefact…"; no fw gate text, no --skip / FW_ flags |
+| arc-closure | Review button (each card) | ok | ok | ok | at 1024 the first card's long title wraps its button to a second line, still visible and clickable; flex-wrap layout predates T-4947 (only stderr text changed) |
+| arc-closure | Advisory and headline-mechanic blocks | ok | ok | ok | |
 
 ## RCA
 
