@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4979: verdict_ledger.py audit exits non-zero when the only findings are void rows (0 failures)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T20:25:00Z
+# ============================================================================
+
+task_id: T-4979
+task_name: "verdict_ledger.py audit exits non-zero when the only findings are void rows (0 failures)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-01T17:13:16Z
+completed: 2026-11-01T20:24:38Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T21:21:35+01:00
+last_commit: 2026-11-01T21:24:36+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ledger audit keeps its 0/3/2 exit contract and now states it on the summary line and in --help (ring20 msg 9cbbdcdc). vendor self — lib/verdict_ledger.py. criteria, decision, verification. ring20 told
+
+# Key outcomes
+outcomes:
+  - 'Decision recorded: exit codes unchanged (0/3/2); every caller of the code checked (`agents/audit/audit.sh` grades 0 PASS, 2 FAIL, 3 WARN, anything else FAIL; no other caller reads the code)'
+  - 'The audit summary line ends with `exit N: <meaning>`; a test pins exit 0, 3 (void-only) and 2 with that wording; the `fw audit` grading still reads the last line correctly; vendored copy in sync — 436 pytest + 20 bats across every audit caller green'
+  - 'ring20 told the contract (be.18 = 65d8a7307, msg f0596624)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-01 — exit code for a ledger with only non-counting rows'
+    chose: 'keep 0 / 3 / 2 and print the meaning on the summary line (`exit 3: warnings only …; nothing fails`).'
+    rationale: '`fw audit` needs 3 to grade those rows WARN, never PASS (T-3657, T-4519); exit 0 would make an acknowledged or void row indistinguishable from a clean ledger. Scripts test `rc -eq 2` for failure.'
+    alternatives_rejected: ['exit 0 with WARN lines (ring20''s suggestion); it would push the WARN/PASS distinction into line parsing for `fw audit` instead.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.tasks/active/T-4979-verdictledgerpy-audit-exits-non-zero-whe.md'
+  - 'lib/verdict_ledger.py'
+  - 'tests/unit/test_t4519_worker_failed_row.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T21:21:35'
+    action: 'T-4979: ledger audit keeps its 0/3/2 exit contract and now states it on the summary line and in --help (ring20 msg 9cbbdcdc)'
+  - time: '2026-11-01T21:21:39'
+    action: 'T-4979: vendor self — lib/verdict_ledger.py'
+  - time: '2026-11-01T21:22:05'
+    action: 'T-4979: criteria, decision, verification'
+  - time: '2026-11-01T21:24:36'
+    action: 'T-4979: ring20 told'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 191 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 191
+  commits: 6
+  files_changed: 10
+  lines_added: 1613
+  lines_removed: 25
+  footprint_refreshed_at: '2026-11-01T20:25:04Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4979-verdictledgerpy-audit-exits-non-zero-whe.md
+generated_by: context-agent-hybrid
