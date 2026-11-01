@@ -5,7 +5,7 @@ description: >
   Inception: Per-arc value-driver sets (driver_set: product) — 010-termlink T-3638
   ask
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -13,7 +13,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-11-01T12:39:56Z
-last_update: '2026-11-01T12:45:20Z'
+last_update: 2026-11-01T14:37:23Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -80,6 +80,15 @@ cost_estimate_proposed:
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
 
+- **IW-1: Should an arc (and a task through its arc) be able to name its own value-driver set?**
+  confidence: 3
+  disposition: answered
+  rationale: operator chose "GO, narrow" in chat 2026-11-01 (dialogue log in docs/reports/T-4961-driver-sets.md)
+- **IW-2: What is the narrowest design that clears the four blocking points (estimator collision, D1-D4 scoping, weight caps, bvp.sh reading only the live file)?**
+  confidence: 0
+  disposition: deferred
+  rationale: design read next, then a short independent review (docs/reports/T-4961-driver-sets.md)
+
 ## Exploration Plan
 
 <!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
@@ -140,11 +149,13 @@ cost_estimate_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO — narrow form
 
 **Rationale:**
 
-Not yet explored. 010-termlink (msg c39df4cd) asks that an arc or task name a driver set resolving to policy/value-drivers-<set>.yaml, used by bvp.sh ranking and the estimator, with D1-D4 meaning unchanged and weights per set. Today the live file wins collisions (estimator.py:2727-2736), D1-D4 cannot be scoped (arc-driver-review.sh check_b), scoped weights are capped (arc.sh:1567,1624) and bvp rank reads only the live file (bvp.sh:285-364). Needs a design read of those four points and the operator's view on whether two driver sets per project is wanted before GO or NO-GO; the peer scores by hand meanwhile, so nothing is blocked.
+Operator, 2026-11-01, in chat: chose "GO, narrow". Scope: only the loading path. `driver_set:` on an arc (a task inherits its arc's set) resolves to `policy/value-drivers-<set>.yaml` and is read by bvp ranking and the estimator, with weights and caps per set. D1-D4 keep their meaning. No new gates. A design read of the four blocking points below and a short independent review come first, then build slices. Recording the decision itself stays the operator's, via Watchtower.
+
+Filing-time note (kept): not yet explored. 010-termlink (msg c39df4cd) asks that an arc or task name a driver set resolving to policy/value-drivers-<set>.yaml, used by bvp.sh ranking and the estimator, with D1-D4 meaning unchanged and weights per set. Today the live file wins collisions (estimator.py:2727-2736), D1-D4 cannot be scoped (arc-driver-review.sh check_b), scoped weights are capped (arc.sh:1567,1624) and bvp rank reads only the live file (bvp.sh:285-364). Needs a design read of those four points and the operator's view on whether two driver sets per project is wanted before GO or NO-GO; the peer scores by hand meanwhile, so nothing is blocked.
 
 **Evidence:**
 
@@ -171,3 +182,6 @@ Not yet explored. 010-termlink (msg c39df4cd) asks that an arc or task name a dr
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-11-01T14:37:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
