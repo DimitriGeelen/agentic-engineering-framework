@@ -52249,3 +52249,21 @@ scan_id: R-89f1dfcc
 task_id: T-4958
 payload:
   task_file: .tasks/active/T-4958-fw-ux-shots-crop-step-so-one-section-of-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-01T12:01:03Z'
+scan_id: R-56628692
+task_id: T-4960
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-01T12:01:03Z'
+scan_id: R-56628692
+task_id: T-4960
+payload:
+  task_file: .tasks/active/T-4960-reviewer-judge-cannot-capture-approvals-.md

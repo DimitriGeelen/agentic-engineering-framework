@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4960: Reviewer judge cannot capture /approvals: full-page shot of an 81,749 px page times out (30 s), so every render review of it is PARTIAL
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T12:01:20Z
+# ============================================================================
+
+task_id: T-4960
+task_name: "Reviewer judge cannot capture /approvals: full-page shot of an 81,749 px page times out (30 s), so every render review of it is PARTIAL"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T11:51:33Z
+completed: 2026-11-01T12:00:54Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-01T13:00:36+01:00
+last_commit: 2026-11-01T13:00:52+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  judge capture — viewport shot above 16,000 px and per-page console errors in the brief; /approvals (81,749 px) no longer times out into PARTIAL. vendor sync of judge capture change
+
+# Key outcomes
+outcomes:
+  - '`_capture_playwright` measures each page; above `MAX_FULL_PAGE_PX` it takes a viewport screenshot instead of a full-page one, and it records console `error` messages and uncaught page errors per page'
+  - 'The per-page notes (height, viewport-only, console errors) reach the brief under "Rendered pages"; a page with no notes (fake capturers in tests) renders as before'
+  - 'New tests cover the notes in the brief and the tall-page branch; existing judge tests (`tests/unit/t3580_judge_cli_test.py`, `t3580_round3_test.py`, `t4943_capture_every_required_page_test.py`) pass'
+  - 'A real `_capture_playwright` run on /approvals returns both pages with no `partial:` error (2026-11-01: 11 s, 01-approvals.png and 02-approvals-content.png, heights 81,749 and 46,540 px, both viewport-only, 0 console errors; before the fix: 133 s and `partial: /approvals: Page.screenshot: Timeout 30000ms exceeded`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'judge capture — viewport shot above 16,000 px and per-page console errors in the brief; /approvals (81,749 px) no longer times out into PARTIAL'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.tasks/active/T-4960-reviewer-judge-cannot-capture-approvals-.md'
+  - 'lib/reviewer/judge_cli.py'
+  - 'tests/unit/t4960_judge_capture_notes_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T13:00:36'
+    action: 'T-4960: judge capture — viewport shot above 16,000 px and per-page console errors in the brief; /approvals (81,749 px) no longer times out into PARTIAL'
+  - time: '2026-11-01T13:00:52'
+    action: 'T-4960: vendor sync of judge capture change'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 9
+  commits: 3
+  files_changed: 7
+  lines_added: 727
+  lines_removed: 9
+  footprint_refreshed_at: '2026-11-01T12:01:31Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4960-reviewer-judge-cannot-capture-approvals-.md
+generated_by: context-agent-hybrid

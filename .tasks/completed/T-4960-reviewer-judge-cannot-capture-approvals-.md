@@ -4,10 +4,10 @@ name: "Reviewer judge cannot capture /approvals: full-page shot of an 81,749 px 
 description: >
   Reviewer judge cannot capture /approvals: full-page shot of an 81,749 px page times out (30 s), so every render review of it is PARTIAL
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T11:51:33Z
-last_update: 2026-11-01T12:00:52Z
-date_finished: null
+last_update: 2026-11-01T12:00:54Z
+date_finished: 2026-11-01T12:00:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -366,3 +366,21 @@ bin/fw vendor self --check --task T-4960
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4960-reviewer-judge-cannot-capture-approvals-.md
 - **Context:** Initial task creation
+
+### 2026-11-01T12:00:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-56628692
+- **Timestamp:** 2026-11-01T12:01:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — New tests cover the notes in the brief and the tall-page branch; existing judge tests (`tests/unit/t3580_judge_cli_test.py`, `t3580_round3_test.py`, `t4943_capture_every_required_page_test.py`) pass
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/t3580_judge_cli_test.py in: New tests cover the notes in the brief and the tall-page branch; existing judge tests (`tests/unit/t3580_judge_cli_test.py`, `t3580_round3_test.py`, ``
