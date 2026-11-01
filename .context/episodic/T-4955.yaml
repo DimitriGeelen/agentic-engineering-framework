@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4955: test_audit_retire_when.bats 4/4 case red since T-4891: fixture writes preference-index.yaml untracked, signal (b) now counts tracked files only
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T09:53:13Z
+# ============================================================================
+
+task_id: T-4955
+task_name: "test_audit_retire_when.bats 4/4 case red since T-4891: fixture writes preference-index.yaml untracked, signal (b) now counts tracked files only"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T09:50:07Z
+completed: 2026-11-01T09:52:21Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T10:52:20+01:00
+last_commit: 2026-11-01T10:52:20+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  retire_when 4/4 fixture tracks its preference file (T-4891 counts tracked files only)
+
+# Key outcomes
+outcomes:
+  - 'The 4/4 fixture `git add`s `preference-index.yaml`; `test_audit_retire_when.bats` 12/12, audit code unchanged'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'retire_when 4/4 fixture tracks its preference file (T-4891 counts tracked files only)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4955-testauditretirewhenbats-44-case-red-sinc.md'
+  - 'tests/unit/test_audit_retire_when.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T10:52:20'
+    action: 'T-4955: retire_when 4/4 fixture tracks its preference file (T-4891 counts tracked files only)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 5
+  lines_added: 150
+  lines_removed: 17
+  footprint_refreshed_at: '2026-11-01T09:53:26Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4955-testauditretirewhenbats-44-case-red-sinc.md
+generated_by: context-agent-hybrid
