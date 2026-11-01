@@ -9,12 +9,12 @@ description: >
   a [REVIEW] Human criterion. Design: docs/reports/T-4961-driver-sets.md §Design (T-4967)
   and §Review (codex C1-C7, opencode 1-8).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/termlink/bvp-estimator/estimator.py, lib/arc_close_readiness.py, lib/bvp.sh, lib/driver_sets.py, lib/resolver.py, web/blueprints/bvp.py, web/templates/bvp.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T21:08:38Z
-last_update: '2026-11-01T22:35:00Z'
-date_finished:
+last_update: 2026-11-01T23:15:21Z
+date_finished: 2026-11-01T23:15:21Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -447,3 +447,23 @@ bin/fw vendor self --check --task T-4986
 ### 2026-11-01T22:34:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-01T23:15:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ca882dc9
+- **Timestamp:** 2026-11-01T23:16:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `lib/bvp.sh`: `rank`, `detail`, `arcs` and `_find_driver_entry` use each task's (or arc's) set; `rank` has a SET column; `detail` prints the set and its file; `arcs` rolls each arc up under its set; a
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/bvp.sh in: `lib/bvp.sh`: `rank`, `detail`, `arcs` and `_find_driver_entry` use each task's (or arc's) set; `rank` has a SET column; `detail` prints the set and i`
+- **AC#2 (Agent)** — `lib/resolver.py` picker and `lib/arc_close_readiness.py` (member values and medians) use per-task weights (C3); `web/blueprints/bvp.py` uses per-task weights with a set badge per point
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/resolver.py in: `lib/resolver.py` picker and `lib/arc_close_readiness.py` (member values and medians) use per-task weights (C3); `web/blueprints/bvp.py` uses per-task`
