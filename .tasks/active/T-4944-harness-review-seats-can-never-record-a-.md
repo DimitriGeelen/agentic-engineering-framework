@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T00:05:46Z
-last_update: 2026-11-01T15:00:24Z
+last_update: 2026-11-01T15:01:11Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -106,7 +106,7 @@ cost_estimate_proposed:
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] A probe records whether the codex and opencode seats, as launched by the review runtime, can see a supplied screenshot (a question only answerable from the image), in `docs/reports/T-4944-harness-seat-vision.md`
-- [ ] The operator's provenance rule is recorded under ## Decisions with their words
+- [x] The operator's provenance rule is recorded under ## Decisions with their words
 - [ ] The chosen rule is built and pinned by tests; every test that reads `lib/verdict_ledger.py` or `lib/reviewer/judge_cli.py` passes
 
 ### Human
@@ -293,6 +293,9 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 python3 -m pytest -q -p no:cacheprovider tests/unit/test_t4944_vision_gated_citation.py tests/unit/t4943_capture_every_required_page_test.py tests/unit/t4960_judge_capture_notes_test.py
+python3 -c "import sys; sys.path.insert(0,'.'); from lib import review_cost as rc; v=rc.worker_vision(); assert v['codex'] is True and v['opencode'] is False"
+bin/fw vendor self --check --task T-4944
 
 ## RCA
 
@@ -309,6 +312,14 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** codex and opencode review seats never recorded a render green; the ledger refused ("the screenshot of … is not cited as evidence"), and on T-4947 both asked to be re-routed to a vision-capable seat.
+
+**Root cause:** the harness path (`record_for_worker`, T-3582) cites only the seat's report, while the render rule (T-3580, T-4214) requires every screenshot to be cited. Nothing in the framework recorded which seat kinds can see images, so the runtime had no honest basis to cite on a seat's behalf, and the judge kept seating a kind that cannot take images.
+
+**Why structurally allowed:** seat capability was assumed uniform. The registry recorded vendor, model and binary for each kind, but not what the model can perceive. The render rule was written and tested with claude seats, which cite their own evidence.
+
+**Prevention:** the `vision` field is set from a probe and validated as a boolean. A kind without it is unknown and is never cited. `test_t4944_vision_gated_citation.py` pins citation (named file + vision seat only) and the exclusion of `vision: false` kinds from render runs.
 
 ## Evolution
 
@@ -373,6 +384,16 @@ cost_estimate_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-01 — provenance rule for harness seats on render criteria
+- **Chose:** "Vision-gated (Recommended)", the operator's answer in chat:
+  - each backend declares `vision: true|false` in `policy/review-backends.yaml` (codex true, opencode false, from the probe);
+  - for a vision harness seat, the runtime cites a run's screenshot only when the seat names that file in its verdict;
+  - render reviews do not seat a `vision: false` kind.
+- **Why:** the probe (`docs/reports/T-4944-harness-seat-vision.md`) showed codex answers from the image and opencode cannot take images. A citation must rest on the seat's own words, not on what it was handed.
+- **Rejected:**
+  - "Named file only": a seat with no image input that names a file would be believed.
+  - "Keep as is": codex could see but could never go green, and opencode spent a seat per render run on a guaranteed not-evaluated.
 
 ## Decision
 
