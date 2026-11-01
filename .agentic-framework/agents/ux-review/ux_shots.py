@@ -23,6 +23,10 @@ A steps file is a YAML list of single-op steps, executed here in order, nothing 
     - hover: ".row"
     - wait-for: "#result"                   # a selector, or {text: "Done"}
       timeout: 5000                         # optional on any step, milliseconds
+    - crop: {from: "#section-a", to: "#section-b"}   # optional, last step only (T-4958)
+A crop limits the shot to one band of the page, at full page width: from the top of `from`
+to the top of `to`, or `crop: "#el"` for that element's own top-to-bottom. It is for pages
+too tall to read whole (a 46,000 px /approvals); every other shot stays full-page.
 No other op and no other key is accepted, so a steps file can never carry code. Every
 capture writes `.context/visual/<task>/<state>.capture.json` beside its PNGs: the source,
 the steps file's sha256 and each shot's sha256, so a reviewer sees what produced each image.
@@ -35,6 +39,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import re
 import sys
@@ -49,7 +54,7 @@ MIN_WIDTH_PX = 320
 MAX_WIDTH_PX = 7680
 VIEWPORT_HEIGHT = 1000
 
-STEP_OPS = ("goto", "click", "fill", "press", "hover", "wait-for")
+STEP_OPS = ("goto", "click", "fill", "press", "hover", "wait-for", "crop")
 DEFAULT_STEP_TIMEOUT_MS = 10000
 MAX_STEP_TIMEOUT_MS = 120000
 MAX_STEPS = 100
@@ -164,6 +169,15 @@ def _step(i: int, raw) -> dict:
         if not isinstance(v, dict) or set(v) != {"selector", "text"} or not isinstance(v["text"], str):
             raise PlanError(f"step {i} (fill) needs {{selector: ..., text: ...}}, got {v!r}")
         st["selector"], st["text"] = _text(op, i, v["selector"]), v["text"]
+    elif op == "crop":
+        if isinstance(v, dict):
+            if set(v) not in ({"from"}, {"from", "to"}):
+                raise PlanError(f"step {i} (crop) takes a selector or {{from: ..., to: ...}}, got {v!r}")
+            st["from"] = _text(op, i, v["from"])
+            if "to" in v:
+                st["to"] = _text(op, i, v["to"])
+        else:
+            st["from"] = _text(op, i, v)
     else:  # wait-for: a selector, or {selector: ...} / {text: ...}
         if isinstance(v, dict):
             if len(v) != 1 or next(iter(v)) not in ("selector", "text"):
@@ -199,6 +213,9 @@ def load_steps(path: Path) -> list[dict]:
     steps = [_step(i, raw) for i, raw in enumerate(doc, 1)]
     if steps[0]["op"] != "goto":
         raise PlanError(f"steps file {str(path)!r} must start with goto (the page the state is on)")
+    crops = [i for i, st in enumerate(steps, 1) if st["op"] == "crop"]
+    if crops and crops != [len(steps)]:
+        raise PlanError(f"steps file {str(path)!r}: crop must be the last step, and only one")
     return steps
 
 
@@ -295,10 +312,59 @@ def _require_playwright():
     return sync_playwright
 
 
+def crop_clip(i: int, top: float, bottom: float, page_width: float) -> dict:
+    """The screenshot clip for a crop step: full page width, rows top..bottom (document px)."""
+    if not bottom > top:
+        raise NotChecked(f"step {i} (crop) selects an empty band (top {top:.0f}px, end {bottom:.0f}px)")
+    return {"x": 0, "y": top, "width": page_width, "height": bottom - top}
+
+
+def _doc_box(page, selector: str, t: int) -> dict:
+    """An element's box in document coordinates (bounding_box is viewport-relative)."""
+    loc = page.locator(selector).first
+    loc.wait_for(state="attached", timeout=t)
+    box = loc.bounding_box(timeout=t)
+    if box is None:
+        raise RuntimeError(f"{selector!r} has no layout box (hidden?)")
+    sx, sy = page.evaluate("() => [window.scrollX, window.scrollY]")
+    return {"top": box["y"] + sy, "bottom": box["y"] + sy + box["height"]}
+
+
+def resolve_crop(page, steps) -> dict | None:
+    """The clip for a trailing crop step, or None for a full-page shot."""
+    if not steps or steps[-1]["op"] != "crop":
+        return None
+    i, st = len(steps), steps[-1]
+    t = st.get("timeout", DEFAULT_STEP_TIMEOUT_MS)
+    try:
+        a = _doc_box(page, st["from"], t)
+        bottom = _doc_box(page, st["to"], t)["top"] if "to" in st else a["bottom"]
+        width = page.evaluate("() => document.documentElement.scrollWidth")
+    except Exception as exc:  # noqa: BLE001 - missing element, timeout
+        raise NotChecked(f"step {i} (crop {st['from']!r}) failed: {str(exc).splitlines()[0][:200]}") from exc
+    return crop_clip(i, a["top"], bottom, width)
+
+
+def frame_band(page, shot: Shot, clip: dict) -> dict:
+    """Fit the viewport to the band and scroll to it; return the clip in viewport px.
+
+    A full_page screenshot renders the whole document even when clipped, and on a
+    46,000 px page that runs past Playwright's 30 s screenshot timeout. The height
+    change can reflow the page, so the band is measured again after it.
+    """
+    page.set_viewport_size({"width": shot.width, "height": max(1, math.ceil(clip["height"]))})
+    clip = resolve_crop(page, shot.steps)
+    page.evaluate("y => window.scrollTo(0, y)", clip["y"])
+    sy = page.evaluate("() => window.scrollY")
+    return {**clip, "y": clip["y"] - sy}
+
+
 def run_steps(page, steps) -> None:
     """Drive `page` through validated steps. A failing step is NotChecked, naming the step."""
     for i, st in enumerate(steps, 1):
         op, t = st["op"], st.get("timeout", DEFAULT_STEP_TIMEOUT_MS)
+        if op == "crop":
+            continue                 # applied at capture time, by resolve_crop
         arg = st.get("url") or st.get("selector") or st.get("key") or st.get("text")
         try:
             if op == "goto":
@@ -338,7 +404,11 @@ def capture(shots: list[Shot]) -> list[Path]:
                     else:
                         page.goto(shot.url, wait_until="load")
                     shot.path.parent.mkdir(parents=True, exist_ok=True)
-                    page.screenshot(path=str(shot.path), full_page=True)
+                    clip = resolve_crop(page, shot.steps)
+                    if clip:
+                        page.screenshot(path=str(shot.path), clip=frame_band(page, shot, clip))
+                    else:
+                        page.screenshot(path=str(shot.path), full_page=True)
                     written.append(shot.path)
                 finally:
                     ctx.close()
