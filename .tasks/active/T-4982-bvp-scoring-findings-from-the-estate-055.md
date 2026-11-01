@@ -80,7 +80,9 @@ bvp_scores_proposed:
 - **Trust meter (055 T-678, 2026-10-02 to 11-01):**
   - 211 picks: 137 were new work, never in the backlog; 74 came from the backlog, and 69 of those had no score when picked.
   - The top-ranked task was picked once: override rate 98.6 %.
-  - One no-signal task (T-058, 108) topped the waiting list for 71 of the 74 backlog picks and was never picked.
+  - **Corrected by 055 (msg 033615f1, after the meter's review round 2):** `fw bvp` as it ranks put either T-058 (parked later all window, constant 108) or T-474 (already started) on top for 71 of the 74 backlog picks. That is the started-and-parked defect.
+  - Counting only real candidates (captured, horizon not later): the top-ranked was picked once, a top-5 task 5 times out of 74, and the top candidate (T-475) was top for 58 picks.
+  - The override rate is unchanged at 98.6 %. Report: 055 `docs/reports/T-678-pick-meter-first-report.md` (round 3 PASS).
 - **Candidate defects visible already:**
   - no-signal is written as a number (0 or 108);
   - the rank lists started work and parked work as candidates;
