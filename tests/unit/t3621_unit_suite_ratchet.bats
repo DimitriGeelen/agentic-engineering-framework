@@ -296,3 +296,23 @@ for e in d["entries"]:
     datetime.date.fromisoformat(str(e["expires"]))
 PY
 }
+
+@test "T-4956: regenerate keeps an entry whose file is not in the report's per-file record (another tier)" {
+    _report "$WORK/r.yaml" '["still.bats: red"]'
+    # A tiered report: per-file durations name only the files this run executed.
+    python3 - "$WORK/r.yaml" <<'PY'
+import sys, yaml
+p = sys.argv[1]; r = yaml.safe_load(open(p))
+r["legs"]["bats"]["file_durations"] = {"still.bats": 1.0, "fixed.bats": 1.0}
+yaml.safe_dump(r, open(p, "w"))
+PY
+    _baseline "$WORK/b.yaml" "$FUTURE" "still.bats: red" "fixed.bats: now green" "othertier.bats: not run here"
+    run python3 "$TOOL" regenerate --baseline "$WORK/b.yaml" --report "$WORK/r.yaml"
+    echo "$output"
+    [ "$status" -eq 0 ]
+    python3 - "$WORK/b.yaml" <<'PY'
+import sys, yaml
+names = {x["name"] for x in yaml.safe_load(open(sys.argv[1]))["entries"]}
+assert names == {"still.bats: red", "othertier.bats: not run here"}, names
+PY
+}

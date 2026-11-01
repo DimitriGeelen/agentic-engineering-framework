@@ -112,6 +112,16 @@ def _unfinished_files(report):
     return s
 
 
+def _ran_files(report, leg):
+    """T-4956: files this report actually ran (its per-file durations). A tiered run (T-4377)
+    covers one tier only; a file absent from it proves nothing green. None when the report
+    carries no per-file record, so callers fall back to the older checks."""
+    d = (report["legs"].get(leg) or {}).get("file_durations")
+    if not isinstance(d, dict):
+        return None
+    return {os.path.basename(str(f)) for f in d}
+
+
 def _leg_finished(report, leg):
     """A leg with a run-level error, or a v1 report with no per-file
     completion, cannot prove anything green."""
@@ -191,9 +201,12 @@ def cmd_regenerate(a):
     keep, dropped = [], []
     for e in base["entries"]:
         leg, name = e.get("leg"), str(e.get("name"))
+        fname = os.path.basename(str(e.get("file") or _file_of(leg, name)))
+        ran = _ran_files(report, leg)
         green = ((leg, name) not in reds
                  and _leg_finished(report, leg)
-                 and (leg, os.path.basename(str(e.get("file") or _file_of(leg, name)))) not in unfinished)
+                 and (leg, fname) not in unfinished
+                 and (ran is None or fname in ran))
         (dropped if green else keep).append(e)
     base["entries"] = keep
     base["last_regenerated"] = {"at": _today().isoformat(), "report": a.report,
