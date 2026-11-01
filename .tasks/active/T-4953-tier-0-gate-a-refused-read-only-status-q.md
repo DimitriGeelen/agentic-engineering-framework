@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T09:12:58Z
-last_update: 2026-11-01T13:09:52Z
+last_update: 2026-11-01T13:30:21Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -102,7 +102,7 @@ cost_estimate_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] External consultation (two internal-cost backends, no host detail in the brief) is recorded in `docs/reports/T-4953-readonly-pipe-consult.md` with each answer, and the cost is logged
 - [x] The operator's choice is recorded under ## Decisions with their words
-- [ ] The chosen behaviour is built in the gate and pinned by tests; every test that reads the hook passes
+- [x] The chosen behaviour is built in the gate and pinned by tests; every test that reads the hook passes (36 files, 401 tests: 400 ok; the one red, T-3077, was a live card leaked by another test, fixed in T-4964 and green since)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
