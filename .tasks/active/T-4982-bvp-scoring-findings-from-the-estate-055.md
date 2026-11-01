@@ -1,8 +1,20 @@
 ---
 id: T-4982
-name: "BVP scoring findings from the estate (055 T-677): unknown is not 0, evidence-cited scores, no batch rewrites, horizon in rank"
+name: "BVP scoring findings from the estate (055 T-677): unknown is not 0, evidence-cited
+  scores, no batch rewrites, horizon in rank"
 description: >
-  055-agentic-fleet-cockpit (msg d6ab6680, estate survey of 11 of 13 agents, their docs/reports/T-677-*): (1) no-signal is written as a number (0, 2, 108) and enters sums/medians/ties; wants an explicit unknown; (2) task scores 0-5 cannot express harm while decision briefs use -2..+2 (bvp.sh range check); (3) a driver score with no cited fact should count as unknown; estimator scores wording and treats its own earlier rationale as evidence; (4) estimate all rewrote last_update on 382 tasks (ring20-dashboard) and the sweep rewrites other tasks' frontmatter (1023 T-120); (5) driver weights cap project work at 0.444 (1409: 55.6% of weight on framework internals) - per-arc driver sets T-4961 may address it; (6) estimator AUC 0.62-0.66 vs operator choice, 'operator ruled/reported it' alone 0.75; fw bvp rank ignores horizon (5 of 055's top 15 are parked). One inception to triage which become build tasks; (4) and the horizon point look like plain bugs.
+  055-agentic-fleet-cockpit (msg d6ab6680, estate survey of 11 of 13 agents, their
+  docs/reports/T-677-*): (1) no-signal is written as a number (0, 2, 108) and enters
+  sums/medians/ties; wants an explicit unknown; (2) task scores 0-5 cannot express
+  harm while decision briefs use -2..+2 (bvp.sh range check); (3) a driver score with
+  no cited fact should count as unknown; estimator scores wording and treats its own
+  earlier rationale as evidence; (4) estimate all rewrote last_update on 382 tasks
+  (ring20-dashboard) and the sweep rewrites other tasks' frontmatter (1023 T-120);
+  (5) driver weights cap project work at 0.444 (1409: 55.6% of weight on framework
+  internals) - per-arc driver sets T-4961 may address it; (6) estimator AUC 0.62-0.66
+  vs operator choice, 'operator ruled/reported it' alone 0.75; fw bvp rank ignores
+  horizon (5 of 055's top 15 are parked). One inception to triage which become build
+  tasks; (4) and the horizon point look like plain bugs.
 
 status: captured
 workflow_type: inception
@@ -12,8 +24,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-11-01T20:35:15Z
-last_update: 2026-11-01T20:35:15Z
-date_finished: null
+last_update: '2026-11-01T20:45:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +34,16 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-11-01T20:45:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=112,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4982: BVP scoring findings from the estate (055 T-677): unknown is not 0, evidence-cited scores, no batch rewrites, horizon in rank
