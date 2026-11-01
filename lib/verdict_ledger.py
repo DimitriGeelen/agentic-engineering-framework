@@ -1175,6 +1175,12 @@ def kind_models(root: Path | None = None, revision: str = "") -> dict[str, str] 
     return _committed_registry_map(review_cost.worker_models, root, revision)
 
 
+def kind_vision(root: Path | None = None, revision: str = "") -> dict[str, bool]:
+    """(T-4944) {worker kind: vision} from the registry AS COMMITTED at `revision`; {} when no valid
+    committed registry exists, so nothing is then cited on a seat's behalf."""
+    return _committed_registry_map(review_cost.worker_vision, root, revision) or {}
+
+
 def kind_binaries(root: Path | None = None, revision: str = "") -> dict[str, str] | None:
     """(T-3582) {worker kind: absolute binary} committed in the registry at `revision`; None when
     no valid committed registry exists."""
@@ -1604,6 +1610,23 @@ def parse_harness_verdicts(text: str) -> dict[int, dict]:
     return {n: v for n, v in out.items() if n not in bad}
 
 
+def _seat_named_screenshots(root: Path, did: str, kind: str, revision: str, v: dict) -> list[str]:
+    """T-4944 (operator 2026-11-01, "vision-gated"): the screenshots a harness seat may be cited as
+    having seen. Only for a kind the committed registry declares `vision: true` (probed:
+    docs/reports/T-4944-harness-seat-vision.md), and only the run's own captures and checklist
+    shots whose file name the seat wrote in its verdict block. Handing a seat an image is not
+    evidence that it looked; its own words naming the file are. A blind or unknown kind gets []."""
+    if kind_vision(root, revision).get(kind) is not True:
+        return []
+    run, _bind, why = run_for_dispatch(root, did)
+    if why or not run:
+        return []
+    block = str(v.get("block") or "")
+    paths = [str(c.get("path") or "") for c in run.get("captures") or [] if c.get("ok")]
+    paths += [str(sh.get("path") or "") for sh in (run.get("visual") or {}).get("shots") or []]
+    return [p for p in dict.fromkeys(paths) if p and Path(p).name in block and (root / p).is_file()]
+
+
 def record_for_worker(dispatch_id: str, *, wdir: str, secret: str = "",
                       root: Path | None = None) -> dict:
     """(run.sh, after a HARNESS_KINDS worker exits, before `complete`) record the worker's printed
@@ -1686,9 +1709,11 @@ def _record_for_worker_locked(root: Path, did: str, drec: dict, kind: str, here:
             f"\n## The worker's full output (result.md)\n\n```\n{_ANSI_RE.sub('', output).strip()}\n```\n")
         touched.append(str(rep))
         guidance = v["guidance"] or ("" if v["outcome"] == GREEN else v["why"])
+        seen = _seat_named_screenshots(root, did, kind, str(drec.get("revision") or ""), v) \
+            if v["outcome"] == GREEN else []
         try:
             rec = record(task, ac, v["outcome"], reviewer=f"{identity}:{seat}", rung=rung,
-                         guidance=guidance, evidence=[str(rep)], digest=criterion_digest(crit),
+                         guidance=guidance, evidence=[str(rep)] + seen, digest=criterion_digest(crit),
                          dispatch_id=did, run_id=str(drec.get("run_id") or ""), root=root)
             res["recorded"].append({"ac": ac, "id": rec["id"], "outcome": rec["outcome"]})
         except VerdictRefused as e:

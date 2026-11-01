@@ -1153,10 +1153,17 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
         if retired:
             res["model_retired"] = retired
             kinds -= set(retired)
+    # T-4944 (operator 2026-11-01, "vision-gated"): a page check goes only to seats that can see
+    # the screenshots. A kind the committed registry declares `vision: false` (opencode: its model
+    # takes no images) can only return not-evaluated there, so it does not sit a render run.
+    blind = set()
+    if any(c["render"] for c in judged):
+        blind = {k for k, seen in vl.kind_vision(root, revision).items() if seen is False}
+        res["blind_kinds"] = sorted(blind)
     try:
         plan = _plan_seats(root, rung, kinds,
                            _kind_vendors(root) if kind_vendors is None else dict(kind_vendors),
-                           exclude_kinds=set(exclude_kinds))
+                           exclude_kinds=set(exclude_kinds) | blind)
     except Exception as e:  # noqa: BLE001 - an unreadable registry is a refusal, not a default
         res.update(error=f"review backend registry unavailable: {e}", code=1)
         return res
