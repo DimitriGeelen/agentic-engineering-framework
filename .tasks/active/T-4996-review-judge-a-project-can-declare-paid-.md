@@ -108,6 +108,12 @@ cost_estimate_proposed:
 - [x] With `never`, `fw reviewer judge` plans no paid seats, calls no `fw review propose`, and each unfilled seat says "paid backends are not allowed in this project (REVIEW_PAID_BACKENDS=never)"; with the default, behaviour is unchanged; tests for both; every test that reads `judge_cli.py` passes; vendored copy in sync. Test `test_estate_only_project_files_no_paid_proposal` beside the existing paid-proposal tests (still green); 809 judge tests and the lint suite green (the key is also listed on the Watchtower config page, which the registry-parity lint requires); Watchtower restarted and current.
 
 ### Human
+- [ ] [REVIEW] The Watchtower config page lists REVIEW_PAID_BACKENDS readably
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find the row REVIEW_PAID_BACKENDS (default `allowed`).
+  **Expected:** the row reads like its neighbours; the description says what `never` does.
+  **If not:** note what reads wrong.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -363,6 +369,14 @@ bin/fw vendor self --check --task T-4996
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+
+**Rationale:** the only render change is one row in the config page's key list (http://192.168.10.107:3000/config); the behaviour change is in the judge and is tested. A project that sets REVIEW_PAID_BACKENDS=never no longer collects paid proposals its operator will never approve.
+
+**Evidence:**
+- `test_estate_only_project_files_no_paid_proposal`: no proposals file, no proposals in the result, every unfilled seat names the setting. The existing paid-proposal tests are still green.
+- 809 tests that import the judge, and the lint suite (including registry/config-page parity), are green; Watchtower is restarted and current, and the page shows the row.
 
 ## Decisions
 
