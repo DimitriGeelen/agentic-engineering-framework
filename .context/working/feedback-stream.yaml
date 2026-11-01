@@ -52123,3 +52123,21 @@ scan_id: R-a3fc563c
 task_id: T-4950
 payload:
   task_file: .tasks/active/T-4950-split-root-shell-ratchet-red-hook-line-c.md
+---
+kind: scan_emitted
+timestamp: '2026-11-01T08:59:49Z'
+scan_id: R-837ba359
+task_id: T-4951
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-01T08:59:49Z'
+scan_id: R-837ba359
+task_id: T-4951
+payload:
+  task_file: .tasks/active/T-4951-approvals-arc-readiness-aborts-with-syst.md
