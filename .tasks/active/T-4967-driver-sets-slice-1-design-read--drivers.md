@@ -11,10 +11,10 @@ description: >
   per change, a short independent review, and the build slices as tasks. Arc-level
   naming only (requester c7c90927); missing set file is a refusal.
 
-status: captured
+status: started-work
 workflow_type: design
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T14:48:23Z
-last_update: '2026-11-01T15:00:45Z'
+last_update: 2026-11-01T20:25:20Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,20 +91,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 010-termlink (msg c39df4cd, their T-3638) wants a PRODUCT value-driver set beside the live DEVELOPMENT set, named per arc (`driver_set: product`). The operator chose "GO, narrow" on T-4961 (2026-11-01); 010 confirmed arc-level naming is enough (msg c7c90927). Report: `docs/reports/T-4961-driver-sets.md`.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** four code points assume one live `policy/value-drivers.yaml`: the estimator lets the live file win collisions, D1-D4 cannot be scoped, scoped weights are capped (6, 3 drivers), and `bvp rank/arcs/detail` read only the live file. Any of them alone would make a named set silently score as the live set.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A design for the narrow form: what changes at each point, what each change touches, reviewed, and cut into build slices.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** The T-4961 report carries the design per point with blast radius; two internal seats have reviewed it; build slices exist as tasks; 010 knows the form.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Design section in `docs/reports/T-4961-driver-sets.md`: for each of the four points, the current behaviour (file:line), the change, and its fabric blast radius; plus the resolution rule (arc `driver_set:` → `policy/value-drivers-<name>.yaml`, missing file refuses) and the consumers of the set that the four points do not name
+- [ ] Short independent review by two internal seats; findings answered in the report
+- [ ] Build slices filed as tasks and linked from the report; 010-termlink told the form
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -387,3 +388,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4967-driver-sets-slice-1-design-read--drivers.md
 - **Context:** Initial task creation
+
+### 2026-11-01T20:25:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
