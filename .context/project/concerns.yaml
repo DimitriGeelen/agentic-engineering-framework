@@ -5697,11 +5697,14 @@ concerns:
     lib/shell_write_scan.py refuses an unresolved target only when ctx.mentions holds, and the read pass sees no
     absolute token inside the assignment.'
   severity: medium
-  status: open
+  status: resolved
   detected_in: T-4965
   observed: '2026-11-01'
   reported_by: independent review seat (codex), confirmed by agent probe
   blast_radius: every project — typed Bash writes outside PROJECT_ROOT via a variable are not fenced (same typed-text
     scope as Tier 0; scripts were never fenced)
   detection_gap: boundary tests cover literal and relative paths; none assigns the path to a variable first
-  what_remains: fix and tests in T-4983
+  what_remains: RESOLVED 2026-11-01 by T-4983 — scan_boundary judges a run-time write target with a mention gate
+    (refused when the command names an outside path); tests/unit/t4983_boundary_variable_write_target.bats. A path
+    that only a file or the environment supplies stays out of scope (typed-text boundary, as Tier 0).
+  resolved: '2026-11-01'
