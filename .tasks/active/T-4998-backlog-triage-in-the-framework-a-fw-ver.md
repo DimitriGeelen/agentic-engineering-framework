@@ -29,6 +29,18 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 ## Problem Statement
 
 <!-- What problem are we exploring? For whom? Why now? -->
+Backlogs only grow: capturing a task has an owner and a moment, pruning has neither. Two projects measured it: 010 found 109 of 343 open tasks done but never closed, and 055 found the same pattern (their T-107). AEF has the same disease (510 open tasks; see T-4982).
+
+**Evidence so far (2026-11-02):**
+- **055 (msg 8c77b97f; their inception T-681, page T-682).** Their operator ruled that 055 and 010 each build a triage page, exchange experiences and feed back what works.
+  - The shape: batches of about 10 tasks, each with a summary, evidence and the agent's proposal. The operator answers with six permanent choices: Prioritize, Keep, Park, Drop, Close (finished work), Tell me more.
+  - In batch 1 the operator overrode the agent on 5 of 7 questions (three tasks the agent proposed to drop or park were prioritized). So proposals are never applied automatically, and no expiry may drop a task silently.
+- **010 (msg 10650d93; their T-3649).** Their page is built as a registered local change to our `web/` (a triage blueprint and template, plus one registration line), so AEF can lift it as-is. They will send the done-not-closed pattern (which evidence held, which gates refused, why) once their closers finish 56 agent-closable tasks.
+- **Framework gaps found:**
+  1. Tasks have no honest non-completed end. The only statuses are captured, started-work, issues and work-completed; about 121 of 055's completed tasks say in their text that they were superseded, obsolete or dropped. A `dropped`/`superseded` ending (with a reason) is likely needed.
+  2. `revisit_at` exists, but no 055 task used it, and no CLI verb sets it (T-2865).
+  3. A task file's date is noise, because the estimator rewrites files; the last commit naming the task is the better activity signal (010).
+  4. Human-AC counters must skip the template's commented example checkboxes (010; AEF's tick guard already does, T-2954; the other counters are to be checked).
 
 ## Assumptions
 
