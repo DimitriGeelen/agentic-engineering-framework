@@ -395,9 +395,19 @@ def _shot_name(i: int, page: str) -> str:
     return f"{i + 1:02d}-{re.sub(r'[^a-z0-9]+', '-', page.lower()).strip('-') or 'root'}.png"
 
 
+# T-4960: a full-page shot of /approvals (81,749 px) ran past Playwright's 30 s screenshot
+# timeout, so every render review of it was PARTIAL, and a finished one is unreadable anyway.
+# Above this height the judge keeps the viewport and says so in the brief; the task's own
+# `fw ux shots` crops cover the sections.
+MAX_FULL_PAGE_PX = 16000
+CAPTURE_NOTES = "capture-notes.json"
+MAX_CONSOLE_ERRORS = 20
+
+
 def _capture_playwright(base_url: str, pages: list[str], outdir: Path) -> tuple[list[Path], str]:
     """Real capturer. Returns (paths, error); shots are named `_shot_name(i, page)` so each page's
-    result can be told apart, and a partial failure comes back as 'partial: <page>: <why>; ...'."""
+    result can be told apart, and a partial failure comes back as 'partial: <page>: <why>; ...'.
+    Per-page notes (height, viewport-only, console errors) go to `CAPTURE_NOTES` in outdir."""
     if not base_url:
         return [], "no running Watchtower (.context/working/watchtower.url missing)"
     if not pages:
@@ -407,26 +417,39 @@ def _capture_playwright(base_url: str, pages: list[str], outdir: Path) -> tuple[
     except Exception as e:  # noqa: BLE001
         return [], f"playwright unavailable: {e}"
     outdir.mkdir(parents=True, exist_ok=True)
+    (outdir / CAPTURE_NOTES).unlink(missing_ok=True)
     shots: list[Path] = []
     errs: list[str] = []
+    notes: dict[str, dict] = {}
+    console: list[str] = []
     try:
         with sync_playwright() as pw:
             browser = pw.chromium.launch()
             page = browser.new_page(viewport={"width": 1280, "height": 900})
+            page.on("console", lambda m: m.type == "error" and console.append(f"console: {m.text}"))
+            page.on("pageerror", lambda e: console.append(f"page error: {e}"))
             for i, p in enumerate(pages):
+                console.clear()
                 try:
                     resp = page.goto(base_url.rstrip("/") + p, timeout=30000)
                     if resp is None or resp.status >= 400:
                         errs.append(f"{p}: HTTP {getattr(resp, 'status', '?')}")
                         continue
                     f = outdir / _shot_name(i, p)
-                    page.screenshot(path=str(f), full_page=True)
+                    height = int(page.evaluate("() => document.documentElement.scrollHeight"))
+                    tall = height > MAX_FULL_PAGE_PX
+                    page.screenshot(path=str(f), full_page=not tall)
                     shots.append(f)
+                    notes[p] = {"height": height, "viewport_only": tall,
+                                "console_errors": [c[:300] for c in console[:MAX_CONSOLE_ERRORS]],
+                                "console_error_count": len(console)}
                 except Exception as e:  # noqa: BLE001
                     errs.append(f"{p}: {e}")
             browser.close()
     except Exception as e:  # noqa: BLE001
         return shots, f"browser failure: {e}"
+    if notes:
+        (outdir / CAPTURE_NOTES).write_text(json.dumps(notes, indent=1), encoding="utf-8")
     if not shots:
         return [], "; ".join(errs) or "no screenshot captured"
     return shots, ("partial: " + "; ".join(errs)) if errs else ""
@@ -508,6 +531,33 @@ def _steps_record(root: Path, task_id: str, state: str, problems: list[str]) -> 
     return want or "missing", shots
 
 
+def _capture_notes(path: Path, pages: list[str]) -> dict:
+    """T-4960: the capturer's per-page notes for the pages planned now; {} when absent or bad."""
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return {p: raw[p] for p in pages if isinstance(raw, dict) and isinstance(raw.get(p), dict)}
+
+
+def _note_lines(notes: dict) -> list[str]:
+    """Brief lines for the capture notes: tall pages shown from the top, and console errors."""
+    out: list[str] = []
+    for p, n in notes.items():
+        if n.get("viewport_only"):
+            out.append(f"- `{p}` is {n.get('height', '?'):,} px tall, over the {MAX_FULL_PAGE_PX:,} px "
+                       "full-page limit: its screenshot shows the top of the page only. Judge sections "
+                       "further down from the task's own visual evidence (fw ux shots crops) below.")
+        errs = n.get("console_errors") or []
+        count = n.get("console_error_count", len(errs))
+        if count:
+            out.append(f"- `{p}`: the browser reported {count} console/page error(s):")
+            out += [f"  - {e}" for e in errs]
+        else:
+            out.append(f"- `{p}`: the browser reported no console or page errors.")
+    return out
+
+
 def _gather_evidence(root: Path, task_id: str, task_data: dict, criteria: list[dict],
                      capture: Capturer, *, dry_run: bool) -> dict:
     """{'needed', 'pages', 'shots', 'error', 'captures', 'partial'}.
@@ -542,6 +592,7 @@ def _gather_evidence(root: Path, task_id: str, task_data: dict, criteria: list[d
             ev["captures"].append({"page": pg, "ok": False, "sha256": "", "path": "", "error": why})
     ev["shots"] = [c["path"] for c in ev["captures"] if c["ok"]]
     ev["partial"] = [c["page"] for c in ev["captures"] if not c["ok"]]
+    ev["notes"] = _capture_notes(root / EVIDENCE_DIR / task_id / CAPTURE_NOTES, ev["pages"])
     ev["error"] = err if (err and not ev["shots"]) else ""
     if not ev["shots"] and not ev["error"]:
         ev["error"] = "no screenshot captured"
@@ -644,6 +695,9 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
                              "`not-evaluated` for it, naming the pages you did not see.")
             lines.append("Cite EVERY screenshot above as `--evidence` (the copy in your report "
                          "directory); the ledger checks each required page's screenshot hash.")
+            notes = _note_lines(ev.get("notes") or {})
+            if notes:
+                lines += ["", "What the capturing browser recorded (T-4960):"] + notes
         else:
             lines += [
                 f"**SCREENSHOT CAPTURE FAILED: {ev['error'] or 'no screenshot captured'}.**",
