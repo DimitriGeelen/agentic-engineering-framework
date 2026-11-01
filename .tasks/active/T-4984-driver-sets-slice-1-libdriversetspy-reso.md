@@ -9,10 +9,10 @@ description: >
   resolves, split-root lint exemption for value-drivers*.yaml. Design: docs/reports/T-4961-driver-sets.md
   §Design (T-4967) and §Review (codex C1-C7, opencode 1-8).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T21:08:37Z
-last_update: '2026-11-01T21:15:30Z'
+last_update: '2026-11-01T22:10:04Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -82,6 +82,23 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-01T22:10:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=4 (body:fw-audit-or-doctor); 
+      D3=0 (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-AUTONOMY=0 (no-signal); F3=1 (body/components:prompt-incidental); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4984: Driver sets slice 1: lib/driver_sets.py resolver and set-file contract
@@ -89,20 +106,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-4961 GO (narrow form). Design T-4967, reviewed by two seats (opencode and codex, both "sound with fixes", all fixes accepted): `docs/reports/T-4961-driver-sets.md`. 010-termlink's product set file already fits the contract (msg f6c450a2).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** every reader assumes the one live `policy/value-drivers.yaml`. Before any reader can become set-aware, there must be ONE resolver and ONE validator, so that no reader invents its own rule or silently falls back to the live set.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** `lib/driver_sets.py`: resolve a task's or arc's set, validate a set file against the contract, and refuse every ambiguous or invalid case. Plus an audit check that every named set resolves, and the split-root lint exemption. No reader changes yet (slices 2 and 3).
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the module and its tests exist. `fw audit` FAILs on an arc whose `driver_set:` does not resolve to a valid file. Nothing else changes behaviour.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `lib/driver_sets.py` with `resolve_set_name`, `set_path`, `load_set`, `load_for_task`, `load_for_arc`, `validate_set` and `DriverSetError`, implementing the design's resolution rule and its review fixes: arc_id and `arc:` tags via `lib/arc_membership.py`; refusals for a missing or invalid file, a bad name, an unresolvable arc reference, arc_id and tags naming different sets, duplicate arc ids or slugs, duplicate YAML keys, and an empty `driver_set:`; `default` reserved for the live file
+- [ ] `validate_set`: same schema as the live file; D1-D4 entries equal to the live ones except `weight` and `rubric`; ids unique across both sections; integer weights 0-10; project-level keys (`auto_promote`, `inception_scoring_exception`) WARN; a file named `value-drivers-default.yaml` WARNs
+- [ ] `tests/unit/test_driver_sets.py` covers every refusal and the valid cases; an audit check FAILs on a named set that does not resolve; the T-2648 split-root lint exempts `value-drivers*.yaml` with a reason; lint suite green; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -385,3 +403,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4984-driver-sets-slice-1-libdriversetspy-reso.md
 - **Context:** Initial task creation
+
+### 2026-11-01T22:10:02Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
