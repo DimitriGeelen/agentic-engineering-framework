@@ -83,9 +83,114 @@ Item 3 is the most sensitive point: a credential handed to an agent process for 
 
 **Rename probe:** on hold; 050 will run it against the `pen-create` mount once that exists.
 
+## Design read (2026-11-01)
+
+What exists today, read from the code and probed with the hook itself (a scratch project with `BOUNDARY_EXTRA_READ_PATHS: /srv/nas-share`):
+
+| Command | Result today |
+|---|---|
+| `cat /srv/nas-share/a.txt` | allowed (extra read path) |
+| `rm /srv/nas-share/a.txt`, `rm -f …` | refused |
+| `mv /srv/nas-share/a /srv/nas-share/b` | refused |
+| `cp x /srv/nas-share/b` | refused |
+| `rm /srv/other/a.txt` | refused |
+
+- **Write/Edit tool** (`check-project-boundary.sh`, Write/Edit gate): allowed only under the project, `/tmp`, the account's `~/.claude`, and sibling worktrees. Everything else is refused.
+- **Bash** has three write passes. Pass 1 (`write_ops`, `_tee_targets`, `_write_verb_targets`) covers redirects, tee, cp/mv/install/ln/rsync/dd, sed/perl -i, chmod/touch/mkdir. Pass 4 refuses outside paths that are not on the read allowlist; the extra read paths are exempt from that pass only. Pass 5 (`lib/shell_write_scan.py`) tokenises the command the way bash reads it and collects every write target. This is why `rm` on an extra read path is refused, even though pass 1 has no `rm`.
+- **What is missing for grants:** every pass answers "is this a write?", none says "which kind". The scanner returns targets, not operations. Level 2 needs each target classified as **create** (the path does not exist), **modify** (it exists), **rename** (source and destination), **delete** or **metadata** (chmod/touch). That classification is the core new code.
+- **Scope limit (unchanged, CLAUDE.md §Tier 0):** all of this sees only the typed command or the Write/Edit target. A script, `make` or `python3 x.py` writes wherever it likes. On the profile mounts the NAS enforces the limits even against scripts (the reason for 050's model change). On the operator's admin mount, the hook is the only fence.
+
+## Design draft (2026-11-01, for review)
+
+### 1. The grant file
+
+- **Location:** `policy/access-grants.yaml`, committed, operator-owned.
+- **Guard:** the same two layers as Human-AC ticks (T-1731, T-3695). (1) A PreToolUse rule refuses Write/Edit, and any Bash command whose write targets include the file, under agent control. (2) An audit check FAILs on any commit that changed the file without operator provenance (`--i-am-human` CLI or Watchtower). The first layer stops accidents; the second makes a script edit visible. Neither stops a determined same-user process (the T-3581 residual), and the report says so.
+- **Shape:**
+  ```yaml
+  grants:
+    - path: /mnt/pen-create/Projects/Archive   # recursive
+      level: create          # read | create | create-project
+      via: /mnt/pen-create   # the profile mount writes must go through
+  temp_prefix: PEN-TMP_      # per project; with the date it forms PEN-TMP_<YYYYMMDD>_<name>
+  never_write: [/mnt/nas-admin]   # the operator's own mount: no typed agent write, ever
+  ```
+- **Validation:** paths absolute, no `..`, no symlink in the path, each `path` under its `via`. Grants may not overlap with different levels. `never_write` wins over any grant.
+- `BOUNDARY_EXTRA_READ_PATHS` stays as it is. A `read` grant is the same thing kept in the operator-owned file, and doctor shows both.
+
+### 2. What each level allows (typed actions)
+
+| Action on a path under the grant | read | create | create-project |
+|---|---|---|---|
+| list, read | yes | yes | yes |
+| create a file or directory (target does not exist) | no | yes, recorded in the ledger | yes, under the parent only; the new directory then counts as a `create` grant |
+| modify an existing file | no | only if the ledger says the agent created it | same as create, inside the new directory |
+| rename or move own item, within the grant | no | yes, if the source is in the ledger, the destination is inside a create-level grant, and the move neither adds nor removes the temp prefix | same |
+| delete | no | **never standing**: through the delete route (§4) | same |
+| chmod, chown, touch -d | no | no | no |
+| anything the scanner cannot resolve (`$VAR`, a glob with no match, inline code mentioning the path) | refused | refused | refused |
+
+The fail direction is refusal, everywhere. When the ledger has no entry for a path, the file belongs to the operator.
+
+### 3. The created-by-agent ledger
+
+- **File:** `.context/grants/created.jsonl`, append-only (one line per create, rename or delete, each with path, kind, task, time and `temp: true|false`).
+- **Who writes it:** the gate cannot write after the fact, so it is split in two. The PreToolUse gate writes a *pending* line for each create target it allowed. A PostToolUse hook confirms the lines whose paths now exist and drops the others. A rename moves the entry (old path closed, new path opened). This is where 050's rename probe matters: if the NAS reports a rename as delete plus create, nothing changes on our side, because the ledger keys on the path as typed.
+- **On 050's mounts** the NAS (CREATOR OWNER on `pen-create`) is what actually enforces "modify only own" against scripts. There the ledger is an audit aid plus the source for temp items and delete scope. On a mount without such accounts, the ledger is the only proof, so a lost or torn ledger means nothing counts as the agent's (fail closed).
+- **mtime is used for nothing.**
+
+### 4. Deletes
+
+**4a. Approved deletes (every non-temporary delete).**
+1. The agent runs `fw grants delete <path>`. The command checks that the path is in the ledger as agent-created and still under a grant, then records a request.
+2. The request becomes a Tier 0 action `grant-delete {path}`, keyed exactly as typed, like `recursive-delete` (T-3593). One approval covers one path.
+3. After approval, the **runtime** deletes; the agent never holds the delete credential (050's preference, msg 24b47da4).
+
+**4b. Temporary items.**
+- Created through `fw grants mktemp <dir> <name>`, which builds `PEN-TMP_<YYYYMMDD>_<name>` and writes the ledger line with `temp: true` at creation. A file that merely carries the prefix is not temporary.
+- Renaming into or out of the prefix is refused.
+- `fw grants delete` on a ledger-temp item runs without approval, through the same runtime route, and is logged.
+
+**4c. The hard part, stated plainly.** On 050's host the agent runs as root. Any credential a *local* runtime can read, the agent can read too. The same holds for any approval record it can sign, which is the T-3581 residual. So a local runtime cannot give real separation for the `pen-delete` credential. Two honest options:
+
+- **(a) Off-host executor (recommended).** The framework only produces the approved, single-path request. Something the agent cannot act as performs the delete, using a `pen-delete` credential that only it can read: Ring20 Manager (their T-2486/T-2581) or a NAS-side task. The executor should also confirm the operator's approval itself (its own UI, or a signed operator action), not trust our approval file.
+- **(b) Local runtime.** It holds the credential in a store the agent's identity has no role on. That protects against typed misuse and makes every use visible in the audit log. It does not protect against a root process on the same host, and must be documented as such.
+
+### 5. Visibility
+
+- `fw doctor` lists each grant, its level and its `via` mount, and WARNs when a `via` mount is absent or a `never_write` root is writable.
+- Watchtower `/config` (or a small `/grants` page) shows the same plus the last ledger lines. Read-only; changes go through the operator's door.
+- Audit log: `.context/grants/audit.jsonl` holds every allowed write, refused write and delete request, with its outcome.
+
+### 6. Acceptance tests (050's four plus ours)
+
+1. A write outside every grant is refused.
+2. Modifying an operator file under a create grant is refused (no ledger entry).
+3. `rm` under a grant is refused without the delete route; `fw grants delete` on a non-ledger path is refused.
+4. The agent cannot edit `policy/access-grants.yaml`: Write/Edit and Bash are refused, and audit FAILs a commit without operator provenance.
+5. A create is recorded, and a modify of that file is then allowed; after a rename, the old path is refused and the new one allowed.
+6. Renaming into or out of the temp prefix is refused; a file named with the prefix but not created through mktemp is not deletable as temp.
+7. An unresolvable target (`> "$X"`, `cp * /mnt/…`) under a grant is refused.
+8. Any typed write to a `never_write` root is refused, even when a grant covers a path below it.
+
+### 7. Build slices (after GO)
+
+1. **Operation classification** in `lib/shell_write_scan.py`: kinds for each target (create / modify / rename / delete / metadata), with tests. This is useful on its own and changes no gate.
+2. **Grant file, validation and guard** (the PreToolUse rule plus the provenance audit) and the read level. Doctor visibility.
+3. **Create level and ledger:** pending line in PreToolUse, confirm in PostToolUse, the rename move, modify-own. Tests 1, 2, 5, 7, 8.
+4. **Delete route and temp items:** `fw grants delete|mktemp`, the Tier 0 action `grant-delete`, and the hand-off to the executor chosen in §4c. Tests 3 and 6.
+5. **create-project level and the Watchtower view.**
+
+### 8. Open questions for the operator (050's)
+
+1. §4c: off-host executor (a) or local runtime (b)? The design recommends (a), and it needs Ring20 Manager's agreement.
+2. Does the grant file live in the project (`policy/`, committed, so it shows in git history), or outside it in an operator-only path the agent cannot write at all? Outside is stronger, but the boundary hook would then need to read a file outside the project.
+3. Is `chmod`/`touch -d` on own files needed? The draft refuses metadata changes.
+4. The rename probe: still useful to confirm the NAS allows a rename without a delete right, but the ledger design does not depend on its answer.
+
 ## Next
 
-1. Design read: `check-project-boundary.sh`, the Tier 1 write scanner (`check-active-task.sh` write patterns), and how Tier 0 approves a delete on an outside path.
-2. Draft the design here. Ask whether 050's rename/mtime probe is needed for the ledger design (a rename moves a ledger entry; mtime is not trusted for anything).
-3. Independent review by two seats. Host names and addresses are left out of the brief.
+1. ~~Design read~~ and ~~draft~~: done above (2026-11-01).
+2. Independent review by two seats. Host names and addresses are left out of the brief.
+3. Send 050 the draft (§4c and §8 first) and record their operator's answers here.
 4. Operator GO/NO-GO; then build slices as separate tasks, with 050's test cases as acceptance tests.
