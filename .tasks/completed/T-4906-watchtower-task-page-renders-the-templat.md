@@ -14,8 +14,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: [bug, watchtower, render]
 components: [lib/upgrade_template_shipped.py, web/blueprints/tasks.py, 
       web/templates/task_detail.html]
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-29T16:58:16Z
-last_update: '2026-10-30T17:15:18Z'
+last_update: 2026-11-01T00:19:43Z
 date_finished: 2026-10-29T20:51:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -142,7 +142,7 @@ The root is that the template's guidance in Verification is written as `#` comme
 - [x] Watchtower restarted and `bin/fw watchtower current` clean; vendored copy synced; template index regenerated
 
 ### Human
-- [ ] [REVIEW] Verification text reads at normal size in Watchtower and on GitHub
+- [x] [REVIEW] Verification text reads at normal size in Watchtower and on GitHub
   **Steps:**
   1. Open http://192.168.10.107:3000/tasks/T-4906 and expand "Task Body"; scroll to `## Verification`.
   2. Open a task created after this change on GitHub (for example T-4906's successor tasks), and look at its Verification section.
@@ -193,6 +193,7 @@ The root is that the template's guidance in Verification is written as `#` comme
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261101-192f7fae — reviewer-judge-t-4906-r3-89c9d5b0eb47:reviewer (rung rung-3-termlink-single-reviewer), digest 3d9aa5baeac3; dispatch judge-t-4906-r3-89c9d5b0eb47; evidence: .context/reviews/evidence/T-4906/AC1-judge-t-4906-r3-89c9d5b0eb47.md, .context/reviews/evidence/T-4906/01-tasks-t-4906-judge-t-4906-r3-89c9d5b0eb47.png, .context/reviews/evidence/T-4906/02-docs-generated-judge-t-4906-r3-89c9d5b0eb47.png, .context/reviews/evidence/T-4906/03-inception-judge-t-4906-r3-89c9d5b0eb47.png, .context/reviews/evidence/T-4906/04-assumptions-judge-t-4906-r3-89c9d5b0eb47.png, .context/reviews/evidence/T-4906/05-settings-judge-t-4906-r3-89c9d5b0eb47.png, .context/reviews/evidence/T-4906/06-settings-models-judge-t-4906-r3-89c9d5b0eb47.png, .context/reviews/evidence/T-4906/07-settings-appearance-judge-t-4906-r3-89c9d5b0eb47.png, .context/reviews/evidence/T-4906/08-tasks-judge-t-4906-r3-89c9d5b0eb47.png, .context/reviews/evidence/T-4906/verification-open@1024-judge-t-4906-r3-89c9d5b0eb47.png, .context/reviews/evidence/T-4906/verification-open@1440-judge-t-4906-r3-89c9d5b0eb47.png, .context/reviews/evidence/T-4906/verification-open@1920-judge-t-4906-r3-89c9d5b0eb47.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 

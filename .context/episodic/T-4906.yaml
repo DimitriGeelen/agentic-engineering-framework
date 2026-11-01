@@ -1,0 +1,171 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4906: Watchtower task page renders the template's '# ...' comment lines in ## Verification as huge bold H1 headings (and shows <!-- --> guidance blocks as raw text)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T00:20:00Z
+# ============================================================================
+
+task_id: T-4906
+task_name: "Watchtower task page renders the template's '# ...' comment lines in ## Verification as huge bold H1 headings (and shows <!-- --> guidance blocks as raw text)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-29T16:58:16Z
+completed: 2026-10-30T17:15:18Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-10-29T21:51:32+01:00
+last_commit: 2026-11-01T01:17:15+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RCA; T-4904 partial-complete. partial-complete — awaiting operator [REVIEW]. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (opencode seat opencode, recorded by the runtime). GitHub-half evidence for the reviewer (mirror in sync; GitHub's rendered T-4930 Verification has no headings, guidance hidden)
+
+# Key outcomes
+outcomes:
+  - 'Watchtower: the raw Task Body block on /tasks/T-XXXX is not auto-highlighted (`class="nohighlight"`), so `#` guidance lines render at normal weight and size; checked in the served page'
+  - 'Template: the guidance in `## Verification` of .tasks/templates/default.md (and the create-task.sh fallback) is one HTML comment block instead of `# …` lines, so GitHub hides it; `extract_verification_block` returns no commands for an untouched template (the build-task refusal for "no verification command" still fires) — the fallback''s Verification is empty, nothing to change there'
+  - 'Tests: extractor on the new template yields 0 commands; a filled-in command below the comment still runs; the served task page carries `nohighlight` on the body block — t4906_verification_render.bats 4/4'
+  - 'Watchtower restarted and `bin/fw watchtower current` clean; vendored copy synced; template index regenerated'
+  - '[REVIEW] Verification text reads at normal size in Watchtower and on GitHub'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/reviews/applied.jsonl'
+  - '.context/reviews/evidence/T-4906/01-tasks-t-4906-judge-t-4906-r3-2bbcd624da21.png'
+  - '.context/reviews/evidence/T-4906/01-tasks-t-4906-judge-t-4906-r3-41db6f21112b.png'
+  - '.context/reviews/evidence/T-4906/01-tasks-t-4906-judge-t-4906-r3-45fdf554cd12.png'
+  - '.context/reviews/evidence/T-4906/01-tasks-t-4906-judge-t-4906-r3-89c9d5b0eb47.png'
+  - '.context/reviews/evidence/T-4906/01-tasks-t-4906-judge-t-4906-r3-fa3b6b98400b.png'
+  - '.context/reviews/evidence/T-4906/02-docs-generated-judge-t-4906-r3-2bbcd624da21.png'
+  - '.context/reviews/evidence/T-4906/02-docs-generated-judge-t-4906-r3-41db6f21112b.png'
+  - '.context/reviews/evidence/T-4906/02-docs-generated-judge-t-4906-r3-45fdf554cd12.png'
+  - '.context/reviews/evidence/T-4906/02-docs-generated-judge-t-4906-r3-89c9d5b0eb47.png'
+  - '.context/reviews/evidence/T-4906/02-docs-generated-judge-t-4906-r3-fa3b6b98400b.png'
+  - '.context/reviews/evidence/T-4906/03-inception-judge-t-4906-r3-2bbcd624da21.png'
+  - '.context/reviews/evidence/T-4906/03-inception-judge-t-4906-r3-41db6f21112b.png'
+  - '.context/reviews/evidence/T-4906/03-inception-judge-t-4906-r3-45fdf554cd12.png'
+  - '.context/reviews/evidence/T-4906/03-inception-judge-t-4906-r3-89c9d5b0eb47.png'
+  - '.context/reviews/evidence/T-4906/03-inception-judge-t-4906-r3-fa3b6b98400b.png'
+  - '.context/reviews/evidence/T-4906/04-assumptions-judge-t-4906-r3-2bbcd624da21.png'
+  - '.context/reviews/evidence/T-4906/04-assumptions-judge-t-4906-r3-41db6f21112b.png'
+  - '.context/reviews/evidence/T-4906/04-assumptions-judge-t-4906-r3-45fdf554cd12.png'
+  - '.context/reviews/evidence/T-4906/04-assumptions-judge-t-4906-r3-89c9d5b0eb47.png'
+  - '.context/reviews/evidence/T-4906/04-assumptions-judge-t-4906-r3-fa3b6b98400b.png'
+  - '.context/reviews/evidence/T-4906/05-settings-judge-t-4906-r3-2bbcd624da21.png'
+  - '.context/reviews/evidence/T-4906/05-settings-judge-t-4906-r3-41db6f21112b.png'
+  - '.context/reviews/evidence/T-4906/05-settings-judge-t-4906-r3-45fdf554cd12.png'
+  - '.context/reviews/evidence/T-4906/05-settings-judge-t-4906-r3-89c9d5b0eb47.png'
+  - '.context/reviews/evidence/T-4906/05-settings-judge-t-4906-r3-fa3b6b98400b.png'
+  - '.context/reviews/evidence/T-4906/06-settings-models-judge-t-4906-r3-41db6f21112b.png'
+  - '.context/reviews/evidence/T-4906/06-settings-models-judge-t-4906-r3-45fdf554cd12.png'
+  - '.context/reviews/evidence/T-4906/06-settings-models-judge-t-4906-r3-89c9d5b0eb47.png'
+  - '.context/reviews/evidence/T-4906/06-settings-models-judge-t-4906-r3-fa3b6b98400b.png'
+  - '.context/reviews/evidence/T-4906/07-settings-appearance-judge-t-4906-r3-89c9d5b0eb47.png'
+  - '.context/reviews/evidence/T-4906/08-tasks-judge-t-4906-r3-89c9d5b0eb47.png'
+  - '.context/reviews/evidence/T-4906/AC1-judge-t-4906-r3-0188235511d3.md'
+  - '.context/reviews/evidence/T-4906/AC1-judge-t-4906-r3-0321cbd726b6.md'
+  - '.context/reviews/evidence/T-4906/AC1-judge-t-4906-r3-04366a10335e.md'
+  - '.context/reviews/evidence/T-4906/AC1-judge-t-4906-r3-2bbcd624da21.md'
+  - '.context/reviews/evidence/T-4906/AC1-judge-t-4906-r3-377ac32d3f95.md'
+  - '.context/reviews/evidence/T-4906/AC1-judge-t-4906-r3-41db6f21112b.md'
+  - '.context/reviews/evidence/T-4906/AC1-judge-t-4906-r3-45fdf554cd12.md'
+  - '.context/reviews/evidence/T-4906/AC1-judge-t-4906-r3-68cc9b7744ce.md'
+  - '.context/reviews/evidence/T-4906/AC1-judge-t-4906-r3-89c9d5b0eb47.md'
+  - '.context/reviews/evidence/T-4906/AC1-judge-t-4906-r3-efd7ca9c4beb.md'
+  - '.context/reviews/evidence/T-4906/AC1-judge-t-4906-r3-fa3b6b98400b.md'
+  - '.context/reviews/evidence/T-4906/verification-open@1024-judge-t-4906-r3-2bbcd624da21.png'
+  - '.context/reviews/evidence/T-4906/verification-open@1024-judge-t-4906-r3-41db6f21112b.png'
+  - '.context/reviews/evidence/T-4906/verification-open@1024-judge-t-4906-r3-45fdf554cd12.png'
+  - '.context/reviews/evidence/T-4906/verification-open@1024-judge-t-4906-r3-89c9d5b0eb47.png'
+  - '.context/reviews/evidence/T-4906/verification-open@1024-judge-t-4906-r3-fa3b6b98400b.png'
+  - '.context/reviews/evidence/T-4906/verification-open@1440-judge-t-4906-r3-2bbcd624da21.png'
+  - '.context/reviews/evidence/T-4906/verification-open@1440-judge-t-4906-r3-41db6f21112b.png'
+  - '.context/reviews/evidence/T-4906/verification-open@1440-judge-t-4906-r3-45fdf554cd12.png'
+  - '.context/reviews/evidence/T-4906/verification-open@1440-judge-t-4906-r3-89c9d5b0eb47.png'
+  - '.context/reviews/evidence/T-4906/verification-open@1440-judge-t-4906-r3-fa3b6b98400b.png'
+  - '.context/reviews/evidence/T-4906/verification-open@1920-judge-t-4906-r3-2bbcd624da21.png'
+  - '.context/reviews/evidence/T-4906/verification-open@1920-judge-t-4906-r3-41db6f21112b.png'
+  - '.context/reviews/evidence/T-4906/verification-open@1920-judge-t-4906-r3-45fdf554cd12.png'
+  - '.context/reviews/evidence/T-4906/verification-open@1920-judge-t-4906-r3-89c9d5b0eb47.png'
+  - '.context/reviews/evidence/T-4906/verification-open@1920-judge-t-4906-r3-fa3b6b98400b.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-4904-watchtower-task-detail-page-taskst-xxxx-.md'
+  - '.tasks/active/T-4906-watchtower-task-page-renders-the-templat.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-29T21:51:32'
+    action: 'T-4906: RCA; T-4904 partial-complete'
+  - time: '2026-10-29T21:52:42'
+    action: 'T-4906: partial-complete — awaiting operator [REVIEW]'
+  - time: '2026-10-31T16:07:59'
+    action: 'T-4906: reviewer verdict'
+  - time: '2026-10-31T16:09:07'
+    action: 'T-4906: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-10-31T17:45:31'
+    action: 'T-4906: reviewer verdict'
+  - time: '2026-10-31T17:46:52'
+    action: 'T-4906: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-10-31T18:11:24'
+    action: 'T-4906: reviewer verdict'
+  - time: '2026-10-31T18:12:46'
+    action: 'T-4906: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-10-31T18:18:09'
+    action: 'T-4906: reviewer verdict (opencode seat opencode, recorded by the runtime)'
+  - time: '2026-11-01T00:55:45'
+    action: 'T-4906: GitHub-half evidence for the reviewer (mirror in sync; GitHub''s rendered T-4930 Verification has no headings, guidance hidden)'
+  - time: '2026-11-01T00:58:38'
+    action: 'T-4906: reviewer verdict'
+  - time: '2026-11-01T00:59:53'
+    action: 'T-4906: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-01T01:02:59'
+    action: 'T-4906: reviewer verdict (opencode seat opencode, recorded by the runtime)'
+  - time: '2026-11-01T01:17:15'
+    action: 'T-4906: reviewer verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 14 commit(s), 1457 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, watchtower, render]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1457
+  commits: 15
+  files_changed: 68
+  lines_added: 727
+  lines_removed: 14
+  footprint_refreshed_at: '2026-11-01T00:20:13Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4906-watchtower-task-page-renders-the-templat.md
+generated_by: context-agent-hybrid
