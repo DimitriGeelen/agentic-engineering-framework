@@ -1820,14 +1820,42 @@ def _names_guarded(command: str, cwd: str | None, ctx: _Ctx) -> str:
     return ""
 
 
+_ASSIGN_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=(.*)$", re.S)
+
+
+def _assigns_guarded(command: str, cwd: str | None, ctx: _Ctx) -> str:
+    """T-4983: the first guarded path that an ASSIGNMENT in `command` stores (`p=/out`,
+    `export p=/out`, `d=/out/x` with a prefix), or "". Only assignment values count: a path
+    mentioned in quoted data (`printf 'see /etc/hosts' > "$f"`) is not where a variable
+    write target comes from, and judging it refused ordinary commands."""
+    ctx = _Ctx(cwd=cwd, mentions=False, guarded=ctx.guarded, boundary=True)
+    try:
+        pieces = executed_texts(command)
+    except ParseError:
+        return ""
+    for piece in pieces:
+        for tok in _tokens(piece, strip_heredocs=False) or []:
+            m = _ASSIGN_RE.match(tok)
+            if not m:
+                continue
+            for cand in _NAMED_PATH_RE.findall(m.group(1)):
+                ok, paths = _resolve(cand, ctx)
+                paths = [p for p in paths if os.path.isdir("/" + p.lstrip("/").split("/")[0])
+                         and p.strip("/")]
+                if ok and any((ctx.guarded or is_guarded_path)(p) for p in paths):
+                    return cand
+    return ""
+
+
 def scan_boundary(command: str, cwd: str | None, guarded, cd_ok) -> list[Hit]:
     """T-4149: every write the command makes to a path `guarded(path)` rejects, read as
     bash reads it (quote removal, `..`/symlink resolution via realpath+normpath, brace
     and tilde expansion, redirections anywhere, option clusters, $(...)/`...`/<(...)
     bodies, unquoted heredoc bodies, static `sh -c`/`eval` scripts). `cd_ok(path)` judges
     absolute cd destinations. A target only known at run time ($VAR, a path read from a
-    file) is judged by a mention gate (T-4983): refused when the command names a guarded
-    path anywhere (`p=/out; echo x >> "$p"`), allowed otherwise (`o=$(mktemp); cmd > "$o"`).
+    file) is judged by an assignment gate (T-4983): refused when an assignment in the command
+    stores a guarded path (`p=/out; echo x >> "$p"`), allowed otherwise (`o=$(mktemp); cmd > "$o"`,
+    `cd "$d" && printf 'see /etc/x' > f`).
     Unparseable text is a hit.
     T-4487 exception: a git diff-family word that may expand to --output is refused when
     the command names a guarded path anywhere (`o=--output=/etc/x; git diff $o`). A value
@@ -1841,10 +1869,10 @@ def scan_boundary(command: str, cwd: str | None, guarded, cd_ok) -> list[Hit]:
                 ctx.hits.append(Hit(ctx.pending_output + " (an expanded argument may be --output; "
                                     "the command names a path outside the boundary)", named))
         if ctx.pending_unresolved and not ctx.hits:
-            named = _names_guarded(command, cwd, ctx)
+            named = _assigns_guarded(command, cwd, ctx)
             if named:
                 ctx.hits.append(Hit(ctx.pending_unresolved + " (write target only known at run "
-                                    "time; the command names a path outside the boundary)", named))
+                                    "time; the command assigns a path outside the boundary)", named))
     except Exception as e:  # noqa: BLE001 — a scanner bug must not open the gate
         ctx.hits.append(Hit(f"boundary scanner error ({type(e).__name__}); refused rather than guessed"))
     return ctx.hits

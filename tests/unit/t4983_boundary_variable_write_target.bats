@@ -46,3 +46,8 @@ allows() {
 @test "control: /tmp variable" { allows 'p=/tmp/a; echo x >> "$p"'; }
 @test "control: unset variable names nothing" { allows 'echo x > "$OUT"'; }
 @test "control: literal outside write is still refused as before" { blocks 'echo x >> /srv/other/x.txt'; }
+# A path in quoted DATA is not where a variable target comes from (found while building T-4988:
+# the first, mention-wide version refused this ordinary command).
+@test "control: outside path only in quoted data, target via cd to a variable" {
+    allows 'd=/tmp/x; cd "$d" && printf "see /srv/other/notes\n" > policy.txt'
+}

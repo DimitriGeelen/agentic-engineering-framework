@@ -1669,6 +1669,7 @@ show_help() {
     echo ""
     echo -e "${BOLD}Commands:${NC}"
     echo -e "  ${GREEN}audit${NC}                Run framework compliance audit"
+    echo -e "  ${GREEN}grants${NC} [show]        Operator-owned access grants outside the project (as committed)"
     echo -e "  ${GREEN}self-audit${NC}           Standalone integrity check (Layers 1-4, no fw dependency)"
     echo -e "  ${GREEN}test-onboarding${NC}     End-to-end onboarding flow test (8 checkpoints)"
     echo -e "  ${GREEN}context${NC} <cmd>        Manage Context Fabric (init, status, focus, ...)"
@@ -3188,6 +3189,23 @@ PY
     # Check: designer pin CURRENCY (T-3119, T-3158) — newer designer release upstream?
     # Lives in lib/doctor-drift.sh (T-3801), delegating to designer.sh check-currency.
     doctor_check_designer_currency
+
+    # Check: operator-owned access grants outside the project (T-4988, T-4965 GO). Silent when
+    # the project has no committed policy/access-grants.yaml.
+    if git -C "$PROJECT_ROOT" cat-file -e "HEAD:policy/access-grants.yaml" 2>/dev/null; then
+        local _ag_line
+        while IFS= read -r _ag_line; do
+            case "$_ag_line" in
+                WARN\ *) echo -e "  ${YELLOW}WARN${NC}  ${_ag_line#WARN }"; warnings=$((warnings + 1)) ;;
+                OK\ *)   echo -e "  ${GREEN}OK${NC}  ${_ag_line#OK }" ;;
+            esac
+        done < <(python3 "$FRAMEWORK_ROOT/lib/access_grants.py" doctor "$PROJECT_ROOT" 2>&1)
+        local _ag_audit
+        _ag_audit=$(python3 "$FRAMEWORK_ROOT/lib/access_grants.py" audit "$PROJECT_ROOT" 2>&1) || {
+            echo -e "  ${YELLOW}WARN${NC}  access grants: commit(s) without 'Grants-Change: operator' — ${_ag_audit%%$'\n'*}"
+            warnings=$((warnings + 1))
+        }
+    fi
 
     # Check: proxy-policy emitted-but-not-installed drift (T-2432, arc-013)
     # Sibling of the MCP manifest + cron registry→generated drift classes. Compares the
@@ -7931,6 +7949,14 @@ except Exception as exc:
     designer)
         # T-2521: vendor + serve the pinned Workflow Designer build (SoT: 832).
         exec "$AGENTS_DIR/designer/designer.sh" "$@"
+        ;;
+    grants)
+        # T-4988 (T-4965 GO): operator-owned access grants outside the project, read-only view.
+        # The grant file is the operator's; there is no edit verb (only its commit counts).
+        case "${1:-show}" in
+            show|doctor|audit) exec python3 "$FRAMEWORK_ROOT/lib/access_grants.py" "${1:-show}" "$PROJECT_ROOT" ;;
+            *) echo "Usage: fw grants [show|doctor|audit]  — policy/access-grants.yaml as committed (T-4988)" >&2; exit 2 ;;
+        esac
         ;;
     bpmn)
         # T-2533: Child-2 forward compiler — BPMN diagram → AEF task skeletons.

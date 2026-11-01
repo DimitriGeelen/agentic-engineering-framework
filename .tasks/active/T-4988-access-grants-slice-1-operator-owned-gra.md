@@ -14,10 +14,10 @@ description: >
   answers, msg 34998006). NAS is the authority for ownership and deletes; AEF fences
   typed commands only.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T21:20:23Z
-last_update: '2026-11-01T21:30:40Z'
+last_update: 2026-11-01T21:40:49Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,20 +94,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-4965 GO (operator, via Watchtower, 2026-11-01). 050-email-archive's agent needs standing read access to a NAS read mount and, in slice 2, writes on a create mount. Their operator made the NAS the authority for ownership and deletes (msg 34998006). Design and two reviews: `docs/reports/T-4965-scoped-access-grants.md`.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** today the only outside access is `BOUNDARY_EXTRA_READ_PATHS`, a config value the agent itself can set. Nothing names a path's level or its mount, nothing marks the admin mount as never-writable, and nothing shows grants to the operator.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** an operator-owned grant file the agent cannot change by typed commands, effective only as committed, that grants reads (this slice) and names `never_write` roots; with doctor and audit visibility.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** with a committed grant, typed reads of a granted path pass the boundary hook. Typed writes to the grant file or its directories are refused. An uncommitted edit has no effect. `fw grants show` and `fw doctor` list the grants and WARN on a missing mount. `fw audit` WARNs on a commit to the file without the operator trailer.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `lib/access_grants.py`: loads `policy/access-grants.yaml` from HEAD only; validates (absolute paths, no `..`, levels read|create|create-project, `path` under `via`, no overlapping grants with different levels, `never_write` absolute); an invalid file grants nothing and reports why; unit tests
+- [ ] Boundary hook: read and create grant paths are readable; Write/Edit and Bash writes to the grant file or any directory above it are refused; a write under a `never_write` root is refused (even under a grant); an uncommitted edit grants nothing; bats tests in a scratch git project
+- [ ] `fw grants show` and a `fw doctor` line (grants listed; WARN on a `via` that is not a mount point or a file that does not validate); `fw audit` WARN for a commit touching the file without a `Grants-Change: operator` trailer
+- [ ] Every test that reads `check-project-boundary.sh` passes; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -390,3 +392,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4988-access-grants-slice-1-operator-owned-gra.md
 - **Context:** Initial task creation
+
+### 2026-11-01T21:40:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

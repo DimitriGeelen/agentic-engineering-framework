@@ -3378,6 +3378,22 @@ else
          "Restore it: bin/fw vendor self (or fw upgrade)"
 fi
 
+# T-4988 (T-4965 GO): the operator-owned grant file. Silent without a committed file. WARN, not
+# FAIL: the trailer makes an agent or script change VISIBLE; it cannot prove who wrote it (the
+# same-user residual, T-3581), and an invalid file already grants nothing.
+if git -C "$PROJECT_ROOT" cat-file -e "HEAD:policy/access-grants.yaml" 2>/dev/null \
+        && [ -f "$FRAMEWORK_ROOT/lib/access_grants.py" ]; then
+    _ag_out=$(python3 "$FRAMEWORK_ROOT/lib/access_grants.py" audit "$PROJECT_ROOT" 2>&1)
+    _ag_bad=$(python3 "$FRAMEWORK_ROOT/lib/access_grants.py" doctor "$PROJECT_ROOT" 2>&1 | grep '^WARN' || true)
+    if [ -z "$_ag_out" ] && [ -z "$_ag_bad" ]; then
+        pass "Access grants: committed file valid, every change carries 'Grants-Change: operator'"
+    else
+        warn "Access grants: $(printf '%s\n%s\n' "$_ag_out" "$_ag_bad" | grep -c '^WARN') finding(s)" \
+             "$(printf '%s\n%s\n' "$_ag_out" "$_ag_bad" | grep '^WARN' | head -3 | tr '\n' ';')" \
+             "A change without the trailer: the operator checks it (git show <sha> -- policy/access-grants.yaml) and, if theirs, re-commits it with 'Grants-Change: operator'; an invalid file grants nothing until fixed (fw grants show)"
+    fi
+fi
+
 # T-4081 / G-114: a Watchtower decision commit that a later commit reverted (the scratch-index
 # commit left the real index on the old blobs). WARN, not FAIL: recovery is operator-gated
 # (restored ticks need operator provenance), and a FAIL would jam every push until then.
