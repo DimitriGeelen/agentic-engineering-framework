@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T12:43:03Z
-last_update: 2026-11-01T13:18:28Z
+last_update: 2026-11-01T13:18:50Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -105,7 +105,7 @@ cost_estimate_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] `reply_signals` also reads direct-route messages stored by the receiver: their `conversation_id` joins the answered set, an `in_reply_to` (the direct envelope's field) if present joins the replied set; our own messages and receipts are ignored; an unreadable file is skipped
 - [x] A test pins it: a posted consult with a direct-route reply on its conversation from ANY identity closes `answered`; a direct message on an unrelated conversation does not; existing retry tests pass
-- [ ] `bin/fw vendor self --check --task T-4963` clean
+- [x] `bin/fw vendor self --check --task T-4963` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
