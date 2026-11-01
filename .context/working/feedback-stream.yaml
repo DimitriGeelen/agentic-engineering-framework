@@ -52527,3 +52527,21 @@ scan_id: R-c05984bc
 task_id: T-4972
 payload:
   task_file: .tasks/active/T-4972-testsintegrationcheckactivetaskbats-4-re.md
+---
+kind: scan_emitted
+timestamp: '2026-11-01T17:03:40Z'
+scan_id: R-6b8b4e22
+task_id: T-4974
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-01T17:03:40Z'
+scan_id: R-6b8b4e22
+task_id: T-4974
+payload:
+  task_file: .tasks/active/T-4974-pytest-collection-clash-testsunittestbul.md

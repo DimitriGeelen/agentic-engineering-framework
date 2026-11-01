@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4974: pytest collection clash: tests/unit/test_bulk_actions.py and test_kanban_drag.py share basenames with tests/web files, aborting any combined run
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T17:04:36Z
+# ============================================================================
+
+task_id: T-4974
+task_name: "pytest collection clash: tests/unit/test_bulk_actions.py and test_kanban_drag.py share basenames with tests/web files, aborting any combined run"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-01T16:38:10Z
+completed: 2026-11-01T17:03:19Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T18:03:03+01:00
+last_commit: 2026-11-01T18:03:03+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the one tests/unit–tests/web basename clash renamed (web side); pre-push lint keeps pytest basenames unique across unit, web, integration and lint (a clash aborts collection and runs nothing)
+
+# Key outcomes
+outcomes:
+  - 'Scope revised after measuring (see ## Decisions): the one clash between directories that are collected together (`test_project_root_discovery.py`, tests/unit and tests/web) is renamed on the web side; the unit files keep their names, so `tests/unit/tiers.yaml` is untouched'
+  - '`pytest --co tests/unit tests/web tests/integration` collects with no error (6616 tests); the renamed file passes'
+  - '`tests/lint/test-basename-unique.bats` (run by pre-push with the invariant suite) fails on any basename shared between tests/unit, web, integration and lint, with a control that proves it sees a planted duplicate'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-01 — which clashes to fix'
+    chose: 'rename the one clash between directories that are run together (tests/unit + tests/web), and add a lint that keeps tests/unit, web, integration and lint unique. tests/playwright stays out of scope; it runs on its own.'
+    rationale: 'the filing named 2 files; measuring found 24 shared basenames, 22 of them unit vs playwright. Those only clash in an ad-hoc run that mixes a browser suite with the unit suite. Renaming them is churn without a class fix, and it would rewrite the generated tier manifest.'
+    alternatives_rejected: ['- Renaming all 24: churn, and no guard against the 25th. - Adding `__init__.py` packages: `tests/playwright` as a package named `playwright` would shadow the real playwright library. - `--import-mode=importlib`: changes how thousands of tests find their sibling helpers.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4974-pytest-collection-clash-testsunittestbul.md'
+  - 'tests/lint/test-basename-unique.bats'
+  - 'tests/web/conftest.py'
+  - 'tests/web/test_project_root_discovery_web.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T18:03:03'
+    action: 'T-4974: the one tests/unit–tests/web basename clash renamed (web side); pre-push lint keeps pytest basenames unique across unit, web, integration and lint (a clash aborts collection and runs nothing)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 25 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 25
+  commits: 2
+  files_changed: 7
+  lines_added: 185
+  lines_removed: 14
+  footprint_refreshed_at: '2026-11-01T17:04:51Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4974-pytest-collection-clash-testsunittestbul.md
+generated_by: context-agent-hybrid
