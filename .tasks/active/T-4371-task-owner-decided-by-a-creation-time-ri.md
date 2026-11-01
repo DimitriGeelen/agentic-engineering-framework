@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-19T09:57:40Z
-last_update: 2026-10-19T10:13:00Z
+last_update: 2026-11-01T16:14:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,6 +93,10 @@ bvp_scores_proposed:
   confidence: 1
   disposition:
   rationale:
+- **IW-4: One ownership rule table for every change (operator, agent, ledger, creation): who may change it, in which direction, on what evidence, and what the audit reconciles afterwards?**
+  confidence: 1
+  disposition: deferred
+  rationale: folded in by the operator, 2026-11-01 (T-4969 step 2). External review: docs/reports/T-4969-ownership-ruleset-review.md. Both seats agree: human → agent only on independent review bound to the reviewed version; agent → human free with a reason; the audit reconciles every owner diff with a log line and the rule; creation-time owner defaults to human and uses independent inputs. Open for the operator: does `owner: human` mean mandatory sign-off, or a gate independent review may discharge? D-626 chose the latter except tier-0, act-in-the-world and sovereignty (T-3557); the table must state it. T-4969 already built the operator row (one logged gate, three doors).
 
 ## Exploration Plan
 
