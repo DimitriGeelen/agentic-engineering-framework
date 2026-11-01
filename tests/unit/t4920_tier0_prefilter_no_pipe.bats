@@ -12,6 +12,22 @@ HOOK_REL="agents/context/check-tier0.sh"
 setup() {
     ROOT="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
     HOOK="$ROOT/$HOOK_REL"
+    # T-4964: the hook runs in place, but judges for a THROWAWAY project. With the live
+    # checkout as PROJECT_ROOT every block filed a real approval card on /approvals.
+    PROJ="$(mktemp -d -t fw-t4920-XXXXXX)"
+    mkdir -p "$PROJ/.context/working" "$PROJ/.context/approvals"
+    export NTFY_ENABLED=false
+    unset CLAUDE_PROJECT_DIR
+}
+
+teardown() {
+    [ -n "${PROJ:-}" ] && [ -d "$PROJ" ] && rm -rf "${PROJ:?}"
+    return 0
+}
+
+_live_surface() {
+    { ls -la --time-style=full-iso "$ROOT/.context/approvals" 2>/dev/null | grep 'pending-' || true
+      ls -la --time-style=full-iso "$ROOT/.context/working"/.tier0-approval* 2>/dev/null || true; } | sha256sum
 }
 
 # Run the real hook (in place: it finds its helpers next to itself) on one Bash payload.
@@ -20,7 +36,7 @@ setup() {
 # and an argv that is too long yields an EMPTY payload, which the hook allows — a false
 # "bypass" that misled the first measurement).
 _judge() {
-    run bash -c 'python3 -c "import json,sys; c=sys.argv[1]+(\" # \"+\"x\"*int(sys.argv[2]) if int(sys.argv[2]) else \"\"); print(json.dumps({\"tool_name\":\"Bash\",\"tool_input\":{\"command\":c},\"tool_use_id\":\"t4920\",\"cwd\":\"/tmp\"}))" "$1" "$2" | PROJECT_ROOT="$3" bash "$4" >/dev/null 2>&1' _ "$1" "${2:-0}" "$ROOT" "$HOOK"
+    run bash -c 'python3 -c "import json,sys; c=sys.argv[1]+(\" # \"+\"x\"*int(sys.argv[2]) if int(sys.argv[2]) else \"\"); print(json.dumps({\"tool_name\":\"Bash\",\"tool_input\":{\"command\":c},\"tool_use_id\":\"t4920\",\"cwd\":\"/tmp\"}))" "$1" "$2" | PROJECT_ROOT="$3" bash "$4" >/dev/null 2>&1' _ "$1" "${2:-0}" "$PROJ" "$HOOK"
 }
 
 @test "a destructive command padded past the pipe buffer is still blocked (old hook: allowed)" {
@@ -35,8 +51,13 @@ _judge() {
 }
 
 @test "the short destructive command is blocked and a plain command still takes the fast path" {
+    local before
+    before="$(_live_surface)"
     _judge "git push --force origin main"
     [ "$status" -eq 2 ]
+    # T-4964: the block was filed in the throwaway project, and nowhere else.
+    [ -s "$PROJ/.context/working/.tier0-approval.pending" ]
+    [ "$(_live_surface)" = "$before" ]
     _judge "ls -la"
     [ "$status" -eq 0 ]
 }
