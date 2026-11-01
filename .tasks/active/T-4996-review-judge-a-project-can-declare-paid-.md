@@ -12,12 +12,12 @@ description: >
   are not allowed in this project; no estate seat can evaluate this criterion'). Pair
   with T-4980 and the antigravity seat fix for real coverage.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [lib/config.sh, web/blueprints/config.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T23:39:29Z
-last_update: '2026-11-01T23:45:22Z'
-date_finished:
+last_update: 2026-11-01T23:54:58Z
+date_finished: 2026-11-01T23:54:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -408,3 +408,21 @@ bin/fw vendor self --check --task T-4996
 
 ### 2026-11-01T23:42:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-01T23:54:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7aed3f8f
+- **Timestamp:** 2026-11-01T23:55:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Config key `REVIEW_PAID_BACKENDS` (values `allowed` default, `never`) in the registry (`lib/config.sh` FW_CONFIG_REGISTRY) with a description; read by the judge through `review_policy.config_value`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/config.sh in: Config key `REVIEW_PAID_BACKENDS` (values `allowed` default, `never`) in the registry (`lib/config.sh` FW_CONFIG_REGISTRY) with a description; read by`
