@@ -11,10 +11,10 @@ description: >
   with its own registry has no vision field, so nothing is excluded; (2) why opencode
   exits 1 after writing a verdict. Localise both with ring20's data before any fix.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T17:13:15Z
-last_update: '2026-11-01T17:15:36Z'
+last_update: 2026-11-01T18:51:05Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -84,6 +84,23 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-01T18:50:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 3
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=0 (no-signal); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4978: T-4944 in the field: opencode still sat render reviews at ring20 and exited 1 after printing a green
@@ -95,6 +112,7 @@ bvp_scores_proposed:
 
 **Problem / hypothesis:** two separate defects.
 1. **The `vision: false` exclusion did not apply.** ring20 has NO project-level `policy/review-backends.yaml`; its vendored `.agentic-framework/policy/review-backends.yaml`, committed with be.15 (3e3ac9a07), carries `vision: false` on opencode. So my first hypothesis (a project override without the field) is refuted. New hypothesis: `kind_vision` reads the registry through `_committed_blob(root, revision, BACKENDS)` with `BACKENDS = policy/review-backends.yaml` relative to the PROJECT root. In a consumer that path does not exist, the blob is empty, `kind_vision` returns `{}`, and nothing is excluded. Check how `kind_vendors` / `kind_models` find the registry in a consumer; they use the same reader, so either they share the blind spot or `_committed_blob` has a fallback that `kind_vision` misses.
+   **Update 2026-11-01:** refuted by reading the code. `_committed_blob` (lib/verdict_ledger.py:905) falls back to the vendored copy under the project at the same revision, so ring20's `vision: false` should be found. Third hypothesis: the exclusion applies only when a judged criterion has `render: True`, which in `judge_cli._partition` means class `render-surface` AND `_RENDER_REVIEW_RE` matching the body. If T-858's and T-863's [REVIEW] criteria were classified otherwise (for example taste or unclassified), no kind is excluded, even though the criterion is about a page. To check with ring20: `fw reviewer judge T-858 --dry-run --json` shows each criterion's class and, for a render run, `blind_kinds`. If the criterion is not render-classified, the fix is to decide whether a criterion that names a rendered page without the render wording should count as render (classifier), or whether the vision gate should key on "the run captured pages" instead.
 2. **opencode exit 1 after a green.** The seat's stderr ends with `FATAL: the opencode reviewer modified the export it reviewed (T-3986) — its greens do not count`. Its verdict says it "booted the real app via FastAPI TestClient" in the export, so import-time writes (`__pycache__`) likely tripped the tamper check. The guard did the right thing. Options: run seats with `PYTHONDONTWRITEBYTECODE=1`, exclude `__pycache__` from the tamper diff, or tell the brief not to execute project code.
 
 **Goal:** (1) the vision exclusion works in consumer projects; (2) a seat that only imports project code does not void its own verdict, without weakening the tamper check.
@@ -105,8 +123,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Defect 1 localised with ring20's dry-run data (criterion class per AC, `blind_kinds`), and the cause recorded here before any fix
+- [ ] Defect 1 fixed: a render review at a consumer with a vendored registry does not seat a `vision: false` kind; a test reproduces ring20's case
+- [ ] Defect 2 fixed without weakening the T-3986 tamper check (for example `PYTHONDONTWRITEBYTECODE=1` for harness seats, or bytecode excluded from the tamper diff); a test shows a seat that only imports project code keeps its verdict, and one that edits a source file still voids it
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -389,3 +408,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4978-t-4944-in-the-field-opencode-still-sat-r.md
 - **Context:** Initial task creation
+
+### 2026-11-01T18:50:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
