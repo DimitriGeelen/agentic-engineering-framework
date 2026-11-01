@@ -9,10 +9,10 @@ description: >
   b5e04529, 60099d7e carry e2e- conversation ids). Direction: the harness marks its
   messages terminal at run end, or the ladder skips e2e- conversations.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T12:43:02Z
-last_update: '2026-11-01T12:45:20Z'
+last_update: 2026-11-01T13:11:22Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,20 +89,21 @@ cost_estimate_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 055-agentic-fleet-cockpit (msg de1569c0, point 1) found sidecar self-test messages in their real outbox: e2e-a4ef8725 (2026-10-01) and the e2e-1fc080c8 sender/responder pair (2026-10-15). The retry ladder escalated them as unanswered consults ("unanswered after 14 attempts"; their OBS-107, OBS-112). AEF's own outbox holds the same leftovers (f07af121, b5e04529, 60099d7e carry `e2e-` conversation ids).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `lib/sidecar/e2e.py` `real_send` writes through `outbox.write_message` into the live outbox, which is correct: the self-test must use the real path. But `retry.sweep` treats every open row as a consult to chase, and nothing tells it that an `e2e-<run>` conversation is a self-test. The ladder rows carry no conversation id, so the sweep only learns it from the message file.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the retry ladder releases any message whose conversation id starts with `e2e-`, using the existing `released:` prefix (never the ladder's to work, not a dead-letter). Leftovers already in an outbox are released on the next sweep, so 055 is fixed by upgrading.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** no reposts, nudges, operator notices or dead-letters for self-test messages. Normal consults behave exactly as before.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `retry.sweep` closes an open row whose message has an `e2e-` conversation id with `released: e2e self-test …`, before any repost/nudge/operator/dead-letter decision, whether or not a rung is due
+- [x] A test pins it: e2e rows released and counted, a normal consult in the same sweep still reposted; existing retry/ladder tests pass
+- [ ] `bin/fw vendor self --check --task T-4962` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,6 +289,8 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 python3 -m pytest -q -p no:cacheprovider tests/unit/test_t4962_sidecar_e2e_released.py tests/unit/test_sidecar_sweep.py tests/unit/test_t4348_sidecar_notice.py
+bin/fw vendor self --check --task T-4962
 
 ## RCA
 
@@ -304,6 +307,14 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** self-test messages on `e2e-<run>` conversations were reposted, nudged and escalated as "unanswered after 14 attempts" in 055's project; the same leftovers sit in AEF's outbox.
+
+**Root cause:** the self-test correctly uses the real send path, but the retry ladder only knew the closing reasons for real consults (answered, read, notice, settled). Nothing marked a self-test message as not-a-consult, and ladder rows carry no conversation id, so the sweep never looked.
+
+**Why structurally allowed:** the self-test and the ladder were built in different tasks (T-3433 era vs T-3434), and the self-test's tests run with fakes, so its messages never met a real sweep in a test. The leftovers only show as noise in a peer's observation inbox weeks later.
+
+**Prevention:** `test_t4962_sidecar_e2e_released.py` sends self-test and normal messages through the real outbox and a real sweep, both before and after rungs are due.
 
 ## Evolution
 
@@ -385,3 +396,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4962-sidecar-live-self-test-leaves-its-messag.md
 - **Context:** Initial task creation
+
+### 2026-11-01T12:47:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -84,6 +84,8 @@ NOTICE = "notice"
 SETTLED = "settled"
 EXHAUSTED = "ladder-exhausted"
 UNRETRYABLE = "ladder-unretryable"
+#: T-4962: conversation-id prefix of the live sidecar self-test (e2e.Config).
+E2E_PREFIX = "e2e-"
 
 
 def _now(now: str | datetime | None) -> datetime:
@@ -367,7 +369,7 @@ def sweep(*, now: str | datetime | None = None,
 
     report: dict = {"considered": len(rows), "due": 0, "reposted": 0,
                     "nudged": 0, "operator": 0, "deadlettered": 0,
-                    "answered": 0, "read": 0, "actions": []}
+                    "answered": 0, "read": 0, "released": 0, "actions": []}
     if not rows:
         return report
 
@@ -381,6 +383,19 @@ def sweep(*, now: str | datetime | None = None,
     for cmid, row in sorted(rows.items()):
         attempts, next_rung, due_at = ladder_position(row)
         posted = row.get("state") in (outbox.INJECTED_NOW, outbox.INJECTED_LATER)
+
+        # T-4962: the live self-test (lib/sidecar/e2e.py) sends through the real
+        # outbox on an `e2e-<run>` conversation. It is never a consult to chase:
+        # 055 saw such leftovers reposted and escalated as "unanswered". Released,
+        # not dead-lettered, so the audit rail does not count them as failures.
+        conversation = (_read_message(cmid) or {}).get("conversation_id") or ""
+        if conversation.startswith(E2E_PREFIX):
+            _close(cmid, row, attempts, row.get("state"),
+                   f"{RELEASED}: e2e self-test {conversation}")
+            report["released"] += 1
+            report["actions"].append({"client_msg_id": cmid, "verb": RELEASED,
+                                      "conversation_id": conversation})
+            continue
 
         if cmid in replied:
             # Settled now, whether or not a rung is due: an answered consult
