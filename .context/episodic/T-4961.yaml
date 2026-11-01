@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4961: Per-arc value-driver sets (driver_set: product) — 010-termlink T-3638 ask
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T14:48:11Z
+# ============================================================================
+
+task_id: T-4961
+task_name: "Per-arc value-driver sets (driver_set: product) — 010-termlink T-3638 ask"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T12:39:56Z
+completed: 2026-11-01T14:47:59Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T13:43:11+01:00
+last_commit: 2026-11-01T15:48:01+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file per-arc driver-set inception (010-termlink ask); T-4962, T-4963 sidecar ladder bugs (055 report). research artifact and dialogue log; recommendation GO (narrow form) per operator chat answer. requester confirms arc-level naming is enough; task-level naming out of the narrow form. inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'file per-arc driver-set inception (010-termlink ask); T-4962, T-4963 sidecar ladder bugs (055 report)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/reviews/human-ac-ticks.jsonl'
+  - '.tasks/active/T-4961-per-arc-value-driver-sets-driverset-prod.md'
+  - '.tasks/active/T-4962-sidecar-live-self-test-leaves-its-messag.md'
+  - '.tasks/active/T-4963-sidecar-retry-ladder-keeps-escalating-a-.md'
+  - '.tasks/completed/T-4961-per-arc-value-driver-sets-driverset-prod.md'
+  - 'docs/reports/T-4961-driver-sets.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T13:43:11'
+    action: 'T-4961: file per-arc driver-set inception (010-termlink ask); T-4962, T-4963 sidecar ladder bugs (055 report)'
+  - time: '2026-11-01T15:38:00'
+    action: 'T-4961: research artifact and dialogue log; recommendation GO (narrow form) per operator chat answer'
+  - time: '2026-11-01T15:41:39'
+    action: 'T-4961: requester confirms arc-level naming is enough; task-level naming out of the narrow form'
+  - time: '2026-11-01T15:48:01'
+    action: 'T-4961: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 128 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 128
+  commits: 5
+  files_changed: 8
+  lines_added: 1078
+  lines_removed: 14
+  footprint_refreshed_at: '2026-11-01T14:48:17Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4961-per-arc-value-driver-sets-driverset-prod.md
+generated_by: context-agent-hybrid
