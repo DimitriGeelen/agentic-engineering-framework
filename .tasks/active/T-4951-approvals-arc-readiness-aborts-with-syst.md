@@ -89,8 +89,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `corpus_medians` turns the policy loader's exit into an ordinary exception carrying the reason; no other behaviour changes
-- [ ] `approvals_close_ready_arcs.bats` green (6/6) and a test pins that a missing policy yields the ratio fallback, not an abort; every test that reads `lib/arc_close_readiness.py` passes; `bin/fw vendor self --check --task T-4951` clean
+- [x] `corpus_medians` turns the policy loader's exit into an ordinary exception carrying the reason; no other behaviour changes
+- [x] `approvals_close_ready_arcs.bats` green (6/6) and a test pins that a missing policy yields the ratio fallback, not an abort; every test that reads `lib/arc_close_readiness.py` passes; `bin/fw vendor self --check --task T-4951` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -276,8 +276,19 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/approvals_close_ready_arcs.bats > /tmp/.t4951 2>&1 && ! grep -q "^not ok" /tmp/.t4951
+python3 -m pytest -q -p no:cacheprovider tests/unit/t4951_readiness_missing_policy_test.py tests/unit/test_t3552_arc_close_readiness.py > /tmp/.t4951b 2>&1 && grep -q " passed" /tmp/.t4951b && ! grep -qE "failed|error" /tmp/.t4951b
+bin/fw vendor self --check --task T-4951
 
 ## RCA
+
+**Symptom:** `approvals_close_ready_arcs.bats` 5 reds: "policy file not found … value-drivers.yaml", exit 2.
+
+**Root cause:** T-3552's arc readiness (on /approvals) calls `bvp.load_policy()`, which is also a CLI entry and does `sys.exit(2)` when the policy file is missing. The caller's degrade path catches `Exception`; `SystemExit` is not one, so it escaped and aborted the Arc Closure build in any project without the file.
+
+**Why structurally allowed:** the reds were baselined (owner T-3611) instead of read; their message named the cause. CLI-style exits inside library code look like normal error handling until a long-running caller imports them.
+
+**Prevention:** the library boundary converts the exit into an ordinary error; `tests/unit/t4951_readiness_missing_policy_test.py` pins it, including that an `except Exception` caller now catches it.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
