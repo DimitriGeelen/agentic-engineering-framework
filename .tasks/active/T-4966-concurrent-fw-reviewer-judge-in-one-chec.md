@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T14:44:35Z
-last_update: 2026-11-01T15:32:47Z
+last_update: 2026-11-01T15:38:22Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -105,8 +105,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `_ledger_lock` is re-entrant within one process (a nested acquire does not block), and `_append` always holds it, so every append to verdicts, recorded, review-dispatches, -runs and -completions is serialized with every verdict commit
-- [ ] A test runs several processes appending to the registers while another commits under the lock in a loop, and proves every committed blob of each register parses line by line (no torn line) and `history_fault` stays clean; plus a re-entrancy test
+- [x] `_ledger_lock` is re-entrant within one process (a nested acquire does not block), and `_append` always holds it, so every append to verdicts, recorded, review-dispatches, -runs and -completions is serialized with every verdict commit
+- [x] A test runs several processes appending to the registers while another commits under the lock in a loop, and proves every committed blob of each register parses line by line (no torn line) and `history_fault` stays clean; plus a re-entrancy test (negative control without the lock: a torn line was committed and `history_fault` refused the file in 1 of 3 runs)
 - [ ] Every test that reads `lib/verdict_ledger.py` passes; `bin/fw vendor self --check --task T-4966` clean
 
 ### Human
@@ -293,6 +293,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 python3 -m pytest -q -p no:cacheprovider tests/unit/test_t4966_ledger_lock_concurrency.py
+bin/fw vendor self --check --task T-4966
 
 ## RCA
 
