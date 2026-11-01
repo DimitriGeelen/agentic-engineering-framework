@@ -141,3 +141,12 @@ class TestVoidNamesWhatChanged:
         w = _run(hrepo, did="judge-t-9200-r1-opencode-pyclean0001",
                  seat_env={"PYTHONDONTWRITEBYTECODE": "1"})
         assert "export added:" not in (w / "stderr.log").read_text()
+
+
+def test_harness_brief_says_run_project_code_from_a_copy():
+    """T-4978 (ring20 msg 2f1752c5): the app wrote its SQLite state under its own code root, inside
+    the export. The brief now tells every harness seat to run project code from a copy in $TMPDIR."""
+    for kind in ("codex", "opencode"):
+        b = _brief(Path("."), kind, "abc")
+        assert "Never run it in place" in b and 'cp -a . "$TMPDIR/run"' in b
+    assert "Never run it in place" not in _brief(Path("."), "claude", "abc")
