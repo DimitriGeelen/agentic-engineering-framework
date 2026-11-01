@@ -68,3 +68,33 @@ def test_sign_answer_without_host_default_source_is_not_trusted(selected):
         out = {"session": {"identity_fingerprint": HOST}}
         return subprocess.CompletedProcess(argv, 0, stdout=json.dumps(out), stderr="")
     assert dm._signing_host_fingerprint(runner=run) is None
+
+
+# ── T-4945 (010-termlink msg 18dbaffb): a per_agent identity, not identity_file ──
+
+def _per_agent_termlink(session_fp=OWN):
+    """termlink resolves FILE > AGENT_ID > IDENTITY_DIR > host default; AGENT_ID and
+    IDENTITY_DIR report source per_agent."""
+    def run(argv, **kw):
+        if argv[1:3] == ["identity", "sign"]:
+            env = kw.get("env") or {}
+            if env.get("TERMLINK_IDENTITY_FILE"):
+                out = {"fingerprint": OWN, "source": "identity_file"}
+            elif env.get("TERMLINK_AGENT_ID") or env.get("TERMLINK_IDENTITY_DIR"):
+                out = {"fingerprint": OWN, "source": "per_agent"}
+            else:
+                out = {"fingerprint": HOST, "source": "host_default"}
+            return subprocess.CompletedProcess(argv, 0, stdout=json.dumps(out), stderr="")
+        out = {"session": {"identity_fingerprint": session_fp}}
+        return subprocess.CompletedProcess(argv, 0, stdout=json.dumps(out), stderr="")
+    return run
+
+
+@pytest.mark.parametrize("var", ["TERMLINK_AGENT_ID", "TERMLINK_IDENTITY_DIR"])
+def test_per_agent_identity_is_own_key(monkeypatch, var):
+    monkeypatch.delenv("FW_SIDECAR_IDENTITY_FP", raising=False)
+    for k in SEL:
+        monkeypatch.delenv(k, raising=False)
+    monkeypatch.setenv(var, "some-agent" if var == "TERMLINK_AGENT_ID" else "/x/agents")
+    assert dm._host_fingerprint(runner=_per_agent_termlink()) == HOST
+    assert dm.identity_is_host_shared(runner=_per_agent_termlink()) is False
