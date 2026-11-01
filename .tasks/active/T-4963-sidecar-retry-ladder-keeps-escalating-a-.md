@@ -9,10 +9,10 @@ description: >
   each by hand; fw sidecar drop is operator-only. Direction: the ladder recognises
   an answer recorded on any route before escalating.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T12:43:03Z
-last_update: '2026-11-01T12:45:20Z'
+last_update: 2026-11-01T13:18:11Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,20 +89,23 @@ cost_estimate_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 055-agentic-fleet-cockpit (msg de1569c0 point 2, details d3a169a5). Two consults kept producing "unanswered after 11-14 attempts" observations for days after they were answered:
+- (a) 2ad78ca1, conversation worker-lifecycle-2026-10-21, was answered by 010-termlink (6f6e1627) on the same conversation, but over the DIRECT route (055's receiver), from an identity other than the one addressed.
+- (b) 58c04b38 was answered on the Ring20 topic by a different identity, and 055's acknowledgement went out on a NEW conversation.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `retry.reply_signals` builds its "answered conversation" set only from the hub inbox topics. A reply that arrives over the direct route is stored in `.context/sidecar/receiver/messages/<id>.json` (it carries `conversation_id`), and the sweep never reads it. So (a) is answered on the consult's own conversation and is still chased. (b) shares neither conversation nor identity with the consult, so no rule can link it safely. For that case the sender's own `fw sidecar settle-sent` (T-4757, open to agents) is the right tool.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** a reply received over the direct route on a consult's conversation closes the consult as answered, exactly like a hub reply. Case (b) is documented as `settle-sent` territory, not guessed.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** 055's case (a) class stops escalating without anyone acting. Hub-route behaviour is unchanged.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `reply_signals` also reads direct-route messages stored by the receiver: their `conversation_id` joins the answered set, an `in_reply_to` (the direct envelope's field) if present joins the replied set; our own messages and receipts are ignored; an unreadable file is skipped
+- [x] A test pins it: a posted consult with a direct-route reply on its conversation from ANY identity closes `answered`; a direct message on an unrelated conversation does not; existing retry tests pass
+- [ ] `bin/fw vendor self --check --task T-4963` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,6 +291,8 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 python3 -m pytest -q -p no:cacheprovider tests/unit/test_t4963_direct_reply_settles.py tests/unit/test_sidecar_sweep.py tests/unit/test_sidecar_answered_topics.py tests/unit/test_sidecar_reply_settles_t3804.py
+bin/fw vendor self --check --task T-4963
 
 ## RCA
 
@@ -304,6 +309,14 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 055's consults kept producing "unanswered after 11-14 attempts" observations for days after their peers had answered.
+
+**Root cause:** the ladder's reply detection (`reply_signals`) read only the hub inbox topics. The direct route (T-3396 receiver) stores inbound messages in a separate place, so an answer that took that route was invisible to the sweep, whatever its conversation or identity.
+
+**Why structurally allowed:** the direct route and the hub ladder grew separately. Each has its own tracker (`direct.escalate_expired` for direct sends, `retry.sweep` for hub sends), and nothing joined "how a consult was sent" to "how its answer may arrive". Tests for each route used only that route.
+
+**Prevention:** `test_t4963_direct_reply_settles.py` crosses the routes: a hub consult answered over the direct route. The other half of 055's report (answer on a different conversation from a different identity) is deliberately left to `fw sidecar settle-sent`; guessing would close consults that were not answered.
 
 ## Evolution
 
@@ -385,3 +398,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4963-sidecar-retry-ladder-keeps-escalating-a-.md
 - **Context:** Initial task creation
+
+### 2026-11-01T13:15:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
