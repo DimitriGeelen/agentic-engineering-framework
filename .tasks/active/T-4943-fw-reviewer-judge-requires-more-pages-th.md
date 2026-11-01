@@ -99,9 +99,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The judge screenshots every required page, not the first 6; the ledger's required-page check is unchanged
-- [ ] A test pins it: a plan of more than 6 pages captures all of them and records none as "not captured"; existing judge tests stay green; `bin/fw vendor self --check --task T-4943` clean
-- [ ] T-4906 re-judged after the fix, outcome recorded
+- [x] The judge screenshots every required page, not the first 6; the ledger's required-page check is unchanged
+- [x] A test pins it: a plan of more than 6 pages captures all of them and records none as "not captured"; existing judge tests stay green (677; t3580 round-3 seven-pages test updated to the new rule, its ledger-refusal control unchanged); `bin/fw vendor self --check --task T-4943` clean
+- [x] T-4906 re-judged after the fix, outcome recorded: 8 screenshots, claude seat green V-20261101-192f7fae; T-4906 closed on it (owner human -> agent)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,6 +287,9 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/unit/t4943_capture_every_required_page_test.py tests/unit/t3580_round3_test.py > /tmp/.t4943 2>&1 && grep -q " passed" /tmp/.t4943 && ! grep -qE "failed|error" /tmp/.t4943
+! grep -q "MAX_CAPTURE_PAGES" lib/reviewer/judge_cli.py
+bin/fw vendor self --check --task T-4943
 
 ## RCA
 
@@ -303,6 +306,13 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** T-4906's render criterion could not go green: the claude seat found it met on every page it saw and still returned not-evaluated, because 2 of 8 required pages were never screenshotted.
+
+**Root cause:** T-3580 round 3 made every planned page required but kept a 6-page cap on capture. Pages past the cap were registered "not captured", and the ledger refuses a render green without every required page. Any plan larger than 6 was un-greenable by construction.
+
+**Why structurally allowed:** the round-3 test pinned the refusal on a 7th page as the intended outcome ("no silent truncation"), which is right for the ledger but made the capture cap a hidden route to the operator. Plans are derived from every route of each changed blueprint, so real plans exceed 6 easily.
+
+**Prevention:** capture follows the required set; `tests/unit/t4943_capture_every_required_page_test.py` pins 8 of 8 captured and that a page the capturer missed still reports not-ok; the round-3 ledger-refusal control is unchanged.
 
 ## Evolution
 
