@@ -1987,6 +1987,7 @@ SKIP_INCEPTION_SCOPE_TRACE=false
 SKIP_RENDER_REVIEW=false
 SKIP_RENDER_REVIEW_REASON=""
 I_AM_HUMAN=false  # T-3586: operator override for agent-refused --skip-* flags
+FROM_WATCHTOWER=false  # T-4969: an owner hand-over made in Watchtower's ownership field
 SCOPE_REDUCTION_ACK=""  # T-1762/P-012: --scope-reduction-acknowledged "rationale"
 # T-1719 A2: retrieval-happiness signal. Feeds the embeddings routing loop —
 # the rating is the outcome half of "recall returned chunks → was that useful?".
@@ -2053,6 +2054,7 @@ while [[ $# -gt 0 ]]; do
             fi
             shift ;;
         --i-am-human) I_AM_HUMAN=true; shift ;;
+        --from-watchtower) FROM_WATCHTOWER=true; shift ;;  # T-4969: verified against Watchtower's own record
         --scope-reduction-acknowledged)
             SCOPE_REDUCTION_ACK="$2"
             if [ -z "$SCOPE_REDUCTION_ACK" ]; then
@@ -2716,17 +2718,70 @@ if [ -n "$NEW_OWNER" ]; then
         die "Valid owners: $VALID_OWNERS (enum source: status-transitions.yaml)"
     fi
     OLD_OWNER=$({ grep "^owner:" "$TASK_FILE" 2>/dev/null || true; } | head -1 | sed 's/owner:[[:space:]]*//')
-    # T-198/R-033: Owner protection — owner: human is sticky
+    # T-198/R-033: Owner protection — owner: human is sticky.
+    # T-4969 (operator 2026-11-01, after external review docs/reports/T-4969-ownership-ruleset-review.md):
+    # the operator hands a task over through ONE gate with three doors, each logged with how the
+    # claim was made. Every door is a claim the same OS user could make; the log says which.
+    #   --from-watchtower   Watchtower's ownership field. Checked against the record Watchtower wrote
+    #                       for this task and owner in the last 120 s (consumed once).
+    #   --i-am-human        the operator's CLI. In an agent environment (CLAUDECODE=1) it also needs
+    #                       an interactive confirmation, which a non-interactive agent cannot give.
+    #   --skip-human-ownership  the old bypass, kept, logged the same way as a bare claim.
     if [ "$OLD_OWNER" = "human" ] && [ "$NEW_OWNER" != "human" ]; then
-        if [ "$SKIP_HUMAN_OWNERSHIP" = true ]; then
+        _ho_via=""
+        _ho_dir="$PROJECT_ROOT/.context/working/owner-handover"
+        if [ "$FROM_WATCHTOWER" = true ]; then
+            _ho_rec="$_ho_dir/$TASK_ID.json"
+            if T4969_REC="$_ho_rec" T4969_TASK="$TASK_ID" T4969_OWNER="$NEW_OWNER" python3 -c '
+import json, os, sys, time
+try:
+    r = json.load(open(os.environ["T4969_REC"]))
+except (OSError, ValueError):
+    sys.exit(1)
+ok = (r.get("task") == os.environ["T4969_TASK"] and r.get("owner") == os.environ["T4969_OWNER"]
+      and 0 <= time.time() - float(r.get("ts", 0)) <= 120)
+sys.exit(0 if ok else 1)' 2>/dev/null; then
+                rm -f "$_ho_rec"
+                _ho_via="watchtower (record verified)"
+            else
+                echo -e "${RED}ERROR: --from-watchtower without a matching Watchtower record for $TASK_ID → $NEW_OWNER (R-033, T-4969)${NC}" >&2
+                echo "  Hand the task over in Watchtower's ownership field, or as the operator on the CLI with --i-am-human." >&2
+                exit 1
+            fi
+        elif [ "$I_AM_HUMAN" = true ]; then
+            if [ "${CLAUDECODE:-}" = "1" ]; then
+                _ho_confirm=""
+                if [ -t 0 ]; then
+                    read -r -p "Hand $TASK_ID to '$NEW_OWNER'? Type the task id to confirm: " _ho_confirm
+                fi
+                if [ "$_ho_confirm" != "$TASK_ID" ]; then
+                    echo -e "${RED}ERROR: owner hand-over from an agent environment needs an interactive confirmation (R-033, T-4969)${NC}" >&2
+                    echo "  The operator hands it over in Watchtower's ownership field, or runs this in their own terminal." >&2
+                    exit 1
+                fi
+                _ho_via="operator CLI (--i-am-human, confirmed interactively in an agent environment)"
+            else
+                _ho_via="operator CLI (--i-am-human, claimed)"
+            fi
+        elif [ "$SKIP_HUMAN_OWNERSHIP" = true ]; then
             echo -e "${YELLOW}WARNING: Overriding human ownership (--skip-human-ownership bypass)${NC}"
             log_gate_bypass "--skip-human-ownership" "owner_change"
+            _ho_via="--skip-human-ownership (bypass, claimed)"
         else
             echo -e "${RED}ERROR: Cannot change owner from 'human' — human ownership is protected (R-033)${NC}" >&2
-            echo "Only the human can reassign human-owned tasks." >&2
-            echo "Use --skip-human-ownership to bypass (logged)." >&2
+            echo "Only the operator can hand over a human-owned task:" >&2
+            echo "  - in Watchtower: the task's Ownership field" >&2
+            echo "  - on the CLI, in the operator's own terminal: bin/fw task update $TASK_ID --owner $NEW_OWNER --i-am-human" >&2
             exit 1
         fi
+        mkdir -p "$PROJECT_ROOT/.context/working" 2>/dev/null
+        T4969_TASK="$TASK_ID" T4969_TO="$NEW_OWNER" T4969_VIA="$_ho_via" T4969_AGENT="${CLAUDECODE:-}" python3 -c '
+import json, os, time
+print(json.dumps({"ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "task": os.environ["T4969_TASK"],
+                  "from": "human", "to": os.environ["T4969_TO"], "via": os.environ["T4969_VIA"],
+                  "agent_env": os.environ["T4969_AGENT"] == "1"}))' \
+            >> "$PROJECT_ROOT/.context/working/owner-handover.jsonl" 2>/dev/null || true
+        echo "Hand-over: $_ho_via (logged in .context/working/owner-handover.jsonl)"
     fi
     _sed_i "s/^owner:.*/owner: $NEW_OWNER/" "$TASK_FILE"
     echo "Owner:   $OLD_OWNER → $NEW_OWNER"

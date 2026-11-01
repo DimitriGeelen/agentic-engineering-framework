@@ -1,6 +1,9 @@
 """Tasks blueprint — task list, detail, status API."""
 
+import json
 import re as re_mod
+import time
+from pathlib import Path
 from html import escape as _html_escape
 from urllib.parse import urlencode
 from datetime import datetime, timezone
@@ -1139,7 +1142,22 @@ def update_task_owner(task_id):
     if owner not in enums["owners"]:
         return '<p style="color: var(--pico-del-color);">Invalid owner</p>', 400
 
-    stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--owner", owner])
+    # T-4969: the operator's own hand-over. Watchtower writes a short-lived record of this request
+    # and passes --from-watchtower; update-task.sh accepts a human → agent change only when the
+    # record matches (task, owner, under 120 s) and consumes it. Typing the flag alone is refused.
+    rec_dir = Path(PROJECT_ROOT) / ".context" / "working" / "owner-handover"
+    rec = rec_dir / f"{task_id}.json"
+    try:
+        rec_dir.mkdir(parents=True, exist_ok=True)
+        rec.write_text(json.dumps({"task": task_id, "owner": owner, "ts": time.time(),
+                                   "by": "watchtower"}), encoding="utf-8")
+    except OSError as e:
+        return f'<p style="color: var(--pico-del-color);">Error: cannot record the hand-over ({_escape(str(e))})</p>', 500
+    try:
+        stdout, stderr, ok = run_fw_command(["task", "update", task_id, "--owner", owner,
+                                             "--from-watchtower"])
+    finally:
+        rec.unlink(missing_ok=True)      # consumed by update-task, or unused (no human → agent change)
     if ok:
         return f'<p style="color: var(--pico-ins-color);">Owner set to {owner}</p>'
     # T-2222: widen 200 → 1500 + escape + pre-wrap (T-2219/T-2221 sibling pattern; OBS-049).
