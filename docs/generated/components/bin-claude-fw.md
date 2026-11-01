@@ -11,11 +11,11 @@ Runs claude normally, then checks for a restart signal file
 written by checkpoint.sh when auto-handover fires at critical budget.
 If found (and fresh), auto-restarts (fresh by default, T-3166). Any -c / --continue
 is resolved to `--resume <this session's conversation>`, never a worker's (T-4497).
+In ps, the claude-fw line keeps its launch arguments for its whole life; after a
+fresh restart the claude child line (no -c / --resume) is what is running (T-4912).
 Usage:
 claude-fw [claude-args...]          # Run with auto-restart enabled
 claude-fw --no-restart [args...]    # Run without auto-restart
-claude-fw --termlink [args...]      # Register as TermLink session for remote access
-TL_CLAUDE_ENABLED=1 claude-fw      # Same via env var
 
 ## Dependencies (1)
 
