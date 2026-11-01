@@ -25,6 +25,7 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | be.11 | 3ba10f67e | T-4941 (host-shared identity check measures the signing key; false WARN gone) |
 | be.12 | 8c4fdbc97 | T-4943 (judge captures every required page), T-4945, T-4947 (/approvals stderr sanitized), T-4948 (atomic YAML writers), T-4949 (FW_ALLOW_EMPTY_RECOMMENDATION restored), T-4950, T-4951 (/approvals no SystemExit without BVP policy), T-4954, T-4955, T-4956 (baseline regenerate keeps unrun files) |
 | be.13 | c5bb76f89 | T-4957 (Workflow Designer 0.34.0 pinned) |
+| be.15 | 0522186b9 | T-4944 (codex may record a render green, citing only screenshots it named; vision:false kinds skip render reviews); T-4966 (ledger and register appends serialized with verdict commits: no torn committed line under parallel judges); T-4968 (stale web readiness fixtures) |
 | be.14 | 5aa42c6ec | T-4953 (read-only gate query + pipe: refused, no approval card); T-4960 (judge captures very tall pages); T-4958 (`fw ux shots` crop step); T-4962 (retry ladder releases `e2e-` self-test messages); T-4963 (direct-route reply settles a hub consult) |
 
 ## Upgrade reports
@@ -161,6 +162,8 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | T-4941 host-shared check (be.11) | pending; a consumer with its own key should no longer see the WARN | — |
 | T-4953 read-only pipe refusal (be.14) | pending; dimitri-mint-dev reported the card (9f92d563) | — |
 | T-4962 + T-4963 retry ladder (be.14) | pending; 055 reported both (de1569c0, d3a169a5) | — |
+| T-4966 parallel judges (be.15) | pending; ring20-dashboard will run parallel batches with "every committed register line parses + audit clean" as the fatal check (ff30b2b9) | — |
+| T-4944 vision-gated render greens (be.15) | pending | — |
 
 ## Clean full upgrades (rule b)
 
