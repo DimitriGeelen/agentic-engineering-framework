@@ -1,6 +1,6 @@
 ---
 id: T-4679
-name: "vendor_preserve post-check matches in_file markers as plain substrings, so markers written with regex escapes (\( \.) always report MARKER MISSING; define and document the marker semantics"
+name: "vendor_preserve post-check matches in_file markers as plain substrings, so markers written with regex escapes (\\( \\.) always report MARKER MISSING; define and document the marker semantics"
 description: >
   Decide literal vs regex (or a prefix such as re: for regex), document it in the manifest schema, make the check consistent, test both forms; tell ring20 which to use. Source: proxmox-ring20-management be.4 field report (sidecar 4aade009, 2026-10-23).
 

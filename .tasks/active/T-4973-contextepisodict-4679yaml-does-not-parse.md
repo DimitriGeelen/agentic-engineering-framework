@@ -101,7 +101,7 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `.context/episodic/T-4679.yaml` and the T-4679 task frontmatter parse with `yaml.safe_load`, content unchanged apart from quoting
+- [x] `.context/episodic/T-4679.yaml` and the T-4679 task frontmatter parse with `yaml.safe_load`, content unchanged apart from quoting (task file: operator ran runme t4973-fix-t4679-name 2026-11-01 19:39, EXIT 0, "parses: … (\( \.) …")
 - [x] `tests/unit/episodic_yaml_timeline_escape.bats` passes (7/7 after the episodic repair)
 - [x] The cause is identified (which field, which writer) and recorded in the RCA; if a current writer can still produce it, a follow-up task is filed (no current writer does: see RCA)
 
