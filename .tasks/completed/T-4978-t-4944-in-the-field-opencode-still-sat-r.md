@@ -11,12 +11,12 @@ description: >
   with its own registry has no vision field, so nothing is excluded; (2) why opencode
   exits 1 after writing a verdict. Localise both with ring20's data before any fix.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/termlink/termlink.sh, tests/unit/t4933_review_seat_evidence_test.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T17:13:15Z
-last_update: 2026-11-01T19:37:18Z
-date_finished:
+last_update: 2026-11-01T20:53:18Z
+date_finished: 2026-11-01T20:53:18Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -422,3 +422,21 @@ bin/fw vendor self --check --task T-4978
 ### 2026-11-01T18:50:35Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-01T20:53:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-586c7d84
+- **Timestamp:** 2026-11-01T20:53:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — Defect 2 fixed without weakening the T-3986 tamper check. **Cause found 2026-11-01 (ring20 msg 2f1752c5):** their app's `services/fault_triage.py` creates `data/state/fault_interactions.sqlite` (and i
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=services/fault_triage.py in: Defect 2 fixed without weakening the T-3986 tamper check. **Cause found 2026-11-01 (ring20 msg 2f1752c5):** their app's `services/fault_triage.py` cre`

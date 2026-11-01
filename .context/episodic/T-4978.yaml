@@ -1,0 +1,116 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4978: T-4944 in the field: opencode still sat render reviews at ring20 and exited 1 after printing a green
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T20:53:44Z
+# ============================================================================
+
+task_id: T-4978
+task_name: "T-4944 in the field: opencode still sat render reviews at ring20 and exited 1 after printing a green"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T17:13:15Z
+completed: 2026-11-01T20:53:18Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T18:16:54+01:00
+last_commit: 2026-11-01T21:50:58+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ring20's data — vendored registry carries vision:false (project-root lookup hypothesis), opencode exit 1 is the T-3986 tamper check tripped by __pycache__. criteria; project-root hypothesis refuted by code (vendored fallback exists); third hypothesis: criteria not render-classified. localised with ring20's data — page-describing [REVIEW] criteria classify as taste/unclassified, so no capture and no vision gate. ring20 — the ledger does not record which green saw the page. page criteria keep blind seats out; a voided seat names what changed in its export. vendor self — judge_cli, termlink.sh. defect 1 criterion ticked; defect 2 finding (bytecode already off since T-4835) and the diagnostic; verification. follow-ups filed — T-4980 (capture a consumer's own app pages), T-4981 (ledger records whether a green saw the page); ring20 told (msg 9d8fa319). harness seats are told to run project code from a copy in $TMPDIR (ring20 msg 2f1752c5: the app writes its SQLite state under its code root, inside the export). vendor self — judge_cli. harness error events (codex usage limit) are named in stderr.log instead of an opaque exit 1. normaliser test extracts the heredoc body correctly. vendor self — termlink.sh. defect 2 cause (ring20: app writes SQLite under its code root) and fix recorded
+
+# Key outcomes
+outcomes:
+  - 'Defect 1 localised with ring20''s dry-run data (criterion class per AC, `blind_kinds`), and the cause recorded here before any fix. ring20 (msg 48311576), measured:'
+  - 'Defect 1 fixed: a render review at a consumer with a vendored registry does not seat a `vision: false` kind; a test reproduces ring20''s case. Decision (judge-side, ledger untouched): `judge_cli.names_page` marks a criterion `page` when it names an app route or a URL with a path (not /api/, not filesystem roots, not files), and the vision exclusion keys on `render or page`. `tests/unit/test_t4978_page_criteria_vision.py` reproduces T-878''s shape (class unclassified, render False, page True → opencode excluded). Commit 94743a6f1.'
+  - 'Defect 2 fixed without weakening the T-3986 tamper check. **Cause found 2026-11-01 (ring20 msg 2f1752c5):** their app''s `services/fault_triage.py` creates `data/state/fault_interactions.sqlite` (and its journal) under its own code root on first use, i.e. inside the export when a seat boots the app under TestClient. The tamper check was right. Fix: the harness brief now tells every codex/opencode seat to run project code from a copy (`cp -a . "$TMPDIR/run"`), pinned by `test_harness_brief_says_run_project_code_from_a_copy`; the fingerprint is unchanged and a real edit still voids (`test_a_real_edit_still_voids_even_with_the_env_var`). Also: a harness error event (codex usage limit) is now named in stderr.log. Field confirmation from ring20 on the next be-tag is recorded under T-4940. **Finding 2026-11-01:** `PYTHONDONTWRITEBYTECODE=1` has been in every review seat''s env.json since T-4835, so the bytecode hypothesis is unlikely; an app booted under TestClient may write something else (a database, a log). Shipped first: the void now lists each added/removed/modified path in stderr.log (fingerprint unchanged; tests in `t4835_review_seat_pycache_test.py`). Open until ring20''s next voided seat (or their retained export) names the file. (for example `PYTHONDONTWRITEBYTECODE=1` for harness seats, or bytecode excluded from the tamper diff); a test shows a seat that only imports project code keeps its verdict, and one that edits a source file still voids it'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'defect 2 cause (ring20: app writes SQLite under its code root) and fix recorded'
+    source: git-mined
+  - description: 'harness error events (codex usage limit) are named in stderr.log instead of an opaque exit 1'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.tasks/active/T-4978-t-4944-in-the-field-opencode-still-sat-r.md'
+  - '.tasks/active/T-4980-judge-captures-pages-of-a-consumers-own-.md'
+  - '.tasks/active/T-4981-ledger-records-whether-a-green-saw-the-p.md'
+  - 'agents/termlink/termlink.sh'
+  - 'lib/reviewer/judge_cli.py'
+  - 'tests/unit/t4835_review_seat_pycache_test.py'
+  - 'tests/unit/t4933_review_seat_evidence_test.py'
+  - 'tests/unit/test_t4978_page_criteria_vision.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T18:16:54'
+    action: 'T-4978: ring20''s data — vendored registry carries vision:false (project-root lookup hypothesis), opencode exit 1 is the T-3986 tamper check tripped by __pycache__'
+  - time: '2026-11-01T19:51:05'
+    action: 'T-4978: criteria; project-root hypothesis refuted by code (vendored fallback exists); third hypothesis: criteria not render-classified'
+  - time: '2026-11-01T19:53:53'
+    action: 'T-4978: localised with ring20''s data — page-describing [REVIEW] criteria classify as taste/unclassified, so no capture and no vision gate'
+  - time: '2026-11-01T19:58:23'
+    action: 'T-4978: ring20 — the ledger does not record which green saw the page'
+  - time: '2026-11-01T20:48:18'
+    action: 'T-4978: page criteria keep blind seats out; a voided seat names what changed in its export'
+  - time: '2026-11-01T20:53:54'
+    action: 'T-4978: vendor self — judge_cli, termlink.sh'
+  - time: '2026-11-01T20:54:18'
+    action: 'T-4978: defect 1 criterion ticked; defect 2 finding (bytecode already off since T-4835) and the diagnostic; verification'
+  - time: '2026-11-01T20:56:57'
+    action: 'T-4978: follow-ups filed — T-4980 (capture a consumer''s own app pages), T-4981 (ledger records whether a green saw the page); ring20 told (msg 9d8fa319)'
+  - time: '2026-11-01T21:43:53'
+    action: 'T-4978: harness seats are told to run project code from a copy in $TMPDIR (ring20 msg 2f1752c5: the app writes its SQLite state under its code root, inside the export)'
+  - time: '2026-11-01T21:43:57'
+    action: 'T-4978: vendor self — judge_cli'
+  - time: '2026-11-01T21:46:31'
+    action: 'T-4978: harness error events (codex usage limit) are named in stderr.log instead of an opaque exit 1'
+  - time: '2026-11-01T21:47:00'
+    action: 'T-4978: normaliser test extracts the heredoc body correctly'
+  - time: '2026-11-01T21:50:42'
+    action: 'T-4978: vendor self — termlink.sh'
+  - time: '2026-11-01T21:50:58'
+    action: 'T-4978: defect 2 cause (ring20: app writes SQLite under its code root) and fix recorded'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 14 commit(s), 220 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 220
+  commits: 15
+  files_changed: 13
+  lines_added: 1178
+  lines_removed: 31
+  footprint_refreshed_at: '2026-11-01T20:54:04Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4978-t-4944-in-the-field-opencode-still-sat-r.md
+generated_by: context-agent-hybrid
