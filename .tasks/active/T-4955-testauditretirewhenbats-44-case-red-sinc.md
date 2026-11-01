@@ -1,10 +1,12 @@
 ---
 id: T-4955
-name: "test_audit_retire_when.bats 4/4 case red since T-4891: fixture writes preference-index.yaml untracked, signal (b) now counts tracked files only"
+name: "test_audit_retire_when.bats 4/4 case red since T-4891: fixture writes preference-index.yaml
+  untracked, signal (b) now counts tracked files only"
 description: >
-  Found 2026-11-01 sweeping tests that read the task template (T-4954). Slow tier; not in the fast-tier report the pre-push ratchet reads, so nothing flagged it.
+  Found 2026-11-01 sweeping tests that read the task template (T-4954). Slow tier;
+  not in the fast-tier report the pre-push ratchet reads, so nothing flagged it.
 
-status: captured
+status: started-work
 workflow_type: test
 owner: agent
 horizon: now
@@ -38,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T09:50:07Z
-last_update: 2026-11-01T09:50:07Z
-date_finished: null
+last_update: '2026-11-01T09:50:58Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +52,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-01T09:50:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4955: test_audit_retire_when.bats 4/4 case red since T-4891: fixture writes preference-index.yaml untracked, signal (b) now counts tracked files only
@@ -57,20 +76,19 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** While running every test that reads the task template for T-4954 (2026-11-01), `tests/unit/test_audit_retire_when.bats` "F-RECALL: all 4 signals → WARN (4/4)" failed consistently: the audit reports 3/4, not 4/4.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** T-4891 (2026-10-29) made signal (b), the preference index, look only at git-tracked files (`tracked_files.find_named`), because a recursive glob over a home-directory root never finished. The fixture writes `preference-index.yaml` but never `git add`s it, so (b) can no longer be met. The test is in the slow tier, and the pre-push ratchet reads the fast-tier report, so nothing flagged it.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the 4/4 case builds all four signals as the audit now defines them.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the fixture tracks the preference file; all 12 tests pass; the audit code is unchanged.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The 4/4 fixture `git add`s `preference-index.yaml`; `test_audit_retire_when.bats` 12/12, audit code unchanged
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -256,6 +274,8 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/test_audit_retire_when.bats > /tmp/.t4955 2>&1 && ! grep -q "^not ok" /tmp/.t4955
+test "$(grep -c '^ok' /tmp/.t4955)" -eq 12
 
 ## RCA
 
@@ -353,3 +373,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4955-testauditretirewhenbats-44-case-red-sinc.md
 - **Context:** Initial task creation
+
+### 2026-11-01T09:50:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

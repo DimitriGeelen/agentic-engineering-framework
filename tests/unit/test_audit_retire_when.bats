@@ -90,8 +90,9 @@ YAML
     echo "x" > "$TEST_PROJECT/positive.txt"
     git -C "$TEST_PROJECT" add positive.txt
     git -C "$TEST_PROJECT" commit -q -m "T-001: positive-reinforcement capture wired"
-    # (b) preference index
+    # (b) preference index — tracked: T-4891 counts git-tracked files only (T-4955)
     echo "# prefs" > "$TEST_PROJECT/preference-index.yaml"
+    git -C "$TEST_PROJECT" add preference-index.yaml
     # (c) auto-sync code
     echo "# auto-sync" > "$TEST_PROJECT/agents/sync.sh"
     # (d) recent reflection log
