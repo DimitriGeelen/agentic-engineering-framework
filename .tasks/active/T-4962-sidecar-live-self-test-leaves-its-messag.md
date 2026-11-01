@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T12:43:02Z
-last_update: 2026-11-01T13:11:27Z
+last_update: 2026-11-01T13:11:37Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -103,7 +103,7 @@ cost_estimate_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] `retry.sweep` closes an open row whose message has an `e2e-` conversation id with `released: e2e self-test …`, before any repost/nudge/operator/dead-letter decision, whether or not a rung is due
 - [x] A test pins it: e2e rows released and counted, a normal consult in the same sweep still reposted; existing retry/ladder tests pass
-- [ ] `bin/fw vendor self --check --task T-4962` clean
+- [x] `bin/fw vendor self --check --task T-4962` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
