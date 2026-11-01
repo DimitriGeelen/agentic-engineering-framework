@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4946: Unit-suite: 9 baselined reds expired 2026-11-01 and block every push — operator re-arm for 7 days, then fix the 5 files
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T10:34:47Z
+# ============================================================================
+
+task_id: T-4946
+task_name: "Unit-suite: 9 baselined reds expired 2026-11-01 and block every push — operator re-arm for 7 days, then fix the 5 files"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T08:35:28Z
+completed: 2026-11-01T10:32:02Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-11-01T10:01:20+01:00
+last_commit: 2026-11-01T11:31:59+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  all 5 expired-red files fixed (T-4947..T-4951); full unit-suite run started. criteria restated to outcome, RCA, verification
+
+# Key outcomes
+outcomes:
+  - 'A runme re-arms exactly the 9 expired-and-red entries for 7 days (names from the baseline and the latest report, not retyped), handed off as one line and watched; the push then succeeds without bypass. Restated 2026-11-01: the runme was prepared (`.context/runme/t4946-rearm-baseline`) but became unnecessary before it was run: all 9 were fixed and a fresh fast-tier run (09:53Z) had none red, so the push went through with no re-arm and no bypass (8d1993caa, 43 commits; then e3435a314). The operator was told not to run it.'
+  - 'Each of the 5 files passes: cause found and fixed (or the test corrected where the test is what is wrong), recorded per file under Updates'
+  - '`python3 agents/audit/unit_suite_baseline.py regenerate` run after a green run drops the fixed entries (first attempt emptied the whole baseline from a one-tier report and was reverted; fixed in T-4956; the corrected run dropped 19, kept 25. Of the 17 files behind the 25, 16 pass when run directly and will drop at their tier''s next run; `doctor_hook_counters.bats` still has 3 reds, owner T-3615)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'all 5 expired-red files fixed (T-4947..T-4951); full unit-suite run started'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4946-unit-suite-9-baselined-reds-expired-2026.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T10:01:20'
+    action: 'T-4946: all 5 expired-red files fixed (T-4947..T-4951); full unit-suite run started'
+  - time: '2026-11-01T11:31:59'
+    action: 'T-4946: criteria restated to outcome, RCA, verification'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 116 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 116
+  commits: 3
+  files_changed: 4
+  lines_added: 517
+  lines_removed: 6
+  footprint_refreshed_at: '2026-11-01T10:35:01Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4946-unit-suite-9-baselined-reds-expired-2026.md
+generated_by: context-agent-hybrid
