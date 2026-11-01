@@ -7,12 +7,12 @@ description: >
   detail shown on /approvals without operator_facing_stderr (T-3280/G-102). One of
   the 9 expired baseline reds (owner T-3605).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [web/blueprints/approvals.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T08:37:10Z
-last_update: 2026-11-01T11:33:13Z
-date_finished:
+last_update: 2026-11-01T12:04:58Z
+date_finished: 2026-11-01T12:04:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -103,7 +103,7 @@ cost_estimate_proposed:
 - [x] `tests/unit/test_operator_facing_stderr.py` passes; existing approvals arc tests pass; Watchtower restarted and `bin/fw watchtower current` exits 0; `bin/fw vendor self --check --task T-4947` clean
 
 ### Human
-- [ ] [REVIEW] The Arc Closure section of /approvals still renders as before
+- [x] [REVIEW] The Arc Closure section of /approvals still renders as before
   **Steps:**
   1. Open http://192.168.10.107:3000/approvals and scroll to the Arc Closure section.
   **Expected:** each listed arc shows its demo state line as before (no raw `fw` gate text, no `--skip`/`FW_` bypass flags in it), and the page renders without errors.
@@ -152,6 +152,7 @@ cost_estimate_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261101-29c96111 — reviewer-judge-t-4947-r3-7507f6c49882:reviewer (rung rung-3-termlink-single-reviewer), digest 04af17cc9c7b; dispatch judge-t-4947-r3-7507f6c49882; evidence: .context/reviews/evidence/T-4947/AC1-judge-t-4947-r3-7507f6c49882.md, .context/reviews/evidence/T-4947/01-approvals-judge-t-4947-r3-7507f6c49882.png, .context/reviews/evidence/T-4947/02-approvals-content-judge-t-4947-r3-7507f6c49882.png, .context/reviews/evidence/T-4947/03-approvals-continuous-state-judge-t-4947-r3-7507f6c49882.png, .context/reviews/evidence/T-4947/arc-closure@1024-judge-t-4947-r3-7507f6c49882.png, .context/reviews/evidence/T-4947/arc-closure@1440-judge-t-4947-r3-7507f6c49882.png, .context/reviews/evidence/T-4947/arc-closure@1920-judge-t-4947-r3-7507f6c49882.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
@@ -411,3 +412,21 @@ Captured with `bin/fw ux shots T-4947 arc-closure=@.context/visual/T-4947/arc-cl
 
 ### 2026-11-01T08:37:14Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-01T12:04:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7abc047d
+- **Timestamp:** 2026-11-01T12:05:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `web/blueprints/approvals.py` passes demo-check's stderr through `operator_facing_stderr`; the exit-code-to-state mapping is unchanged
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/approvals.py in: `web/blueprints/approvals.py` passes demo-check's stderr through `operator_facing_stderr`; the exit-code-to-state mapping is unchanged`

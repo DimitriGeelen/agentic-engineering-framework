@@ -1,0 +1,125 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4947: Approvals arc demo-check renders raw subprocess stderr to the operator (test_operator_facing_stderr red)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T12:06:11Z
+# ============================================================================
+
+task_id: T-4947
+task_name: "Approvals arc demo-check renders raw subprocess stderr to the operator (test_operator_facing_stderr red)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T08:37:10Z
+completed: 2026-11-01T12:04:58Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T09:38:34+01:00
+last_commit: 2026-11-01T13:04:06+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  /approvals arc demo-check detail passes stderr through operator_facing_stderr (G-102); test_operator_facing_stderr green. criteria, RCA, verification. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (opencode seat opencode, recorded by the runtime). Visual Verification table — Arc Closure cropped at 1024/1440/1920 (T-4958)
+
+# Key outcomes
+outcomes:
+  - '`web/blueprints/approvals.py` passes demo-check''s stderr through `operator_facing_stderr`; the exit-code-to-state mapping is unchanged'
+  - '`tests/unit/test_operator_facing_stderr.py` passes; existing approvals arc tests pass; Watchtower restarted and `bin/fw watchtower current` exits 0; `bin/fw vendor self --check --task T-4947` clean'
+  - '[REVIEW] The Arc Closure section of /approvals still renders as before'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/approvals.py'
+  - '.context/reviews/applied.jsonl'
+  - '.context/reviews/evidence/T-4947/01-approvals-judge-t-4947-r3-7507f6c49882.png'
+  - '.context/reviews/evidence/T-4947/02-approvals-content-judge-t-4947-r3-24e430faa04f.png'
+  - '.context/reviews/evidence/T-4947/02-approvals-content-judge-t-4947-r3-7507f6c49882.png'
+  - '.context/reviews/evidence/T-4947/02-approvals-content-judge-t-4947-r3-f0a60a9bb3f1.png'
+  - '.context/reviews/evidence/T-4947/03-approvals-continuous-state-judge-t-4947-r3-24e430faa04f.png'
+  - '.context/reviews/evidence/T-4947/03-approvals-continuous-state-judge-t-4947-r3-7507f6c49882.png'
+  - '.context/reviews/evidence/T-4947/03-approvals-continuous-state-judge-t-4947-r3-f0a60a9bb3f1.png'
+  - '.context/reviews/evidence/T-4947/AC1-judge-t-4947-r3-0389e063e132.md'
+  - '.context/reviews/evidence/T-4947/AC1-judge-t-4947-r3-1ef6fa032d28.md'
+  - '.context/reviews/evidence/T-4947/AC1-judge-t-4947-r3-24e430faa04f.md'
+  - '.context/reviews/evidence/T-4947/AC1-judge-t-4947-r3-3ceaf1bb7092.md'
+  - '.context/reviews/evidence/T-4947/AC1-judge-t-4947-r3-7507f6c49882.md'
+  - '.context/reviews/evidence/T-4947/AC1-judge-t-4947-r3-f0a60a9bb3f1.md'
+  - '.context/reviews/evidence/T-4947/AC1-judge-t-4947-r3-f51515d37ed6.md'
+  - '.context/reviews/evidence/T-4947/arc-closure@1024-judge-t-4947-r3-7507f6c49882.png'
+  - '.context/reviews/evidence/T-4947/arc-closure@1024-judge-t-4947-r3-f0a60a9bb3f1.png'
+  - '.context/reviews/evidence/T-4947/arc-closure@1440-judge-t-4947-r3-7507f6c49882.png'
+  - '.context/reviews/evidence/T-4947/arc-closure@1440-judge-t-4947-r3-f0a60a9bb3f1.png'
+  - '.context/reviews/evidence/T-4947/arc-closure@1920-judge-t-4947-r3-7507f6c49882.png'
+  - '.context/reviews/evidence/T-4947/arc-closure@1920-judge-t-4947-r3-f0a60a9bb3f1.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-4947-approvals-arc-demo-check-renders-raw-sub.md'
+  - 'web/blueprints/approvals.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T09:38:34'
+    action: 'T-4947: /approvals arc demo-check detail passes stderr through operator_facing_stderr (G-102); test_operator_facing_stderr green'
+  - time: '2026-11-01T09:39:14'
+    action: 'T-4947: criteria, RCA, verification'
+  - time: '2026-11-01T10:06:35'
+    action: 'T-4947: reviewer verdict'
+  - time: '2026-11-01T10:12:33'
+    action: 'T-4947: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-01T10:17:54'
+    action: 'T-4947: reviewer verdict (opencode seat opencode, recorded by the runtime)'
+  - time: '2026-11-01T12:33:13'
+    action: 'T-4947: Visual Verification table — Arc Closure cropped at 1024/1440/1920 (T-4958)'
+  - time: '2026-11-01T12:36:26'
+    action: 'T-4947: reviewer verdict'
+  - time: '2026-11-01T12:39:42'
+    action: 'T-4947: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-01T12:46:04'
+    action: 'T-4947: reviewer verdict (opencode seat opencode, recorded by the runtime)'
+  - time: '2026-11-01T13:04:06'
+    action: 'T-4947: reviewer verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 10 commit(s), 207 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 207
+  commits: 11
+  files_changed: 33
+  lines_added: 872
+  lines_removed: 11
+  footprint_refreshed_at: '2026-11-01T12:06:28Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4947-approvals-arc-demo-check-renders-raw-sub.md
+generated_by: context-agent-hybrid

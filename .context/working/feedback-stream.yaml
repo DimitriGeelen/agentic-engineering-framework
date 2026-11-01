@@ -52267,3 +52267,21 @@ scan_id: R-56628692
 task_id: T-4960
 payload:
   task_file: .tasks/active/T-4960-reviewer-judge-cannot-capture-approvals-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-01T12:05:51Z'
+scan_id: R-7abc047d
+task_id: T-4947
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-01T12:05:51Z'
+scan_id: R-7abc047d
+task_id: T-4947
+payload:
+  task_file: .tasks/active/T-4947-approvals-arc-demo-check-renders-raw-sub.md
