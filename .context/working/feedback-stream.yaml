@@ -52617,3 +52617,21 @@ scan_id: R-efc58772
 task_id: T-4976
 payload:
   task_file: .tasks/active/T-4976-test-fixture-testsfixturesforeignwatchto.md
+---
+kind: scan_emitted
+timestamp: '2026-11-01T20:13:55Z'
+scan_id: R-05fc6068
+task_id: T-4970
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-01T20:13:55Z'
+scan_id: R-05fc6068
+task_id: T-4970
+payload:
+  task_file: .tasks/active/T-4970-host-shared-key-check-the-whoami-fallbac.md
