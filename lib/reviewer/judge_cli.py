@@ -1193,6 +1193,12 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
     except Exception as e:  # noqa: BLE001 - an unreadable registry is a refusal, not a default
         res.update(error=f"review backend registry unavailable: {e}", code=1)
         return res
+    # T-4996: an estate-only project (REVIEW_PAID_BACKENDS=never) gets no paid seats and no
+    # proposals its operator will never approve; each unfilled seat says why instead.
+    paid_never = review_policy.config_value(root, "REVIEW_PAID_BACKENDS", "allowed").strip().lower() == "never"
+    if paid_never:
+        plan["paid"] = []
+        res["paid_backends"] = "never"
     seats, required = plan["seats"], plan["required"]
     degraded = (DEGRADED_SINGLE_VENDOR if rung >= 5 and (len(plan["dispatch"]) < required
                                                          or len(plan["vendors"]) < required) else "")
@@ -1299,6 +1305,9 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
                                          "status": p.get("status", "pending")})
             except Exception as e:  # noqa: BLE001
                 entry.update(backend=backend, status=f"proposal refused: {e}")
+        elif paid_never:
+            entry["status"] = ("paid backends are not allowed in this project "
+                               "(REVIEW_PAID_BACKENDS=never); no internal backend can fill this seat")
         else:
             entry["status"] = "no backend (internal or paid) can fill this seat"
         for r in entry["results"]:

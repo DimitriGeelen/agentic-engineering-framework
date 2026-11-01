@@ -709,6 +709,21 @@ class TestCostIntegration:
         assert res["outcomes"] == {1: "unknown"}
         assert vl.apply(TID, repo)["ticked"] == []                      # the ledger keeps it open
 
+    def test_estate_only_project_files_no_paid_proposal(self, repo, monkeypatch):
+        """T-4996 (ring20): REVIEW_PAID_BACKENDS=never — no proposal is filed, and each unfilled
+        seat says plainly why, instead of a proposal its operator will never approve."""
+        monkeypatch.setenv("FW_REVIEW_PAID_BACKENDS", "never")
+        _mk_task(repo, TASTE, extra_fm=HI)
+        _produce(repo)
+        w = FakeWorker("green")
+        res = _judge(repo, dispatcher=w, worker_kinds={"claude"})
+        assert [c["vendor"] for c in w.calls] == ["claude"]
+        assert _costs(repo, "proposals.jsonl") == [] and res["proposals"] == []
+        assert res["paid_backends"] == "never"
+        unfilled = [d for d in res["dispatches"] if "dispatch_id" not in d]
+        assert unfilled and all("REVIEW_PAID_BACKENDS=never" in d["status"] for d in unfilled)
+        assert res["outcomes"] == {1: "unknown"}
+
     def test_a_rerun_reuses_the_open_proposal(self, repo):
         _mk_task(repo, TASTE, extra_fm=HI)
         _produce(repo)
