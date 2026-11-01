@@ -188,6 +188,50 @@ The fail direction is refusal, everywhere. When the ledger has no entry for a pa
 3. Is `chmod`/`touch -d` on own files needed? The draft refuses metadata changes.
 4. The rename probe: still useful to confirm the NAS allows a rename without a delete right, but the ledger design does not depend on its answer.
 
+## Review, seat 1 (opencode, 2026-11-01): sound with fixes
+
+The full text is in `docs/reports/T-4965-review-opencode.md`. Seat 2 (codex) could not run (usage limit until 22:02) and will be added. The reviewer confirmed the layering, the off-host executor and the fail-closed ledger, and found the delete route as drafted unsound. Findings, and what changes:
+
+1. **The share is reachable by paths the draft never names.** Examples: a new `mount` under `/tmp`, `smbclient`, or `ssh` to the NAS. **Accepted.** Under any grant, the scanner treats `mount`, `umount` and `fusermount` as writes. Typed network clients aimed at the NAS are refused (they are named in the scope limits). `fw doctor` compares `/proc/mounts` with the grant `via` list and alarms on any other mount of the same source.
+2. **The ledger and audit log are themselves editable.** An agent could append a temp entry for an operator file. **Accepted. This changes the design's core:**
+   - `created.jsonl` and `audit.jsonl` join the guarded set (the T-3695 leg);
+   - the delete authority is never the local ledger. It is the NAS-side owner, which the executor checks itself;
+   - the temp-item route exists only on mounts with NAS-side ownership.
+3. **The ledger's soundness.** **Accepted:**
+   - pending lines are bound to the tool call's `tool_use_id`;
+   - entries are confirmed by NAS owner (or content hash), not by existence;
+   - entries are keyed on the resolved path, case-folded on cifs;
+   - an entry closes as soon as its path is seen missing;
+   - ownership is re-checked at every decision.
+4. **Archive extractors and script-created files skip the ledger.** `tar -x` under a grant creates members the ledger never sees, and `../` members can land outside the grant. **Accepted:**
+   - extractors are refused under grants (stage the archive in the project, then copy);
+   - a Tier 0 approval may delete a path that is not in the ledger (the operator, not the ledger, is the authority).
+5. **A hard link can make an operator file look agent-created.** **Accepted:** `ln` sources are classified; a hard link is refused unless its source is in the ledger as agent-created.
+6. **§4c is right, but the executor's spec was incomplete.** The executor must check all of the following itself:
+   - the operator's approval, over its own channel;
+   - NAS-side ownership of the exact path;
+   - every check again at execution time (rename TOCTOU);
+   - symlinks resolved on the server;
+   - a single-use request bound to a nonce.
+
+   **Accepted, written into §4c(a).** Option (b), a local runtime, is withdrawn: a root agent can also watch the local process using the credential.
+7. **The grant file's guard has gaps.**
+   - It checked only commits.
+   - It missed `git checkout/restore/stash/apply` on the file.
+   - `fw config set BOUNDARY_EXTRA_READ_PATHS` stays a way for the agent to widen its own read access.
+
+   **Accepted:**
+   - every hook fire checks the file's digest against HEAD (an uncommitted change means no grants apply);
+   - the guarded verb set is extended;
+   - read grants move into the operator-owned file, and `BOUNDARY_EXTRA_READ_PATHS` becomes operator-only, which is a separate change that needs the operator's yes.
+8. **Slice gaps.** **Accepted:**
+   - `never_write` and the steering go into slice 2;
+   - the audit log goes into slice 3;
+   - mount hygiene (finding 1) goes into slice 2, before the create level;
+   - steering refuses with a message; it never rewrites paths.
+
+**Net effect:** the framework's role in deletes shrinks to recording the request and getting the approval. An off-host executor that checks NAS ownership itself does the delete. On a mount without NAS-side ownership, only the read and create levels are offered.
+
 ## Next
 
 1. ~~Design read~~ and ~~draft~~: done above (2026-11-01).
