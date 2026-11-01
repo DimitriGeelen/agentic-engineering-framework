@@ -9,10 +9,10 @@ description: >
   Ships with slice 3 under one be-tag. Design: docs/reports/T-4961-driver-sets.md
   §Design (T-4967) and §Review (codex C1-C7, opencode 1-8).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T21:08:38Z
-last_update: '2026-11-01T21:15:30Z'
+last_update: '2026-11-01T22:19:35Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -82,6 +82,22 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-01T22:19:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal);
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4985: Driver sets slice 2: estimator and arc review read the task's set
@@ -89,20 +105,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** driver sets slice 2 (T-4961 GO; design and reviews in `docs/reports/T-4961-driver-sets.md`). Slice 1 (T-4984) delivered `lib/driver_sets.py`, the one resolver and validator. 010-termlink's product set file is ready (msg f6c450a2).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** the BVP estimator reads only the live `policy/value-drivers.yaml` (drivers, aliases, specs), and the arc-driver reviewer's check_a/check_b and the scorability rail compare against the live file too. A task in a product arc would therefore be scored and reviewed against the wrong drivers.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the estimator and the arc-driver review read the task's or arc's set through `lib/driver_sets.py`, with score provenance and backfill as the reviews required.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** a task in an arc with `driver_set: product` gets product weights and product-only drivers proposed. Proposals record their set. A score counts under another set only for a pure re-weight. Missing set drivers are re-proposed without touching confirmations. Ships together with slice 3 (T-4986) under one be-tag.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `estimator.estimate_task` loads drivers, aliases and specs from the task's set (`driver_sets.load_for_task`); the three loaders take a policy argument; the set wins collisions with arc-scoped drivers as the live file does today; a refused set skips the task with a reason, never falls back to the live file
+- [ ] Proposals (`bvp_scores_proposed` entries) record `driver_set:` (absent = default). A score counts under another set only when that set's entry for the id has the same name and scoring spec (C1). A task missing drivers of its set, or carrying scores from another set, is re-estimated for those drivers only, bypassing delta suppression, and confirmations are never overwritten (C2)
+- [ ] `lib/arc-driver-review.sh` check_a and check_b, and `lib/bvp-scorability.sh` classify, use the arc's set; the estimator's AGENT.md describes set loading
+- [ ] Tests: extend `test_bvp_estimator.py` (product-arc task gets product weights and F-TRUST-style driver; provenance; backfill; refused set skipped) and `t3429_arc_driver_review.bats` (a scoped driver duplicating a set driver is refused); every test that reads the changed files passes; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -385,3 +403,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4985-driver-sets-slice-2-estimator-and-arc-re.md
 - **Context:** Initial task creation
+
+### 2026-11-01T22:19:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
