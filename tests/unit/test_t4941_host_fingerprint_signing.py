@@ -55,9 +55,22 @@ def test_session_on_the_host_key_is_still_host_shared(selected):
     assert dm.identity_is_host_shared(runner=_termlink(session_fp=HOST)) is True
 
 
-def test_sign_unavailable_falls_back_to_the_old_reading(selected):
-    # an older termlink without `identity sign`: the stripped-env whoami reading, as before
-    assert dm._host_fingerprint(runner=_termlink(sign_ok=False)) == OWN
+def test_sign_unavailable_means_host_key_unknown(selected):
+    # T-4970: no whoami fallback. whoami reports the session's key (OWN) whatever the
+    # env, so falling back made every project-keyed session look host-shared.
+    assert dm._host_fingerprint(runner=_termlink(sign_ok=False)) is None
+
+
+def test_sign_unavailable_with_a_selector_is_not_host_shared(selected):
+    assert dm.identity_is_host_shared(runner=_termlink(sign_ok=False)) is False
+
+
+def test_sign_unavailable_without_a_selector_is_still_host_shared(monkeypatch):
+    # the drain protection does not depend on the probe: no selector means the host key
+    monkeypatch.delenv("FW_SIDECAR_IDENTITY_FP", raising=False)
+    for k in SEL:
+        monkeypatch.delenv(k, raising=False)
+    assert dm.identity_is_host_shared(runner=_termlink(sign_ok=False)) is True
 
 
 def test_sign_answer_without_host_default_source_is_not_trusted(selected):

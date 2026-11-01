@@ -1,13 +1,22 @@
 ---
 id: T-4970
-name: "Host-shared key check: the whoami fallback in _host_fingerprint reintroduces the pid-walk false positive T-4941 fixed"
+name: "Host-shared key check: the whoami fallback in _host_fingerprint reintroduces
+  the pid-walk false positive T-4941 fixed"
 description: >
-  832 (msg 4ebbef7c, on be.4) measured identity_is_host_shared() = True although 832 signs with its own key: termlink whoami resolves the session by pid walk, so stripping the identity env still returns the session key, and 'host' == 'ours'. T-4941 (be.11) measures the host key with 'termlink identity sign --json' (env stripped, source must be host_default), which follows the env. But lib/sidecar/dm.py _host_fingerprint still FALLS BACK to the whoami reading when identity sign fails or reports another source, which brings the false WARN back. Direction: no whoami fallback; when the signing probe cannot answer, the host fingerprint is unknown (None) and the WARN is not raised, as T-4941's own docstring explains whoami cannot measure it.
+  832 (msg 4ebbef7c, on be.4) measured identity_is_host_shared() = True although 832
+  signs with its own key: termlink whoami resolves the session by pid walk, so stripping
+  the identity env still returns the session key, and 'host' == 'ours'. T-4941 (be.11)
+  measures the host key with 'termlink identity sign --json' (env stripped, source
+  must be host_default), which follows the env. But lib/sidecar/dm.py _host_fingerprint
+  still FALLS BACK to the whoami reading when identity sign fails or reports another
+  source, which brings the false WARN back. Direction: no whoami fallback; when the
+  signing probe cannot answer, the host fingerprint is unknown (None) and the WARN
+  is not raised, as T-4941's own docstring explains whoami cannot measure it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T16:15:25Z
-last_update: 2026-11-01T16:15:25Z
-date_finished: null
+last_update: '2026-11-01T20:08:53Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-01T20:08:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4970: Host-shared key check: the whoami fallback in _host_fingerprint reintroduces the pid-walk false positive T-4941 fixed
@@ -57,20 +83,20 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 832 (msg 4ebbef7c, on be.4) measured `identity_is_host_shared()` = True although 832 signs with its own key. T-4941 (be.11) switched the host measurement to `termlink identity sign --json` (env stripped, source `host_default`).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `lib/sidecar/dm.py _host_fingerprint` still falls back to the stripped-env `whoami` reading when `identity sign` fails or reports another source. `whoami` picks the session by a pid walk, so inside a project-keyed session that reading is our own key, and the false host-shared WARN returns.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** The host fingerprint is either the signing probe's answer or unknown; never the whoami reading.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** With a selector set and the probe unavailable, `_host_fingerprint` is None, `identity_is_host_shared` is False (no false WARN), and `legacy_host_fingerprint` is None. With no selector set, the check still reports host-shared (drain protection unchanged).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `_host_fingerprint` returns only the signing probe's answer (no whoami fallback); docstrings say why
+- [ ] Tests: probe unavailable → `_host_fingerprint` None and `identity_is_host_shared` False with a selector set; no selector → still True; every test that reads `lib/sidecar/dm.py` host/identity code passes; `bin/fw vendor self --check --task T-4970` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -353,3 +379,10 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4970-host-shared-key-check-the-whoami-fallbac.md
 - **Context:** Initial task creation
+
+### 2026-11-01T16:24:50Z — status-update [task-update-agent]
+- **Change:** horizon: next → next
+
+### 2026-11-01T20:08:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

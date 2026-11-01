@@ -32,6 +32,11 @@ a = sys.argv[1:]
 if a[:1] == ["whoami"]:
     fp = "ownfp" if os.environ.get("TERMLINK_IDENTITY_FILE") else "hostfp"
     print(json.dumps({"session": {"identity_fingerprint": fp}}))
+elif a[:2] == ["identity", "sign"]:
+    # T-4970: the host key comes from what termlink SIGNS with (T-4941), which follows the env
+    own = bool(os.environ.get("TERMLINK_IDENTITY_FILE"))
+    print(json.dumps({"fingerprint": "ownfp" if own else "hostfp", "ok": True,
+                      "source": "identity_file" if own else "host_default"}))
 elif a[:2] == ["channel", "list"]:
     print(os.environ.get("FAKE_TL_TOPICS", '{"topics": []}'))
 elif a[:2] == ["channel", "subscribe"]:

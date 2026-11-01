@@ -150,16 +150,12 @@ def _signing_host_fingerprint(*, runner=subprocess.run, timeout: int = 15) -> st
 
 def _host_fingerprint(*, runner=subprocess.run, timeout: int = 15) -> str | None:
     """The host default key, measured rather than hard-coded: the key termlink
-    signs with when no selector is set (T-4941), else, where `identity sign` is
-    unavailable, the fingerprint `whoami` reports with every selector stripped."""
-    fp = _signing_host_fingerprint(runner=runner, timeout=timeout)
-    if fp:
-        return fp
-    saved = {k: os.environ.pop(k) for k in _IDENTITY_ENV if k in os.environ}
-    try:
-        return identity_fingerprint(runner=runner, timeout=timeout)
-    finally:
-        os.environ.update(saved)
+    signs with when no selector is set (T-4941). None when that probe cannot
+    answer. T-4970 (832 msg 4ebbef7c): there is no `whoami` fallback. whoami picks
+    the session by a pid walk whatever the env says, so inside a project-keyed
+    session its "host" reading is our own key and the false host-shared WARN
+    came back; an unknown host key is the honest answer."""
+    return _signing_host_fingerprint(runner=runner, timeout=timeout)
 
 
 def legacy_host_fingerprint(*, runner=subprocess.run, timeout: int = 15) -> str | None:

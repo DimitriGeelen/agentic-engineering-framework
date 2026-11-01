@@ -29,6 +29,13 @@ def _whoami(host_fp, own_fp=None):
     import os
 
     def run(argv, **kw):
+        if argv[1:3] == ["identity", "sign"]:
+            # T-4970: the host key is what termlink SIGNS with under the env it is given (T-4941)
+            env = kw.get("env") or {}
+            own = bool(own_fp and any(env.get(k) for k in IDENT_ENV[:3]))
+            out = json.dumps({"fingerprint": own_fp if own else host_fp, "ok": True,
+                              "source": "identity_file" if own else "host_default"})
+            return subprocess.CompletedProcess(argv, 0, stdout=out, stderr="")
         fp = own_fp if own_fp and any(os.environ.get(k) for k in IDENT_ENV[:3]) else host_fp
         out = json.dumps({"session": {"identity_fingerprint": fp}})
         return subprocess.CompletedProcess(argv, 0, stdout=out, stderr="")
