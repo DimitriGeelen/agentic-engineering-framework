@@ -83,6 +83,10 @@ bvp_scores_proposed:
   - **Corrected by 055 (msg 033615f1, after the meter's review round 2):** `fw bvp` as it ranks put either T-058 (parked later all window, constant 108) or T-474 (already started) on top for 71 of the 74 backlog picks. That is the started-and-parked defect.
   - Counting only real candidates (captured, horizon not later): the top-ranked was picked once, a top-5 task 5 times out of 74, and the top candidate (T-475) was top for 58 picks.
   - The override rate is unchanged at 98.6 %. Report: 055 `docs/reports/T-678-pick-meter-first-report.md` (round 3 PASS).
+- **055 follow-up (msg fc76d54a), answered by AEF (msg b612012b):**
+  - Their measurement: "newest captured first" puts the picked task in the top 5 for 62 of 71 picks, the evidence list for 31-35, and `fw bvp` for 5.
+  - Our view: agreement with picks measures prediction, not priority; judge priority by weekly sampled regret plus the age of evidenced items. We recommended their option A.
+  - The core problem is the backlog that only grows: capture has an owner, pruning has none. AEF has the same disease (510 open tasks; 238 approved inceptions whose build is unknown). Candidate for AEF: a regular prune step with an owner, proposing drop or merge in batches for one-click operator answers.
 - **Candidate defects visible already:**
   - no-signal is written as a number (0 or 108);
   - the rank lists started work and parked work as candidates;
