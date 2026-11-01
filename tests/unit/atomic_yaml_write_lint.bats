@@ -30,6 +30,9 @@ EXEMPT = {
         "which writes via git plumbing, not this module",
     "agents/docgen/test_docgen.py":
         "test fixture writer; regenerable test-scope output",
+    "lib/cron_commit.py":
+        "only dump is its self-test fixture, written into a tempfile.TemporaryDirectory "
+        "(T-4948)",
 }
 
 # A to-file YAML dump signal (PyYAML, ruamel alias forms used in this repo).
