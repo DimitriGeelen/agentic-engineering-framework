@@ -152,7 +152,14 @@ def corpus_medians(project_root: Path | str, *, framework_root=None,
     re-parsed here — ~9.5s on a cold /approvals build.
     """
     bvp = bvp_py.load(framework_root)
-    policy = bvp.load_policy()
+    try:
+        policy = bvp.load_policy()
+    except SystemExit as e:
+        # T-4951: load_policy exits (it is also a CLI) when policy/value-drivers.yaml is
+        # missing. A SystemExit is not an Exception, so it escaped the /approvals caller's
+        # degrade-to-ratio path and aborted the page build. Raise an ordinary error.
+        raise RuntimeError(f"BVP policy unavailable (load_policy exited {e.code}): "
+                           "policy/value-drivers.yaml missing; fw bvp driver --init") from e
     weights = bvp.driver_weights(policy)
 
     if open_fms is None:
