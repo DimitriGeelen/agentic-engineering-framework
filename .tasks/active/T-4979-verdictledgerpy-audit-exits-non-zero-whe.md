@@ -101,8 +101,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Decision recorded: exit codes unchanged (0/3/2); every caller of the code checked (`agents/audit/audit.sh` grades 0 PASS, 2 FAIL, 3 WARN, anything else FAIL)
-- [ ] The audit summary line ends with `exit N: <meaning>`; a test pins exit 0, 3 (void-only) and 2 with that wording; the `fw audit` grading still reads the last line correctly; vendored copy in sync
+- [x] Decision recorded: exit codes unchanged (0/3/2); every caller of the code checked (`agents/audit/audit.sh` grades 0 PASS, 2 FAIL, 3 WARN, anything else FAIL; no other caller reads the code)
+- [x] The audit summary line ends with `exit N: <meaning>`; a test pins exit 0, 3 (void-only) and 2 with that wording; the `fw audit` grading still reads the last line correctly; vendored copy in sync — 436 pytest + 20 bats across every audit caller green
 - [ ] ring20 told the contract
 
 ### Human
@@ -289,6 +289,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_t4519_worker_failed_row.py tests/unit/test_t3657_acknowledged_refusals.py > /tmp/.t4979.v 2>&1 && grep -q passed /tmp/.t4979.v
+bin/fw vendor self --check --task T-4979
 
 ## RCA
 
@@ -360,6 +362,11 @@ bvp_scores_proposed:
 -->
 
 ## Decisions
+
+### 2026-11-01 — exit code for a ledger with only non-counting rows
+- **Chose:** keep 0 / 3 / 2 and print the meaning on the summary line (`exit 3: warnings only …; nothing fails`).
+- **Why:** `fw audit` needs 3 to grade those rows WARN, never PASS (T-3657, T-4519); exit 0 would make an acknowledged or void row indistinguishable from a clean ledger. Scripts test `rc -eq 2` for failure.
+- **Rejected:** exit 0 with WARN lines (ring20's suggestion); it would push the WARN/PASS distinction into line parsing for `fw audit` instead.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
