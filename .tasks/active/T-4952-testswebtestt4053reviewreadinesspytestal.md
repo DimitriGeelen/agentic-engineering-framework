@@ -7,10 +7,10 @@ description: >
   Fails identically with T-4951's change stashed, so pre-existing. Web tests are not
   in the unit-suite ratchet, so nothing flags it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T08:59:18Z
-last_update: '2026-11-01T09:00:23Z'
+last_update: 2026-11-01T12:23:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,20 +87,20 @@ cost_estimate_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** `tests/web/test_t4053_review_readiness.py::test_all_agent_ticked_and_open_human_is_ready` fails, both on HEAD and with T-4951 stashed. Reproduced 2026-11-01: `('waiting-on-agent', [...criterion 1]) != ('ready', [])`.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** the test is stale, not the code. Its "ready" fixture is a `[RUBBER-STAMP]` Human criterion whose Expected clause is a shell check. Since T-4916 (2026-10-30, operator "b"), deterministic criteria are reviewer-judged and are no longer kept for the operator. So `review_readiness` correctly says the task waits for a reviewer verdict. Only tier-0-or-bypass, act-in-the-world and sovereignty criteria stay with the operator (T-3557).
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the test pins the current rule. A task whose only open Human criterion is operator-only (act-in-the-world) is ready. A deterministic one waits for a green reviewer verdict.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the web test file is green and asserts the post-T-4916 behaviour instead of the old one.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The "ready" fixture uses an operator-only (act-in-the-world) Human criterion; a new test asserts a deterministic Human criterion without a green verdict is waiting-on-agent
+- [x] `tests/web/test_t4053_review_readiness.py` passes in full; `web/shared.py` is unchanged
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -286,6 +286,8 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 400 python3 -m pytest -q -p no:cacheprovider tests/web/test_t4053_review_readiness.py
+git diff --quiet HEAD -- web/shared.py
 
 ## RCA
 
@@ -302,6 +304,14 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** one web test was red: a task with all Agent criteria ticked and one open deterministic Human criterion was expected to be "ready" but was "waiting-on-agent".
+
+**Root cause:** T-4916 (2026-10-30) changed the rule so that deterministic Human criteria are reviewer-judged and wait for a green verdict. The predicate followed the rule; this test's fixture still encoded the old one.
+
+**Why structurally allowed:** tests under `tests/web/` are not in the unit-suite ratchet or the pre-push audit. T-4916 ran the tests that read `lib/delegation.py` directly, and this test reaches it only through `web/shared.py`, so the red went unnoticed for two days.
+
+**Prevention:** the test now pins both sides of the rule (operator-only is ready; deterministic waits). The wider gap — web tests that no gate grades — stays as it was; it is named here for whoever next touches the ratchet scope.
 
 ## Evolution
 
@@ -383,3 +393,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4952-testswebtestt4053reviewreadinesspytestal.md
 - **Context:** Initial task creation
+
+### 2026-11-01T12:21:37Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

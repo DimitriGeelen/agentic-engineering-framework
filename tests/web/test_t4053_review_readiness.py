@@ -24,6 +24,15 @@ DETERMINISTIC = """- [ ] [RUBBER-STAMP] Run it
   **Expected:** output contains `tmp`
   **If not:** fix it
 """
+# T-4952: since T-4916 a deterministic criterion is reviewer-judged, so only the three
+# operator-only classes (tier-0-or-bypass, act-in-the-world, sovereignty) leave a task
+# ready for the operator without a verdict. This one is act-in-the-world.
+OPERATOR_ONLY = """- [ ] [REVIEW] Publish the release notes on the project site
+  **Steps:**
+  1. Publish them
+  **Expected:** the notes are live
+  **If not:** note what failed
+"""
 TASTE = """- [ ] [REVIEW] Tone reads clearly
   **Steps:**
   1. Read it
@@ -73,8 +82,15 @@ def _readiness(proj, tid, text):
 
 
 def test_all_agent_ticked_and_open_human_is_ready(proj):
-    state, why = _readiness(proj, "T-9001", _task("T-9001", "- [x] done\n", DETERMINISTIC))
+    state, why = _readiness(proj, "T-9001", _task("T-9001", "- [x] done\n", OPERATOR_ONLY))
     assert (state, why) == ("ready", [])
+
+
+def test_deterministic_human_criterion_waits_for_a_reviewer_verdict(proj):
+    # T-4952: before T-4916 this fixture was "ready"; deterministic criteria are now judged.
+    state, why = _readiness(proj, "T-9006", _task("T-9006", "- [x] done\n", DETERMINISTIC))
+    assert state == "waiting-on-agent"
+    assert any("criterion 1" in r for r in why)
 
 
 def test_open_agent_criterion_is_waiting_and_counted(proj):
