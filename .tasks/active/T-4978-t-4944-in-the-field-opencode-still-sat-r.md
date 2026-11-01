@@ -1,8 +1,15 @@
 ---
 id: T-4978
-name: "T-4944 in the field: opencode still sat render reviews at ring20 and exited 1 after printing a green"
+name: "T-4944 in the field: opencode still sat render reviews at ring20 and exited
+  1 after printing a green"
 description: >
-  ring20-dashboard (msg 9cbbdcdc, be.15): on T-858 and T-863 ([REVIEW] render criteria) an opencode seat was dispatched (judge-t-858-r5-opencode-9e0426fed2bb; V-20261101-35746ad5), printed a full VERDICT: green block, then exited 1, so the row was voided (worker-failed). Two questions: (1) why the vision:false exclusion did not apply; hypothesis: kind_vision reads policy/review-backends.yaml as committed in the REVIEWING project, and a consumer with its own registry has no vision field, so nothing is excluded; (2) why opencode exits 1 after writing a verdict. Localise both with ring20's data before any fix.
+  ring20-dashboard (msg 9cbbdcdc, be.15): on T-858 and T-863 ([REVIEW] render criteria)
+  an opencode seat was dispatched (judge-t-858-r5-opencode-9e0426fed2bb; V-20261101-35746ad5),
+  printed a full VERDICT: green block, then exited 1, so the row was voided (worker-failed).
+  Two questions: (1) why the vision:false exclusion did not apply; hypothesis: kind_vision
+  reads policy/review-backends.yaml as committed in the REVIEWING project, and a consumer
+  with its own registry has no vision field, so nothing is excluded; (2) why opencode
+  exits 1 after writing a verdict. Localise both with ring20's data before any fix.
 
 status: captured
 workflow_type: build
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T17:13:15Z
-last_update: 2026-11-01T17:13:15Z
-date_finished: null
+last_update: '2026-11-01T17:15:19Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-01T17:15:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4978: T-4944 in the field: opencode still sat render reviews at ring20 and exited 1 after printing a green

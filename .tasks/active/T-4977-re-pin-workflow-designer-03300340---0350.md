@@ -2,7 +2,14 @@
 id: T-4977
 name: "Re-pin Workflow Designer 0.33.0/0.34.0 -> 0.35.0 (832 T-1360; validator changed)"
 description: >
-  832 msg 041d0f42: designer-v0.35.0 (commit 9c8de5682); artifact dist/aef-workflow-designer-0.35.0.html sha256 af559a1302097809b9ab854a506048457f86ce4b3c6b9d541ad7aa396db197b0, 1310486 bytes; kit SHA256SUMS sha256 8c628658579392db9120ae97ea5ae72a18f9c158caac8a2f092ad3bfe8755546; validate-workflow.py sha256 c9c57d88c701dc875e80119cebc60f4e6daed4622abc518ab7a6cc98f50e3046, 116871 bytes (changed: accepts sendTask/receiveTask/manualTask/businessRuleTask like <task>). Same flow as T-4957: fw designer sync --from-tag, verify the three anchors, update policy/designer-pin.yaml, vendor, run the /api/validate tests (T-4830), tell 832.
+  832 msg 041d0f42: designer-v0.35.0 (commit 9c8de5682); artifact dist/aef-workflow-designer-0.35.0.html
+  sha256 af559a1302097809b9ab854a506048457f86ce4b3c6b9d541ad7aa396db197b0, 1310486
+  bytes; kit SHA256SUMS sha256 8c628658579392db9120ae97ea5ae72a18f9c158caac8a2f092ad3bfe8755546;
+  validate-workflow.py sha256 c9c57d88c701dc875e80119cebc60f4e6daed4622abc518ab7a6cc98f50e3046,
+  116871 bytes (changed: accepts sendTask/receiveTask/manualTask/businessRuleTask
+  like <task>). Same flow as T-4957: fw designer sync --from-tag, verify the three
+  anchors, update policy/designer-pin.yaml, vendor, run the /api/validate tests (T-4830),
+  tell 832.
 
 status: captured
 workflow_type: build
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T17:13:15Z
-last_update: 2026-11-01T17:13:15Z
-date_finished: null
+last_update: '2026-11-01T17:15:19Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-01T17:15:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4977: Re-pin Workflow Designer 0.33.0/0.34.0 -> 0.35.0 (832 T-1360; validator changed)
