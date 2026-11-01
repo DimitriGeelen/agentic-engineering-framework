@@ -150,3 +150,31 @@ def test_harness_brief_says_run_project_code_from_a_copy():
         b = _brief(Path("."), kind, "abc")
         assert "Never run it in place" in b and 'cp -a . "$TMPDIR/run"' in b
     assert "Never run it in place" not in _brief(Path("."), "claude", "abc")
+
+
+def _normaliser() -> str:
+    src = TERMLINK.read_text()
+    start = src.index("# Normalise every harness to one result.md")
+    body = src[src.index("<<'PYEOF'", start) + len("<<'PYEOF'\n"):]
+    return body[:body.index("\nPYEOF")]
+
+
+def test_a_harness_error_event_is_named_on_stderr(tmp_path):
+    """T-4978: codex's 'usage limit' lived only in result.jsonl; the run showed exit 1 and an empty
+    result. The normaliser now prints each error event to stderr, which run.sh appends to the log."""
+    events = [{"type": "thread.started"},
+              {"type": "error", "message": "You've hit your usage limit."},
+              {"type": "turn.failed", "error": {"message": "You've hit your usage limit."}}]
+    (tmp_path / "result.jsonl").write_text("\n".join(json.dumps(e) for e in events) + "\n")
+    r = subprocess.run([sys.executable, "-", str(tmp_path), "codex"], input=_normaliser(),
+                       capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+    assert r.stderr.count("HARNESS ERROR (codex): You've hit your usage limit.") == 1
+
+
+def test_a_clean_run_prints_no_harness_error(tmp_path):
+    (tmp_path / "result.jsonl").write_text(json.dumps({"type": "text", "part": {"text": "ok"}}) + "\n")
+    r = subprocess.run([sys.executable, "-", str(tmp_path), "opencode"], input=_normaliser(),
+                       capture_output=True, text=True)
+    assert r.returncode == 0 and "HARNESS ERROR" not in r.stderr
+    assert (tmp_path / "result.md").read_text().strip() == "ok"

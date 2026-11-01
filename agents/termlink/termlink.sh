@@ -1942,6 +1942,20 @@ import json, re, sys
 from pathlib import Path
 w, kind = Path(sys.argv[1]), sys.argv[2]
 ansi = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]|\x1b\][^\x07]*\x07")
+# T-4978: a harness that failed (codex 'usage limit') said so only inside result.jsonl, so the run
+# showed exit 1 and an empty result. Name every error event on stderr (this block's stderr is the log).
+_seen = set()
+for line in (w / "result.jsonl").read_text(errors="replace").splitlines() if (w / "result.jsonl").is_file() else []:
+    try:
+        ev = json.loads(line)
+    except ValueError:
+        continue
+    if isinstance(ev, dict) and ev.get("type") in ("error", "turn.failed"):
+        err = ev.get("error")
+        msg = str(ev.get("message") or (err.get("message") if isinstance(err, dict) else err) or "").strip()
+        if msg and msg not in _seen:
+            _seen.add(msg)
+            print(f"HARNESS ERROR ({kind}): {msg[:400]}", file=sys.stderr)
 if kind == "opencode":
     parts = []
     for line in (w / "result.jsonl").read_text(errors="replace").splitlines() if (w / "result.jsonl").is_file() else []:
