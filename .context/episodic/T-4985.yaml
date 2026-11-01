@@ -1,0 +1,106 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4985: Driver sets slice 2: estimator and arc review read the task's set
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T22:32:47Z
+# ============================================================================
+
+task_id: T-4985
+task_name: "Driver sets slice 2: estimator and arc review read the task's set"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-01T21:08:38Z
+completed: 2026-11-01T22:32:09Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T23:19:51+01:00
+last_commit: 2026-11-01T23:32:06+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context and criteria. driver sets slice 2 — estimator scores each task under its arc's set (refused set = skipped, never the live file), proposals record driver_set, scores count across sets only for a pure re-weight, missing set drivers backfilled without touching confirmations; arc review check_a/check_b and the scorability rail use the arc's set (dispatched build, reviewed). vendor self. criteria, decisions (backfill scope, arcs_dir seam), known gap for T-4986, verification. tests criterion ticked
+
+# Key outcomes
+outcomes:
+  - '`estimator.estimate_task` loads drivers, aliases and specs from the task''s set (`driver_sets.load_for_task`); the three loaders take a policy argument; the set wins collisions with arc-scoped drivers as the live file does today; a refused set skips the task with a reason, never falls back to the live file'
+  - 'Proposals (`bvp_scores_proposed` entries) record `driver_set:` (absent = default). A score counts under another set only when that set''s entry for the id has the same name and scoring spec (C1). A task missing drivers of its set, or carrying scores from another set, is re-estimated for those drivers only, bypassing delta suppression, and confirmations are never overwritten (C2)'
+  - '`lib/arc-driver-review.sh` check_a and check_b, and `lib/bvp-scorability.sh` classify, use the arc''s set; the estimator''s AGENT.md describes set loading'
+  - 'Tests: extend `test_bvp_estimator.py` (product-arc task gets product weights and F-TRUST-style driver; provenance; backfill; refused set skipped) and `t3429_arc_driver_review.bats` (a scoped driver duplicating a set driver is refused); every test that reads the changed files passes; vendored copy in sync. Dispatched worker t4985-build, reviewed by me (refusal never falls back to the live file, checked in the diff); my rerun: 406 pytest + 36 bats over every file naming the changed code, 0 skipped; one dead negation in the new bats test fixed (`|| false`).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-01 — backfill applies only where a set is involved'
+    chose: 're-estimate missing drivers for a task under a named set, or one carrying scores made under another set. A default-set task whose scores all came from the live file behaves exactly as before.'
+    rationale: 'applied literally, C2 would also have made the sweep write to confirmed default-set tasks lacking a newer live driver. That contradicts the existing rule that the sweep leaves confirmed tasks alone, and an existing test pins that rule. It is a different question from driver sets.'
+    alternatives_rejected: ['backfilling every task with any missing driver.']
+  - decision: '2026-11-01 — `arcs_dir` override in `lib/driver_sets.py`'
+    chose: 'an optional `arcs_dir` on `resolve_set_name`, `load_for_task` and the internal resolver. The resolution rule is unchanged.'
+    rationale: 'the estimator''s existing `ARCS_DIR` seam, used by about 20 tests, has to reach the one resolver; a second resolver would break the "one rule" design.'
+  - decision: 'Known gap, carried to T-4986'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/bvp-estimator/AGENT.md'
+  - '.agentic-framework/agents/termlink/bvp-estimator/estimator.py'
+  - '.agentic-framework/lib/arc-driver-review.sh'
+  - '.agentic-framework/lib/bvp-scorability.sh'
+  - '.agentic-framework/lib/driver_sets.py'
+  - '.tasks/active/T-4985-driver-sets-slice-2-estimator-and-arc-re.md'
+  - 'agents/termlink/bvp-estimator/AGENT.md'
+  - 'agents/termlink/bvp-estimator/estimator.py'
+  - 'lib/arc-driver-review.sh'
+  - 'lib/bvp-scorability.sh'
+  - 'lib/driver_sets.py'
+  - 'tests/unit/t3429_arc_driver_review.bats'
+  - 'tests/unit/test_bvp_estimator.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T23:19:51'
+    action: 'T-4985: context and criteria'
+  - time: '2026-11-01T23:31:19'
+    action: 'T-4985: driver sets slice 2 — estimator scores each task under its arc''s set (refused set = skipped, never the live file), proposals record driver_set, scores count across sets only for a pure re-weight, missing set drivers backfilled without touching confirmations; arc review check_a/check_b and the scorability rail use the arc''s set (dispatched build, reviewed)'
+  - time: '2026-11-01T23:31:25'
+    action: 'T-4985: vendor self'
+  - time: '2026-11-01T23:31:58'
+    action: 'T-4985: criteria, decisions (backfill scope, arcs_dir seam), known gap for T-4986, verification'
+  - time: '2026-11-01T23:32:06'
+    action: 'T-4985: tests criterion ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 83 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 83
+  commits: 6
+  files_changed: 16
+  lines_added: 1339
+  lines_removed: 165
+  footprint_refreshed_at: '2026-11-01T22:32:56Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4985-driver-sets-slice-2-estimator-and-arc-re.md
+generated_by: context-agent-hybrid
