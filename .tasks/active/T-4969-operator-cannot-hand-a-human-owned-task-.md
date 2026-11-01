@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T15:32:32Z
-last_update: 2026-11-01T16:32:29Z
+last_update: 2026-11-01T16:34:18Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -109,7 +109,9 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] External review by two internal seats (codex, opencode) of the ownership proposal is recorded in `docs/reports/T-4969-ownership-ruleset-review.md`, with each answer and the cost logged; no host detail in the brief
 - [x] The operator's decision on the review is recorded under ## Decisions
-- [ ] The agreed step is built and pinned by tests; every test that reads `agents/task-create/update-task.sh` owner handling or `web/blueprints/tasks.py` owner route passes
+- [x] The agreed step is built and pinned by tests; every test that reads `agents/task-create/update-task.sh` owner handling or `web/blueprints/tasks.py` owner route passes:
+  - t4969 (16), t3586 and t2924 bats green; route tests 3/3; 584 of the related pytest set passed.
+  - Reds in the wide run, all pre-existing and unrelated, filed separately: stale pre-T-4916 fixtures in `tests/web/test_t4663_awaiting_agent_done.py` and `tests/web/test_t3575_tasks_page_perf.py`; `tests/integration/check_active_task.bats` fixtures lacking T-4907 context; T-4679 episodic YAML; a pytest basename clash between `tests/unit` and `tests/web`.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
