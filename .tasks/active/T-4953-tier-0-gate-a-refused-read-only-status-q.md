@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T09:12:58Z
-last_update: 2026-11-01T13:09:35Z
+last_update: 2026-11-01T13:09:52Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,7 +101,7 @@ cost_estimate_proposed:
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] External consultation (two internal-cost backends, no host detail in the brief) is recorded in `docs/reports/T-4953-readonly-pipe-consult.md` with each answer, and the cost is logged
-- [ ] The operator's choice is recorded under ## Decisions with their words
+- [x] The operator's choice is recorded under ## Decisions with their words
 - [ ] The chosen behaviour is built in the gate and pinned by tests; every test that reads the hook passes
 
 ### Human
@@ -288,6 +288,9 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t4953_readonly_pipe_no_card.bats
+bash -n agents/context/check-tier0.sh
+bin/fw vendor self --check --task T-4953
 
 ## RCA
 
