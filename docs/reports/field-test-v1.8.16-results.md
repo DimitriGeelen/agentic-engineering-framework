@@ -23,6 +23,8 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | be.9 | 64acfecfa | T-4912 (claude-fw `ps` note), T-4939 (`restatement accept --text`) |
 | be.10 | c10740e74 | T-4942 (restatement read from sha-checked evidence; `--text` on a marker-less amber) |
 | be.11 | 3ba10f67e | T-4941 (host-shared identity check measures the signing key; false WARN gone) |
+| be.12 | 8c4fdbc97 | T-4943 (judge captures every required page), T-4945, T-4947 (/approvals stderr sanitized), T-4948 (atomic YAML writers), T-4949 (FW_ALLOW_EMPTY_RECOMMENDATION restored), T-4950, T-4951 (/approvals no SystemExit without BVP policy), T-4954, T-4955, T-4956 (baseline regenerate keeps unrun files) |
+| be.13 | c5bb76f89 | T-4957 (Workflow Designer 0.34.0 pinned) |
 
 ## Upgrade reports
 
