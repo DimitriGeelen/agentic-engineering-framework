@@ -230,3 +230,76 @@ def test_a_failing_step_is_not_checked_and_names_the_step(tmp_path, capsys):
     assert rc == us.EXIT_NOT_CHECKED
     assert "step 2 (click" in capsys.readouterr().err
     assert not list((tmp_path / "p").rglob("*.png"))
+
+
+# ── T-4958: crop a band of a page too tall to read whole ──────────────────
+
+def test_crop_parses_as_the_last_step(tmp_path):
+    steps = us.load_steps(_steps(tmp_path, "- goto: http://h/\n- crop: {from: '#a', to: '#b'}\n"))
+    assert steps[-1] == {"op": "crop", "from": "#a", "to": "#b"}
+    one = us.load_steps(_steps(tmp_path, "- goto: http://h/\n- crop: '#a'\n  timeout: 2000\n"))
+    assert one[-1] == {"op": "crop", "from": "#a", "timeout": 2000}
+
+
+@pytest.mark.parametrize("body,match", [
+    ("- goto: http://h/\n- crop: '#a'\n- click: '#b'\n", "last step"),
+    ("- goto: http://h/\n- crop: '#a'\n- crop: '#b'\n", "last step"),
+    ("- goto: http://h/\n- crop: {to: '#b'}\n", "crop"),
+    ("- goto: http://h/\n- crop: {from: '#a', to: '#b', pad: 3}\n", "crop"),
+    ("- goto: http://h/\n- crop: ''\n", "crop"),
+    ("- goto: http://h/\n- crop: {from: '#a', to: ''}\n", "crop"),
+])
+def test_bad_crops_are_refused(tmp_path, body, match):
+    with pytest.raises(us.PlanError, match=match):
+        us.load_steps(_steps(tmp_path, body))
+
+
+def test_crop_clip_is_full_width_between_the_two_tops():
+    assert us.crop_clip(3, 1200.0, 2600.0, 1440) == {"x": 0, "y": 1200.0, "width": 1440, "height": 1400.0}
+    with pytest.raises(us.NotChecked, match=r"step 3 \(crop\) selects an empty band"):
+        us.crop_clip(3, 900.0, 900.0, 1024)
+
+
+def test_no_crop_means_a_full_page_shot():
+    assert us.resolve_crop(None, None) is None
+    assert us.resolve_crop(None, [{"op": "goto", "url": "http://h/"}]) is None
+
+
+TALL = ("<!doctype html><title>t</title><body style='margin:0'>"
+        "<div style='height:5000px'>top</div>"
+        "<h2 id='a' style='margin:0;height:40px'>A</h2><div style='height:760px'>a body</div>"
+        "<h2 id='b' style='margin:0;height:40px'>B</h2><div style='height:5000px'>rest</div></body>")
+
+
+def _png_size(path: Path) -> tuple[int, int]:
+    b = path.read_bytes()
+    return int.from_bytes(b[16:20], "big"), int.from_bytes(b[20:24], "big")
+
+
+@pytest.mark.skipif(_REASON is not None, reason=f"browser capture not exercised: {_REASON}")
+def test_crop_captures_only_the_band(tmp_path):
+    site = tmp_path / "site"
+    site.mkdir()
+    (site / "tall.html").write_text(TALL, encoding="utf-8")
+    url = (site / "tall.html").as_uri()
+    band = _steps(tmp_path, f"- goto: {url}\n- crop: {{from: '#a', to: '#b'}}\n", "band.yaml")
+    head = _steps(tmp_path, f"- goto: {url}\n- crop: '#a'\n", "head.yaml")
+    root = tmp_path / "project"
+    root.mkdir()
+    assert us.main(["T-9", f"band=@{band}", f"head=@{head}", "--root", str(root)]) == us.EXIT_OK
+    d = root / ".context/visual/T-9"
+    for w in (1024, 1440, 1920):
+        assert _png_size(d / f"band@{w}.png") == (w, 800)
+        assert _png_size(d / f"head@{w}.png") == (w, 40)
+
+
+@pytest.mark.skipif(_REASON is not None, reason=f"browser capture not exercised: {_REASON}")
+def test_crop_on_a_missing_element_is_not_checked(tmp_path, capsys):
+    site = tmp_path / "site"
+    site.mkdir()
+    (site / "tall.html").write_text(TALL, encoding="utf-8")
+    f = _steps(tmp_path, f"- goto: {(site / 'tall.html').as_uri()}\n- crop: '#absent'\n  timeout: 500\n")
+    rc = us.main(["T-9", f"x=@{f}", "--root", str(tmp_path / "p")])
+    assert rc == us.EXIT_NOT_CHECKED
+    assert "step 2 (crop" in capsys.readouterr().err
+    assert not list((tmp_path / "p").rglob("*.png"))
