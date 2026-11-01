@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4956: unit_suite_baseline regenerate drops entries whose test file did not run in the latest report (a fast-tier report emptied the whole baseline)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T10:23:24Z
+# ============================================================================
+
+task_id: T-4956
+task_name: "unit_suite_baseline regenerate drops entries whose test file did not run in the latest report (a fast-tier report emptied the whole baseline)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T10:19:57Z
+completed: 2026-11-01T10:22:42Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T11:21:53+01:00
+last_commit: 2026-11-01T11:22:40+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  baseline regenerate drops an entry only when its file ran in the report (a fast-tier report had emptied the whole baseline). regenerate with the fix drops the 19 baseline entries that ran green (T-4946); 25 kept. criteria, RCA, verification
+
+# Key outcomes
+outcomes:
+  - '`regenerate` keeps entries whose file is not in the report''s `file_durations` for that leg; unchanged when the report has no per-file record'
+  - 'A test pins it (an entry from a file outside the report is kept; an entry from a file that ran green is dropped); existing baseline tests pass; run against a copy of the real baseline it keeps the 17 not-run files'' entries'
+  - '`bin/fw vendor self --check --task T-4956` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'regenerate with the fix drops the 19 baseline entries that ran green (T-4946); 25 kept'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/unit_suite_baseline.py'
+  - '.context/audits/unit-suite/baseline.yaml'
+  - '.tasks/active/T-4956-unitsuitebaseline-regenerate-drops-entri.md'
+  - 'agents/audit/unit_suite_baseline.py'
+  - 'tests/unit/t3621_unit_suite_ratchet.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T11:21:53'
+    action: 'T-4956: baseline regenerate drops an entry only when its file ran in the report (a fast-tier report had emptied the whole baseline)'
+  - time: '2026-11-01T11:22:15'
+    action: 'T-4956: regenerate with the fix drops the 19 baseline entries that ran green (T-4946); 25 kept'
+  - time: '2026-11-01T11:22:40'
+    action: 'T-4956: criteria, RCA, verification'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 4
+  files_changed: 8
+  lines_added: 566
+  lines_removed: 154
+  footprint_refreshed_at: '2026-11-01T10:23:36Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4956-unitsuitebaseline-regenerate-drops-entri.md
+generated_by: context-agent-hybrid
