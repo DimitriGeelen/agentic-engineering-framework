@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T11:33:40Z
-last_update: '2026-11-01T11:45:19Z'
+last_update: 2026-11-01T12:17:35Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,8 +98,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The 12 untracked `.context/arcs/t1852-*.yaml` files are removed; none was tracked in git
-- [ ] /approvals no longer shows a "start smoke" arc card
+- [x] The 12 untracked `.context/arcs/t1852-*.yaml` files are removed; none was tracked in git (operator ran runme t4959-remove-test-arcs 2026-11-01 13:16, EXIT 0; the tracked-file check passed before rm)
+- [x] /approvals no longer shows a "start smoke" arc card (Arc Closure now lists 2 arcs, was 8)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -285,6 +285,7 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+test "$(ls .context/arcs | grep -c '^t1852-')" = 0
 
 ## RCA
 
