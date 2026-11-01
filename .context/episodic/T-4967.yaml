@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4967: Driver sets slice 1: design read — driver_set on arcs across the estimator, arc driver review, arc caps and bvp ranking (T-4961 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T21:09:25Z
+# ============================================================================
+
+task_id: T-4967
+task_name: "Driver sets slice 1: design read — driver_set on arcs across the estimator, arc driver review, arc caps and bvp ranking (T-4961 GO)"
+workflow_type: design
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T14:48:23Z
+completed: 2026-11-01T21:09:14Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T15:48:44+01:00
+last_commit: 2026-11-01T22:09:12+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file driver-sets slice 1 (design read) after T-4961 GO. context and criteria. driver-sets design (dispatched design read): resolver module, four points (two need no change), six further readers, set-file contract, four slices, five open questions. design criterion ticked; review seats dispatched. opencode review (sound with fixes) and answers; codex seat pending (usage limit). codex review (sound with fixes) and answers; slices revised. build slices T-4984..T-4987 filed and linked; 010 told the form
+
+# Key outcomes
+outcomes:
+  - 'Design section in `docs/reports/T-4961-driver-sets.md` (commit f7ffe3045, dispatched worker t4967-design; I read and checked it): for each of the four points, the current behaviour (file:line), the change, and its fabric blast radius; plus the resolution rule (arc `driver_set:` → `policy/value-drivers-<name>.yaml`, missing file refuses) and the consumers of the set that the four points do not name'
+  - 'Short independent review by two internal seats; findings answered in the report (opencode and codex both "sound with fixes"; `docs/reports/T-4967-review-{opencode,codex}.md`; costs logged)'
+  - 'Build slices filed as tasks and linked from the report; 010-termlink told the form (T-4984..T-4987; msg 52ea8a5c)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'codex review (sound with fixes) and answers; slices revised'
+    source: git-mined
+  - description: 'opencode review (sound with fixes) and answers; codex seat pending (usage limit)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4967-driver-sets-slice-1-design-read--drivers.md'
+  - '.tasks/active/T-4984-driver-sets-slice-1-libdriversetspy-reso.md'
+  - '.tasks/active/T-4985-driver-sets-slice-2-estimator-and-arc-re.md'
+  - '.tasks/active/T-4986-driver-sets-slice-3-every-ranking-surfac.md'
+  - '.tasks/active/T-4987-driver-sets-slice-4-rails-iterate-every-.md'
+  - 'docs/reports/T-4961-driver-sets.md'
+  - 'docs/reports/T-4967-review-codex.md'
+  - 'docs/reports/T-4967-review-opencode.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T15:48:44'
+    action: 'T-4967: file driver-sets slice 1 (design read) after T-4961 GO'
+  - time: '2026-11-01T21:28:00'
+    action: 'T-4967: context and criteria'
+  - time: '2026-11-01T21:32:19'
+    action: 'T-4967: driver-sets design (dispatched design read): resolver module, four points (two need no change), six further readers, set-file contract, four slices, five open questions'
+  - time: '2026-11-01T21:32:56'
+    action: 'T-4967: design criterion ticked; review seats dispatched'
+  - time: '2026-11-01T21:45:38'
+    action: 'T-4967: opencode review (sound with fixes) and answers; codex seat pending (usage limit)'
+  - time: '2026-11-01T22:06:16'
+    action: 'T-4967: codex review (sound with fixes) and answers; slices revised'
+  - time: '2026-11-01T22:09:12'
+    action: 'T-4967: build slices T-4984..T-4987 filed and linked; 010 told the form'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 380 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 380
+  commits: 8
+  files_changed: 11
+  lines_added: 2127
+  lines_removed: 17
+  footprint_refreshed_at: '2026-11-01T21:09:35Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4967-driver-sets-slice-1-design-read--drivers.md
+generated_by: context-agent-hybrid
