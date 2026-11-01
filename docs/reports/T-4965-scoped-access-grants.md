@@ -72,6 +72,15 @@ Item 3 is the most sensitive point: a credential handed to an agent process for 
 - For the grant file: **two standing levels (read, create)** plus the Tier 0 delete flow; there is no write level.
 - Nothing exists yet; account creation waits for their operator. Their T-2500 is GO; follow-up is their T-2502.
 
+**Operator decisions relayed by 050 (msgs dea9b6b7, e15d95fa):**
+- **Rename is not delete.** The create level may rename and move the agent's OWN files and folders. Only a real delete needs Tier 0, so the design's grammar must not classify `mv` or a rename of own files as a delete. Ring20 is testing whether the NAS allows rename without a delete right.
+- **One exception to "every delete is Tier 0": temporary items.** A file or directory the agent declares temporary AT CREATION, named `PEN-TMP_<YYYYMMDD>_<name>`, may be deleted by the agent without approval (a directory with its contents). The framework layer must enforce:
+  1. the ledger records the item as created by the agent with `temp=true` at creation (the prefix alone is never enough);
+  2. renaming INTO the prefix is refused;
+  3. renaming OUT of the prefix is refused (keep content by copying under a normal name);
+  4. every temporary delete is audit-logged.
+- On the NAS the create account has no delete right, so the runtime performs a temporary delete through the delete route, as for an approved delete, with the ledger check standing in for the operator's approval. 050 suggests a configurable prefix per project as the general pattern.
+
 **Rename probe:** on hold; 050 will run it against the `pen-create` mount once that exists.
 
 ## Next
