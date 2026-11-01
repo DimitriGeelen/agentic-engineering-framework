@@ -9,10 +9,10 @@ description: >
   a [REVIEW] Human criterion. Design: docs/reports/T-4961-driver-sets.md §Design (T-4967)
   and §Review (codex C1-C7, opencode 1-8).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T21:08:38Z
-last_update: '2026-11-01T21:15:30Z'
+last_update: '2026-11-01T22:35:00Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -82,6 +82,23 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-01T22:35:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 4
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=4 
+      (body:auto-promote-class-eligibility); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4986: Driver sets slice 3: every ranking surface uses each task's set
@@ -89,22 +106,35 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** driver sets slice 3 (T-4961 GO; design and reviews in `docs/reports/T-4961-driver-sets.md`). Slice 1 (T-4984) built the resolver; slice 2 (T-4985) made the estimator and arc review set-aware. Codex C7: every ranking surface must ship under the same be-tag as slice 2, or two surfaces rank differently.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `fw bvp rank/detail/arcs`, the resolver's picker, arc-close readiness, auto-promote and Watchtower `/bvp` all compute BVP from the live file's weights. A product-arc task would therefore be ranked under development weights, and its set-only drivers (F-TRUST) would count for nothing.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** every ranking surface resolves weights per task through `lib/driver_sets.py`, and shows refused tasks rather than dropping them.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:**
+- Mixed-set rankings are consistent across CLI, resolver, readiness, auto-promote and `/bvp`.
+- A `SET` column appears in the CLI, and `/bvp` shows a set badge.
+- Refused tasks and arcs appear as rows with their reason.
+- `fw bvp confirm` records the set (the gap left by T-4985).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `lib/bvp.sh`: `rank`, `detail`, `arcs` and `_find_driver_entry` use each task's (or arc's) set; `rank` has a SET column; `detail` prints the set and its file; `arcs` rolls each arc up under its set; auto-promote resolves weights per scoring call (C3); `fw bvp confirm` records `driver_set` on the confirmed scores
+- [ ] `lib/resolver.py` picker and `lib/arc_close_readiness.py` (member values and medians) use per-task weights (C3); `web/blueprints/bvp.py` uses per-task weights with a set badge per point
+- [ ] Refusals are visible (C4): refused tasks and arcs appear as rows with the reason in `rank`, `arcs`, `/bvp`, readiness and picker output; `rank` exits 3 when any were refused; `collect_arcs` passes on YAML errors instead of swallowing them
+- [ ] Tests: mixed-set parity between `fw bvp rank` and the resolver (t2497 shape), readiness and auto-promote on a mixed corpus, `/bvp` blueprint test; every test that reads the changed files passes; Watchtower restarted (`bin/fw watchtower current`); vendored copy in sync
 
 ### Human
+- [ ] [REVIEW] `/bvp` shows each point's driver set clearly, and a refused task is visible, not missing
+  **Steps:**
+  1. Open http://192.168.10.107:3000/bvp
+  2. Look at the scatter and its table: tasks scored under a named set carry a set badge; default-set tasks carry none.
+  3. If any task's set is refused, find its row with the reason.
+  **Expected:** the set is readable at a glance; nothing looks dropped; the page layout is unchanged otherwise.
+  **If not:** note which point or row is unclear, and where.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -385,3 +415,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4986-driver-sets-slice-3-every-ranking-surfac.md
 - **Context:** Initial task creation
+
+### 2026-11-01T22:34:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
