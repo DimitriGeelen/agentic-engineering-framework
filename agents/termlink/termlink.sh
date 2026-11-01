@@ -1888,8 +1888,12 @@ elif [ -n "$HARNESS" ]; then
         # user), and the export it reviews is fingerprinted before and checked after the run.
         SEAT_TMP="$WDIR/tmp"
         mkdir -p "$SEAT_TMP" && chmod 1777 "$SEAT_TMP"
-        _tree_fp() { ( cd "$TREE" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum 2>/dev/null | sha256sum | cut -d' ' -f1 ); }
-        TREE_FP_BEFORE="$(_tree_fp)"
+        _tree_list() { ( cd "$TREE" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum 2>/dev/null ); }
+        _tree_fp() { _tree_list | sha256sum | cut -d' ' -f1; }
+        # T-4978: keep the per-file list too, so a voided seat names WHAT changed (ring20's opencode
+        # seat was voided and the cause could only be guessed). The fingerprint itself is unchanged.
+        TREE_LIST_BEFORE="$(_tree_list)"
+        TREE_FP_BEFORE="$(printf '%s\n' "$TREE_LIST_BEFORE" | sha256sum | cut -d' ' -f1)"
         PROMPT_TEXT="$(cat "$WDIR/prompt.md")"
         _fw_record_worker_bin "$WORKER_BIN"
         case "$WORKER_KIND" in
@@ -1926,6 +1930,10 @@ elif [ -n "$HARNESS" ]; then
         # what it reviewed exits non-zero, so none of its greens can count.
         if [ "$(_tree_fp)" != "$TREE_FP_BEFORE" ]; then
             echo "FATAL: the $WORKER_KIND reviewer modified the export it reviewed (T-3986) — its greens do not count" >> "$WDIR/stderr.log"
+            diff <(printf '%s\n' "$TREE_LIST_BEFORE") <(_tree_list) \
+                | awk '/^[<>] /{p=substr($0,69); s[p]=s[p] substr($0,1,1)}
+                       END{for(p in s){t=(s[p]~/</&&s[p]~/>/)?"modified":(s[p]~/>/?"added":"removed"); print "  export " t ": " p}}' \
+                | LC_ALL=C sort | head -20 >> "$WDIR/stderr.log"
             EXIT_CODE=1
         fi
         # Normalise every harness to one result.md: the worker's final text, no ANSI.

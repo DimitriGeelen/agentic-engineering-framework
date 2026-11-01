@@ -70,7 +70,7 @@ def test_cli_runs_and_reports(tmp_path):
 def test_run_sh_copies_before_fingerprinting():
     src = (_ROOT / "agents/termlink/termlink.sh").read_text()
     copy_at = src.index("lib/review_seat_evidence.py\" \"$WDIR/brief.md\"")
-    fp_at = src.index('TREE_FP_BEFORE="$(_tree_fp)"')
+    fp_at = src.index('TREE_LIST_BEFORE="$(_tree_list)"')  # T-4978: the list is taken first
     export_at = src.index("archive --format=tar \"${FW_REVIEW_REVISION:-HEAD}\"")
     assert export_at < copy_at < fp_at
 

@@ -134,6 +134,24 @@ def _load_task(task_id: str, root: Path) -> dict | None:
         return None
 
 
+# T-4978 (ring20): a criterion that describes what an app page shows ("[REVIEW] /classic SSL
+# Certificates widget shows 4 tiles ...") classifies taste or unclassified when its task does not
+# touch AEF's own web/ layout, so `render` stays False and a seat that cannot see images sat it.
+# `page` is the judge's own, wider question: does the criterion name a route of the app? It only
+# decides who may sit the criterion (vision); the ledger's render rules still key on `render`.
+_PAGE_ROUTE_RE = re.compile(r"(?<![\w/.:~-])/([a-z][\w-]*)(?:/[\w-]+)*(?![\w/.-])", re.IGNORECASE)
+_NOT_A_PAGE = {"tmp", "opt", "etc", "usr", "var", "root", "home", "dev", "proc", "bin", "srv", "mnt",
+               "api"}
+
+
+def names_page(text: str) -> bool:
+    """True when `text` names an app route (`/classic`, `/cicd/builds`) or a URL with a path.
+    Filesystem roots and /api/ endpoints are not pages; neither is a token with a file suffix."""
+    if re.search(r"https?://[\w.<>-]+(?::\d+)?/[a-z]", text, re.IGNORECASE):
+        return True
+    return any(m.group(1).lower() not in _NOT_A_PAGE for m in _PAGE_ROUTE_RE.finditer(text))
+
+
 def _partition(task_data: dict, root: Path, task_id: str,
                criterion_n: int | None = None) -> tuple[list[dict], list[dict]]:
     """Split the open Human criteria into (judged, operator_only).
@@ -152,6 +170,7 @@ def _partition(task_data: dict, root: Path, task_id: str,
         item = {"index": len(judged) + 1, "ac_index": crit.index, "text": crit.title.strip(),
                 "body": vl.criterion_body(crit), "class": cl.cls,
                 "render": cl.cls == "render-surface" and bool(vl._RENDER_REVIEW_RE.search(vl.criterion_body(crit)))}
+        item["page"] = item["render"] or names_page(f"{crit.title}\n{item['body']}")
         if cl.delegation_class == REVIEWER_JUDGES:
             judged.append(item)
         elif cl.delegation_class == OPERATOR_ONLY:
@@ -1114,7 +1133,8 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
     judged, operator = _partition(task_data, root, task_id, criterion_n)
     res: dict = {"task_id": task_id, "dry_run": dry_run, "operator_only": [
         {"ac": c["ac_index"], "class": c["class"], "reason": c["reason"]} for c in operator],
-        "criteria": [{"ac": c["ac_index"], "text": c["text"][:80], "class": c["class"]} for c in judged]}
+        "criteria": [{"ac": c["ac_index"], "text": c["text"][:80], "class": c["class"],
+                      "page": bool(c.get("page"))} for c in judged]}
     if not judged:
         res.update(error=f"No REVIEWER_JUDGES criteria found for {task_id}", code=1)
         return res
@@ -1157,7 +1177,7 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
     # the screenshots. A kind the committed registry declares `vision: false` (opencode: its model
     # takes no images) can only return not-evaluated there, so it does not sit a render run.
     blind = set()
-    if any(c["render"] for c in judged):
+    if any(c["render"] or c.get("page") for c in judged):   # T-4978: page criteria too
         blind = {k for k, seen in vl.kind_vision(root, revision).items() if seen is False}
         res["blind_kinds"] = sorted(blind)
     try:

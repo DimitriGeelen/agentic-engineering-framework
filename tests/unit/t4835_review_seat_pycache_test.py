@@ -122,3 +122,22 @@ class TestDispatcherSetsIt:
         src = TERMLINK.read_text()
         line = next(ln for ln in src.splitlines() if "_tree_fp() {" in ln)
         assert "pycache" not in line and "*.pyc" not in line
+
+
+class TestVoidNamesWhatChanged:
+    """T-4978 (ring20): a voided seat's cause was a guess (`__pycache__`?) because the check only
+    compared one hash of the whole tree. The void now lists each changed path; the hash is unchanged."""
+
+    def test_a_voided_seat_names_the_added_file(self, hrepo):
+        _setup(hrepo)
+        w = _run(hrepo, did="judge-t-9200-r1-opencode-pyname00001",
+                 seat_env={"PYTHONDONTWRITEBYTECODE": "1"}, edit=True)
+        log = (w / "stderr.log").read_text()
+        assert "modified the export it reviewed" in log
+        assert "export added: ./tools/real_edit.txt" in log
+
+    def test_a_clean_seat_lists_nothing(self, hrepo):
+        _setup(hrepo)
+        w = _run(hrepo, did="judge-t-9200-r1-opencode-pyclean0001",
+                 seat_env={"PYTHONDONTWRITEBYTECODE": "1"})
+        assert "export added:" not in (w / "stderr.log").read_text()
