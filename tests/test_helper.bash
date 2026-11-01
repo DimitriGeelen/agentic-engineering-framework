@@ -107,7 +107,13 @@ date_finished: null
 
 ## Context
 
-Test context.
+**Background / trigger:** test fixture.
+
+**Problem / hypothesis:** a gate under test needs a valid task to act on.
+
+**Goal:** exercise that gate, not task-context validation (T-4907; T-4972).
+
+**Expected outcome:** the gate under test decides the result.
 
 ## Acceptance Criteria
 

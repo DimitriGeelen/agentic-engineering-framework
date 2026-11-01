@@ -8,10 +8,10 @@ description: >
   in tests/test_helper writes no Context. The gate is right; the helper fixture is
   stale. Fix the helper (four parts) and check every caller.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T16:38:09Z
-last_update: '2026-11-01T16:45:35Z'
+last_update: 2026-11-01T16:54:37Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,20 +88,20 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-4969's wide run (2026-11-01): `tests/integration/check_active_task.bats` tests 13, 14, 17 and 18 fail. Reproduced: the hook prints "BLOCKED: Task T-042 has no human-readable context (missing: Background / trigger, Problem / hypothesis, Goal, Expected outcome)".
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** the shared fixture helper `create_test_task` in `tests/test_helper.bash` writes `## Context` as "Test context.". Since T-4907 (2026-10-29), `check-active-task.sh` refuses source edits under a task without the four labelled parts. The gate is right; the fixture predates it. Tests of other gates may opt out with `FW_TEST_SKIP_TASK_CONTEXT_GATE=1`, but this file never did.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the helper writes the four parts, so every caller's fixture is a valid task under T-4907, rather than each file opting out.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `check_active_task.bats` green, and every other caller of `create_test_task` still green.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `create_test_task` writes Background / trigger, Problem / hypothesis, Goal and Expected outcome; `lib/task_context.py` accepts the fixture (one inline fixture in check_active_task.bats test 17 got the same four parts)
+- [x] `tests/integration/check_active_task.bats` passes, and every other file calling `create_test_task` passes (7 files, 67 tests)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,6 +287,7 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 bats tests/integration/check_active_task.bats tests/unit/context_focus.bats tests/unit/fw_focus_alias.bats
 
 ## RCA
 
@@ -303,6 +304,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 4 reds in `tests/integration/check_active_task.bats`: valid-task fixtures were blocked by the T-4907 context gate.
+
+**Root cause:** the shared fixture helper and one inline fixture wrote a one-line Context. T-4907 (2026-10-29) requires the four labelled parts, and these fixtures were not updated with it.
+
+**Why structurally allowed:** T-4907 added an opt-out for other gates' tests (`FW_TEST_SKIP_TASK_CONTEXT_GATE=1`) and fixed the fixtures it knew about. The shared helper's callers were not swept, and `tests/integration/` is outside the pre-push ratchet.
+
+**Prevention:** the shared helper now writes a valid four-part Context, so every present and future caller gets a task the gate accepts. All seven callers were run.
 
 ## Evolution
 
@@ -384,3 +393,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4972-testsintegrationcheckactivetaskbats-4-re.md
 - **Context:** Initial task creation
+
+### 2026-11-01T16:51:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

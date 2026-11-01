@@ -258,7 +258,13 @@ date_finished: null
 
 ## Context
 
-Bug in login flow.
+**Background / trigger:** a bug in the login flow.
+
+**Problem / hypothesis:** credentials are not validated.
+
+**Goal:** validate credentials on the login form.
+
+**Expected outcome:** bad credentials are refused (T-4907 four parts; T-4972).
 
 ## Acceptance Criteria
 
