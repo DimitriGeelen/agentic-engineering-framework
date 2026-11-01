@@ -7,7 +7,7 @@
 # ============================================================================
 
 task_id: T-4679
-task_name: "vendor_preserve post-check matches in_file markers as plain substrings, so markers written with regex escapes (\( \.) always report MARKER MISSING; define and document the marker semantics"
+task_name: "vendor_preserve post-check matches in_file markers as plain substrings, so markers written with regex escapes (\\( \\.) always report MARKER MISSING; define and document the marker semantics"
 workflow_type: build
 enrichment_status: complete  # AC checked + decisions recorded
 

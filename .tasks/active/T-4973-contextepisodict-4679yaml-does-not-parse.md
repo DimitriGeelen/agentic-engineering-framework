@@ -7,10 +7,10 @@ description: >
   fails on T-4679.yaml; the audit also reports the T-4679 task file frontmatter unparseable
   (T-2069 class). Repair both and find which writer produced them.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T16:38:10Z
-last_update: '2026-11-01T16:45:35Z'
+last_update: 2026-11-01T16:58:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,20 +87,23 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:**
+- `tests/unit/episodic_yaml_timeline_escape.bats` ("T-2729: every episodic in the corpus parses") is red on `.context/episodic/T-4679.yaml`.
+- Every audit run this session has also reported "Task frontmatter: 1 task(s) have unparseable YAML: .tasks/completed/T-4679-vendorpreserve-post-check-matches-infile.md (T-2069 class)". Both files date from T-4679's close, 2026-10-23.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** a value in T-4679's frontmatter (likely its name or description, about a preserve check that matches in-file text) contains characters the writers did not quote. The task file and then the episodic generated from it both carry the break. This is the T-2069 class: a folded scalar or quoting break.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** repair both files so they parse with the same content, and find whether a current writer can still produce the break.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the episodic corpus test is green, the audit's frontmatter warning is gone, and the cause is either fixed or shown to be an old writer.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `.context/episodic/T-4679.yaml` and the T-4679 task frontmatter parse with `yaml.safe_load`, content unchanged apart from quoting
+- [x] `tests/unit/episodic_yaml_timeline_escape.bats` passes (7/7 after the episodic repair)
+- [x] The cause is identified (which field, which writer) and recorded in the RCA; if a current writer can still produce it, a follow-up task is filed (no current writer does: see RCA)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -286,6 +289,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -c "import yaml; yaml.safe_load(open('.context/episodic/T-4679.yaml'))"
+timeout 300 bats tests/unit/episodic_yaml_timeline_escape.bats
 
 ## RCA
 
@@ -302,6 +307,19 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `.context/episodic/T-4679.yaml` did not parse ("found unknown escape character '('"), and every audit since 2026-10-23 flagged T-4679's task frontmatter as unparseable.
+
+**Root cause:** T-4679's name contains regex text, `(\( \.)`, written into a double-quoted YAML scalar without escaping the backslashes. In YAML double quotes, `\(` is an invalid escape. `fw task create` wrote the name that way on 2026-10-23. The episodic writer (`agents/context/lib/episodic.sh`) passes the raw field through (`get_yaml_field` returns it unparsed), so it copied the break.
+
+**Is a current writer still exposed?** No.
+- T-4787 (2026-10-28) made `create-task.sh` write names with `json.dumps`, which escapes backslashes.
+- The episodic writer's raw pass-through round-trips a correctly escaped name: checked with `get_yaml_field` on a name holding `\\(`, which returns `\\(` and parses back to `\(`.
+- So no follow-up task is needed. The one remaining instance is T-4679's closed task file, which the closed-record gate reserves for the operator (runme `t4973-fix-t4679-name`, dry-run on a copy: the line parses and the name is unchanged).
+
+**Why structurally allowed:** nothing validated a task file's frontmatter as YAML at write time. The audit WARNs after the fact, and a WARN that repeats for 9 days reads as background.
+
+**Prevention:** the writer is fixed (T-4787). The corpus test (`episodic_yaml_timeline_escape.bats`) catches an unparseable episodic, but it is outside pre-push, so this one sat for 9 days.
 
 ## Evolution
 
@@ -383,3 +401,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4973-contextepisodict-4679yaml-does-not-parse.md
 - **Context:** Initial task creation
+
+### 2026-11-01T16:55:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
