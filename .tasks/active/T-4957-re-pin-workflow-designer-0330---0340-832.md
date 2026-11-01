@@ -98,10 +98,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] 832's validator anchors received (kit SHA256SUMS sha256, validator sha256 and bytes)
-- [ ] `policy/designer-pin.yaml` bumped to 0.34.0 (version, sha256, bytes, artifact, tag, vendored path, validator fields, notes); `fw designer sync --from-tag designer-v0.34.0` verifies and vendors both files
-- [ ] `bin/fw designer status` PRESENT on 0.34.0; Watchtower restarted and serves the new sha256; designer tests pass; `bin/fw vendor self --check --task T-4957` clean
-- [ ] 832 told the pin landed and which be-tag carries it
+- [x] 832's validator anchors received (kit SHA256SUMS sha256, validator sha256 and bytes) — msg f02fcf23: kit 29cbacdd…, validator unchanged from 0.33.0 (b82eaff0…, 115706 B)
+- [x] `policy/designer-pin.yaml` bumped to 0.34.0 (version, sha256, bytes, artifact, tag, vendored path, validator fields, notes); `fw designer sync --from-tag designer-v0.34.0` verifies and vendors both files
+- [x] `bin/fw designer status` PRESENT on 0.34.0; Watchtower restarted and serves the new sha256; designer tests pass; `bin/fw vendor self --check --task T-4957` clean
+- [x] 832 told the pin landed and which be-tag carries it (v1.8.16-be.13, msg 045a196a)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,6 +287,9 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -c "import yaml,sys; d=yaml.safe_load(open('policy/designer-pin.yaml')); sys.exit(0 if d['version']=='0.34.0' and d['bytes']==1310486 else 1)"
+bin/fw designer status > /tmp/.t4957.out 2>&1 && grep -q "PRESENT" /tmp/.t4957.out
+bin/fw vendor self --check --task T-4957
 
 ## RCA
 
