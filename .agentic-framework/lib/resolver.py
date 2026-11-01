@@ -1395,6 +1395,36 @@ def _bvp_driver_weights() -> Dict[str, int]:
     return out
 
 
+def _bvp_weight_resolver(default_weights: Dict[str, int]):
+    """lib/driver_sets.WeightResolver for one ranking pass, or the import error
+    text when the module cannot load (every task with an arc is then refused)."""
+    try:
+        import driver_sets  # noqa: PLC0415
+    except Exception as exc:  # noqa: BLE001
+        return f"lib/driver_sets.py unavailable ({type(exc).__name__}: {exc})"
+    return driver_sets.WeightResolver(PROJECT_ROOT, default_weights=default_weights)
+
+
+def _bvp_task_weights(resolver, fm: Dict[str, Any], default_weights: Dict[str, int]
+                      ) -> Tuple[Optional[Dict[str, int]], Optional[str], Optional[str]]:
+    """(weights, set name or None, refusal or None) for one task (T-4986)."""
+    if isinstance(resolver, str):
+        if fm.get("arc_id") or any("arc:" in str(t) for t in (fm.get("tags") or [])):
+            return None, None, resolver
+        return default_weights, None, None
+    import driver_sets  # noqa: PLC0415
+    try:
+        name, weights = resolver.resolve(fm)
+    except driver_sets.DriverSetError as exc:
+        return None, None, " ".join(str(exc).split())
+    return weights, name, None
+
+
+def _bvp_refusals(metas: List[Dict[str, Any]]) -> Dict[str, str]:
+    """{task id: reason} for tasks whose driver set was refused (T-4986, C4)."""
+    return {m["id"]: m["bvp_refused"] for m in metas if m.get("bvp_refused")}
+
+
 def _bvp_norm(scores: Any, weights: Dict[str, int]) -> Optional[float]:
     """Normalised BVP in [0,1] against 5×sum(weights-in-use). None when no driver
     overlaps (mirrors bvp.sh compute_bvp; None means 'no value signal')."""
@@ -1517,14 +1547,28 @@ def _annotate_bvp_rank(metas: List[Dict[str, Any]]) -> None:
         m["bvp_cost"] = None
         m["_quadrant"] = "-"
         m["_quadrant_rank"] = _NO_BVP_RANK
+        m["bvp_driver_set"] = None
+        m["bvp_refused"] = None
     if os.environ.get("FW_RESOLVER_BVP_RANK", "1") == "0":
         return
     weights = _bvp_driver_weights()
     if not weights:
         return
+    # T-4986 (C3): each task is valued under its own driver set
+    # (lib/driver_sets.py, memoised per set). A refused set is recorded on the
+    # meta (`bvp_refused`) and reported in the picker output (C4); the task is
+    # never valued under the live weights in its place, so it ranks FIFO.
+    resolver = _bvp_weight_resolver(weights)
     scored: List[Dict[str, Any]] = []
     for m in metas:
-        norm, cost = _bvp_value_cost(m.get("fm") or {}, weights)
+        fm = m.get("fm") or {}
+        task_weights, set_name, refusal = _bvp_task_weights(resolver, fm, weights)
+        if refusal is not None:
+            m["bvp_refused"] = refusal
+            m["_quadrant"] = "refused"
+            continue
+        m["bvp_driver_set"] = set_name
+        norm, cost = _bvp_value_cost(fm, task_weights)
         m["bvp_norm"] = norm
         m["bvp_cost"] = cost
         if norm is not None:
@@ -1571,6 +1615,8 @@ def _bvp_summary(meta: Dict[str, Any]) -> Dict[str, Any]:
         "bvp_norm": round(norm, 4) if isinstance(norm, (int, float)) else None,
         "cost": round(cost, 2) if isinstance(cost, (int, float)) else None,
         "quadrant": meta.get("_quadrant", "-"),
+        "driver_set": meta.get("bvp_driver_set"),
+        "refused": meta.get("bvp_refused"),
     }
 
 
@@ -1995,7 +2041,7 @@ def cmd_pick(args: argparse.Namespace) -> int:
         if args.json:
             print(json.dumps({
                 "eligible": [], "pick": None, "reason": "no eligible tasks",
-                "excluded": dict(excluded), "dispatched": False,
+                "excluded": dict(excluded), "bvp_refused": {}, "dispatched": False,
             }, indent=2))
         else:
             print("resolver pick: no eligible tasks for autonomous dispatch")
@@ -2011,15 +2057,24 @@ def cmd_pick(args: argparse.Namespace) -> int:
                 "reason": f"status={pick['status']}, horizon={pick['horizon']}, "
                           f"quadrant={pick.get('_quadrant', '-')}",
                 "bvp": _bvp_summary(pick),
-                "excluded": dict(excluded), "dispatched": False,
+                "excluded": dict(excluded),
+                "bvp_refused": _bvp_refusals(eligible),
+                "dispatched": False,
             }, indent=2))
         else:
             print(f"Eligible for autonomous dispatch ({len(eligible)}):")
             for m in eligible:
                 marker = "→" if m["id"] == pick["id"] else " "
                 quad = m.get("_quadrant", "-")
+                dset = f" [set {m['bvp_driver_set']}]" if m.get("bvp_driver_set") else ""
                 print(f"  {marker} {m['id']:8s} [{m['status']}/{m['horizon']}] "
-                      f"{quad:>5s} {m['name'][:54]}")
+                      f"{quad:>5s} {m['name'][:54]}{dset}")
+            refused = _bvp_refusals(eligible)
+            if refused:
+                print()
+                print(f"Driver set refused ({len(refused)}) — ranked without a value (FIFO):")
+                for tid, why in refused.items():
+                    print(f"    {tid:8s} refused: {why}")
             print()
             print(f"Top pick:  {pick['id']}  →  workflow '{chosen_type}'")
             print(f"Dispatch:  bin/fw resolver pick --dispatch")
@@ -2057,7 +2112,8 @@ def cmd_pick(args: argparse.Namespace) -> int:
             "eligible": [m["id"] for m in eligible],
             "pick": task_id, "workflow": task_type,
             "bvp": _bvp_summary(pick),
-            "excluded": dict(excluded), "dispatched": True, "outcome": outcome,
+            "excluded": dict(excluded), "bvp_refused": _bvp_refusals(eligible),
+            "dispatched": True, "outcome": outcome,
         }, indent=2, default=str))
     else:
         print(f"Picked + dispatched: {task_id} (workflow '{task_type}')")
@@ -2113,11 +2169,13 @@ def cmd_loop(args: argparse.Namespace) -> int:
     results: List[Dict[str, Any]] = []
     stop_reason = f"reached --max ({max_iter})"
     in_flight_n = 0  # T-2915 AC3: last-observed in-flight exclusion count
+    bvp_refused: Dict[str, str] = {}  # T-4986 (C4): driver-set refusals seen
 
     for i in range(max_iter):
         eligible, _excluded = _select_eligible(
             claimed=claimed, cooldown_min=cooldown, stall_after=stall_after
         )
+        bvp_refused.update(_bvp_refusals(eligible))
         pick = eligible[0] if eligible else None
         if not pick:
             in_flight_n = sum(1 for _id, r in _excluded if r == "in-flight dispatch")
@@ -2183,6 +2241,7 @@ def cmd_loop(args: argparse.Namespace) -> int:
             "picked": results, "dispatched_count": dispatched_n,
             "stop_reason": stop_reason,
             "in_flight_count": in_flight_n,  # T-2915 AC3
+            "bvp_refused": bvp_refused,  # T-4986
         }, indent=2, default=str))
     else:
         mode = "DISPATCH" if args.dispatch else "DRY-RUN"
@@ -2197,6 +2256,8 @@ def cmd_loop(args: argparse.Namespace) -> int:
                 print(f"  ✗ {r['id']:8s} error: {r['error']}")
             else:
                 print(f"  • {r['id']:8s} → {r['workflow']:10s} (would dispatch)")
+        for tid, why in bvp_refused.items():
+            print(f"  ! {tid:8s} driver set refused (ranked without a value): {why}")
         print(f"  stop: {stop_reason}; dispatched {dispatched_n}")
     return 2 if had_error else 0
 

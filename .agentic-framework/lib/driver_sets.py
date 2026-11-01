@@ -155,6 +155,14 @@ class _ArcIndex:
             for ident in idents:
                 self.by_identity.setdefault(ident, []).append(path)
 
+    def uses_sets(self) -> bool:
+        """True when any arc names a driver set (a file that does not parse counts when its
+        raw text mentions `driver_set`). When none does, every task resolves to the live file
+        whatever its arc references say, so nothing about them can be ambiguous (T-4986: a
+        stale `arc:` tag must not unrank a task in a project that uses no sets)."""
+        return (any(isinstance(a, dict) and "driver_set" in a for a in self.data.values())
+                or any("driver_set" in raw for _, raw in self.broken.values()))
+
     def _broken_candidates(self, ref: str) -> list[Path]:
         pat = re.compile(
             r"^\s*(?:id|slug)\s*:\s*['\"]?" + re.escape(ref) + r"['\"]?\s*(?:#.*)?$",
@@ -258,14 +266,19 @@ def _task_arc_refs(task_fm: dict) -> tuple[str | None, list[str]]:
     return (arc_id or None), slugs
 
 
-def _resolve(task_fm: dict, project_root, arcs_dir=None
+def _resolve(task_fm: dict, project_root, arcs_dir=None, idx=None
              ) -> tuple[str | None, str | None]:
-    """(set name or None, label of the arc that chose it or None)."""
+    """(set name or None, label of the arc that chose it or None). `idx` lets a
+    ranking pass reuse one arc snapshot instead of re-statting every arc file per
+    task (T-4986: /approvals/content went past its render cap)."""
     root = Path(project_root)
     arc_id, slugs = _task_arc_refs(task_fm)
     if not arc_id and not slugs:
         return None, None
-    idx = _arc_index(root, arcs_dir)
+    if idx is None:
+        idx = _arc_index(root, arcs_dir)
+    if not idx.uses_sets():
+        return None, None
 
     chosen: list[tuple[str, str | None, str]] = []  # (label, set, via)
     if arc_id:
@@ -503,6 +516,104 @@ def load_for_arc(arc_data: dict | None, project_root) -> tuple[str | None, dict]
         return name, load_set(name, project_root)
     except DriverSetError as exc:
         raise DriverSetError(f"arc '{label}': {exc}") from exc
+
+
+# ---------------------------------------------------------------------------
+# Ranking surfaces (T-4986): per-task weights, memoised per set name
+# ---------------------------------------------------------------------------
+def policy_weights(policy) -> dict:
+    """{driver_id: int weight} over protected + free drivers of a parsed policy.
+
+    Same merge every ranking surface already used for the live file; an entry
+    without an id or with an unparseable weight is skipped.
+    """
+    out: dict = {}
+    if not isinstance(policy, dict):
+        return out
+    for section in ("protected_drivers", "free_drivers"):
+        for d in (policy.get(section) or []):
+            if not isinstance(d, dict) or not d.get("id"):
+                continue
+            try:
+                out[d["id"]] = int(d.get("weight", 0))
+            except (TypeError, ValueError):
+                continue
+    return out
+
+
+def set_file_label(name: str | None, project_root) -> str:
+    """'policy/value-drivers-<name>.yaml' (relative), for display."""
+    try:
+        return str(set_path(name, project_root).relative_to(Path(project_root)))
+    except (ValueError, DriverSetError):
+        return f"policy/value-drivers-{name}.yaml" if name else f"policy/{LIVE_FILE}"
+
+
+class WeightResolver:
+    """Per-task (or per-arc) driver weights for a ranking surface.
+
+    One instance per ranking pass. The set name is resolved per task by the
+    one rule above; each set's weights are loaded once (memoised per name,
+    refusals too). `default_weights` lets a surface keep its own reading of
+    the live file for default-set tasks, so the default path is unchanged;
+    when None the live file is loaded through `load_set`.
+
+    `resolve` / `resolve_arc` return (set name or None, weights) and raise
+    DriverSetError with the arc label in the message. A refused task must be
+    shown by the caller (T-4967 C4), never ranked under the live weights.
+    """
+
+    def __init__(self, project_root, default_weights: dict | None = None,
+                 arcs_dir=None):
+        self.root = Path(project_root)
+        self.arcs_dir = arcs_dir
+        self.default = default_weights
+        self._sets: dict = {}  # name -> weights dict | DriverSetError
+        self._policies: dict = {}
+        # One arc snapshot per pass; when no arc names a set, every task is default.
+        self._idx = _arc_index(self.root, arcs_dir)
+        self._uses_sets = self._idx.uses_sets()
+
+    def policy_for_set(self, name: str | None) -> dict:
+        """Parsed policy of set `name` (None = live file). Raises DriverSetError."""
+        if name in self._policies:
+            hit = self._policies[name]
+            if isinstance(hit, DriverSetError):
+                raise hit
+            return hit
+        try:
+            pol = load_set(name, self.root)
+        except DriverSetError as exc:
+            self._policies[name] = exc
+            raise
+        self._policies[name] = pol
+        return pol
+
+    def weights_for_set(self, name: str | None, label: str | None = None) -> dict:
+        if name is None and self.default is not None:
+            return self.default
+        if name not in self._sets:
+            try:
+                self._sets[name] = policy_weights(self.policy_for_set(name))
+            except DriverSetError as exc:
+                self._sets[name] = exc
+        hit = self._sets[name]
+        if isinstance(hit, DriverSetError):
+            if label:
+                raise DriverSetError(f"arc '{label}': {hit}") from hit
+            raise hit
+        return hit
+
+    def resolve(self, task_fm: dict) -> tuple[str | None, dict]:
+        if not self._uses_sets:
+            return None, self.weights_for_set(None)
+        name, label = _resolve(task_fm or {}, self.root, self.arcs_dir, idx=self._idx)
+        return name, self.weights_for_set(name, label)
+
+    def resolve_arc(self, arc_data: dict | None) -> tuple[str | None, dict]:
+        label = _arc_label(arc_data or {}, None)
+        name = arc_set_name(arc_data or {}, label)
+        return name, self.weights_for_set(name, label)
 
 
 # ---------------------------------------------------------------------------

@@ -241,6 +241,38 @@ def _driver_rubrics(policy: dict) -> dict[str, list[tuple[str, str]]]:
     return out
 
 
+# ── T-4986: driver sets ────────────────────────────────────────────────────────
+# A task in an arc that names `driver_set: <name>` is valued under
+# policy/value-drivers-<name>.yaml. Which set, and whether it is valid, is decided
+# by lib/driver_sets.py alone. The live `weights` passed in stay the default set,
+# so default-set points are computed exactly as before.
+def _weight_resolver(default_weights: dict[str, int]):
+    """A per-request WeightResolver, or the import error text (every point with an
+    arc is then refused rather than valued under the live weights)."""
+    try:
+        from lib import driver_sets
+    except Exception as exc:  # noqa: BLE001
+        return f"lib/driver_sets.py unavailable ({type(exc).__name__}: {exc})"
+    return driver_sets.WeightResolver(PROJECT_ROOT, default_weights=default_weights)
+
+
+def _resolve_weights(resolver, fm: dict, default_weights: dict[str, int], *, arc: bool = False):
+    """(set name or None, weights, refusal or None) for a task or arc (T-4986)."""
+    if isinstance(resolver, str):
+        has_arc = arc and "driver_set" in (fm or {}) or (not arc and (
+            fm.get("arc_id") or any("arc:" in str(t) for t in (fm.get("tags") or []))))
+        return (None, None, resolver) if has_arc else (None, default_weights, None)
+    from lib import driver_sets
+    try:
+        if arc:
+            name, weights = resolver.resolve_arc(fm)
+        else:
+            name, weights = resolver.resolve(fm)
+    except driver_sets.DriverSetError as exc:
+        return None, None, " ".join(str(exc).split())
+    return name, weights, None
+
+
 def _compute_bvp(scores: dict, weights: dict[str, int]) -> tuple[int, float]:
     raw = 0
     weight_sum = 0
@@ -411,10 +443,17 @@ def _resolve_cost_estimate(fm: dict, *, is_proposed: bool) -> tuple[dict | None,
     return None, "default"
 
 
-def _collect_task_points(weights: dict[str, int]) -> list[dict]:
+def _collect_task_points(weights: dict[str, int], refused: list | None = None,
+                         resolver=None) -> list[dict]:
     """T-1934: returns both confirmed and proposed points. Confirmed scores
     take precedence (proposed is skipped if confirmed exists for the same
-    task — the scatter shows one point per task)."""
+    task — the scatter shows one point per task).
+
+    T-4986: each task is valued under its own driver set (`weights` is the
+    default set). A task whose set is refused is not a point; it is appended to
+    `refused` as {kind, id, name, reason} so the page lists it (C4)."""
+    if resolver is None:
+        resolver = _weight_resolver(weights)
     points: list[dict] = []
     patterns = [
         str(PROJECT_ROOT / ".tasks" / "active" / "T-*.md"),
@@ -431,7 +470,13 @@ def _collect_task_points(weights: dict[str, int]) -> list[dict]:
                 continue
             is_proposed = not confirmed
             scores = confirmed if confirmed else proposed
-            raw, norm = _compute_bvp(scores, weights)
+            set_name, task_weights, why = _resolve_weights(resolver, fm, weights)
+            if why is not None:
+                if refused is not None:
+                    refused.append({"kind": "task", "id": fm.get("id") or Path(p).stem,
+                                    "name": (fm.get("name") or "")[:80], "reason": why})
+                continue
+            raw, norm = _compute_bvp(scores, task_weights)
             ce, ce_mode = _resolve_cost_estimate(fm, is_proposed=is_proposed)
             cost, br, tier, effort, src = _compute_cost(ce, default_when_absent=is_proposed)
             if ce_mode == "proposed" and src != "default-medium":
@@ -459,6 +504,7 @@ def _collect_task_points(weights: dict[str, int]) -> list[dict]:
                 "status": fm.get("status") or "-",
                 "scores": {k: int(v) for k, v in scores.items() if isinstance(v, (int, float))},
                 "proposed": is_proposed,
+                "driver_set": set_name,
                 "workflow_type": wf,
                 "target_blast_radius": int(tbr_val) if isinstance(tbr_val, (int, float)) else None,
                 "voi_score": float(voi_val) if isinstance(voi_val, (int, float)) else None,
@@ -586,7 +632,22 @@ def _arc_rolled_up_cost(members: list[dict]) -> tuple[dict | None, str]:
     return cost, mode
 
 
-def _collect_arc_points(weights: dict[str, int]) -> list[dict]:
+def _split_members_by_set(members: list[dict], arc_set, resolver, weights) -> tuple[list[dict], list[str]]:
+    """T-4986: parity with lib/bvp.sh — a member whose own driver set differs
+    from its arc's (or is refused) is counted as mixed set, not re-weighted."""
+    same: list[dict] = []
+    mixed: list[str] = []
+    for fm in members:
+        name, _w, why = _resolve_weights(resolver, fm, weights)
+        if why is None and name == arc_set:
+            same.append(fm)
+        else:
+            mixed.append(str(fm.get("id") or "?"))
+    return same, mixed
+
+
+def _collect_arc_points(weights: dict[str, int], refused: list | None = None,
+                        resolver=None) -> list[dict]:
     """T-1934 + T-1936: render arc points.
 
     Resolution order:
@@ -598,12 +659,31 @@ def _collect_arc_points(weights: dict[str, int]) -> list[dict]:
     Sovereignty: a direct `bvp_scores:` on the arc always overrides the
     rollup (human authority signal at arc level outranks aggregate).
     """
+    if resolver is None:
+        resolver = _weight_resolver(weights)
     points: list[dict] = []
     for p in sorted(glob.glob(str(PROJECT_ROOT / ".context" / "arcs" / "*.yaml"))):
         try:
             data = yaml.safe_load(Path(p).read_text()) or {}
-        except yaml.YAMLError:
+        except (yaml.YAMLError, OSError) as exc:
+            # T-4986 (C4): was a silent `continue`.
+            if refused is not None:
+                first = (str(exc).strip().splitlines() or ["parse error"])[0]
+                refused.append({"kind": "arc", "id": Path(p).stem, "name": "",
+                                "reason": f"arc file {Path(p).name} does not parse: {first}"})
             continue
+        if not isinstance(data, dict):
+            if refused is not None:
+                refused.append({"kind": "arc", "id": Path(p).stem, "name": "",
+                                "reason": f"arc file {Path(p).name} is not a mapping"})
+            continue
+        arc_set, arc_weights, why = _resolve_weights(resolver, data, weights, arc=True)
+        if why is not None:
+            if refused is not None:
+                refused.append({"kind": "arc", "id": data.get("id") or Path(p).stem,
+                                "name": (data.get("name") or "")[:80], "reason": why})
+            continue
+        mixed: list[str] = []
         confirmed = data.get("bvp_scores") or {}
         proposed = _latest_proposed_scores(data)
         bvp_mode = ""
@@ -619,6 +699,7 @@ def _collect_arc_points(weights: dict[str, int]) -> list[dict]:
             arc_slug = data.get("slug") or Path(p).stem
             arc_id_str = str(data.get("id") or "")
             members = _arc_member_tasks(arc_slug, arc_id_str)
+            members, mixed = _split_members_by_set(members, arc_set, resolver, weights)
             scores, bvp_mode = _arc_rolled_up_scores(members)
             if not scores:
                 # T-3503, DELIBERATE AND BOUNDED DIVERGENCE from the CLI twin.
@@ -636,7 +717,7 @@ def _collect_arc_points(weights: dict[str, int]) -> list[dict]:
             rolled_cost, cost_mode = _arc_rolled_up_cost(members)
 
         is_proposed = bvp_mode in ("direct-proposed", "derived-proposed")
-        raw, norm = _compute_bvp(scores, weights)
+        raw, norm = _compute_bvp(scores, arc_weights)
 
         if rolled_cost is not None:
             cost, br, tier, effort, src = _compute_cost(rolled_cost, default_when_absent=is_proposed)
@@ -673,6 +754,8 @@ def _collect_arc_points(weights: dict[str, int]) -> list[dict]:
             # Empty string when no scores route emitted a mode (defensive; the
             # `continue` above on `not scores` should make this unreachable).
             "bvp_mode": bvp_mode or "",
+            "driver_set": arc_set,
+            "mixed_set": len(mixed),
         })
     return points
 
@@ -1066,8 +1149,14 @@ def bvp_scatter():
 
     # Sort by value (bvp_norm) descending BEFORE windowing — the window must be a slice of a
     # sorted set so "page 1" always means "highest ranked", not "first found on disk" (T-2780).
-    all_task_points = sorted(_collect_task_points(weights), key=lambda p: p["bvp_norm"], reverse=True)
-    arc_points = sorted(_collect_arc_points(weights), key=lambda p: p["bvp_norm"], reverse=True)
+    # T-4986: one resolver per request (memoised per set); refused tasks and arcs
+    # are listed on the page with their reason, never dropped (C4).
+    resolver = _weight_resolver(weights)
+    refused: list[dict] = []
+    all_task_points = sorted(_collect_task_points(weights, refused, resolver),
+                             key=lambda p: p["bvp_norm"], reverse=True)
+    arc_points = sorted(_collect_arc_points(weights, refused, resolver),
+                        key=lambda p: p["bvp_norm"], reverse=True)
 
     total_tasks = len(all_task_points)
     task_page_count = max(1, (total_tasks + _BVP_TASKS_PER_PAGE - 1) // _BVP_TASKS_PER_PAGE)
@@ -1091,6 +1180,7 @@ def bvp_scatter():
         driver_names=driver_names,
         driver_rubrics=driver_rubrics,
         pending_proposals=pending_proposals,
+        refused_points=refused,
         empty=(not all_task_points and not arc_points),
         task_page=task_page,
         task_page_count=task_page_count,

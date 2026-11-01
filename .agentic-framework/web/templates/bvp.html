@@ -252,6 +252,13 @@
   {% endif %}
   {% endmacro %}
 
+  {#- T-4986: driver-set badge — the set a point is valued under. Nothing for the
+      default (live) set, so the page reads as before unless a set is in use. -#}
+  {% macro set_badge(p) -%}
+    {%- if p.driver_set %} <small class="bvp-set-badge" data-driver-set="{{ p.driver_set }}" title="Valued under policy/value-drivers-{{ p.driver_set }}.yaml" style="border:1px solid currentColor; border-radius:0.6rem; padding:0 0.35rem; white-space:nowrap;">{{ p.driver_set }}</small>{% endif -%}
+    {%- if p.mixed_set %} <small class="muted" title="Members valued under a different driver set are left out of this arc's roll-up, not re-weighted">+{{ p.mixed_set }} mixed set</small>{% endif -%}
+  {%- endmacro %}
+
   {% if empty %}
     <p><strong>No scored entities yet.</strong> The scatter is empty until tasks/arcs carry confirmed <code>bvp_scores:</code> (via <code>fw bvp confirm T-XXX --i-am-human</code>) or estimator-proposed <code>bvp_scores_proposed:</code> (via the T-1922 worker; advisory). Proposed scores render at reduced opacity until confirmed.</p>
     <p>Once scoring lands, this page will show a four-quadrant scatter:</p>
@@ -294,7 +301,32 @@
       arc (confirmed) &nbsp;·&nbsp;
       <span style="display:inline-block;width:14px;height:14px;border:2px solid #d4623a;border-radius:50%;vertical-align:middle;"></span>
       arc (proposed)
+      {%- if task_points|selectattr('driver_set')|list or arc_points|selectattr('driver_set')|list %}
+      &nbsp;·&nbsp; <small class="bvp-set-badge" style="border:1px solid currentColor; border-radius:0.6rem; padding:0 0.35rem;">set</small>
+      = valued under that driver set's weights (no badge = the default set)
+      {%- endif %}
     </small></p>
+  {% endif %}
+
+  {#- T-4986 (C4): a task or arc whose driver set was refused is listed with the
+      reason, not dropped from the page. -#}
+  {% if refused_points %}
+  <div id="bvp-refused" style="margin:0.75rem 0;">
+    <p><strong>Not ranked — driver set refused ({{ refused_points|length }}):</strong></p>
+    <table style="font-size:0.85rem;">
+      <thead><tr><th>Kind</th><th>ID</th><th>Name</th><th>Reason</th></tr></thead>
+      <tbody>
+        {% for r in refused_points %}
+        <tr class="bvp-refused-row">
+          <td>{{ r.kind }}</td>
+          <td>{% if r.kind == 'task' %}<a href="/tasks/{{ r.id }}"><code>{{ r.id }}</code></a>{% else %}<code>{{ r.id }}</code>{% endif %}</td>
+          <td>{{ r.name }}</td>
+          <td>refused: {{ r.reason }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
   {% endif %}
 
   <details>
@@ -307,7 +339,7 @@
         {% for p in arc_points %}
         <tr>
           <td><strong>arc</strong></td>
-          <td><code>{{ p.id }}</code></td>
+          <td><code>{{ p.id }}</code>{{ set_badge(p) }}</td>
           <td>{{ p.name }}</td>
           <td>—</td>
           <td>{{ "%.3f"|format(p.bvp_norm) }}</td>
@@ -319,7 +351,7 @@
         {% for p in task_points %}
         <tr>
           <td>task</td>
-          <td><code>{{ p.id }}</code></td>
+          <td><code>{{ p.id }}</code>{{ set_badge(p) }}</td>
           <td>{{ p.name }}</td>
           {# T-2192: WF column makes inceptions glanceable in the raw-data table without hovering each dot #}
           <td>{% if p.workflow_type == 'inception' %}<strong style="color:#9333ea;">inception</strong>{% elif p.workflow_type %}{{ p.workflow_type }}{% else %}—{% endif %}</td>
@@ -379,7 +411,7 @@
       <tbody>
         {%- for p in task_points %}
         <tr>
-          <td><a href="/tasks/{{ p.id }}"><code>{{ p.id }}</code></a></td>
+          <td><a href="/tasks/{{ p.id }}"><code>{{ p.id }}</code></a>{{ set_badge(p) }}</td>
           <td style="max-width: 24rem;">{{ p.name }}</td>
           {%- for d_id, w in weights.items() %}
           <td class="bvp-score-cell" data-driver-id="{{ d_id }}" style="text-align: center;">
@@ -429,6 +461,9 @@
   }
 
   function recomputePoint(p, weights) {
+    // T-4986: the sliders edit the default (live) weights; a point valued under
+    // a named driver set keeps its server-side value.
+    if (p.driver_set) return p;
     const r = computeBVP(p.scores || {}, weights);
     return Object.assign({}, p, {bvp_norm: r.norm, bvp_raw: r.raw});
   }
@@ -594,7 +629,8 @@
       cost = "cost: absent";
     }
     // T-1934: surface proposed vs confirmed in the tooltip explicitly
-    const advisory = d.proposed ? " <em>(proposed)</em>" : "";
+    const advisory = (d.proposed ? " <em>(proposed)</em>" : "")
+      + (d.driver_set ? ` <small>[set: ${d.driver_set}]</small>` : "");
     // T-1941: for arc dots, append the 4-tier provenance slug so users can
     // tell direct-confirmed (anchored arc score) from derived-confirmed
     // (rolled up from members) — same for proposed.

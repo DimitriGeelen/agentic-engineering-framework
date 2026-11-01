@@ -350,7 +350,8 @@ def _counting_scores(fm: dict, driver_set: str | None
 
     Each score is judged against the set it was scored under: a proposal
     entry's `driver_set:` (absent = the live file); confirmed `bvp_scores:`
-    carry no set and are read as live-file scores. A score that does not count
+    are judged against `bvp_scores_driver_set:`, which `fw bvp confirm` writes
+    (T-4986); absent = live-file scores. A score that does not count
     is treated as unscored (unknown, never 0). Proposed values are the newest
     counting value per driver across entries. `foreign` is True when any
     earlier score was dropped because it was made under another meaning.
@@ -370,9 +371,12 @@ def _counting_scores(fm: dict, driver_set: str | None
 
     confirmed: dict[str, int] = {}
     raw_conf = (fm or {}).get("bvp_scores")
+    conf_set = (fm or {}).get("bvp_scores_driver_set") or None
+    if not isinstance(conf_set, str):
+        conf_set = None
     for k, v in (raw_conf.items() if isinstance(raw_conf, dict) else []):
         if isinstance(v, (int, float)) and not isinstance(v, bool):
-            if counts(k, None):
+            if counts(k, conf_set):
                 confirmed[k] = int(v)
             else:
                 foreign = True
