@@ -24,6 +24,14 @@ DETERMINISTIC = """- [ ] [RUBBER-STAMP] Run it
   **Expected:** output contains `tmp`
   **If not:** fix it
 """
+# T-4968: since T-4916 a deterministic criterion is reviewer-judged, so a "ready" fixture needs
+# an operator-only one (act-in-the-world), as in test_t4053_review_readiness (T-4952).
+OPERATOR_ONLY = """- [ ] [REVIEW] Publish the release notes on the project site
+  **Steps:**
+  1. Publish them
+  **Expected:** the notes are live
+  **If not:** note what failed
+"""
 TASTE = """- [ ] [REVIEW] Tone reads clearly
   **Steps:**
   1. Read it
@@ -162,8 +170,8 @@ def test_ledger_dependent_entry_recomputes_after_commit(proj):
 
 def test_edit_to_task_file_invalidates_its_entry(proj):
     p = proj / ".tasks" / "active" / "T-9103-fixture.md"
-    assert _readiness(proj, "T-9103", _task("T-9103", "- [ ] open\n", DETERMINISTIC))[0] == "waiting-on-agent"
-    text = _task("T-9103", "- [x] done\n", DETERMINISTIC)
+    assert _readiness(proj, "T-9103", _task("T-9103", "- [ ] open\n", OPERATOR_ONLY))[0] == "waiting-on-agent"
+    text = _task("T-9103", "- [x] done\n", OPERATOR_ONLY)
     p.write_text(text)
     os.utime(p, ns=(p.stat().st_atime_ns, p.stat().st_mtime_ns + 10_000_000))
     subprocess.run(GIT + ["-C", str(proj), "add", "-A"], check=True)

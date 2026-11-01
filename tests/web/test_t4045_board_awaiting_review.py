@@ -13,11 +13,13 @@ sys.path.insert(0, ".")
 
 from web import shared  # noqa: E402
 
-HUMAN = """- [ ] [RUBBER-STAMP] Run it
+# T-4968: since T-4916 a deterministic criterion is reviewer-judged, so a "ready" fixture needs
+# an operator-only one (act-in-the-world), as in test_t4053_review_readiness (T-4952).
+HUMAN = """- [ ] [REVIEW] Publish the release notes on the project site
   **Steps:**
-  1. Run `ls /tmp`
-  **Expected:** output contains `tmp`
-  **If not:** fix it
+  1. Publish them
+  **Expected:** the notes are live
+  **If not:** note what failed
 """
 
 

@@ -25,6 +25,14 @@ DETERMINISTIC = """- [ ] [RUBBER-STAMP] Run it
   **Expected:** output contains `tmp`
   **If not:** fix it
 """
+# T-4968: since T-4916 a deterministic criterion is reviewer-judged, so a "ready" fixture needs
+# an operator-only one (act-in-the-world), as in test_t4053_review_readiness (T-4952).
+OPERATOR_ONLY = """- [ ] [REVIEW] Publish the release notes on the project site
+  **Steps:**
+  1. Publish them
+  **Expected:** the notes are live
+  **If not:** note what failed
+"""
 TASTE = """- [ ] [REVIEW] Tone reads clearly
   **Steps:**
   1. Read it
@@ -61,7 +69,7 @@ true
 
 
 CORPUS = {
-    "T-9201": _task("T-9201", "- [x] done\n", DETERMINISTIC),
+    "T-9201": _task("T-9201", "- [x] done\n", OPERATOR_ONLY),
     "T-9202": _task("T-9202", "- [x] a\n- [ ] b\n", DETERMINISTIC),
     "T-9203": _task("T-9203", "- [x] done\n", DETERMINISTIC, wf="inception", extra=REC),
     "T-9204": _task("T-9204", "- [x] done\n", TASTE),
