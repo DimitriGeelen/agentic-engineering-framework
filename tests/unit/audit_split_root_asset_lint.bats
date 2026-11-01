@@ -152,13 +152,15 @@ EOF
     # designer-pin dz/dc reads moved from bin/fw to lib/doctor-drift.sh (net 0). +1:
     # T-4913's bin/fw read of the project's own policy/review-backends.yaml, which
     # detects a consumer registry shadowing the framework's (a per-project policy read).
+    # +1: T-4988's boundary-hook guard of the project's own policy/access-grants.yaml (the
+    # operator-owned grant file is per project; FRAMEWORK_ROOT would be the wrong root).
     sites=$(grep -rnE --exclude='*.txt' '\$\{?PROJECT_ROOT\}?/(lib|agents|policy|web)/' \
                 "$REPO_ROOT/agents/" "$REPO_ROOT/lib/" "$REPO_ROOT/bin/fw" 2>/dev/null \
             | grep -v ".agentic-framework" \
             | grep -v "FRAMEWORK_ROOT:-" || true)
     count=$(printf '%s\n' "$sites" | grep -c .)
-    if [ "$count" -ne 23 ]; then
-        echo "PROJECT_ROOT framework-asset sites: $count (baseline 23)" >&2
+    if [ "$count" -ne 24 ]; then
+        echo "PROJECT_ROOT framework-asset sites: $count (baseline 24)" >&2
         printf '%s\n' "$sites" >&2
         false
     fi
@@ -172,6 +174,7 @@ EOF
     grep -qF 'PROJECT_ROOT[[:space:]]*/[[:space:]]*' "$REPO_ROOT/agents/audit/audit.sh"
     grep -qF '(lib|agents|policy|bin|web)' "$REPO_ROOT/agents/audit/audit.sh"
     # And the semantic allowlist entries exist in the audit.sh check block.
-    grep -qF '*value-drivers.yaml*|*bvp-scoring-rubric.md*' "$REPO_ROOT/agents/audit/audit.sh"
+    # T-4984: widened to value-drivers*.yaml so named driver sets are covered too.
+    grep -qF '*value-drivers*.yaml*|*bvp-scoring-rubric.md*' "$REPO_ROOT/agents/audit/audit.sh"
     grep -qF '*OBS-097-allow:*' "$REPO_ROOT/agents/audit/audit.sh"
 }
