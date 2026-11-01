@@ -52599,3 +52599,21 @@ scan_id: R-7849af54
 task_id: T-4977
 payload:
   task_file: .tasks/active/T-4977-re-pin-workflow-designer-03300340---0350.md
+---
+kind: scan_emitted
+timestamp: '2026-11-01T20:00:58Z'
+scan_id: R-efc58772
+task_id: T-4976
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-01T20:00:58Z'
+scan_id: R-efc58772
+task_id: T-4976
+payload:
+  task_file: .tasks/active/T-4976-test-fixture-testsfixturesforeignwatchto.md

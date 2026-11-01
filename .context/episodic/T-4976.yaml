@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4976: Test fixture tests/fixtures/foreign_watchtower.py leaks: 51 python3 processes left running for hours to days
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T20:01:11Z
+# ============================================================================
+
+task_id: T-4976
+task_name: "Test fixture tests/fixtures/foreign_watchtower.py leaks: 51 python3 processes left running for hours to days"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T17:13:14Z
+completed: 2026-11-01T20:00:52Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T21:00:50+01:00
+last_commit: 2026-11-01T21:00:50+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fixture servers no longer leak — pid file for teardown, self-expiry, and a lint for the shape
+
+# Key outcomes
+outcomes:
+  - 'Both bats files append each fixture pid to `$TEST_TEMP_DIR/foreign.pids`, and teardown kills from it; the three fixture suites pass (19 ok, 0 skip) and leave 0 fixture processes'
+  - '`foreign_watchtower.py` and `slow_watchtower.py` shut down when their port file disappears or after 600 s (probe: the server exited within 3 s of its temp dir being removed)'
+  - '`tests/lint/bats-fixture-server-pidfile.bats` fails when a file that backgrounds a fixture server has no pid file (checked by reverting `watchtower_url_no_guess.bats`: `not ok 1`), and passes on the tree'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fixture servers no longer leak — pid file for teardown, self-expiry, and a lint for the shape'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4976-test-fixture-testsfixturesforeignwatchto.md'
+  - 'tests/fixtures/foreign_watchtower.py'
+  - 'tests/fixtures/slow_watchtower.py'
+  - 'tests/lint/bats-fixture-server-pidfile.bats'
+  - 'tests/unit/t3379_review_placeholder_foreign_port.bats'
+  - 'tests/unit/watchtower_url_no_guess.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T21:00:50'
+    action: 'T-4976: fixture servers no longer leak — pid file for teardown, self-expiry, and a lint for the shape'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 167 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 167
+  commits: 2
+  files_changed: 9
+  lines_added: 228
+  lines_removed: 14
+  footprint_refreshed_at: '2026-11-01T20:01:25Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4976-test-fixture-testsfixturesforeignwatchto.md
+generated_by: context-agent-hybrid

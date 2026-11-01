@@ -10,12 +10,12 @@ description: >
   (trap/kill by recorded pid) and add a check that a run leaves no fixture process.
   The live ones are cleared by the operator's runme.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/fixtures/foreign_watchtower.py, tests/unit/t3379_review_placeholder_foreign_port.bats, tests/unit/watchtower_url_no_guess.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T17:13:14Z
-last_update: '2026-11-01T20:00:30Z'
-date_finished:
+last_update: 2026-11-01T20:00:52Z
+date_finished: 2026-11-01T20:00:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -417,3 +417,21 @@ bats tests/lint/bats-fixture-server-pidfile.bats > /tmp/.t4976.l 2>&1 && ! grep 
 ### 2026-11-01T20:00:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-01T20:00:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-efc58772
+- **Timestamp:** 2026-11-01T20:00:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Both bats files append each fixture pid to `$TEST_TEMP_DIR/foreign.pids`, and teardown kills from it; the three fixture suites pass (19 ok, 0 skip) and leave 0 fixture processes
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=TEST_TEMP_DIR/foreign.pids in: Both bats files append each fixture pid to `$TEST_TEMP_DIR/foreign.pids`, and teardown kills from it; the three fixture suites pass (19 ok, 0 skip) an`
