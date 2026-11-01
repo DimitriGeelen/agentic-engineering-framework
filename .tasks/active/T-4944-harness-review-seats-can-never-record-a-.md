@@ -11,10 +11,10 @@ description: >
   them; this changes how the hardened ledger (T-3580/T-3581) attributes evidence,
   so decide the provenance rule first. Claude seats cite their own.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T00:05:46Z
-last_update: '2026-11-01T00:15:22Z'
+last_update: 2026-11-01T14:53:18Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,20 +91,23 @@ cost_estimate_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:**
+- T-4906's judge (judge-t-4906-r3-04366a10335e, opencode seat): "verdict refused by the ledger: the screenshot of /tasks/T-4906 is not cited as evidence".
+- T-4947's judges (2026-11-01): the codex and opencode seats asked to be re-routed "to a vision-capable seat"; only the claude seat went green.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** for a harness seat (codex, opencode), the runtime records the verdict through `lib/verdict_ledger.py` `record_for_worker`, with `evidence=[report]` only. A render green needs every required page's screenshot hash among the cited evidence, so a harness seat can never record one. The obvious fix is for the runtime to cite the screenshots it copied into the seat's export (T-4933). But a citation claims the seat SAW the image. If a seat cannot view images (opencode runs with every tool off; codex runs with no image attached), that citation is false provenance in a ledger hardened against exactly that (T-3580/T-3581).
 
-**Goal:** <what we are trying to achieve>
+**Goal:** first establish, by probe, whether each harness seat can actually see a supplied screenshot. Then the operator decides the provenance rule. Then build that rule.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** either harness seats can give a render green backed by evidence they truly saw, or render criteria stop being sent to seats that cannot see. Today they are sent, burning three seats per run to get two not-evaluated verdicts.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A probe records whether the codex and opencode seats, as launched by the review runtime, can see a supplied screenshot (a question only answerable from the image), in `docs/reports/T-4944-harness-seat-vision.md`
+- [ ] The operator's provenance rule is recorded under ## Decisions with their words
+- [ ] The chosen rule is built and pinned by tests; every test that reads `lib/verdict_ledger.py` or `lib/reviewer/judge_cli.py` passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -387,3 +390,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4944-harness-review-seats-can-never-record-a-.md
 - **Context:** Initial task creation
+
+### 2026-11-01T14:52:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
