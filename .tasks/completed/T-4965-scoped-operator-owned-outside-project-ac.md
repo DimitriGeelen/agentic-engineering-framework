@@ -6,16 +6,16 @@ description: >
   Inception: Scoped, operator-owned outside-project access grants (read / create /
   create-project) — 050 Pen T-2500 ask
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-11-01T13:34:31Z
-last_update: 2026-11-01T17:14:16Z
-date_finished:
+last_update: 2026-11-01T21:14:20Z
+date_finished: 2026-11-01T21:14:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -116,15 +116,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -194,7 +194,13 @@ That is about three slices, with no ledger and no executor.
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: the framework can honestly fence *typed* commands under an operator-owned grant file. That covers the read and create levels, steering to the profile mounts, refusal of opaque forms (variables, links, archive extractors, recursive copies, replacing moves), and visibility. It cannot be the authority for deletes, temporary items or "created by the agent". The agent runs as root on 050's host, so every local record (ledger, approval, credential) can be forged or watched. Both reviewers found ways to steer a delete from a forged ledger row (opencode: sound with fixes; codex: unsound as drafted). That authority must live off the host: the NAS's own ownership plus an executor owned by Ring20 Manager, which checks approval, ownership and object identity itself. Real protection of operator files also needs the agent kept off the admin mount, which is 050's host decision. Report: `docs/reports/T-4965-scoped-access-grants.md` (§Design draft, §Review seat 1, §Review seat 2).
+
+*Filing-time rationale (kept for the record):* Requested by 050-email-archive (msg d7a70b98, Pen T-2500, priority not urgent): standing per-directory grants for one agent to paths outside its project (read; create + modify only what it created, via a created-by-agent ledger; create-project; deletes never standing, always Tier 0), operator-owned grant file the agent cannot edit, audit log of every outside write, grants shown in fw doctor and Watchtower. Today check-project-boundary.sh offers only BOUNDARY_EXTRA_READ_PATHS. This widens the project boundary, so the requester and the framework both want a co-designed spec and an independent external review before any build. Evidence for GO/NO-GO does not exist yet: no design read against the boundary hook, the Tier 1 write scanner and the Tier 0 grammar has been done. Next: design doc, external review, then GO/NO-GO.
+
+**Date**: 2026-11-01T21:14:19Z
 
 ## Updates
 
@@ -203,3 +209,49 @@ That is about three slices, with no ledger and no executor.
 
 ### 2026-11-01T14:40:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-01T21:14:19Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** the framework can honestly fence *typed* commands under an operator-owned grant file. That covers the read and create levels, steering to the profile mounts, refusal of opaque forms (variables, links, archive extractors, recursive copies, replacing moves), and visibility. It cannot be the authority for deletes, temporary items or "created by the agent". The agent runs as root on 050's host, so every local record (ledger, approval, credential) can be forged or watched. Both reviewers found ways to steer a delete from a forged ledger row (opencode: sound with fixes; codex: unsound as drafted). That authority must live off the host: the NAS's own ownership plus an executor owned by Ring20 Manager, which checks approval, ownership and object identity itself. Real protection of operator files also needs the agent kept off the admin mount, which is 050's host decision. Report: `docs/reports/T-4965-scoped-access-grants.md` (§Design draft, §Review seat 1, §Review seat 2).
+
+*Filing-time rationale (kept for the record):* Requested by 050-email-archive (msg d7a70b98, Pen T-2500, priority not urgent): standing per-directory grants for one agent to paths outside its project (read; create + modify only what it created, via a created-by-agent ledger; create-project; deletes never standing, always Tier 0), operator-owned grant file the agent cannot edit, audit log of every outside write, grants shown in fw doctor and Watchtower. Today check-project-boundary.sh offers only BOUNDARY_EXTRA_READ_PATHS. This widens the project boundary, so the requester and the framework both want a co-designed spec and an independent external review before any build. Evidence for GO/NO-GO does not exist yet: no design read against the boundary hook, the Tier 1 write scanner and the Tier 0 grammar has been done. Next: design doc, external review, then GO/NO-GO.
+
+### 2026-11-01T21:14:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f018891d
+- **Timestamp:** 2026-11-01T21:14:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1: disposition='answered-pending-review' (must be one of ['answered', 'deferred', 'dissolved'])`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2: disposition='answered-pending-review' (must be one of ['answered', 'deferred', 'dissolved'])`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3: disposition='answered-pending-review' (must be one of ['answered', 'deferred', 'dissolved'])`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-363f17b9
+- **Timestamp:** 2026-11-01T21:14:21Z
+- **Overall:** CONFIRMED
+- **Claims:** 6
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-4965-scoped-access-grants.md` | file | ✓ pass |
+| `lib/shell_write_scan.py` | file | ✓ pass |
+| `docs/reports/T-4965-review-opencode.md` | file | ✓ pass |
+| `docs/reports/T-4965-review-codex.md` | file | ✓ pass |
+| `T-2500` | task | ✓ pass |
+| `T-4983` | task | ✓ pass |
