@@ -1,8 +1,19 @@
 ---
 id: T-4991
-name: "Workflow-design vocabulary for maps (832 T-1363): document state, key mapping, decision/proof status, value shapes via SHACL"
+name: "Workflow-design vocabulary for maps (832 T-1363): document state, key mapping,
+  decision/proof status, value shapes via SHACL"
 description: >
-  832 (msg d4b4b295, their operator's proposal; research 832 docs/reports/T-1363-cross-system-workflow-primitives.md). Greenfield map WT-01 needs six things a map cannot say: documents with state, a state change in system Y starting a step, a user click acting in two systems, keys between systems, decision status and proof status per step, how an attribute's value is built (format/length/allowed values). Proposed split: ontocraft as is; AEF owns a small vocabulary added to mapping v1.1 (T-4415) reusing BPMN 2.0, SHACL (value rules; T-4415 already allows ruleLanguage=shacl) and PROV-O, adding only the linking terms; 832 builds the ontology-to-map bridge (field catalog from SHACL, validator checks, designer display, authoring skill). Asks: (a) does AEF own it, as an inception like T-4415; (b) SHACL for value rules so T-4415 C's type-level rules point at SHACL shapes; (c) task id. No build before 832's T-1363 decision.
+  832 (msg d4b4b295, their operator's proposal; research 832 docs/reports/T-1363-cross-system-workflow-primitives.md).
+  Greenfield map WT-01 needs six things a map cannot say: documents with state, a
+  state change in system Y starting a step, a user click acting in two systems, keys
+  between systems, decision status and proof status per step, how an attribute's value
+  is built (format/length/allowed values). Proposed split: ontocraft as is; AEF owns
+  a small vocabulary added to mapping v1.1 (T-4415) reusing BPMN 2.0, SHACL (value
+  rules; T-4415 already allows ruleLanguage=shacl) and PROV-O, adding only the linking
+  terms; 832 builds the ontology-to-map bridge (field catalog from SHACL, validator
+  checks, designer display, authoring skill). Asks: (a) does AEF own it, as an inception
+  like T-4415; (b) SHACL for value rules so T-4415 C's type-level rules point at SHACL
+  shapes; (c) task id. No build before 832's T-1363 decision.
 
 status: captured
 workflow_type: inception
@@ -12,8 +23,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-11-01T22:11:27Z
-last_update: 2026-11-01T22:11:27Z
-date_finished: null
+last_update: '2026-11-01T22:15:19Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +33,16 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-11-01T22:15:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=112,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4991: Workflow-design vocabulary for maps (832 T-1363): document state, key mapping, decision/proof status, value shapes via SHACL

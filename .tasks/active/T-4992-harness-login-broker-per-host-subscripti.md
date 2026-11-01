@@ -1,8 +1,20 @@
 ---
 id: T-4992
-name: "Harness login broker: per-host subscription login approved in the operator's browser (ring20-management T-2582)"
+name: "Harness login broker: per-host subscription login approved in the operator's
+  browser (ring20-management T-2582)"
 description: >
-  proxmox-ring20-management (msg 3447897a, operator request). Need: agents on other hosts need their OWN subscription login per harness (Claude, Codex, Antigravity, Mistral, Z.AI); today: copied desktop logins (shared refresh tokens; Codex invalidated the first host), API keys (billing; operator is subscription-only), or typing in a terminal. Requirements R1 one operator approval in his browser, nothing to copy; R2 login made on the target host, never copied; R3 no secret through chat/argv/logs/push (fingerprint only); R4 login into a scratch home, swap only after a real prompt answered; R5 failure leaves the old login intact; R6 harness-neutral (device-code and paste-code flows). Working instances at ring20: codex device-code with scratch CODEX_HOME and swap-on-success; Antigravity via pty with a one-shot LAN approval page. Ask: a framework surface such as fw login <harness> --host <target> with the approval page in Watchtower. They will send both scripts and edge cases.
+  proxmox-ring20-management (msg 3447897a, operator request). Need: agents on other
+  hosts need their OWN subscription login per harness (Claude, Codex, Antigravity,
+  Mistral, Z.AI); today: copied desktop logins (shared refresh tokens; Codex invalidated
+  the first host), API keys (billing; operator is subscription-only), or typing in
+  a terminal. Requirements R1 one operator approval in his browser, nothing to copy;
+  R2 login made on the target host, never copied; R3 no secret through chat/argv/logs/push
+  (fingerprint only); R4 login into a scratch home, swap only after a real prompt
+  answered; R5 failure leaves the old login intact; R6 harness-neutral (device-code
+  and paste-code flows). Working instances at ring20: codex device-code with scratch
+  CODEX_HOME and swap-on-success; Antigravity via pty with a one-shot LAN approval
+  page. Ask: a framework surface such as fw login <harness> --host <target> with the
+  approval page in Watchtower. They will send both scripts and edge cases.
 
 status: captured
 workflow_type: inception
@@ -12,8 +24,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-11-01T22:11:28Z
-last_update: 2026-11-01T22:11:28Z
-date_finished: null
+last_update: '2026-11-01T22:15:19Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +34,16 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-11-01T22:15:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=130,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4992: Harness login broker: per-host subscription login approved in the operator's browser (ring20-management T-2582)
