@@ -25,10 +25,11 @@ They ask that an arc (and a task without one) can name a set, for example `drive
   2. A design read before deciding.
   3. NO-GO: one set per project stays; the peer keeps hand-scoring.
 - **Operator:** chose **"GO, narrow (Recommended)"**.
+- **2026-11-01, 010-termlink (msg c7c90927):** the arc-level form covers them; their product work sits in product arcs, so **task-level naming is not needed**. They will read the design and re-vendor at the named be-tag.
 
 ## Scope of the narrow form (to be refined by the design read)
 
-- `driver_set: <name>` on an arc YAML. A task inherits its arc's set; a task with no arc uses the live file. Whether a task may name a set directly is a design-read question.
+- `driver_set: <name>` on an arc YAML. A task inherits its arc's set; a task with no arc uses the live file. A task does not name a set directly (not needed by the requester, c7c90927; it stays out of the narrow form).
 - The name resolves to `policy/value-drivers-<name>.yaml`. A missing file is a refusal, not a silent fall back to the live set.
 - Ranking (`bvp.sh`) and the estimator read the arc's set. Weights and caps come from that set.
 - D1-D4 are the same four directives in every set; only their weights change.
