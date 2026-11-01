@@ -117,6 +117,14 @@
 .editable-desc:hover {
     background: var(--pico-primary-focus);
 }
+/* T-4975: role="button" (T-430) makes Pico paint these fields as primary buttons, and links
+   inside kept the primary colour, the same as the background, so file paths and task links
+   in the title and description were invisible. Links take the field's own text colour. */
+.editable-desc[role="button"] a,
+.editable-name[role="button"] a {
+    color: inherit;
+    text-decoration: underline;
+}
 .desc-edit-textarea {
     width: 100%;
     min-height: 4rem;
