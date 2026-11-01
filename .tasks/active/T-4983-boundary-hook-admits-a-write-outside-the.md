@@ -14,10 +14,10 @@ description: >
   the command makes resolves inside the allowed zones; tests for the variable, $(...)
   and export forms, with controls for in-project variables.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T21:06:50Z
-last_update: '2026-11-01T21:15:30Z'
+last_update: 2026-11-01T21:25:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,20 +94,20 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** the codex review of T-4965 (finding 4) reported that a write through a shell variable is not checked. A probe confirmed it on 2026-11-01: `p=/srv/other/x.txt; echo x >> "$p"` exits 0 from `check-project-boundary.sh`, while `echo x >> /srv/other/x.txt` exits 2. Registered as G-126.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** in boundary mode, `lib/shell_write_scan.py` leaves a target known only at run time unjudged (`scan_boundary` docstring: "no mention gate applies here"). The read pass does not see the path either, because it sits inside an assignment.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** an unresolved write target is refused when the command names a path outside the boundary anywhere, the same mention gate T-4487 uses for git `--output`. Ordinary in-project forms such as `o=$(mktemp); cmd > "$o"` stay allowed.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the variable, `export` and `${p}` forms of an outside write are refused; in-project and `/tmp` variables still pass; the hook tests stay green.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `scan_boundary` refuses an unresolved write target when the command names a guarded path anywhere (new `pending_unresolved`, judged by `_names_guarded`), and leaves it allowed otherwise; the docstring says so
+- [ ] Tests: `p=/out; echo x >> "$p"`, `export p=…`, `"${p}"` refused; `o=$(mktemp)`, an in-project variable, a `/tmp` variable allowed; every test that reads `lib/shell_write_scan.py` or `check-project-boundary.sh` passes; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -390,3 +390,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4983-boundary-hook-admits-a-write-outside-the.md
 - **Context:** Initial task creation
+
+### 2026-11-01T21:25:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
