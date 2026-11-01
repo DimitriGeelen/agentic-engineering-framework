@@ -8,10 +8,10 @@ description: >
   refusal also queues an approval card, inviting the operator to approve something
   that was only a read.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T09:12:58Z
-last_update: '2026-11-01T09:15:32Z'
+last_update: 2026-11-01T12:48:30Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,20 +88,21 @@ cost_estimate_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** dimitri-mint-dev's be.3 report (msg 9f92d563, observation 2). A read-only status query on the Tier 0 gate, piped into a filter (`| grep`, `| tail`), is refused by the keyword rule. That much is intended. But the refusal also writes an approval card to the operator's queue.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** every Tier 0 block writes a card (`agents/context/check-tier0.sh`, pending writer near line 931). For this shape the card asks the operator to approve a read. Cards that never need approving teach the operator to approve without reading, and that weakens Tier 0 for the cards that matter.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** settle how the gate treats a plain read-only query followed by a pipe. Three options: (1) refuse with no card, (2) allow a narrow pipe grammar, (3) keep the card with clearer wording. Then build the chosen one. Because this changes what Tier 0 does, the operator chooses; a short external consultation (operator, 2026-11-01) informs the choice.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** a recorded operator choice, and the gate behaving that way, pinned by tests in the Tier 0 test suite.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] External consultation (two internal-cost backends, no host detail in the brief) is recorded in `docs/reports/T-4953-readonly-pipe-consult.md` with each answer, and the cost is logged
+- [ ] The operator's choice is recorded under ## Decisions with their words
+- [ ] The chosen behaviour is built in the gate and pinned by tests; every test that reads the hook passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -384,3 +385,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4953-tier-0-gate-a-refused-read-only-status-q.md
 - **Context:** Initial task creation
+
+### 2026-11-01T12:44:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
