@@ -11,10 +11,10 @@ description: >
   anchors, update policy/designer-pin.yaml, vendor, run the /api/validate tests (T-4830),
   tell 832.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T17:13:15Z
-last_update: '2026-11-01T17:15:36Z'
+last_update: 2026-11-01T19:25:19Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,20 +91,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 832 released Workflow Designer 0.35.0 (msg 041d0f42, their T-1360, release commit 9c8de5682). The build is the same size; the validator changed: it accepts sendTask, receiveTask, manualTask and businessRuleTask like a plain `<task>`.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** AEF still pins and serves 0.34.0, so /designer and POST /api/validate run the old validator and flag those task types that 832 now accepts.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Pin, verify and serve 0.35.0 (build and validator) through the pull-at-tag intake, as in T-4957.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `fw designer status` reports PRESENT on 0.35.0, Watchtower serves the new sha256, /api/validate runs validator c9c57d88…, and 832 knows which be-tag carries it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `policy/designer-pin.yaml` bumped to 0.35.0 (version, sha256 af559a13…, artifact, tag, vendored path, validator kit sha 8c628658…, validator sha c9c57d88… and 116871 bytes, notes); `fw designer sync --from-tag designer-v0.35.0` verifies and vendors both files
+- [ ] `bin/fw designer status` PRESENT on 0.35.0; designer and /api/validate tests pass; Watchtower restarted and current; `bin/fw vendor self --check --task T-4977` clean
+- [ ] 832 told the pin landed and which be-tag carries it
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,6 +291,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -c "import yaml,sys; d=yaml.safe_load(open('policy/designer-pin.yaml')); sys.exit(0 if d['version']=='0.35.0' and d['validator_bytes']==116871 and d['sha256'].startswith('af559a13') else 1)"
+bin/fw designer status > /tmp/.t4977.out 2>&1 && grep -q "PRESENT" /tmp/.t4977.out
+bin/fw watchtower current
+bin/fw vendor self --check --task T-4977
 
 ## RCA
 
@@ -387,3 +392,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4977-re-pin-workflow-designer-03300340---0350.md
 - **Context:** Initial task creation
+
+### 2026-11-01T19:25:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
