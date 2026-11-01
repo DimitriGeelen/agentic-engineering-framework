@@ -52509,3 +52509,21 @@ scan_id: R-249681f0
 task_id: T-4971
 payload:
   task_file: .tasks/active/T-4971-two-more-web-tests-encode-the-pre-t-4916.md
+---
+kind: scan_emitted
+timestamp: '2026-11-01T16:54:57Z'
+scan_id: R-c05984bc
+task_id: T-4972
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-01T16:54:57Z'
+scan_id: R-c05984bc
+task_id: T-4972
+payload:
+  task_file: .tasks/active/T-4972-testsintegrationcheckactivetaskbats-4-re.md
