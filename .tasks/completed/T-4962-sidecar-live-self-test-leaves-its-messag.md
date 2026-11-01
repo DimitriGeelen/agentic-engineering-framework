@@ -9,12 +9,12 @@ description: >
   b5e04529, 60099d7e carry e2e- conversation ids). Direction: the harness marks its
   messages terminal at run end, or the ladder skips e2e- conversations.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/sidecar/retry.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T12:43:02Z
-last_update: 2026-11-01T13:11:37Z
-date_finished:
+last_update: 2026-11-01T13:11:38Z
+date_finished: 2026-11-01T13:11:38Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -400,3 +400,21 @@ bin/fw vendor self --check --task T-4962
 ### 2026-11-01T12:47:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-01T13:11:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-24a8f16b
+- **Timestamp:** 2026-11-01T13:11:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `timeout 600 python3 -m pytest -q -p no:cacheprovider tests/unit/test_t4962_sidecar_e2e_released.py tests/unit/test_sidecar_sweep.py tests/unit/test_t4348_sidecar_notice.py`
