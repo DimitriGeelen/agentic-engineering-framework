@@ -122,10 +122,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/bvp.sh`: `rank`, `detail`, `arcs` and `_find_driver_entry` use each task's (or arc's) set; `rank` has a SET column; `detail` prints the set and its file; `arcs` rolls each arc up under its set; auto-promote resolves weights per scoring call (C3); `fw bvp confirm` records `driver_set` on the confirmed scores
-- [ ] `lib/resolver.py` picker and `lib/arc_close_readiness.py` (member values and medians) use per-task weights (C3); `web/blueprints/bvp.py` uses per-task weights with a set badge per point
-- [ ] Refusals are visible (C4): refused tasks and arcs appear as rows with the reason in `rank`, `arcs`, `/bvp`, readiness and picker output; `rank` exits 3 when any were refused; `collect_arcs` passes on YAML errors instead of swallowing them
-- [ ] Tests: mixed-set parity between `fw bvp rank` and the resolver (t2497 shape), readiness and auto-promote on a mixed corpus, `/bvp` blueprint test; every test that reads the changed files passes; Watchtower restarted (`bin/fw watchtower current`); vendored copy in sync
+- [x] `lib/bvp.sh`: `rank`, `detail`, `arcs` and `_find_driver_entry` use each task's (or arc's) set; `rank` has a SET column; `detail` prints the set and its file; `arcs` rolls each arc up under its set; auto-promote resolves weights per scoring call (C3); `fw bvp confirm` records `driver_set` on the confirmed scores (key `bvp_scores_driver_set`, so a task never looks like it chooses its own set; the estimator reads it)
+- [x] `lib/resolver.py` picker and `lib/arc_close_readiness.py` (member values and medians) use per-task weights (C3); `web/blueprints/bvp.py` uses per-task weights with a set badge per point
+- [x] Refusals are visible (C4): refused tasks and arcs appear as rows with the reason in `rank`, `arcs`, `/bvp`, readiness and picker output; `rank` exits 3 when any were refused; `collect_arcs` passes on YAML errors instead of swallowing them
+- [x] Tests: mixed-set parity between `fw bvp rank` and the resolver (t2497 shape), readiness and auto-promote on a mixed corpus, `/bvp` blueprint test; every test that reads the changed files passes; Watchtower restarted (`bin/fw watchtower current`); vendored copy in sync. My rerun: 623 pytest + 150 bats over every file naming the changed code. One route-time red (/approvals/content 5.28 s vs 5 s cap) went green after the resolver stopped re-statting arc files per task. Review fixes: no refusal on arc references when no arc names a set (a stale `arc:bvp` tag had unranked 4 tasks on /bvp), with tests.
 
 ### Human
 - [ ] [REVIEW] `/bvp` shows each point's driver set clearly, and a refused task is visible, not missing
@@ -398,7 +398,25 @@ bin/fw vendor self --check --task T-4986
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** every ranking surface now values a task under its own driver set, and a refused set shows up as a row instead of disappearing. On our own corpus, which names no sets, `/bvp` looks as before: no badges, no refused table, layout unchanged at 1024, 1440 and 1920 px. The set badge and the refused table only appear in a project whose arcs name a set; 010-termlink will be the first, and its field report closes that visual question.
+
+**Evidence:**
+- 623 pytest + 150 bats over every test naming the changed code; `test_t4986_driver_set_surfaces.py` covers mixed-set parity (rank vs resolver), auto-promote, confirm, readiness and `/bvp`.
+- Screenshots: `.context/visual/T-4986/bvp@{1024,1440,1920}.png`; `fw watchtower current` OK.
+- Two review fixes, each with tests: no refusal from arc references in a project without sets (a stale `arc:bvp` tag had unranked 4 tasks), and one arc snapshot per ranking pass (`/approvals/content` back under its 5 s cap).
+- Not done, follow-up: `/bvp`'s per-driver columns and rubric tooltips still list only the live file's drivers. Values are correct, but a set-only driver has no column yet.
+
 ## Decisions
+
+### 2026-11-02 — confirm records the set under `bvp_scores_driver_set`
+- **Chose:** a separate key, not the literal `driver_set`.
+- **Why:** a task-level `driver_set:` would read as the task choosing its own set, which only arcs do.
+
+### 2026-11-02 — no refusal from arc references when no arc names a set
+- **Chose:** `_ArcIndex.uses_sets()`. When it is False, every task resolves to the live file before any arc-reference check.
+- **Why:** with no sets anywhere, a missing or stale arc reference cannot change the set a task is scored under. Refusing only unranked tasks (4 on our own `/bvp`). As soon as any arc names a set, the full refusal rules apply (control test).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
