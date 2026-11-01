@@ -443,7 +443,9 @@ open(path, "w").write(t)' "$task_file" "$obs_id" "$text"
     echo ""
     echo -e "${GREEN}$obs_id promoted to task${NC}"
     echo "  The task is owner: human (Sovereign default). Do not plan agent work on it"
-    echo "  until the operator hands it over: fw task update T-XXX --owner agent"
+    # T-4969: the hand-over this used to print was refused by R-033, for the operator too.
+    echo "  until the operator hands it over: the task's Ownership field in Watchtower, or in the"
+    echo "  operator's own terminal: fw task update T-XXX --owner agent --i-am-human"
 }
 
 do_dismiss() {
