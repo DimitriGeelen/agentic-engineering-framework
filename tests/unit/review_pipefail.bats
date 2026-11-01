@@ -151,3 +151,16 @@ EOF
     grep -q "FW_ALLOW_EMPTY_RECOMMENDATION" "$log"
     grep -q "T-9005" "$log"
 }
+
+@test "T-4949: FW_ALLOW_EMPTY_RECOMMENDATION=1 does not wave through an undisposed Open Question" {
+    cd "$PROJECT_ROOT"
+    local f
+    f=$(_make_inception "T-9006" "")
+    # An IW question with no disposition: a different readiness finding.
+    printf '\n## Open Questions\n\n- **IW-1: does the thing work?**\n' >> "$f"
+
+    FW_ALLOW_EMPTY_RECOMMENDATION=1 run "$FRAMEWORK_ROOT/bin/fw" task review T-9006
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"BLOCKED"* ]]
+    [ ! -f "$PROJECT_ROOT/.context/working/.reviewed-T-9006" ]
+}

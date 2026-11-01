@@ -195,6 +195,13 @@ emit_review() {
                 # sibling above which needs the `|| true`.
                 _blockers=$(inception_handoff_blockers "$task_file")
             fi
+            # T-4949 (L-399 parity): FW_ALLOW_EMPTY_RECOMMENDATION=1 is the documented bypass
+            # for an empty Recommendation (T-2206). Leave that one finding to the T-2206 gate
+            # below, which honours and logs it; every other finding still needs
+            # FW_ALLOW_UNREADY_HANDOFF.
+            if [ "${FW_ALLOW_EMPTY_RECOMMENDATION:-}" = "1" ] && [ -n "$_blockers" ]; then
+                _blockers=$(printf '%s\n' "$_blockers" | awk -F'\t' '$1 != "empty-recommendation"')
+            fi
 
             if [ -z "$_underdisposed" ] && [ -n "$_blockers" ]; then
                 echo "" >&2
