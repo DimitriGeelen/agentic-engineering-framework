@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4966: Concurrent fw reviewer judge in one checkout: dispatch/run/completion register appends are outside the verdict-ledger lock
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T15:39:07Z
+# ============================================================================
+
+task_id: T-4966
+task_name: "Concurrent fw reviewer judge in one checkout: dispatch/run/completion register appends are outside the verdict-ledger lock"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-01T14:44:35Z
+completed: 2026-11-01T15:38:39Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T15:44:48+01:00
+last_commit: 2026-11-01T16:38:37+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file concurrent reviewer-judge task (ring20-dashboard question). scope decision — corruption, not commit attribution. every ledger and register append takes the (now re-entrant) verdict-ledger lock — a parallel judge's commit can no longer capture a torn register line. vendor sync. last criterion
+
+# Key outcomes
+outcomes:
+  - '`_ledger_lock` is re-entrant within one process (a nested acquire does not block), and `_append` always holds it, so every append to verdicts, recorded, review-dispatches, -runs and -completions is serialized with every verdict commit'
+  - 'A test runs several processes appending to the registers while another commits under the lock in a loop, and proves every committed blob of each register parses line by line (no torn line) and `history_fault` stays clean; plus a re-entrancy test (negative control without the lock: a torn line was committed and `history_fault` refused the file in 1 of 3 runs)'
+  - 'Every test that reads `lib/verdict_ledger.py` passes; `bin/fw vendor self --check --task T-4966` clean (44 pytest files: 844 passed; 7 bats files: 81 ok)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-01 — scope: corruption, not commit attribution'
+    chose: 'serialize every ledger and register append with every verdict commit (one re-entrant lock). This removes the torn-line risk. A negative control without the lock committed a torn completions line in 1 of 3 runs, and `history_fault` then refused the whole file. - **Not addressed, deliberately:** which commit carries a register row. ring20-dashboard (msg b6334f86) measured 22 of 68 register rows in another task''s verdict commit when judges run in parallel, and completion rows carried into the next task''s commit even when serial. The introducing-commit checks apply only to verdicts.jsonl rows, which are appended and committed together under the lock, so they always land in their own commit. Register rows are verified by signature (dispatches, runs) and append-only history (completions), never by the commit that carried them. So the attribution is cosmetic.'
+    alternatives_rejected: ['- A commit per register append: 3-4 extra commits per seat, from the runtime and worker contexts, to fix cosmetic attribution. - Staging only one''s own lines of a shared file (filtered `git apply --cached`): complex, and a new way to corrupt the ledger.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.tasks/active/T-4966-concurrent-fw-reviewer-judge-in-one-chec.md'
+  - 'lib/verdict_ledger.py'
+  - 'tests/unit/test_t4966_ledger_lock_concurrency.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T15:44:48'
+    action: 'T-4966: file concurrent reviewer-judge task (ring20-dashboard question)'
+  - time: '2026-11-01T16:32:47'
+    action: 'T-4966: scope decision — corruption, not commit attribution'
+  - time: '2026-11-01T16:38:22'
+    action: 'T-4966: every ledger and register append takes the (now re-entrant) verdict-ledger lock — a parallel judge''s commit can no longer capture a torn register line'
+  - time: '2026-11-01T16:38:27'
+    action: 'T-4966: vendor sync'
+  - time: '2026-11-01T16:38:37'
+    action: 'T-4966: last criterion'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 54 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 54
+  commits: 6
+  files_changed: 7
+  lines_added: 687
+  lines_removed: 30
+  footprint_refreshed_at: '2026-11-01T15:39:22Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4966-concurrent-fw-reviewer-judge-in-one-chec.md
+generated_by: context-agent-hybrid
