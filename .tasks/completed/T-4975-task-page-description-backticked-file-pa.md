@@ -8,12 +8,12 @@ description: >
   stood. Likely the path auto-link (T-1575) gives a link color equal to the description's
   dark-green background. Render surface: needs Visual Verification.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [web/templates/task_detail.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T16:38:11Z
-last_update: 2026-11-01T17:09:25Z
-date_finished:
+last_update: 2026-11-01T17:09:34Z
+date_finished: 2026-11-01T17:09:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -408,3 +408,17 @@ Shots: `bin/fw ux shots T-4975 task-page=http://192.168.10.107:3000/tasks/T-4970
 ### 2026-11-01T17:06:40Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-01T17:09:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** link colour only (inherit + underline) inside two role=button fields; shots at 3 widths in ## Visual Verification show the links readable and the rest of the page unchanged
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b4cced35
+- **Timestamp:** 2026-11-01T17:09:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

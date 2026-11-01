@@ -52545,3 +52545,21 @@ scan_id: R-6b8b4e22
 task_id: T-4974
 payload:
   task_file: .tasks/active/T-4974-pytest-collection-clash-testsunittestbul.md
+---
+kind: scan_emitted
+timestamp: '2026-11-01T17:09:42Z'
+scan_id: R-b4cced35
+task_id: T-4975
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-01T17:09:42Z'
+scan_id: R-b4cced35
+task_id: T-4975
+payload:
+  task_file: .tasks/active/T-4975-task-page-description-backticked-file-pa.md
