@@ -9,10 +9,10 @@ description: >
   0, non-zero only on failures; check every caller of the exit code (fw audit grades
   it WARN today).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T17:13:16Z
-last_update: '2026-11-01T17:15:36Z'
+last_update: 2026-11-01T20:14:19Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,20 +89,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** ring20-dashboard (msg 9cbbdcdc): `verdict_ledger.py audit` exits non-zero on a ledger whose only findings are void or acknowledged rows, so their scripts had to parse the failure count.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** the exit codes are a deliberate three-way contract (0 clean, 3 = non-counting rows only, 2 = a row fails), and `fw audit` relies on 3 to grade WARN rather than PASS (T-3657, T-4519). The contract is stated only in the `--help` text, so a script author sees "non-zero" and reads it as failure.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Keep the contract and make it visible where scripts and people look: the output's summary line.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** The summary line names its exit code and what it means; a test pins all three codes; ring20 knows to test `rc -eq 2` for failure.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Decision recorded: exit codes unchanged (0/3/2); every caller of the code checked (`agents/audit/audit.sh` grades 0 PASS, 2 FAIL, 3 WARN, anything else FAIL)
+- [ ] The audit summary line ends with `exit N: <meaning>`; a test pins exit 0, 3 (void-only) and 2 with that wording; the `fw audit` grading still reads the last line correctly; vendored copy in sync
+- [ ] ring20 told the contract
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -385,3 +386,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4979-verdictledgerpy-audit-exits-non-zero-whe.md
 - **Context:** Initial task creation
+
+### 2026-11-01T20:14:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

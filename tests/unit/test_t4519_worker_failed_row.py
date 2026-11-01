@@ -110,3 +110,17 @@ def test_never_started_dispatch_row_is_not_provisional(prod):
 def test_audit_sh_names_the_new_warn_classes():
     src = (_HERE / "agents" / "audit" / "audit.sh").read_text()
     assert "WARN \\(acknowledged\\|void\\|provisional\\)" in src
+
+
+# ── T-4979 (ring20): the summary line names the exit code and what it means ──
+
+@pytest.mark.parametrize("exit_code,committer,want", [
+    (0, None, "exit 0: every row verifies"),
+    (143, None, "exit 3: warnings only (acknowledged, void or provisional rows); nothing fails"),
+    (143, "Builder Bot", "exit 2: a row does not verify"),
+])
+def test_summary_line_states_the_exit_contract(prod, exit_code, committer, want):
+    _killed_green(prod, exit_code=exit_code, committer=committer)
+    code, out = vl.audit(prod)
+    assert out[-1].startswith("verdict ledger: ") and out[-1].endswith(want), out[-1]
+    assert f"exit {code}:" in out[-1]
