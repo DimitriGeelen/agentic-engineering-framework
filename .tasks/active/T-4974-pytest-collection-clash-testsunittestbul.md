@@ -8,10 +8,10 @@ description: >
   a pass in a pipe. Each file passes alone. Rename or add package __init__ so both
   trees can be collected together.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T16:38:10Z
-last_update: '2026-11-01T16:45:35Z'
+last_update: 2026-11-01T17:03:02Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,20 +88,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** a pytest run over 50 files (T-4969, 2026-11-01) stopped at collection with "2 errors" and ran nothing. Behind a `| tail` it read like a short pass. Reproduced: "import file mismatch: imported module 'test_bulk_actions' has this __file__ attribute: tests/playwright/test_bulk_actions.py".
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `tests/unit/test_bulk_actions.py` and `tests/unit/test_kanban_drag.py` share their basenames with `tests/playwright/` files. There are no `__init__.py` packages, so pytest imports both as the same top-level module. Any run that collects both trees aborts, and every test in it goes unrun. (The filing guessed `tests/web`; it is `tests/playwright`.)
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the two unit files get unique basenames, so `tests/unit` and `tests/playwright` can be collected together. Their entries in the generated tier manifest follow the rename.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** a combined collection of `tests/unit` and `tests/playwright` has no errors; both renamed files pass; `unit_tier.py check` is clean.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Scope revised after measuring (see ## Decisions): the one clash between directories that are collected together (`test_project_root_discovery.py`, tests/unit and tests/web) is renamed on the web side; the unit files keep their names, so `tests/unit/tiers.yaml` is untouched
+- [x] `pytest --co tests/unit tests/web tests/integration` collects with no error (6616 tests); the renamed file passes
+- [x] `tests/lint/test-basename-unique.bats` (run by pre-push with the invariant suite) fails on any basename shared between tests/unit, web, integration and lint, with a control that proves it sees a planted duplicate
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,6 +288,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 120 bats tests/lint/test-basename-unique.bats
+timeout 600 python3 -m pytest -q -p no:cacheprovider --co tests/unit tests/web tests/integration
 
 ## RCA
 
@@ -303,6 +306,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** a combined pytest run stopped at collection ("2 errors") and ran no test. Behind `| tail`, it read like a short pass.
+
+**Root cause:** `tests/` has no `__init__.py` packages, so pytest imports each test file as a top-level module named after its basename. Two files with one basename in two collected directories abort the whole collection. Measured: 24 shared basenames. 22 are between tests/unit and tests/playwright, which are run separately by design. One is between tests/playwright and tests/web. One is between tests/unit and tests/web (`test_project_root_discovery.py`), and that is the one that breaks a normal combined run.
+
+**Why structurally allowed:** each suite is usually run on its own, where no clash shows. Nothing checked uniqueness across directories, and a collection abort looks like "no failures" in a summary line.
+
+**Prevention:** `tests/lint/test-basename-unique.bats` runs with the invariant suite at pre-push. It fails on any basename shared between tests/unit, web, integration and lint, and has a control that proves it can see one.
 
 ## Evolution
 
@@ -368,6 +379,13 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-11-01 — which clashes to fix
+- **Chose:** rename the one clash between directories that are run together (tests/unit + tests/web), and add a lint that keeps tests/unit, web, integration and lint unique. tests/playwright stays out of scope; it runs on its own.
+- **Why:** the filing named 2 files; measuring found 24 shared basenames, 22 of them unit vs playwright. Those only clash in an ad-hoc run that mixes a browser suite with the unit suite. Renaming them is churn without a class fix, and it would rewrite the generated tier manifest.
+- **Rejected:**
+  - Renaming all 24: churn, and no guard against the 25th.
+  - Adding `__init__.py` packages: `tests/playwright` as a package named `playwright` would shadow the real playwright library.
+  - `--import-mode=importlib`: changes how thousands of tests find their sibling helpers.
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -384,3 +402,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4974-pytest-collection-clash-testsunittestbul.md
 - **Context:** Initial task creation
+
+### 2026-11-01T16:58:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

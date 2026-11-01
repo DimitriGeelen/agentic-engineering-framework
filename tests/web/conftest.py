@@ -17,7 +17,7 @@ import module_identity  # noqa: E402  (T-4616)
 @pytest.fixture(autouse=True)
 def _restore_web_shared_root():
     """OBS-094 / T-2580: several files (test_build_ambient, test_fabric_loader,
-    test_load_latest_audit, test_secret_key, test_project_root_discovery)
+    test_load_latest_audit, test_secret_key, test_project_root_discovery_web)
     reload or pop web.shared under a tmp PROJECT_ROOT to exercise the
     module-level resolution. monkeypatch restores the env var at teardown but
     NOT the module constant — web.shared.PROJECT_ROOT then points at a deleted
