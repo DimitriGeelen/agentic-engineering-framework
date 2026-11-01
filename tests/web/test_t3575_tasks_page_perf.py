@@ -192,9 +192,10 @@ def test_bound_counts_derived_awaiting_review_column(monkeypatch, tmp_path):
         p.write_text(
             f"---\nid: {tid}\nname: f {tid}\nstatus: {status}\nworkflow_type: build\nowner: agent\n"
             f"horizon: now\nlast_update: 2026-10-11T10:00:00Z\n---\n\n## Acceptance Criteria\n\n"
-            f"### Agent\n- [{box}] agent work\n### Human\n- [ ] [RUBBER-STAMP] Run it\n"
-            f"  **Steps:**\n  1. Run `ls /tmp`\n  **Expected:** output contains `tmp`\n"
-            f"  **If not:** fix it\n\n## Verification\ntrue\n")
+            # T-4971: operator-only (act-in-the-world), not reviewer-judged since T-4916.
+            f"### Agent\n- [{box}] agent work\n### Human\n- [ ] [REVIEW] Publish the release notes\n"
+            f"  **Steps:**\n  1. Publish them\n  **Expected:** the notes are live\n"
+            f"  **If not:** note what failed\n\n## Verification\ntrue\n")
         metas.append({"id": tid, "name": f"f {tid}", "status": status, "workflow_type": "build",
                       "horizon": "now", "owner": "agent", "last_update": "2026-10-11T10:00:00Z",
                       "_location": "active", "_path": str(p), "tags": []})

@@ -15,12 +15,14 @@ sys.path.insert(0, ".")
 
 from web import shared  # noqa: E402
 
-# [RUBBER-STAMP] is not reviewer-judged: readiness needs only the Agent boxes.
-RUBBER = """- [ ] [RUBBER-STAMP] Run it
+# T-4971: an operator-only (act-in-the-world) criterion is not reviewer-judged, so readiness
+# needs only the Agent boxes. (Before T-4916 a [RUBBER-STAMP] criterion played this part; it is
+# reviewer-judged now.)
+RUBBER = """- [ ] [REVIEW] Publish the release notes on the project site
   **Steps:**
-  1. Run `ls /tmp`
-  **Expected:** output contains `tmp`
-  **If not:** fix it
+  1. Publish them
+  **Expected:** the notes are live
+  **If not:** note what failed
 """
 # [REVIEW] is reviewer-judged: readiness waits for a green verdict that never comes when
 # the project keeps reviews human-only.

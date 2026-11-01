@@ -10,10 +10,10 @@ description: >
   Fix: operator-only (act-in-the-world) fixture for the ready/awaiting case; sweep
   tests/web for every RUBBER-STAMP fixture, not a string.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T16:38:09Z
-last_update: '2026-11-01T16:45:35Z'
+last_update: 2026-11-01T16:50:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,20 +90,20 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-4969's wide test run (2026-11-01) had 3 reds in `tests/web/test_t4663_awaiting_agent_done.py` and 1 in `tests/web/test_t3575_tasks_page_perf.py::test_bound_counts_derived_awaiting_review_column`.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** both use a `[RUBBER-STAMP]` (deterministic) Human criterion as the "ready / awaiting review" case. T-4916 (2026-10-30) made deterministic criteria reviewer-judged, so those tasks now wait for a verdict. Same class as T-4952 and T-4968. T-4968's sweep searched for the string `"ready"`, and these two assert awaiting-review placement instead, so they were missed.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** both files use an operator-only (act-in-the-world) criterion where they mean "ready". A sweep of every `[RUBBER-STAMP]` fixture in `tests/web/` confirms no third file remains.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** both files green; `web/` unchanged.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The two files use an operator-only Human criterion for the ready/awaiting case and pass; `web/` unchanged
+- [x] Every `tests/web` file with a `[RUBBER-STAMP]` fixture passes (the six files named by grep: 49 passed)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,6 +289,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 python3 -m pytest -q -p no:cacheprovider tests/web/test_t4663_awaiting_agent_done.py tests/web/test_t3575_tasks_page_perf.py tests/web/test_t4053_review_readiness.py tests/web/test_t3590_batch_ready_predicate.py tests/web/test_t4133_readiness_perf.py tests/web/test_t4096_review_parity.py
+git diff --quiet HEAD -- web
 
 ## RCA
 
@@ -305,6 +307,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** four reds in two web test files: a task with all Agent criteria ticked and one open deterministic Human criterion was expected in the awaiting-review column.
+
+**Root cause:** these fixtures encode the pre-T-4916 rule. A deterministic criterion is reviewer-judged since 2026-10-30.
+
+**Why structurally allowed:** `tests/web/` is outside the pre-push ratchet. T-4968's sweep searched for the assertion string `"ready"`, not for the fixture shape, so files asserting column placement slipped past.
+
+**Prevention:** this sweep went by fixture shape (every `[RUBBER-STAMP]` in `tests/web/`), and all six such files pass. Learning: sweep for the cause, not for one symptom's wording.
 
 ## Evolution
 
@@ -386,3 +396,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4971-two-more-web-tests-encode-the-pre-t-4916.md
 - **Context:** Initial task creation
+
+### 2026-11-01T16:48:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

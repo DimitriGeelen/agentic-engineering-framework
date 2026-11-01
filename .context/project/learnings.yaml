@@ -5224,3 +5224,9 @@ X'` returning empty group."
   task: T-4964
   date: 2026-11-01
   context: Added via context agent
+- id: L-715
+  learning: "When a rule change makes test fixtures stale, sweep for the fixture SHAPE (e.g. every [RUBBER-STAMP] fixture), not for one assertion's wording: T-4968 searched for '\"ready\"' and missed files asserting column placement (T-4971)."
+  source: P-001
+  task: T-4971
+  date: 2026-11-01
+  context: Added via context agent
