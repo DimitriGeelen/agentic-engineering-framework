@@ -1,32 +1,16 @@
 # T-1549 — Layer B v0 Heuristic Scan Results
 
-**Run:** 2026-10-31T04:23:02.989948+00:00
-**Corpus:** 4027 completed tasks
-**Bug-class identified:** 745 (18%)
+**Run:** 2026-11-01T04:23:03.562216+00:00
+**Corpus:** 4063 completed tasks
+**Bug-class identified:** 761 (18%)
 
 ## H1 — Bug-class tasks with no `## RCA` section
 
-**Flagged:** 494 / 745 bug-class tasks (66%)
+**Flagged:** 498 / 761 bug-class tasks (65%)
 
 **Last 30 days sample (FP triage candidates):**
 
-- `T-3598-budget-gate-cache-shared-across-sessions` — Budget gate cache shared across sessions
-- `T-3606-fw-sessions-broken-agentssessionsclaude-` — fw sessions broken: agents/sessions/claude-code/list.sh committed without exec
-- `T-3607-fw-resume-status-crashes-when-an-active-` — fw resume status crashes when an active task name contains a pipe
-- `T-3617-sidecar-inbox-hook-not-mirrored-into-con` — sidecar-inbox hook not mirrored into consumer init template nor allowlisted
-- `T-3626-auditsh-schedule-install-delegates-fw-cr` — audit.sh schedule install delegates fw cron install into the cwd project, not
-- `T-3628-fw-pickup-send-without---remote-delivers` — fw pickup send without --remote delivers nothing and does not say so; ID counter
-- `T-3629-claude-fw-fresh-restart-with-empty-claud` — claude-fw fresh restart with empty CLAUDE_ARGS lands Claude Code 2.1.28x in
-- `T-3633-claude-fw-two-loop-exit-paths-record-the` — claude-fw: two loop exit paths record the same reason max-restarts
 - `T-3640-priority-tier-0-check-tier0sh-blocks-onl` — PRIORITY Tier 0: check-tier0.sh blocks only 'pkill -9' — every other SIGKILL
-- `T-3642-reviewer-destructive-action-escalation-f` — Reviewer destructive-action escalation fires on negated safety guarantees ('can
-- `T-3647-claude-fw-leaks-its-claude-master-termli` — claude-fw leaks its claude-master TermLink registration on every exit (055
-- `T-3648-claude-fw-ends-a-live-agent-on-one-faile` — claude-fw ends a live agent on ONE failed termlink ping (055 P-011/P-012, 10
-- `T-3650-unit-suite-audit-line-hard-codes-testsun` — Unit-suite audit line hard-codes '(tests/unit)' instead of the report's own
-- `T-3660-fw-serve--watchtowersh-does-not-detach-w` — fw serve / watchtower.sh does not detach: Watchtower dies with its launching
-- `T-3661-fw-watchtower-status-exits-0-when-watcht` — fw watchtower status exits 0 when Watchtower is stopped (P-01 WSL F-25)
-- `T-3665-native-windows-a-crlf-checkout-silently-` — Native Windows: a CRLF checkout silently disables the secret scan (P-01 Win
-- `T-3673-consumer-projects-never-get-the-sidecar-` — Consumer projects never get the sidecar-sweep cron: init's cron-registry seed
 - `T-3709-dispatch-route-cache-silently-picks-haik` — Dispatch route cache silently picks haiku for build work: _route_cache_query_bes
 - `T-3712-fw-upgrade-step-5-reports-partial-missin` — fw upgrade step 5 reports PARTIAL missing hooks (check-paid-backend, check-workt
 - `T-3714-upgrading-a-consumer-from-a-bleeding-edg` — Upgrading a consumer from a bleeding-edge clone: shallow clone refused as foreig
@@ -35,15 +19,31 @@
 - `T-3719-four-single-unit-reds-onboardingcurricul` — Four single unit reds: onboarding_curriculum_ungated (1), t3113_upgrade_worktree
 - `T-3740-post-commit-fabric-advisory-loops-every-` — post-commit fabric advisory loops every changed file over every fabric card
 - `T-3744-fw-inception-decide-completes-the-incept` — fw inception decide completes the inception but leaves horizon: now on the
-- ... +100 more in last 30 days
+- `T-3746-hasbashwritepattern-misses-2-redirects-t` — has_bash_write_pattern misses 2>/&> redirects to files, sed w flag/command,
+- `T-3886-bare-fw-upgrade-from-a-consumer-auto-clo` — Bare fw upgrade from a consumer auto-clones the source with --depth=1, so ever_i
+- `T-3957-sidecar-projectid-ignores-railprojectlab` — Sidecar project_id ignores RAIL_PROJECT_LABEL (010; their local fix 93297d781)
+- `T-3962-audits-reviewer-verdict-ledger-fail-show` — Audit's reviewer-verdict-ledger FAIL shows only the first 3 failing rows and no 
+- `T-3973-testtaskpairacdgate-b2b4-historic-regres` — test_task_pair_acd_gate B2+B4 historic regression runs the gate against the
+- `T-3975-t-3974-regression-vendorselfwithhold-lin` — T-3974 regression: vendor_self_withhold lint fails on the new .tasks/workflow se
+- `T-4051-fw-doctor-flags-the-on-path-claude-fw-ro` — fw doctor flags the on-PATH claude-fw router (T-2854) as drifted from repo
+- `T-4054-watchtower-config-registry-lacks-the-hos` — Watchtower /config registry lacks the HOST key T-4041 added to lib/config.sh
+- `T-4056-fw-doctor-misparses-interpreter-prefixed` — fw doctor misparses interpreter-prefixed hook commands (python3 \"$CLAUDE_PROJEC
+- `T-4057-t4055versionderivationbats-has-three-ine` — t4055_version_derivation.bats has three inert '! cmd' assertions (dead-negation
+- `T-4062-watchtower-secret-key-file-is-group-read` — Watchtower secret-key file is group-readable (0660 + ACL here) although _resolve
+- `T-4067-fw-termlink-dispatch-aborts-silently-aft` — fw termlink dispatch aborts silently after 'Tagged:' when no task type is set:
+- `T-4068-invariant-mcp-termlink-runtime-dir-compa` — Invariant mcp-termlink-runtime-dir compares against the first 'termlink hub star
+- `T-4082-unit-regressions-from-t-4053t-4041-2026-` — Unit regressions from T-4053/T-4041 (2026-10-11): approvals overflow fixture lac
+- `T-4083-fw-vendor-dies-when-libupgradesh-is-abse` — fw vendor dies when lib/upgrade.sh is absent: T-4069's end-of-run notice sources
+- `T-4084-two-push-gate-reds-from-2026-10-11-worke` — Two push-gate reds from 2026-10-11 workers: T-4070 added a narrow [:300] error t
+- ... +88 more in last 30 days
 
 ## H2 — Learning IDs referenced across ≥3 tasks within 30 days
 
-- `P-011` — referenced by 5883 tasks: T-100143-c2-doctoraudit-branch-hygiene-warns, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100157-fw-doctor-calls-fwconsumeryamls-defined- …
-- `L-387` — referenced by 5516 tasks: T-100142-c1-fw-integrate-run-deletes-landed-sourc, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind- …
-- `L-291` — referenced by 2303 tasks: T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100157-fw-doctor-calls-fwconsumeryamls-defined-, T-100158-integrate-run-zone-3-go-live-line-refere, T-100159-reviewer-disposition-detector-truncates- …
-- `L-398` — referenced by 1969 tasks: T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100157-fw-doctor-calls-fwconsumeryamls-defined-, T-100158-integrate-run-zone-3-go-live-line-refere, T-100159-reviewer-disposition-detector-truncates- …
-- `P-010` — referenced by 1372 tasks: T-100185-createtaskbats-inception-tests-fail-unde, T-100190-auditsh-metrics-history-writer-non-atomi, T-100191-sweep-atomic-write-pattern-for-all-conte, T-100196-safe-go-live-path-reconciling-fw-go-live, T-1101-inception-fw-inception-decide-silent---f …
+- `P-011` — referenced by 5990 tasks: T-100143-c2-doctoraudit-branch-hygiene-warns, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100157-fw-doctor-calls-fwconsumeryamls-defined- …
+- `L-387` — referenced by 5602 tasks: T-100142-c1-fw-integrate-run-deletes-landed-sourc, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind- …
+- `L-291` — referenced by 2339 tasks: T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100157-fw-doctor-calls-fwconsumeryamls-defined-, T-100158-integrate-run-zone-3-go-live-line-refere, T-100159-reviewer-disposition-detector-truncates- …
+- `L-398` — referenced by 2004 tasks: T-100143-c2-doctoraudit-branch-hygiene-warns, T-100144-c3-handover-surfaces-branch-aheadbehind-, T-100157-fw-doctor-calls-fwconsumeryamls-defined-, T-100158-integrate-run-zone-3-go-live-line-refere, T-100159-reviewer-disposition-detector-truncates- …
+- `P-010` — referenced by 1407 tasks: T-100185-createtaskbats-inception-tests-fail-unde, T-100190-auditsh-metrics-history-writer-non-atomi, T-100191-sweep-atomic-write-pattern-for-all-conte, T-100196-safe-go-live-path-reconciling-fw-go-live, T-1101-inception-fw-inception-decide-silent---f …
 - `L-399` — referenced by 116 tasks: T-100202-task-id-allocator-inflation--split-view-, T-1895-template--claudemd-reviewer-example-for-, T-1908-safe-commandssh-env-var-prefix-breaks-fw, T-1908-safe-commandssh-env-var-prefix-breaks-fw, T-1983-go-scope-traceability--inception-decisio …
 - `P-013` — referenced by 64 tasks: T-1125-termlink-u-003-send-file-reports-ok-on-h, T-1125-termlink-u-003-send-file-reports-ok-on-h, T-1495-pickup-watchtower-discovery-watchtowerur, T-1763-fix-ac-body-parser--html-comment-example, T-1766-render-surface-human-ac-gate--block-work …
 - `L-006` — referenced by 56 tasks: T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou, T-1110-collapse-framework-enums-into-single-sou …
@@ -57,7 +57,7 @@
 
 ## H3 — Bug-class with no RCA AND no learning captured
 
-**Flagged:** 265 / 745 (35%)
+**Flagged:** 265 / 761 (34%)
 
 This is the strongest symptom-fix signal: fix shipped, no root cause stated, no learning captured for next time.
 
@@ -71,12 +71,12 @@ T-1548 (the inception that birthed this scan): bug_class=False has_rca=False lea
 
 | Metric | Value |
 |---|---|
-| Total completed tasks | 4027 |
-| Bug-class tasks | 745 (18%) |
-| H1 flagged | 494 |
+| Total completed tasks | 4063 |
+| Bug-class tasks | 761 (18%) |
+| H1 flagged | 498 |
 | H2 repeat-learning patterns | 180 |
 | H3 flagged (strongest signal) | 265 |
-| Last-30-days bug-class | 125 |
+| Last-30-days bug-class | 113 |
 
 ## Read-out — GO/NO-GO for Layer B v1 (cron + register + Watchtower)
 
