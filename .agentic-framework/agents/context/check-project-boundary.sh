@@ -105,6 +105,15 @@ except:
     # Resolve to absolute path
     RESOLVED=$(realpath -m "$FILE_PATH" 2>/dev/null || echo "$FILE_PATH")
 
+    # T-4988: the operator-owned grant file is never written by the agent.
+    if [ "$RESOLVED" = "$(realpath -m "$PROJECT_ROOT/policy/access-grants.yaml")" ]; then
+        echo "" >&2
+        echo "  ACCESS GRANTS — policy/access-grants.yaml is the operator's file (T-4988)." >&2
+        echo "  The agent never writes it. Ask the operator to change it and commit it with" >&2
+        echo "  the trailer 'Grants-Change: operator'; only the committed version counts." >&2
+        exit 2
+    fi
+
     # Allowed zones
     case "$RESOLVED" in
         "$PROJECT_ROOT"/*)
@@ -234,6 +243,15 @@ except Exception:
     export _BOUNDARY_CWD="$CMD_CWD"
     export _BOUNDARY_FW_LIB="$FRAMEWORK_ROOT/lib"   # T-3766: registered credential files
     export _BOUNDARY_HOME="$BOUNDARY_HOME"           # T-4361
+    # T-4988: paths granted by the operator-owned grant file (read and create levels), as
+    # COMMITTED at HEAD. The cheap cat-file probe keeps projects without the file at no cost.
+    if git -C "$PROJECT_ROOT" cat-file -e "HEAD:policy/access-grants.yaml" 2>/dev/null; then
+        while IFS= read -r _bd_g; do
+            case "$_bd_g" in /?*) ;; *) continue ;; esac
+            case ":$BOUNDARY_EXTRA_READ:" in *":$_bd_g:"*) continue ;; esac
+            BOUNDARY_EXTRA_READ="${BOUNDARY_EXTRA_READ:+$BOUNDARY_EXTRA_READ:}$_bd_g"
+        done < <(python3 "$FRAMEWORK_ROOT/lib/access_grants.py" read-paths "$PROJECT_ROOT" 2>/dev/null)
+    fi
     export _BOUNDARY_EXTRA_READ="$BOUNDARY_EXTRA_READ"
     MATCH_RESULT=$(python3 << 'PYEOF'
 import re, sys, os, subprocess
@@ -1047,8 +1065,21 @@ def _under(p, base):
     return p == base or p.startswith(base.rstrip('/') + '/')
 
 
+def _grant_file_guarded(p):
+    # T-4988: the operator-owned grant file and every directory above it inside the project
+    # are never written from a typed command (a move or removal of a parent replaces it).
+    try:
+        sys.path.insert(0, os.environ.get('_BOUNDARY_FW_LIB', ''))
+        import access_grants
+        return access_grants.is_grant_file_or_ancestor(p, project_root)
+    except Exception:
+        return False
+
+
 def _write_guarded(p):
     p = p.rstrip('/') or '/'
+    if _grant_file_guarded(p):
+        return True
     if any(_under(p, r) for r in _ROOTS) or any(_under(p, z) for z in _ZONES):
         return False
     return not _in_sibling_worktree(p)
