@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4954: verification_pipe_buffer.bats red: T-4921 rewrote the template's pipe guidance and dropped the '65536-byte pipe buffer' phrase the T-2743 test pins
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T09:50:42Z
+# ============================================================================
+
+task_id: T-4954
+task_name: "verification_pipe_buffer.bats red: T-4921 rewrote the template's pipe guidance and dropped the '65536-byte pipe buffer' phrase the T-2743 test pins"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T09:18:22Z
+completed: 2026-11-01T09:50:28Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T10:50:27+01:00
+last_commit: 2026-11-01T10:50:27+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-2743 template test pins the corrected teaching T-4921 wrote (redirect default, here-string exception, pipe-buffer line); T-4955 filed
+
+# Key outcomes
+outcomes:
+  - '`verification_pipe_buffer.bats` test 7 pins the current corrected wording (default, exception, pipe buffer, rehearsal), all 7 tests pass, the template is unchanged'
+  - 'Every other test that reads `.tasks/templates/default.md` passes (one exception, unrelated to the template: `test_audit_retire_when.bats`, a stale fixture since T-4891, filed as T-4955)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4954-verificationpipebufferbats-red-t-4921-re.md'
+  - '.tasks/active/T-4955-testauditretirewhenbats-44-case-red-sinc.md'
+  - 'tests/unit/verification_pipe_buffer.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T10:50:27'
+    action: 'T-4954: T-2743 template test pins the corrected teaching T-4921 wrote (redirect default, here-string exception, pipe-buffer line); T-4955 filed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 32 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 32
+  commits: 2
+  files_changed: 6
+  lines_added: 857
+  lines_removed: 6
+  footprint_refreshed_at: '2026-11-01T09:50:52Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4954-verificationpipebufferbats-red-t-4921-re.md
+generated_by: context-agent-hybrid
