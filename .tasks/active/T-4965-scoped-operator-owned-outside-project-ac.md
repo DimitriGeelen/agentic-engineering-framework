@@ -57,6 +57,8 @@ bvp_scores_proposed:
 
 ## Problem Statement
 
+050-email-archive's agent needs standing, per-directory access to a NAS share outside its project: read, create (modify only its own) and create-project, with every delete approved by the operator. Today the boundary hook offers only a whole-path read exemption (`BOUNDARY_EXTRA_READ_PATHS`). The question is how much of the rest the framework can enforce honestly, given that hooks see only typed commands and that the agent runs as root on the same host as the operator's admin mount.
+
 <!-- What problem are we exploring? For whom? Why now? -->
 
 ## Assumptions
@@ -154,13 +156,18 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO for a reduced framework layer; NO-GO for any framework-side delete or temp authority
 
-**Rationale:**
+**Rationale (2026-11-01, after the design read and two independent reviews):** the framework can honestly fence *typed* commands under an operator-owned grant file. That covers the read and create levels, steering to the profile mounts, refusal of opaque forms (variables, links, archive extractors, recursive copies, replacing moves), and visibility. It cannot be the authority for deletes, temporary items or "created by the agent". The agent runs as root on 050's host, so every local record (ledger, approval, credential) can be forged or watched. Both reviewers found ways to steer a delete from a forged ledger row (opencode: sound with fixes; codex: unsound as drafted). That authority must live off the host: the NAS's own ownership plus an executor owned by Ring20 Manager, which checks approval, ownership and object identity itself. Real protection of operator files also needs the agent kept off the admin mount, which is 050's host decision. Report: `docs/reports/T-4965-scoped-access-grants.md` (§Design draft, §Review seat 1, §Review seat 2).
 
-Requested by 050-email-archive (msg d7a70b98, Pen T-2500, priority not urgent): standing per-directory grants for one agent to paths outside its project (read; create + modify only what it created, via a created-by-agent ledger; create-project; deletes never standing, always Tier 0), operator-owned grant file the agent cannot edit, audit log of every outside write, grants shown in fw doctor and Watchtower. Today check-project-boundary.sh offers only BOUNDARY_EXTRA_READ_PATHS. This widens the project boundary, so the requester and the framework both want a co-designed spec and an independent external review before any build. Evidence for GO/NO-GO does not exist yet: no design read against the boundary hook, the Tier 1 write scanner and the Tier 0 grammar has been done. Next: design doc, external review, then GO/NO-GO.
+*Filing-time rationale (kept for the record):* Requested by 050-email-archive (msg d7a70b98, Pen T-2500, priority not urgent): standing per-directory grants for one agent to paths outside its project (read; create + modify only what it created, via a created-by-agent ledger; create-project; deletes never standing, always Tier 0), operator-owned grant file the agent cannot edit, audit log of every outside write, grants shown in fw doctor and Watchtower. Today check-project-boundary.sh offers only BOUNDARY_EXTRA_READ_PATHS. This widens the project boundary, so the requester and the framework both want a co-designed spec and an independent external review before any build. Evidence for GO/NO-GO does not exist yet: no design read against the boundary hook, the Tier 1 write scanner and the Tier 0 grammar has been done. Next: design doc, external review, then GO/NO-GO.
 
 **Evidence:**
+
+- Hook probe (scratch project, 2026-11-01): rm/mv/cp on a `BOUNDARY_EXTRA_READ_PATHS` path are refused today; `lib/shell_write_scan.py` finds write targets but not their kind (create/modify/rename/delete).
+- Reviews: `docs/reports/T-4965-review-opencode.md` (sound with fixes), `docs/reports/T-4965-review-codex.md` (unsound as drafted); all findings answered in the report.
+- A present defect found on the way: a write through a shell variable passes the boundary hook (G-126, T-4983).
+- Open for 050's operator: who runs the executor (Ring20 Manager?), keeping the agent off the admin mount, and whether chmod/touch on own files is needed.
 
 <!-- Add evidence bullets as exploration progresses (file paths,
      commit hashes, test results). The filing-time recommendation
