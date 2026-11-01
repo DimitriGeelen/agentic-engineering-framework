@@ -164,6 +164,10 @@ INDEX_LOCK_WAIT_S = 60.0
 #: `audit` exit code when every failing row is acknowledged, void or provisional (T-4519): WARN,
 #: never PASS.
 AUDIT_WARN = 3
+#: T-4979: what each `audit` exit code means, printed on its summary line.
+AUDIT_EXIT_MEANING = {0: "every row verifies",
+                      AUDIT_WARN: "warnings only (acknowledged, void or provisional rows); nothing fails",
+                      2: "a row does not verify"}
 #: Where a reviewer's evidence report lives (the judge's brief names the same directory).
 REPORT_DIR = ".context/reviews/evidence"
 DISPATCH_KEY = Path(".context/secrets/review-dispatch.key")
@@ -3906,9 +3910,12 @@ def audit(root: Path | None = None) -> tuple[int, list[str]]:
             out.append(f"FAIL {rid} ({task}): {f[0].replace('-', ' ')} — {f[1]}"
                        + (f" [acknowledgement not honoured: {why}]" if why else ""))
     out += downs
+    code = 2 if bad else AUDIT_WARN if acked or voided else 0
+    # T-4979 (ring20): the exit code is a three-way contract, so the summary names it. Exit 3 is
+    # not a failure: test `rc -eq 2` for "a row does not verify".
     out.append(f"verdict ledger: {n} row(s), {bad} failure(s), {acked} acknowledged refusal(s), "
-               f"{voided} void/provisional row(s)")
-    return (2 if bad else AUDIT_WARN if acked or voided else 0), out
+               f"{voided} void/provisional row(s) — exit {code}: {AUDIT_EXIT_MEANING[code]}")
+    return code, out
 
 
 # ── acknowledged refusals (T-3657) ───────────────────────────────────────────
@@ -4179,8 +4186,9 @@ def _cli(argv: list[str] | None = None) -> int:
     dc.add_argument("--reason", required=True)
     dc.add_argument("--i-am-human", action="store_true")
 
-    sub.add_parser("audit", help="cross-check every ledger row; exit 2 on any failure, "
-                   f"{AUDIT_WARN} when every failing row is acknowledged, void or provisional")
+    sub.add_parser("audit", help="cross-check every ledger row; exit 0 when every row verifies, "
+                   f"{AUDIT_WARN} when the only findings are acknowledged, void or provisional rows "
+                   "(warnings, not failures), 2 when a row does not verify")
 
     ls = sub.add_parser("list", help="verdicts recorded for a task")
     ls.add_argument("task_id")
