@@ -12,10 +12,10 @@ description: >
   operator answers, msg 34998006). NAS is the authority for ownership and deletes;
   AEF fences typed commands only.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T21:20:24Z
-last_update: '2026-11-01T21:30:40Z'
+last_update: 2026-11-01T21:55:06Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,20 +92,24 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-4965 GO, slice 2. 050's operator made the NAS the authority for ownership and deletes: the `pen-create` account, a phone notice per delete or rename, btrfs snapshots (msg 34998006). 050 waits for this slice before any write through its create mount. Slice 1 (T-4988) added the grant file and read access.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** every typed write outside the project is refused today, so a create grant cannot be used. Opening writes must not open the admin mount (`never_write`), metadata changes (refused by their operator), or forms the typed-text gate cannot judge.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** typed create, modify, rename and delete are allowed on create-level grant paths, and nowhere else outside the project.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:**
+- `echo x > <create grant>/f`, `mv` and `rm` within the grant pass; the same under a read grant, an ungranted sibling or a `never_write` root is refused.
+- chmod/chown/touch and archive extraction naming a granted path are refused.
+- Allowed grant writes are logged.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Boundary hook: a typed write (Bash write passes and the Write/Edit tool) under a create or create-project grant is allowed; under a read grant, an ungranted path, or a `never_write` root (even under a grant) it is refused; a path that resolves through a symlink to outside the grant is refused
+- [ ] On granted paths, chmod/chown/chgrp/touch and archive extraction (tar, unzip, 7z, cpio, bsdtar) are refused; a write through a variable that assigns an ungranted outside path stays refused (T-4983)
+- [ ] Each allowed grant write appends a line to `.context/grants/audit.jsonl` (time, tool, target); bats tests cover every case above plus 050's four; every test that reads `check-project-boundary.sh` passes; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -388,3 +392,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4989-access-grants-slice-2-create-level-on-cr.md
 - **Context:** Initial task creation
+
+### 2026-11-01T21:55:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

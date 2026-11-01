@@ -17,6 +17,8 @@ targets. Scripts are fenced by the NAS accounts behind the `via` mounts, not by 
 
 CLI:
     access_grants.py read-paths ROOT   paths a typed command may read (read and create levels)
+    access_grants.py create-paths ROOT paths a typed command may write (create levels; T-4989)
+    access_grants.py write-ok ROOT P   exit 0 when a typed write to P is allowed by a grant
     access_grants.py never-write ROOT  the never_write roots
     access_grants.py show ROOT         the grants, one per line, or the reason none apply
     access_grants.py doctor ROOT       one doctor line per finding: OK|WARN <text>
@@ -127,6 +129,24 @@ def read_paths(root: str) -> list[str]:
     return [g["path"] for g in load(root)["grants"]]
 
 
+def create_paths(root: str) -> list[str]:
+    """Paths where typed writes are allowed (T-4989): create and create-project levels. The NAS
+    behind each `via` mount judges ownership, renames and deletes."""
+    return [g["path"] for g in load(root)["grants"] if g["level"] in ("create", "create-project")]
+
+
+def write_allowed(path: str, create: list[str], never: list[str]) -> bool:
+    """True when a typed write to `path` is allowed by a create grant: the path, both as typed
+    (normalised) and fully resolved, lies under a create path and under no never_write root.
+    Resolving catches a symlink inside a grant that points elsewhere (review finding 6)."""
+    if not path.startswith("/"):
+        return False
+    cands = {_norm(path), _norm(os.path.realpath(path))}
+    if any(_under(c, n) for c in cands for n in never):
+        return False
+    return all(any(_under(c, g) for g in create) for c in cands)
+
+
 _PRESENT: dict = {}
 
 
@@ -197,12 +217,19 @@ def audit(root: str) -> list[str]:
 
 
 def _main(argv: list[str]) -> int:
-    if len(argv) != 3 or argv[1] not in ("read-paths", "never-write", "show", "doctor", "audit"):
+    if len(argv) == 4 and argv[1] == "write-ok":
+        st = load(argv[2])
+        create = [g["path"] for g in st["grants"] if g["level"] in ("create", "create-project")]
+        return 0 if write_allowed(argv[3], create, st["never_write"]) else 1
+    if len(argv) != 3 or argv[1] not in ("read-paths", "create-paths", "never-write", "show",
+                                         "doctor", "audit"):
         print(__doc__.split("CLI:")[1].rstrip(), file=sys.stderr)
         return 2
     cmd, root = argv[1], argv[2]
     if cmd == "read-paths":
         print("\n".join(read_paths(root)))
+    elif cmd == "create-paths":
+        print("\n".join(create_paths(root)))
     elif cmd == "never-write":
         print("\n".join(load(root)["never_write"]))
     elif cmd == "show":

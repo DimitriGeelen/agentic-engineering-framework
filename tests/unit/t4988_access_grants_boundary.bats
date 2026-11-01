@@ -46,7 +46,8 @@ blocks() { run hook "$1" "$2"; [ "$status" -eq 2 ]; }
 @test "create grant: typed read passes" { allows Bash 'cat /srv/fwt-share/create/y'; }
 @test "an ungranted sibling stays refused" { blocks Bash 'cat /srv/fwt-share/other'; }
 @test "never_write root is not readable either (no grant)" { blocks Bash 'cat /srv/fwt-admin/z'; }
-@test "writes outside stay refused in slice 1, create grant included" { blocks Bash 'echo x > /srv/fwt-share/create/y'; }
+# (slice 2, T-4989, opened writes on the create grant; t4989_access_grants_create_level.bats)
+@test "a read grant is not writable" { blocks Bash 'echo x > /srv/fwt-share/ro/y'; }
 @test "never_write: typed write refused" { blocks Bash 'echo x > /srv/fwt-admin/z'; }
 
 @test "grant file: Bash append refused" { blocks Bash "echo x >> $P/policy/access-grants.yaml"; }
