@@ -68,6 +68,7 @@ if str(_LIB) not in sys.path:
     sys.path.insert(0, str(_LIB))
 
 import bvp_py  # noqa: E402
+import driver_sets  # noqa: E402  (T-4986: per-task driver set)
 
 HIGH_VALUE_QUADRANTS = ("hv-lc", "hv-hc")  # Q1 and Q2, the operator's terms
 
@@ -124,6 +125,24 @@ def task_value(fm: dict, weights: dict, bvp):
     return norm, source
 
 
+def weight_resolver(project_root, live_weights: dict):
+    """T-4986 (C3): per-task weights for one readiness pass, memoised per set.
+    Default-set tasks keep the live weights this module always used."""
+    return driver_sets.WeightResolver(project_root, default_weights=live_weights)
+
+
+def member_value(fm: dict, resolver, bvp):
+    """(norm, source) or (None, reason) under the task's OWN driver set.
+
+    A refused set is a reason ("driver set refused: …"), never a value computed
+    under the live weights in its place (T-4967 C3/C4)."""
+    try:
+        _name, weights = resolver.resolve(fm)
+    except driver_sets.DriverSetError as exc:
+        return None, "driver set refused: " + " ".join(str(exc).split())
+    return task_value(fm, weights, bvp)
+
+
 def task_cost(fm: dict, bvp):
     """(composite, source) or (None, reason) — confirmed outranks proposed."""
     ce = fm.get("cost_estimate")
@@ -161,24 +180,31 @@ def corpus_medians(project_root: Path | str, *, framework_root=None,
         raise RuntimeError(f"BVP policy unavailable (load_policy exited {e.code}): "
                            "policy/value-drivers.yaml missing; fw bvp driver --init") from e
     weights = bvp.driver_weights(policy)
+    resolver = weight_resolver(project_root, weights)
 
     if open_fms is None:
         open_fms = (_read_fm(p, parse_frontmatter) for p in
                     glob.glob(str(Path(project_root) / ".tasks" / "active" / "T-*.md")))
 
-    vals, costs = [], []
+    vals, costs, refused = [], [], []
     for fm in open_fms:
         if not fm:
             continue
-        v, _ = task_value(fm, weights, bvp)
+        v, why = member_value(fm, resolver, bvp)
         if v is not None:
             vals.append(v)
+        elif str(why).startswith("driver set refused"):
+            refused.append(f"{fm.get('id') or '?'} ({why})")
         c, _ = task_cost(fm, bvp)
         if c is not None:
             costs.append(c)
 
     return {
         "weights": weights,
+        # T-4986: the resolver travels with the medians so evaluate() values each
+        # member under its own set; `refused` names tasks left out of the median.
+        "resolver": resolver,
+        "refused": refused,
         "value_median": statistics.median(vals) if vals else None,
         "cost_median": statistics.median(costs) if costs else None,
         "value_degenerate": bvp.value_axis_degenerate(vals) if vals else False,
@@ -235,6 +261,12 @@ def evaluate(open_members: list[tuple[str, dict]], medians: dict,
     """
     bvp = bvp_py.load(framework_root)
     weights = medians.get("weights") or {}
+    resolver = medians.get("resolver")
+    if resolver is None:
+        # A caller that built `medians` by hand: resolve from the project root
+        # bvp_py runs against, with its weights as the default set.
+        import os  # noqa: PLC0415
+        resolver = weight_resolver(os.environ.get("PROJECT_ROOT") or ".", weights)
     vmed = medians.get("value_median")
     cmed = medians.get("cost_median")
     degenerate = bool(medians.get("value_degenerate"))
@@ -243,7 +275,7 @@ def evaluate(open_members: list[tuple[str, dict]], medians: dict,
     unestimated = []
     scored: list[tuple[str, float, float]] = []
     for tid, fm in open_members:
-        v, vreason = task_value(fm, weights, bvp)
+        v, vreason = member_value(fm, resolver, bvp)
         c, creason = task_cost(fm, bvp)
         missing = []
         if v is None:

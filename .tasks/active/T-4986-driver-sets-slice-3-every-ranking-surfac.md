@@ -318,6 +318,16 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_t4986_driver_set_surfaces.py tests/unit/test_driver_sets.py > /tmp/.t4986.v1 2>&1 && grep -q passed /tmp/.t4986.v1
+bin/fw watchtower current
+curl -sf "$(bin/fw watchtower url)/bvp" -o /tmp/.t4986.bvp && grep -q "BVP Quadrant Scatter" /tmp/.t4986.bvp
+bin/fw vendor self --check --task T-4986
+
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| bvp | page (sliders, proposals, scatter, raw table) | ok | ok | ok | default-set corpus: no set badges and no refused table, as intended; layout unchanged |
 
 ## RCA
 

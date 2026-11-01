@@ -397,3 +397,32 @@ def test_audit_warns_on_project_level_key_and_reserved_name(proj):
     rows = _audit(proj)
     assert any(r[0] == "WARN" and "auto_promote" in r[2] for r in rows)
     assert any(r[0] == "WARN" and r[1] == "value-drivers-default.yaml" for r in rows)
+
+
+# --- T-4986: a project that names no set has nothing to refuse -----------------
+
+@pytest.fixture
+def plain_proj(tmp_path):
+    _write(tmp_path / "policy" / "value-drivers.yaml", LIVE)
+    arcs = tmp_path / ".context" / "arcs"
+    _write(arcs / "plain.yaml", {"id": "arc-001", "slug": "plain"})
+    (arcs / "broken.yaml").write_text("id: arc-009\nslug: [unclosed\n")
+    ds._ARC_CACHE.clear()
+    ds._SET_CACHE.clear()
+    return tmp_path
+
+
+@pytest.mark.parametrize("fm", [
+    {"tags": ["arc:bvp"]},                      # stale tag (found on AEF's own /bvp)
+    {"arc_id": "no-such-arc"},                  # unresolvable arc_id
+    {"arc_id": "broken"},                       # an arc file that does not parse
+])
+def test_no_set_anywhere_means_live_file_not_refusal(plain_proj, fm):
+    assert ds.resolve_set_name(fm, plain_proj) is None
+
+
+def test_control_same_stale_tag_is_refused_once_any_arc_names_a_set(plain_proj):
+    _arc(plain_proj, "prod", {"id": "arc-002", "slug": "prod", "driver_set": "product"})
+    _write(plain_proj / "policy" / "value-drivers-product.yaml", _product_set())
+    with pytest.raises(ds.DriverSetError):
+        ds.resolve_set_name({"tags": ["arc:bvp"]}, plain_proj)

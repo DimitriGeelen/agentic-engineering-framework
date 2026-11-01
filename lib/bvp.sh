@@ -10,7 +10,9 @@
 #   fw bvp --help                — usage
 #
 # Source-of-truth files:
-#   policy/value-drivers.yaml     — driver weights (T-1917)
+#   policy/value-drivers.yaml     — driver weights (T-1917); project-level keys
+#   policy/value-drivers-<set>.yaml — a task's weights when its arc names
+#                                   `driver_set: <set>` (T-4986; lib/driver_sets.py)
 #   .tasks/{active,completed}/T-*.md frontmatter `bvp_scores:` / `cost_estimate:`
 #   .context/arcs/*.yaml          — arc `scoped_drivers:` / `bvp_scores:`
 #
@@ -231,6 +233,78 @@ def driver_weights(policy):
     return out
 
 
+# ------------------------------------------------- driver sets (T-4986, T-4961)
+# A task in an arc that names `driver_set: <name>` is scored under
+# policy/value-drivers-<name>.yaml. Which set, and whether it is valid, is decided
+# by lib/driver_sets.py alone (one resolver; nothing here re-derives the rule).
+# `load_policy()` stays the live-file loader for project-level keys
+# (auto_promote thresholds, version) and for default-set weights.
+_DRIVER_SETS_MOD = None
+
+
+def _driver_sets():
+    """lib/driver_sets.py, imported from FRAMEWORK_ROOT/lib. Raises on failure."""
+    global _DRIVER_SETS_MOD
+    if _DRIVER_SETS_MOD is None:
+        lib_dir = str(FRAMEWORK_ROOT / 'lib')
+        if lib_dir not in sys.path:
+            sys.path.insert(0, lib_dir)
+        import driver_sets  # noqa: E402
+        _DRIVER_SETS_MOD = driver_sets
+    return _DRIVER_SETS_MOD
+
+
+class TaskWeights:
+    """Per-task weights for one ranking pass (memoised per set name).
+
+    `for_task(fm)` / `for_arc(data)` return (set_name, weights, refusal):
+    set_name None = default (live) set; on refusal weights is None and refusal
+    names the reason. A refused task is shown as a row, never ranked under the
+    live weights and never dropped (T-4967 C4).
+    """
+
+    def __init__(self, default_weights):
+        self.default = default_weights
+        self._err = None
+        self._r = None
+        try:
+            self._ds = _driver_sets()
+            self._r = self._ds.WeightResolver(PROJECT_ROOT, default_weights=default_weights)
+        except Exception as exc:  # noqa: BLE001 — surfaced per task, never silent
+            self._err = f"lib/driver_sets.py unavailable ({type(exc).__name__}: {exc})"
+
+    def _call(self, fn, arg):
+        if self._r is None:
+            return None, None, self._err
+        try:
+            name, weights = fn(arg)
+            return name, weights, None
+        except self._ds.DriverSetError as exc:
+            return None, None, str(exc)
+
+    def for_task(self, fm):
+        return self._call(self._r.resolve if self._r else None, fm)
+
+    def for_arc(self, data):
+        return self._call(self._r.resolve_arc if self._r else None, data)
+
+    def policy_for_set(self, name):
+        """Parsed policy of a set already resolved (None = live)."""
+        if name is None or self._r is None:
+            return load_policy()
+        return self._r.policy_for_set(name)
+
+    def file_label(self, name):
+        if self._r is None:
+            return 'policy/value-drivers.yaml'
+        return self._ds.set_file_label(name, PROJECT_ROOT)
+
+
+def _one_line(text, limit=160):
+    text = ' '.join(str(text).split())
+    return text if len(text) <= limit else text[:limit - 1] + '…'
+
+
 # ----------------------------------------------------------- frontmatter scan
 _FM_RE = re.compile(r'^---\n(.*?)\n---', re.S)
 
@@ -262,12 +336,20 @@ def collect_tasks():
 
 
 def collect_arcs():
+    """Yield (path, data) per arc file. T-4986 (C4): a file that does not parse is
+    no longer skipped — it is yielded as {'_load_error': reason} so the caller
+    shows it as a refused row instead of the arc silently leaving the table."""
     for p in sorted(glob.glob(str(PROJECT_ROOT / '.context' / 'arcs' / '*.yaml'))):
         try:
             data = yaml.safe_load(Path(p).read_text()) or {}
-            yield Path(p), data
-        except yaml.YAMLError:
+        except (yaml.YAMLError, OSError) as exc:
+            first = (str(exc).strip().splitlines() or ['parse error'])[0]
+            yield Path(p), {'_load_error': f"arc file {Path(p).name} does not parse: {first}"}
             continue
+        if not isinstance(data, dict):
+            yield Path(p), {'_load_error': f"arc file {Path(p).name} is not a mapping"}
+            continue
+        yield Path(p), data
 
 
 # -------------------------------------------------------------------- scoring
@@ -404,7 +486,9 @@ def cmd_rank(filter_quadrant=None, include_proposed=False, include_completed=Fal
     HV-LC #2 one session after T-2223 shipped."""
     policy = load_policy()
     weights = driver_weights(policy)
+    tw = TaskWeights(weights)  # T-4986: each task ranked under its own driver set
     rows = []
+    refused = []
     for path, fm in collect_tasks():
         # T-2223 + T-2224: skip work-completed rows by default so the rank lists
         # actionable tasks only. Two legs:
@@ -426,7 +510,12 @@ def cmd_rank(filter_quadrant=None, include_proposed=False, include_completed=Fal
             if not proposed:
                 continue
             scores, source = proposed, 'proposed'
-        raw, norm, _ = compute_bvp(scores, weights)
+        set_name, task_w, why = tw.for_task(fm)
+        if why is not None:
+            # T-4986 (C4): a refused set is a visible row, never the live weights.
+            refused.append({'id': fm.get('id', path.stem), 'reason': _one_line(why)})
+            continue
+        raw, norm, _ = compute_bvp(scores, task_w)
         ce = fm.get('cost_estimate')
         # Cost: confirmed first; under --include-proposed, fall back to proposed.
         cost, _, _, _, src = compute_cost(ce)
@@ -444,9 +533,13 @@ def cmd_rank(filter_quadrant=None, include_proposed=False, include_completed=Fal
             'cost': cost,
             'cost_src': src,
             'source': source,
+            'set': set_name or '',
             'all_no_signal': _proposal_is_all_no_signal(fm) if source == 'proposed' else False,
         })
 
+    if not rows and refused:
+        _print_refused_rank(refused, include_proposed)
+        return 3
     if not rows:
         if include_proposed:
             print("No tasks have `bvp_scores:` or `bvp_scores_proposed:` set yet.")
@@ -523,6 +616,14 @@ def cmd_rank(filter_quadrant=None, include_proposed=False, include_completed=Fal
               f"— quadrant withheld ('{QUAD_VALUE_WITHHELD}') rather than guessed. See T-3485.")
         print()
 
+    # T-4986: rows ranked under different driver sets share one list; the SET
+    # column (blank = default set) keeps that visible.
+    _sets_used = sorted({r['set'] for r in rows if r['set']})
+    if _sets_used:
+        print(f"NOTE: tasks ranked under driver set(s) {', '.join(_sets_used)} carry the set in "
+              f"the SET column; NORM is each task's ratio against its own set's weights (T-4986).")
+        print()
+
     if filter_quadrant:
         rows = [r for r in rows if r['quadrant'] == filter_quadrant]
         if not rows:
@@ -530,22 +631,52 @@ def cmd_rank(filter_quadrant=None, include_proposed=False, include_completed=Fal
             if _n_unknown:
                 print(f"  ({_n_unknown} of {_n_total} task(s) were unplaceable for want "
                       f"of a cost — that is the likely reason, not an empty quadrant.)")
+            if refused:
+                print()
+                _print_refused_rank(refused, include_proposed)
+                return 3
             return 0
 
     rows.sort(key=lambda r: r['bvp_norm'], reverse=True)
     if include_proposed:
-        print(f"{'TASK':<10} {'BVP':>5} {'NORM':>6} {'COST':>5} {'QUAD':>6}  {'SOURCE':<10} NAME")
-        print('-' * 96)
+        print(f"{'TASK':<10} {'BVP':>5} {'NORM':>6} {'COST':>5} {'QUAD':>6}  {'SOURCE':<10} {'SET':<10} NAME")
+        print('-' * 107)
         for r in rows:
             cost_str = f"{r['cost']:.1f}" if r['cost'] is not None else '-'
-            print(f"{r['id']:<10} {r['bvp_raw']:>5} {r['bvp_norm']:>6.2f} {cost_str:>5} {r['quadrant']:>6}  {r['source']:<10} {r['name']}")
+            print(f"{r['id']:<10} {r['bvp_raw']:>5} {r['bvp_norm']:>6.2f} {cost_str:>5} {r['quadrant']:>6}  {r['source']:<10} {r['set']:<10} {r['name']}")
     else:
-        print(f"{'TASK':<10} {'BVP':>6} {'NORM':>6} {'COST':>6} {'QUAD':>6}  NAME")
-        print('-' * 80)
+        print(f"{'TASK':<10} {'BVP':>6} {'NORM':>6} {'COST':>6} {'QUAD':>6}  {'SET':<10} NAME")
+        print('-' * 91)
         for r in rows:
             cost_str = f"{r['cost']:.1f}" if r['cost'] is not None else '-'
-            print(f"{r['id']:<10} {r['bvp_raw']:>6} {r['bvp_norm']:>6.2f} {cost_str:>6} {r['quadrant']:>6}  {r['name']}")
+            print(f"{r['id']:<10} {r['bvp_raw']:>6} {r['bvp_norm']:>6.2f} {cost_str:>6} {r['quadrant']:>6}  {r['set']:<10} {r['name']}")
+    if refused:
+        _print_refused_rows(refused, include_proposed)
+        return 3
     return 0
+
+
+def _print_refused_rows(refused, include_proposed):
+    """T-4986 (C4): one row per task whose driver set was refused. They have no
+    value, so they sit below the ranked rows; the reason is the row's text."""
+    for r in refused:
+        if include_proposed:
+            print(f"{r['id']:<10} {'-':>5} {'-':>6} {'-':>5} {'-':>6}  {'-':<10} {'?':<10} refused: {r['reason']}")
+        else:
+            print(f"{r['id']:<10} {'-':>6} {'-':>6} {'-':>6} {'-':>6}  {'?':<10} refused: {r['reason']}")
+    print()
+    print(f"REFUSED: {len(refused)} task(s) could not be ranked — their driver set was refused "
+          f"(see each row). Fix the arc or set file; exit 3 (T-4986).")
+
+
+def _print_refused_rank(refused, include_proposed):
+    if include_proposed:
+        print(f"{'TASK':<10} {'BVP':>5} {'NORM':>6} {'COST':>5} {'QUAD':>6}  {'SOURCE':<10} {'SET':<10} NAME")
+        print('-' * 107)
+    else:
+        print(f"{'TASK':<10} {'BVP':>6} {'NORM':>6} {'COST':>6} {'QUAD':>6}  {'SET':<10} NAME")
+        print('-' * 91)
+    _print_refused_rows(refused, include_proposed)
 
 
 def _latest_proposed_cost_estimate(fm):
@@ -562,12 +693,19 @@ def _latest_proposed_cost_estimate(fm):
     return ce
 
 
+def _driver_names_of(policy):
+    names = {d['id']: d.get('name', d['id']) for d in (policy.get('protected_drivers') or [])
+             if isinstance(d, dict) and d.get('id')}
+    for d in (policy.get('free_drivers') or []):
+        if isinstance(d, dict) and d.get('id'):
+            names[d['id']] = d.get('name', d['id'])
+    return names
+
+
 def cmd_detail(task_id):
     policy = load_policy()
-    weights = driver_weights(policy)
-    driver_names = {d['id']: d['name'] for d in (policy.get('protected_drivers') or [])}
-    for d in (policy.get('free_drivers') or []):
-        driver_names[d['id']] = d.get('name', d['id'])
+    live_weights = driver_weights(policy)
+    tw = TaskWeights(live_weights)
 
     for path, fm in collect_tasks():
         if fm.get('id') != task_id:
@@ -575,6 +713,15 @@ def cmd_detail(task_id):
         print(f"Task:  {task_id}")
         print(f"Name:  {fm.get('name','')}")
         print(f"File:  {path.relative_to(PROJECT_ROOT)}")
+        # T-4986: weights and driver names come from the task's driver set.
+        set_name, weights, why = tw.for_task(fm)
+        if why is not None:
+            print(f"Driver set: REFUSED — {_one_line(why, 300)}")
+            print("  No value is computed under the live weights in its place (T-4986).")
+            return 3
+        set_policy = tw.policy_for_set(set_name) if set_name else policy
+        driver_names = _driver_names_of(set_policy)
+        print(f"Driver set: {set_name or 'default'} ({tw.file_label(set_name)})")
         print()
         scores = fm.get('bvp_scores') or {}
         proposed_list = fm.get('bvp_scores_proposed') or []
@@ -780,11 +927,46 @@ def _arc_rolled_up_scores(members):
     return scores, mode
 
 
+def _split_members_by_set(members, arc_set, tw):
+    """T-4986 (opencode 5): an arc rolls up only members scored under the arc's own
+    set. A member whose own set differs (or is refused) is counted as `mixed set`,
+    never re-weighted under the arc's set. Returns (same_set_members, mixed_ids)."""
+    same, mixed = [], []
+    for fm in members:
+        name, _w, why = tw.for_task(fm)
+        if why is None and name == arc_set:
+            same.append(fm)
+        else:
+            mixed.append(str(fm.get('id') or '?'))
+    return same, mixed
+
+
 def cmd_arcs():
     policy = load_policy()
     global_weights = driver_weights(policy)
+    tw = TaskWeights(global_weights)
     rows = []
     for path, data in collect_arcs():
+        base = {
+            'slug': data.get('slug', path.stem),
+            'arc_id': data.get('id', '-'),
+            'name': (data.get('name') or '')[:40],
+            'status': data.get('status', '-'),
+            'set': '',
+            'mixed': [],
+        }
+        if data.get('_load_error'):
+            # T-4986 (C4): was a silent `continue` in collect_arcs.
+            rows.append(dict(base, arc_id='-', status='-', bvp_raw=None, bvp_norm=None,
+                             source='refused', name=f"refused: {_one_line(data['_load_error'])}",
+                             refused=True))
+            continue
+        arc_set, arc_weights, why = tw.for_arc(data)
+        if why is not None:
+            rows.append(dict(base, bvp_raw=None, bvp_norm=None, source='refused', set='?',
+                             name=f"refused: {_one_line(why)}", refused=True))
+            continue
+        base['set'] = arc_set or ''
         scores = data.get('bvp_scores') or {}
         source = ''
         if scores:
@@ -797,7 +979,9 @@ def cmd_arcs():
                 arc_slug = data.get('slug') or path.stem
                 arc_id_str = str(data.get('id') or '')
                 members = _arc_member_tasks(arc_slug, arc_id_str)
-                scores, source = _arc_rolled_up_scores(members)
+                same, mixed = _split_members_by_set(members, arc_set, tw)
+                base['mixed'] = mixed
+                scores, source = _arc_rolled_up_scores(same)
                 if not scores:
                     # T-3503: was `continue`, which DELETED the arc from the table.
                     # That collapsed two different states into one invisible one —
@@ -805,26 +989,11 @@ def cmd_arcs():
                     # arc missing from the ranking was indistinguishable from an arc
                     # that does not exist, in the table used to choose arcs. Report
                     # which of the two it is; never omit the row.
-                    rows.append({
-                        'slug': data.get('slug', path.stem),
-                        'arc_id': data.get('id', '-'),
-                        'name': (data.get('name') or '')[:40],
-                        'bvp_raw': None,
-                        'bvp_norm': None,
-                        'status': data.get('status', '-'),
-                        'source': 'no-members' if not members else 'members-unscored',
-                    })
+                    rows.append(dict(base, bvp_raw=None, bvp_norm=None,
+                                     source='no-members' if not members else 'members-unscored'))
                     continue
-        raw, norm, _ = compute_bvp(scores, global_weights)
-        rows.append({
-            'slug': data.get('slug', path.stem),
-            'arc_id': data.get('id', '-'),
-            'name': (data.get('name') or '')[:40],
-            'bvp_raw': raw,
-            'bvp_norm': norm,
-            'status': data.get('status', '-'),
-            'source': source,
-        })
+        raw, norm, _ = compute_bvp(scores, arc_weights)
+        rows.append(dict(base, bvp_raw=raw, bvp_norm=norm, source=source))
     if not rows:
         print("No arcs have `bvp_scores:` set yet (and no constituent-task rollup available).")
         print("Per D2: arcs compared across arcs use only global drivers (D1-D4 + free).")
@@ -837,13 +1006,26 @@ def cmd_arcs():
         print(f"WARNING: arc membership DEGRADED to arc_id:-only — {degraded}")
         print("         Tag-only arcs are under-counted in this table (T-3503).")
     slug_width = max(24, max((len(r['slug']) for r in rows), default=24))
-    sep_len = 8 + 1 + slug_width + 1 + 12 + 1 + 5 + 1 + 6 + 2 + 18 + 1 + 8
-    print(f"{'ARC':<8} {'SLUG':<{slug_width}} {'STATUS':<12} {'BVP':>5} {'NORM':>6}  {'SOURCE':<18} NAME")
+    sep_len = 8 + 1 + slug_width + 1 + 12 + 1 + 5 + 1 + 6 + 2 + 18 + 1 + 10 + 1 + 6 + 1 + 8
+    print(f"{'ARC':<8} {'SLUG':<{slug_width}} {'STATUS':<12} {'BVP':>5} {'NORM':>6}  {'SOURCE':<18} {'SET':<10} {'MIXED':>6} NAME")
     print('-' * sep_len)
     for r in rows:
         raw = '-' if r['bvp_raw'] is None else f"{r['bvp_raw']:>5}"
         norm = '     -' if r['bvp_norm'] is None else f"{r['bvp_norm']:>6.2f}"
-        print(f"{r['arc_id']:<8} {r['slug']:<{slug_width}} {r['status']:<12} {raw:>5} {norm}  {r['source']:<18} {r['name']}")
+        mixed = str(len(r['mixed'])) if r['mixed'] else ''
+        print(f"{str(r['arc_id']):<8} {r['slug']:<{slug_width}} {str(r['status']):<12} {raw:>5} {norm}  {r['source']:<18} {r['set']:<10} {mixed:>6} {r['name']}")
+    _mixed_rows = [r for r in rows if r['mixed']]
+    if _mixed_rows:
+        print()
+        print("MIXED SET: members scored under a different driver set than their arc are "
+              "left out of the arc's roll-up, not re-weighted (T-4986):")
+        for r in _mixed_rows:
+            print(f"  {r['slug']}: {len(r['mixed'])} member(s) — {', '.join(r['mixed'][:10])}"
+                  + (' …' if len(r['mixed']) > 10 else ''))
+    _refused = [r for r in rows if r.get('refused')]
+    if _refused:
+        print()
+        print(f"REFUSED: {len(_refused)} arc(s) could not be ranked (see rows marked refused).")
     return 0
 
 
@@ -1244,6 +1426,24 @@ def cmd_confirm(args):
             print(_sticky.format_summary(skipped=1, written=0))
             return 0
 
+    # T-4986 (closes T-4985's known gap): record the driver set the confirmed
+    # scores belong to, so the estimator's provenance check (C1) counts them under
+    # that set. Absent = the live file. A refused set leaves the field absent and
+    # says so; it never blocks a confirmation.
+    _set_name = None
+    try:
+        _set_name, _w, _why = TaskWeights({}).for_task(fm)
+        if _why is not None:
+            _set_name = None
+            print(f"WARNING: driver set for {task_id} refused ({_one_line(_why)}); "
+                  f"confirmed scores recorded without a driver set.", file=sys.stderr)
+    except Exception as _exc:  # noqa: BLE001 — provenance is advisory
+        print(f"WARNING: driver set not recorded ({type(_exc).__name__}: {_exc})", file=sys.stderr)
+    if _set_name:
+        fm['bvp_scores_driver_set'] = _set_name
+    elif 'bvp_scores_driver_set' in fm:
+        del fm['bvp_scores_driver_set']
+
     fm['bvp_scores'] = confirmed
     fm['bvp_scores_proposed'] = []  # M3 — cleared; estimator may re-populate next sweep.
     fm['confirmed_by'] = os.environ.get('USER', 'unknown')
@@ -1277,6 +1477,8 @@ def cmd_confirm(args):
     if overrides:
         print(f"  Overrides applied: {overrides}")
     print(f"  Confirmed by: {fm['confirmed_by']}  at: {fm['confirmed_at']}  via: {fm['confirmed_via']}")
+    if _set_name:
+        print(f"  Driver set: {_set_name}")
     print(f"  bvp_scores_proposed: cleared (M3 — estimator may re-propose if next pass diverges by ≥2)")
 
     # T-4478: record the confirmation. Human confirmations are recorded too — a ledger
@@ -1413,12 +1615,23 @@ def _find_driver_entry(driver_key, task_fm=None):
     same precedence estimate_task() applies when it merges arc-scoped drivers.
     """
     policy = load_policy()
+    source_file = 'policy/value-drivers.yaml'
+    if task_fm:
+        # T-4986: the task's driver set is searched in place of the live file.
+        # A refused set is reported, never replaced by the live file.
+        tw = TaskWeights(driver_weights(policy))
+        set_name, _w, why = tw.for_task(task_fm)
+        if why is not None:
+            raise ValueError(f"driver set refused: {_one_line(why, 300)}")
+        if set_name:
+            policy = tw.policy_for_set(set_name)
+            source_file = tw.file_label(set_name)
     for section in ('protected_drivers', 'free_drivers'):
         for d in (policy.get(section) or []):
             if not isinstance(d, dict):
                 continue
             if driver_key in (d.get('id'), d.get('name')):
-                return d, f"policy/value-drivers.yaml ({section})"
+                return d, f"{source_file} ({section})"
     if task_fm:
         try:
             arc_data = _load_estimator()._resolve_arc_data(task_fm) or {}
@@ -1465,7 +1678,11 @@ def _driver_explain(args):
     fm, body = est.parse_task(task_path)
     tags = list(fm.get('tags') or [])
 
-    entry, source = _find_driver_entry(driver_key, fm)
+    try:
+        entry, source = _find_driver_entry(driver_key, fm)
+    except ValueError as exc:  # T-4986: the task's driver set was refused
+        print(f"Error: {task_id}: {exc}", file=sys.stderr)
+        return 3
     if entry is None:
         print(f"Error: driver {driver_key!r} not found in policy or in "
               f"{task_id}'s arc scoped_drivers", file=sys.stderr)
@@ -2071,7 +2288,10 @@ def cmd_auto_promote(args):
     if not weights:
         print("ERROR: no drivers in policy — cannot compute bvp_norm.", file=sys.stderr)
         return 2
-    max_possible = 5 * sum(weights.values())
+    # T-4986 (C3): weights are resolved per scoring call from each task's driver
+    # set; the thresholds above stay project-level (live file only).
+    tw = TaskWeights(weights)
+    refused = []
 
     # Count currently started-work tasks (concurrency ceiling).
     started_count = 0
@@ -2099,7 +2319,11 @@ def cmd_auto_promote(args):
         scores = fm.get('bvp_scores') or {}
         if not scores:
             continue  # M3 sovereignty boundary: only confirmed scores promote.
-        raw_bvp, bvp_norm, _ = compute_bvp(scores, weights)
+        set_name, task_w, why = tw.for_task(fm)
+        if why is not None:
+            refused.append((fm.get('id') or path.stem, _one_line(why)))
+            continue  # never promoted on the live weights in place of its set
+        raw_bvp, bvp_norm, _ = compute_bvp(scores, task_w)
         cost_estimate = fm.get('cost_estimate') or {}
         composite, br, tier, effort, source = compute_cost(cost_estimate)
         if composite is None:
@@ -2115,7 +2339,11 @@ def cmd_auto_promote(args):
             'tier': tier,
             'effort': effort,
             'cost_source': source,
+            'driver_set': set_name,
         })
+
+    for tid, why in refused:
+        print(f"REFUSED: {tid} not considered — driver set refused: {why}")
 
     candidates.sort(key=lambda c: (-c['bvp_norm'], c['cost']))
     to_promote = candidates[:headroom]
@@ -2126,7 +2354,8 @@ def cmd_auto_promote(args):
 
     print(f"Auto-promote: {len(to_promote)} candidate(s) (headroom={headroom}, dry_run={dry_run}).")
     for c in to_promote:
-        print(f"  {c['task_id']}  bvp_norm={c['bvp_norm']:.3f}  cost={c['cost']:.3f}  (source={c['cost_source']})")
+        _set = f", set={c['driver_set']}" if c['driver_set'] else ''
+        print(f"  {c['task_id']}  bvp_norm={c['bvp_norm']:.3f}  cost={c['cost']:.3f}  (source={c['cost_source']}{_set})")
 
     if dry_run:
         print("--dry-run: no promotion performed, no log entry written.")
@@ -2164,6 +2393,8 @@ def cmd_auto_promote(args):
             },
             'mechanism': 'fw-bvp-auto-promote',
         })
+        if c['driver_set']:
+            log_entries[-1]['driver_set'] = c['driver_set']
         print(f"OK: promoted {c['task_id']} captured → started-work")
 
     if log_entries:
@@ -2194,12 +2425,17 @@ USAGE:
                                   cost falls back to cost_estimate_proposed: too)
   fw bvp --include-completed      also rank work-completed tasks (T-2223; archival
                                   sweep semantic — opt-in for historical analysis)
-  fw bvp T-<id>                   per-driver detail for one task; cost section
-                                  falls back to cost_estimate_proposed: when
-                                  cost_estimate: is absent (T-1938)
-  fw bvp arcs                     rank arcs by global-driver BVP; falls back to
-                                  constituent-task rollup when arc lacks direct
-                                  scores (T-1937; SOURCE column)
+                                  Driver sets (T-4986): each task is valued under its
+                                  arc's `driver_set:` (SET column, blank = default);
+                                  a refused set is a `refused: <reason>` row, exit 3
+  fw bvp T-<id>                   per-driver detail for one task under its driver set
+                                  (`Driver set:` line); cost section falls back to
+                                  cost_estimate_proposed: when cost_estimate: is absent
+                                  (T-1938)
+  fw bvp arcs                     rank arcs by BVP under each arc's driver set; falls
+                                  back to constituent-task rollup when arc lacks direct
+                                  scores (T-1937; SOURCE column). Members under another
+                                  set are counted in MIXED, not re-weighted (T-4986)
   fw bvp --quadrant {hv-lc|hv-hc|lv-lc|lv-hc}
                                   filter ranking by quadrant (BVP median × cost median);
                                   combine with --include-proposed
