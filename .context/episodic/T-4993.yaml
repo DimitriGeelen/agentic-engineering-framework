@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4993: fw dies with 'HOME: unbound variable' when the agent shell has no HOME (050 field report, be.20)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T23:33:59Z
+# ============================================================================
+
+task_id: T-4993
+task_name: "fw dies with 'HOME: unbound variable' when the agent shell has no HOME (050 field report, be.20)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T23:25:05Z
+completed: 2026-11-01T23:32:54Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-02T00:32:09+01:00
+last_commit: 2026-11-02T00:32:52+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  bin/fw defaults HOME to the account's passwd home when unset (050: fw upgrade and fw doctor died with 'HOME: unbound variable' in a HOME-less agent shell). vendor self. criteria, verification, RCA
+
+# Key outcomes
+outcomes:
+  - '`bin/fw` sets and exports HOME from the passwd entry of the running account when HOME is unset or empty, before anything reads it; an explicitly set HOME is never changed'
+  - 'A bats test runs `bin/fw` with HOME unset (doctor, and an upgrade dry run against a scratch consumer) and shows no `unbound variable`; a control shows a set HOME is kept; `tests/unit/upgrade_fresh_machine_simulation.bats` passes; vendored copy in sync. The doctor test was red with the fix stashed. The upgrade dry run stops before step 4c, so it is labelled a smoke test, and the export test carries the guarantee. 23/23 ok with the fresh-machine simulation, 0 skipped.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.tasks/active/T-4993-fw-dies-with-home-unbound-variable-when-.md'
+  - 'bin/fw'
+  - 'tests/unit/t4993_fw_without_home.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-02T00:32:09'
+    action: 'T-4993: bin/fw defaults HOME to the account''s passwd home when unset (050: fw upgrade and fw doctor died with ''HOME: unbound variable'' in a HOME-less agent shell)'
+  - time: '2026-11-02T00:32:14'
+    action: 'T-4993: vendor self'
+  - time: '2026-11-02T00:32:52'
+    action: 'T-4993: criteria, verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 7
+  commits: 4
+  files_changed: 7
+  lines_added: 249
+  lines_removed: 19
+  footprint_refreshed_at: '2026-11-01T23:34:12Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4993-fw-dies-with-home-unbound-variable-when-.md
+generated_by: context-agent-hybrid

@@ -52805,3 +52805,39 @@ scan_id: R-28ae2447
 task_id: T-4985
 payload:
   task_file: .tasks/active/T-4985-driver-sets-slice-2-estimator-and-arc-re.md
+---
+kind: scan_emitted
+timestamp: '2026-11-01T23:16:09Z'
+scan_id: R-ca882dc9
+task_id: T-4986
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-01T23:16:09Z'
+scan_id: R-ca882dc9
+task_id: T-4986
+payload:
+  task_file: .tasks/active/T-4986-driver-sets-slice-3-every-ranking-surfac.md
+---
+kind: scan_emitted
+timestamp: '2026-11-01T23:33:37Z'
+scan_id: R-07a6be14
+task_id: T-4993
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-01T23:33:37Z'
+scan_id: R-07a6be14
+task_id: T-4993
+payload:
+  task_file: .tasks/active/T-4993-fw-dies-with-home-unbound-variable-when-.md
