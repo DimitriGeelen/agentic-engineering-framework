@@ -91,13 +91,15 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** ring20-dashboard, be.15 (msgs 9cbbdcdc, 21a8092b). On T-858 and T-863 ([REVIEW] render criteria on /cicd and /classic), an opencode seat was dispatched (`judge-t-858-r5-opencode-9e0426fed2bb`; V-20261101-35746ad5). It printed a full green verdict, then exited 1, and the row was voided. On re-judge both tasks got two clean greens, so nothing is blocked for them.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** two separate defects.
+1. **The `vision: false` exclusion did not apply.** ring20 has NO project-level `policy/review-backends.yaml`; its vendored `.agentic-framework/policy/review-backends.yaml`, committed with be.15 (3e3ac9a07), carries `vision: false` on opencode. So my first hypothesis (a project override without the field) is refuted. New hypothesis: `kind_vision` reads the registry through `_committed_blob(root, revision, BACKENDS)` with `BACKENDS = policy/review-backends.yaml` relative to the PROJECT root. In a consumer that path does not exist, the blob is empty, `kind_vision` returns `{}`, and nothing is excluded. Check how `kind_vendors` / `kind_models` find the registry in a consumer; they use the same reader, so either they share the blind spot or `_committed_blob` has a fallback that `kind_vision` misses.
+2. **opencode exit 1 after a green.** The seat's stderr ends with `FATAL: the opencode reviewer modified the export it reviewed (T-3986) — its greens do not count`. Its verdict says it "booted the real app via FastAPI TestClient" in the export, so import-time writes (`__pycache__`) likely tripped the tamper check. The guard did the right thing. Options: run seats with `PYTHONDONTWRITEBYTECODE=1`, exclude `__pycache__` from the tamper diff, or tell the brief not to execute project code.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** (1) the vision exclusion works in consumer projects; (2) a seat that only imports project code does not void its own verdict, without weakening the tamper check.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** at ring20, render reviews no longer seat opencode, and harness seats stop losing greens to bytecode files.
 
 ## Acceptance Criteria
 
