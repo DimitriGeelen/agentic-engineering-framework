@@ -103,7 +103,7 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Design section in `docs/reports/T-4961-driver-sets.md`: for each of the four points, the current behaviour (file:line), the change, and its fabric blast radius; plus the resolution rule (arc `driver_set:` → `policy/value-drivers-<name>.yaml`, missing file refuses) and the consumers of the set that the four points do not name
+- [x] Design section in `docs/reports/T-4961-driver-sets.md` (commit f7ffe3045, dispatched worker t4967-design; I read and checked it): for each of the four points, the current behaviour (file:line), the change, and its fabric blast radius; plus the resolution rule (arc `driver_set:` → `policy/value-drivers-<name>.yaml`, missing file refuses) and the consumers of the set that the four points do not name
 - [ ] Short independent review by two internal seats; findings answered in the report
 - [ ] Build slices filed as tasks and linked from the report; 010-termlink told the form
 
