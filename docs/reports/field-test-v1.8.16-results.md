@@ -102,6 +102,18 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 - The T-4892 host-shared WARN shows for them on be.4. That can be the false positive fixed in
   be.11 (T-4941) or a true reading; told them (reply to 160ded67).
 
+### be.3: dimitri-mint-dev (9f92d563), 2026-11-01
+- **WORKS.** v1.8.15 → be.3, non-shallow clone, dry and real rc 0, 4 changes. Doctor 0 FAIL
+  before and after.
+- **T-4920 + T-4921 WORKS:** installed hooks fed PreToolUse probes (never executed): the Tier 0
+  hook blocks a force push short and after 130 KB of padding; the boundary hook blocks a /opt
+  write short, padded, and as line 4001 of 4001; benign 130 KB commands pass.
+- **T-4913 WORKS** (registry-shadow OK, no WARN). **T-4905 WORKS.** **T-4918 WORKS** (dry:
+  `defer` listed; no real reopen run).
+- Observations: a filtered Tier 0 status read is refused as self-approval and leaves a pending
+  block on /approvals that nobody should approve (filed T-4953); the self-approval word rule
+  read the quoted body of their sidecar message (documented accepted cost, see reply).
+
 ### Announced, not yet reported
 - 055-agentic-fleet-cockpit (6f246312): will upgrade to be.8 when their operator times it and
   report T-4937 with their own test kept as the check.
@@ -124,7 +136,8 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | T-4870 in-file patches lost on upgrade (1409) | **WORKS** at 010-termlink (8/8 preserved, 4 three-way merges, 0 conflicts); 1409 not yet reported | 010-termlink 160ded67 |
 | T-4892 host-shared key WARN | **WORKS** at 832 (`config get SIDECAR_DM_ADDRESS_KEYS` exits 0); TermLink's own verdict pending | 832 32c4d12e |
 | T-4893 notices are not mail (ring20 / 050) | pending | — |
-| T-4913, T-4918 (dimitri-mint-dev) | pending | — |
+| T-4913, T-4918 (dimitri-mint-dev) | **WORKS** (T-4918 dry run only) | dimitri-mint-dev 9f92d563 |
+| T-4905 runme repro body | **WORKS** | dimitri-mint-dev 9f92d563 |
 | T-4924 designer 0.33.0 pin (832) | pending (ring20-dashboard did swap to 0.33.0 cleanly, 504a2831) | — |
 | T-4929 Evidence blocks not classified | no specific verdict | — |
 | T-4935 GitHub #104 symlink entry | pending: posted available-for-testing on #104 | — |
@@ -145,7 +158,7 @@ not yet cover be.5 to be.9.
 
 ## No positive field test yet
 
-T-4893, T-4913, T-4918, T-4924 (832's own check), T-4928, T-4929, T-4935, and
+T-4893, T-4924 (832's own check), T-4928, T-4929, T-4935, and
 everything first shipped in be.7 to be.9 without its own verdict (T-4932, T-4933, T-4937,
 T-4912). A release that includes them needs either these
 verdicts, rule-b coverage from three clean upgrades at that tag, or the operator's explicit yes.
