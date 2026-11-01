@@ -59,6 +59,8 @@ The main fence moves to the NAS. The framework's grants become the **second laye
 
 Item 3 is the most sensitive point: a credential handed to an agent process for one action. It needs the closest look in the external review.
 
+**050's preference on ask 3 (msg 24b47da4):** the **runtime runs the approved delete itself**. The agent never holds the delete credential, and the approval binds to exactly one path. That still meets their operator's rule (every delete is Tier 0) and closes the credential-lifetime gap. Their operator has the final word after the design and the review. No further asks until the draft.
+
 **Rename probe:** on hold; 050 will run it against the `pen-create` mount once that exists.
 
 ## Next
