@@ -128,7 +128,7 @@ bvp_scores_proposed:
 - [x] Tests: mixed-set parity between `fw bvp rank` and the resolver (t2497 shape), readiness and auto-promote on a mixed corpus, `/bvp` blueprint test; every test that reads the changed files passes; Watchtower restarted (`bin/fw watchtower current`); vendored copy in sync. My rerun: 623 pytest + 150 bats over every file naming the changed code. One route-time red (/approvals/content 5.28 s vs 5 s cap) went green after the resolver stopped re-statting arc files per task. Review fixes: no refusal on arc references when no arc names a set (a stale `arc:bvp` tag had unranked 4 tasks on /bvp), with tests.
 
 ### Human
-- [ ] [REVIEW] `/bvp` shows each point's driver set clearly, and a refused task is visible, not missing
+- [ ] [REVIEW] The BVP page (http://192.168.10.107:3000/bvp) shows each point's driver set clearly, and a refused task is visible, not missing
   **Steps:**
   1. Open http://192.168.10.107:3000/bvp
   2. Look at the scatter and its table: tasks scored under a named set carry a set badge; default-set tasks carry none.
@@ -400,13 +400,13 @@ bin/fw vendor self --check --task T-4986
 
 **Recommendation:** GO
 
-**Rationale:** every ranking surface now values a task under its own driver set, and a refused set shows up as a row instead of disappearing. On our own corpus, which names no sets, `/bvp` looks as before: no badges, no refused table, layout unchanged at 1024, 1440 and 1920 px. The set badge and the refused table only appear in a project whose arcs name a set; 010-termlink will be the first, and its field report closes that visual question.
+**Rationale:** every ranking surface now values a task under its own driver set, and a refused set shows up as a row instead of disappearing. On our own corpus, which names no sets, the BVP page (http://192.168.10.107:3000/bvp) looks as before: no badges, no refused table, layout unchanged at 1024, 1440 and 1920 px. The set badge and the refused table only appear in a project whose arcs name a set; 010-termlink will be the first, and its field report closes that visual question.
 
 **Evidence:**
-- 623 pytest + 150 bats over every test naming the changed code; `test_t4986_driver_set_surfaces.py` covers mixed-set parity (rank vs resolver), auto-promote, confirm, readiness and `/bvp`.
+- 623 pytest + 150 bats over every test naming the changed code; `test_t4986_driver_set_surfaces.py` covers mixed-set parity (rank vs resolver), auto-promote, confirm, readiness and the BVP page.
 - Screenshots: `.context/visual/T-4986/bvp@{1024,1440,1920}.png`; `fw watchtower current` OK.
-- Two review fixes, each with tests: no refusal from arc references in a project without sets (a stale `arc:bvp` tag had unranked 4 tasks), and one arc snapshot per ranking pass (`/approvals/content` back under its 5 s cap).
-- Not done, follow-up: `/bvp`'s per-driver columns and rubric tooltips still list only the live file's drivers. Values are correct, but a set-only driver has no column yet.
+- Two review fixes, each with tests: no refusal from arc references in a project without sets (a stale `arc:bvp` tag had unranked 4 tasks), and one arc snapshot per ranking pass (the approvals content page back under its 5 s cap).
+- Not done, follow-up: the BVP page's per-driver columns and rubric tooltips still list only the live file's drivers. Values are correct, but a set-only driver has no column yet.
 
 ## Decisions
 
