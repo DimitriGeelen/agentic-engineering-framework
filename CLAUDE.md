@@ -517,7 +517,11 @@ bash decodes it, including the cut at a decoded NUL (`$'tier\0junk'0` is `tier0`
 `env -i`, `bash -c`, and reassembled verbs (`` `echo approve` ``, `appr{o,}ve`, `tier""0`,
 `X=tier0; … $X approve`); executing or importing `tier0_action` is Tier 0 too. The cost: a
 read-only command that names the bare word `tier0` (a grep for it, a commit message using it)
-is blocked; write "Tier 0" or name the file instead. The module itself refuses
+is blocked; write "Tier 0" or name the file instead. A plain read-only form followed by
+one inert filter (`| grep|head|tail|wc` with plain words, optionally after a literal
+`2>&1`) is still refused, but writes no approval card and no pending hash, only a line in
+`.context/working/tier0-read-refusals.jsonl` (T-4953, operator option 1): re-run it without
+the pipe. Any other shape, or any second risk, keeps its card. The module itself refuses
 `approve-pending` under `CLAUDECODE=1`; `--i-am-human` overrides it and the record says
 `approved_by: agent-override`. **What this does NOT claim:** every agent here runs as the
 same user with write access to the repo, so an agent can write an approval record into

@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T09:12:58Z
-last_update: 2026-11-01T12:48:30Z
+last_update: 2026-11-01T13:09:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -368,6 +368,11 @@ cost_estimate_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-01 — how the gate treats a read-only query followed by a pipe
+- **Chose:** option 1, refuse without a card. Operator, verbatim: "Okay, proceed as advice suggested." The advice was option 1 with three conditions: (1) the refusal stays unconditional, only the card is suppressed; (2) whole-command classification, fail closed: the left side is exactly a plain read-only form, the right side one inert filter (`grep`/`head`/`tail`/`wc` with plain words, no further pipe, redirect, substitution, `;`, `&`, newline or quote), and anything else keeps its card; (3) an audit line for every suppressed refusal.
+- **Why:** both consulted seats (codex, opencode) recommended it independently (`docs/reports/T-4953-readonly-pipe-consult.md`). It removes cards that ask the operator to approve a read, and so the habit of approving without reading, while letting nothing new run.
+- **Rejected:** option 2 (allow narrow pipes): file-read operands, `grep -f`/`-r`, `tail -f` hangs and flag drift, each a new review round, for a convenience the agent gets by dropping the pipe. Option 3 (reword the card): the card count is the fatigue, not its wording.
 
 ## Decision
 

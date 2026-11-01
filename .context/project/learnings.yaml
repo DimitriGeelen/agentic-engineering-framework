@@ -5218,3 +5218,9 @@ X'` returning empty group."
   task: T-4933
   date: 2026-10-31
   context: Added via context agent
+- id: L-714
+  learning: "A hook test that passes the live checkout as PROJECT_ROOT files real approval cards: the hook finds its helpers from its own path, PROJECT_ROOT only decides where it writes. Give every hook test a throwaway PROJECT_ROOT and NTFY_ENABLED=false."
+  source: P-001
+  task: T-4964
+  date: 2026-11-01
+  context: Added via context agent
