@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T13:06:37Z
-last_update: '2026-11-01T13:15:19Z'
+last_update: 2026-11-01T13:29:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,7 +100,7 @@ cost_estimate_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] `t4920_tier0_prefilter_no_pipe.bats` passes `PROJECT_ROOT` = a per-test temp dir and `NTFY_ENABLED=false`; the hook path is unchanged
 - [x] A new assertion in that file: after the blocking judgements, the temp root holds the pending file and the live checkout's approvals surface is unchanged
-- [ ] The leaked live card and pending files are removed (operator, via runme) and `tests/governance/test_t3077_approvals_surface_isolation.bats` passes
+- [x] The leaked live card and pending files are removed (operator, via runme) and `tests/governance/test_t3077_approvals_surface_isolation.bats` passes (operator ran t4964-remove-leaked-card 14:28, EXIT 0; T-3077 2/2 ok)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
