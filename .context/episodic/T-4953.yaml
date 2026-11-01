@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4953: Tier 0 gate: a refused read-only status query (filtered through a pipe) leaves a pending approval on /approvals that nobody should approve
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T13:31:00Z
+# ============================================================================
+
+task_id: T-4953
+task_name: "Tier 0 gate: a refused read-only status query (filtered through a pipe) leaves a pending approval on /approvals that nobody should approve"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-01T09:12:58Z
+completed: 2026-11-01T13:30:22Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T13:48:30+01:00
+last_commit: 2026-11-01T14:30:21+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  external consultation (codex, opencode) on read-only pipe refusals — both recommend refuse-without-card, whole-command match, audit line. a plain read-only gate query followed by one inert filter is still refused but files no approval card — whole-command match, fail closed, one audit line per refusal (operator option 1, after codex/opencode consultation). vendor sync of the read-only pipe refusal. verification, decision criterion ticked. last criterion — hook test set green after T-4964
+
+# Key outcomes
+outcomes:
+  - 'External consultation (two internal-cost backends, no host detail in the brief) is recorded in `docs/reports/T-4953-readonly-pipe-consult.md` with each answer, and the cost is logged'
+  - 'The operator''s choice is recorded under ## Decisions with their words'
+  - 'The chosen behaviour is built in the gate and pinned by tests; every test that reads the hook passes (36 files, 401 tests: 400 ok; the one red, T-3077, was a live card leaked by another test, fixed in T-4964 and green since)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-01 — how the gate treats a read-only query followed by a pipe'
+    chose: 'option 1, refuse without a card. Operator, verbatim: "Okay, proceed as advice suggested." The advice was option 1 with three conditions: (1) the refusal stays unconditional, only the card is suppressed; (2) whole-command classification, fail closed: the left side is exactly a plain read-only form, the right side one inert filter (`grep`/`head`/`tail`/`wc` with plain words, no further pipe, redirect, substitution, `;`, `&`, newline or quote), and anything else keeps its card; (3) an audit line for every suppressed refusal.'
+    rationale: 'both consulted seats (codex, opencode) recommended it independently (`docs/reports/T-4953-readonly-pipe-consult.md`). It removes cards that ask the operator to approve a read, and so the habit of approving without reading, while letting nothing new run.'
+    alternatives_rejected: ['option 2 (allow narrow pipes): file-read operands, `grep -f`/`-r`, `tail -f` hangs and flag drift, each a new review round, for a convenience the agent gets by dropping the pipe. Option 3 (reword the card): the card count is the fatigue, not its wording.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-tier0.sh'
+  - '.context/costs/reviews.jsonl'
+  - '.context/project/learnings.yaml'
+  - '.tasks/active/T-4953-tier-0-gate-a-refused-read-only-status-q.md'
+  - 'CLAUDE.md'
+  - 'agents/context/check-tier0.sh'
+  - 'docs/reports/T-4953-readonly-pipe-consult.md'
+  - 'tests/unit/t4953_readonly_pipe_no_card.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T13:48:30'
+    action: 'T-4953: external consultation (codex, opencode) on read-only pipe refusals — both recommend refuse-without-card, whole-command match, audit line'
+  - time: '2026-11-01T14:09:26'
+    action: 'T-4953: a plain read-only gate query followed by one inert filter is still refused but files no approval card — whole-command match, fail closed, one audit line per refusal (operator option 1, after codex/opencode consultation)'
+  - time: '2026-11-01T14:09:35'
+    action: 'T-4953: vendor sync of the read-only pipe refusal'
+  - time: '2026-11-01T14:09:52'
+    action: 'T-4953: verification, decision criterion ticked'
+  - time: '2026-11-01T14:30:21'
+    action: 'T-4953: last criterion — hook test set green after T-4964'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 257 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 257
+  commits: 6
+  files_changed: 11
+  lines_added: 445
+  lines_removed: 27
+  footprint_refreshed_at: '2026-11-01T13:31:14Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4953-tier-0-gate-a-refused-read-only-status-q.md
+generated_by: context-agent-hybrid
