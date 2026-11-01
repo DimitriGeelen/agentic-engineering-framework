@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4958: fw ux shots: crop step so one section of a very tall page can be captured readably
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T11:32:22Z
+# ============================================================================
+
+task_id: T-4958
+task_name: "fw ux shots: crop step so one section of a very tall page can be captured readably"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T11:26:02Z
+completed: 2026-11-01T11:31:47Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-01T12:31:06+01:00
+last_commit: 2026-11-01T12:31:46+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw ux shots crop step — capture one band of a very tall page (viewport-framed, so a 46,000 px page does not hit the screenshot timeout). vendor sync of ux_shots crop step
+
+# Key outcomes
+outcomes:
+  - 'A steps file may end with `crop: "<selector>"` or `crop: {from: "<selector>", to: "<selector>"}`; anything else (crop not last, two crops, extra keys, empty selector) is refused at plan time with a PlanError'
+  - 'At capture, the shot is clipped to the full page width and the vertical span from `from`''s top to `to`''s top (or to the bottom of `from`); a missing or zero-height region is NOT CHECKED, naming the step'
+  - '`tests/unit/test_t4391_ux_steps.py` and `tests/unit/test_ux_shots.py` pass with new tests for the crop grammar and the clip arithmetic; the module docstring documents the op'
+  - 'A real crop of http://192.168.10.107:3000/approvals Arc Closure is captured at 1024/1440/1920 and each image is under 6000 px tall'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/ux-review/ux_shots.py'
+  - '.tasks/active/T-4958-fw-ux-shots-crop-step-so-one-section-of-.md'
+  - 'agents/ux-review/ux_shots.py'
+  - 'tests/unit/test_t4391_ux_steps.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T12:31:06'
+    action: 'T-4958: fw ux shots crop step — capture one band of a very tall page (viewport-framed, so a 46,000 px page does not hit the screenshot timeout)'
+  - time: '2026-11-01T12:31:46'
+    action: 'T-4958: vendor sync of ux_shots crop step'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 3
+  files_changed: 7
+  lines_added: 698
+  lines_removed: 10
+  footprint_refreshed_at: '2026-11-01T11:32:32Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4958-fw-ux-shots-crop-step-so-one-section-of-.md
+generated_by: context-agent-hybrid
