@@ -100,9 +100,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A runme re-arms exactly the 9 expired-and-red entries for 7 days (names from the baseline and the latest report, not retyped), handed off as one line and watched; the push then succeeds without bypass
+- [x] A runme re-arms exactly the 9 expired-and-red entries for 7 days (names from the baseline and the latest report, not retyped), handed off as one line and watched; the push then succeeds without bypass. Restated 2026-11-01: the runme was prepared (`.context/runme/t4946-rearm-baseline`) but became unnecessary before it was run: all 9 were fixed and a fresh fast-tier run (09:53Z) had none red, so the push went through with no re-arm and no bypass (8d1993caa, 43 commits; then e3435a314). The operator was told not to run it.
 - [x] Each of the 5 files passes: cause found and fixed (or the test corrected where the test is what is wrong), recorded per file under Updates
-- [ ] `python3 agents/audit/unit_suite_baseline.py regenerate` run after a green run drops the fixed entries
+- [x] `python3 agents/audit/unit_suite_baseline.py regenerate` run after a green run drops the fixed entries (first attempt emptied the whole baseline from a one-tier report and was reverted; fixed in T-4956; the corrected run dropped 19, kept 25. Of the 17 files behind the 25, 16 pass when run directly and will drop at their tier's next run; `doctor_hook_counters.bats` still has 3 reds, owner T-3615)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,8 +288,18 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+out=$(bin/fw audit --section structure 2>&1); ! grep -q "^\[FAIL\] Unit suite" <<<"$out"
+python3 agents/audit/unit_suite_baseline.py show > /tmp/.t4946 2>&1 && grep -q "entries=25" /tmp/.t4946
 
 ## RCA
+
+**Symptom:** at 00:00 UTC on 2026-11-01, 9 baselined unit-suite reds expired together and the pre-push ratchet blocked every push (14 commits held, later 43).
+
+**Root cause:** the 9 were real defects or stale tests baselined in October with owner tasks (T-3605, T-3609, T-3611, T-3612, T-3614) and an expiry; none was worked before the expiry. Two were genuine product bugs (raw gate stderr on /approvals, T-4947; a SystemExit aborting the /approvals Arc Closure build, T-4951), one a broken documented bypass (T-4949), two lint drift (T-4948, T-4950).
+
+**Why structurally allowed:** a baseline entry looks "handled" for its whole life; the expiry is the only prompt, and it fires all at once, for everyone, as a push block.
+
+**Prevention:** the fixes, plus T-4956 (regenerate no longer empties the baseline from a one-tier report). Learning: a red the suite caught on arrival and someone baselined is a known bug with a deadline, and it costs more to fix under a push block than when it was caught. Read the failure message before baselining: three of these named their cause outright.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
