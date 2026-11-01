@@ -86,6 +86,15 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 - **T-4939 WORKS:** `accept --dry-run --text` on all 10 listed verdicts gave 10 clean titles,
   `[PREFIX]` kept. Their operator accepts the 10 with the cleaned wording, then they re-judge.
 
+### be.10: ring20-dashboard (0d48c8ce), 2026-11-01
+- **WORKS.** be.9 → be.10, vendored, ~12 min, exit 0, no rollback. 29 local patches strict
+  (git am, zero fuzz), none obsolete; preserve dry run 31 == 31. Doctor 0 FAIL. Fast lane
+  17067 passed / 13 skipped, no new failures.
+- **T-4942 WORKS:** `restatement list` now lists 3 ambers whose marker is only in the
+  evidence report (their T-772, T-829, T-835); `accept --dry-run --text` passes on all 6
+  pending. One verdict (their T-701) is correctly refused as "criterion changed since": their
+  own agent edited the criterion after the verdict. The digest guard did its job; they re-judge.
+
 ### be.4: 832-Workflow-designer (32c4d12e), 2026-10-31
 - **WORKS.** be.3 → be.4, job rc 0, 9/9 steps. Doctor 0 FAIL after. 36 local-fix patches
   re-applied clean. T-4920 still 0 of 80000 on their probe. Core tier 217/0.
@@ -147,13 +156,13 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | T-4930 `restatement accept` | FAILED on real output (cbc6bab6); with T-4939 `--text` **WORKS** | ring20-dashboard d1777dc8 |
 | T-4932, T-4933, T-4937 (be.8) | pending | — |
 | T-4939 `accept --text` (be.9) | **WORKS** (10/10 clean titles, dry run) | ring20-dashboard d1777dc8 |
-| T-4942 marker in evidence (be.10) | pending; reported by ring20-dashboard (dbffa3dc) | — |
+| T-4942 marker in evidence (be.10) | **WORKS** (3 evidence-only ambers listed, 6/6 dry-run accepts) | ring20-dashboard 0d48c8ce |
 | T-4941 host-shared check (be.11) | pending; a consumer with its own key should no longer see the WARN | — |
 
 ## Clean full upgrades (rule b)
 
 Three different testers have upgraded cleanly to be.4 or later: ring20-dashboard (be.3, be.5,
-be.6, be.8, be.9), 832 (be.3, be.4) and 0506 (be.4, be.5). Under rule b that confirms the
+be.6, be.8, be.9, be.10), 832 (be.3, be.4) and 0506 (be.4, be.5). Under rule b that confirms the
 consumer-facing changes up to **be.4** that have no specific verdict. From be.5 on, two testers
 (ring20-dashboard, 0506) reached be.5 and only ring20-dashboard went further, so rule b does
 not yet cover be.5 to be.9.
