@@ -1,8 +1,17 @@
 ---
 id: T-4966
-name: "Concurrent fw reviewer judge in one checkout: dispatch/run/completion register appends are outside the verdict-ledger lock"
+name: "Concurrent fw reviewer judge in one checkout: dispatch/run/completion register
+  appends are outside the verdict-ledger lock"
 description: >
-  ring20-dashboard (msg 8f73b60a) wants 2-3 judges in parallel (~120 tasks, 7-10 min each). Verified 2026-11-01: verdict append+commit hold one lock (lib/verdict_ledger.py _ledger_lock, T-3940) and the commit waits on .git/index.lock (T-4033), but register_dispatch (:872), start (:1387), complete (:1537) and register_run (:1866) append to review-dispatches/-completions/-runs.jsonl with no lock, and those files are staged by every verdict commit (T-4591), so a commit can carry another run's register rows. Never tested concurrently. Each judge needs 3 seats; TERMLINK_MAX_WORKERS default 5 refuses a second judge's third seat. Direction: every review-register append under the ledger lock, a concurrency test with two judges, then decide on 'fw reviewer judge T-A T-B --parallel N'.
+  ring20-dashboard (msg 8f73b60a) wants 2-3 judges in parallel (~120 tasks, 7-10 min
+  each). Verified 2026-11-01: verdict append+commit hold one lock (lib/verdict_ledger.py
+  _ledger_lock, T-3940) and the commit waits on .git/index.lock (T-4033), but register_dispatch
+  (:872), start (:1387), complete (:1537) and register_run (:1866) append to review-dispatches/-completions/-runs.jsonl
+  with no lock, and those files are staged by every verdict commit (T-4591), so a
+  commit can carry another run's register rows. Never tested concurrently. Each judge
+  needs 3 seats; TERMLINK_MAX_WORKERS default 5 refuses a second judge's third seat.
+  Direction: every review-register append under the ledger lock, a concurrency test
+  with two judges, then decide on 'fw reviewer judge T-A T-B --parallel N'.
 
 status: captured
 workflow_type: build
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T14:44:35Z
-last_update: 2026-11-01T14:44:48Z
-date_finished: null
+last_update: '2026-11-01T14:45:19Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-01T14:45:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4966: Concurrent fw reviewer judge in one checkout: dispatch/run/completion register appends are outside the verdict-ledger lock
