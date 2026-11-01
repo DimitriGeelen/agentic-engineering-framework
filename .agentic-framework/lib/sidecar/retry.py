@@ -227,7 +227,39 @@ def reply_signals(*, reader=inbox.default_reader,
             if len(page) < inbox.DEFAULT_LIMIT or highest <= cursor:
                 break
             cursor = highest
+    direct_reply_signals(me, answered, replied)
     return answered, replied
+
+
+def direct_reply_signals(me: str, answered: set[str], replied: set[str]) -> None:
+    """T-4963: add replies that came over the DIRECT route to both sets.
+
+    The receiver stores every direct message as `<id>.json` with its
+    `conversation_id`, and the hub walk above never sees them. 055's consult
+    2ad78ca1 was answered on its own conversation that way, by a peer other
+    than the one addressed, and was chased for days. Like the hub walk, any
+    peer's message on the conversation counts; our own do not. A reply on a
+    DIFFERENT conversation is not guessed at: the sender settles that one with
+    `fw sidecar settle-sent`.
+    """
+    from . import receiver
+    from .receipts import base_id
+    messages = receiver._root() / ".context" / "sidecar" / "receiver" / "messages"
+    try:
+        files = list(messages.glob("*.json"))
+    except OSError:
+        return
+    for f in files:
+        try:
+            env = json.loads(f.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if not isinstance(env, dict) or env.get("from") == me or env.get("kind") == "receipt":
+            continue
+        if env.get("conversation_id"):
+            answered.add(env["conversation_id"])
+        if env.get("in_reply_to"):
+            replied.add(base_id(env["in_reply_to"]))
 
 
 def _fw_binary() -> str | None:
