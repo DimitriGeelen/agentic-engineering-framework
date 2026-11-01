@@ -107,9 +107,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Boundary hook: a typed write (Bash write passes and the Write/Edit tool) under a create or create-project grant is allowed; under a read grant, an ungranted path, or a `never_write` root (even under a grant) it is refused; a path that resolves through a symlink to outside the grant is refused
-- [ ] On granted paths, chmod/chown/chgrp/touch and archive extraction (tar, unzip, 7z, cpio, bsdtar) are refused; a write through a variable that assigns an ungranted outside path stays refused (T-4983)
-- [ ] Each allowed grant write appends a line to `.context/grants/audit.jsonl` (time, tool, target); bats tests cover every case above plus 050's four; every test that reads `check-project-boundary.sh` passes; vendored copy in sync
+- [x] Boundary hook: a typed write (Bash write passes and the Write/Edit tool) under a create or create-project grant is allowed; under a read grant, an ungranted path, or a `never_write` root (even under a grant) it is refused; a path that resolves through a symlink to outside the grant is refused (`access_grants.write_allowed` checks the normalised and the resolved path)
+- [x] On granted paths, chmod/chown/chgrp/touch and archive extraction (tar, unzip, 7z, cpio, bsdtar) are refused; a write through a variable that assigns an ungranted outside path stays refused (T-4983)
+- [x] Each allowed grant write appends a line to `.context/grants/audit.jsonl` (time, tool, target); bats tests cover every case above (`t4989_access_grants_create_level.bats`, 23). Of 050's four original cases, 1 and 4 are framework tests here; 2 (modify an operator file) and 3 (rm without approval) moved to the NAS when their operator made it the ownership and delete authority (msg 34998006). Every test that reads `check-project-boundary.sh` passes (654 bats, 0 skipped; 40 pytest; lint green after commit); vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -295,6 +295,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 bats tests/unit/t4989_access_grants_create_level.bats tests/unit/t4988_access_grants_boundary.bats > /tmp/.t4989.v 2>&1 && ! grep -q "^not ok" /tmp/.t4989.v
+test "$(grep -c '# skip' /tmp/.t4989.v)" -eq 0
+bin/fw vendor self --check --task T-4989
 
 ## RCA
 
