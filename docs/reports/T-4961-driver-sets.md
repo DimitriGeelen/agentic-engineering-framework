@@ -148,3 +148,21 @@ Slices 1 → 2 → 3 are serial (2 and 3 both import slice 1). Slice 4 can follo
 3. **Already-confirmed scores.** `bvp_scores:` on a task in an arc that later gains `driver_set:` were confirmed under the live weights. The scores (0-5 per driver) stay valid; only the weights change, so ranking moves. Set-only drivers (F-TRUST) will be unscored on those tasks until re-estimated. Proposal: no migration; the next estimator sweep proposes the missing drivers.
 4. **Who may write `driver_set:` on an arc.** The narrow form adds no gate. But choosing a set changes every member task's weights at once, which is close to a weight change (`fw bvp weight` is §ACD-gated). Is an arc-YAML edit by an agent acceptable, or should it be operator-only?
 5. **Fabric impact output was empty** for all six files (`fw fabric impact` printed only its header). Blast radius above relies on `fw fabric deps` and grep. Worth a separate look; not blocking.
+
+## Review (T-4967, 2026-11-01)
+
+Seat 1, opencode: **sound with fixes** (full text: `docs/reports/T-4967-review-opencode.md`). It confirmed the point-3 claim, the point-4 citations, the auto-promote `max_possible` catch and the hooks allowlist. Seat 2, codex: not run yet (usage limit until 22:02); to be added.
+
+Findings, and what the design now says:
+
+1. **An unresolvable arc reference falls back to the live set.** Accepted. If `arc_id:` names no arc, or every `arc:` tag names a missing arc, that is a refusal, the same as a parse error. Rule 5 is widened to "any arc reference that does not resolve".
+2. **check_a and the scorability rail still use the live-file alias table.** Accepted. Once the loaders take a `policy` argument (point 1), check_a and `bvp-scorability.sh classify` pass the arc's set. Moved into slice 2.
+3. **A refused task can drop out of the resolver picker with only a WARNING on the terminal.** Accepted. `fw bvp rank` prints a `refused` row per skipped task and exits 3 when any were skipped. The picker writes the refusal to its decision log, and `fw doctor` shows the count.
+4. **The T-2648 split-root lint would flag the new set paths.** Accepted. Slice 1 extends the lint's exemption to `value-drivers*.yaml`, with a reason: set files are per project, so FRAMEWORK_ROOT would be wrong for them.
+5. **`arc_id:` and the tags can disagree, and multi-arc roll-ups can mix sets.** Accepted. It is a refusal when `arc_id:` and the tags resolve to different sets. For `fw bvp arcs`, each arc rolls up its members under that arc's set; a member whose own set differs is listed under a `mixed set` count, not silently re-weighted.
+6. **Between slices 2 and 3, set-only drivers are scored but not ranked.** Accepted. Slices 2 and 3 land together, under one be-tag.
+7. **`validate_set` checks too little.** Accepted. It compares the whole D1-D4 entries: only `weight` and `rubric` may differ (so the judges' `note:` reads stay valid). Weights must be numbers from 0 to 10.
+8. **Minor points:**
+   - an empty `driver_set:` is a refusal;
+   - a file `policy/value-drivers-default.yaml` gets a WARN (reserved name);
+   - the estimator's `AGENT.md` is updated in slice 2.
