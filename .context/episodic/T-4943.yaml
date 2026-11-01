@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4943: fw reviewer judge requires more pages than it captures (8 planned, cap 6), so a render criterion can never go green
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T00:21:58Z
+# ============================================================================
+
+task_id: T-4943
+task_name: "fw reviewer judge requires more pages than it captures (8 planned, cap 6), so a render criterion can never go green"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T00:03:37Z
+completed: 2026-11-01T00:20:56Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T01:13:59+01:00
+last_commit: 2026-11-01T01:20:54+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  judge captures every required page (the 6-page cap made any larger render plan un-greenable); T-4944 filed (harness seats cannot cite screenshots). criteria, RCA, verification
+
+# Key outcomes
+outcomes:
+  - 'The judge screenshots every required page, not the first 6; the ledger''s required-page check is unchanged'
+  - 'A test pins it: a plan of more than 6 pages captures all of them and records none as "not captured"; existing judge tests stay green (677; t3580 round-3 seven-pages test updated to the new rule, its ledger-refusal control unchanged); `bin/fw vendor self --check --task T-4943` clean'
+  - 'T-4906 re-judged after the fix, outcome recorded: 8 screenshots, claude seat green V-20261101-192f7fae; T-4906 closed on it (owner human -> agent)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.fabric/components/tests-unit-t4943_capture_every_required_page_test.yaml'
+  - '.tasks/active/T-4943-fw-reviewer-judge-requires-more-pages-th.md'
+  - '.tasks/active/T-4944-harness-review-seats-can-never-record-a-.md'
+  - 'lib/reviewer/judge_cli.py'
+  - 'tests/unit/t3580_round3_test.py'
+  - 'tests/unit/t4943_capture_every_required_page_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T01:13:59'
+    action: 'T-4943: judge captures every required page (the 6-page cap made any larger render plan un-greenable); T-4944 filed (harness seats cannot cite screenshots)'
+  - time: '2026-11-01T01:20:54'
+    action: 'T-4943: criteria, RCA, verification'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 17
+  commits: 3
+  files_changed: 10
+  lines_added: 971
+  lines_removed: 38
+  footprint_refreshed_at: '2026-11-01T00:22:07Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4943-fw-reviewer-judge-requires-more-pages-th.md
+generated_by: context-agent-hybrid
