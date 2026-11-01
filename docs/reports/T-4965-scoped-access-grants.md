@@ -61,6 +61,17 @@ Item 3 is the most sensitive point: a credential handed to an agent process for 
 
 **050's preference on ask 3 (msg 24b47da4):** the **runtime runs the approved delete itself**. The agent never holds the delete credential, and the approval binds to exactly one path. That still meets their operator's rule (every delete is Tier 0) and closes the credential-lifetime gap. Their operator has the final word after the design and the review. No further asks until the draft.
 
+**Refined model (050's operator via Ring20 Manager T-2581; msgs 95d746a2, c040f1e9):**
+- **Three accounts:**
+  - `pen-read`: list and read.
+  - `pen-create`: read, create, and modify or rename only its own files (CREATOR OWNER); no delete.
+  - `pen-delete`: deletes only what the agent made, per action with the operator's permission.
+  - `pen-write` is **dropped**; the agent never changes operator files.
+- **Two standing mounts:** read and create, both SMB/cifs. `pen-delete` has no mount.
+- The `pen-delete` credential goes into a **separate secrets project** the agent's identity has no role on, so the agent cannot read it. How one approved delete gets it is ours to design: **the runtime acts, not the agent**.
+- For the grant file: **two standing levels (read, create)** plus the Tier 0 delete flow; there is no write level.
+- Nothing exists yet; account creation waits for their operator. Their T-2500 is GO; follow-up is their T-2502.
+
 **Rename probe:** on hold; 050 will run it against the `pen-create` mount once that exists.
 
 ## Next
