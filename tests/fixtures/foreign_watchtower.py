@@ -33,12 +33,26 @@ class Handler(http.server.BaseHTTPRequestHandler):
         pass
 
 
+def expire_with_port_file(srv, port_file, max_seconds=600):
+    """T-4976: stop when the test's temp dir (and so the port file) is gone, or after
+    max_seconds, so a killed bats run cannot leave this server behind for days."""
+    import os, threading, time
+
+    def watch():
+        end = time.monotonic() + max_seconds
+        while time.monotonic() < end and os.path.exists(port_file):
+            time.sleep(1)
+        srv.shutdown()
+    threading.Thread(target=watch, daemon=True).start()
+
+
 def main():
     port_file = sys.argv[1]
     socketserver.TCPServer.allow_reuse_address = True
     with socketserver.TCPServer(("127.0.0.1", 0), Handler) as srv:
         with open(port_file, "w") as fh:
             fh.write(str(srv.server_address[1]))
+        expire_with_port_file(srv, port_file)
         srv.serve_forever()
 
 

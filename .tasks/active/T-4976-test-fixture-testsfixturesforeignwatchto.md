@@ -10,10 +10,10 @@ description: >
   (trap/kill by recorded pid) and add a check that a run leaves no fixture process.
   The live ones are cleared by the operator's runme.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T17:13:14Z
-last_update: '2026-11-01T17:15:36Z'
+last_update: '2026-11-01T20:00:30Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -83,6 +83,22 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-01T20:00:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4976: Test fixture tests/fixtures/foreign_watchtower.py leaks: 51 python3 processes left running for hours to days
@@ -90,20 +106,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 055-agentic-fleet-cockpit (msg d3681548) saw 52 `foreign_watchtower.py` processes on the shared host, the oldest 3.7 days old; we counted 51 on 2026-11-01. They had already exited by the time the operator's runme ran.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `t3379_review_placeholder_foreign_port.bats` and `watchtower_url_no_guess.bats` start the fixture inside `fport=$(_start_foreign_watchtower)`. `PID=$!` is set in that subshell, so teardown sees an empty variable and never kills the server. Every run leaks one server per test. T-4338 fixed the same shape in `t3382_liveness_identity_probe.bats` with a pid file; the siblings were missed.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** No run of these suites leaves a fixture server behind, and a killed run cannot leak one for days.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Teardown kills by a pid file; both fixture servers exit by themselves once their port file is gone or after 10 minutes; a lint refuses a bats file that backgrounds a fixture server without a pid file.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Both bats files append each fixture pid to `$TEST_TEMP_DIR/foreign.pids`, and teardown kills from it; the three fixture suites pass (19 ok, 0 skip) and leave 0 fixture processes
+- [x] `foreign_watchtower.py` and `slow_watchtower.py` shut down when their port file disappears or after 600 s (probe: the server exited within 3 s of its temp dir being removed)
+- [x] `tests/lint/bats-fixture-server-pidfile.bats` fails when a file that backgrounds a fixture server has no pid file (checked by reverting `watchtower_url_no_guess.bats`: `not ok 1`), and passes on the tree
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,6 +306,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 bats tests/unit/t3379_review_placeholder_foreign_port.bats tests/unit/watchtower_url_no_guess.bats tests/unit/t3382_liveness_identity_probe.bats > /tmp/.t4976.v 2>&1 && ! grep -q "^not ok" /tmp/.t4976.v
+test "$(grep -c '# skip' /tmp/.t4976.v)" -eq 0
+bats tests/lint/bats-fixture-server-pidfile.bats > /tmp/.t4976.l 2>&1 && ! grep -q "^not ok" /tmp/.t4976.l
 
 ## RCA
 
@@ -305,6 +325,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** dozens of `foreign_watchtower.py` test servers stayed alive on the shared host for hours to days (52 seen by 055, 51 counted by us).
+
+**Root cause:** the fixture starter runs inside `$(...)`, so `FOREIGN_PID=$!` / `FAKE_PID=$!` is set in a subshell and the teardown's `kill` gets an empty pid. The fixture servers had no lifetime of their own, so nothing else ever stopped them.
+
+**Why structurally allowed:** a leaked background process fails no assertion; the suite stays green. T-4338 found and fixed the same shape in one file (t3382) without sweeping its siblings, so the class was fixed once and kept leaking twice.
+
+**Prevention:** (1) the lint `tests/lint/bats-fixture-server-pidfile.bats` refuses any bats file that sets `…PID=$!` for a fixture server without writing a pid file; (2) both fixtures expire by themselves (port file gone, or 600 s), so even a killed run, whose teardown never runs, cannot leak for long. Lesson already on record (T-4971): sweep for the fixture shape, not the one file.
 
 ## Evolution
 
@@ -386,3 +413,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4976-test-fixture-testsfixturesforeignwatchto.md
 - **Context:** Initial task creation
+
+### 2026-11-01T20:00:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

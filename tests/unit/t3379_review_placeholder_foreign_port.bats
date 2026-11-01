@@ -33,6 +33,9 @@ setup() {
 
 teardown() {
     [ -n "${FOREIGN_PID:-}" ] && kill "$FOREIGN_PID" 2>/dev/null
+    # T-4976: callers run _start_foreign_watchtower in $(...), so the pid set there never
+    # reaches this shell and the server outlived every run (51 found live). The pid file does.
+    [ -s "${TEST_TEMP_DIR:-}/foreign.pids" ] && xargs kill < "$TEST_TEMP_DIR/foreign.pids" 2>/dev/null
     [ -n "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
     return 0
 }
@@ -46,6 +49,7 @@ _start_foreign_watchtower() {
     python3 "$BATS_TEST_DIRNAME/../fixtures/foreign_watchtower.py" "$out" \
         >/dev/null 2>&1 3>&- </dev/null &
     FOREIGN_PID=$!
+    echo "$FOREIGN_PID" >> "$TEST_TEMP_DIR/foreign.pids"
     local i
     for i in $(seq 1 50); do
         [ -s "$out" ] && { cat "$out"; return 0; }
