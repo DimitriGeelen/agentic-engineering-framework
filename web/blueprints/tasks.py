@@ -1,6 +1,7 @@
 """Tasks blueprint — task list, detail, status API."""
 
 import json
+import os
 import re as re_mod
 import time
 from pathlib import Path
@@ -1149,8 +1150,12 @@ def update_task_owner(task_id):
     rec = rec_dir / f"{task_id}.json"
     try:
         rec_dir.mkdir(parents=True, exist_ok=True)
-        rec.write_text(json.dumps({"task": task_id, "owner": owner, "ts": time.time(),
+        # Write beside, then os.replace: a symlink planted at the record path is replaced, never
+        # followed (code review, T-4969).
+        tmp = rec_dir / f".{task_id}.{os.getpid()}.tmp"
+        tmp.write_text(json.dumps({"task": task_id, "owner": owner, "ts": time.time(),
                                    "by": "watchtower"}), encoding="utf-8")
+        os.replace(tmp, rec)
     except OSError as e:
         return f'<p style="color: var(--pico-del-color);">Error: cannot record the hand-over ({_escape(str(e))})</p>', 500
     try:

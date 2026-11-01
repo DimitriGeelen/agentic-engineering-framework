@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T15:32:32Z
-last_update: 2026-11-01T16:23:35Z
+last_update: 2026-11-01T16:32:22Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -299,6 +299,14 @@ timeout 600 bats tests/unit/t4969_owner_handover.bats tests/unit/t3586_skip_flag
 timeout 600 python3 -m pytest -q -p no:cacheprovider tests/web/test_t4969_owner_route_handover.py
 bin/fw watchtower current
 bin/fw vendor self --check --task T-4969
+
+## Visual Verification
+
+`bin/fw ux shots T-4969 task-page=http://192.168.10.107:3000/tasks/T-4969`. Only the owner route's server logic changed; no template, CSS or field markup. The Ownership field is the control that posts to it.
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| task-page | Ownership field (select, posts to /api/task/T-4969/owner) | ok | ok | ok | renders as before; not clicked on a live task (a click changes ownership); the route's behaviour is pinned by tests/web/test_t4969_owner_route_handover.py |
 
 ## RCA
 
