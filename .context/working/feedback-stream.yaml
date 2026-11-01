@@ -52419,3 +52419,21 @@ task_id: T-4961
 payload:
   overall: UNVERIFIED
   claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-11-01T15:11:58Z'
+scan_id: R-96c05cb2
+task_id: T-4944
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-01T15:11:58Z'
+scan_id: R-96c05cb2
+task_id: T-4944
+payload:
+  task_file: .tasks/active/T-4944-harness-review-seats-can-never-record-a-.md

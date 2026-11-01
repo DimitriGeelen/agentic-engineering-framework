@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4944: Harness review seats can never record a green on a render criterion: record_for_worker cites only its report, not the screenshots the seat was given
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T15:12:10Z
+# ============================================================================
+
+task_id: T-4944
+task_name: "Harness review seats can never record a green on a render criterion: record_for_worker cites only its report, not the screenshots the seat was given"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-01T00:05:46Z
+completed: 2026-11-01T15:11:48Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T15:53:18+01:00
+last_commit: 2026-11-01T16:11:47+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context and criteria — probe seat vision first, then operator's provenance rule. vision probe — codex sees supplied screenshots (view_image), opencode cannot (model has no image input). vision-gated citation — registry vision field (codex true, opencode false, probed); runtime cites a run screenshot for a vision seat only when the seat named it; render reviews skip vision:false kinds (operator choice). decision (operator: vision-gated), verification, RCA. vendor sync. last criterion — module test set green apart from one unrelated stale fixture
+
+# Key outcomes
+outcomes:
+  - 'A probe records whether the codex and opencode seats, as launched by the review runtime, can see a supplied screenshot (a question only answerable from the image), in `docs/reports/T-4944-harness-seat-vision.md`'
+  - 'The operator''s provenance rule is recorded under ## Decisions with their words'
+  - 'The chosen rule is built and pinned by tests; every test that reads `lib/verdict_ledger.py` or `lib/reviewer/judge_cli.py` passes (70 files: 954 pytest passed, bats clean; the one red, `tests/web/test_t4133_readiness_perf.py::test_edit_to_task_file_invalidates_its_entry`, is a pre-T-4916 fixture unrelated to this change, filed separately)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'last criterion — module test set green apart from one unrelated stale fixture'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-01 — provenance rule for harness seats on render criteria'
+    chose: '"Vision-gated (Recommended)", the operator''s answer in chat: - each backend declares `vision: true|false` in `policy/review-backends.yaml` (codex true, opencode false, from the probe); - for a vision harness seat, the runtime cites a run''s screenshot only when the seat names that file in its verdict; - render reviews do not seat a `vision: false` kind.'
+    rationale: 'the probe (`docs/reports/T-4944-harness-seat-vision.md`) showed codex answers from the image and opencode cannot take images. A citation must rest on the seat''s own words, not on what it was handed.'
+    alternatives_rejected: ['- "Named file only": a seat with no image input that names a file would be believed. - "Keep as is": codex could see but could never go green, and opencode spent a seat per render run on a guaranteed not-evaluated.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/review_cost.py'
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.agentic-framework/policy/review-backends.yaml'
+  - '.context/costs/reviews.jsonl'
+  - '.tasks/active/T-4944-harness-review-seats-can-never-record-a-.md'
+  - 'docs/reports/T-4944-harness-seat-vision.md'
+  - 'lib/review_cost.py'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/verdict_ledger.py'
+  - 'policy/review-backends.yaml'
+  - 'tests/unit/test_t4944_vision_gated_citation.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T15:53:18'
+    action: 'T-4944: context and criteria — probe seat vision first, then operator''s provenance rule'
+  - time: '2026-11-01T15:54:13'
+    action: 'T-4944: vision probe — codex sees supplied screenshots (view_image), opencode cannot (model has no image input)'
+  - time: '2026-11-01T16:00:24'
+    action: 'T-4944: vision-gated citation — registry vision field (codex true, opencode false, probed); runtime cites a run screenshot for a vision seat only when the seat named it; render reviews skip vision:false kinds (operator choice)'
+  - time: '2026-11-01T16:01:11'
+    action: 'T-4944: decision (operator: vision-gated), verification, RCA'
+  - time: '2026-11-01T16:01:22'
+    action: 'T-4944: vendor sync'
+  - time: '2026-11-01T16:11:47'
+    action: 'T-4944: last criterion — module test set green apart from one unrelated stale fixture'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 906 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 906
+  commits: 7
+  files_changed: 15
+  lines_added: 465
+  lines_removed: 26
+  footprint_refreshed_at: '2026-11-01T15:12:19Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4944-harness-review-seats-can-never-record-a-.md
+generated_by: context-agent-hybrid
