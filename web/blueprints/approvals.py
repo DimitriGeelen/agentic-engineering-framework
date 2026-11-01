@@ -940,7 +940,9 @@ def _arc_demo_state(arc: dict) -> dict:
         # Could not ask. Not the same as "no demo" — say so.
         return {"state": "indeterminate", "detail": "demo-check could not be run"}
 
-    out = ((p.stdout or "") + (p.stderr or "")).strip().splitlines()
+    from web.shared import operator_facing_stderr  # T-4947: G-102, no raw gate stderr on /approvals
+
+    out = ((p.stdout or "") + operator_facing_stderr(p.stderr or "")).strip().splitlines()
     first = out[0] if out else ""
     if p.returncode == 0:
         return {"state": "valid", "detail": first.replace("valid: ", "", 1)}
