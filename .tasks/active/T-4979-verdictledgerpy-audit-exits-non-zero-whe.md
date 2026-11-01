@@ -103,7 +103,7 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] Decision recorded: exit codes unchanged (0/3/2); every caller of the code checked (`agents/audit/audit.sh` grades 0 PASS, 2 FAIL, 3 WARN, anything else FAIL; no other caller reads the code)
 - [x] The audit summary line ends with `exit N: <meaning>`; a test pins exit 0, 3 (void-only) and 2 with that wording; the `fw audit` grading still reads the last line correctly; vendored copy in sync — 436 pytest + 20 bats across every audit caller green
-- [ ] ring20 told the contract
+- [x] ring20 told the contract (be.18 = 65d8a7307, msg f0596624)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
