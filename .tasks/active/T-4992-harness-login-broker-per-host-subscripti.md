@@ -29,6 +29,24 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 ## Problem Statement
 
 <!-- What problem are we exploring? For whom? Why now? -->
+Agents on other hosts need their own subscription login per harness. Copying a desktop login, using an API key, or typing in a terminal are each a bad answer (description; ring20-management msg 3447897a).
+
+**Evidence from ring20-management (msg e6a22976, 2026-11-01):**
+- **Scripts** (on their OneDev, master): `scripts/agy-node1-login.py` and `scripts/codex-node1-login.py`. The codex one uses a scratch CODEX_HOME and swaps only on success, locks against concurrent logins, and pushes to the phone on failure.
+- **Edge cases:**
+  1. pty driving through ssh/incus with select and ANSI stripping; menus detected by their text;
+  2. the TUI wraps a 600-character OAuth URL and inserts spaces; fixed with `stty cols 4000` and a regex over the buffer with CR/LF removed;
+  3. block-buffered stdout hid the "open this link" line; fixed with line buffering;
+  4. the operator does not use phone links, only a page on screen;
+  5. agy finds its login through $HOME, and uses the token file when there is no keyring;
+  6. `codex login` deletes the old login before it has a new one, so never log in on the live home.
+- **Weakness today (their own analysis):** the one-shot code page is served by the script on the LAN: random port and path, no TLS, no auth, one POST, 15 minutes. The pointer to it is a fixed, unauthenticated Watchtower static URL. Nothing proves the POST came from the operator.
+  - Anyone on the LAN can deny the login (the old login stays intact).
+  - Worse, anyone can post an authorization code from **their own** Google sign-in, so the host is logged into the wrong account. PKCE does not stop this.
+- **Their mitigations:**
+  1. compare the token's account email with the expected account before the swap;
+  2. a random page name, removed on first view;
+  3. for a framework surface: the page served by Watchtower behind its own session/auth, with a CSRF token, and the operator shown the account that will be stored before the swap.
 
 ## Assumptions
 
