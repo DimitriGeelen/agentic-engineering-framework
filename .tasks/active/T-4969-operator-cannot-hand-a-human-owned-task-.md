@@ -15,10 +15,10 @@ description: >
   existing human-action protection, CLI with --i-am-human), logged; promote prints
   that path.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T15:32:32Z
-last_update: '2026-11-01T15:45:34Z'
+last_update: 2026-11-01T16:03:10Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,20 +95,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 055-agentic-fleet-cockpit (msg 92d47a93): their operator ran the hand-over command that `fw note promote` prints (`fw task update T-XXX --owner agent`) for five promoted tasks, and all five were refused by R-033. Verified here: the Watchtower owner field (`web/blueprints/tasks.py:1142`) calls the same command without the bypass, so the operator's own field fails the same way.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** R-033 (`update-task.sh`, owner protection) refuses every human → agent change unless `--skip-human-ownership` is passed, and does not distinguish the operator from an agent. Other operator-only actions use `--from-watchtower` / `--i-am-human`; ownership never got that path. The wider issue, raised by the operator on 2026-11-01: who may change ownership, in which direction, on what evidence, is spread over R-033, D-626 (ledger hand-over), the bypass flag and T-4371 (creation-time owner). It should be one ruleset.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** first an external review of the proposal (operator's request, 2026-11-01). Then the operator decides. Then build the agreed step: at least the operator's own change through the Watchtower field working, logged.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the operator can hand a task over through the ownership field; an agent still cannot; every hand-over leaves a log line naming who did it. The general ruleset is captured as a decision or an inception.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] External review by two internal seats (codex, opencode) of the ownership proposal is recorded in `docs/reports/T-4969-ownership-ruleset-review.md`, with each answer and the cost logged; no host detail in the brief
+- [ ] The operator's decision on the review is recorded under ## Decisions
+- [ ] The agreed step is built and pinned by tests; every test that reads `agents/task-create/update-task.sh` owner handling or `web/blueprints/tasks.py` owner route passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -391,3 +392,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4969-operator-cannot-hand-a-human-owned-task-.md
 - **Context:** Initial task creation
+
+### 2026-11-01T15:57:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
