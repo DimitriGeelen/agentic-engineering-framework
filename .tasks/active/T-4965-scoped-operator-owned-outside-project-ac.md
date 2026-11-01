@@ -82,13 +82,17 @@ bvp_scores_proposed:
 -->
 
 - **IW-1: Can the boundary hook enforce per-directory read / create / create-project grants, from an operator-owned grant file, without widening anything a grant does not name?**
-  confidence: 0
-  disposition: deferred
-  rationale: design read of check-project-boundary.sh, the Tier 1 write scanner and the Tier 0 grammar not done yet (docs/reports/T-4965-scoped-access-grants.md)
+  confidence: 3
+  disposition: answered-pending-review
+  rationale: design read done 2026-11-01 (report §Design read). Yes for typed actions, with one new piece: lib/shell_write_scan.py must classify each target as create/modify/rename/delete/metadata (today it only finds targets). Probe: rm/mv/cp on an extra read path are already refused. Scope limit stays: scripts are fenced only by the NAS accounts, never by the hook.
 - **IW-2: How does level 2 ("modify only what the agent created") work when the filesystem cannot tell who created a file?**
-  confidence: 1
-  disposition: deferred
-  rationale: 050's mount facts: sshfs with no idmap, every file root:root mode 777, so ownership proves nothing; a created-by-agent ledger is required (requirements in docs/reports/T-4965-scoped-access-grants.md)
+  confidence: 3
+  disposition: answered-pending-review
+  rationale: 050's model change moves "own" to the NAS (pen-create, CREATOR OWNER), which holds against scripts. The framework ledger (pending in PreToolUse, confirmed in PostToolUse, renames move the entry) remains the audit aid, the source for temp items and the scope of deletes; a missing entry means the operator's file (report §Design draft 3).
+- **IW-3: Can a delete credential be kept from an agent that runs as root on the same host?**
+  confidence: 3
+  disposition: answered-pending-review
+  rationale: No, not by anything local (same residual as T-3581). Real separation needs an off-host executor (Ring20 Manager or NAS-side) that holds pen-delete and confirms the operator's approval itself; a local runtime only adds visibility. Report §Design draft 4c; operator's choice, asked of 050.
 
 ## Exploration Plan
 
