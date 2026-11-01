@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4977: Re-pin Workflow Designer 0.33.0/0.34.0 -> 0.35.0 (832 T-1360; validator changed)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T19:34:09Z
+# ============================================================================
+
+task_id: T-4977
+task_name: "Re-pin Workflow Designer 0.33.0/0.34.0 -> 0.35.0 (832 T-1360; validator changed)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T17:13:15Z
+completed: 2026-11-01T19:33:48Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T20:28:31+01:00
+last_commit: 2026-11-01T20:33:46+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  re-pin Workflow Designer 0.34.0 -> 0.35.0 (832 msg 041d0f42); pull-at-tag verified (MANIFEST, pin, kit SHA256SUMS); validator changed (sendTask/receiveTask/manualTask/businessRuleTask). vendor self — designer 0.35.0 build, validator and pin (also replaces 0.33.0, which stayed tracked because T-4957 never committed the vendored 0.34.0). criteria — pin verified, tests green, Watchtower serves 0.35.0. 832 told (be.16)
+
+# Key outcomes
+outcomes:
+  - '`policy/designer-pin.yaml` bumped to 0.35.0 (version, sha256 af559a13…, artifact, tag, vendored path, validator kit sha 8c628658…, validator sha c9c57d88… and 116871 bytes, notes); `fw designer sync --from-tag designer-v0.35.0` verifies and vendors both files'
+  - '`bin/fw designer status` PRESENT on 0.35.0; designer and /api/validate tests pass; Watchtower restarted and current; `bin/fw vendor self --check --task T-4977` clean — 16 designer bats files green, 147 pytest passed; /designer serves af559a13…; a sendTask map through live /api/validate is read as a flow node (only the lane/meta findings any lane-less map gets)'
+  - '832 told the pin landed and which be-tag carries it (v1.8.16-be.16 = 893cc8d8f, msg 8016d385)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/designer-pin.yaml'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.35.0.html'
+  - '.agentic-framework/vendor/designer/validate-workflow-0.35.0.py'
+  - '.tasks/active/T-4977-re-pin-workflow-designer-03300340---0350.md'
+  - 'policy/designer-pin.yaml'
+  - 'vendor/designer/aef-workflow-designer-0.35.0.html'
+  - 'vendor/designer/validate-workflow-0.35.0.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T20:28:31'
+    action: 'T-4977: re-pin Workflow Designer 0.34.0 -> 0.35.0 (832 msg 041d0f42); pull-at-tag verified (MANIFEST, pin, kit SHA256SUMS); validator changed (sendTask/receiveTask/manualTask/businessRuleTask)'
+  - time: '2026-11-01T20:29:02'
+    action: 'T-4977: vendor self — designer 0.35.0 build, validator and pin (also replaces 0.33.0, which stayed tracked because T-4957 never committed the vendored 0.34.0)'
+  - time: '2026-11-01T20:30:16'
+    action: 'T-4977: criteria — pin verified, tests green, Watchtower serves 0.35.0'
+  - time: '2026-11-01T20:33:46'
+    action: 'T-4977: 832 told (be.16)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 140 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 140
+  commits: 5
+  files_changed: 10
+  lines_added: 18689
+  lines_removed: 120
+  footprint_refreshed_at: '2026-11-01T19:34:19Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4977-re-pin-workflow-designer-03300340---0350.md
+generated_by: context-agent-hybrid
