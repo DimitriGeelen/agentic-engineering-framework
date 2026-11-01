@@ -90,8 +90,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Under `FW_ALLOW_EMPTY_RECOMMENDATION=1` the readiness check ignores only the `empty-recommendation` finding; other findings still refuse
-- [ ] `review_pipefail.bats` green, plus a test that another readiness finding still refuses under `FW_ALLOW_EMPTY_RECOMMENDATION=1`; every test that reads `lib/review.sh` passes; `bin/fw vendor self --check --task T-4949` clean
+- [x] Under `FW_ALLOW_EMPTY_RECOMMENDATION=1` the readiness check ignores only the `empty-recommendation` finding; other findings still refuse
+- [x] `review_pipefail.bats` green (6/6), plus a test that another readiness finding still refuses under `FW_ALLOW_EMPTY_RECOMMENDATION=1`; every test that reads `lib/review.sh` passes; `bin/fw vendor self --check --task T-4949` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -277,8 +277,19 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/review_pipefail.bats > /tmp/.t4949 2>&1 && ! grep -q "^not ok" /tmp/.t4949
+test "$(grep -c '^ok' /tmp/.t4949)" -eq 6
+bin/fw vendor self --check --task T-4949
 
 ## RCA
+
+**Symptom:** `FW_ALLOW_EMPTY_RECOMMENDATION=1 fw task review <inception>` still refused, naming `FW_ALLOW_UNREADY_HANDOFF` as the bypass.
+
+**Root cause:** T-3549 added a readiness check to `emit_review` that also reports an empty Recommendation, placed before the T-2206 gate, with its own bypass variable. The older documented bypass never reached the gate that honours it.
+
+**Why structurally allowed:** the T-2206 bypass test caught it, but it was baselined (owner T-3609) rather than fixed; the T-1890 producer/consumer parity rule was not applied when the second gate was added in front of the first.
+
+**Prevention:** the readiness check now leaves that one finding to the T-2206 gate under its bypass, and a new test proves another finding (an undisposed question) still refuses, so the fix cannot widen into a general bypass.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
