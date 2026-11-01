@@ -89,9 +89,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `regenerate` keeps entries whose file is not in the report's `file_durations` for that leg; unchanged when the report has no per-file record
-- [ ] A test pins it (an entry from a file outside the report is kept; an entry from a file that ran green is dropped); existing baseline tests pass; run against a copy of the real baseline it keeps the 17 not-run files' entries
-- [ ] `bin/fw vendor self --check --task T-4956` clean
+- [x] `regenerate` keeps entries whose file is not in the report's `file_durations` for that leg; unchanged when the report has no per-file record
+- [x] A test pins it (an entry from a file outside the report is kept; an entry from a file that ran green is dropped); existing baseline tests pass; run against a copy of the real baseline it keeps the 17 not-run files' entries
+- [x] `bin/fw vendor self --check --task T-4956` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -277,8 +277,18 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t3621_unit_suite_ratchet.bats > /tmp/.t4956 2>&1 && ! grep -q "^not ok" /tmp/.t4956
+bin/fw vendor self --check --task T-4956
 
 ## RCA
+
+**Symptom:** after a fast-tier run, `regenerate` dropped all 44 baseline entries, 17 files' worth of which never ran in that report.
+
+**Root cause:** "green" was computed as not-red, leg-finished and not-timed-out; the check that the file ran at all was missing. T-4377 split the suite into tiers, so one report covers one tier and every other tier's entry looked green.
+
+**Why structurally allowed:** the regenerate tests used reports without per-file records, predating tiers; no test had a file absent from the report.
+
+**Prevention:** an entry is dropped only when its file appears in the report's `file_durations`; a T-4956 test pins it and fails on the pre-fix code. Learning: "not red" is not "green" whenever a report can be partial; the same shape caught T-4943 (pages never captured counted as not-seen) earlier today.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
