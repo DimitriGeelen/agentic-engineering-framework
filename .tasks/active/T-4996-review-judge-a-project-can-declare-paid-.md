@@ -1,10 +1,18 @@
 ---
 id: T-4996
-name: "Review judge: a project can declare paid backends never allowed; the judge then says so instead of filing paid proposals (ring20)"
+name: "Review judge: a project can declare paid backends never allowed; the judge
+  then says so instead of filing paid proposals (ring20)"
 description: >
-  ring20-dashboard (msg 699dcbea, be.19): after T-4978 kept blind kinds off page criteria, rung-5 page criteria at ring20 end at 'OPERATOR: no seat kind could evaluate' and the judge files paid OpenRouter proposals (RP-138b6ad8, RP-42360e74 and more) that their operator will never approve (estate-only rule). Need: a per-project setting (e.g. fw config REVIEW_PAID_BACKENDS=never) under which the judge never plans paid seats or files paid proposals, and its result names the reason plainly ('paid backends are not allowed in this project; no estate seat can evaluate this criterion'). Pair with T-4980 and the antigravity seat fix for real coverage.
+  ring20-dashboard (msg 699dcbea, be.19): after T-4978 kept blind kinds off page criteria,
+  rung-5 page criteria at ring20 end at 'OPERATOR: no seat kind could evaluate' and
+  the judge files paid OpenRouter proposals (RP-138b6ad8, RP-42360e74 and more) that
+  their operator will never approve (estate-only rule). Need: a per-project setting
+  (e.g. fw config REVIEW_PAID_BACKENDS=never) under which the judge never plans paid
+  seats or files paid proposals, and its result names the reason plainly ('paid backends
+  are not allowed in this project; no estate seat can evaluate this criterion'). Pair
+  with T-4980 and the antigravity seat fix for real coverage.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T23:39:29Z
-last_update: 2026-11-01T23:39:29Z
-date_finished: null
+last_update: '2026-11-01T23:42:38Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-01T23:42:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4996: Review judge: a project can declare paid backends never allowed; the judge then says so instead of filing paid proposals (ring20)
@@ -57,20 +82,20 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** ring20-dashboard on be.19 (msg 699dcbea). After T-4978 kept blind kinds off page criteria, their rung-5 page criteria end at "OPERATOR: no seat kind could evaluate". The judge then files paid OpenRouter proposals (RP-138b6ad8, RP-42360e74 and more) that their operator will never approve: their rule is that nothing leaves the estate.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** the judge always offers unfilled seats to a paid backend. A project cannot say "never paid", so it collects dead proposals, and its operator reads them as pending decisions.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** a per-project setting under which the judge never plans paid seats and never files paid proposals, and says plainly why a criterion went to the operator.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** with `REVIEW_PAID_BACKENDS=never` (`fw config set`), an unfilled seat records "paid backends are not allowed in this project" and no `RP-*` is created; without it, behaviour is unchanged.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Config key `REVIEW_PAID_BACKENDS` (values `allowed` default, `never`) in the registry (`lib/config.sh` FW_CONFIG_REGISTRY) with a description; read by the judge through `review_policy.config_value`
+- [ ] With `never`, `fw reviewer judge` plans no paid seats, calls no `fw review propose`, and each unfilled seat says "paid backends are not allowed in this project (REVIEW_PAID_BACKENDS=never)"; with the default, behaviour is unchanged; tests for both; every test that reads `judge_cli.py` passes; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -353,3 +378,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4996-review-judge-a-project-can-declare-paid-.md
 - **Context:** Initial task creation
+
+### 2026-11-01T23:42:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
