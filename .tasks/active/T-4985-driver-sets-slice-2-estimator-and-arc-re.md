@@ -117,10 +117,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `estimator.estimate_task` loads drivers, aliases and specs from the task's set (`driver_sets.load_for_task`); the three loaders take a policy argument; the set wins collisions with arc-scoped drivers as the live file does today; a refused set skips the task with a reason, never falls back to the live file
-- [ ] Proposals (`bvp_scores_proposed` entries) record `driver_set:` (absent = default). A score counts under another set only when that set's entry for the id has the same name and scoring spec (C1). A task missing drivers of its set, or carrying scores from another set, is re-estimated for those drivers only, bypassing delta suppression, and confirmations are never overwritten (C2)
-- [ ] `lib/arc-driver-review.sh` check_a and check_b, and `lib/bvp-scorability.sh` classify, use the arc's set; the estimator's AGENT.md describes set loading
-- [ ] Tests: extend `test_bvp_estimator.py` (product-arc task gets product weights and F-TRUST-style driver; provenance; backfill; refused set skipped) and `t3429_arc_driver_review.bats` (a scoped driver duplicating a set driver is refused); every test that reads the changed files passes; vendored copy in sync
+- [x] `estimator.estimate_task` loads drivers, aliases and specs from the task's set (`driver_sets.load_for_task`); the three loaders take a policy argument; the set wins collisions with arc-scoped drivers as the live file does today; a refused set skips the task with a reason, never falls back to the live file
+- [x] Proposals (`bvp_scores_proposed` entries) record `driver_set:` (absent = default). A score counts under another set only when that set's entry for the id has the same name and scoring spec (C1). A task missing drivers of its set, or carrying scores from another set, is re-estimated for those drivers only, bypassing delta suppression, and confirmations are never overwritten (C2)
+- [x] `lib/arc-driver-review.sh` check_a and check_b, and `lib/bvp-scorability.sh` classify, use the arc's set; the estimator's AGENT.md describes set loading
+- [ ] Tests: extend `test_bvp_estimator.py` (product-arc task gets product weights and F-TRUST-style driver; provenance; backfill; refused set skipped) and `t3429_arc_driver_review.bats` (a scoped driver duplicating a set driver is refused); every test that reads the changed files passes; vendored copy in sync. Dispatched worker t4985-build, reviewed by me (refusal never falls back to the live file, checked in the diff); my rerun: 406 pytest + 36 bats over every file naming the changed code, 0 skipped; one dead negation in the new bats test fixed (`|| false`).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -306,6 +306,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_bvp_estimator.py tests/unit/test_driver_sets.py > /tmp/.t4985.v1 2>&1 && grep -q passed /tmp/.t4985.v1
+timeout 900 bats tests/unit/t3429_arc_driver_review.bats tests/unit/t3429_arc_driver_reviewer_record_rail.bats > /tmp/.t4985.v2 2>&1 && ! grep -q "^not ok" /tmp/.t4985.v2
+test "$(grep -c '# skip' /tmp/.t4985.v2)" -eq 0
+bin/fw vendor self --check --task T-4985
 
 ## RCA
 
@@ -377,6 +381,18 @@ bvp_scores_proposed:
 -->
 
 ## Decisions
+
+### 2026-11-01 — backfill applies only where a set is involved
+- **Chose:** re-estimate missing drivers for a task under a named set, or one carrying scores made under another set. A default-set task whose scores all came from the live file behaves exactly as before.
+- **Why:** applied literally, C2 would also have made the sweep write to confirmed default-set tasks lacking a newer live driver. That contradicts the existing rule that the sweep leaves confirmed tasks alone, and an existing test pins that rule. It is a different question from driver sets.
+- **Rejected:** backfilling every task with any missing driver.
+
+### 2026-11-01 — `arcs_dir` override in `lib/driver_sets.py`
+- **Chose:** an optional `arcs_dir` on `resolve_set_name`, `load_for_task` and the internal resolver. The resolution rule is unchanged.
+- **Why:** the estimator's existing `ARCS_DIR` seam, used by about 20 tests, has to reach the one resolver; a second resolver would break the "one rule" design.
+
+### Known gap, carried to T-4986
+`fw bvp confirm` does not record the set the confirmed scores came from, so they read as live-file scores. A product-arc task gets one extra backfill entry after each confirm, then it stops. Fix in slice 3: confirm copies `driver_set`.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
