@@ -105,7 +105,7 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] `policy/designer-pin.yaml` bumped to 0.35.0 (version, sha256 af559a13…, artifact, tag, vendored path, validator kit sha 8c628658…, validator sha c9c57d88… and 116871 bytes, notes); `fw designer sync --from-tag designer-v0.35.0` verifies and vendors both files
 - [x] `bin/fw designer status` PRESENT on 0.35.0; designer and /api/validate tests pass; Watchtower restarted and current; `bin/fw vendor self --check --task T-4977` clean — 16 designer bats files green, 147 pytest passed; /designer serves af559a13…; a sendTask map through live /api/validate is read as a flow node (only the lane/meta findings any lane-less map gets)
-- [ ] 832 told the pin landed and which be-tag carries it
+- [x] 832 told the pin landed and which be-tag carries it (v1.8.16-be.16 = 893cc8d8f, msg 8016d385)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
