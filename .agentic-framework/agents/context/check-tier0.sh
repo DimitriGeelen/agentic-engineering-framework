@@ -514,12 +514,34 @@ def matches(raw):
     if not any(d.startswith('TIER 0 SELF-APPROVAL') for d in found):
         if (re.search(TIER0_WORD, dq) and not TIER0_READONLY.fullmatch(raw.strip())) \
                 or any(re.search(p, dq) for p in MODULE_USE) or module_executed(raw, dq):
-            found.append('TIER 0 SELF-APPROVAL: a tier0 command other than a plainly spelled '
-                         'fw tier0 status|list (wrappers like sudo, su, tmux, bash -c and '
-                         'reassembled spellings included) is human-only')
+            found.append(SELF_APPROVAL_WORD)
     return found
 
+# T-4953 (operator 2026-11-01, option 1): a plain read-only form followed by ONE
+# inert filter is still refused, but writes no approval card, since approving a read
+# only teaches the operator to approve unread. Whole command, fail closed: the left
+# side is exactly TIER0_READONLY, optionally then the literal 2>&1; the right side is
+# grep|head|tail|wc with plain words (no quote, $, backtick, redirect, further pipe,
+# ;, &, newline). Anything else, or any second risk, keeps its card.
+READ_FILTER = re.compile(r'[ \t]*\|[ \t]*(?:grep|head|tail|wc)(?:[ \t]+[A-Za-z0-9._:=@+%,/-]+)*[ \t]*')
+SELF_APPROVAL_WORD = ('TIER 0 SELF-APPROVAL: a tier0 command other than a plainly spelled '
+                      'fw tier0 status|list (wrappers like sudo, su, tmux, bash -c and '
+                      'reassembled spellings included) is human-only')
+
+def read_only_pipe(raw, found):
+    if found != [SELF_APPROVAL_WORD] or chr(10) in raw or chr(13) in raw:
+        return False
+    s = raw.strip()
+    bar = s.find('|')
+    if bar < 0:
+        return False
+    left = re.sub(r'[ \t]+2>&1[ \t]*' + chr(36), '', s[:bar].rstrip())
+    return bool(TIER0_READONLY.fullmatch(left) and READ_FILTER.fullmatch(s[bar:]))
+
 found = matches(strip_heredocs(command))
+if found and read_only_pipe(command, found):
+    print('READ-REFUSED|' + found[0])
+    sys.exit(0)
 if found:
     # Every matching risk is shown, not only the first: a force push that also
     # skips hooks must say so (round 3).
@@ -557,6 +579,31 @@ fi
 # Matcher returned SAFE: allow
 if [ "$MATCH_RESULT" = "SAFE" ]; then
     exit 0
+fi
+
+# T-4953: a read-only query refused only for its pipe. Still blocked, but no
+# approval card and no pending hash: approving a read teaches the operator to
+# approve without reading. One audit line per refusal, so repeats stay visible.
+if [ "${MATCH_RESULT#READ-REFUSED|}" != "$MATCH_RESULT" ]; then
+    T0_READ_LOG="$PROJECT_ROOT/.context/working/tier0-read-refusals.jsonl"
+    mkdir -p "${T0_READ_LOG%/*}" 2>/dev/null
+    T0_CMD="$COMMAND" python3 -c '
+import json, os, sys, time
+print(json.dumps({"ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                  "command": os.environ["T0_CMD"][:300], "card": False,
+                  "reason": "read-only query refused only for its pipe (T-4953)"}))
+' >> "$T0_READ_LOG" 2>/dev/null || true
+    {
+        echo ""
+        echo "  TIER 0: read-only query refused because of the pipe (T-4953)"
+        echo "  Command: ${COMMAND:0:120}"
+        echo ""
+        echo "  Only the plain forms run unattended: 'fw <gate> status', 'list' or 'help',"
+        echo "  with nothing after them. Re-run it without the pipe and read the output."
+        echo "  No approval was requested; the operator's queue is untouched."
+        echo ""
+    } >&2
+    exit 2
 fi
 
 # ── Destructive pattern detected ──
