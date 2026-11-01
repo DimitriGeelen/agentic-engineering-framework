@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4949: fw task review ignores FW_ALLOW_EMPTY_RECOMMENDATION: the T-3549 readiness check refuses empty-recommendation before the T-2206 gate that honours it
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T08:48:22Z
+# ============================================================================
+
+task_id: T-4949
+task_name: "fw task review ignores FW_ALLOW_EMPTY_RECOMMENDATION: the T-3549 readiness check refuses empty-recommendation before the T-2206 gate that honours it"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T08:43:04Z
+completed: 2026-11-01T08:47:58Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T09:47:38+01:00
+last_commit: 2026-11-01T09:47:57+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw task review honours FW_ALLOW_EMPTY_RECOMMENDATION again (readiness check leaves that one finding to the T-2206 gate); negative control for undisposed questions. criteria, RCA, verification
+
+# Key outcomes
+outcomes:
+  - 'Under `FW_ALLOW_EMPTY_RECOMMENDATION=1` the readiness check ignores only the `empty-recommendation` finding; other findings still refuse'
+  - '`review_pipefail.bats` green (6/6), plus a test that another readiness finding still refuses under `FW_ALLOW_EMPTY_RECOMMENDATION=1`; every test that reads `lib/review.sh` passes; `bin/fw vendor self --check --task T-4949` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/review.sh'
+  - '.tasks/active/T-4949-fw-task-review-ignores-fwallowemptyrecom.md'
+  - 'lib/review.sh'
+  - 'tests/unit/review_pipefail.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T09:47:38'
+    action: 'T-4949: fw task review honours FW_ALLOW_EMPTY_RECOMMENDATION again (readiness check leaves that one finding to the T-2206 gate); negative control for undisposed questions'
+  - time: '2026-11-01T09:47:57'
+    action: 'T-4949: criteria, RCA, verification'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4
+  commits: 3
+  files_changed: 7
+  lines_added: 537
+  lines_removed: 7
+  footprint_refreshed_at: '2026-11-01T08:48:33Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4949-fw-task-review-ignores-fwallowemptyrecom.md
+generated_by: context-agent-hybrid
