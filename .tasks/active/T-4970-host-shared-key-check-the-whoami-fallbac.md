@@ -95,8 +95,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `_host_fingerprint` returns only the signing probe's answer (no whoami fallback); docstrings say why
-- [ ] Tests: probe unavailable → `_host_fingerprint` None and `identity_is_host_shared` False with a selector set; no selector → still True; every test that reads `lib/sidecar/dm.py` host/identity code passes; `bin/fw vendor self --check --task T-4970` clean
+- [x] `_host_fingerprint` returns only the signing probe's answer (no whoami fallback); docstrings say why
+- [x] Tests: probe unavailable → `_host_fingerprint` None and `identity_is_host_shared` False with a selector set; no selector → still True; every test that reads `lib/sidecar/dm.py` host/identity code passes; `bin/fw vendor self --check --task T-4970` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -282,8 +282,18 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_t4941_host_fingerprint_signing.py tests/unit/test_sidecar_dm_host_shared_t4252.py tests/unit/test_sidecar_rail_identity_t4311.py tests/unit/test_sidecar_dm_transition_scope_t4531.py > /tmp/.t4970.v 2>&1 && grep -q passed /tmp/.t4970.v
+bin/fw vendor self --check --task T-4970
 
 ## RCA
+
+**Symptom:** a project that signs with its own key could still be reported as host-shared whenever `termlink identity sign` was unavailable or answered with another source (832 msg 4ebbef7c).
+
+**Root cause:** T-4941 fixed the main reading but kept the stripped-env `whoami` reading as a fallback. `whoami` picks the session by a pid walk, so it returns our own key whatever the env, and host == ours.
+
+**Why structurally allowed:** the test fakes modelled `whoami` as following the env, which real termlink does not do, so the fallback looked correct in every test.
+
+**Prevention:** the fallback is gone; the fakes now answer `identity sign` as termlink does, and three tests pin "probe unavailable → unknown, not host-shared with a selector; still host-shared without one".
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
