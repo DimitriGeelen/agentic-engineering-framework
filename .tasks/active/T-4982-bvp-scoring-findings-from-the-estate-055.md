@@ -68,6 +68,23 @@ bvp_scores_proposed:
 ## Problem Statement
 
 <!-- What problem are we exploring? For whom? Why now? -->
+`fw bvp` does not predict what the operator chooses, across the estate (055 T-677 survey, 11 of 13 agents; msg d6ab6680). Six findings are in the description. Evidence 055 sent for this task (msg 927f9b3a, 2026-11-01), kept here verbatim in substance:
+
+- **AUC method (055 T-677-ground-truth.md):**
+  - Chosen tasks: 489, i.e. completed in the last 45 days, or carrying an "operator ruling" or a Dialogue Log.
+  - Not chosen: 64 tasks, active and parked (horizon later/next) or stale captured.
+  - Score: the confirmed score, else the latest proposed score, weighted (max 270).
+  - Results: value AUC 0.66; pre-finish proposal 0.69; `fw bvp` position 0.59; constants removed 0.62; operator-ruling tasks alone 0.75.
+  - Ties: 389 scored tasks share only 57 distinct values. Of the 110 tasks with no signal at all, 79 score 0 and 31 score 108, and the 108s rank above every varied score.
+- **Their top 15 on 2026-11-01** (`fw bvp --include-proposed`): 9 are already started (in-progress work is listed as a candidate), 5 are parked later/next, and 3 carry the constant no-signal 108. Only one is both waiting and horizon now.
+- **Trust meter (055 T-678, 2026-10-02 to 11-01):**
+  - 211 picks: 137 were new work, never in the backlog; 74 came from the backlog, and 69 of those had no score when picked.
+  - The top-ranked task was picked once: override rate 98.6 %.
+  - One no-signal task (T-058, 108) topped the waiting list for 71 of the 74 backlog picks and was never picked.
+- **Candidate defects visible already:**
+  - no-signal is written as a number (0 or 108);
+  - the rank lists started work and parked work as candidates;
+  - the estimator sweep rewrites other tasks' frontmatter.
 
 ## Assumptions
 
