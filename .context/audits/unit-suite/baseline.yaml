@@ -9,63 +9,10 @@ source_report:
   finished: '2026-10-01T01:43:26Z'
 entries:
 - leg: bats
-  name: 'approvals_close_ready_arcs.bats: arc with status=in-progress, ratio<0.80, rec present → excluded'
-  file: approvals_close_ready_arcs.bats
-  owner: T-3611
-  added: '2026-10-01'
-  expires: '2026-10-31'
-  added_by: human
-- leg: bats
-  name: 'approvals_close_ready_arcs.bats: arc with status=in-progress, ratio>=0.80, no rec → included
-    with blocked_reason (T-2986)'
-  file: approvals_close_ready_arcs.bats
-  owner: T-3611
-  added: '2026-10-01'
-  expires: '2026-10-31'
-  added_by: human
-- leg: bats
-  name: 'approvals_close_ready_arcs.bats: arc with status=in-progress, ratio>=0.80, rec present → included'
-  file: approvals_close_ready_arcs.bats
-  owner: T-3611
-  added: '2026-10-01'
-  expires: '2026-10-31'
-  added_by: human
-- leg: bats
-  name: 'approvals_close_ready_arcs.bats: verdict is captured per arc (CLOSE / KEEP-OPEN / GO)'
-  file: approvals_close_ready_arcs.bats
-  owner: T-3611
-  added: '2026-10-01'
-  expires: '2026-10-31'
-  added_by: human
-- leg: bats
-  name: 'approvals_close_ready_arcs.bats: anchor task with empty ## Recommendation body → included with
-    blocked_reason (T-2986)'
-  file: approvals_close_ready_arcs.bats
-  owner: T-3611
-  added: '2026-10-01'
-  expires: '2026-10-31'
-  added_by: human
-- leg: bats
-  name: 'atomic_yaml_write_lint.bats: every lib/ and agents/ file that dumps YAML has an atomic-write
-    signal'
-  file: atomic_yaml_write_lint.bats
-  owner: T-3612
-  added: '2026-10-01'
-  expires: '2026-10-31'
-  added_by: human
-- leg: bats
   name: 'audit_inception_recommendation.bats: emit_review: FW_ALLOW_EMPTY_RECOMMENDATION=1 bypass → exit
     0 + NOTE + log'
   file: audit_inception_recommendation.bats
   owner: T-3609
-  added: '2026-10-01'
-  expires: '2026-10-31'
-  added_by: human
-- leg: bats
-  name: 'audit_split_root_asset_lint.bats: shell-idiom ratchet (T-2649): PROJECT_ROOT framework-asset
-    sites in shell stay at the reviewed baseline'
-  file: audit_split_root_asset_lint.bats
-  owner: T-3614
   added: '2026-10-01'
   expires: '2026-10-31'
   added_by: human
@@ -114,27 +61,6 @@ entries:
   expires: '2026-10-31'
   added_by: human
 - leg: bats
-  name: 'handover_push_timeout.bats: handover.sh distinguishes timeout (exit 124) from other failures'
-  file: handover_push_timeout.bats
-  owner: T-3556
-  added: '2026-10-01'
-  expires: '2026-10-31'
-  added_by: human
-- leg: bats
-  name: 'handover_push_timeout.bats: checkpoint.sh wraps auto-handover invocation in timeout (T-1277 belt-and-braces)'
-  file: handover_push_timeout.bats
-  owner: T-3556
-  added: '2026-10-01'
-  expires: '2026-10-31'
-  added_by: human
-- leg: bats
-  name: 'handover_push_timeout.bats: default push timeout is 60s when env var unset'
-  file: handover_push_timeout.bats
-  owner: T-3556
-  added: '2026-10-01'
-  expires: '2026-10-31'
-  added_by: human
-- leg: bats
   name: 'lib_review.bats: review: T-1492 — emit_review survives pipefail when inception task has no Recommendation
     line'
   file: lib_review.bats
@@ -150,69 +76,10 @@ entries:
   expires: '2026-10-31'
   added_by: human
 - leg: bats
-  name: 'no_root_framework_markers.bats: filesystem root carries no framework markers'
-  file: no_root_framework_markers.bats
-  owner: T-2787
-  added: '2026-10-01'
-  expires: '2026-10-31'
-  added_by: human
-- leg: bats
-  name: 'review_pipefail.bats: T-2206 bypass: FW_ALLOW_EMPTY_RECOMMENDATION=1 → exit 0 + NOTE + log'
-  file: review_pipefail.bats
-  owner: T-3609
-  added: '2026-10-01'
-  expires: '2026-10-31'
-  added_by: human
-- leg: bats
-  name: 't2244_audit_self_vendor_drift.bats: t2244 t2: libs-only drift → FAIL line names libs class'
-  file: t2244_audit_self_vendor_drift.bats
-  owner: T-3604
-  added: '2026-10-01'
-  expires: '2026-10-31'
-  added_by: human
-- leg: bats
-  name: 't2244_audit_self_vendor_drift.bats: t2244 t3: templates-only drift → FAIL line names templates
-    class'
-  file: t2244_audit_self_vendor_drift.bats
-  owner: T-3604
-  added: '2026-10-01'
-  expires: '2026-10-31'
-  added_by: human
-- leg: bats
-  name: 't2298_audit_structure_no_perfile_fork.bats: t3: T-2096 block uses single python3 pre-scan (not
-    per-task grep fan-out)'
-  file: t2298_audit_structure_no_perfile_fork.bats
-  owner: T-3604
-  added: '2026-10-01'
-  expires: '2026-10-31'
-  added_by: human
-- leg: bats
-  name: 't2298_audit_structure_no_perfile_fork.bats: t4: T-2096 block has exactly one python3 -c invocation'
-  file: t2298_audit_structure_no_perfile_fork.bats
-  owner: T-3604
-  added: '2026-10-01'
-  expires: '2026-10-31'
-  added_by: human
-- leg: bats
-  name: 'test_bin_fw_no_heredoc_cmd_sub.bats: T-1946: bin/fw contains zero heredoc-in-command-substitution
-    patterns'
-  file: test_bin_fw_no_heredoc_cmd_sub.bats
-  owner: T-4221
-  added: '2026-10-01'
-  expires: '2026-10-31'
-  added_by: human
-- leg: bats
   name: 'test_cron_registry_generated_drift.bats: T-1942: registry ahead of generated → WARN ''edited
     but not generated'''
   file: test_cron_registry_generated_drift.bats
   owner: T-4221
-  added: '2026-10-01'
-  expires: '2026-10-31'
-  added_by: human
-- leg: pytest
-  name: tests/unit/test_operator_facing_stderr.py::test_every_stderr_render_site_is_sanitized
-  file: test_operator_facing_stderr.py
-  owner: T-3605
   added: '2026-10-01'
   expires: '2026-10-31'
   added_by: human
@@ -251,14 +118,6 @@ entries:
   name: 't1719_index_one_post_write.bats: t1719: indexing a document makes it retrievable and stays under
     the 5s budget'
   file: t1719_index_one_post_write.bats
-  owner: T-4221
-  added: '2026-10-17'
-  expires: '2026-10-31'
-  added_by: human
-- leg: bats
-  name: 'check_render_surface_human_ac_sigpipe.bats: T-1900: pre-fix pattern (head -3) DID die with SIGPIPE
-    — regression sentinel'
-  file: check_render_surface_human_ac_sigpipe.bats
   owner: T-4221
   added: '2026-10-17'
   expires: '2026-10-31'
@@ -336,7 +195,7 @@ entries:
   expires: '2026-10-27'
   added_by: human
 last_regenerated:
-  at: '2026-10-17'
+  at: '2026-11-01'
   report: /opt/999-Agentic-Engineering-Framework/.context/audits/unit-suite/LATEST.yaml
-  finished: '2026-10-17T02:51:08Z'
-  dropped: 113
+  finished: '2026-11-01T09:57:16Z'
+  dropped: 19
