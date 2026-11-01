@@ -89,8 +89,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `web/blueprints/approvals.py` passes demo-check's stderr through `operator_facing_stderr`; the exit-code-to-state mapping is unchanged
-- [ ] `tests/unit/test_operator_facing_stderr.py` passes; existing approvals arc tests pass; Watchtower restarted and `bin/fw watchtower current` exits 0; `bin/fw vendor self --check --task T-4947` clean
+- [x] `web/blueprints/approvals.py` passes demo-check's stderr through `operator_facing_stderr`; the exit-code-to-state mapping is unchanged
+- [x] `tests/unit/test_operator_facing_stderr.py` passes; existing approvals arc tests pass; Watchtower restarted and `bin/fw watchtower current` exits 0; `bin/fw vendor self --check --task T-4947` clean
 
 ### Human
 - [ ] [REVIEW] The Arc Closure section of /approvals still renders as before
@@ -281,6 +281,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_operator_facing_stderr.py tests/unit/test_t3552_arc_close_readiness.py > /tmp/.t4947 2>&1 && grep -q " passed" /tmp/.t4947 && ! grep -qE "failed|error" /tmp/.t4947
+bin/fw watchtower current
+bin/fw vendor self --check --task T-4947
 
 ## RCA
 
@@ -297,6 +300,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** `test_every_stderr_render_site_is_sanitized` red since 2026-09-29, naming `web/blueprints/approvals.py:943`.
+
+**Root cause:** T-3553 added `_arc_demo_state`, which joins `fw arc demo-check`'s raw stderr into a detail line rendered on /approvals, without `operator_facing_stderr` (the T-3280 rule for every operator surface).
+
+**Why structurally allowed:** the sanitizer test caught it the day it landed, but the red was baselined (owner T-3605) instead of fixed, and the baseline expiry was the next thing to look at it, a month later.
+
+**Prevention:** the site is sanitized and the test is green, so the existing test guards it again. The broader lesson is T-4946's: a baselined red is a debt with a date, and these dates came due together.
 
 ## Evolution
 
