@@ -106,8 +106,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `scan_boundary` refuses an unresolved write target when the command names a guarded path anywhere (new `pending_unresolved`, judged by `_names_guarded`), and leaves it allowed otherwise; the docstring says so
-- [ ] Tests: `p=/out; echo x >> "$p"`, `export p=…`, `"${p}"` refused; `o=$(mktemp)`, an in-project variable, a `/tmp` variable allowed; every test that reads `lib/shell_write_scan.py` or `check-project-boundary.sh` passes; vendored copy in sync
+- [x] `scan_boundary` refuses an unresolved write target when the command names a guarded path anywhere (new `pending_unresolved`, judged by `_names_guarded`), and leaves it allowed otherwise; the docstring says so. Only path WORDS with `$`/backtick are judged; the UNRESOLVED marker (xargs/find operands, git words, patch contents) keeps its T-4487 handling, a first version that judged it too broke a T-4487 control
+- [x] Tests (578 bats across every boundary/scanner file + 59 task-file-guard bats + 24 pytest, 0 skipped): `p=/out; echo x >> "$p"`, `export p=…`, `"${p}"` refused; `o=$(mktemp)`, an in-project variable, a `/tmp` variable allowed; every test that reads `lib/shell_write_scan.py` or `check-project-boundary.sh` passes; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -293,22 +293,19 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t4983_boundary_variable_write_target.bats tests/unit/t4487_boundary_unresolved_git_output.bats > /tmp/.t4983.v 2>&1 && ! grep -q "^not ok" /tmp/.t4983.v
+test "$(grep -c '# skip' /tmp/.t4983.v)" -eq 0
+bin/fw vendor self --check --task T-4983
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `p=/srv/other/x.txt; echo x >> "$p"` passed the project-boundary hook and would write outside the project (found by the codex review of T-4965, confirmed by probe).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** in boundary mode, `lib/shell_write_scan.py` deliberately left a target that is only known at run time unjudged. Its docstring said "no mention gate applies here". The read pass did not see the path either, because it sat inside an assignment word.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the boundary tests covered literal, relative, quoted and globbed targets, but no test assigned the path to a variable first. T-4487 added a mention gate for the one variable case it met (git `--output`) and did not generalise it.
+
+**Prevention:** the generalised mention gate (`pending_unresolved`), and `tests/unit/t4983_boundary_variable_write_target.bats` with five refused forms and four controls. Registered as G-126. Still out of scope by design, as for Tier 0: a value that only a file or the environment supplies (`echo x > "$(cat f)"` with an outside path inside `f`).
 
 ## Evolution
 
