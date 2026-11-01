@@ -549,16 +549,17 @@ def r7(repo):
 
 
 class TestSevenPages:
-    def test_every_page_is_registered_and_the_seventh_is_recorded_uncaptured(self, r7):
+    def test_every_page_is_registered_and_captured(self, r7):
+        # T-4943: was "the seventh is recorded uncaptured" — the 6-page capture cap made every
+        # plan larger than 6 un-greenable. Every required page is now registered AND captured;
+        # the refusal of a green that misses a page is the next test, unchanged.
         w = FakeWorker("green")
-        res = _judge(r7, dispatcher=w, capture=_capture_all)
+        _judge(r7, dispatcher=w, capture=_capture_all)
         run = next(r for r in vl._read(vl.RUNS, r7) if r.get("kind") == "run")
         assert run["pages"] == {"1": SEVEN}
         caps = {c["page"]: c for c in run["captures"]}
-        assert all(caps[p]["ok"] for p in SEVEN[:6])
-        assert not caps["/p7"]["ok"] and "capped" in caps["/p7"]["error"]
-        assert "did NOT see: `/p7`" in w.calls[0]["brief"]
-        assert res["outcomes"] == {1: "unknown"}             # the worker's green is refused
+        assert all(caps[p]["ok"] for p in SEVEN)
+        assert "did NOT see" not in w.calls[0]["brief"]
 
     def test_ledger_refuses_a_green_missing_the_seventh_page(self, r7, monkeypatch):
         """Application negative control: the row gets past `record` (its run check bypassed) and

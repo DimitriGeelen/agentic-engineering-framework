@@ -85,9 +85,6 @@ RUNG_COST = review_policy.RUNG_COST
 #: IW-7: a rung-5 panel is three reviewers from three different vendors. WHICH vendors is the
 #: registry's business (policy/review-backends.yaml), not this module's.
 PANEL_SIZE = review_policy.PANEL_SIZE
-#: Screenshots taken per run. Pages beyond the cap are still REQUIRED: they are registered as
-#: not captured, so the ledger refuses a render green (round 3: no silent truncation).
-MAX_CAPTURE_PAGES = 6
 #: Seconds a review seat runs before the dispatcher stops it (T-4933: the brief states it, so a
 #: harness seat prints its verdicts before the stop instead of recording nothing).
 HARNESS_SEAT_TIMEOUT = 900
@@ -386,7 +383,7 @@ def _pages_for(root: Path, task_id: str, task_text: str, criteria: list[dict]) -
         if p not in seen:
             seen.add(p)
             out.append(p)
-    return out          # every required page; capture is capped separately (MAX_CAPTURE_PAGES)
+    return out          # every required page, and every one is captured (T-4943)
 
 
 def _watchtower_url(root: Path) -> str:
@@ -526,20 +523,18 @@ def _gather_evidence(root: Path, task_id: str, task_data: dict, criteria: list[d
     ev["visual"] = _gather_visual(root, task_id, task_data)
     if dry_run:
         return ev
-    shoot = ev["pages"][:MAX_CAPTURE_PAGES]
+    # T-4943: every required page is captured. A cap below the required set (6, from T-3580
+    # round 3) recorded the rest as not captured, so the ledger refused every render green on
+    # a plan larger than the cap and no reviewer could ever close it.
     try:
-        shots, err = capture(_watchtower_url(root), shoot, root / EVIDENCE_DIR / task_id)
+        shots, err = capture(_watchtower_url(root), ev["pages"], root / EVIDENCE_DIR / task_id)
     except Exception as e:  # noqa: BLE001
         shots, err = [], f"capture crashed: {e}"
     by_name = {Path(x).name: Path(x) for x in shots if Path(x).exists()}
     errs = err[len("partial: "):].split("; ") if err.startswith("partial: ") else []
     for i, pg in enumerate(ev["pages"]):
-        f = by_name.get(_shot_name(i, pg)) if i < MAX_CAPTURE_PAGES else None
-        if i >= MAX_CAPTURE_PAGES:
-            ev["captures"].append({"page": pg, "ok": False, "sha256": "", "path": "",
-                                   "error": f"not captured: capture is capped at "
-                                            f"{MAX_CAPTURE_PAGES} pages"})
-        elif f is not None:
+        f = by_name.get(_shot_name(i, pg))
+        if f is not None:
             ev["captures"].append({"page": pg, "ok": True, "sha256": vl._hash_path(f),
                                    "path": str(f.resolve().relative_to(root.resolve())), "error": ""})
         else:
