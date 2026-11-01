@@ -232,6 +232,35 @@ The full text is in `docs/reports/T-4965-review-opencode.md`. Seat 2 (codex) cou
 
 **Net effect:** the framework's role in deletes shrinks to recording the request and getting the approval. An off-host executor that checks NAS ownership itself does the delete. On a mount without NAS-side ownership, only the read and create levels are offered.
 
+## Review, seat 2 (codex, 2026-11-01): unsound as drafted
+
+Full text: `docs/reports/T-4965-review-codex.md`. Codex agrees with opencode on the ledger, links, the grant-file guard and the executor, and goes further. New points:
+
+- **C1. A temp directory can swallow permanent content.** Move an own permanent file into `PEN-TMP_…/`, or let the operator drop a file there, then delete the temp directory. **Accepted:** temp status is checked for every descendant; moves across a temp boundary are refused; a temp delete refuses if any descendant lacks a trusted temp record.
+- **C2. Temp provenance and delete authority cannot come from the root agent's host at all.** A forged local row can still steer a remote delete. A path-keyed approval can be swapped to other data before execution (`tier0_action.py` keys `recursive-delete` on spelling, not object identity). **Accepted:**
+  - temp status is recorded by the executor at creation (an executor-side mktemp), not by our ledger;
+  - the executor authenticates approval, share, grant, ownership, object identity and recursive scope itself, with expiry and single use.
+- **C3. Pending-then-exists cannot prove authorship.** **Accepted:** create-level authorship can only be trusted where the NAS records the creating account. Our ledger is an audit aid and is never authority. Script-created objects without such provenance count as the operator's.
+- **C4. The scanner already misses things the draft promises to refuse.** Codex probed it read-only:
+  - `p=…; echo x >> "$p"` yields no checked target;
+  - so do `tar -x … -C` and `unzip -d`;
+  - boundary mode rejects an unresolved target only when `ctx.mentions` holds;
+  - a bare relative command in a grant cwd can skip the prefilter.
+
+  **Accepted as a defect class of its own:** in boundary mode, an unresolved write target must be refused outright. That gap exists today whether or not grants are built, so it is filed as a separate task, not folded in here.
+- **C5. Copy and rename have effects beyond their operands.** `cp -r` into an owned directory can overwrite operator descendants; `mv own operator-file` replaces it; a cross-mount move is a copy plus an unlink. **Accepted:** under a grant, recursive copies are refused, a move or copy onto an existing path is refused unless the target is the agent's own, and cross-filesystem moves are refused.
+- **C6. Links created after validation.** **Accepted (as opencode 5):** `ln` and `ln -s` are refused under a grant; mount identity is checked, not only the mountpoint.
+- **C7. The grant file can be replaced through its directory, git, or by turning off the hook.** **Accepted:** the guard covers the file's ancestors and git-mediated replacement. The effective policy is checked against a version the operator committed. Disabling hooks is outside what any hook can stop: the same residual as T-3581, named.
+- **C8. Isolation comes first.** While the root agent keeps the admin mount, a script bypasses every profile ACL. **Accepted:** the honest prerequisite for real enforcement is that the agent cannot reach the admin mount (a separate account or VM, outside this framework). The NAS tests (ACLs, rename vs delete, mount identity) move before slice 3. create-project is corrected to directories only.
+
+**Where this leaves the design.** The framework layer can honestly offer:
+- fencing of typed commands;
+- steering to profile mounts;
+- refusal of opaque forms;
+- visibility.
+
+Authority over deletes, temporary items and "created by the agent" must live off the host (the NAS and an executor), because nothing the root agent's host records can be trusted. Real protection of operator data also needs the agent kept away from the admin mount, which is 050's host decision. Recommendation for the inception: **GO for the reduced framework layer (read and create levels, typed fencing, steering, visibility); NO-GO for any framework-side delete or temp authority**, which instead becomes a request to the executor's owner (Ring20 Manager).
+
 ## Next
 
 1. ~~Design read~~ and ~~draft~~: done above (2026-11-01).

@@ -5676,7 +5676,7 @@ concerns:
     env to the watcher) was wrong; the pid read was a short-lived process from the vendored copy. The live sidecar
     has no session vars and the APPLIED marker (T-4941 Updates).'
   severity: medium
-  status: mitigated
+  status: resolved
   detected_in: T-4931
   observed: '2026-10-31'
   reported_by: agent (T-4931 runme verification)
@@ -5685,3 +5685,23 @@ concerns:
     the key termlink actually signs with
   what_remains: T-4941 fixed the measurement (termlink identity sign, source host_default; whoami fallback when sign
     is unavailable). Close once a consumer on the next be-tag confirms the WARN no longer fires with its own key.
+    RESOLVED 2026-11-01 — 832 confirmed on be.15 (msg 128aaa36) that the WARN no longer fires; T-4970 (be.18) removed
+    the whoami fallback, so an unavailable probe now means 'unknown', and the test fakes answer identity sign as
+    termlink does.
+  resolved: '2026-11-01'
+- id: G-126
+  type: gap
+  title: The project-boundary hook admits a Bash write outside the project when the path is held in a shell variable
+  description: 'Found by the codex review of T-4965 (finding 4), confirmed 2026-11-01 with a scratch project:
+    ''p=/srv/other/x.txt; echo x >> "$p"'' exits 0 while ''echo x >> /srv/other/x.txt'' exits 2. In boundary mode
+    lib/shell_write_scan.py refuses an unresolved target only when ctx.mentions holds, and the read pass sees no
+    absolute token inside the assignment.'
+  severity: medium
+  status: open
+  detected_in: T-4965
+  observed: '2026-11-01'
+  reported_by: independent review seat (codex), confirmed by agent probe
+  blast_radius: every project — typed Bash writes outside PROJECT_ROOT via a variable are not fenced (same typed-text
+    scope as Tier 0; scripts were never fenced)
+  detection_gap: boundary tests cover literal and relative paths; none assigns the path to a variable first
+  what_remains: fix and tests in T-4983
