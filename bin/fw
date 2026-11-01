@@ -11,6 +11,16 @@
 
 set -euo pipefail
 
+# T-4993 (050 field report, be.20): agent shells may run with no HOME, and every `$HOME`
+# below is fatal under `set -u` (fw upgrade died mid-run, fw doctor too). Default it once,
+# here, to the running account's home from the passwd database and export it, so every
+# subcommand and sourced lib inherits it. A HOME that is set is never changed.
+if [ -z "${HOME:-}" ]; then
+    HOME=$(getent passwd "$(id -un 2>/dev/null || id -u)" 2>/dev/null | cut -d: -f6)
+    [ -n "$HOME" ] || HOME=$(cd ~ 2>/dev/null && pwd || echo /)
+    export HOME
+fi
+
 # Version: derived from git tags (X.Y.Z on a tag, X.Y.Z+N.gSHA N commits past it)
 # Falls back to VERSION file for consumer installs without git history
 _derive_version() {

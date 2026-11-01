@@ -1,10 +1,19 @@
 ---
 id: T-4993
-name: "fw dies with 'HOME: unbound variable' when the agent shell has no HOME (050 field report, be.20)"
+name: "fw dies with 'HOME: unbound variable' when the agent shell has no HOME (050
+  field report, be.20)"
 description: >
-  050-email-archive (msg cedc1b89, be.20): their agent shells run without HOME. fw upgrade died at step 4c/9 (lib/upgrade.sh:2623 local_bin=$HOME/.local/bin) after the vendor copy, so .framework.yaml was not updated; fw doctor dies at bin/fw:2553 ($HOME/.claude/settings.json). bin/fw runs under set -euo pipefail and has 19 $HOME uses (lib/upgrade.sh 7). The agent cannot set HOME itself: the Tier 0 gate labels a HOME= prefix before a hook-running git command as a hook bypass. Fix direction: one default at the top of bin/fw when HOME is unset or empty — the passwd home of the running account — exported, so every subcommand and sourced lib inherits it; test under env -u HOME.
+  050-email-archive (msg cedc1b89, be.20): their agent shells run without HOME. fw
+  upgrade died at step 4c/9 (lib/upgrade.sh:2623 local_bin=$HOME/.local/bin) after
+  the vendor copy, so .framework.yaml was not updated; fw doctor dies at bin/fw:2553
+  ($HOME/.claude/settings.json). bin/fw runs under set -euo pipefail and has 19 $HOME
+  uses (lib/upgrade.sh 7). The agent cannot set HOME itself: the Tier 0 gate labels
+  a HOME= prefix before a hook-running git command as a hook bypass. Fix direction:
+  one default at the top of bin/fw when HOME is unset or empty — the passwd home of
+  the running account — exported, so every subcommand and sourced lib inherits it;
+  test under env -u HOME.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T23:25:05Z
-last_update: 2026-11-01T23:25:05Z
-date_finished: null
+last_update: '2026-11-01T23:25:42Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-01T23:25:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4993: fw dies with 'HOME: unbound variable' when the agent shell has no HOME (050 field report, be.20)
@@ -57,20 +83,20 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 050-email-archive field report on be.20 (msg cedc1b89): their agent shells run without HOME. `fw upgrade` died at step 4c/9 (`lib/upgrade.sh:2623`, `HOME: unbound variable`) after the vendor copy, leaving `.framework.yaml` not updated. `fw doctor` dies the same way at `bin/fw:2553`.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `bin/fw` runs under `set -euo pipefail` and reads `$HOME` in 19 places (`lib/upgrade.sh` in 7 more), with no default. The agent cannot set HOME itself, because the Tier 0 gate labels a `HOME=` prefix before a hook-running git command as a hook bypass.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** `fw` works without HOME, using the running account's home from the passwd database.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `env -u HOME bin/fw doctor` and `fw upgrade` complete. HOME is set once, at the entry point, and exported, so every subcommand and sourced library inherits it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `bin/fw` sets and exports HOME from the passwd entry of the running account when HOME is unset or empty, before anything reads it; an explicitly set HOME is never changed
+- [ ] A bats test runs `bin/fw` with HOME unset (doctor, and an upgrade dry run against a scratch consumer) and shows no `unbound variable`; a control shows a set HOME is kept; `tests/unit/upgrade_fresh_machine_simulation.bats` passes; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -353,3 +379,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4993-fw-dies-with-home-unbound-variable-when-.md
 - **Context:** Initial task creation
+
+### 2026-11-01T23:25:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
