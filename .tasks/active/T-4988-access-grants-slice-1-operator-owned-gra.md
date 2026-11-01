@@ -106,10 +106,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/access_grants.py`: loads `policy/access-grants.yaml` from HEAD only; validates (absolute paths, no `..`, levels read|create|create-project, `path` under `via`, no overlapping grants with different levels, `never_write` absolute); an invalid file grants nothing and reports why; unit tests
-- [ ] Boundary hook: read and create grant paths are readable; Write/Edit and Bash writes to the grant file or any directory above it are refused; a write under a `never_write` root is refused (even under a grant); an uncommitted edit grants nothing; bats tests in a scratch git project
-- [ ] `fw grants show` and a `fw doctor` line (grants listed; WARN on a `via` that is not a mount point or a file that does not validate); `fw audit` WARN for a commit touching the file without a `Grants-Change: operator` trailer
-- [ ] Every test that reads `check-project-boundary.sh` passes; vendored copy in sync
+- [x] `lib/access_grants.py`: loads `policy/access-grants.yaml` from HEAD only; validates (absolute paths, no `..`, levels read|create|create-project, `path` under `via`, no overlapping grants with different levels, `never_write` absolute); an invalid file grants nothing and reports why; unit tests
+- [x] Boundary hook: read and create grant paths are readable; Write/Edit and Bash writes to the grant file or any directory above it (inside the project, not the root itself) are refused; a write under a `never_write` root is refused (even under a grant); an uncommitted edit grants nothing; bats tests in a scratch git project (`t4988_access_grants_boundary.bats`, 14)
+- [x] `fw grants show` and a `fw doctor` line (grants listed; WARN on a `via` that is not a mount point or a file that does not validate); `fw audit` WARN for a commit touching the file without a `Grants-Change: operator` trailer; `fw help` lists `grants`
+- [x] Every test that reads `check-project-boundary.sh` passes; vendored copy in sync — 646 bats (0 skipped) + 40 pytest + lint suite 162 green. Found on the way: T-4983's first gate refused quoted data naming an outside path; narrowed to assignment values, control test added
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -295,6 +295,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_t4988_access_grants.py > /tmp/.t4988.v1 2>&1 && grep -q passed /tmp/.t4988.v1
+timeout 600 bats tests/unit/t4988_access_grants_boundary.bats tests/unit/t4983_boundary_variable_write_target.bats > /tmp/.t4988.v2 2>&1 && ! grep -q "^not ok" /tmp/.t4988.v2
+test "$(grep -c '# skip' /tmp/.t4988.v2)" -eq 0
+bin/fw vendor self --check --task T-4988
 
 ## RCA
 
