@@ -151,7 +151,28 @@ Slices 1 → 2 → 3 are serial (2 and 3 both import slice 1). Slice 4 can follo
 
 ## Review (T-4967, 2026-11-01)
 
-Seat 1, opencode: **sound with fixes** (full text: `docs/reports/T-4967-review-opencode.md`). It confirmed the point-3 claim, the point-4 citations, the auto-promote `max_possible` catch and the hooks allowlist. Seat 2, codex: not run yet (usage limit until 22:02); to be added.
+Seat 1, opencode: **sound with fixes** (full text: `docs/reports/T-4967-review-opencode.md`). It confirmed the point-3 claim, the point-4 citations, the auto-promote `max_possible` catch and the hooks allowlist. Seat 2, codex: **sound with fixes** (full text: `docs/reports/T-4967-review-codex.md`). It confirmed the point-2 collision rule and the point-3 caps, and found no unlisted reader of the file.
+
+Codex findings, and what the design now says:
+
+- **C1. Old scores can change meaning.** A set may reuse a free-driver id (F1) for a different driver, and `_latest_proposed_scores` drops the proposal's metadata (`lib/bvp.sh:651-662`). **Accepted:**
+  - each score carries the set it was scored under;
+  - a score counts under another set only if that set's entry for the id has the same `name` and `scoring` spec (pure re-weighting);
+  - otherwise the score shows as unscored (unknown, never 0) until re-estimated.
+- **C2. The promised backfill does not happen.** The sweep skips confirmed tasks (`estimator.py:3496-3497`), and delta suppression looks only at confirmed keys (`:2796-2809`). **Accepted:** a missing driver or a score from another set triggers re-estimation of those drivers only, bypasses delta suppression for them, and never overwrites a confirmation. A test switches a confirmed task to a set with an extra driver.
+- **C3. Auto-promote and readiness need more than the change I named.** Auto-promote scores with the global `weights` (`lib/bvp.sh:2070,2102`), so the `max_possible` change alone does nothing. Readiness reuses one weight map for member values (`lib/arc_close_readiness.py:181,237-246`). **Accepted:** weights are resolved at every scoring call; readiness's shared-weight interface is replaced. Tests compare mixed-set promotion and readiness with the CLI.
+- **C4. A warning is not visible enough.** `/bvp` never shows a terminal warning, and `collect_arcs` already swallows YAML errors (`lib/bvp.sh:264-270`). **Accepted, widening opencode's finding 3:** refused tasks and arcs travel in the returned data and appear as rows (with the reason) in the CLI, `/bvp`, readiness and picker output. Collection errors are passed on, not swallowed.
+- **C5. Identity and parsing rules.** Duplicate arc ids or slugs, a filename/slug conflict, or a repeated `driver_set:` key (which `yaml.safe_load` accepts) choose a set silently. **Accepted:** conflicting identities and duplicate keys are refusals. Malformed files met during an id scan are refusals for any task that could resolve to them. Tests cover each case.
+- **C6. The set contract.** Weight loaders overwrite repeated ids (`estimator.py:129-134`, `web/blueprints/bvp.py:122-127`) and cast weights with `int`. **Accepted:** ids are unique across both sections; protected and free ids may not collide; weights are finite integers from 0 to 10 (this replaces "numbers"). Tests cover booleans, fractions, non-finite values and duplicates.
+- **C7. Release boundary.** `/bvp` is a ranking surface of its own. **Accepted:** all scoring surfaces (CLI, estimator, resolver, readiness, auto-promote, `/bvp`) ship under one be-tag. Slice 4 keeps only the rails (scorability, `retire_when`), and the `/bvp` work moves into slice 3.
+
+**Revised slices:**
+1. Resolver and contract: `lib/driver_sets.py`, the validation from C5/C6/opencode 7, and the split-root lint exemption.
+2. Estimator and arc review: points 1 and 2, check_a, score provenance (C1) and the backfill (C2).
+3. Every scoring and ranking surface, together: rank, detail, arcs, resolver, readiness, auto-promote and `/bvp`, with visible refusals (C3, C4, C7).
+4. The rails.
+
+2 and 3 ship under one be-tag; tell 010-termlink then.
 
 Findings, and what the design now says:
 
