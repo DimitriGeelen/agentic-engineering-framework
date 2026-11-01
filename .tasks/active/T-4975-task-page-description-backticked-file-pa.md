@@ -8,10 +8,10 @@ description: >
   stood. Likely the path auto-link (T-1575) gives a link color equal to the description's
   dark-green background. Render surface: needs Visual Verification.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T16:38:11Z
-last_update: '2026-11-01T16:45:35Z'
+last_update: 2026-11-01T17:09:20Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,20 +88,20 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-4969's Visual Verification shots (2026-11-01, `/tasks/T-4969` at 1024 and 1440) showed gaps in the Description box where file paths stood, for example `agents/observe/observe.sh:446`.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis (confirmed):** the description renders paths as `<a href="/file/…">` links (T-1575). The description paragraph `.editable-desc` and the title `.editable-name` carry `role="button"` since T-430 (2026-03-11, accessibility). Pico CSS styles `[role=button]` as a primary button: green background, white centred text. Links inside keep Pico's link colour, which is the same green, so they disappear.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** links inside those two editable fields are readable. Minimal change: they take the surrounding text colour, underlined. The fields' green button look is left as it is; changing it is the operator's call.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** paths and task links in the Description and the title are visible at every width. Nothing else on the page changes.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A CSS rule in `web/templates/task_detail.html` makes `a` inside `.editable-desc[role="button"]` and `.editable-name[role="button"]` inherit the text colour, underlined; no other rule changes
+- [x] `fw ux shots` of a task page whose description holds paths, at 1024/1440/1920, shows the paths readable; Visual Verification table filled; Watchtower restarted and current
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,8 +287,28 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+grep -q '.editable-desc\[role="button"\] a' web/templates/task_detail.html
+bin/fw watchtower current
+bin/fw vendor self --check --task T-4975
+
+## Visual Verification
+
+Shots: `bin/fw ux shots T-4975 task-page=http://192.168.10.107:3000/tasks/T-4970` and a crop of `#desc-display` on the same page (T-4970's description holds a file path and two task links).
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| description | file and task links inside the Description | ok | ok | ok | `lib/sidecar/dm.py` and `T-4941` now white and underlined on the green field; before, the same green as the field, so invisible |
+| task-page | rest of the task page | ok | ok | ok | unchanged; only links inside the two editable fields were restyled |
 
 ## RCA
+
+**Symptom:** file paths and task links in a task's Description (and title) were invisible: gaps in the text.
+
+**Root cause:** T-430 (2026-03-11) gave `.editable-desc` and `.editable-name` `role="button"` for keyboard access. Pico CSS styles `[role=button]` as a primary button (green background, white text), and links inside keep Pico's primary link colour, which is that same green.
+
+**Why structurally allowed:** the accessibility change was reviewed for keyboard behaviour, not for how the field renders with links in it. Descriptions with paths only became common after T-1575 started auto-linking paths. No visual check of a task page with linked content existed until T-4213's Visual Verification.
+
+**Prevention:** the CSS rule names the cause (`[role="button"]`) in a comment, and this task's shots are the reference. The field's green-button look is left as it is: whether it should look like plain text is the operator's call, offered in the hand-off.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -384,3 +404,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4975-task-page-description-backticked-file-pa.md
 - **Context:** Initial task creation
+
+### 2026-11-01T17:06:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
