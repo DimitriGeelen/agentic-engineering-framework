@@ -52357,3 +52357,21 @@ scan_id: R-97422b94
 task_id: T-4963
 payload:
   task_file: .tasks/active/T-4963-sidecar-retry-ladder-keeps-escalating-a-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-01T13:29:33Z'
+scan_id: R-e6598ca4
+task_id: T-4964
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-01T13:29:33Z'
+scan_id: R-e6598ca4
+task_id: T-4964
+payload:
+  task_file: .tasks/active/T-4964-t4920-test-runs-the-tier-0-hook-against-.md

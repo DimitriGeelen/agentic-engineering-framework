@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4964: t4920 test runs the Tier 0 hook against the live project: every run files a fake force-push card on /approvals
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T13:29:43Z
+# ============================================================================
+
+task_id: T-4964
+task_name: "t4920 test runs the Tier 0 hook against the live project: every run files a fake force-push card on /approvals"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T13:06:37Z
+completed: 2026-11-01T13:29:15Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-01T14:08:27+01:00
+last_commit: 2026-11-01T14:29:13+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t4920 test judges for a throwaway project — it filed a fake force-push card on the live /approvals each run. leaked card removed by operator; T-3077 isolation green
+
+# Key outcomes
+outcomes:
+  - '`t4920_tier0_prefilter_no_pipe.bats` passes `PROJECT_ROOT` = a per-test temp dir and `NTFY_ENABLED=false`; the hook path is unchanged'
+  - 'A new assertion in that file: after the blocking judgements, the temp root holds the pending file and the live checkout''s approvals surface is unchanged'
+  - 'The leaked live card and pending files are removed (operator, via runme) and `tests/governance/test_t3077_approvals_surface_isolation.bats` passes (operator ran t4964-remove-leaked-card 14:28, EXIT 0; T-3077 2/2 ok)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4964-t4920-test-runs-the-tier-0-hook-against-.md'
+  - 'tests/unit/t4920_tier0_prefilter_no_pipe.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T14:08:27'
+    action: 'T-4964: t4920 test judges for a throwaway project — it filed a fake force-push card on the live /approvals each run'
+  - time: '2026-11-01T14:29:13'
+    action: 'T-4964: leaked card removed by operator; T-3077 isolation green'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 22 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 22
+  commits: 3
+  files_changed: 5
+  lines_added: 506
+  lines_removed: 7
+  footprint_refreshed_at: '2026-11-01T13:29:55Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4964-t4920-test-runs-the-tier-0-hook-against-.md
+generated_by: context-agent-hybrid
