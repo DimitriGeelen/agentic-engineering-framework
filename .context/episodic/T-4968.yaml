@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4968: test_t4133_readiness_perf: stale pre-T-4916 fixture expects a deterministic Human criterion to be ready
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T15:17:12Z
+# ============================================================================
+
+task_id: T-4968
+task_name: "test_t4133_readiness_perf: stale pre-T-4916 fixture expects a deterministic Human criterion to be ready"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T15:13:37Z
+completed: 2026-11-01T15:16:16Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-01T16:16:15+01:00
+last_commit: 2026-11-01T16:16:15+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  three web readiness tests still encoded the pre-T-4916 rule (deterministic criterion = ready); fixtures now use an operator-only criterion for the ready case
+
+# Key outcomes
+outcomes:
+  - '`test_edit_to_task_file_invalidates_its_entry` uses an operator-only Human criterion for the ready step; the file passes in full; `web/shared.py` unchanged'
+  - 'Sweep of `tests/web/` for deterministic fixtures expected to be "ready": `test_t4096_review_parity.py` and `test_t4045_board_awaiting_review.py` had the same stale fixture (4 reds) and are fixed the same way; all five readiness web files pass (41 tests)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'three web readiness tests still encoded the pre-T-4916 rule (deterministic criterion = ready); fixtures now use an operator-only criterion for the ready case'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4968-testt4133readinessperf-stale-pre-t-4916-.md'
+  - 'tests/web/test_t4045_board_awaiting_review.py'
+  - 'tests/web/test_t4096_review_parity.py'
+  - 'tests/web/test_t4133_readiness_perf.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T16:16:15'
+    action: 'T-4968: three web readiness tests still encoded the pre-T-4916 rule (deterministic criterion = ready); fixtures now use an operator-only criterion for the ready case'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 7
+  lines_added: 506
+  lines_removed: 11
+  footprint_refreshed_at: '2026-11-01T15:17:21Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4968-testt4133readinessperf-stale-pre-t-4916-.md
+generated_by: context-agent-hybrid
