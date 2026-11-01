@@ -143,6 +143,11 @@ TYPE_PERFORMER = {
     # only for the type-vs-lane mismatch message; membership in this table is what makes
     # the node participate in ownership checks at all.
     "task": None,
+    # T-1358: the plain task subtypes, None for the same reason as <task>: the lane decides, the type is presentational.
+    "sendTask": None,
+    "receiveTask": None,
+    "manualTask": None,
+    "businessRuleTask": None,
 }
 
 # section 3: required top-level keys (lanes >= 1; nodes/edges may be empty)
@@ -270,7 +275,14 @@ XML_TRANSLATED_NODE_TYPES = frozenset(
 # MAPPING ROWS — what each type compiles to — and it reads like an input vocabulary. It is
 # not one. XML_ONLY because the YAML form has its own authored type list; nothing here
 # changes what the designer emits.
-XML_ONLY_NODE_TYPES = frozenset({"boundaryEvent", "task"})
+#
+# T-1358: the plain BPMN 2.0 task subtypes on the same footing, for the same reason. Greenfield's map
+# tobe-sales-without-novis drew 7 E-XML-NODE-TYPE on <sendTask>, which the designer imports (as a serviceTask shape)
+# and writes back unchanged: the editor round-tripped an element its own validator refused. sendTask, receiveTask,
+# manualTask and businessRuleTask imply no performer the lane does not already decide (O-1), exactly like <task>.
+# Admitting a type means THREE tables (this one, TYPE_PERFORMER, NODE_OCCUPANCY): T-972 and T-975 each repaired a
+# missed one; tests/test_xml_node_type_vocab.py now fails if a task-like type here is missing from the other two.
+XML_ONLY_NODE_TYPES = frozenset({"boundaryEvent", "task", "sendTask", "receiveTask", "manualTask", "businessRuleTask"})
 
 XML_NODE_TYPES = XML_TRANSLATED_NODE_TYPES | XML_ONLY_NODE_TYPES
 
@@ -313,6 +325,11 @@ NODE_OCCUPANCY = {
     # shape, tag re-emitted verbatim), so on the canvas it occupies exactly a serviceTask.
     # Without this row every lane holding a plain task was SKIPPED by capacity checking.
     "task": 64,
+    # T-1358: imported like <task> as a foreign node drawn with the serviceTask shape (src foreignDisplayTag).
+    "sendTask": 64,
+    "receiveTask": 64,
+    "manualTask": 64,
+    "businessRuleTask": 64,
 }
 
 # src:6966 — the containment margin the Clean layout applies at BOTH edges. Used
