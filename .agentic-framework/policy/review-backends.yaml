@@ -23,6 +23,11 @@
 # Bash command by the hook, case-sensitive (default: the id as a whole word). A paid backend must
 # have approval_required: true.
 #
+# Optional vision: true|false (T-4944, operator "vision-gated" 2026-11-01): whether this kind's
+# model can see a screenshot it is handed. Set from a probe, never assumed. A `false` kind does not
+# sit a render review; for a `true` harness kind the runtime cites a run's screenshot only when the
+# seat named that file in its verdict. Absent = unknown: neither cited nor excluded.
+#
 # Optional worker_kind + vendor (T-3580 round 5): the ONE kind→vendor mapping. `worker_kind` is a
 # `fw termlink dispatch --worker-kind` value; `vendor` is who runs it. The dispatcher prints it
 # (`fw termlink worker-kinds --vendors`) and the verdict ledger derives every review dispatch's
@@ -59,6 +64,7 @@ backends:
     description: "Claude Code session with subscription harness"
     worker_kind: claude
     vendor: anthropic
+    vision: true   # T-4944: reads supplied screenshots (T-4947 render green, 2026-11-01)
     credential:
       source: cli-login
       note: "Claude Code's own login (claude /login; OAuth state in ~/.claude) — the CLI authenticates itself"
@@ -80,6 +86,7 @@ backends:
     description: "Codex review via subscription account (ChatGPT login, ~/.codex/auth.json)"
     worker_kind: codex
     vendor: openai
+    vision: true   # T-4944 probe: answered from the image via view_image (docs/reports/T-4944-harness-seat-vision.md)
     credential:
       source: cli-login
       note: "codex login with the ChatGPT account (~/.codex/auth.json) — the CLI authenticates itself"
@@ -105,6 +112,7 @@ backends:
     description: "Z.ai opencode via subscription coding plan"
     worker_kind: opencode
     vendor: zai
+    vision: false  # T-4944 probe: "this model does not support image input" (docs/reports/T-4944-harness-seat-vision.md)
     credential:
       source: cli-login
       note: "opencode auth login with the Z.ai coding plan (opencode's own auth store) — the CLI authenticates itself"

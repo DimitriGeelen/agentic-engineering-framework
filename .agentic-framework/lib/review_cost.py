@@ -192,6 +192,10 @@ def validate(backends: object) -> list[str]:
         mdl = b.get("model")
         if mdl is not None and (not isinstance(mdl, str) or not MODEL_RE.match(mdl)):
             errs.append(f"{bid}: model must match {MODEL_RE.pattern}")
+        # T-4944: whether this kind's model can see an image it is handed (probed, not assumed:
+        # docs/reports/T-4944-harness-seat-vision.md). Absent means unknown, which is never "yes".
+        if "vision" in b and not isinstance(b.get("vision"), bool):
+            errs.append(f"{bid}: vision must be true/false")
         # T-3582: the ONE binary a review worker of this kind is launched with, committed here
         # (absolute). Absent means the dispatcher resolves it (claude: PATH; ollama-loop: tools/).
         bn = b.get("binary")
@@ -263,6 +267,13 @@ def worker_models(path: Path | None = None) -> dict[str, str]:
     dispatch of that kind is launched with exactly that model; a kind with none uses its default."""
     return {b["worker_kind"]: b["model"] for b in load_registry(path)
             if b.get("worker_kind") and b.get("model")}
+
+
+def worker_vision(path: Path | None = None) -> dict[str, bool]:
+    """{worker kind: vision} for the kinds whose registry entry declares it (T-4944). A kind that
+    is absent is unknown: it is neither cited as having seen a screenshot nor excluded."""
+    return {b["worker_kind"]: b["vision"] for b in load_registry(path)
+            if b.get("worker_kind") and isinstance(b.get("vision"), bool)}
 
 
 def worker_binaries(path: Path | None = None) -> dict[str, str]:
