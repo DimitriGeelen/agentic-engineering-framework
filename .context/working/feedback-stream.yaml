@@ -52751,3 +52751,21 @@ scan_id: R-d8219ca4
 task_id: T-4988
 payload:
   task_file: .tasks/active/T-4988-access-grants-slice-1-operator-owned-gra.md
+---
+kind: scan_emitted
+timestamp: '2026-11-01T22:02:37Z'
+scan_id: R-0f69e300
+task_id: T-4989
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-01T22:02:37Z'
+scan_id: R-0f69e300
+task_id: T-4989
+payload:
+  task_file: .tasks/active/T-4989-access-grants-slice-2-create-level-on-cr.md

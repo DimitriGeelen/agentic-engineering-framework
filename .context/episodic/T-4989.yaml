@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4989: Access grants slice 2: create level on create mounts, opaque forms refused
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-01T22:02:49Z
+# ============================================================================
+
+task_id: T-4989
+task_name: "Access grants slice 2: create level on create mounts, opaque forms refused"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T21:20:24Z
+completed: 2026-11-01T22:02:08Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-01T23:01:29+01:00
+last_commit: 2026-11-01T23:02:07+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  access grants slice 2 — typed create/modify/rename/delete on create-level grants (NAS judges ownership); never_write wins; chmod/chown/touch and archive extraction on granted paths refused; allowed grant writes logged. vendor self. criteria and verification
+
+# Key outcomes
+outcomes:
+  - 'Boundary hook: a typed write (Bash write passes and the Write/Edit tool) under a create or create-project grant is allowed; under a read grant, an ungranted path, or a `never_write` root (even under a grant) it is refused; a path that resolves through a symlink to outside the grant is refused (`access_grants.write_allowed` checks the normalised and the resolved path)'
+  - 'On granted paths, chmod/chown/chgrp/touch and archive extraction (tar, unzip, 7z, cpio, bsdtar) are refused; a write through a variable that assigns an ungranted outside path stays refused (T-4983)'
+  - 'Each allowed grant write appends a line to `.context/grants/audit.jsonl` (time, tool, target); bats tests cover every case above (`t4989_access_grants_create_level.bats`, 23). Of 050''s four original cases, 1 and 4 are framework tests here; 2 (modify an operator file) and 3 (rm without approval) moved to the NAS when their operator made it the ownership and delete authority (msg 34998006). Every test that reads `check-project-boundary.sh` passes (654 bats, 0 skipped; 40 pytest; lint green after commit); vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-project-boundary.sh'
+  - '.agentic-framework/lib/access_grants.py'
+  - '.tasks/active/T-4989-access-grants-slice-2-create-level-on-cr.md'
+  - 'agents/context/check-project-boundary.sh'
+  - 'lib/access_grants.py'
+  - 'tests/unit/t4988_access_grants_boundary.bats'
+  - 'tests/unit/t4989_access_grants_create_level.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-01T23:01:29'
+    action: 'T-4989: access grants slice 2 — typed create/modify/rename/delete on create-level grants (NAS judges ownership); never_write wins; chmod/chown/touch and archive extraction on granted paths refused; allowed grant writes logged'
+  - time: '2026-11-01T23:01:42'
+    action: 'T-4989: vendor self'
+  - time: '2026-11-01T23:02:07'
+    action: 'T-4989: criteria and verification'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 41 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 41
+  commits: 4
+  files_changed: 10
+  lines_added: 468
+  lines_removed: 20
+  footprint_refreshed_at: '2026-11-01T22:03:03Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4989-access-grants-slice-2-create-level-on-cr.md
+generated_by: context-agent-hybrid
