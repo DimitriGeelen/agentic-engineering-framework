@@ -1,0 +1,102 @@
+# Next session: carry-over
+
+## FIRST (2026-11-01 ~17:30Z, 762K used, all work pushed; be.15 = 0522186b9)
+- **Closed this afternoon:** T-4947 (green), T-4952, T-4953 (read-only pipe: refused, no card; operator option 1 after codex/opencode consult), T-4958 (ux shots crop), T-4959, T-4960 (judge tall pages), T-4962, T-4963 (sidecar ladder, 055), T-4964 (t4920 test leaked a live card), T-4944 (vision-gated render greens), T-4966 (ledger lock; WORKS at ring20), T-4968, T-4969 (operator owner hand-over: one gate, three doors, 'claimed' log; external design review + code review), T-4971, T-4972, T-4974 (basename lint), T-4975 (links in role=button fields).
+- **Waiting on the operator (runmes):** `t4973-fix-t4679-name` (escape T-4679's closed name; then close T-4973), `t4976-stop-leaked-fixtures` (51 leaked foreign_watchtower.py servers). Watch both logs; close T-4973 after.
+- **Next work, in order:** T-4978 (LOCALISED with ring20's data: [REVIEW] criteria that describe what a page shows classify as taste/unclassified, so the judge captures no screenshots and the vision gate never fires; decide classifier vs "names a route → capture"; defect 2: opencode exit 1 = T-3986 tamper check tripped by `__pycache__`), T-4976 (fixture teardown), T-4977 (designer 0.35.0 re-pin, validator changed; tell 832), T-4970 (no whoami fallback), T-4979 (audit exit on void rows), T-4967 (driver-sets design read, TermLink), T-4965 (scoped grants design + external review; 050's decisions in the report).
+- **Operator question open:** task title/description render as green buttons since T-430 (role=button) — plain text or keep? (T-4975 fixed only the links.)
+- **Inceptions waiting on operator:** T-4371 now holds IW-4 (general ownership rule table; codex's question: does owner:human mean mandatory sign-off?). T-4965 DEFER until design + review.
+- **Field record:** be.14 is commit b82af92fe (NOT 5aa42c6ec, that was the tag object; read tags with ^{commit}). Recorded: 055 be.14 WORKS, T-4962 WORKS; ring20 be.10, be.15 WORKS, T-4966 WORKS.
+- **Lessons:** sweep for the fixture shape, not one assertion's wording (T-4971); `fw vendor self` withholds uncommitted files: commit source, then vendor; a bats `! cmd` that isn't last never fails (`|| false`).
+
+## EARLIER (2026-11-01 ~10:50Z, session ending near Amber, all work pushed)
+- **Push block cleared, no baseline re-arm needed.** 9 expired baseline reds fixed: T-4947 (/approvals raw stderr), T-4948 (atomic YAML writers), T-4949 (FW_ALLOW_EMPTY_RECOMMENDATION restored), T-4950 (split-root ratchet), T-4951 (SystemExit on missing BVP policy). Plus T-4954 (my T-4921 template change broke a T-2743 test), T-4955 (retire_when fixture), T-4956 (`regenerate` emptied the baseline from a one-tier report; fixed). Baseline now 25 entries; 16 of their 17 files pass directly (drop at their tier's next run); `doctor_hook_counters.bats` still 3 reds (T-3615). The re-arm runme `.context/runme/t4946-rearm-baseline` must NOT be run (operator told).
+- **T-4947 open (partial):** code done, Watchtower restarted; its [REVIEW] render criterion came back not-evaluated: needs a Visual Verification table + `fw ux shots T-4947 <state>=<URL>` of the /approvals Arc Closure section (full page is 46k px tall), then `fw reviewer judge T-4947`.
+- **T-4957 DONE:** designer 0.34.0 pinned and served (be.13, c5bb76f89); 832 told.
+- **Closed today also:** T-4906 (green on all 8 pages after T-4943 removed the 6-page capture cap), T-4931/T-4941/T-4945 (AEF already had its own key; the host-shared WARN was a measurement bug), T-4942 (restatement marker in evidence). Be-tags: be.10, be.11 (T-4941). be.12 (8c4fdbc97) carries T-4943, T-4945, T-4947..T-4956; add it to the field report's tag table (T-4940).
+- **Filed, open:** T-4944 (harness seats can't cite screenshots — ledger provenance decision first), T-4952 (pre-existing web test red), T-4953 (refused Tier 0 status read leaves a pending approval).
+- **Operator still:** /review/T-4788 one click. Config done: continuous mode disarmed, SIDECAR_HOST_DM_TRANSITION=0.
+- **Field record:** T-4940 open; 010-termlink be.4 and dimitri-mint-dev be.3 recorded today.
+- **Lessons:** "not red" is not "green" when a report can be partial (T-4943 pages, T-4956 tiers); read a red's failure message before baselining it.
+
+## FIRST (2026-10-31 ~21:30Z, session at Green, all work pushed)
+- **T-4931 DONE (2026-11-01):** AEF already signed with its own key bdd184bd (since T-4454); the "host-shared" WARN was a measurement bug, fixed in T-4941 (`dm._host_fingerprint` now uses `termlink identity sign`, source host_default). G-125 mitigated; close it when a consumer on the next be-tag confirms the WARN is gone with its own key. T-4942 (restatement marker in evidence) is in be.10; T-4941 is in be.11 (3ba10f67e), TermLink told (msg c8d83510).
+- **Lesson:** identify a process by full command line and parent before reading its env (a vendored-copy pid was mistaken for AEF's watcher, producing a false finding that had to be corrected in T-4931, T-4941 and G-125).
+- **Be-tags this session:** be.7 (T-4935), be.8 (T-4930, T-4932, T-4933, T-4937), be.9 (T-4912, T-4939). Field record: `docs/reports/field-test-v1.8.16-results.md`, kept current under **T-4940** (open until the release; record each new report there with its message id).
+- **Field so far:** ring20-dashboard be.3/be.5/be.6/be.8/be.9 WORKS (be.8 found the accept-title bug, fixed by T-4939, be.9 WORKS 10/10); 832 be.3 WORKS (T-4920 0 of 80000); 0506 be.4/be.5 WORKS. Rule b (3 clean upgrades) covers up to be.3 only. Owed: 055 (T-4937 at their next upgrade), 1409 (T-4870), dimitri-mint-dev (T-4913, T-4918, T-4912), TermLink (T-4892), ring20 (T-4893), 832 (T-4924), GitHub #104 submitter (T-4935).
+- **Closed this session:** T-4935, T-4930, T-4932, T-4904 (D-626 green, owner -> agent), T-4933, T-4937, T-4938, T-4912, T-4939. Filed: T-4936 (Watchtower restatement buttons, later), T-4940.
+- **Operator:** /review/T-4788 (one click), /review/T-4906 (all seats agree the Watchtower half is met; GitHub half cannot be checked from here; opencode suggests the GitHub mirror may not have synced), disarm the expired continuous-run arm (`bin/fw continuous disarm --reason "expired 2026-10-28"`).
+- **Backlog needing the operator or design:** T-4925 (nested subprocess spec shape), T-4649 (inception), T-4923 (notes at release time).
+- **Lessons (2026-10-31 evening):** (1) review-dispatch tests compare run.sh with termlink.sh AS COMMITTED: commit a termlink.sh change before judging that suite. (2) A verb that copies model output into an operator-owned record needs an operator edit path from day one (T-4939). (3) Bash cannot name the Tier 0 hook file; edit it with the Edit tool and search tests by the `check-tier` prefix.
+
+## Earlier today (2026-10-31 ~14:45Z, session at Amber, all work pushed)
+- **Be-tags since v1.8.15:** v1.8.16-be.1 … be.5 (be.3 = T-4920/T-4921 security; be.5 = T-4926/7/8 security). bleeding-edge is ahead of be.5 by T-4929 (classifier skips Evidence blocks). Field so far: ring20-dashboard be.3 WORKS (T-4871, T-4914, T-4916), 0506 be.4 WORKS. Waiting: 1409 (T-4870), 832 (be.2/be.3, designer 0.33.0 pin T-4924), dimitri-mint-dev (T-4913, T-4918), TermLink (T-4892), ring20 (050 acks, T-4893 WORKS pending), ring20-dashboard (be.5).
+- **Waiting for the operator:** inception T-4917 (1409: dispatch time limit = evaluation trigger, not kill; recommend GO); whether to give AEF its own TermLink identity (T-4252; the new T-4892 alerts WARN fires for AEF itself); /review for T-4788, T-4792, T-4906, T-4904; dimitri-mint-dev's LAN embed/rerank/Whisper offer (msg 577f99b8).
+- **Operator answers 2026-10-31 ~15:00Z:** (1) T-4917 GO — the operator still has to click http://192.168.10.107:3000/inception/T-4917 (agents cannot decide). (2) "yes" to AEF's own identity → T-4931 prepared; run it at the start of a session (a coordination event with peers). (3) "why not agent review?" → done: T-4792 closed on an independent green verdict (V-20261031-d22e4d25, first real D-626 close here). T-4906 and T-4904 came back not-evaluated: T-4906 needs the GitHub page, which the sandbox cannot fetch (stays human); T-4904 failed on T-4932 (the judge required the POST-only /api/task/create). Re-judge T-4904 after T-4932. T-4788 stays a one-click operator close: all criteria ticked, carve-out triggered by "change ownership" in its own last criterion.
+- **0506 be.5 WORKS** (first field confirmation of the be.5 security fixes); ring20-dashboard has the six probe lines in its own tests (9/9 on be.5).
+- **Backlog, ready:** T-4930 first (accept a PROPOSED RESTATEMENT: ring20-dashboard has 7 ambers waiting), T-4932 (judge page plan), T-4933 (opencode seat never completes), T-4925 (corpus_spec reads only a process's direct children: nested subprocess nodes dropped), T-4930 (no verb to accept a PROPOSED RESTATEMENT), T-4923 (v1.8.16 release-notes items: write them into the notes at release time), T-4912 (cosmetic -c in ps after a budget restart), T-4649 (project-local hook extension points: inception first).
+- **Lesson to keep (2026-10-31):** when changing a gate file, run EVERY test that reads it, not only the ones named after it (T-4920 broke the T-4851 parser test; T-4921 broke the T-3000 template lint). And never split a gate keyword to get a command past it, even for a harmless test.
+
+## Older (2026-10-29 ~21:25Z), all done 2026-10-30/31
+- T-4870 finished and pushed; dimitri-mint-dev's v1.8.15 result recorded (T-4911, T-4915); glm-5.2 pin was their project copy (T-4913).
+
+# Older carry-over (written 2026-10-28 ~12:00 UTC, session end at Amber)
+
+## RELEASE FREEZE ACTIVE (operator ruling 2026-10-28, T-4869; CLAUDE.md §Release Freeze Phase)
+No new development until v1.8.15 is released. Allowed: testing, fixing field-reported FAILS, test reliability, release work. New requests: task with --horizon later and tag post-freeze, need before solution, tell the requester.
+Confirmation rule (operator answer b, 2026-10-28): a clean full upgrade by 3+ testers confirms changes without a specific verdict; a specific FAILS must be fixed and re-confirmed.
+Exit: every active tester on be.48+ reported, no open failures, then release; only the operator lifts it.
+
+## CONTINUOUS MODE ARMED (operator, 17:07Z) until 2026-10-28T19:07:50Z, 6 sessions, tier 1, max 6 tasks
+Directive: freeze work only; stop and report when 1409 has sent its be.48+ upgrade report or the queue is empty. The operator armed it to watch the restart hand-off: say in the first message whether this session came from the wrapper's budget restart (S-2026-1028-1812 was the session before).
+
+## Tester status (2026-10-28 evening) — see docs/reports/field-test-v1.8.15-results.md, T-4876
+- Clean on be.48+: ring20-dashboard (be.49), ring20 (be.48), dimitri-mint-dev (be.48), 055 (be.49), 832 (be.48, A-H complete), TermLink (be.49). Rule b met.
+- ONLY 1409's be.48+ upgrade report is missing for the freeze exit.
+- be.49 (T-4874) carries T-4872, T-4873, T-4857..T-4859; T-4872 and T-4873 confirmed WORKS by their reporters.
+- Still owed, not blocking: 055 G, dimitri-mint-dev G + T-4781 (after their relaunches).
+
+## UPDATE 2026-10-28 ~19:30Z (later session)
+- DONE: T-4879 (no repro), T-4880 (dm mail per addressee in fw sidecar alerts; TermLink told), T-4881 (config parity), T-4883 (reload-identity test flake). All older unanswered dm items handled (.context/sidecar/dm-handled); 0235 told P-001 = T-4046 (asked WORKS/FAILS + truncated Co-Authored-By refusal).
+- be.50 CUT AND PUSHED (370b2688b): be.49 + T-4875, T-4880, T-4881, T-4883. `fw release` always releases HEAD (no cut-at-tag), so these 4 must be confirmed rather than released unconfirmed.
+- Asked for be.50 upgrade reports: 1409 (conversation aef-v1815-freeze-exit, the freeze-exit gate), 010-termlink + 055 (conversation aef-v1815-be50). Three clean be.50 upgrades = rule b for the 4 new fixes.
+- Operator review ticks open (they asked "what do I review"): T-4046, T-4846, T-4875, T-4854, T-4831, T-4832, links via `bin/fw task review-batch`.
+- 832 T-1261: origin carrier advice given (option 1, x832 namespace, originalId=); they publish the namespace URI after their operator rules.
+- OPERATOR 2026-10-28 ~19:45Z, answer "1": the release WAITS for 1409's be.50 report (earliest 2026-10-29, after their reviews, with their operator's go). TermLink and 055 also upgrade to be.50 when their operators say go. 1409 dropped T-4797 (they use clones now, K3).
+- 1409 INTERIM 2026-10-28 21:33 (msg 8e456671): upgraded to be.50 cleanly (dry-run + upgrade exit 0, no PRESERVE file changed, 29 files, their commit 97362b0b7; 40 STALE review worktrees + claude-fw restart hint expected). Doctor on be.50 (~21:45, msg 3b77df39): 0 FAIL, 38 project WARN + 1 host WARN; no pre-upgrade doctor reading exists. Pre-upgrade baseline (5f66369d): 7 project tests red, data-dependent, theirs, not framework; they separate them out in the report. Still owed: full test suite after a machine restart.
+- NEXT: when reports arrive, record them in docs/reports/field-test-v1.8.15-results.md (under a task), then release decision + dry-run to the operator.
+
+## FIRST agent work for the next session (allowed under the freeze: reported breakage)
+- T-4879: a consumer session that inherits another project's PROJECT_ROOT made fw write tasks/focus into that project (1023, on v1.6.15, report ~2026-10-15, forwarded 2026-10-28). Reproduce on current be.49 first; if it reproduces, fix so fw trusts its own bin/fw location + cwd .framework.yaml and refuses on mismatch. 1023 was answered directly (msg d8b7308d) with upgrade guidance.
+- T-4878: sidecar message truncated at 832 (investigate if it repeats).
+- T-4880: peer mail to this project sat unread for days (dm-stale judges by signing identity; auto-confirm receipts count as read). Root cause of the two late forwards on 2026-10-28. TermLink sent it (msg 80641d05; full text: bin/fw sidecar inbox --show 80641d05-a425-44dc-8664-de20ef2637db): rule in their commit 22782d588 (scripts/check-unacted-mail.sh, tests/unacted-mail-fixtures.sh 17 cases, 4 more in session-start-alerts-fixtures). Rule: per message, OPEN when nobody it was meant for (to_project, else anyone else) posted after it; within 72 h of the other side = an answer; receipts/notices/replies excluded; a "handled" file escapes mail answered on another rail. Reply to TermLink once T-4880 lands.
+- Restart test result to record: session S-2026-1028-1812's successor reached the Stop band at ~17:37Z; check .context/working/.restart-requested and the claude-fw log for whether the budget restart fired.
+
+## Release path
+- T-4867 report: docs/reports/T-4867-release-cut-point.md. Under rule b: release up to the latest be-tag once all active testers are on it with no open FAILS (was be.46 at analysis time; now be.48/be.49).
+- T-4868 inception (release-branch model) is open; research not started; lower value now (confirmed fixes sit on top of the unconfirmed bulk, cherry-picks would conflict).
+- When the exit condition holds: release decision (T-4743 closed-record edit needs FW_ALLOW_CLOSED_RECORD_EDIT=1 by the operator), dry-run, then release; operator lifts the freeze.
+
+## Operator decision walk (one question at a time, with context)
+Done: Q1 designer reviews (T-4830/4836/4838/4845 closed on green verdicts; T-4831/T-4832 back to operator: look in the designer, then tick /review/T-4831 and /review/T-4832). Q2 release -> c (cut-point + inception). Q3 T-4649 -> deferred by the freeze. Freeze ruling. Q5a -> b.
+Also done since: Q4 T-4802 -> a, Q2b -> b, Q f -> a (see below). Remaining (low urgency): T-4808, T-4785/T-4786 (design, after the freeze), T-4790 drop (operator), T-4829 wording, plus the operator review ticks listed under "Late 2026-10-28".
+
+## Post-freeze backlog (horizon later, tag post-freeze)
+FIRST after the release (operator 2b, answer b): T-4788 (python3 -c write idioms pass the task gate) and T-4792 (command substitution judged by outer command), with tests and a field round.
+Then: T-4649, T-4855, T-4856, T-4864, T-4870 (upgrade drops consumer local block, 1409), T-4871 (runme double start, ring20-dashboard). Also consider moving T-4840's .audit-inflight marker out of .context/audits (832 heads-up; possible T-4866 flake source).
+
+## Late 2026-10-28
+- 832 COMPLETED its v1.8.15 A-H field test (T-4811 and G WORK, no open FAILS). It waits for the release notice, then sends designer 0.32.0 (re-pin = post-release work).
+- TermLink upgraded to be.49 clean (T-4827, T-4828 WORK). 6 of 7 testers on be.48+; ONLY 1409's upgrade report is missing for the freeze exit.
+- Q f -> a: T-4875 built (retry a first-time red file once; pass on retry = WARN suspected flaky + flakes.jsonl). Partial-complete: operator ticks /review/T-4875 after looking at UNIT_SUITE_FLAKE_RETRY_MAX on /config. Not yet in a be-tag (next tag or the release).
+- Operator review ticks still open: T-4831, T-4832 (designer look), T-4846 (/config TMP_USE_WARN_PCT), T-4854 (restart), T-4875 (/config retry row).
+- Remaining walk items (low urgency): a T-4808 and c T-4785/T-4786 (design, after the freeze), d T-4790 (operator drops the dead-lettered consult), e T-4829 wording.
+
+## Decided in the walk since the last handover
+- Q4 T-4802 -> a: dispatch_records.py supported for ring20 poold; B/C after the freeze (ring20 told, msg e9d39d8d).
+- Q2b -> b: gate holes after the release.
+- Testers on be.48+: ring20-dashboard (be.49), ring20, dimitri-mint-dev, 055 (be.49), 832, TermLink (be.49). Only 1409 left. T-4872 and T-4873 confirmed WORKS by their reporters.
+
+## Watch
+- opencode review seat gave no completion twice in today's designer reviews (832 reports it working on their side). If it repeats, investigate (allowed under the freeze).
+- T-4866: first-time one-off suite reds (fw_pending_remind unexplained; t4041 once).
