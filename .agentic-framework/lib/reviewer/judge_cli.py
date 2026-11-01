@@ -769,6 +769,12 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
             "harness's temp files, a build cache). If what a criterion needs still cannot run, "
             "return `not-evaluated` with the reason — never a verdict on what you could not check.",
             "",
+            # T-4978 (ring20): a seat booted the app under TestClient; the app created its sqlite
+            # state file under its own code root, i.e. inside the export, and the seat was voided.
+            "Running project code: an app or test may write files next to its own code (a SQLite "
+            "database, a cache, a log). Never run it in place. Copy the export first and run the "
+            "copy: `cp -a . \"$TMPDIR/run\" && cd \"$TMPDIR/run\"`.",
+            "",
             "When you finish, the dispatch runtime records the verdicts you PRINT, under your own "
             "reviewer identity, with your full output as the evidence report, and signs your "
             "completion. Only the format below is read: a criterion you do not print exactly once, "
