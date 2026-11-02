@@ -101,8 +101,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/review.sh` falls back to `DECISION` (no shell metacharacter) and prints a warning line naming go, no-go and defer; mapped verdicts are unchanged
-- [ ] `tests/unit/t4726_review_hint_decide_verb.bats` updated: the placeholder is `DECISION`, the warning is printed, and no `|` appears in the decide line; `fw inception decide T-X DECISION` is refused; vendored copy in sync
+- [x] `lib/review.sh` falls back to `DECISION` (no shell metacharacter) and prints a warning line naming go, no-go and defer; mapped verdicts are unchanged
+- [x] `tests/unit/t4726_review_hint_decide_verb.bats` updated: the placeholder is `DECISION`, the warning is printed, and no `|` appears in the decide line; `fw inception decide T-X DECISION` is refused; vendored copy in sync. The refusal is shown by code, not by running decide, which is operator-only: `lib/inception.sh` (decision validation) accepts only go, no-go and defer and exits 1 otherwise. 32 bats files naming review.sh / task review: 273 ok, 1 not ok. That one, `audit_blocks_review_and_decide.bats` "fw inception decide: blocks when placeholder present", fails identically with the previous review.sh, so it predates this change (likely decide's agent refusal under CLAUDECODE=1 firing first).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,8 +288,18 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t4726_review_hint_decide_verb.bats > /tmp/.t4994.v 2>&1 && ! grep -q "^not ok" /tmp/.t4994.v
+bin/fw vendor self --check --task T-4994
 
 ## RCA
+
+**Symptom:** for an inception whose Recommendation has no mappable verdict, `fw task review` printed `fw inception decide T-X go|no-go|defer --rationale "..."` as a line to paste.
+
+**Root cause:** the fallback placeholder was made of shell metacharacters. Pasted into bash it is a pipeline whose first stage is `fw inception decide T-X go`.
+
+**Why structurally allowed:** the T-4726 test pinned the placeholder text as correct; nothing asked whether a pasteable line is safe to paste.
+
+**Prevention:** the placeholder is `DECISION`, which `do_inception_decide` refuses, plus a warning line. The T-4726 test asserts that no `|` appears in the decide line.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
