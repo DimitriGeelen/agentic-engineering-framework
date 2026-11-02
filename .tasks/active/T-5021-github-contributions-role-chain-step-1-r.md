@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-02T14:02:18Z
-last_update: 2026-11-02T21:08:48Z
+last_update: 2026-11-02T21:09:12Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -112,7 +112,7 @@ cost_estimate_proposed:
 - [ ] [REVIEW] Step 1 output approved: the requirements and the sign-off list
   **Sovereignty:** operator decision only; this approval cannot be delegated to an agent reviewer.
   **Steps:**
-  1. Open http://192.168.10.107:3000/project/docs--reports--T-5006-requirements.md and read section 14 (the sign-off list: open risks and decisions).
+  1. Open http://192.168.10.107:3000/project/docs--reports--T-5006-requirements and read section 14 (the sign-off list: open risks and decisions).
   2. For each item, accept it, change it, or carry it forward as open; say so in a comment or to the agent.
   3. Skim section 6 (requirements) for anything that does not match what you meant.
   **Expected:** every item in section 14 has your answer; nothing in section 6 contradicts your intent. Then tick this box; step 2 (T-5022, threat modeler) may start.
