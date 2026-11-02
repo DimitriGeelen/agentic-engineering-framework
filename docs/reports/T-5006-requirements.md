@@ -109,6 +109,15 @@ on standard GitHub-hosted runners, with no minute cap; GitHub's 2025-12-16 chang
 stays free. Paid only: private repos beyond the free quota, and "larger" runners. A $0.002/min fee on
 self-hosted runners in private repos was announced for 2026-03-01 and reported postponed; it never applied to
 public repos. Not checked against GitHub's live billing page.
+4.6.e **A6** (2026-11-02): "I would like to have it under my own control. OK, let's do GitHub runners, but let's
+have an activity that also starts developing and testing our own runners for later. That needs to be a
+high-priority activity, not immediately but high priority."
+4.6.f Recorded as: (1) now: every check (tests, structure audit, lint, the framework task check) runs on
+GitHub-hosted runners, through framework commands only (4.6.c), so it can move; (2) a separate high-priority
+task in this arc, scheduled next (not started now): build and test our own isolated runner under the operator's
+control (candidate: a throwaway VM or container on the operator's Proxmox, on a network segment that cannot
+reach other hosts, driven by OneDev's build server or registered as a runner), and prove it runs the same checks.
+The goal is control: the operator wants the checks to end up on their own infrastructure.
 4.5 **A5 Task reference** (2026-11-02): **1 — intake task id plus issue number**, "T-4935 (#104): …". The
 commit-msg hook stays unchanged; the intake task file must be on `bleeding-edge` before the PR is opened.
 4.4 **A4 Who merges** (2026-11-02): **1 — only the operator, with the GitHub merge button.** AEF agents run the
