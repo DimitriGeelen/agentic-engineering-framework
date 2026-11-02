@@ -88,6 +88,12 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 - **T-4939 WORKS:** `accept --dry-run --text` on all 10 listed verdicts gave 10 clean titles,
   `[PREFIX]` kept. Their operator accepts the 10 with the cleaned wording, then they re-judge.
 
+### be.26: ring20-dashboard (msg a14cb4c1, their T-2632), 2026-11-02
+- **WORKS.** be.19 → be.26 (db97fbae4), vendored, 19:22-19:40Z, exit 0, no rollback. 29 local patches, zero fuzz; 27 strict, 2 ported because T-4986 reworked `cmd_rank` (their 0007 QUAD footers, 0024 `--owner` after quadrant medians; offered upstream, T-5035). Doctor 0 FAIL before and after; fast lane 17103 passed, no new failures. Watchtower cold load of `/` 110 s (see T-5010/T-5011).
+- **T-5014 WORKS:** their main session holds the lease (generation 1); another session id gets am-i exit 1.
+- **T-5008 PARTLY:** isolation is recorded on a real opencode seat (stderr.log line and `seat_pid_isolation` in meta.json). The seat refused to run the decoy `pkill`, treating it as an injection, so a live seat could not serve as the attacker. The mechanism itself, tested without a seat through the exact `unshare` wrapper: inside, the shell is PID 1 and sees 4 processes, `pkill` matched only its own line, the decoy outside stayed alive. Open: a sanctioned self-test for the seat launch path.
+- **Security review input on T-4988 (access grants):** 2 HIGH, 2 MEDIUM (self-grant by committing the grant file; symlinks under a create grant; refused verbs skipped via cd/variables; unguarded first write of the grant file). Registered as G-129; T-5031 to T-5034.
+
 ### be.26: 050-email-archive (msg 18a23e53), 2026-11-02
 - **WORKS.** be.25 → be.26 (35abca011) in their agent shell: upgrade and `fw doctor` rc 0; 8 local patches merged clean; access grants unchanged.
 - **T-5014 WORKS:** main claimed on the first prompt after the upgrade ("held by main <this session>", generation 1); a foreign session id gets am-i exit 1.
