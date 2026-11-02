@@ -1877,3 +1877,14 @@ testable until decided.
 14.14 **The other open operator questions** (10.1, 10.3, 10.4, 10.6, 10.10 to 10.25, 10.27, 10.28, 10.30, 10.34): decide
 now, or let them go forward to the next roles as open. 10.29, 10.33, 10.36 and 10.37 go to the architect and threat
 modeler.
+12.13 **Release channels (operator, 2026-11-02, "let's try two weeks").** Three channels: bleeding edge (everything
+new, basic tests green; daily `be-tag`s), pre-release (cut weekly from what 2 to 3 different agents showed working in
+the field), stable (cut monthly from what ran as pre-release for at least 2 weeks, used by at least two different
+projects, with no open failure against it). Emergency route for urgent security fixes: field-proven by two agents,
+then straight to pre-release and stable with the operator's explicit go. Outside PRs always target `bleeding-edge`.
+`CONTRIBUTING.md` names `master` (there is no `main`). To be filed as its own inception in this arc; consistent with
+the standing rulings T-4020 / T-4146.
+12.14 **Mehdi's proposal re-checked against the draft plan** (operator asked, 2026-11-02): added to
+`T-5006-draft-plan-for-mehdi.md` the direct answer to the closing question, the release channels, PR 1's corrections
+(`master`, branch from `bleeding-edge`), PR 2's example #106 checked on the latest pre-release, and the 28-October CI
+re-verification check as the step after the pilot.
