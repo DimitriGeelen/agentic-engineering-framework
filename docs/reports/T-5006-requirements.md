@@ -92,6 +92,12 @@ is untrusted until reviewed (adversary 2.7.a); running it there means a harmful 
 and the contributor sees the result on the PR (A1.a). Running it on our own hosts is possible (a self-hosted
 runner, OneDev's build server, or an AEF agent that checks the PR out) but executes untrusted code inside the
 network, next to credentials and the peers' hosts.
+4.6.b Operator: "But do I need to pay for that? Then I need to start to use GitHub resources." Facts
+(2026-11-02): the GitHub repo is public, and GitHub-hosted runners are free for public repositories. GitHub
+resources are already in use: `test.yml` runs on every push to `master`, and its last three runs
+(2026-10-20, 2026-10-20, 2026-10-29) all FAILED unnoticed. A same-day field report (ring20-dashboard, G-128,
+T-5008: a review seat on a shared host killed a production service) is a live example of why untrusted code
+should not run on the operator's hosts.
 4.5 **A5 Task reference** (2026-11-02): **1 — intake task id plus issue number**, "T-4935 (#104): …". The
 commit-msg hook stays unchanged; the intake task file must be on `bleeding-edge` before the PR is opened.
 4.4 **A4 Who merges** (2026-11-02): **1 — only the operator, with the GitHub merge button.** AEF agents run the
