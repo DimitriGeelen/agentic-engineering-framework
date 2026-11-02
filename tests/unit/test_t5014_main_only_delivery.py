@@ -30,6 +30,8 @@ sys.path.insert(0, str(FW_ROOT))
 
 from lib.sidecar import adapter, hooks, inject, lifecycle, main_session, receiver  # noqa: E402
 
+_REAL_ANCESTOR = adapter._claude_ancestor_pid   # before any fixture stubs it
+
 STUB = r'''#!/usr/bin/env python3
 import json, os, sys, time
 args = sys.argv[1:]
@@ -37,7 +39,9 @@ with open(os.environ["T5014_LOG"], "a") as fh:
     fh.write(" ".join(args) + "\n")
 sid = args[args.index("--session") + 1] if "--session" in args else ""
 table = json.load(open(os.environ["T5014_MAP"]))
-rc, out, err, sleep = table.get(sid, table.get("*", [2, "", "", 0]))
+verb = args[1] if len(args) > 1 and args[0] == "main" else ""
+rc, out, err, sleep = table.get(f"{verb}:{sid}", table.get(f"{verb}:*",
+                                table.get(sid, table.get("*", [2, "", "", 0]))))
 time.sleep(sleep)
 sys.stdout.write(out)
 sys.stderr.write(err)
@@ -55,6 +59,9 @@ def proj(tmp_path, monkeypatch):
     monkeypatch.setenv("PROJECT_ROOT", str(root))
     monkeypatch.setenv("FW_SIDECAR_REGISTRY_DIR", str(tmp_path / "registry"))
     monkeypatch.delenv("FW_REVIEW_WORKER", raising=False)
+    # the suite may itself run inside a dispatched worker: clear its markers
+    monkeypatch.delenv("FW_DISPATCHED_WORKER", raising=False)
+    monkeypatch.delenv("FW_REVIEWER_IN_DISPATCH", raising=False)
     monkeypatch.delenv("TERMLINK_SESSION_ID", raising=False)
     monkeypatch.setattr(adapter, "_claude_ancestor_pid", lambda *a, **k: None)
     return root
@@ -79,6 +86,9 @@ class MainStub:
 
     def calls(self):
         return self.log.read_text().splitlines() if self.log.exists() else []
+
+    def verbs(self, verb):
+        return [c for c in self.calls() if c.startswith(f"main {verb} ")]
 
 
 @pytest.fixture
@@ -216,9 +226,11 @@ def test_unknown_injector_types_nowhere(main, monkeypatch):
     assert tl.injects == [] and "main-only delivery unknown" in rep["reason"]
 
 
-def test_no_waiting_mail_asks_termlink_nothing(main, monkeypatch):
+def test_no_waiting_mail_claims_but_never_asks_am_i(main, monkeypatch):
+    main.set({"*": [0, "", "", 0]})
     ids, out = _hook(monkeypatch, "prompt", "op", "tl-op")
-    assert ids == [] and out == "" and main.calls() == []
+    assert ids == [] and out == ""
+    assert main.calls() == ["main claim --session op"]
 
 
 # ── (d) unsupported: today's delivery, said once per session ───────────────
@@ -308,3 +320,185 @@ def test_exit_codes_map_and_holder_is_one_short_line(proj):
     assert main_session.am_i("s", runner=answer(2, err="error: unexpected argument '--session'"))[0] \
         == main_session.UNSUPPORTED
     assert main_session.am_i("s", runner=answer(97, err="refused"))[0] == main_session.UNKNOWN
+
+
+# ── (g) T-5014 follow-up: the main lease is CLAIMED, then asked ─────────────
+# 010's build (msgs c84c1c6d, 59d2ec20): nobody holds main until a session claims
+# it; a vacant lease answers am-i with exit 1 and the line below.
+
+HELD = "not-main: held by main op-sid@host-a pid 4242 (agent aef) (generation 7)\n"
+VACANT = "main of t5014 is vacant (generation 7)\n"
+
+
+def test_exact_am_i_outputs_pinned(proj):
+    def answer(rc, out="", err=""):
+        return lambda argv, **k: subprocess.CompletedProcess(argv, rc, out, err)
+    assert main_session.ask("s", runner=answer(0)) == (main_session.MAIN, "", False)
+    a, holder, vacant = main_session.ask("s", runner=answer(1, HELD))
+    assert (a, vacant) == (main_session.NOT_MAIN, False) and holder == HELD.strip()
+    a, holder, vacant = main_session.ask("s", runner=answer(1, VACANT))
+    assert (a, vacant) == (main_session.NOT_MAIN, True) and holder == VACANT.strip()
+    assert main_session.ask("s", runner=answer(2, "", "hub down\n")) == (main_session.UNKNOWN, "", False)
+    assert main_session.am_i("s", runner=answer(1, VACANT)) == (main_session.NOT_MAIN, VACANT.strip())
+
+
+def test_claim_and_release_argv_and_results(proj):
+    seen = []
+
+    def answer(rc, out="", err=""):
+        def run(argv, **k):
+            seen.append(argv[1:])
+            return subprocess.CompletedProcess(argv, rc, out, err)
+        return run
+    assert main_session.claim("s", runner=answer(0)) == main_session.CLAIMED
+    assert seen[-1] == ["main", "claim", "--session", "s"]
+    assert main_session.claim("s2", runner=answer(1, HELD)) == main_session.REFUSED
+    assert main_session.claim("s3", runner=answer(2, "", MISSING[2])) == main_session.UNSUPPORTED
+    assert main_session.claim("s4", runner=answer(2, "", "hub down")) == main_session.UNKNOWN
+    assert main_session.release("s", runner=answer(0)) == main_session.RELEASED
+    assert seen[-1] == ["main", "release", "--session", "s"]
+
+    def boom(*a, **k):
+        raise subprocess.TimeoutExpired(a[0], 5)
+    assert main_session.claim("s5", runner=boom) == main_session.UNKNOWN
+    assert main_session.release("s5", runner=boom) == main_session.UNKNOWN
+    assert main_session.claim("", runner=boom) == main_session.UNKNOWN
+
+
+def test_first_prompt_on_a_vacant_lease_claims_then_surfaces(main, monkeypatch):
+    lifecycle.write_config(inject=False)
+    state = main.map.parent / "held"
+    # am-i: vacant until the claim lands, then main. The stub reads a table, so
+    # the claim call itself flips the table (a tiny wrapper script).
+    wrapper = main.bin.parent / "termlink-claiming"
+    wrapper.write_text(
+        "#!/usr/bin/env bash\n"
+        f"echo \"$*\" >> \"$T5014_LOG\"\n"
+        f"if [ \"$2\" = claim ]; then touch {state}; exit 0; fi\n"
+        f"if [ -e {state} ]; then exit 0; fi\n"
+        f"printf '%s' '{VACANT.strip()}'; exit 1\n")
+    wrapper.chmod(0o755)
+    monkeypatch.setenv("FW_TERMLINK_BIN", str(wrapper))
+    _store("m1")
+    ids, out = _hook(monkeypatch, "prompt", "op", "tl-op")
+    assert ids == ["m1"] and "body-m1" in _ctx(out)
+    calls = main.calls()
+    assert calls[0] == "main claim --session op" and calls[1] == "main am-i --session op"
+
+
+def test_renewal_is_rate_limited_to_one_claim_per_minute(main, monkeypatch):
+    main.set({"*": [0, "", "", 0]})
+    _hook(monkeypatch, "prompt", "op", "tl-op")
+    _hook(monkeypatch, "stop", "op", "tl-op")
+    _hook(monkeypatch, "prompt", "op", "tl-op")
+    assert main.verbs("claim") == ["main claim --session op"]
+    # a minute later it renews
+    stamp = main_session._stamp("op")
+    old = stamp.stat().st_mtime - main_session.CLAIM_MIN_INTERVAL_S - 1
+    os.utime(stamp, (old, old))
+    _hook(monkeypatch, "stop", "op", "tl-op")
+    assert len(main.verbs("claim")) == 2
+
+
+def test_failed_claim_is_not_stamped_so_the_next_prompt_retries(main, monkeypatch):
+    main.set({"claim:op": [1, HELD, "", 0], "am-i:op": [1, HELD, "", 0]})
+    _hook(monkeypatch, "prompt", "op", "tl-op")
+    _hook(monkeypatch, "prompt", "op", "tl-op")
+    assert len(main.verbs("claim")) == 2
+
+
+def test_session_start_forces_a_claim_inside_the_rate_limit(main, monkeypatch):
+    main.set({"*": [0, "", "", 0]})
+    _hook(monkeypatch, "prompt", "op", "tl-op")
+    assert hooks.session_start({"session_id": "op"}, spawn=False) == main_session.CLAIMED
+    assert len(main.verbs("claim")) == 2
+
+
+def test_session_start_cli_reads_hook_input_and_claims(main, monkeypatch, proj):
+    """The real entry point, with the real /proc ancestry: run under an
+    interactive claude (or none) it claims; run under a `claude -p` worker (as
+    when this suite itself is dispatched) it must not."""
+    main.set({"*": [0, "", "", 0]})
+    headless = adapter._is_headless(_REAL_ANCESTOR())
+    env = dict(os.environ, PROJECT_ROOT=str(proj))
+    r = subprocess.run([sys.executable, str(FW_ROOT / "lib/sidecar/hooks.py"), "session-start"],
+                       input=json.dumps({"session_id": "op"}), text=True, env=env,
+                       capture_output=True, timeout=30)
+    assert r.returncode == 0, r.stderr
+    import time as _t
+    for _ in range(100):                      # the claim runs detached
+        if main.verbs("claim"):
+            break
+        _t.sleep(0.05)
+    if headless:
+        _t.sleep(0.5)
+        assert main.verbs("claim") == []
+    else:
+        assert main.verbs("claim") == ["main claim --session op"]
+
+
+
+@pytest.mark.parametrize("env", [("FW_REVIEW_WORKER", "1"), ("FW_DISPATCHED_WORKER", "1"),
+                                 ("FW_REVIEWER_IN_DISPATCH", "1")])
+def test_review_seats_and_dispatched_workers_never_claim(main, monkeypatch, env):
+    main.set({"*": [0, "", "", 0]})
+    monkeypatch.setenv(*env)
+    lifecycle.write_config(inject=False)
+    _store("m1")
+    assert hooks.session_start({"session_id": "op"}, spawn=False) is None
+    _hook(monkeypatch, "prompt", "op", "tl-op")
+    _hook(monkeypatch, "stop", "op", "tl-op")
+    assert main.verbs("claim") == []
+
+
+def test_headless_worker_never_claims(main, monkeypatch):
+    main.set({"*": [0, "", "", 0]})
+    monkeypatch.setattr(adapter, "_is_headless", lambda pid: True)
+    lifecycle.write_config(inject=False)
+    _store("m1")
+    assert hooks.session_start({"session_id": "w"}, spawn=False) is None
+    ids, _ = _hook(monkeypatch, "prompt", "w", "tl-w")
+    _hook(monkeypatch, "stop", "w", "tl-w")
+    assert ids == [] and main.verbs("claim") == []
+    assert not main_session.may_claim({"session_id": "w", "headless": True})
+    assert main_session.may_claim({"session_id": "w", "headless": False})
+
+
+def test_vacant_after_a_failed_claim_shows_one_line_and_no_mail(main, monkeypatch):
+    lifecycle.write_config(inject=False)
+    main.set({"claim:*": [1, "quiet period: vacant since 1 min\n", "", 0],
+              "am-i:*": [1, VACANT, "", 0]})
+    _store("m1")
+    ids, out = _hook(monkeypatch, "prompt", "op", "tl-op")
+    assert ids == [] and _ctx(out) == main_session.VACANT_LINE and "\n" not in _ctx(out)
+    assert inject.read_claim("m1") is None
+
+
+def test_vacant_within_the_rate_limit_retries_the_claim_once(main, monkeypatch):
+    lifecycle.write_config(inject=False)
+    main.set({"*": [0, "", "", 0]})
+    _hook(monkeypatch, "prompt", "op", "tl-op")             # claimed, stamped
+    main.set({"claim:*": [1, "cooldown\n", "", 0], "am-i:*": [1, VACANT, "", 0]})
+    _store("m1")
+    ids, out = _hook(monkeypatch, "prompt", "op", "tl-op")
+    assert ids == [] and _ctx(out) == main_session.VACANT_LINE
+    assert len(main.verbs("claim")) == 2                  # the forced retry
+
+
+def test_held_by_another_session_shows_nothing(main, monkeypatch):
+    lifecycle.write_config(inject=False)
+    main.set({"claim:*": [1, HELD, "", 0], "am-i:*": [1, HELD, "", 0]})
+    _store("m1")
+    ids, out = _hook(monkeypatch, "prompt", "bg", "tl-bg")
+    assert ids == [] and out == ""
+
+
+def test_unsupported_termlink_claim_is_a_noop_and_delivery_is_todays(main, monkeypatch):
+    lifecycle.write_config(inject=False)
+    main.set({"*": MISSING})
+    assert hooks.session_start({"session_id": "op"}, spawn=False) == main_session.UNSUPPORTED
+    _store("m1")
+    ids, out = _hook(monkeypatch, "prompt", "op", "tl-op")
+    _hook(monkeypatch, "stop", "op", "tl-op")
+    assert ids == ["m1"] and _ctx(out).count(main_session.UNSUPPORTED_LINE) == 1
+    assert not main_session._stamp("op").exists()

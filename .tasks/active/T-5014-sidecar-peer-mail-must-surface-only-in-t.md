@@ -118,7 +118,7 @@ cost_estimate_proposed:
 - [ ] `fw sidecar status` (or `alerts`) shows which session, if any, holds each pending message
 - [x] Where `termlink main am-i` is missing, the hook keeps today's delivery and says so once per session ("main-only delivery not active: termlink lacks main am-i"), with a test (010's ask, msg ba5835e1)
 - [ ] Interactive sessions claim the main lease (`termlink main claim`) on SessionStart and renew it on UserPromptSubmit and PostToolUse, and release it on SessionEnd; a headless `claude -p` worker or a review seat never claims; a termlink without the verb is a no-op (010 interface, msg c84c1c6d)
-- [ ] The exact am-i outputs from 010's build (exit 0 / 1 with "not-main: held by main …" / 2) are pinned in a test, and the vacant-lease answer is handled so a project whose sessions have not claimed yet does not hold all mail
+- [x] The exact am-i outputs from 010's build (exit 0 / 1 with "not-main: held by main …" / 2) are pinned in a test, and the vacant-lease answer is handled so a project whose sessions have not claimed yet does not hold all mail
 - [ ] Live check on this host after 010's install: this session claims main, peer mail surfaces here, and a second interactive session of the project receives nothing
 - [ ] 010 and ring20 are told what shipped, with the be-tag
 

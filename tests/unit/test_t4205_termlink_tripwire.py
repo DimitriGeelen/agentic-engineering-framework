@@ -44,3 +44,18 @@ def test_old_receipt_shape_is_refused_by_the_fake_not_posted_to_a_hub(termlink_t
     # This test's purpose is that the call was refused; clear the record so the
     # fixture does not fail it for making the call.
     termlink_tripwire.forgive()
+
+
+def test_main_lease_verbs_answer_verb_missing_and_never_pass_through(termlink_tripwire, monkeypatch):
+    """T-5014: every interactive hook now claims the main lease. The fake answers
+    `main claim` / `main release` as a termlink without the verb (today's delivery)
+    and records them as `lease`: not a failing `call`, and — unlike a probe —
+    never handed to a real binary even with TERMLINK_TRIPWIRE_PASS_PROBES=1."""
+    import subprocess
+    monkeypatch.setenv("TERMLINK_TRIPWIRE_PASS_PROBES", "1")
+    for verb in ("claim", "release"):
+        r = subprocess.run(["termlink", "main", verb, "--session", "s1"],
+                           capture_output=True, text=True, timeout=10)
+        assert r.returncode == 2 and "unrecognized subcommand" in r.stderr
+    assert termlink_tripwire.calls() == ["lease main claim --session s1",
+                                         "lease main release --session s1"]

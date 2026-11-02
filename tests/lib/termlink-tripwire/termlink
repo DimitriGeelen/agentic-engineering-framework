@@ -24,6 +24,9 @@ case "$verb $sub" in
     "identity sign"|"identity show") kind=probe ;;
     # T-5014: read-only question (is this session the project's main?).
     "main am-i") kind=probe ;;
+    # T-5014: the main lease. NOT read-only (a hub write), so never a probe and never
+    # passed through to a real binary; answered below as a termlink without the verb.
+    "main claim"|"main release") kind=lease ;;
 esac
 case "$verb" in
     ""|discover|whoami|version|help|info|list) kind=probe ;;
@@ -33,7 +36,9 @@ printf '%s %s\n' "$kind" "$*" >> "$log"
 # T-5014: `main am-i` is a read-only question (is this session the project's main?).
 # Answer it as a termlink that lacks the verb, so the sidecar keeps today's delivery
 # in every test that does not stub termlink itself (FW_TERMLINK_BIN).
-if [ "$verb $sub" = "main am-i" ]; then
+# `main claim` / `main release` (recorded as `lease`) get the same answer: every
+# interactive hook claims, and a test that does not stub termlink keeps today's rule.
+if [ "$verb $sub" = "main am-i" ] || [ "$kind" = lease ]; then
     echo "error: unrecognized subcommand 'main'" >&2
     exit 2
 fi
