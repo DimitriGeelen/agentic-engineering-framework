@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-02T08:33:17Z
-last_update: 2026-11-02T16:08:28Z
+last_update: 2026-11-02T16:59:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -108,6 +108,8 @@ cost_estimate_proposed:
 - [x] Harness seats (codex, opencode, antigravity) launch inside a PID namespace when the host allows it (`unshare --pid --fork --mount-proc` or equivalent), and say plainly in the run log when it does not
 - [x] A test starts a decoy process outside the seat with the same command line, runs a seat command `pkill -f <that line>`, and shows the decoy still alive
 - [ ] The seat brief and the seat's command guard refuse `pkill`, `killall` and `kill $(pgrep …)`, with a test
+- [ ] Seats can run as a dedicated unprivileged user: a config key (e.g. `REVIEW_SEAT_USER`) runs every harness seat through `sudo -n -u <user>` inside its namespace (as antigravity already does), with a documented host setup (user, sudoers line, read access to the export); unset = today. Closes the `systemctl` / control-socket residual found by the codex review (db97fbae4) and named by ring20-dashboard (msg 0bbb23a6). The user itself is a host change for each operator
+- [ ] Review findings fixed: the watchdog records timeout before signalling (race); isolation is recorded only after the namespaced launch actually started
 - [ ] ring20-dashboard is answered with what shipped, and the report is recorded under T-4940
 
 ### Human
