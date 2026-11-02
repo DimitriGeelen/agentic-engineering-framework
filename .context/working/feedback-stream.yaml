@@ -52841,3 +52841,39 @@ scan_id: R-07a6be14
 task_id: T-4993
 payload:
   task_file: .tasks/active/T-4993-fw-dies-with-home-unbound-variable-when-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-01T23:55:20Z'
+scan_id: R-7aed3f8f
+task_id: T-4996
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-01T23:55:20Z'
+scan_id: R-7aed3f8f
+task_id: T-4996
+payload:
+  task_file: .tasks/active/T-4996-review-judge-a-project-can-declare-paid-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-02T00:17:06Z'
+scan_id: R-2f907c14
+task_id: T-4999
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-02T00:17:06Z'
+scan_id: R-2f907c14
+task_id: T-4999
+payload:
+  task_file: .tasks/active/T-4999-review-seats-inherit-the-live-projectroo.md

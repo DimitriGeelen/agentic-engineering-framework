@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4999: Review seats inherit the LIVE PROJECT_ROOT: an opencode seat wrote operator state in ring20's live project
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-02T00:17:19Z
+# ============================================================================
+
+task_id: T-4999
+task_name: "Review seats inherit the LIVE PROJECT_ROOT: an opencode seat wrote operator state in ring20's live project"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-02T00:02:29Z
+completed: 2026-11-02T00:16:44Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-02T01:03:35+01:00
+last_commit: 2026-11-02T01:14:06+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  harness review seats run with PROJECT_ROOT = their export and no FRAMEWORK_ROOT (ring20: an opencode seat wrote the live project's operator state via an app honouring PROJECT_ROOT). tests — a seat's PROJECT_ROOT is its export, FRAMEWORK_ROOT unset; an app writing under PROJECT_ROOT never reaches the live project and the seat is voided. vendor self. criteria, RCA, follow-ups T-5000/T-5001, G-127 registered. test stub acts only as the seat, not on the runtime's --version probe (the probe runs with the run's live env; under a non-default TMPDIR the stub's probe call wrote the live dir and failed the gate)
+
+# Key outcomes
+outcomes:
+  - 'In `run.sh`, each harness launch (codex, opencode, antigravity) sets `PROJECT_ROOT` to the export and unsets `FRAMEWORK_ROOT` for the seat process only; the framework''s own steps in `run.sh` keep the live values'
+  - 'A test with a stub seat that records its environment shows PROJECT_ROOT = the export and no FRAMEWORK_ROOT, and a stub that writes `$PROJECT_ROOT/data/x` leaves the live project untouched and is voided; every test that reads `termlink.sh` passes; vendored copy in sync (`TestSeatNeverSeesTheLiveProject`, 2 tests; 497 pytest + 229 bats over every file reading termlink.sh, 0 skipped)'
+  - 'The wider follow-ups are filed: T-5000 (inception: the claude review seat runs with the live project as its cwd) and T-5001 (void a seat that changed anything outside its export); registered as G-127'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.context/project/concerns.yaml'
+  - '.tasks/active/T-4999-review-seats-inherit-the-live-projectroo.md'
+  - '.tasks/active/T-5000-the-claude-review-seat-runs-with-the-liv.md'
+  - '.tasks/active/T-5001-void-and-report-a-review-seat-that-chang.md'
+  - 'agents/termlink/termlink.sh'
+  - 'tests/unit/t4835_review_seat_pycache_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-02T01:03:35'
+    action: 'T-4999: harness review seats run with PROJECT_ROOT = their export and no FRAMEWORK_ROOT (ring20: an opencode seat wrote the live project''s operator state via an app honouring PROJECT_ROOT)'
+  - time: '2026-11-02T01:09:34'
+    action: 'T-4999: tests — a seat''s PROJECT_ROOT is its export, FRAMEWORK_ROOT unset; an app writing under PROJECT_ROOT never reaches the live project and the seat is voided'
+  - time: '2026-11-02T01:09:39'
+    action: 'T-4999: vendor self'
+  - time: '2026-11-02T01:10:31'
+    action: 'T-4999: criteria, RCA, follow-ups T-5000/T-5001, G-127 registered'
+  - time: '2026-11-02T01:14:06'
+    action: 'T-4999: test stub acts only as the seat, not on the runtime''s --version probe (the probe runs with the run''s live env; under a non-default TMPDIR the stub''s probe call wrote the live dir and failed the gate)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 14
+  commits: 6
+  files_changed: 10
+  lines_added: 1090
+  lines_removed: 27
+  footprint_refreshed_at: '2026-11-02T00:17:31Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4999-review-seats-inherit-the-live-projectroo.md
+generated_by: context-agent-hybrid
