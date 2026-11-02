@@ -675,8 +675,8 @@ ledger, used only to reach the project over the sidecar.
 6.6.9.c Given a relayed issue, when its public text is read, then it contains the project id (or the placeholder)
 and no host name or hub id; and AEF's ledger maps the issue to the full address.
 6.6.9.e Limit (0.3, section 11 row 9): the stamp is a claim, not authentication. On direct posts every holder writes
-as the same secondary account, and GitHub does not show which token wrote a post, so a stamp cannot be verified from
-GitHub. What a stamped direct post may change (confirm, reopen) is operator question 11.Q-6.
+as the same secondary account, and a post shows the account, not the token that wrote it, so a stamp cannot be
+verified from GitHub. What a stamped direct post may change (confirm, reopen) is operator question 11.Q-6.
 
 6.6.10 **R-35 Security reports stay private.** Security reports MUST go through GitHub private vulnerability reporting,
 visible only to the operator and the people they add, with a short `SECURITY.md` pointing there; estate peers MAY
@@ -979,8 +979,8 @@ session's direct pushes. **Open** (11.Q-3). R-8 restated to what can hold (6.2.2
 personal-account repo.** A collaborator on a personal-account repo can push and merge, and a fine-grained token of
 another account cannot write to it (6.7.2.e, 6.7.3.e). **Open** (11.Q-5).
 7.13 **C-13 Identity by project-id stamp (F5, 4R.5.b) vs one shared secondary account (4R.6.c).** All direct posts
-come from the same GitHub account, and GitHub does not show which token wrote a post, so a stamp on a direct post
-cannot be authenticated. **Open** (11.Q-6, 10.7).
+come from the same GitHub account, and a post shows the account, not the token that wrote it, so a stamp on a
+direct post cannot be authenticated. **Open** (11.Q-6, 10.7).
 7.14 **C-14 "No PR requirement for our own commits" (A8) vs merge eligibility enforced by GitHub (reviews codex 3,
 opencode 2).** A rule requiring green checks before merging may also bind the session's direct pushes; GitHub's
 documentation does not say (10.29). And the repo owner can change or bypass such a rule, so against the operator it is
@@ -1285,3 +1285,130 @@ the report (R-28).
 10.29 Not verified: whether a GitHub rule requiring green checks before merging also binds direct pushes, and whether
 direct pushes can be exempted without exempting the operator's merges (the rulesets documentation does not say). For
 the architect, under 11.Q-4.
+
+## 11 Review round 1 disposition
+
+11.0 Inputs: `T-5021-review-codex.md` (red, findings C1 to C11) and `T-5021-review-opencode.md` (amber, findings O1
+to O9; O6 and O7 have lettered parts). Findings that make the same point are merged into one row. Marks:
+**accepted** (the change made, by section or R-n), **rejected** (the reason, citing the answer it would contradict or
+the fact that disproves it), **operator** (needs a decision only the operator may take; the question is in 11.Q).
+Several operator rows also carry an accepted restatement, so the requirement says honestly what holds until the
+operator answers. Sections 1 to 4R, the operator's record, are not edited.
+
+| Row | Findings | Mark | Disposition |
+|---|---|---|---|
+| 11.1 | C1, O1: direct posting bypasses the cleaning gate; R-29's "impossible" over-claims | **operator** (+ accepted restatement) | R-29 restated to the framework's posting command, with prevented / detected / residual (6.6.4.e); a positive test case added (6.6.4.c); R-52 (scan after posting) proposed. Which direct-route control applies changes 4R.6.c's direct route: 11.Q-1. Blocking for sign-off, as C1 asks. |
+| 11.2 | C2 (execution part), O4: outside code runs on estate hosts before any isolation floor | **operator** (+ accepted restatement) | R-17 restated to the framework's procedures, its test to execution rather than dispatch (6.4.2.c, 6.4.2.e); R-18 restated: a throwaway copy protects the live project's files, not the host (6.4.3.e); R-53 (isolation floor, tested by attempted access) proposed. Gating field tests on the floor changes A7's flow for the pilot: 11.Q-2. |
+| 11.3 | O5, C2 (fork CI part): PR-modified workflows; what fork CI may see is unanswered | **accepted** | R-54 added (no `pull_request_target`, no secrets, read-only token, no self-hosted runner), sourced to 4.6.a and A6. Q6's unanswered half is open question 10.23. Whether a workflow-editing PR needs approval before it runs belongs with 10.14. |
+| 11.4 | C3 (push part): R-8 forbids every agent token from pushing, R-5 keeps the session's pushes | **operator** (+ accepted restatement) | R-8 restated: the ban covers secondary-account tokens; the session's push credential can land a PR's commits (6.2.2.e). Conflict C-11 added; R-58 (detection) proposed. Removing direct session pushes would reverse A8: 11.Q-3. |
+| 11.5 | C3 (merge eligibility), O2: nothing restrains the hurried approver at the merge | **operator** (+ accepted R-55) | R-55 added: the recommendation names the tested head commit, and a new push withdraws it (from A16 and 4.7). A GitHub rule requiring green checks may also bind the session's direct pushes, which A8 keeps free; GitHub's documentation does not settle it (10.29); and the repo owner can bypass such a rule, so against the operator it is friction, not impossibility. Conflict C-14; 11.Q-4. |
+| 11.6 | C4 (feasibility part), O3: the narrow token scope may not exist | **operator** (facts checked, 11.F) | Confirmed, and worse than both reviews said: the repo belongs to a personal account; there a collaborator can push and merge, and a fine-grained token of another account cannot write to the repo at all (11.F.1 to 11.F.4). R-37 and R-38 carry the feasibility note (6.7.2.e, 6.7.3.e); R-41's label depends on it (6.8.1.e). Conflict C-12. The fix changes the token model of 4R.6.b / 4R.6.c: 11.Q-5. |
+| 11.7 | C4 (test part): R-38 tests revocation only; removing trust need not revoke | **accepted** | 6.7.3.c adds refused push, merge, protection change and cross-repository write, and revocation on leaving the trusted list within a limit (10.27). The binding follows from 4R.6.c ("revocable per peer", operator-owned list). |
+| 11.8 | C4 (R-39 part), O7.c: "refused or flagged" lets an unapproved change take effect | **accepted** | 6.7.4.c: the change has no effect until the operator's approval of that exact change is recorded. |
+| 11.9 | C5, O8: the project-id stamp is not authentication | **operator** | 6.6.9.e records the limit; conflict C-13. O8's proposed fix (identity from which token posted) does not work on its own: every holder posts as the one secondary account, and a post shows the account, not the token. What a stamped direct post may change: 11.Q-6. |
+| 11.10 | C6: the opt-out (R-33) contradicts the mandatory id (R-34, R-51) | **accepted** | R-33 carried to every public surface, including direct posts, later comments and the stamp; R-34 reads "project id or placeholder"; F4's "unless requested otherwise" governs. R-51's project-id field is read the same way (an opted-out project gives the placeholder). |
+| 11.11 | C7 (R-26), O6.b: "and replies" has no source | **accepted** | Withdrawn from R-26; direct issue updates and PR comments by trusted peers stated (4R.6.c). |
+| 11.12 | C7 (R-35), O6.c: A15's visibility, private fixing and advisory timing omitted | **accepted** | R-35 restated with all three, and a test that the fix is on the source repo before the advisory. |
+| 11.13 | C7 (R-36): a two-account limit framework-wide | **accepted** | R-36 narrowed to "this arc adds only the secondary account" (4R.5.b says "in this arc"). |
+| 11.14 | C7 (R-40): pre-commit and CI enforcement not in 4.18.a | **accepted** | R-40 narrowed to 4.18.a; the scanner is open question 10.24. |
+| 11.15 | C7 (R-42): issue, task and be-tag payload absent from A12 | **rejected** | The payload is in the T-5007 IW-2 record from which A12 is reproduced (`T-5007-pickups-to-github.md`: the operator's addition "later an AEF agent can also inform the relevant project agent to check", recorded there with the issue, the task and the be-tag). Dropping it would narrow what that record holds. The source is now cited in 6.8.2.a. |
+| 11.16 | C8, O6.e: GitHub outage and recovery not covered; the recovery claim rests on a ledger no requirement asks for | **accepted** | R-56 (local ledger, from 4.18.e) and R-57 (a GitHub outage loses nothing, from 4.18.d and 4R.1.b) added. The recovery target (what, by when, shown how) was never asked: open question 10.25, not invented here. |
+| 11.17 | C9, O7.a, O7.b: acceptance criteria that pass while the guarantee fails | **accepted** | R-6 (`master` update invariant, 6.1.6.c, 6.1.6.e), R-7 (no review, test or recommendation), R-15 (same-verdict criterion only), R-17 (no checkout for execution), R-24 (head commit and a measurable one-screen bound), R-28 (template fields, no 8-word run), R-29 (clean samples must pass), R-32 (complete state set, time-bounded). The two bounds are provisional (10.26). |
+| 11.18 | C10, O9: drawings decide open points | **accepted** | D-2: checks run on every PR before the queue (R-12); the DCO node, the slot use of "waiting for review strength" and field-test isolation marked provisional (10.6, 10.12, 10.9); the release is no longer conditioned on WORKS (A12 does not say so); a new push withdraws the recommendation. D-3: every refusal passes RefusalDrafted and needs the operator's approval (A16, R-25); Linked → Closed with a pending check marked provisional (10.22); Processing and Checked states added. D-1: the direct-post edge marked provisional. All three re-rendered without error. |
+| 11.19 | C11: earlier-proposal disposition incomplete | **accepted** | 8.1 accounts for branching from `bleeding-edge`; 8.2's "approach agreed first" is open question 10.28; 8.4 changed from "kept, provisional" to "open (not decided)". |
+| 11.20 | O6.a: the impossible-count is wrong and R-13 lacks item d | **rejected** | Checked: R-13 has item d (6.3.2.d), and version 0.2 had 18 d-items, as its 6.11 said. The count in 6.12 is now taken mechanically from the text. |
+| 11.21 | O6.d: 4.2.a ("A7 to A9: not yet asked") is stale | **accepted (note only)** | Section 4 is the operator's record and is not edited; 4.2.a is superseded by 4.7.c, 4.8 and 4.9, recorded here. |
+
+11.C Counts: 21 rows from 20 findings (C1 to C11, O1 to O9), split where one finding made several points.
+**Accepted 13** (11.3, 11.7, 11.8, 11.10 to 11.14, 11.16 to 11.19, 11.21); **rejected 2** (11.15, 11.20);
+**operator 6** (11.1, 11.2, 11.4, 11.5, 11.6, 11.9), four of them with an accepted restatement.
+
+### 11.Q Questions for the operator
+
+11.Q-1 **Direct posts and the cleaning gate** (11.1, C-7, 10.8). A trusted peer's token can post any text, past the
+gate.
+1. Keep direct posts as they are, add the scan after posting (R-52), and accept that a leak is public until the scan
+   finds it.
+2. Narrow direct posts to fixed-form verdict comments (WORKS / FAILS with set fields, no free text); everything else
+   goes through the relay; add the scan (R-52) for the rest.
+3. No direct posts: all public text goes through AEF's relay.
+Recommendation: **2** — testers keep posting their verdicts on the PR (A7), free text, where a leak can happen, goes
+through the gate, and the scan catches what remains.
+
+11.Q-2 **Running outside code before an isolation floor exists** (11.2, C-2, 10.9). A throwaway copy protects the
+project's files, not the host.
+1. No field test of an outside PR anywhere but GitHub's runners until the threat modeler has set the floor (R-53) and
+   it is in place; until then a PR that needs field tests waits.
+2. Until the floor exists, pilot PRs are limited to risk levels that need no field test.
+3. Accept the throwaway copy for the pilot, since the contributor is known, and record the residual.
+Recommendation: **1** — G-128 showed this week what code on a shared host can do, and a public PR is reachable by
+anyone.
+
+11.Q-3 **The session's push credential and "only the operator merges"** (11.4, C-11).
+1. Keep the session's direct pushes; accept that its credential could land PR commits; the framework refuses it and
+   R-58 flags it.
+2. Give the session a push-only credential (no API merge); it can still land commits by pushing, so this only narrows
+   the path; plus R-58.
+3. The session stops pushing to GitHub `bleeding-edge` directly and pushes a branch you merge (reverses A8's direct
+   pushes).
+Recommendation: **1** — option 2 adds a credential without closing the path; option 3 costs a merge per handover.
+
+11.Q-4 **Merge only after green checks and a current recommendation** (11.5, C-14, 10.29).
+1. No GitHub rule; R-55 binds the recommendation to the tested commit, and sync flags a merge made without a current
+   green recommendation.
+2. A GitHub rule requiring green checks for PR merges into `bleeding-edge`, if the architect confirms the session's
+   direct pushes stay free; otherwise back to you.
+3. Both.
+Recommendation: **3** — the rule adds friction where GitHub supports it and the flag always works; neither stops the
+repo owner, who can bypass rules.
+
+11.Q-5 **Account and token model on a personal-account repo** (11.6, C-12). As decided (4R.6.b, 4R.6.c) it cannot be
+built on this repo: a collaborator can push and merge, and the secondary account's fine-grained tokens cannot write.
+1. Move the repo to an organisation you own: the secondary account gets the triage role (labels, close and reopen; no
+   push, no merge), and fine-grained per-holder tokens work. Cost: the move; GitHub redirects the old address, but
+   recorded install and mirror addresses should be updated.
+2. Stay; the secondary account is not a collaborator; per-holder classic tokens; it can open issues and comment only.
+   Labels and closing then need another identity (your personal account, against 4R.6.c), or R-41's label becomes a
+   field in the body.
+3. A GitHub App with issue and PR permissions and no contents permission, instead of the secondary account (one app,
+   not an account per peer; per-holder keys not verified here).
+Recommendation: **1** — the only option under which R-37 and R-38 hold as you decided them.
+
+11.Q-6 **What a stamped direct post may change** (11.9, C-13, 10.7).
+1. Direct posts are information; a verdict changes state (confirm, reopen, counts for a recommendation) only when the
+   same verdict also arrives from that project over the sidecar.
+2. Signed stamps: each trusted peer signs its post with a key AEF holds a record of; unsigned or wrongly signed counts
+   as no result.
+3. Accept the stamp from trusted peers as it is.
+Recommendation: **1** now, **2** if direct traffic grows — the sidecar already knows who is speaking.
+
+### 11.R Residual risks for the operator to accept or reject
+
+11.R.1 Text posted outside the framework's command is public until detected (R-29, 6.6.4.e).
+11.R.2 A peer acting outside the procedure can run a public PR before review (R-17, 6.4.2.e).
+11.R.3 Until R-53 or the own runner exists, a field test exposes the tester's host (R-18, 6.4.3.e).
+11.R.4 The session's push credential can land a PR's commits (R-8, 6.2.2.e).
+11.R.5 The repo owner can push `master` directly and can bypass any GitHub rule (R-6, 6.1.6.e; 11.Q-4).
+11.R.6 A stamp on a direct post is a claim, not an identity (R-34, 6.6.9.e).
+11.R.7 Under 11.Q-5 option 2, classic tokens are not scoped to this repo.
+
+### 11.F Facts checked (2026-11-02, public sources only, no credential used)
+
+11.F.1 Owner type: GitHub's public users API, queried without credentials, reports the repo's owner as a personal
+account ("User"), not an organisation.
+11.F.2 GitHub Docs, "Permission levels for a personal account repository": two levels only, owner and collaborators;
+"Collaborators can't have read-only access"; collaborators can push, "create, merge, and close pull requests", manage
+labels and close issues.
+11.F.3 GitHub Docs, "Managing your personal access tokens": a fine-grained token reaches "resources owned by a single
+user or organization"; listed as unsupported: contributing "to repositories where the user is an outside or repository
+collaborator" and "to public repos where the user is not a member"; "Only personal access tokens (classic) have write
+access for public repositories that are not owned by you".
+11.F.4 GitHub Docs, "Permissions required for fine-grained personal access tokens": creating an issue needs Issues
+(write); an issue or PR conversation comment, and labels, need Issues or Pull requests (write); a PR review comment
+needs Pull requests (write); merging a PR needs Contents (write), not Pull requests.
+11.F.5 GitHub Docs, "Repository roles for an organization": Triage can apply labels and close, reopen and assign issues
+and PRs; it cannot push or merge. The page covers organisation repos only.
+11.F.6 Not verified: whether a ruleset requiring status checks binds direct pushes, or can exempt them separately from
+merges (the rulesets page does not say, 10.29); whether a GitHub App can hold one revocable key per holder; whether
+fork PRs get no secrets and a read-only token by default (stated by opencode 5; R-54 pins it either way); whether the
+account's security log records which token wrote a post.
