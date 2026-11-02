@@ -1,6 +1,52 @@
 # Next session: carry-over
 
-## FIRST (2026-11-01 ~17:30Z, 762K used, all work pushed; be.15 = 0522186b9)
+## FIRST (2026-11-02 ~00:30Z, ~760K used, all work pushed; latest be.24 = be290e092)
+- **Closed tonight:**
+  - T-4977 (designer 0.35.0, be.16);
+  - T-4976 (fixture leak plus lint);
+  - T-4970 (no whoami fallback; 832 confirmed, G-125 resolved);
+  - T-4979 (ledger audit states its exit contract);
+  - T-4978 (page criteria keep blind seats out; seats run project code from a copy; voids name the changed files);
+  - T-4983 (boundary: a variable assigning an outside path is refused; G-126 resolved);
+  - T-4967 (driver-sets design, two reviews);
+  - T-4988 + T-4989 (access grants, be.20; 050 field WORKS);
+  - T-4984, T-4985 (driver sets slices 1-2);
+  - T-4993 (fw runs without HOME, be.22);
+  - T-4999 (review seats get PROJECT_ROOT = their export; G-127 high, mitigated; be.24).
+- **Partial-complete, operator review:**
+  - T-4986 (driver sets slice 3, /bvp) http://192.168.10.107:3000/review/T-4986;
+  - T-4996 (REVIEW_PAID_BACKENDS=never; config page row) http://192.168.10.107:3000/review/T-4996.
+- **Operator rulings tonight:**
+  - T-4965 GO (reduced access-grants layer);
+  - T-4371 IW-4: "If it's for the agent, if it's for the human, it's for the human." owner:human = the operator closes it; no hand-back from a recorded decision. 010 told.
+- **Next work, in order:**
+  1. T-4997 (antigravity seat: headless mode auto-denies 'command'). ring20's rung-5 page criteria need it or T-4980. Localising means reading agy's settings for the seat user (another account's home) and is probably a HOST change: hand the operator a runme.
+  2. T-5004 (read-only sed -n/awk/for/python3 -c on .tasks/* treated as writes).
+  3. T-5002, T-5003, T-5005 (gate friction from 010's closers).
+  4. T-4995 (grant refusal names the rule).
+  5. T-4994 (review.sh go|no-go|defer pipe).
+  6. T-5001 (void a seat that wrote outside its export).
+  7. T-4987 (driver-sets rails).
+  8. T-4990 (grants Watchtower view).
+- **Inceptions for the operator (DEFER):**
+  - T-4991 (832 workflow-design vocabulary; SHACL);
+  - T-4992 (ring20-management harness login broker; their wrong-account weakness recorded);
+  - T-4998 (backlog triage: 055 and 010 pages, 010's 23% not-done-on-second-look, "no honest non-completed ending");
+  - T-4982 (055 scoring findings);
+  - T-5000 (claude review seat runs in the live project).
+- **Waiting on field reports:**
+  - 010 (driver sets be.21: product arcs);
+  - ring20 (be.23 + be.24 upgrade; REVIEW_PAID_BACKENDS=never; T-878 dry run);
+  - 050 (be.22 HOME fix).
+  - Record each under T-4940 in docs/reports/field-test-v1.8.16-results.md.
+- **Still open for the operator:** the green-button question (task title/description render as buttons since T-430).
+- **Slip to remember:** I typed the Tier 0 keyword inside a grep (refused; a stray approval card may exist). Use 'Tier 0' or the check-tier[0] glob.
+- **Lessons:**
+  - (1) Test the probe environment too: the runtime's `--version` call runs a stub with the live env, and a gate-like TMPDIR exposed it.
+  - (2) A grep-by-filename test sweep misses tree-scanning tests (the split-root ratchet broke silently).
+  - (3) Review dispatched builds against field reality (a stale `arc:` tag unranked 4 tasks).
+
+## EARLIER (2026-11-01 ~17:30Z, 762K used, all work pushed; be.15 = 0522186b9)
 - **Closed this afternoon:** T-4947 (green), T-4952, T-4953 (read-only pipe: refused, no card; operator option 1 after codex/opencode consult), T-4958 (ux shots crop), T-4959, T-4960 (judge tall pages), T-4962, T-4963 (sidecar ladder, 055), T-4964 (t4920 test leaked a live card), T-4944 (vision-gated render greens), T-4966 (ledger lock; WORKS at ring20), T-4968, T-4969 (operator owner hand-over: one gate, three doors, 'claimed' log; external design review + code review), T-4971, T-4972, T-4974 (basename lint), T-4975 (links in role=button fields).
 - **Waiting on the operator (runmes):** `t4973-fix-t4679-name` (escape T-4679's closed name; then close T-4973), `t4976-stop-leaked-fixtures` (51 leaked foreign_watchtower.py servers). Watch both logs; close T-4973 after.
 - **Next work, in order:** T-4978 (LOCALISED with ring20's data: [REVIEW] criteria that describe what a page shows classify as taste/unclassified, so the judge captures no screenshots and the vision gate never fires; decide classifier vs "names a route → capture"; defect 2: opencode exit 1 = T-3986 tamper check tripped by `__pycache__`), T-4976 (fixture teardown), T-4977 (designer 0.35.0 re-pin, validator changed; tell 832), T-4970 (no whoami fallback), T-4979 (audit exit on void rows), T-4967 (driver-sets design read, TermLink), T-4965 (scoped grants design + external review; 050's decisions in the report).
