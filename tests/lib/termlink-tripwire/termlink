@@ -22,12 +22,21 @@ case "$verb $sub" in
     "hub fingerprint"|"hub probe"|"channel list"|"remote ping"|"fleet doctor"|"agent identity") kind=probe ;;
     # T-4941: local key reads; `identity sign` signs a local file and publishes nothing.
     "identity sign"|"identity show") kind=probe ;;
+    # T-5014: read-only question (is this session the project's main?).
+    "main am-i") kind=probe ;;
 esac
 case "$verb" in
     ""|discover|whoami|version|help|info|list) kind=probe ;;
 esac
 
 printf '%s %s\n' "$kind" "$*" >> "$log"
+# T-5014: `main am-i` is a read-only question (is this session the project's main?).
+# Answer it as a termlink that lacks the verb, so the sidecar keeps today's delivery
+# in every test that does not stub termlink itself (FW_TERMLINK_BIN).
+if [ "$verb $sub" = "main am-i" ]; then
+    echo "error: unrecognized subcommand 'main'" >&2
+    exit 2
+fi
 # A file whose point is the host's identity (rail-identity: fingerprint non-vacuity) may opt
 # in to read-only probes reaching the real binary. Calls are refused regardless.
 if [ "$kind" = probe ] && [ "${TERMLINK_TRIPWIRE_PASS_PROBES:-}" = 1 ]; then

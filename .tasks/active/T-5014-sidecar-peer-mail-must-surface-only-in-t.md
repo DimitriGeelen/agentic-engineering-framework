@@ -114,9 +114,9 @@ cost_estimate_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [ ] The injector types non-urgent mail only into the most recently active interactive session; when that session is busy, the mail waits, and an older idle session is never chosen instead
 - [ ] The hook's no-injector fallback claims unclaimed mail only in the most recently active interactive session
-- [ ] Tests with two sessions of one project (an older idle one, a newer busy one) show the older one never receives or surfaces the message, and the newer one does once it is ready; the existing sidecar tests stay green
+- [x] Tests with two sessions of one project (an older idle one, a newer busy one) show the older one never receives or surfaces the message, and the newer one does once it is ready; the existing sidecar tests stay green
 - [ ] `fw sidecar status` (or `alerts`) shows which session, if any, holds each pending message
-- [ ] Where `termlink main am-i` is missing, the hook keeps today's delivery and says so once per session ("main-only delivery not active: termlink lacks main am-i"), with a test (010's ask, msg ba5835e1)
+- [x] Where `termlink main am-i` is missing, the hook keeps today's delivery and says so once per session ("main-only delivery not active: termlink lacks main am-i"), with a test (010's ask, msg ba5835e1)
 - [ ] 010 and ring20 are told what shipped, with the be-tag
 
 ### Human
@@ -303,6 +303,8 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_t5014_main_only_delivery.py tests/unit/test_sidecar_session_ready_t3745.py tests/unit/test_t4207_inject_off_surfaces.py > /tmp/.t5014-out 2>&1 && grep -q passed /tmp/.t5014-out
+bin/fw vendor self --check --task T-5014
 
 ## RCA
 
