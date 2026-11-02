@@ -1429,3 +1429,13 @@ triage would need an organisation; collaborator would let them push past the ope
 his proposal"** — Mehdi's own proposal (points 1 and 6: fork, branch from `bleeding-edge`, PR against it, the
 operator approves and merges). Recorded: outside contributors get no account from AEF and no rights on the repo;
 they work from their own account through forks and PRs. Consistent with A4 and A2.
+12.3 **Q-5 decided (operator, 2026-11-02): option 1.** Keep the repository on the operator's personal account. The
+secondary account is NOT a collaborator; it holds one classic token per trusted peer (and one for AEF's relay), each
+revocable on its own; it can open issues and comment like any outside GitHub user and can never push, merge or change
+settings. Lifecycle steps on others' issues (labels, close, reopen) stay with AEF through the operator's account, as
+today. Supersedes the fine-grained-token wording of 4R.6.c; R-37 and R-38 to be restated accordingly in round 2.
+12.4 **Organisation move: deferred to its own task** (operator: "not looking forward to big changes, but if it needs,
+it needs"). The one argument that stands is separating AEF's own GitHub access from the operator's personal login
+(today `fw issues` acts with the operator's full-power login stored on the AEF host); an organisation would let AEF
+hold a triage-only account. Contributors do not need it: on a public repo anyone can fork and open PRs (12.2), and only
+the operator can merge.
