@@ -1443,3 +1443,11 @@ the operator can merge.
 verdicts (e.g. "WORKS / FAILS on be.N for #123" plus a fixed list of fields; no free text). Anything with free text (a
 bug report, an explanation) goes through AEF's relay and the cleaning gate. AEF scans every direct post right after it
 appears (R-52); on a hit it hides the post and alerts the operator. Residual 11.R.1 narrows to fixed-form fields.
+12.6 **11.Q-2 decided (operator, 2026-11-02), revises A7.** Operator's framing: AEF enforces quality (the test and
+its evidence), not the security model of anyone's host; an outside contributor's machine is entirely their own
+business. Before the operator's merge into `bleeding-edge`: (1) the submitter delivers the test and the evidence
+(Mehdi's PR template: a test that fails before and passes after, commands and output, fw audit, fw doctor, what was not
+tested); a PR without it is refused with one line; (2) GitHub-hosted runners run the checks (A6); (3) deeper tests run
+on AEF's own isolated test hosts (T-5009). The operator's project hosts never run unmerged outside code. After the
+merge into `bleeding-edge`, peers field-test through the be-tag as for AEF's own fixes; a FAILS blocks the release to
+`master`. A7's "trusted testers run the PR in a throwaway copy before the merge" is withdrawn. Residual 11.R.3 removed.
