@@ -1439,3 +1439,7 @@ it needs"). The one argument that stands is separating AEF's own GitHub access f
 (today `fw issues` acts with the operator's full-power login stored on the AEF host); an organisation would let AEF
 hold a triage-only account. Contributors do not need it: on a public repo anyone can fork and open PRs (12.2), and only
 the operator can merge.
+12.5 **11.Q-1 decided (operator, 2026-11-02): option 1.** Trusted peers' direct posts are limited to fixed-form
+verdicts (e.g. "WORKS / FAILS on be.N for #123" plus a fixed list of fields; no free text). Anything with free text (a
+bug report, an explanation) goes through AEF's relay and the cleaning gate. AEF scans every direct post right after it
+appears (R-52); on a hit it hides the post and alerts the operator. Residual 11.R.1 narrows to fixed-form fields.
