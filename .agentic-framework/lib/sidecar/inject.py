@@ -42,7 +42,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from . import adapter, lifecycle, receiver, runtime_dir, seen
+from . import adapter, lifecycle, main_session, receiver, runtime_dir, seen
 
 REINJECT_AFTER_S = 120   # an inject that never produced a hand-over may be retried
 
@@ -281,7 +281,7 @@ def choose_target(urgent: bool, runner=subprocess.run, input_state=None) -> tupl
            ("terminal not injectable") reaches the sender as WAITING_NO_RECIPIENT.
     A busy c1 session is never bypassed for c2: the c1 rules decide when to type there."""
     target, why = _choose_termlink(urgent, runner)
-    if target is not None or _C1_BUSY.search(why):
+    if target is not None or _C1_BUSY.search(why) or why.startswith(MAIN_ONLY_PREFIX):
         return target, why
     t2, why2 = _choose_tmux(urgent, runner, input_state)
     if t2 is not None:
@@ -292,6 +292,31 @@ def choose_target(urgent: bool, runner=subprocess.run, input_state=None) -> tupl
 # c1 found a live agent session that is merely busy: wait for its Stop, never route around it.
 # ("agent not ready: no session in a registered TermLink PTY …" is NOT busy — no agent is there.)
 _C1_BUSY = re.compile(r"^agent not ready: \d+ registered session\(s\), none has stopped")
+# T-5014: a main-only decision that names no target is final; never route around it.
+# "agent not ready" so the sender is not told "no recipient" (the main exists, or may).
+MAIN_ONLY_PREFIX = "agent not ready: main-only delivery"
+
+
+def _main_only(records: list[dict], urgent: bool) -> tuple[list[dict] | None, str, str]:
+    """T-5014: ask TermLink which candidate is the project's main session.
+
+    Returns (records, refusal, note): records to choose among (today's list when
+    termlink lacks `main am-i`, else only the main session); refusal is a final
+    no-target reason (records None); note is appended to a chosen target's reason."""
+    mode, kept, detail = main_session.gate(records)
+    if mode == "legacy":
+        return records, "", ""
+    if mode == "main":
+        if not urgent and not [r for r in kept if r.get("ready") is True]:
+            # Matches _C1_BUSY: the main is merely busy; wait for its Stop.
+            return None, (f"agent not ready: {len(kept)} registered session(s), none has "
+                          f"stopped since its last prompt (main-only delivery: main session "
+                          f"{kept[0].get('session_id')} busy)"), ""
+        return kept, "", " [main-only delivery: main session]"
+    if mode == "unknown":
+        return None, f"{MAIN_ONLY_PREFIX} unknown ({detail}); mail waits", ""
+    return None, (f"{MAIN_ONLY_PREFIX}: no candidate here is the main session "
+                  f"(holder: {detail}); mail waits for the main"), ""
 _STATE_URL = "http://127.0.0.1:8090/api/claude/input-state"
 _FRESH_COCKPIT_S = 120
 
@@ -383,6 +408,9 @@ def _choose_tmux(urgent: bool, runner, input_state=None) -> tuple[dict | None, s
                      key=lambda r: str(r.get("updated_at") or ""), reverse=True)
     if not records:
         return None, ""
+    records, refusal, note = _main_only(records, urgent)
+    if records is None:
+        return None, refusal
     panes = _tmux_panes(runner)
     busy, held, bare = [], [], []
     for r in records:
@@ -405,7 +433,8 @@ def _choose_tmux(urgent: bool, runner, input_state=None) -> tuple[dict | None, s
                  "ready": r.get("ready") is True, "route": "tmux", "pane": pane[0], "tty": tty,
                  "socket": pane[2]},
                 f"session {r.get('session_id')} in tmux pane {pane[0]} ({tty}, session "
-                f"{pane[1] or '?'})" + ("" if r.get("ready") is True else " — URGENT bypass"))
+                f"{pane[1] or '?'})" + ("" if r.get("ready") is True else " — URGENT bypass")
+                + note)
     if busy:
         return None, f"agent not ready: tmux session(s) {', '.join(busy)} not stopped since last prompt"
     if held:
@@ -445,13 +474,20 @@ def _choose_termlink(urgent: bool, runner=subprocess.run) -> tuple[dict | None, 
                   if r.get("termlink_session") in tagged_ids and r.get("alive") is not False
                   and not r.get("headless")]
     _publish_injectable(sorted(tagged_ids), candidates)
-    ready = [r for r in candidates if r.get("ready") is True]
+    # T-5014: where TermLink knows the project's main session, only it is a target
+    # (non-urgent waits while it is busy; urgent bypasses into it alone). Where
+    # termlink lacks `main am-i`, today's rule stands unchanged.
+    gated, refusal, note = _main_only(candidates, urgent)
+    if gated is None:
+        return None, refusal
+    pool = gated
+    ready = [r for r in pool if r.get("ready") is True]
     if ready:
         r = ready[0]
         return ({"session_id": r.get("session_id"), "termlink_session": r["termlink_session"],
                  "ready": True},
                 f"session {r.get('session_id')} ready in {r['termlink_session']} (matched by {how})"
-                + _several(tagged_ids, candidates, r["termlink_session"], "newest ready"))
+                + _several(tagged_ids, candidates, r["termlink_session"], "newest ready") + note)
     if not urgent:
         if candidates:
             return None, (f"agent not ready: {len(candidates)} registered session(s), "
@@ -461,12 +497,13 @@ def _choose_termlink(urgent: bool, runner=subprocess.run) -> tuple[dict | None, 
                           "agent with claude-fw --termlink")
         return None, ("agent not ready: no session in a registered TermLink PTY has "
                       "reported a Stop yet")
-    if candidates:
-        r = candidates[0]
+    if pool:
+        r = pool[0]
         return ({"session_id": r.get("session_id"), "termlink_session": r["termlink_session"],
                  "ready": False},
                 f"URGENT bypass: session {r.get('session_id')} busy in {r['termlink_session']}"
-                + _several(tagged_ids, candidates, r["termlink_session"], "most recently active"))
+                + _several(tagged_ids, candidates, r["termlink_session"], "most recently active")
+                + note)
     if len(tagged) == 1:
         # No record yet, so nothing says whether this PTY holds an agent. Type
         # into it only when an INTERACTIVE claude is seen running in it — never

@@ -45,7 +45,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
     __package__ = "lib.sidecar"
 
-from . import adapter, circuit, direct, identity, inject, lifecycle, receiver  # noqa: E402
+from . import adapter, circuit, direct, identity, inject, lifecycle, main_session, receiver  # noqa: E402
 
 BODY_CAP = 4000
 # T-3840: Claude Code keeps a hook's additionalContext inline only up to ~10,000
@@ -285,6 +285,24 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
     # prompt already; it is not surfaced a second time here.
     waiting = [i for i in receiver.awaiting_handover() if not _being_finalized(i, now)
                and not waiting_mod.recovering(i)]
+    # T-5014: peer mail surfaces only in the project's MAIN session (TermLink owns
+    # the pin: `termlink main am-i`). Not main → nothing here (no claim, no shown
+    # mark). Unknown → nothing, plus one line saying mail waits. termlink without
+    # the verb → today's delivery, said once per session. Asked only when mail waits.
+    notice = None
+    if waiting:
+        answer, _holder = main_session.am_i(my_sid)
+        if answer == main_session.NOT_MAIN:
+            return []
+        if answer == main_session.UNKNOWN:
+            out.write(json.dumps({"hookSpecificOutput": {
+                "hookEventName": "UserPromptSubmit",
+                "additionalContext": main_session.UNKNOWN_LINE,
+            }}) + "\n")
+            out.flush()
+            return []
+        if answer == main_session.UNSUPPORTED:
+            notice = _unsupported_notice_once(my_sid)
     ids = [i for i in waiting if inject.is_claimed_for(i, me)]
     # A project where the injector has DECIDED no TermLink session is
     # registered (plain terminals only) has no injection target at all; the
@@ -334,12 +352,16 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
             }}) + "\n")
             out.flush()
         return []
+    if notice and not _mark_notice_said(my_sid):
+        notice = None
     surfacing = secrets.token_hex(16)
     messages, frame = _fit([by_id[i] for i in order], surfacing)
     surfaced = [str(m.get("client_msg_id")) for m in messages]
+    # The frame keeps its place (stale note first, as before); the notice trails it.
+    context = "\n\n".join(x for x in (stale, frame, notice) if x)
     out.write(json.dumps({"hookSpecificOutput": {
         "hookEventName": "UserPromptSubmit",
-        "additionalContext": f"{stale}\n\n{frame}" if stale else frame,
+        "additionalContext": context,
     }}) + "\n")
     out.flush()
     try:
@@ -360,6 +382,36 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
             env=dict(os.environ, PROJECT_ROOT=str(receiver._root())),
             start_new_session=True)
     return surfaced
+
+
+def _notice_marker(session_id: str):
+    safe = "".join(c for c in str(session_id) if c.isalnum() or c in "-_")[:80] or "unknown"
+    d = receiver._receiver_dir() / "main-only-notice"
+    d.mkdir(parents=True, exist_ok=True)
+    return d / safe
+
+
+def _unsupported_notice_once(session_id: str) -> str | None:
+    """T-5014 (010's ask): the "main-only delivery not active" line, if this
+    session has not been told yet. Said only alongside mail it surfaces."""
+    try:
+        if _notice_marker(session_id).exists():
+            return None
+    except OSError:
+        return None
+    return main_session.UNSUPPORTED_LINE
+
+
+def _mark_notice_said(session_id: str) -> bool:
+    """Record the notice as said; False when another prompt already said it."""
+    try:
+        fd = os.open(_notice_marker(session_id), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+    except FileExistsError:
+        return False
+    except OSError:
+        return True   # cannot record it: say it rather than stay silent
+    os.close(fd)
+    return True
 
 
 def _stale_doorbell(prompt_text) -> str | None:
