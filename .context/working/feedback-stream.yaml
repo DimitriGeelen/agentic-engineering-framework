@@ -52877,3 +52877,21 @@ scan_id: R-2f907c14
 task_id: T-4999
 payload:
   task_file: .tasks/active/T-4999-review-seats-inherit-the-live-projectroo.md
+---
+kind: scan_emitted
+timestamp: '2026-11-02T07:08:19Z'
+scan_id: R-28b864ef
+task_id: T-4994
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-02T07:08:19Z'
+scan_id: R-28b864ef
+task_id: T-4994
+payload:
+  task_file: .tasks/active/T-4994-libreviewsh-falls-back-to-the-literal-go.md

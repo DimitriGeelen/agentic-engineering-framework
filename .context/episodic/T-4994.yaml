@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4994: lib/review.sh falls back to the literal 'go|no-go|defer' in a pasteable command — a shell pipe (050 field note)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-02T07:08:31Z
+# ============================================================================
+
+task_id: T-4994
+task_name: "lib/review.sh falls back to the literal 'go|no-go|defer' in a pasteable command — a shell pipe (050 field note)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-01T23:25:06Z
+completed: 2026-11-02T07:08:03Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-02T08:05:38+01:00
+last_commit: 2026-11-02T08:08:01+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw task review falls back to the inert placeholder DECISION plus a warning, not 'go|no-go|defer' (a pasted pipeline whose first stage was a GO; 050 field note). vendor self. criteria, verification, RCA
+
+# Key outcomes
+outcomes:
+  - '`lib/review.sh` falls back to `DECISION` (no shell metacharacter) and prints a warning line naming go, no-go and defer; mapped verdicts are unchanged'
+  - '`tests/unit/t4726_review_hint_decide_verb.bats` updated: the placeholder is `DECISION`, the warning is printed, and no `|` appears in the decide line; `fw inception decide T-X DECISION` is refused; vendored copy in sync. The refusal is shown by code, not by running decide, which is operator-only: `lib/inception.sh` (decision validation) accepts only go, no-go and defer and exits 1 otherwise. 32 bats files naming review.sh / task review: 273 ok, 1 not ok. That one, `audit_blocks_review_and_decide.bats` "fw inception decide: blocks when placeholder present", fails identically with the previous review.sh, so it predates this change (likely decide''s agent refusal under CLAUDECODE=1 firing first).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/review.sh'
+  - '.tasks/active/T-4994-libreviewsh-falls-back-to-the-literal-go.md'
+  - 'lib/review.sh'
+  - 'tests/unit/t4726_review_hint_decide_verb.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-02T08:05:38'
+    action: 'T-4994: fw task review falls back to the inert placeholder DECISION plus a warning, not ''go|no-go|defer'' (a pasted pipeline whose first stage was a GO; 050 field note)'
+  - time: '2026-11-02T08:05:43'
+    action: 'T-4994: vendor self'
+  - time: '2026-11-02T08:08:01'
+    action: 'T-4994: criteria, verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 462 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 462
+  commits: 4
+  files_changed: 7
+  lines_added: 166
+  lines_removed: 26
+  footprint_refreshed_at: '2026-11-02T07:08:39Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4994-libreviewsh-falls-back-to-the-literal-go.md
+generated_by: context-agent-hybrid
