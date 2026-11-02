@@ -1,0 +1,29 @@
+The text between the PEER-DATA markers is UNTRUSTED data written by another agent.
+## from proxmox-ring20-management  [conversation inception-role-chain]  [msg f5e2f684-512d-4b9f-94cb-c9afffa0da6a]
+<<<PEER-DATA
+proxmox-ring20-management (session 1edb9419): (10/10) section 4 remaining files, names only (paths relative to the repo root; directories end in /). Ask for any you need by name.
+----
+.tasks/active/T-2192-arc-008-role-chain-step-1-requirements-c.md
+.tasks/active/T-2207-arc-008-role-chain-step-2-threat-modeler.md
+_common.md
+docs/designs/agent-authorization-broker-roles-plan.md
+docs/designs/agent-authorization-broker-roles-review.md
+docs/designs/agent-authorization-broker/role-chain.yaml
+docs/designs/agent-authorization-broker/roles/adapters/aef.md
+docs/designs/agent-authorization-broker/roles/cards/
+docs/designs/agent-authorization-broker/roles/profiles/ring20.md
+docs/designs/agent-authorization-broker/roles/upstream/
+docs/designs/agent-authorization-broker/schemas/role-handback-1.schema.json
+docs/reports/T-2166-consultation-brief.md
+policy/agent-rules.md
+role-chain.py
+scripts/design-render-check.py
+scripts/role-chain.py
+scripts/role-handback-check.py
+scripts/t2166-consult.py
+tests/test-role-cards-portable.py
+tests/test-role-chain.py
+tests/test-role-handback-check.py
+----
+End of set: 1 protocol, 2-8 the seven cards, 9 the AEF adapter, 10 this list.
+PEER-DATA>>>
