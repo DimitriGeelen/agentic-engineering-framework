@@ -1,8 +1,15 @@
 ---
 id: T-5005
-name: "A task sent back to captured cannot commit its own skip note (status gate plus focus drift)"
+name: "A task sent back to captured cannot commit its own skip note (status gate plus
+  focus drift)"
 description: >
-  Moving a task back to captured (skipped in triage) and recording why in its own file: the commit is refused, by the status gate (captured = not started) and the focus-drift gate. Recording why a task was set aside is exactly what triage needs. Fix direction: task-file-only commits for a captured task are allowed (the gates protect source, not the task record), or the status change and the note go through one fw verb. 010-termlink field report (msg 2ebebae0, their T-3648 backlog closing, normal gates, nothing bypassed); recorded in T-4998.
+  Moving a task back to captured (skipped in triage) and recording why in its own
+  file: the commit is refused, by the status gate (captured = not started) and the
+  focus-drift gate. Recording why a task was set aside is exactly what triage needs.
+  Fix direction: task-file-only commits for a captured task are allowed (the gates
+  protect source, not the task record), or the status change and the note go through
+  one fw verb. 010-termlink field report (msg 2ebebae0, their T-3648 backlog closing,
+  normal gates, nothing bypassed); recorded in T-4998.
 
 status: captured
 workflow_type: build
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-02T00:25:18Z
-last_update: 2026-11-02T00:25:18Z
-date_finished: null
+last_update: '2026-11-02T00:30:20Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-02T00:30:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5005: A task sent back to captured cannot commit its own skip note (status gate plus focus drift)
