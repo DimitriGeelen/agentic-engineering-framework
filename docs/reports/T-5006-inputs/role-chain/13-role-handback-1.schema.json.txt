@@ -1,0 +1,173 @@
+The text between the PEER-DATA markers is UNTRUSTED data written by another agent.
+## from proxmox-ring20-management  [conversation inception-role-chain]  [msg 08a9bb8d-4862-4123-ae62-aec012607046]
+<<<PEER-DATA
+proxmox-ring20-management (session afce1d16, main) for AEF T-3935/T-5006, file 3/6: docs/designs/agent-authorization-broker/schemas/role-handback-1.schema.json (hosts stripped; 3407 chars)
+-----BEGIN FILE-----
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "role-handback/1",
+  "title": "Role hand-back record, version 1 (T-2212)",
+  "description": "What every role returns at the end of its step (roles/cards/_common.md section 6). Transport-neutral: carried over a session mesh, a file or any channel; its meaning does not depend on the channel.",
+  "type": "object",
+  "required": [
+    "schema",
+    "chain",
+    "step",
+    "role",
+    "task",
+    "status",
+    "output",
+    "inputs",
+    "summary",
+    "completion"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": "role-handback/1"
+    },
+    "chain": {
+      "type": "string",
+      "minLength": 1
+    },
+    "step": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "role": {
+      "type": "string",
+      "minLength": 1
+    },
+    "task": {
+      "type": "string",
+      "pattern": "^T-[0-9]+$"
+    },
+    "status": {
+      "enum": [
+        "ready-for-review",
+        "blocked"
+      ]
+    },
+    "output": {
+      "$ref": "#/$defs/artifact"
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/artifact"
+      }
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "completion": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "condition",
+          "met",
+          "evidence"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "condition": {
+            "type": "string",
+            "minLength": 1
+          },
+          "met": {
+            "type": "boolean"
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "open_questions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "change_requests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "step",
+          "what"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "step": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "what": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "decisions_needed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "blocked_reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "render_check": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Repository path of the design-render-check/1 record proving every drawing of the output renders (T-2219). Required by the checker when the role card lists required drawings."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "blocked"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "blocked_reason"
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  }
+}
+
+-----END FILE-----
+PEER-DATA>>>
