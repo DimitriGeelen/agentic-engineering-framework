@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-02T12:15:35Z
-last_update: 2026-11-02T19:16:45Z
+last_update: 2026-11-02T19:42:53Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -123,6 +123,7 @@ cost_estimate_proposed:
 - [ ] Live check on this host after 010's install: this session claims main, peer mail surfaces here, and a second interactive session of the project receives nothing
   **Partial evidence (2026-11-02 ~19:00Z, termlink 0.12.1494):** `termlink main status` → held by main 087d333f… (this session), generation 1, claimed by our hook; `am-i --session 087d333f…` → exit 0 "main: this session is main of 999-Agentic-Engineering-Framework"; `am-i` for another session id → exit 1 "not-main: held by main …"; three peer messages surfaced in this session with no fallback line. Not yet observed live: a second interactive session receiving nothing (covered by unit tests only).
 - [x] The ledger says why: INJECT_ATTEMPT carries the main-only verdict (with generation); a main-only injector refusal is one INJECT_BLOCKED row per message and reason; a not-main or unknown prompt writes SURFACE_WITHHELD once per message, session and verdict (ring20 via 010, msg d9231506); 3 tests
+- [ ] `fw upgrade` says, when it installs or updates the main-lease hooks, that a running session claims main at its next prompt or Stop (until then status reads vacant) — 050's field note, msg 18a23e53
 - [ ] 010 and ring20 are told what shipped, with the be-tag
 
 ### Human
