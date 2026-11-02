@@ -1455,3 +1455,8 @@ merge into `bleeding-edge`, peers field-test through the be-tag as for AEF's own
 pushing outside contributors' commits; an audit check raises an alarm, by name, for any commit on `bleeding-edge`
 whose author is an outside contributor and that did not arrive through a pull request the operator merged (R-58).
 Direct pushes of AEF's own work stay as in A8. Residual 11.R.4 accepted with detection.
+12.8 **11.Q-4 decided (operator, 2026-11-02): option 1 — a GitHub rule plus an after-the-fact check.** On
+`bleeding-edge`, a GitHub branch rule requires the checks to be green before a PR can be merged; AEF's recommendation
+is posted as a required check on the PR ("AEF review: merge"); an audit check afterwards flags any merge that did not
+meet both. The repo owner can still override in an emergency; the audit shows every override by name (residual 11.R.5
+accepted with detection).
