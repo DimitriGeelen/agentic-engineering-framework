@@ -295,21 +295,52 @@ fix merged there is the authoritative one.
 
 ## 5 Glossary
 
-(filled as terms settle: contribution, PR, issue, relay, peer bot, source repo, mirror, landing)
+Each term is defined once here; later roles use it in this sense. The source is the answer or finding that
+set it.
 
-## 6 Requirements
+5.1 **Contribution**: a change proposed to the framework from outside the operator's own sessions, carried as an
+outside PR (5.2). Source: A1.a, A2.
+5.2 **Outside PR**: a GitHub pull request opened from a fork by an outside contributor, targeting `bleeding-edge`,
+fixing or building exactly one issue (5.3). Source: A1.a, A10, 4.4.a.
+5.3 **Issue**: a GitHub issue on the framework's source repo (5.9); the public, numbered record of one bug report,
+enhancement request or other structural item. Source: A10.
+5.4 **Relayed issue**: an issue AEF files on behalf of a peer project after the peer reported to AEF over the
+sidecar; it carries the `relayed` label and a source field. Source: A11, F2.
+5.5 **Direct post**: an issue, issue update or PR comment written by a trusted peer (5.6) itself, with its own token
+of the secondary account (5.7), without the AEF relay. Source: 4R.6.a, 4R.6.c.
+5.6 **Trusted peer**: a peer project named in the operator-owned trusted-peer policy file; it may post directly and
+may act as a tester of outside PRs. Every other peer uses the relay. Source: 4R.6.a, 4R.6.c, A7.
+5.7 **Secondary account**: the one GitHub account, owned by the operator, used only for creating and updating
+issues and writing PR comments; machine traffic runs through it, not through the operator's personal account.
+Source: 4R.6.a, 4R.6.c, 4.18.a.
+5.8 **Project id**: the stable, unique project name of a peer project in the TermLink naming convention (the
+project layer only, never the host or hub id), stamped on relayed issues and direct posts to identify the source.
+Source: 4R.5, 4R.5.a, 4R.5.b.
+5.9 **Source repo**: the authoritative repository where merges land and from which consumers install: the GitHub
+repo. Source: A3.
+5.10 **Mirror**: the OneDev copy of the source repo, updated from GitHub (the reverse of the direction before this
+arc); OneDev's builds and the private copy stay. Source: A3.a.
+5.11 **Landing**: an outside PR being merged by the operator into `bleeding-edge` on the source repo. `master`
+receives work only by fast-forward at release. Source: A3, A4, 4.4.a.
+5.12 **Cleaning gate**: the one shared check every piece of public text (title, body, comment, verdict) passes
+before it is posted, on both the relay and the direct route; it refuses on any hit and never repairs. Source: F1,
+4R.1.a, A14, A11.
+5.13 **Held report**: a peer report whose public draft the cleaning gate refused; it is kept, visible, with its
+reason, until AEF rewrites it or the operator acts. Source: 4R.1.b, 4R.6.d.
+5.14 **Main ticket / linked ticket**: when AEF's matching finds that a new ticket is the same problem as an
+existing one, the existing one is the main ticket and the new one is linked to it; the main ticket records its
+links. Source: F7, 4R.7.b.
+5.15 **Risk level**: low, medium or high, as the framework's normal review logic assesses a change; an outside PR is
+assessed one level higher than the same change made inside the estate. Source: 4.7.b.
+5.16 **Review rung**: the review strength of the framework's review policy (rung 1, 3 or 5) required by a risk level;
+rung 5 is a three-seat, three-vendor panel. Source: A7, 4.18.h.
+5.17 **Field test**: a trusted peer running a change in a throwaway copy of its own project (never the live project)
+and reporting WORKS or FAILS with evidence. Source: A7, A12.
+5.18 **be-tag**: the pre-release tag on `bleeding-edge` that a source project is asked to test when its issue
+reaches fixed. Source: A12, T-5007 IW-2.
+5.19 **DCO**: the Developer Certificate of Origin; a `Signed-off-by:` line on each outside commit certifying the
+contributor has the right to submit it, in addition to Apache-2.0 section 5. Source: A9.
+5.20 **Pilot**: the period in which only Mehdi's contributions run through the circuit; it ends by an operator
+decision after the circuit has held end to end. Source: A2.
 
-(drafted after the interview)
-
-## 7 Conflicts
-
-(none recorded yet)
-
-## 8 Earlier requirements
-
-8.1 Mehdi's proposal points 1-8 (`T-5006-github-contributions.md`): each will be marked kept, changed or
-dropped.
-
-## 9 Drawings
-
-(D-1 context view, D-2 main flow incl. refusal path, D-3 lifecycle of a contribution: after the interview)
+PLACEHOLDER-6-9
