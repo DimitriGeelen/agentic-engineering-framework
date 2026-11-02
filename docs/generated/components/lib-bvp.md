@@ -15,7 +15,7 @@ fw bvp --quadrant {hv-lc,hv-hc,lv-lc,lv-hc}
 — filter ranking by quadrant
 fw bvp --help                — usage
 Source-of-truth files:
-policy/value-drivers.yaml     — driver weights (T-1917)
+policy/value-drivers.yaml     — driver weights (T-1917); project-level keys
 
 ## Dependencies (2)
 
