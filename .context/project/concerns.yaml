@@ -5708,3 +5708,21 @@ concerns:
     (refused when the command names an outside path); tests/unit/t4983_boundary_variable_write_target.bats. A path
     that only a file or the environment supplies stays out of scope (typed-text boundary, as Tier 0).
   resolved: '2026-11-01'
+- id: G-127
+  type: gap
+  title: A read-only review seat wrote a consumer's LIVE operator state through an inherited PROJECT_ROOT
+  description: 'ring20-dashboard (msg e49375be): on 2026-11-01 (be.15) an opencode seat ran the app under
+    TestClient inside its export; the app resolved its state dir from PROJECT_ROOT, which run.sh exports as the
+    live project, so bulk ack/pin/snooze writes landed in the live operator state. The T-3986 tamper check voided
+    the seat but only watches the export; the live writes stayed.'
+  severity: high
+  status: mitigated
+  detected_in: T-4999
+  observed: '2026-11-01'
+  reported_by: ring20-dashboard (field report)
+  blast_radius: every consumer whose code honours PROJECT_ROOT and whose review seats run project code
+  detection_gap: the tamper check fingerprints only the seat's export; nothing watches the live project during a
+    seat run, and the seat's environment was never audited for live paths
+  what_remains: T-4999 gives harness seats PROJECT_ROOT = their export and no FRAMEWORK_ROOT (be.24). Open — T-5000
+    (the claude review seat runs with the live project as its cwd, by design) and T-5001 (void a seat that changed
+    anything outside its export). Close when both are settled.

@@ -69,9 +69,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] In `run.sh`, each harness launch (codex, opencode, antigravity) sets `PROJECT_ROOT` to the export and unsets `FRAMEWORK_ROOT` for the seat process only; the framework's own steps in `run.sh` keep the live values
-- [ ] A test with a stub seat that records its environment shows PROJECT_ROOT = the export and no FRAMEWORK_ROOT, and a stub that writes `$PROJECT_ROOT/data/x` leaves the live project untouched and is voided; every test that reads `termlink.sh` passes; vendored copy in sync
-- [ ] The wider follow-ups are filed: the claude review seat runs with the live project as its cwd, and a generic "seat changed nothing outside its export" check
+- [x] In `run.sh`, each harness launch (codex, opencode, antigravity) sets `PROJECT_ROOT` to the export and unsets `FRAMEWORK_ROOT` for the seat process only; the framework's own steps in `run.sh` keep the live values
+- [x] A test with a stub seat that records its environment shows PROJECT_ROOT = the export and no FRAMEWORK_ROOT, and a stub that writes `$PROJECT_ROOT/data/x` leaves the live project untouched and is voided; every test that reads `termlink.sh` passes; vendored copy in sync (`TestSeatNeverSeesTheLiveProject`, 2 tests; 497 pytest + 229 bats over every file reading termlink.sh, 0 skipped)
+- [x] The wider follow-ups are filed: T-5000 (inception: the claude review seat runs with the live project as its cwd) and T-5001 (void a seat that changed anything outside its export); registered as G-127
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,22 +257,18 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 python3 -m pytest -q tests/unit/t4835_review_seat_pycache_test.py > /tmp/.t4999.v 2>&1 && grep -q passed /tmp/.t4999.v
+bin/fw vendor self --check --task T-4999
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** a read-only review seat changed a consumer's live operator state (fake pins, acks and snoozes on ring20's dashboard).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `run.sh` exports the live `PROJECT_ROOT` and `FRAMEWORK_ROOT` for its own steps, and the harness seats inherited them while working in their export. An app that follows the common PROJECT_ROOT convention therefore resolved the live project.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** isolation was checked on the export only (T-3986 tamper check) and on cwd. Nobody audited the seat's environment for paths into the live project, and the tests' stub seats never read PROJECT_ROOT.
+
+**Prevention:** the seat's subshell sets `PROJECT_ROOT` to its export and unsets `FRAMEWORK_ROOT` (`_fw_seat_env`). `TestSeatNeverSeesTheLiveProject` pins both the environment and the outcome: a write lands in the export, the seat is voided, and the live project is untouched. G-127 stays open for the claude seat (T-5000) and a whole-project change check (T-5001).
 
 ## Evolution
 
