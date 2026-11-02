@@ -151,6 +151,13 @@ contributor has the right to submit it; the commit-msg check verifies the line o
 published with the fix; a short `SECURITY.md` points there. Peers in the estate may still report over the
 sidecar (private). Security reports never go into public issues, and the relay (F1) refuses to file one
 publicly.
+4.14 **A14 What never goes public** (operator, 2026-11-02): **option 1.** The cleaning gate (F1) refuses public
+text containing: host names; IP addresses; file paths on estate machines; account and user names; tokens, keys
+and secrets; TermLink hub ids; personal data (email addresses, real names other than a contributor's own GitHub
+name, phone numbers); content from a project's own data (for example a quoted email in a 050 report); open
+security weaknesses (private route, A15); and estate layout (which host runs what, network layout, backup
+locations). Project names are allowed unless a project opts out (F4). Anything the gate cannot classify is held
+for rewriting, never posted (F1).
 4.13 **A13 The old path** — answered by F8 (4R.8): `fw pickup send` for bugs and features is wrapped onto the new
 route; learnings and patterns stay on the sidecar.
 4.17 **A17 Migration** — answered by F8 (4R.8): forward only.
