@@ -158,6 +158,21 @@ it; a report still held after a set time (or attempts) surfaces to the operator 
 Watchtower); the sending project is told either the issue number or that it is held and why. Nothing is ever
 bounced back to the sender as the only copy.
 
+4R.2 **F2 Relayed issues lose the lifecycle.** `fw issues sync` classifies owner-authored issues as internal
+(ledger only: no stages, no submitter confirmation). **Operator (2026-11-02): option 1** — AEF files relayed
+issues with a `relayed` label and a source field; sync gives them the full lifecycle, and where it would wait for
+the GitHub author it waits for the source project's verdict over the sidecar. One account, no new credentials.
+
+4R.3 **F3 No reopen; the 14-day sweep can close too early.** **Operator (2026-11-02): option 1** — a FAILS
+verdict (source project over the sidecar, or a "not fixed" reply on GitHub) reopens the issue: back to accepted,
+task reopened or a follow-up linked, a cleaned public comment posted. The sweep skips an issue while a requested
+check is pending; an overdue check surfaces to the operator by name instead of closing silently.
+
+4R.4 **F4 Naming the source project is a disclosure.** **Operator (2026-11-02): option 3, "unless requested
+otherwise"** — the relayed issue names the real source project by default; a project that asks not to be named
+gets "reported by a project in the maintainer's estate" with the mapping kept only in AEF's local ledger. The
+cleaning gate (F1) still removes hosts, IPs, paths, accounts and tokens; only the project name is allowed.
+
 ## 5 Glossary
 
 (filled as terms settle: contribution, PR, issue, relay, peer bot, source repo, mirror, landing)
