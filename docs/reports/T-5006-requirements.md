@@ -84,7 +84,9 @@ answer to Q3 (below, A3), given ahead of order.
 4.2 **A2 Who may contribute** (2026-11-02): **1 — Mehdi first, as a pilot.** The whole circuit runs end to end
 with one contributor who knows the framework; it opens wider only after it has held. Reason given: with GitHub
 as the source repo (A3), a bad merge lands where consumers install from.
-4.2.a A4 to A9: not yet asked.
+4.2.a A5 to A9: not yet asked.
+4.4 **A4 Who merges** (2026-11-02): **1 — only the operator, with the GitHub merge button.** AEF agents run the
+review loop and post a recommendation on the PR; no agent holds merge rights.
 4.3 **A3 Where a merged PR lands** (2026-11-02, given with A1): the operator merges, and the merge lands on
 GitHub; OneDev is no longer where it lands. This is option 3 of Q3: GitHub becomes the source repo.
 4.3.a Follow-up (2026-11-02): OneDev retired, a mirror of GitHub, or a backup only? **Operator: 1 — OneDev
