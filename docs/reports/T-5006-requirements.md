@@ -1711,3 +1711,10 @@ unconfirmed one is labelled as such and changes nothing. Residual 11.R.6 closed 
 12.10 **All round-1 operator questions answered** (Q-1 to Q-6, 2026-11-02). Next: round 2 — fold 12.3-12.9 into
 sections 5-10 (restate R-29, R-37, R-38, R-52, R-53, R-58 and A7-derived requirements), then an independent round-2
 review, then the operator's sign-off (card: 2-3 rounds).
+12.11 **Q-7 decided (operator, 2026-11-02): option 1.** Every outside PR gets the deeper tests on AEF's own isolated
+test hosts (T-5009) before the operator's merge; documentation-only PRs (no code to run) are excepted. Until T-5009
+exists, outside PRs that contain code wait for it. Settles round-2 findings codex 3 and opencode 2 (the
+"no deeper tests needed" branch of D-3 is removed).
+12.12 **Release gating for AEF's own fixes** (round-2 opencode finding 1) is not a new decision: the standing operator
+ruling of 2026-10-10 (T-4020, amended by T-4146) already says only verified-working fixes reach `master`. R-63 and
+deviation 9.3.1.m cite that ruling.
