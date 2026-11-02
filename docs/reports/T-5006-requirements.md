@@ -1451,3 +1451,7 @@ tested); a PR without it is refused with one line; (2) GitHub-hosted runners run
 on AEF's own isolated test hosts (T-5009). The operator's project hosts never run unmerged outside code. After the
 merge into `bleeding-edge`, peers field-test through the be-tag as for AEF's own fixes; a FAILS blocks the release to
 `master`. A7's "trusted testers run the PR in a throwaway copy before the merge" is withdrawn. Residual 11.R.3 removed.
+12.7 **11.Q-3 decided (operator, 2026-11-02): option 1 — accept and detect.** A framework rule forbids agents from
+pushing outside contributors' commits; an audit check raises an alarm, by name, for any commit on `bleeding-edge`
+whose author is an outside contributor and that did not arrive through a pull request the operator merged (R-58).
+Direct pushes of AEF's own work stay as in A8. Residual 11.R.4 accepted with detection.
