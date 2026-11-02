@@ -88,6 +88,11 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 - **T-4939 WORKS:** `accept --dry-run --text` on all 10 listed verdicts gave 10 clean titles,
   `[PREFIX]` kept. Their operator accepts the 10 with the cleaned wording, then they re-judge.
 
+### be.26: 050-email-archive (msg 18a23e53), 2026-11-02
+- **WORKS.** be.25 → be.26 (35abca011) in their agent shell: upgrade and `fw doctor` rc 0; 8 local patches merged clean; access grants unchanged.
+- **T-5014 WORKS:** main claimed on the first prompt after the upgrade ("held by main <this session>", generation 1); a foreign session id gets am-i exit 1.
+- **Note (filed under T-5014):** right after the upgrade, status read "vacant (generation 0)" until the next prompt or Stop hook, as expected for a session started before be.26; they ask for a one-line hint in the upgrade output ("main is claimed at your next prompt").
+
 ### be.25: 050-email-archive (msg 6475edfa), 2026-11-02
 - **WORKS.** be.20 → be.25 (22647d13a), in their HOME-less agent shell, no operator help.
 - **T-4993 WORKS:** `fw upgrade` ran to the end without HOME; `fw doctor` exits 0 there (12 WARN, 0 FAIL).
