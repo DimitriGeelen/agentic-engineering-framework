@@ -31,3 +31,8 @@ GitHub intake already has what pickups lack in public: a numbered thread, lifecy
 - Agent's suggestions (pending operator's pick): documentation that disagrees with the code; design proposals like Mehdi's (GitHub Discussions or an issue labelled `proposal`); a sanitised per-release verdict thread. Security reports are the exception: they go to a private GitHub security advisory, never a public issue.
 - Stays on the sidecar: field reports with host detail, live consults, notices, replies.
 - **Operator added: PRs too, "but they are I guess part of either two?"** Agent: yes. A PR is not a third kind of request; it is the proposed fix for a bug issue or the build of an enhancement issue (Mehdi's rule 2: one PR, one issue). How PRs are taken in is T-5006's question; here they only count as the follow-up to an issue.
+
+### 2026-11-02 — IW-2: who files the issue
+- Agent offered: (1) AEF relays and files under the operator's account, (2) peers file directly with the operator's `gh` login through a cleaning `fw` verb, (3) each peer project gets its own GitHub bot account. Recommended 1.
+- **Operator: "I really like the thought of 3."** Recorded as the operator's leaning, not yet a decision; to be put to the external review (now or with the full artefact).
+- Open points for option 3, to resolve before GO: who creates and owns the bot accounts; where each token lives (per-host credential, registry entry in `policy/review-backends.yaml`-style or `fw review credential`); how host detail is stripped before posting when no relay sits in between; GitHub's terms on machine accounts; and how `fw issues sync` tells a peer bot from an outside reporter.
