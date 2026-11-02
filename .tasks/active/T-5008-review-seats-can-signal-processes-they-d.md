@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-02T08:33:17Z
-last_update: 2026-11-02T14:21:23Z
+last_update: 2026-11-02T14:25:02Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -105,8 +105,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Harness seats (codex, opencode, antigravity) launch inside a PID namespace when the host allows it (`unshare --pid --fork --mount-proc` or equivalent), and say plainly in the run log when it does not
-- [ ] A test starts a decoy process outside the seat with the same command line, runs a seat command `pkill -f <that line>`, and shows the decoy still alive
+- [x] Harness seats (codex, opencode, antigravity) launch inside a PID namespace when the host allows it (`unshare --pid --fork --mount-proc` or equivalent), and say plainly in the run log when it does not
+- [x] A test starts a decoy process outside the seat with the same command line, runs a seat command `pkill -f <that line>`, and shows the decoy still alive
 - [ ] The seat brief and the seat's command guard refuse `pkill`, `killall` and `kill $(pgrep …)`, with a test
 - [ ] ring20-dashboard is answered with what shipped, and the report is recorded under T-4940
 

@@ -220,7 +220,8 @@ class TestKindsAndVendors:
 
     def test_the_antigravity_launch_is_the_operator_approved_sudo_form(self):
         body = r3._run_sh()
-        assert ('exec /usr/bin/sudo -n -u dimitri-mint-dev -H "$WORKER_BIN" -p "$PROMPT_TEXT" '
+        # T-5008: the PID-namespace prefix (empty where the host refuses it) runs outside sudo.
+        assert ('exec ${SEAT_PIDNS[@]+"${SEAT_PIDNS[@]}"} /usr/bin/sudo -n -u dimitri-mint-dev -H "$WORKER_BIN" -p "$PROMPT_TEXT" '
                 '--mode plan --sandbox < /dev/null' in body)
 
 
