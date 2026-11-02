@@ -203,6 +203,19 @@ operator's AEF instance holds a token; each trusted peer holds its own fine-grai
 PR comments on this repo, revocable per peer; the trusted-peer list is an operator-owned policy file. Machine
 traffic leaves the operator's personal account. F1 (cleaning gate), F5 (project-id stamp) and F2 (lifecycle)
 apply to direct posts as well as relayed ones.
+4R.6.d **Relay route, remainder of F6 — operator: option 1.** A peer keeps its report until AEF acknowledges with
+an issue number or a held status; the sidecar holds messages while AEF is down; a report waiting too long
+surfaces to the operator by name; AEF has no veto: it files and adds its view as a comment. Only the cleaning
+gate (F1) can hold a report, visibly.
+
+4R.7 **F7 Duplicates.** Pickup dedup (content hash + project) is lost on the GitHub route; sync has only a title
+similarity hint. **Operator (2026-11-02):** AEF must do the matching, because it has far stronger tools: the
+component fabric, the vector database (semantic match) and BM25 keyword search. AEF matches each new ticket
+against existing tasks and tickets, links the new ticket to the main one (or closes it as part of it), records
+the link in the main ticket, and when the main ticket is closed, closes all linked tickets.
+4R.7.a Agent's view: agreed, with two refinements under discussion — (a) a linked reporter whose check FAILS
+reopens their own ticket (unlinked), because the symptom may differ; (b) a weak match is never linked
+silently: high confidence links, medium confidence posts "possible duplicate of #N" for the operator.
 
 ## 5 Glossary
 
