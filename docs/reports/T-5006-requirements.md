@@ -1,11 +1,11 @@
 ---
 title: "Outside contributions through GitHub — requirements (role chain step 1: requirements collector)"
-task: T-5006 (with T-5007)
+task: T-5021 (step 1; interview under T-5006)
 arc: github-contributions (arc-027)
 role: requirements-collector
-version: 0.1
+version: 0.2
 date: 2026-11-02
-status: collecting (interview mode)
+status: draft, awaiting independent review
 ---
 
 # Outside contributions through GitHub — requirements
@@ -15,6 +15,7 @@ status: collecting (interview mode)
 | Version | Date | Change | Task |
 |---|---|---|---|
 | 0.1 | 2026-11-02 | Skeleton; stakeholders; question list; answers A10-A12 carried in from the T-5007 dialogue | T-5006 |
+| 0.2 | 2026-11-02 | Draft: glossary, requirements, conflicts, earlier requirements, drawings | T-5021 |
 
 ## 1 Why this document exists
 
@@ -640,7 +641,7 @@ public issue through the relay MUST be impossible.
 6.6.10.b An open weakness in public helps an attacker before the fix ships.
 6.6.10.c Given a peer report classified as a security weakness, when AEF processes it, then no public issue is filed
 and the report goes to the private route.
-6.6.10.d Holds against: 2.7.c (confused agent), 2.7.a (an attacker reading public issues).
+6.6.10.d Holds against: 2.7.c (confused agent filing it publicly).
 
 ### 6.7 Accounts and credentials
 
@@ -851,4 +852,243 @@ dissolved by A3.
 later a CI check re-verifying task, criteria, ticks and Verification. Consistent with the pilot (R-7). The later
 check is partly covered by "the framework task check" in R-12; its full scope is 10.21.
 
-PLACEHOLDER-9
+## 9 Drawings
+
+9.0 Each drawing is Mermaid, render-checked with the Mermaid command-line renderer on 2026-11-02 (all three rendered
+without error). The numbered textual equivalent below each drawing carries the same meaning without the diagram.
+
+### 9.1 Drawing D-1: context view (structure)
+
+```mermaid
+flowchart LR
+  OP["Operator"]
+  MC["Outside contributor: Mehdi, pilot"]
+  TP["Trusted peer agents"]
+  PP["Other peer agents"]
+  AEF["AEF agents: relay, review loop, sync"]
+  CON["Consumer projects"]
+  subgraph GH["GitHub, public"]
+    SRC["Source repo: bleeding-edge, master, issues, PRs"]
+    CI["GitHub-hosted runners"]
+    PVR["Private vulnerability reports"]
+  end
+  OD["OneDev mirror, private"]
+  OWN["Own isolated runner, later"]
+  subgraph ADV["Adversaries"]
+    X1["2.7.a malicious contributor"]
+    X2["2.7.b compromised peer token"]
+    X3["2.7.c confused agent"]
+    X4["2.7.d hurried approver"]
+    X5["2.7.e mirror sync"]
+  end
+  MC -->|"fork PR, signed-off commits"| SRC
+  SRC -->|"PR code to check"| CI
+  CI -->|"check results"| SRC
+  OP -->|"merge button, approvals"| SRC
+  AEF -->|"recommendations, relayed issues, lifecycle comments"| SRC
+  TP -->|"direct posts, WORKS or FAILS"| SRC
+  PP -->|"reports over sidecar"| AEF
+  TP -->|"reports and verdicts over sidecar"| AEF
+  AEF -->|"check requests, issue number or held"| PP
+  AEF -->|"one-screen recommendation, held reports"| OP
+  SRC -->|"one-way mirror"| OD
+  SRC -->|"releases from master"| CON
+  MC -.->|"security report"| PVR
+  SRC -.->|"deep tests, later"| OWN
+  X1 -.-> SRC
+  X2 -.-> SRC
+  X3 -.-> AEF
+  X4 -.-> OP
+  X5 -.-> SRC
+```
+
+9.1.1 Textual equivalent of D-1:
+9.1.1.a The GitHub source repo (`bleeding-edge`, `master`, issues, PRs) is the centre (R-1). GitHub-hosted runners and
+private vulnerability reporting sit beside it on GitHub.
+9.1.1.b The outside contributor sends a fork PR with signed-off commits to the source repo (R-9 to R-11), and sends
+security reports to private vulnerability reporting only (R-35).
+9.1.1.c The source repo sends PR code to GitHub-hosted runners; the runners send check results back to the PR
+(R-12, R-13). Deep tests move to the own isolated runner later (R-15, R-22).
+9.1.1.d The operator merges with the merge button and gives approvals on the source repo (R-8, R-25).
+9.1.1.e AEF agents write recommendations, relayed issues and lifecycle comments to the source repo through the
+secondary account (R-24, R-27, R-37, R-41), and send the operator one-screen recommendations and held reports
+(R-24, R-30).
+9.1.1.f Trusted peers post directly and post WORKS / FAILS to the source repo with their own token (R-18, R-38), and
+send reports and verdicts to AEF over the sidecar. Other peers report to AEF over the sidecar only (R-27); AEF sends
+them check requests and an issue number or a held notice (R-30, R-42).
+9.1.1.g The source repo is mirrored one way to OneDev (R-2); consumers receive releases from `master` (R-6).
+9.1.1.h Adversaries and where they act: 2.7.a on the source repo through a PR; 2.7.b on the source repo through a
+peer token; 2.7.c inside AEF; 2.7.d at the operator's merge; 2.7.e on the source repo through the mirror sync.
+
+### 9.2 Drawing D-2: main flow, with the refusal path and the relayed peer report (behaviour)
+
+```mermaid
+flowchart TD
+  subgraph RELAY["Relayed peer report"]
+    R1["Peer reports to AEF over sidecar"] --> R2["Recorded locally on arrival"]
+    R2 --> R3{"Security report?"}
+    R3 -->|yes| R4["Private route, no public issue"]
+    R3 -->|no| R5["AEF rewrites from template, stamps project id"]
+    R5 --> R6{"Cleaning gate: any hit or unclassifiable?"}
+    R6 -->|hit| R7["Held: reason visible, sender told"]
+    R7 -->|"AEF rewrites"| R5
+    R7 -->|"limit passed"| R8["Surfaces to operator by name"]
+    R6 -->|clean| R9["Matched against tasks and tickets"]
+    R9 --> R10["Issue filed or linked, sender gets issue number"]
+  end
+  R10 --> I1
+  I1["Issue accepted, intake task on bleeding-edge"] --> P1["Contributor opens PR"]
+  P1 --> P2{"Base bleeding-edge and one issue linked?"}
+  P2 -->|no| F1["AEF drafts one-line refusal"]
+  P2 -->|yes| P3{"Fewer than 3 PRs waiting for merge?"}
+  P3 -->|no| P4["Labelled waiting"]
+  P4 -->|"slot frees"| P3
+  P3 -->|yes| C1["GitHub checks: tests, audit, lint, task check, DCO"]
+  C1 -->|red| C2["Contributor changes the PR"]
+  C2 --> C1
+  C1 -->|green| K1["Risk assessed, raised one level"]
+  K1 --> K2{"Required review rung available?"}
+  K2 -->|no| K3["Labelled waiting for review strength"]
+  K3 -->|"panel available"| K2
+  K2 -->|yes| V1["Review seats read the PR, do not run it"]
+  V1 -->|alarming| F1
+  V1 -->|clean| T1["Trusted testers run it in throwaway copies"]
+  T1 -->|FAILS| C2
+  T1 -->|WORKS| D1["One-screen AEF recommendation"]
+  D1 --> D2{"Operator decides"}
+  D2 -->|change| C2
+  D2 -->|refuse| F1
+  F1 --> F2{"Operator approves refusal?"}
+  F2 -->|yes| F3["One line posted, PR closed"]
+  F2 -->|no| D1
+  D2 -->|merge| M1["Merged into bleeding-edge on GitHub"]
+  M1 --> M2["Mirrored to OneDev"]
+  M1 --> M3["be-tag, source project asked to check"]
+  M3 -->|FAILS| I1
+  M3 -->|WORKS| M4["Release: master fast-forward"]
+```
+
+9.2.1 Textual equivalent of D-2, relayed peer report:
+9.2.1.a A peer reports to AEF over the sidecar; AEF records the report locally on arrival (R-30, R-31).
+9.2.1.b A security report goes to the private route and never becomes a public issue (R-35).
+9.2.1.c Otherwise AEF rewrites the report from the fixed template and stamps the project id (R-28, R-34).
+9.2.1.d The cleaning gate checks the draft. On any hit, or if it cannot classify, the report is held with its reason
+visible and the sender is told; AEF rewrites and resubmits; past the held limit the report surfaces to the operator by
+name (R-29, R-30).
+9.2.1.e A clean draft is matched against tasks and tickets (R-45, R-46), then filed or linked; the sender receives the
+issue number. The issue then enters the main flow at 9.2.2.a.
+9.2.2 Textual equivalent of D-2, main flow:
+9.2.2.a The issue is accepted and its intake task is on `bleeding-edge` (R-10). The contributor opens a PR.
+9.2.2.b If the base is not `bleeding-edge`, or no single issue is linked, AEF drafts a one-line refusal (R-6, R-9).
+9.2.2.c If three PRs already wait for the operator, the PR is labelled "waiting" until a slot frees (R-23).
+9.2.2.d GitHub checks run (tests, audit, lint, task check, DCO); on red the contributor changes the PR and the checks
+run again (R-11, R-12).
+9.2.2.e On green the risk is assessed and raised one level (R-16). If the required review rung is not available, the
+PR is labelled "waiting for review strength" until it is (R-21).
+9.2.2.f Review seats read the PR without running it; if they find anything alarming, AEF drafts a refusal (R-17).
+9.2.2.g If the read is clean, trusted testers run the PR in throwaway copies (R-18, R-19); FAILS sends it back to the
+contributor; WORKS leads to the one-screen recommendation (R-20, R-24).
+9.2.2.h The operator decides: change (back to the contributor), refuse, or merge (R-8).
+9.2.3 Textual equivalent of D-2, refusal path: AEF's one-line draft goes to the operator; if approved, the line is
+posted and the PR closed; if not, the decision returns to the recommendation (R-25).
+9.2.4 Textual equivalent of D-2, after the merge: the merge lands on GitHub `bleeding-edge` (R-1) and is mirrored to
+OneDev (R-2); a be-tag is cut and the source project is asked to check (R-42); FAILS reopens the issue (R-43); WORKS
+lets the change go out with the next release, a fast-forward of `master` (R-5, R-6).
+
+### 9.3 Drawing D-3: lifecycle of a contribution (behaviour)
+
+```mermaid
+stateDiagram-v2
+  [*] --> Received : peer report or outside issue
+  Received --> Held : cleaning gate refuses
+  Held --> Received : AEF rewrites
+  Received --> Private : security report
+  Private --> [*]
+  Received --> Filed : gate passes
+  Filed --> Linked : high-confidence match
+  Filed --> Accepted : intake accepts
+  Linked --> Accepted : own check FAILS, unlinked
+  Linked --> Closed : main ticket closed
+  Accepted --> Fixed : fixed by our own work
+  Accepted --> PROpen : outside PR opened
+  PROpen --> Refused : no issue, base master, or alarming
+  PROpen --> Waiting : three PRs already waiting
+  Waiting --> PROpen : slot frees
+  PROpen --> UnderReview : checks green
+  UnderReview --> WaitingStrength : rung not available
+  WaitingStrength --> UnderReview : rung available
+  UnderReview --> Refused : read review alarming
+  UnderReview --> FieldTest : read review clean
+  FieldTest --> PROpen : FAILS, contributor changes
+  FieldTest --> Recommended : WORKS
+  Recommended --> PROpen : operator asks for change
+  Recommended --> Refused : operator approves refusal
+  Recommended --> Merged : operator merges
+  Refused --> [*]
+  Merged --> Fixed : merged on bleeding-edge
+  Fixed --> Released : release
+  Fixed --> Accepted : FAILS reopens
+  Released --> Accepted : FAILS reopens
+  Released --> Closed : WORKS, or 14 days with no pending check
+  Closed --> Accepted : FAILS reopens
+  Closed --> [*]
+```
+
+9.3.1 Textual equivalent of D-3 (states, then the allowed transitions):
+9.3.1.a States: Received, Held, Private, Filed, Linked, Accepted, PROpen, Waiting, UnderReview, WaitingStrength,
+FieldTest, Recommended, Refused, Merged, Fixed, Released, Closed.
+9.3.1.b Received → Held when the cleaning gate refuses; Held → Received when AEF rewrites (R-29, R-30). Received →
+Private for a security report, which ends there publicly (R-35). Received → Filed when the gate passes.
+9.3.1.c Filed → Linked on a high-confidence match (R-46); Linked → Closed when the main ticket closes (R-47); Linked →
+Accepted, unlinked, when the linked reporter's own check FAILS (R-48). Filed → Accepted when intake accepts.
+9.3.1.d Accepted → Fixed when our own work fixes it; Accepted → PROpen when an outside PR is opened.
+9.3.1.e PROpen → Refused when there is no issue, the base is `master`, or the read review is alarming (R-6, R-9,
+R-17); PROpen → Waiting when three PRs already wait, and back when a slot frees (R-23); PROpen → UnderReview when the
+checks are green (R-12).
+9.3.1.f UnderReview → WaitingStrength when the required rung is not available, and back when it is (R-21);
+UnderReview → FieldTest when the read review is clean (R-17, R-18).
+9.3.1.g FieldTest → PROpen on FAILS (the contributor changes the PR); FieldTest → Recommended on WORKS (R-20, R-24).
+9.3.1.h Recommended → PROpen when the operator asks for a change; → Refused when the operator approves a refusal
+(R-25); → Merged when the operator merges (R-8).
+9.3.1.i Merged → Fixed (on `bleeding-edge`); Fixed → Released at release; Fixed or Released → Accepted when a FAILS
+verdict reopens it (R-43); Released → Closed on WORKS, or after 14 days with no pending check (R-44); Closed →
+Accepted when a FAILS verdict reopens it (R-43).
+9.3.1.j Ends: Refused, Closed, and (for the public record) Private.
+
+## 10 Open questions
+
+Questions the answers did not settle. Each is for the operator, or (where marked) for a later role. None is a
+requirement until answered.
+
+10.1 Which further structural kinds move to GitHub besides bug reports and enhancements: documentation that disagrees
+with the code, design proposals, a cleaned per-release verdict thread (A10, open since T-5007 IW-1).
+10.2 During the pilot (R-7): how PRs from other accounts are handled (refused with one line, labelled "waiting", or
+left untouched), and what "the circuit has held" means as an exit criterion.
+10.3 Mehdi's documentation exception: may a documentation-only PR come without an issue (C-8)?
+10.4 Branch naming `fix/<issue>-<keyword>` / `feat/<issue>-<keyword>` (Mehdi point 1): adopt, or leave free?
+10.5 The PR template's content (Mehdi point 4): adopt as proposed, or change?
+10.6 Where the DCO check runs: PR checks (collector's recommendation) or elsewhere (C-6).
+10.7 How the project-id stamp is trusted on direct posts: a trusted peer's token can stamp any project id, and a body
+saying "from project X" is not authentication (codex 2; R-34).
+10.8 Direct posts and the cleaning gate: accept, check after posting, or narrow the direct route (C-7).
+10.9 Until the own runner exists, what isolation a tester's throwaway copy needs (C-2; G-128, T-5008). For the threat
+modeler as well.
+10.10 How many testers and which scenarios per risk level (R-19).
+10.11 The held limits: after what time or number of rewrite attempts a held report surfaces (R-30), and when a
+waiting peer report counts as "too long" (R-31).
+10.12 Does a PR labelled "waiting for review strength" hold one of the three slots (C-9)?
+10.13 Who notices red CI runs: `test.yml`'s last three runs failed unnoticed (4.6.b). No answer asks for this.
+10.14 GitHub's approval of workflow runs for first-time contributors (Mehdi point 5): who clicks, and does it stay on
+after the pilot?
+10.15 Cutover: does the pilot's first merge wait until GitHub is the source and the mirror direction has flipped
+(C-1)? The mechanics are for the architect.
+10.16 A second fix cycle on the same issue: today stage comments are de-duplicated per issue and stage, so a reopened
+issue's second "fixed" could be suppressed (codex 3). Not asked; R-43 implies the stages must repeat.
+10.17 Is the public list of named projects itself estate layout (C-4)?
+10.18 The confidence thresholds for high and medium duplicate matches (R-46).
+10.19 Whether a TermLink hub id is derived from key material was not verified (4R.5.a); R-29 treats it as sensitive
+either way.
+10.20 GitHub's live billing page was not checked (4.6.d); the cost statement rests on the changelog and reports.
+10.21 The full scope of Mehdi's later CI check (re-verify task, criteria, ticks and Verification on every PR) beyond
+"the framework task check" in R-12 (8.9).
+10.22 Does a linked ticket with its own pending check close with the main ticket, or wait for its check (C-10)?
