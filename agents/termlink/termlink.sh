@@ -1888,6 +1888,10 @@ elif [ -n "$HARNESS" ]; then
         # user), and the export it reviews is fingerprinted before and checked after the run.
         SEAT_TMP="$WDIR/tmp"
         mkdir -p "$SEAT_TMP" && chmod 1777 "$SEAT_TMP"
+        # T-4999 (ring20): the run exports the LIVE PROJECT_ROOT/FRAMEWORK_ROOT for its own steps;
+        # a seat inherited them, and an app honouring PROJECT_ROOT wrote the live project's operator
+        # state from inside the export. The seat process gets the export instead (called in its subshell).
+        _fw_seat_env() { export PROJECT_ROOT="$TREE"; unset FRAMEWORK_ROOT; }
         _tree_list() { ( cd "$TREE" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum 2>/dev/null ); }
         _tree_fp() { _tree_list | sha256sum | cut -d' ' -f1; }
         # T-4978: keep the per-file list too, so a voided seat names WHAT changed (ring20's opencode
@@ -1904,7 +1908,7 @@ elif [ -n "$HARNESS" ]; then
                 # --ignore-user-config and --ignore-rules: no ~/.codex/config.toml or execpolicy
                 # rules (auth still loads); project_doc_max_bytes=0: AGENTS.md is not injected;
                 # --ephemeral: no session files.
-                ( cd "$TREE" && TMPDIR="$SEAT_TMP" exec "$WORKER_BIN" exec -s workspace-write --add-dir "$SEAT_TMP" -c sandbox_workspace_write.exclude_slash_tmp=true -c sandbox_workspace_write.network_access=false --skip-git-repo-check --ignore-user-config --ignore-rules --ephemeral --color never -c project_doc_max_bytes=0 ${MODEL:+-m "$MODEL"} --json -o "$WDIR/result.md" "$PROMPT_TEXT" < /dev/null > "$WDIR/result.jsonl" 2>> "$WDIR/stderr.log" ) &
+                ( cd "$TREE" && _fw_seat_env && TMPDIR="$SEAT_TMP" exec "$WORKER_BIN" exec -s workspace-write --add-dir "$SEAT_TMP" -c sandbox_workspace_write.exclude_slash_tmp=true -c sandbox_workspace_write.network_access=false --skip-git-repo-check --ignore-user-config --ignore-rules --ephemeral --color never -c project_doc_max_bytes=0 ${MODEL:+-m "$MODEL"} --json -o "$WDIR/result.md" "$PROMPT_TEXT" < /dev/null > "$WDIR/result.jsonl" 2>> "$WDIR/stderr.log" ) &
                 ;;
             opencode)
                 # --agent plan: opencode's built-in no-edit agent; --pure: no external plugins;
@@ -1912,12 +1916,12 @@ elif [ -n "$HARNESS" ]; then
                 # OPENCODE_DISABLE_PROJECT_CONFIG=1 (T-4050, ring20 T-2303): the reviewed project's own
                 # .opencode/ config and plugins are not loaded; otherwise opencode installs the plugin
                 # SDK into the export (+3,650 files) and the seat is voided. Same isolation as codex.
-                ( cd "$TREE" && TMPDIR="$SEAT_TMP" OPENCODE_DISABLE_PROJECT_CONFIG=1 exec "$WORKER_BIN" run ${MODEL:+-m "$MODEL"} --agent plan --pure --format json "$PROMPT_TEXT" < /dev/null > "$WDIR/result.jsonl" 2>> "$WDIR/stderr.log" ) &
+                ( cd "$TREE" && _fw_seat_env && TMPDIR="$SEAT_TMP" OPENCODE_DISABLE_PROJECT_CONFIG=1 exec "$WORKER_BIN" run ${MODEL:+-m "$MODEL"} --agent plan --pure --format json "$PROMPT_TEXT" < /dev/null > "$WDIR/result.jsonl" 2>> "$WDIR/stderr.log" ) &
                 ;;
             antigravity)
                 # The operator-approved form (2026-09-30), with the registered absolute binary:
                 # sudo's secure_path does not reach ~/.local/bin. sudo drops this environment.
-                ( cd "$TREE" && exec /usr/bin/sudo -n -u dimitri-mint-dev -H "$WORKER_BIN" -p "$PROMPT_TEXT" --mode plan --sandbox < /dev/null > "$WDIR/result.md" 2>> "$WDIR/stderr.log" ) &
+                ( cd "$TREE" && _fw_seat_env && exec /usr/bin/sudo -n -u dimitri-mint-dev -H "$WORKER_BIN" -p "$PROMPT_TEXT" --mode plan --sandbox < /dev/null > "$WDIR/result.md" 2>> "$WDIR/stderr.log" ) &
                 ;;
         esac
         HARNESS_PID=$!
