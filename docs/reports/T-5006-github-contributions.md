@@ -2,16 +2,15 @@
 
 Inception research artefact. Arc: `github-contributions` (draft). Status: exploration.
 
-## How this inception runs (roles)
+## How this inception runs: the design role chain
 
-| Role | Who | Does |
-|---|---|---|
-| Proposer | Mehdi (GitHub contributor) | Wrote the proposal below; consulted on each open question that affects contributors. |
-| Researcher | AEF agent (this session) | Checks every claim against the repo, compares options per question, writes this file. |
-| Independent reviewers | Two review seats from different vendors (codex, opencode) | Read the finished artefact cold and report what it misses; their reports go in `T-5006-review-*.md`. |
-| Decider | Operator | Answers the questions only they can answer (licence, branch protection, who merges), then records GO / NO-GO / DEFER. |
+**Corrected 2026-11-02.** The operator asked for the long-form inception: ring20-manager's **design role chain** (their T-2222, v0.3), which AEF used for T-4017 (arc-001) and T-4123. The work passes from one role to the next; each role has a card, produces one document, and hands back to the operator with the decisions needed before the next step.
 
-On GO, each agreed piece becomes its own build task in the arc. The operator merges every outside PR.
+Chain (from T-4123 §1): **1 requirements collector** → threat modeler → security floor and phasing → architect → evidence → pseudo-code → external panel → planner. The interactive steps run in this session with the operator.
+
+Cards held locally: `_common` and `requirements-collector` only (`docs/reports/T-4123-inputs/02b-ring20-manager-role-cards.txt`, 2026-10-12). The rest, and T-2222 itself, were requested from ring20-manager on 2026-11-02 (sidecar conversation `inception-role-chain`). Embedding the chain as AEF's standard workflow is T-3935 (captured, deferred since 2026-10-08).
+
+**Step 1 starts now:** requirements collector, interview mode, for T-5006 and T-5007 together (one arc). Stakeholders: the operator, Mehdi (outside contributor), the peer projects (senders of requests). The answers already given in T-5007's Dialogue Log are carried in as the first answers. The two review seats dispatched on T-5007 before this correction ran ahead of the chain (an external panel belongs near the end); their findings are kept as input to step 1, not as the panel.
 
 ## Proposal as received (2026-11-02, verbatim)
 
