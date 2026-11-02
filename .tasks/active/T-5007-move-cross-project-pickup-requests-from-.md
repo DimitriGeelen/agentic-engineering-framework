@@ -13,7 +13,7 @@ arc_id: github-contributions
 components: []
 related_tasks: []
 created: 2026-11-02T07:57:21Z
-last_update: 2026-11-02T08:09:41Z
+last_update: 2026-11-02T08:10:10Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,9 +85,9 @@ Peer projects send work requests to AEF over the sidecar (`fw pickup`, peer mess
   disposition: open
   rationale: operator 2026-11-02 chose option 1 — bug reports, enhancement requests and other structural items move; field reports, consults, notices stay on the sidecar. Further structural kinds pending (report Dialogue Log).
 - **IW-2: Can every peer project file and read GitHub issues (accounts, tokens, private projects, host detail in reports)?**
-  confidence: 0
+  confidence: 2
   disposition: open
-  rationale: peers run on different hosts and accounts; many reports carry host detail that must not go public.
+  rationale: operator 2026-11-02 — AEF relay is the path every agent has (AEF files on GitHub with the source project named, after cleaning host detail); per-peer bot accounts optional. AEF tells the source project's agent when the issue is ready to check (report Dialogue Log).
 - **IW-3: How does a GitHub issue from a peer enter our task registry (existing `fw issues` intake, or a new route)?**
   confidence: 1
   disposition: open
