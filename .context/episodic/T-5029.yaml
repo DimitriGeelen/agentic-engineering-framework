@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5029: t4835 bats wrapper still expects 5 passed after T-4978/T-4999 added tests to its pytest file
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-02T14:58:54Z
+# ============================================================================
+
+task_id: T-5029
+task_name: "t4835 bats wrapper still expects 5 passed after T-4978/T-4999 added tests to its pytest file"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-02T14:57:01Z
+completed: 2026-11-02T14:58:29Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-02T15:58:27+01:00
+last_commit: 2026-11-02T15:58:27+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t4835 bats wrapper asserts a non-zero passed count and no failures instead of a literal 5
+
+# Key outcomes
+outcomes:
+  - '`t4835_review_seat_pycache.bats` passes, and asserts exit 0, no "failed" and a non-zero passed count rather than a literal count'
+  - 'A dead-negation-safe assertion style is used (the repo''s dead-negation lint passes)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5029-t4835-bats-wrapper-still-expects-5-passe.md'
+  - 'tests/unit/t4835_review_seat_pycache.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-02T15:58:27'
+    action: 'T-5029: t4835 bats wrapper asserts a non-zero passed count and no failures instead of a literal 5'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 5
+  lines_added: 507
+  lines_removed: 5
+  footprint_refreshed_at: '2026-11-02T14:59:03Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5029-t4835-bats-wrapper-still-expects-5-passe.md
+generated_by: context-agent-hybrid
