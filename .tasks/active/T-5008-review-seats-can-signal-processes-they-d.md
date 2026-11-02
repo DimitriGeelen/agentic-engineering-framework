@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-02T08:33:17Z
-last_update: '2026-11-02T08:45:32Z'
+last_update: 2026-11-02T14:21:23Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,6 +99,7 @@ cost_estimate_proposed:
 **Goal:** a review seat cannot stop or signal a process it did not start, and any attempt is visible.
 
 **Expected outcome:** seats run in their own process namespace (or as a separate user where that is not available); a seat that tries to signal outside it fails harmlessly; the interim command guard refuses `pkill`, `killall` and `kill $(pgrep …)` in seats; the field report is answered and recorded.
+**Localised (2026-11-02, code read + probe):** the three harness seats launch in `agents/termlink/termlink.sh` (codex ~line 1911, opencode ~1919, antigravity ~1924) as `( cd "$TREE" && _fw_seat_env && exec "$WORKER_BIN" … ) &`, with no process isolation. On this host `unshare --pid --fork --mount-proc --kill-child` works as root (probe: a shell inside saw 4 processes); `bwrap` and `systemd-run` are also present. Plan: wrap each harness launch in that `unshare` (antigravity: unshare outside its `sudo -u`), probe once per dispatch and fall back to today's launch with one logged line ("seat process isolation not available: …") where unshare is refused (e.g. a non-root consumer without user namespaces). `--kill-child` keeps the watchdog's kill of the recorded PID effective. Open: the claude-kind review seat (T-5000) runs in the live project and is not covered by this path.
 
 ## Acceptance Criteria
 
