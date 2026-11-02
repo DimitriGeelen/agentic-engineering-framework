@@ -1,8 +1,20 @@
 ---
 id: T-4999
-name: "Review seats inherit the LIVE PROJECT_ROOT: an opencode seat wrote operator state in ring20's live project"
+name: "Review seats inherit the LIVE PROJECT_ROOT: an opencode seat wrote operator
+  state in ring20's live project"
 description: >
-  ring20-dashboard (msg e49375be): on 2026-11-01 20:25Z (be.15) the opencode seat judging T-1295 ran TestClient(app) inside its export and POSTed snooze/ack/pin bulk actions; the writes landed in the LIVE project's data/state (operator-only acks), shown on the operator's page. The seat was voided (T-3986) but the live writes stayed. Cause on our side: run.sh exports PROJECT_ROOT=$PROJECT_DIR (and FRAMEWORK_ROOT) for the whole worker run (agents/termlink/termlink.sh ~1691), and the harness seats inherit it while working in $TREE; any app honouring PROJECT_ROOT writes the live tree. ring20 fixed their app side (their T-2626). Fix: harness seats (codex, opencode, antigravity) run with PROJECT_ROOT=$TREE and without FRAMEWORK_ROOT; test with a stub seat that records its env. Wider follow-up: the claude review seat runs with cwd = the live project by design (it reads .context evidence); and a generic check that a seat changed nothing outside its export (ring20's second proposal).
+  ring20-dashboard (msg e49375be): on 2026-11-01 20:25Z (be.15) the opencode seat
+  judging T-1295 ran TestClient(app) inside its export and POSTed snooze/ack/pin bulk
+  actions; the writes landed in the LIVE project's data/state (operator-only acks),
+  shown on the operator's page. The seat was voided (T-3986) but the live writes stayed.
+  Cause on our side: run.sh exports PROJECT_ROOT=$PROJECT_DIR (and FRAMEWORK_ROOT)
+  for the whole worker run (agents/termlink/termlink.sh ~1691), and the harness seats
+  inherit it while working in $TREE; any app honouring PROJECT_ROOT writes the live
+  tree. ring20 fixed their app side (their T-2626). Fix: harness seats (codex, opencode,
+  antigravity) run with PROJECT_ROOT=$TREE and without FRAMEWORK_ROOT; test with a
+  stub seat that records its env. Wider follow-up: the claude review seat runs with
+  cwd = the live project by design (it reads .context evidence); and a generic check
+  that a seat changed nothing outside its export (ring20's second proposal).
 
 status: started-work
 workflow_type: build
@@ -38,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-02T00:02:29Z
-last_update: 2026-11-02T00:02:29Z
-date_finished: null
+last_update: '2026-11-02T00:15:36Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +62,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-02T00:15:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=299,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4999: Review seats inherit the LIVE PROJECT_ROOT: an opencode seat wrote operator state in ring20's live project
