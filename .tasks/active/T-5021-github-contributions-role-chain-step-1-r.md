@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-02T14:02:18Z
-last_update: 2026-11-02T20:57:23Z
+last_update: 2026-11-02T21:08:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -106,9 +106,17 @@ cost_estimate_proposed:
 - [x] The requirements document has a Glossary, Requirements R-n (each with type, source, rationale, priority, verification method and at least one acceptance criterion), Conflicts, and Earlier requirements (Mehdi's points 1-8 each kept, changed or dropped)
 - [x] Every requirement saying something MUST be impossible names the adversary it holds against (stakeholders 2.7.a-e)
 - [x] Drawings D-1 (context), D-2 (main flow including the refusal path) and D-3 (lifecycle of a contribution) are present as Mermaid blocks, each with a numbered caption and a textual equivalent
-- [ ] An independent review of the step-1 output is recorded, and its findings are dispositioned in the document
+- [x] An independent review of the step-1 output is recorded, and its findings are dispositioned in the document (round 1: codex red, opencode amber → section 11; round 2: both amber → section 13; round 3 not re-reviewed, card cap of 2-3 rounds)
 
 ### Human
+- [ ] [REVIEW] Step 1 output approved: the requirements and the sign-off list
+  **Sovereignty:** operator decision only; this approval cannot be delegated to an agent reviewer.
+  **Steps:**
+  1. Open http://192.168.10.107:3000/project/docs--reports--T-5006-requirements.md and read section 14 (the sign-off list: open risks and decisions).
+  2. For each item, accept it, change it, or carry it forward as open; say so in a comment or to the agent.
+  3. Skim section 6 (requirements) for anything that does not match what you meant.
+  **Expected:** every item in section 14 has your answer; nothing in section 6 contradicts your intent. Then tick this box; step 2 (T-5022, threat modeler) may start.
+  **If not:** tell the agent which item or requirement is wrong; it goes back to step 1 as a change request.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
