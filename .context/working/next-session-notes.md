@@ -40,7 +40,11 @@
   - 050 (be.22 HOME fix).
   - Record each under T-4940 in docs/reports/field-test-v1.8.16-results.md.
 - **Still open for the operator:** the green-button question (task title/description render as buttons since T-430).
-- **Slip to remember:** I typed the Tier 0 keyword inside a grep (refused; a stray approval card may exist). Use 'Tier 0' or the check-tier[0] glob.
+- **After the handover:** T-4994 done (be.25: review hint placeholder is `DECISION`, no pipe; 050 told). `tests/integration/audit_blocks_review_and_decide.bats` "fw inception decide: blocks when placeholder present" fails with or without T-4994 (pre-existing; likely the CLAUDECODE agent refusal firing first). Worth a look.
+- **Slips to remember:**
+  - I typed the Tier 0 keyword inside a grep (refused; a stray approval card may exist). Use 'Tier 0' or the check-tier[0] glob.
+  - I ran `fw inception decide` on a fake id to test its validation. It is operator-only: refused, and possibly a stray card. Prove by reading code instead.
+  - I ran `git stash -- <path>` when the path had no changes. It stashed nothing, and the next `pop` tried an OLD unrelated stash (the pop aborted, nothing applied). Never stash a path without checking it has changes.
 - **Lessons:**
   - (1) Test the probe environment too: the runtime's `--version` call runs a stub with the live env, and a gate-like TMPDIR exposed it.
   - (2) A grep-by-filename test sweep misses tree-scanning tests (the split-root ratchet broke silently).
