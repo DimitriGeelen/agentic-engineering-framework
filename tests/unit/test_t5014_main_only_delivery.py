@@ -502,3 +502,41 @@ def test_unsupported_termlink_claim_is_a_noop_and_delivery_is_todays(main, monke
     _hook(monkeypatch, "stop", "op", "tl-op")
     assert ids == ["m1"] and _ctx(out).count(main_session.UNSUPPORTED_LINE) == 1
     assert not main_session._stamp("op").exists()
+
+
+# ── the ledger says why (ring20 via 010, msg d9231506) ─────────────────────
+
+def test_inject_attempt_records_the_main_only_verdict_with_generation(main, monkeypatch):
+    main.set({"op": [0, "main: this session is main of p (generation 7)\n", "", 0],
+              "bg": [1, "not-main: held by main op@h pid 1 (generation 7)\n", "", 0]})
+    _hook(monkeypatch, "stop", "bg", "tl-bg")
+    _hook(monkeypatch, "stop", "op", "tl-op")
+    _store("m1")
+    rep = inject.deliver_pending("test", runner=Termlink(_sessions("tl-bg", "tl-op")))
+    assert rep["injected"] == ["m1"]
+    att = [e for e in receiver.read_events("m1") if e["event"] == "INJECT_ATTEMPT"]
+    assert att and "main session" in att[-1]["main_only"] and "generation 7" in att[-1]["main_only"]
+
+
+def test_not_main_injector_refusal_is_one_ledger_row(main, monkeypatch):
+    main.set({"*": [1, "not-main: held by main elsewhere@h pid 1 (generation 3)\n", "", 0]})
+    _hook(monkeypatch, "stop", "bg", "tl-bg")
+    _store("m1")
+    tl = Termlink(_sessions("tl-bg"))
+    inject.deliver_pending("test", runner=tl)
+    inject.deliver_pending("test", runner=tl)
+    rows = [e for e in receiver.read_events("m1") if e["event"] == "INJECT_BLOCKED"]
+    assert len(rows) == 1 and "generation 3" in rows[0]["reason"]
+
+
+def test_not_main_prompt_records_withheld_once_per_session_and_verdict(main, monkeypatch):
+    lifecycle.write_config(inject=False)
+    main.set({"bg": [1, "not-main: held by main op@h pid 1 (generation 2)\n", "", 0],
+              "op": [0, "", "", 0]})
+    _store("m1")
+    _hook(monkeypatch, "prompt", "bg", "tl-bg")
+    _hook(monkeypatch, "prompt", "bg", "tl-bg")
+    rows = [e for e in receiver.read_events("m1") if e["event"] == "SURFACE_WITHHELD"]
+    assert len(rows) == 1
+    assert rows[0]["session"] == "bg" and rows[0]["main_only"] == "not-main"
+    assert "generation 2" in rows[0]["holder"]

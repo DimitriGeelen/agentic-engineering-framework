@@ -312,11 +312,19 @@ def _main_only(records: list[dict], urgent: bool) -> tuple[list[dict] | None, st
             return None, (f"agent not ready: {len(kept)} registered session(s), none has "
                           f"stopped since its last prompt (main-only delivery: main session "
                           f"{kept[0].get('session_id')} busy)"), ""
-        return kept, "", " [main-only delivery: main session]"
+        return kept, "", " [main-only delivery: main session" + (f"; {detail}" if detail else "") + "]"
     if mode == "unknown":
         return None, f"{MAIN_ONLY_PREFIX} unknown ({detail}); mail waits", ""
     return None, (f"{MAIN_ONLY_PREFIX}: no candidate here is the main session "
                   f"(holder: {detail}); mail waits for the main"), ""
+
+
+def _main_only_note(why: str) -> str | None:
+    """The main-only verdict a chosen target's reason carries, or None (today's rule)."""
+    i = (why or "").find("[main-only delivery:")
+    return why[i + 1:].rstrip("]").strip() if i >= 0 else None
+
+
 _STATE_URL = "http://127.0.0.1:8090/api/claude/input-state"
 _FRESH_COCKPIT_S = 120
 
@@ -663,7 +671,9 @@ def _deliver_locked(trigger: str, runner) -> dict:
     target, why = choose_target(bool(urgent), runner)
     if target is None:
         report["reason"] = why
-        if not why.startswith("agent not ready"):
+        # T-5014: a main-only refusal is a decision worth a ledger row (once per
+        # message and reason), unlike a plain "agent not ready" heartbeat.
+        if not why.startswith("agent not ready") or why.startswith(MAIN_ONLY_PREFIX):
             for m in waiting:
                 _blocked(m, trigger, why)
         if waiting_mod.is_no_recipient(why):
@@ -715,6 +725,8 @@ def _deliver_locked(trigger: str, runner) -> dict:
         receiver.record_event(m, "INJECT_ATTEMPT", trigger=trigger, session=session,
                               target_session_id=target.get("session_id"),
                               route=target.get("route", "termlink"),
+                              # T-5014: why this session (main-only verdict, or today's rule)
+                              main_only=_main_only_note(why),
                               ok=ok, error=err or None,
                               urgent_bypass=(m in urgent and not target["ready"]) or None)
     if ok:

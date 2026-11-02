@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-02T12:15:35Z
-last_update: 2026-11-02T18:58:11Z
+last_update: 2026-11-02T19:16:08Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -122,6 +122,7 @@ cost_estimate_proposed:
 - [x] The exact am-i outputs from 010's build (exit 0 / 1 with "not-main: held by main …" / 2) are pinned in a test, and the vacant-lease answer is handled so a project whose sessions have not claimed yet does not hold all mail
 - [ ] Live check on this host after 010's install: this session claims main, peer mail surfaces here, and a second interactive session of the project receives nothing
   **Partial evidence (2026-11-02 ~19:00Z, termlink 0.12.1494):** `termlink main status` → held by main 087d333f… (this session), generation 1, claimed by our hook; `am-i --session 087d333f…` → exit 0 "main: this session is main of 999-Agentic-Engineering-Framework"; `am-i` for another session id → exit 1 "not-main: held by main …"; three peer messages surfaced in this session with no fallback line. Not yet observed live: a second interactive session receiving nothing (covered by unit tests only).
+- [x] The ledger says why: INJECT_ATTEMPT carries the main-only verdict (with generation); a main-only injector refusal is one INJECT_BLOCKED row per message and reason; a not-main or unknown prompt writes SURFACE_WITHHELD once per message, session and verdict (ring20 via 010, msg d9231506); 3 tests
 - [ ] 010 and ring20 are told what shipped, with the be-tag
 
 ### Human

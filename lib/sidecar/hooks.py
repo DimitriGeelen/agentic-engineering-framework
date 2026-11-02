@@ -328,6 +328,8 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
             # Claimed under a minute ago, yet vacant now (released or lost): try once more.
             if main_session.claim(my_sid, force=True) == main_session.CLAIMED:
                 answer, _holder, vacant = main_session.ask(my_sid)
+        if answer in (main_session.NOT_MAIN, main_session.UNKNOWN):
+            _record_withheld(waiting, my_sid, answer, _holder)
         if answer == main_session.NOT_MAIN:
             if vacant and claimed != main_session.INELIGIBLE:
                 out.write(json.dumps({"hookSpecificOutput": {
@@ -424,6 +426,21 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
             env=dict(os.environ, PROJECT_ROOT=str(receiver._root())),
             start_new_session=True)
     return surfaced
+
+
+def _record_withheld(msg_ids, session_id: str, answer: str, holder: str) -> None:
+    """T-5014 (ring20 via 010, msg d9231506): the ledger says why a session held
+    mail back — once per (message, session, verdict), not on every prompt."""
+    for mid in msg_ids:
+        try:
+            last = [e for e in receiver.read_events(mid) if e.get("event") == "SURFACE_WITHHELD"
+                    and e.get("session") == session_id]
+            if last and last[-1].get("main_only") == answer and last[-1].get("holder") == (holder or None):
+                continue
+            receiver.record_event(mid, "SURFACE_WITHHELD", session=session_id,
+                                  main_only=answer, holder=holder or None)
+        except Exception:
+            _log_error("record_withheld")
 
 
 def _notice_marker(session_id: str):

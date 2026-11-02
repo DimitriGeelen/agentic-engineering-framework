@@ -111,7 +111,8 @@ def ask(session_id, runner=subprocess.run, timeout: float = 5,
         return res, "", False
     rc, out, err = res
     if rc == 0:
-        return MAIN, "", False
+        # The holder text of a main answer names the generation (logged, T-5014).
+        return MAIN, _one_line(out), False
     if rc == 1:
         return NOT_MAIN, _one_line(out), bool(_VACANT.search(out))
     if _verb_missing(out, err):
@@ -222,7 +223,7 @@ def gate(records: list[dict], runner=subprocess.run) -> tuple[str, list[dict], s
     answers = [(r, am_i(r.get("session_id"), runner=runner)) for r in records]
     mains = [r for r, (a, _) in answers if a == MAIN]
     if mains:
-        return "main", mains, ""
+        return "main", mains, "; ".join(sorted({h for _, (a, h) in answers if a == MAIN and h}))
     if all(a == UNSUPPORTED for _, (a, _) in answers):
         return "legacy", records, ""
     if any(a == UNKNOWN for _, (a, _) in answers):
