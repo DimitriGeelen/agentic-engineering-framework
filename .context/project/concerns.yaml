@@ -5745,3 +5745,19 @@ concerns:
   what_remains: T-5008 (process isolation for seats; interim refusal of pkill/killall/kill $(pgrep ...)); T-5001
     (void and report seats that changed anything outside the export, processes included). Close when a seat cannot
     signal a process it did not start.
+- id: G-129
+  type: gap
+  title: Access grants can be self-granted by an agent (commit of the grant file, first write before it exists, symlinks under a create grant)
+  description: 'ring20-dashboard (msg a14cb4c1, automated review of their be.26 upgrade) on T-4988/T-4989: (1) a grant counts
+    once policy/access-grants.yaml is at HEAD, and the Grants-Change: operator trailer is text an agent can also write; (2)
+    is_grant_file_or_ancestor is False while the file does not exist, so its first write is unguarded; (3) link-creating verbs
+    (ln -s, cp -s, rsync --links, mv of a link) are not refused on granted paths; (4) the refused-verbs check needs the grant
+    path as a substring of the typed command. Inactive where no grant file exists; live at 050 (first user of grants).'
+  severity: high
+  status: watching
+  detected_in: T-5031
+  observed: '2026-11-02'
+  reported_by: ring20-dashboard (automated security review, passed on)
+  blast_radius: every project with policy/access-grants.yaml (050 today)
+  detection_gap: the grant tests cover writes through the grant and refusals of listed verbs; none commits the grant file as the agent, creates it from nothing, or makes a link
+  what_remains: T-5031 (agent commit of the grant file), T-5032 (symlinks), T-5033 (cd/variable paths), T-5034 (bootstrap write). Close when an agent cannot widen its own grants by any of the four routes.
