@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-02T12:15:35Z
-last_update: '2026-11-02T12:45:20Z'
+last_update: 2026-11-02T12:45:52Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -105,6 +105,8 @@ cost_estimate_proposed:
 **010 measured (msg 1ca19c5c):** `is_self` is per agent, not per calling process (`book.rs main_view`: `book.main == this sidecar's agent id`), so every session of the main agent gets `true`: never gate on it alone. The session proof is undesigned (their T-3654, one operator decision): an env var or socket handed over at launch (cheap, inherited by children, spoofable on the host) or a heartbeat-renewed lease with a visible holder (deferred to their PH-4). **Constraint for AEF:** a hook gated on a stub that returns not-main would stop all mail, the operator's included; the gate ships only with a real session proof, or with an interim the operator approves.
 **Localised (2026-11-02, code read):** the misroute is ours and needs no session proof. `lib/sidecar/inject.py:_choose_termlink` (line 448) types into the **newest READY** candidate. While the operator's session is mid-turn it is not ready, so an older idle background session of the same project is the only ready one and is picked. The no-injector fallback in `lib/sidecar/hooks.py:prompt` (line 301) has the same shape: any interactive session that prompts first claims unclaimed mail. **Fix:** the local "main" is the most recently active interactive session (records are sorted by `updated_at`, `adapter.session_records`); non-urgent mail goes only to it, and waits while it is busy instead of falling to an older idle session; the hook fallback claims only in that session. 010's session proof (T-3654) can harden this later.
 **Correction (same day, tests read):** "most recently active" conflicts with an established case. `tests/unit/test_sidecar_session_ready_t3745.py::test_non_urgent_goes_only_to_the_idle_session_never_the_busy_sibling` (055 @117) requires mail to go to the idle operator terminal while the fleet agent is busy: there the idle session is the right one. Recency cannot tell main from background; something must say which session is main. That is a policy choice for the operator (pin by the operator, recency, or wait for 010's lease).
+**010 update (msg 3f7260ce, 2026-11-02):** their operator ruled main-only delivery BUILD NOW under 010 T-3654, on the protocol ruled 2026-10-06 (their OD-18 / R-67): one main per project under a lease at the home hub, holder = one session; a non-main copy leaves role mail for main or forwards it once; no valid holder → operator pin, else longest uninterrupted holder, else stable id; holder visible, overrides audited; project-generic. Interface for this hook: `termlink main am-i --session <claude-session-id> [--project P]` → exit 0 main, 1 not-main (prints holder), 2 unknown (fail-closed); also on the status socket and MCP. Exact output follows with their build.
+**Open for AEF:** where `termlink main am-i` does not exist (older TermLink, or a consumer without TermLink), the hook must keep today's delivery rather than stop all mail; exit 2 (unknown) leaves mail waiting with one visible line.
 
 ## Acceptance Criteria
 
