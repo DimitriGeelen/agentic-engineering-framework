@@ -93,7 +93,7 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** deferred from T-4999 (G-127), which fixed the inherited PROJECT_ROOT for harness seats. ring20-dashboard (msg e49375be) proposed this generic check after an opencode seat wrote their live operator state; the T-3986 tamper check covers only the seat's export.
 
 **Problem / hypothesis:** <what we think is wrong and why>
 
