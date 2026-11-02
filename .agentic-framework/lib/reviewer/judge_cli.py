@@ -773,7 +773,12 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
             # state file under its own code root, i.e. inside the export, and the seat was voided.
             "Running project code: an app or test may write files next to its own code (a SQLite "
             "database, a cache, a log). Never run it in place. Copy the export first and run the "
-            "copy: `cp -a . \"$TMPDIR/run\" && cd \"$TMPDIR/run\"`.",
+            "copy: `cp -a . \"$TMPDIR/run\" && cd \"$TMPDIR/run\"`. "
+            # T-5008 (ring20-dashboard): a seat stopped its own test server with
+            # `pkill -f 'uvicorn main:app'` and took down the live service with the same line.
+            "Never stop or signal a process you did not start: no `pkill`, no `killall`, no "
+            "`kill $(pgrep …)`. Stop a server you started by the PID you started it with "
+            "(`server & pid=$!` … `kill \"$pid\"`).",
             "",
             "When you finish, the dispatch runtime records the verdicts you PRINT, under your own "
             "reviewer identity, with your full output as the evidence report, and signs your "
