@@ -773,4 +773,82 @@ for the project id.
 6.11 Summary: 51 requirements (R-1 to R-51); the 18 that make something impossible each name their adversary
 (item d).
 
-PLACEHOLDER-7-9
+## 7 Conflicts
+
+Each conflict names the answers in tension, what resolves it, and what is left for the operator. "Resolved" means a
+later answer settles it; "open" means it needs the operator.
+
+7.1 **C-1 GitHub as source (A3) vs the session's own push path (A3.b).** Today `origin` is OneDev, `fw mirror sync`
+pushes OneDev → GitHub every 15 minutes, and the session, hooks, release train and handovers push to `origin`. A3
+and A3.a reverse that. **Resolved in principle** by A3.a (OneDev becomes the mirror; R-1, R-2, R-3). **Open:** the
+cutover mechanics (how the session pushes, when `fw mirror sync` flips direction) belong to the architect step; and
+whether the pilot's first merge waits for the cutover, because a merge on GitHub before the flip is exactly the
+#76/#77/#79 loss (2.7.e). Collector's recommendation: the first merge waits for the cutover (10.15).
+
+7.2 **C-2 Testers run PR code (A7) vs process isolation (G-128, T-5008).** A7 has trusted peers run an unmerged PR in
+a throwaway copy of their project; G-128 showed a review seat on a shared host killing a production service.
+**Partly resolved** by A7 itself: read review first (R-17), throwaway copy only (R-18), and the move to the own
+runner later (R-22). **Open:** until the own runner exists, a throwaway copy still runs on an estate host; what
+isolation that copy needs (separate user, container, no network to other hosts) is not settled (10.9).
+
+7.3 **C-3 Control (A6) vs GitHub-hosted runners (A6).** The operator wants the checks under their own control but
+accepted GitHub's runners now. **Resolved** by R-14 (no logic in the CI, so the checks can move) and R-15 (own runner
+at high priority).
+
+7.4 **C-4 Public project names (F4) vs no estate layout in public (A14).** Project names are allowed (F4), but the
+set of names, and which project reports what, may itself sketch the estate. **Resolved by default** with the opt-out
+(R-33). **Open:** whether the operator considers the full list of named projects to be estate layout (10.17).
+
+7.5 **C-5 No accounts (F5, 4R.5.b) and "one account" (F2) vs the secondary account (4R.6.c).** 4R.5.b said no bot
+accounts in this arc; F2 had relayed issues filed under one account (the operator's); A11 had per-peer bot accounts
+as an optional addition. **Resolved:** 4R.6.a states that it revises F5 (the concern was the number of accounts, not
+tokens), and 4R.6.c moves machine traffic to one secondary account. Per-peer accounts are dropped (R-36); F2's
+lifecycle is keyed on the `relayed` label and source field, not on authorship (R-41).
+
+7.6 **C-6 Hook unchanged (A5) vs a DCO check on outside commits (A9).** A5 keeps the commit-msg hook unchanged; A9
+says "the commit-msg check verifies the line on outside commits". A contributor's local hook is not under our
+control, so a hook alone cannot enforce it. **Open** (10.6). Collector's recommendation: the DCO check runs in the PR
+checks (R-12) and the commit-msg hook stays unchanged, which satisfies both answers.
+
+7.7 **C-7 One refusing gate (F1, R-29) vs direct posting by trusted peers (4R.6.c).** On the relay route AEF runs the
+gate before posting. On the direct route a trusted peer holds a token with issue-write scope; the gate runs on the
+peer's side, and a careless or compromised peer (2.7.b) can post with any GitHub client, bypassing it. The token scope
+limits where a peer can write, not what it writes. **Open** (10.8): accept this for trusted peers; or add a check
+after posting (sync scans direct posts, hides and flags hits); or keep the direct route for test verdicts only.
+
+7.8 **C-8 Mehdi's documentation exception (point 2) vs "a PR without an issue is refused" (4.18.h).** **Open** (10.3).
+R-9 follows 4.18.h (no exception) until the operator decides.
+
+7.9 **C-9 A queue of three (A16) vs "high risk waits" (4.18.h).** A high-risk outside PR waiting for a rung-5 panel
+could hold one of the three slots indefinitely, since T-4997 has no date. **Open** (10.12). Collector's
+recommendation: a PR labelled "waiting for review strength" does not hold a slot.
+
+7.10 **C-10 Closing the main closes the linked (F7, R-47) vs the sweep waits for requested checks (F3, R-44).** A
+linked ticket whose own reporter has a pending check would be closed with the main ticket. **Partly resolved** by
+4R.7.a.a (a linked reporter's FAILS reopens and unlinks, R-48). **Open** (10.22): whether a linked ticket with a
+pending check closes with the main or waits for its own check.
+
+7.11 Not conflicts, recorded so they are not raised again: A1.c's unchosen purpose statements ("lands and ships
+without being lost", "the same review loop") became requirements through A3 (R-1 to R-3) and A7 (R-16 to R-21); F9
+dissolved by A3.
+
+## 8 Earlier requirements
+
+8.0 The earlier list is Mehdi's proposal, points 1-8 (`T-5006-github-contributions.md`, verbatim there).
+
+| # | Mehdi's point | Outcome | To | Reason |
+|---|---|---|---|---|
+| 8.1 | 1 Branches: fork, branch from and PR against `bleeding-edge`; names `fix/<issue>-<keyword>` / `feat/…`; `master` fast-forwards at release | **Kept** (target and release rule); branch names not ruled | R-5, R-6 | Operator confirmed the target (4.4.a). The naming convention was not asked (10.4). |
+| 8.2 | 2 One PR, one issue; "Fixes #N"; none without an issue except docs; approach agreed in the issue first | **Changed** | R-9 | One issue per PR kept (A10, 4.18.h); the documentation exception is not accepted until the operator rules (7.8, 10.3); approach-first is intake practice, not asked. |
+| 8.3 | 3 Task reference "T-4935 (#104): …"; hook unchanged; task file on `bleeding-edge` first | **Kept** | R-10 | Operator chose option 1 (A5). |
+| 8.4 | 4 PR template (issue and task; approach and defect class; evidence; tests; `fw doctor`; what was not tested) | **Kept, provisional** | none yet | Not contradicted by any answer and not asked; its content awaits the operator (10.5). |
+| 8.5 | 5 CI: add `bleeding-edge` to `test.yml`; first-time contributor run approval | **Changed** | R-12 to R-15 | Every PR is tested on GitHub-hosted runners (A6), through framework commands only, with an own runner as a high-priority follow-up (4.6.f). Approval click: 10.14. |
+| 8.6 | 6 Review: operator approves and merges; agents run the loop before the release; one-line refusals | **Changed** | R-8, R-16 to R-21, R-23 to R-25 | The operator still merges alone (A4), but the review loop runs **before** the merge, not before the release, at one risk level higher (A7, 4.7.b); queue of three and one-screen recommendation added (A16). One-line refusals kept, drafted by AEF and approved by the operator. |
+| 8.7 | 7 History: branch protection against force push on `bleeding-edge`, "only if it fits" | **Changed** | R-3 to R-5 | Extended to `master` and to deletion (A8); it fits because GitHub becomes the source (A3). |
+| 8.8 | 8 Licence: Apache-2.0 section 5, no CLA | **Changed** | R-11 | Kept, plus a DCO sign-off on every outside commit (A9). |
+
+8.9 Mehdi's "how I would start": PR 1 (documentation, template, CI), PR 2 (a small fix to run the circuit once),
+later a CI check re-verifying task, criteria, ticks and Verification. Consistent with the pilot (R-7). The later
+check is partly covered by "the framework task check" in R-12; its full scope is 10.21.
+
+PLACEHOLDER-9
