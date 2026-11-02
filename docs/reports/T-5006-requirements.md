@@ -98,6 +98,12 @@ resources are already in use: `test.yml` runs on every push to `master`, and its
 (2026-10-20, 2026-10-20, 2026-10-29) all FAILED unnoticed. A same-day field report (ring20-dashboard, G-128,
 T-5008: a review seat on a shared host killed a production service) is a live example of why untrusted code
 should not run on the operator's hosts.
+4.6.c Operator: "Then I depend on GitHub infrastructure to do that, right?" Agent: yes, for the pre-merge
+checks. Two qualifiers: (1) A3 already makes GitHub the source repo, so the dependency exists either way;
+Actions adds the runner, not a new vendor. (2) Portability (directive D4) is kept if the workflow only calls the
+framework's own commands (`fw audit`, `fw test`, the task check), so the same checks can run elsewhere
+(OneDev's build server or an isolated local seat, once T-5008 lands) if GitHub is down or its terms change.
+Candidate requirement: the CI workflow contains no logic of its own, only calls to framework commands.
 4.5 **A5 Task reference** (2026-11-02): **1 — intake task id plus issue number**, "T-4935 (#104): …". The
 commit-msg hook stays unchanged; the intake task file must be on `bleeding-edge` before the PR is opened.
 4.4 **A4 Who merges** (2026-11-02): **1 — only the operator, with the GitHub merge button.** AEF agents run the
