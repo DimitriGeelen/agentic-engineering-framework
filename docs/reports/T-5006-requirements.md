@@ -84,7 +84,9 @@ answer to Q3 (below, A3), given ahead of order.
 4.2 **A2 Who may contribute** (2026-11-02): **1 — Mehdi first, as a pilot.** The whole circuit runs end to end
 with one contributor who knows the framework; it opens wider only after it has held. Reason given: with GitHub
 as the source repo (A3), a bad merge lands where consumers install from.
-4.2.a A5 to A9: not yet asked.
+4.2.a A6 to A9: not yet asked.
+4.5 **A5 Task reference** (2026-11-02): **1 — intake task id plus issue number**, "T-4935 (#104): …". The
+commit-msg hook stays unchanged; the intake task file must be on `bleeding-edge` before the PR is opened.
 4.4 **A4 Who merges** (2026-11-02): **1 — only the operator, with the GitHub merge button.** AEF agents run the
 review loop and post a recommendation on the PR; no agent holds merge rights.
 4.3 **A3 Where a merged PR lands** (2026-11-02, given with A1): the operator merges, and the merge lands on
