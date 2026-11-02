@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-02T12:15:35Z
-last_update: 2026-11-02T13:19:29Z
+last_update: 2026-11-02T13:34:06Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -117,6 +117,9 @@ cost_estimate_proposed:
 - [x] Tests with two sessions of one project (an older idle one, a newer busy one) show the older one never receives or surfaces the message, and the newer one does once it is ready; the existing sidecar tests stay green
 - [ ] `fw sidecar status` (or `alerts`) shows which session, if any, holds each pending message
 - [x] Where `termlink main am-i` is missing, the hook keeps today's delivery and says so once per session ("main-only delivery not active: termlink lacks main am-i"), with a test (010's ask, msg ba5835e1)
+- [ ] Interactive sessions claim the main lease (`termlink main claim`) on SessionStart and renew it on UserPromptSubmit and PostToolUse, and release it on SessionEnd; a headless `claude -p` worker or a review seat never claims; a termlink without the verb is a no-op (010 interface, msg c84c1c6d)
+- [ ] The exact am-i outputs from 010's build (exit 0 / 1 with "not-main: held by main …" / 2) are pinned in a test, and the vacant-lease answer is handled so a project whose sessions have not claimed yet does not hold all mail
+- [ ] Live check on this host after 010's install: this session claims main, peer mail surfaces here, and a second interactive session of the project receives nothing
 - [ ] 010 and ring20 are told what shipped, with the be-tag
 
 ### Human
