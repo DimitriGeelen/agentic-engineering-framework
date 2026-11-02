@@ -142,6 +142,18 @@ isolated runner) exists, deep tests move there.
 refuse force pushes and deletion. Direct pushes stay allowed (the session pushes to `bleeding-edge`; releases
 fast-forward `master`). No PR requirement for our own commits. With GitHub as the source and OneDev mirroring
 from it (A3, A3.a), the protection no longer conflicts with the mirror sync.
+4.9 **A9 Licence terms** (operator, 2026-11-02): **option 1 — Apache-2.0 section 5 plus the DCO.** The project
+is already Apache-2.0 (`LICENSE`; section 5: a contribution submitted for inclusion is under the same licence
+unless stated otherwise). Each outside commit also carries `Signed-off-by:` (`git commit -s`), certifying the
+contributor has the right to submit it; the commit-msg check verifies the line on outside commits. No CLA.
+4.15 **A15 Security reports** (operator, 2026-11-02): **option 1** — GitHub private vulnerability reporting
+("Report a vulnerability"), visible only to the operator and people they add; fixed privately, advisory
+published with the fix; a short `SECURITY.md` points there. Peers in the estate may still report over the
+sidecar (private). Security reports never go into public issues, and the relay (F1) refuses to file one
+publicly.
+4.13 **A13 The old path** — answered by F8 (4R.8): `fw pickup send` for bugs and features is wrapped onto the new
+route; learnings and patterns stay on the sidecar.
+4.17 **A17 Migration** — answered by F8 (4R.8): forward only.
 4.5 **A5 Task reference** (2026-11-02): **1 — intake task id plus issue number**, "T-4935 (#104): …". The
 commit-msg hook stays unchanged; the intake task file must be on `bleeding-edge` before the PR is opened.
 4.4 **A4 Who merges** (2026-11-02): **1 — only the operator, with the GitHub merge button.** AEF agents run the
