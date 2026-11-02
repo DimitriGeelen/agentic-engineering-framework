@@ -138,6 +138,10 @@ read the PR first (they do not run it); only if they find nothing alarming does 
 testers then run the PR in a throwaway copy of their project, never the live one, and post WORKS / FAILS on the
 PR through the secondary account (4R.6.c). Higher risk means more testers and more scenarios. When T-5009 (own
 isolated runner) exists, deep tests move there.
+4.8 **A8 Protecting history** (operator, 2026-11-02): **option 1** — on GitHub, `bleeding-edge` and `master`
+refuse force pushes and deletion. Direct pushes stay allowed (the session pushes to `bleeding-edge`; releases
+fast-forward `master`). No PR requirement for our own commits. With GitHub as the source and OneDev mirroring
+from it (A3, A3.a), the protection no longer conflicts with the mirror sync.
 4.5 **A5 Task reference** (2026-11-02): **1 — intake task id plus issue number**, "T-4935 (#104): …". The
 commit-msg hook stays unchanged; the intake task file must be on `bleeding-edge` before the PR is opened.
 4.4 **A4 Who merges** (2026-11-02): **1 — only the operator, with the GitHub merge button.** AEF agents run the
