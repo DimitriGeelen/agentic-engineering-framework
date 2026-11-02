@@ -343,4 +343,434 @@ contributor has the right to submit it, in addition to Apache-2.0 section 5. Sou
 5.20 **Pilot**: the period in which only Mehdi's contributions run through the circuit; it ends by an operator
 decision after the circuit has held end to end. Source: A2.
 
-PLACEHOLDER-6-9
+## 6 Requirements
+
+6.0 How to read this section.
+6.0.a Each requirement has: statement (RFC 2119), a. type · source · priority · verification method, b. rationale,
+c. acceptance criterion a test can check, and d. for requirements that make something **impossible**, the
+adversary (2.7.a-e) it holds against.
+6.0.b Priority (proposed by the collector; the operator decides at sign-off): **P1** needed for the pilot (A2);
+**P2** needed before contributions open wider; **P3** later.
+6.0.c Verification methods: **test** (automated, repeatable), **demonstration** (a live run observed once and
+recorded), **inspection** (reading a file or setting), **analysis** (reasoning over records).
+6.0.d Nothing here is new: every item traces to an answer (A-n) or a finding (F-n). Gaps are open questions
+(section 10), not requirements.
+
+### 6.1 Source repo, landing and history
+
+6.1.1 **R-1 GitHub is the source repo.** Merges of outside PRs and the session's own pushes MUST land on the GitHub
+repo, and the GitHub repo MUST be treated as authoritative for "fixed" and "released".
+6.1.1.a Functional · A3, F9 · P1 · demonstration.
+6.1.1.b The operator merges on GitHub and wants the merge to stick there (A3); a fix merged on the source repo is
+the authoritative one (F9).
+6.1.1.c Given an outside PR merged on GitHub `bleeding-edge`, when every scheduled sync has run, then the merge
+commit is still reachable from GitHub `bleeding-edge` and the issue lifecycle refers to that commit.
+
+6.1.2 **R-2 OneDev mirrors GitHub.** OneDev MUST be updated from GitHub (one direction: GitHub → OneDev). OneDev's
+builds and the private copy on the operator's network MUST keep working.
+6.1.2.a Interface · A3.a, A3.b · P1 · demonstration.
+6.1.2.b The operator chose to reverse today's direction rather than retire OneDev (A3.a).
+6.1.2.c Given a commit pushed to GitHub `bleeding-edge`, when the mirror cycle runs, then OneDev `bleeding-edge`
+points at the same commit, and a OneDev build can run on it.
+
+6.1.3 **R-3 The mirror cannot erase merged work.** It MUST be impossible for the mirror sync to remove or rewrite a
+commit on GitHub `bleeding-edge` or `master`.
+6.1.3.a Security invariant · A3.a, A8, 2.7.e (PRs #76, #77, #79) · P1 · test.
+6.1.3.b Merged PRs were lost once when the mirror rewrote GitHub's history.
+6.1.3.c Invariant: after any mirror run, the previous GitHub tip of each protected branch is an ancestor of the
+new tip.
+6.1.3.d Holds against: 2.7.e (the mirror sync).
+
+6.1.4 **R-4 Protected branches.** On GitHub, `bleeding-edge` and `master` MUST refuse force pushes and deletion.
+6.1.4.a Security invariant · A8, Mehdi point 7 · P1 · inspection and test.
+6.1.4.b Branch protection stops the #76/#77/#79 loss class, and with GitHub as the source it no longer conflicts with
+the mirror (A8).
+6.1.4.c Given the protection is on, when anyone (operator token, agent token or peer token) force-pushes to or
+deletes `bleeding-edge` or `master`, then GitHub refuses.
+6.1.4.d Holds against: 2.7.e (mirror sync), 2.7.b (compromised peer token), 2.7.d (hurried approver).
+
+6.1.5 **R-5 Our own pushes stay direct.** Direct (fast-forward) pushes to `bleeding-edge`, and release fast-forwards
+to `master`, MUST stay allowed, and our own commits MUST be pushable without a PR.
+6.1.5.a Operational · A8 · P1 · demonstration.
+6.1.5.b The session pushes to `bleeding-edge`; releases fast-forward `master` (release train).
+6.1.5.c Given protection is on, when the session pushes a fast-forward to `bleeding-edge`, then the push succeeds
+without a PR.
+
+6.1.6 **R-6 Outside work never enters `master` directly.** Outside PRs MUST target `bleeding-edge`. A PR against
+`master` MUST be refused with a one-line reason. It MUST be impossible for outside work to reach `master` other than
+by a release fast-forward from `bleeding-edge`.
+6.1.6.a Security invariant · 4.4.a, 4.18.h, Mehdi point 1 · P1 · test.
+6.1.6.b `master` is the consumer install surface and receives only releases.
+6.1.6.c Given an outside PR with base `master`, when AEF takes it in, then AEF drafts a one-line refusal and no
+review or test starts.
+6.1.6.d Holds against: 2.7.a (malicious contributor), 2.7.d (hurried approver).
+
+### 6.2 Who contributes, who merges, licence
+
+6.2.1 **R-7 Pilot first.** Until the operator decides the circuit has held end to end, only Mehdi's outside PRs MUST
+be taken through review, testing and merge.
+6.2.1.a Operational · A2 · P1 · demonstration.
+6.2.1.b With GitHub as the source repo, a bad merge lands where consumers install from (A2).
+6.2.1.c Given the pilot is on, when a PR from another account arrives, then it is not recommended for merge (how
+it is handled otherwise: 10.2).
+
+6.2.2 **R-8 Only the operator merges.** Outside PRs MUST be merged only by the operator, with the GitHub merge button.
+It MUST be impossible for an agent or a peer to merge: no token held by an agent or peer has merge or push rights.
+6.2.2.a Security invariant · A4, 4R.6.c · P1 · inspection and test.
+6.2.2.b AEF agents run the review loop and recommend; deciding is the operator's (A4).
+6.2.2.c Given each agent and peer token, when it is used to merge a PR or push a branch, then GitHub refuses.
+6.2.2.d Holds against: 2.7.b (compromised peer token), 2.7.c (confused agent).
+
+6.2.3 **R-9 One PR, one issue.** Every outside PR MUST link exactly one issue. A PR without an issue MUST be refused
+with a one-line reason.
+6.2.3.a Functional · A10, 4.18.h, Mehdi point 2 · P1 · test.
+6.2.3.b A PR is the fix or build for one issue, not a third kind of request (A10). (Mehdi's documentation exception:
+10.3.)
+6.2.3.c Given an outside PR whose description links no issue, when AEF takes it in, then AEF drafts a one-line
+refusal and no review starts.
+
+6.2.4 **R-10 Task reference.** Each outside commit message MUST start with the intake task id and the issue number
+("T-NNNN (#N): …"). The commit-msg hook MUST stay unchanged. The intake task file MUST be on `bleeding-edge` before
+the contributor opens the PR.
+6.2.4.a Interface · A5, Mehdi point 3 · P1 · test.
+6.2.4.b The intake already creates one task per issue; this needs no new mechanism (A5).
+6.2.4.c Given an issue accepted by intake, when the contributor is told to start, then its task file is already on
+GitHub `bleeding-edge`; and given a commit "T-NNNN (#N): …" for that task, the unchanged hook accepts it.
+
+6.2.5 **R-11 Licence and DCO.** Outside contributions MUST be under Apache-2.0 (section 5). Each outside commit MUST
+carry a `Signed-off-by:` line, and a check MUST verify it on outside commits. No CLA is required.
+6.2.5.a Interface · A9, Mehdi point 8 · P1 · test.
+6.2.5.b The DCO certifies the contributor's right to submit at no cost to them (A9). Where the check runs: 7.6.
+6.2.5.c Given an outside PR with a commit lacking `Signed-off-by:`, when the checks run, then the DCO check fails
+and the PR is not recommended for merge.
+
+### 6.3 Checks before anyone looks
+
+6.3.1 **R-12 Every PR is tested.** Every PR to `bleeding-edge` MUST run the automated checks (tests, structure audit,
+lint, the framework task check), and the result MUST be visible to the contributor on the PR.
+6.3.1.a Functional · A1.a, A6, Mehdi point 5 · P1 · demonstration.
+6.3.1.b Today `test.yml` ignores PRs to `bleeding-edge`; the contributor must see tests run (A1.a).
+6.3.1.c Given a new PR to `bleeding-edge`, when it is opened (and, for a first-time contributor, the run is
+approved), then each listed check runs and reports its status on the PR.
+
+6.3.2 **R-13 Checks run on GitHub-hosted runners for now.** The automated checks MUST run on GitHub-hosted runners.
+Untrusted PR code MUST NOT run on estate hosts for these checks.
+6.3.2.a Security invariant · A6, 4.6.a, 4.6.b · P1 · inspection.
+6.3.2.b A PR's code is untrusted until reviewed; a throwaway runner outside the network can damage nothing of ours.
+6.3.2.c Given the workflow file, when inspected, then every job uses a GitHub-hosted runner label and none a
+self-hosted one.
+6.3.2.d Holds against: 2.7.a (malicious contributor).
+
+6.3.3 **R-14 The CI holds no logic of its own.** The workflow MUST only call framework commands, so the same checks
+can run elsewhere unchanged.
+6.3.3.a Quality (portability, directive D4) · 4.6.c, 4.6.f · P1 · inspection and demonstration.
+6.3.3.b The operator wants the checks under their own control later (A6); this keeps them movable.
+6.3.3.c Given the workflow file, when each step is read, then it is a framework command (or checkout/setup), and
+running the same commands on another machine gives the same verdict.
+
+6.3.4 **R-15 Own runner, high priority.** A separate task in this arc MUST build and test an isolated runner under the
+operator's control and prove it runs the same checks; it is scheduled next, at high priority, not started now.
+6.3.4.a Operational · A6, 4.6.f (T-5009) · P2 · inspection, then demonstration.
+6.3.4.b "I would like to have it under my own control" (A6).
+6.3.4.c Given the arc, when its tasks are listed, then the own-runner task exists with high priority; when it
+completes, the R-12 checks pass on the own runner with the same verdict as on GitHub for the same commit.
+
+### 6.4 Risk, review and testing
+
+6.4.1 **R-16 Outside raises risk.** An outside PR MUST be assessed one risk level higher than the same change made
+inside the estate: low → medium, medium → high, high stays high. Testing depth and review strength MUST follow the
+raised level.
+6.4.1.a Functional · 4.7.b · P1 · test.
+6.4.1.b "The risk automatically gets increased, because it comes from external" (operator, 4.7.b).
+6.4.1.c Given a change the risk assessment rates low, when it arrives as an outside PR, then the recorded risk level
+is medium and the review rung required is the medium one.
+
+6.4.2 **R-17 Read before run.** Review seats MUST read an outside PR (not run it) first. It MUST be impossible for an
+outside PR's code to run on any estate host or in any peer project before that read review has found nothing
+alarming.
+6.4.2.a Security invariant · A7, 4.7.a, G-128 · P1 · test and analysis.
+6.4.2.b Running an unmerged PR runs a stranger's code (4.7.a); a review seat on a shared host already killed a
+production service once (G-128, T-5008).
+6.4.2.c Given an outside PR whose read review has not returned clean, when any tester asks for it, then no test
+request is sent and the PR shows it awaits review.
+6.4.2.d Holds against: 2.7.a (malicious contributor), 2.7.d (hurried approver).
+
+6.4.3 **R-18 Testers use a throwaway copy.** After a clean read review, trusted peer testers MUST run the PR only in a
+throwaway copy of their project; running an outside PR in a live project MUST be impossible by the procedure AEF
+sends. Testers MUST post WORKS / FAILS on the PR through the secondary account.
+6.4.3.a Security invariant · A7 · P1 · demonstration.
+6.4.3.b A field test of a stranger's code must not reach a working project.
+6.4.3.c Given a test request, when a tester follows it, then the PR is checked out into a fresh copy that is removed
+afterwards, and a WORKS/FAILS comment with evidence appears on the PR from the secondary account.
+6.4.3.d Holds against: 2.7.a (malicious contributor). (Where the copy runs until the own runner exists: 7.2.)
+
+6.4.4 **R-19 Depth follows risk.** A higher risk level MUST mean more testers and more scenarios.
+6.4.4.a Functional · A7, 4.7.a · P1 · analysis. (Counts per level: 10.10.)
+6.4.4.b Deeper testing for riskier change, like any external tester (operator, 4.7).
+6.4.4.c Given two outside PRs rated medium and high, when tests are requested, then the high one has more testers and
+more scenarios than the medium one.
+
+6.4.5 **R-20 Results judged like field reports.** Test results MUST be judged as field reports are (WORKS / FAILS
+with evidence), under the normal review logic.
+6.4.5.a Functional · 4.7 (operator), 4.7.a · P1 · inspection.
+6.4.5.b "Have the test results judged like we do with any external tester" (4.7).
+6.4.5.c Given a WORKS comment without evidence, when AEF builds the recommendation, then it counts as no result.
+
+6.4.6 **R-21 No step-down for outside PRs.** An outside PR MUST get the review rung its raised risk level requires.
+A high-risk outside PR MUST wait, labelled "waiting for review strength", until a rung-5 panel can run; a step-down
+for outside PRs MUST be impossible.
+6.4.6.a Security invariant · 4.18.h (T-4997 dependency) · P1 · test.
+6.4.6.b The operator chose "it waits" (4.18.h).
+6.4.6.c Given a high-risk outside PR and no rung-5 panel available, when AEF processes it, then it is labelled
+"waiting for review strength", no merge recommendation is posted, and no step-down is recorded.
+6.4.6.d Holds against: 2.7.a (malicious contributor), 2.7.d (hurried approver).
+
+6.4.7 **R-22 Deep tests move to the own runner.** When the own runner (R-15) exists, deep tests of outside PRs MUST
+run there.
+6.4.7.a Operational · A7 · P3 · demonstration.
+6.4.7.b The own runner is the isolation the operator wants under their control (A6, A7).
+6.4.7.c Given the own runner is live, when a deep test is requested, then it runs on the own runner.
+
+### 6.5 The operator's time
+
+6.5.1 **R-23 A queue of three.** At most 3 outside PRs MUST wait for the operator's merge at once; further PRs MUST be
+labelled "waiting" and not reviewed until a slot frees.
+6.5.1.a Operational · A16 · P1 · test.
+6.5.1.b Caps approval load (approval fatigue, 4.18.c).
+6.5.1.c Given 3 outside PRs awaiting merge, when a fourth passes intake, then it is labelled "waiting" and no review
+is dispatched for it until one of the three is merged or refused.
+
+6.5.2 **R-24 One screen per PR.** Each outside PR MUST get a one-screen AEF recommendation: what it changes, risk
+level, test results, and merge / change / refuse.
+6.5.2.a Interface · A16 · P1 · inspection.
+6.5.2.b The operator decides from one screen (A16).
+6.5.2.c Given a PR ready for the operator, when the recommendation is posted, then it contains all four parts.
+
+6.5.3 **R-25 One-line refusals, approved.** A refusal MUST be one line on the PR, drafted by AEF and posted only after
+the operator approved it.
+6.5.3.a Functional · A16, Mehdi point 6 · P1 · test.
+6.5.3.b Refusing is the operator's decision; one line is enough (Mehdi point 6).
+6.5.3.c Given AEF drafts a refusal, when no operator approval is recorded, then nothing is posted.
+
+### 6.6 Peer requests as issues
+
+6.6.1 **R-26 What moves.** Peer bug reports, enhancement requests and other structural items MUST live as GitHub
+issues. Field reports, live consults, notices and replies MUST stay on the sidecar.
+6.6.1.a Functional · A10, A1.b · P1 · inspection. (Further structural kinds: 10.1.)
+6.6.1.b GitHub gives a numbered thread and lifecycle; the sidecar delivers into a running session.
+6.6.1.c Given a peer files a bug report, when it is processed, then it ends as a GitHub issue; given a live consult,
+it stays on the sidecar.
+
+6.6.2 **R-27 Relay for every peer.** Every peer MUST be able to report to AEF over the sidecar without any GitHub
+account, and AEF MUST file the issue naming the source project (subject to R-33).
+6.6.2.a Functional · A11 · P1 · demonstration.
+6.6.2.b The relay is the path every agent has (A11).
+6.6.2.c Given a peer with no token sends a bug report to AEF, when AEF processes it, then a relayed issue exists
+naming the source project, or the report is held (R-30).
+
+6.6.3 **R-28 Fresh rewrite.** AEF MUST write each relayed issue from a fixed template in its own words; publishing a
+peer's raw text MUST be impossible on the relay route.
+6.6.3.a Security invariant · F1, 4R.1.a · P1 · test.
+6.6.3.b A filter that repairs text misses what it cannot recognise; rewriting removes the copy path (4R.1).
+6.6.3.c Given a peer report containing a sentence S, when AEF drafts the issue, then S does not appear verbatim and
+the draft follows the template's fields.
+6.6.3.d Holds against: 2.7.c (confused agent).
+
+6.6.4 **R-29 The cleaning gate.** All public text (titles, bodies, comments, verdicts) on both the relay and the
+direct route MUST pass one shared cleaning gate that refuses on any hit and never repairs. It MUST be impossible for
+public text to contain: host names; IP addresses; file paths on estate machines; account and user names; tokens,
+keys and secrets; TermLink hub ids; personal data (email addresses, real names other than a contributor's own GitHub
+name, phone numbers); content from a project's own data; open security weaknesses; estate layout (which host runs
+what, network layout, backup locations). Anything the gate cannot classify MUST be held, never posted.
+6.6.4.a Security invariant · F1, 4R.1.a, A14, A11, 4R.5.a, 4R.6.c · P1 · test.
+6.6.4.b The mirror is public and a leak is never undone; one gate for both routes (A11).
+6.6.4.c Given a draft containing an item of any listed class, when it is submitted on either route, then the gate
+refuses, nothing is posted, and the report becomes held with the class named. Given a draft the gate cannot
+classify, then it is held.
+6.6.4.d Holds against: 2.7.c (confused agent), 2.7.b (careless or compromised peer). (The direct route's limit:
+7.7.)
+
+6.6.5 **R-30 A refusal never loses a report.** Every peer report MUST be recorded locally on arrival, before any public
+step. A refused draft MUST stay in a visible held state with its reason; AEF rewrites it; a report still held after a
+set time or number of attempts MUST surface to the operator by name (operator pending, Watchtower). The sender MUST
+be told the issue number or that it is held and why. A report MUST NOT be bounced back as the sender's only copy.
+6.6.5.a Functional (reliability) · 4R.1.b, 4R.6.d · P1 · test. (Limits: 10.11.)
+6.6.5.b "We ping it back and it disappears in the void" is what the operator wants to prevent (4R.1.b).
+6.6.5.c Given a report whose draft is refused, when the held limit passes, then it appears in operator pending by
+name, and the sender has received a held notice with the reason.
+6.6.5.d Holds against: 2.7.c (confused agent dropping a report).
+
+6.6.6 **R-31 Peer keeps until acknowledged.** A peer MUST keep its report until AEF acknowledges with an issue number
+or a held status; the sidecar MUST hold reports while AEF is down; a report waiting too long MUST surface to the
+operator by name.
+6.6.6.a Operational · 4R.6.d, 4.18.d · P1 · test.
+6.6.6.b Separates receipt from publication so nothing is lost while AEF is down (F6).
+6.6.6.c Given AEF is down, when a peer sends a report, then the message is held and, when AEF returns, processed
+and acknowledged.
+
+6.6.7 **R-32 AEF has no veto.** AEF MUST file every relayed report that passes the cleaning gate and MAY add its view
+as a comment. Only the cleaning gate MAY hold a report, and visibly; silent dropping by AEF MUST be impossible.
+6.6.7.a Security invariant · 4R.6.d · P1 · analysis (every local record ends as issue or held).
+6.6.7.b Disagreement about a request must not erase it (F6).
+6.6.7.c Invariant: every locally recorded peer report is in exactly one of: filed (with issue number), held (with
+reason).
+6.6.7.d Holds against: 2.7.c (confused agent).
+
+6.6.8 **R-33 Naming the source project.** A relayed issue MUST name the real source project by default. A project
+that asks not to be named MUST appear as "reported by a project in the maintainer's estate", with the mapping kept
+only in AEF's local ledger; its name appearing publicly MUST be impossible.
+6.6.8.a Security invariant · F4 · P1 · test.
+6.6.8.b "Unless requested otherwise" (F4).
+6.6.8.c Given a project on the opt-out list, when an issue is filed for it, then the public text carries the
+placeholder phrase and not the project's name.
+6.6.8.d Holds against: 2.7.c (confused agent).
+
+6.6.9 **R-34 Project id stamp.** Relayed issues and direct posts MUST carry the project id of the source project.
+Nothing else from TermLink (host, hub id, address) MAY appear publicly; the full address MUST stay in AEF's local
+ledger, used only to reach the project over the sidecar.
+6.6.9.a Interface · 4R.5, 4R.5.b, 4R.6.c · P1 · test. (How the stamp is trusted: 10.7.)
+6.6.9.b Identity comes from the stamp, not from who is logged in to GitHub (4R.5).
+6.6.9.c Given a relayed issue, when its public text is read, then it contains the project id and no host name or
+hub id; and AEF's ledger maps the issue to the full address.
+
+6.6.10 **R-35 Security reports stay private.** Security reports MUST go through GitHub private vulnerability reporting,
+with a short `SECURITY.md` pointing there; estate peers MAY report over the sidecar. Filing a security report as a
+public issue through the relay MUST be impossible.
+6.6.10.a Security invariant · A15 · P1 · test and inspection.
+6.6.10.b An open weakness in public helps an attacker before the fix ships.
+6.6.10.c Given a peer report classified as a security weakness, when AEF processes it, then no public issue is filed
+and the report goes to the private route.
+6.6.10.d Holds against: 2.7.c (confused agent), 2.7.a (an attacker reading public issues).
+
+### 6.7 Accounts and credentials
+
+6.7.1 **R-36 No per-peer bot accounts.** The GitHub accounts the framework uses MUST be only the operator's personal account and the secondary account (R-37); peers get tokens, not accounts.
+6.7.1.a Operational · 4R.5.b, 4R.6.a, F5 · P1 · inspection.
+6.7.1.b GitHub allows one free machine account per person; the concern was the number of accounts (4R.6.a).
+6.7.1.c Given the arc is done, when GitHub accounts used by the framework are listed, then there are exactly the
+operator's personal account and the secondary account.
+
+6.7.2 **R-37 One secondary account.** One secondary GitHub account, owned by the operator (password, 2FA), MUST be
+used for creating and updating issues and writing PR comments only; machine traffic MUST NOT use the operator's
+personal account.
+6.7.2.a Security invariant · 4R.6.c, 4.18.a · P1 · inspection.
+6.7.2.b Machine traffic leaves the personal account; the account's rights are narrow (4R.6.c).
+6.7.2.c Given the secondary account, when its repository role is inspected, then it can write issues and comments
+but cannot push or merge; and AEF-generated issues and comments are authored by it.
+6.7.2.d Holds against: 2.7.b (compromised token: the damage is limited to issues and comments).
+
+6.7.3 **R-38 Tokens per holder.** The operator's AEF instance MUST hold its own token of the secondary account. Each
+trusted peer MUST hold its own fine-grained token, scoped to issues and PR comments on this repo only (no push, no
+merge), revocable alone without affecting other holders.
+6.7.3.a Security invariant · 4R.6.b, 4R.6.c, 4.18.b, 4.18.f · P1 · test.
+6.7.3.b A compromised host costs only its own token (4.18.b).
+6.7.3.c Given peer P's token is revoked, when P posts, then GitHub refuses; when AEF and another peer post, then they
+succeed.
+6.7.3.d Holds against: 2.7.b (compromised peer token).
+
+6.7.4 **R-39 Operator-owned trusted list.** The trusted-peer list MUST be an operator-owned policy file; an agent
+changing it MUST be impossible without the operator's recorded approval. Peers not on it MUST use the relay.
+6.7.4.a Security invariant · 4R.6.a, 4R.6.c · P1 · test.
+6.7.4.b Trust in a peer is the operator's decision.
+6.7.4.c Given an agent session, when it writes an entry into the trusted-peer list, then the write is refused or
+flagged for the operator.
+6.7.4.d Holds against: 2.7.c (confused agent), 2.7.b (compromised peer).
+
+6.7.5 **R-40 Tokens never in the repo.** Each token MUST live in its holder's credential store, named in a registry
+by reference; a token value in the repo MUST be impossible to commit unnoticed.
+6.7.5.a Security invariant · 4.18.a · P1 · test.
+6.7.5.b The repo is public.
+6.7.5.c Given a commit containing a token value, when the pre-commit and CI checks run, then they refuse it.
+6.7.5.d Holds against: 2.7.c (confused agent).
+
+### 6.8 Lifecycle and verdicts
+
+6.8.1 **R-41 Relayed issues get the full lifecycle.** Relayed issues MUST carry a `relayed` label and a source field,
+and `fw issues sync` MUST give them the full lifecycle (stages and confirmation); where sync would wait for the
+GitHub author it MUST wait for the source project's verdict over the sidecar. The same applies to direct posts.
+6.8.1.a Functional · F2, 4R.6.c · P1 · test.
+6.8.1.b Today owner-authored issues are ledger-only, which would drop the lifecycle the move is for (F2).
+6.8.1.c Given a relayed issue, when sync runs, then it posts the lifecycle stages and, at fixed, waits for the source
+project's verdict rather than a GitHub reply.
+
+6.8.2 **R-42 Ask the source to check.** When an issue reaches fixed or released, AEF MUST tell the source project's
+agent to check, naming the issue, the task and the be-tag; the verdict MUST come back as a field report and confirm
+or reopen the issue.
+6.8.2.a Functional · A12, A1.b · P1 · demonstration.
+6.8.2.b Closes the loop with the reporter (A1.b).
+6.8.2.c Given a relayed issue moves to fixed, when sync runs, then the source project receives a sidecar message with
+the issue, task and be-tag; given its WORKS verdict, the issue is confirmed.
+
+6.8.3 **R-43 FAILS reopens.** A FAILS verdict (from the source project over the sidecar, or a "not fixed" reply on
+GitHub) MUST reopen the issue: back to accepted, the task reopened or a follow-up linked, and a cleaned public comment
+posted.
+6.8.3.a Functional · F3 · P1 · test.
+6.8.3.b Today a FAILS verdict has no reopen path (F3).
+6.8.3.c Given a closed or fixed issue, when a FAILS verdict arrives, then the issue is open at stage accepted, a task
+is open for it, and a comment passed by the cleaning gate is posted.
+
+6.8.4 **R-44 The sweep waits for requested checks.** The 14-day sweep MUST skip an issue while a requested check is
+pending; an overdue check MUST surface to the operator by name instead of closing the issue.
+6.8.4.a Functional · F3 · P1 · test.
+6.8.4.b The sweep could close an issue while the source's verdict is in flight (F3).
+6.8.4.c Given an issue released 15 days ago with a pending check, when the sweep runs, then the issue stays open and
+appears in operator pending as overdue.
+
+### 6.9 Duplicates
+
+6.9.1 **R-45 AEF matches every new ticket.** `fw issues sync` MUST match every new ticket (relayed and direct) against
+existing tasks and tickets, using the component fabric, the vector index and BM25 keyword search.
+6.9.1.a Functional · F7, 4R.7.b · P2 · test.
+6.9.1.b Pickup dedup is lost on the GitHub route; AEF has far stronger tools (F7).
+6.9.1.c Given a new ticket describing an existing open ticket's problem in other words, when sync runs, then the
+existing ticket is named as a match with a confidence.
+
+6.9.2 **R-46 Link by confidence.** A high-confidence match MUST link the new ticket to the main ticket (or close it as
+part of it) and record the link in the main ticket. A medium-confidence match MUST only post "possible duplicate of
+#N" for the operator. Only a high-confidence match MAY create a link.
+6.9.2.a Functional · F7, 4R.7.a.b · P2 · test. (Thresholds: 10.18.)
+6.9.2.b A wrong link silently drops a reporter's problem (4R.7.a).
+6.9.2.c Given a medium-confidence match, when sync runs, then a "possible duplicate" comment is posted and no link is
+made.
+
+6.9.3 **R-47 Closing the main closes the linked.** When a main ticket is closed, all tickets still linked to it MUST be
+closed.
+6.9.3.a Functional · F7 · P2 · test. (Pending checks of linked reporters: 7.10.)
+6.9.3.b One fix settles all reports of one problem (F7).
+6.9.3.c Given a main ticket with two linked tickets, when the main is closed, then both are closed with a comment
+naming the main.
+
+6.9.4 **R-48 A linked reporter's FAILS reopens its own ticket.** If a linked reporter's check FAILS, its own ticket
+MUST be reopened and unlinked.
+6.9.4.a Functional · 4R.7.a.a, 4R.7.b · P2 · test.
+6.9.4.b The symptom may differ from the main ticket's (4R.7.a).
+6.9.4.c Given linked ticket L of main M, when L's reporter sends FAILS, then L is open, no longer linked to M, and M
+records the unlink.
+
+### 6.10 Migration
+
+6.10.1 **R-49 Forward only.** The processed pickups MUST stay as they are (each already became a task); the
+auto-deferred pickups MUST be filed on GitHub when their blocker clears.
+6.10.1.a Operational · F8, A17 · P2 · analysis.
+6.10.1.b Replaying old envelopes would duplicate tasks and could publish old host detail (codex 7).
+6.10.1.c Given migration is done, when the issue list is compared with the pickup ledger, then no processed pickup
+has a new issue, and each auto-deferred pickup whose blocker cleared has one.
+
+6.10.2 **R-50 The old command is wrapped.** `fw pickup send` for bug reports and feature proposals MUST route to the
+new filing command (direct for trusted peers, relay for the rest); learnings and patterns MUST stay on the sidecar.
+6.10.2.a Interface · F8, A13 · P2 · test.
+6.10.2.b Old agents keep working; nothing breaks at the cutover.
+6.10.2.c Given a peer runs `fw pickup send` with type bug report, when it completes, then the report is on the new
+route (issue or held), not in the old pickup inbox; given type learning, it goes over the sidecar as before.
+
+6.10.3 **R-51 Issue templates ask for clean input.** The GitHub issue templates MUST ask for a cleaned description and
+the project id, not raw `fw doctor` output or logs.
+6.10.3.a Interface · F8 · P2 · inspection.
+6.10.3.b Today's forms request raw output and logs, which carry host detail (codex 7).
+6.10.3.c Given the issue templates, when read, then no field asks for raw command output or logs, and one field asks
+for the project id.
+
+6.11 Summary: 51 requirements (R-1 to R-51); the 18 that make something impossible each name their adversary
+(item d).
+
+PLACEHOLDER-7-9
