@@ -72,7 +72,14 @@ operation, recovery, revocation, identity, unsupported cases.
 
 ## 4 Answers
 
-4.1 A1 to A9: not yet asked.
+4.1 **A1 Purpose** (2026-11-02): the operator chose two of the four offered statements:
+4.1.a an outside contributor can open a PR against `bleeding-edge` and see tests run on it;
+4.1.b peer projects' bugs and requests live as GitHub issues, with AEF relaying them and asking the reporter
+to check the fix.
+4.1.c Not chosen as purpose: "merged work lands in OneDev and ships without being lost" and "nothing reaches
+consumers without the same review loop". Recorded as candidate requirements, not dropped; they are asked
+directly under Q3 (landing) and Q7 (gates).
+4.2 A2 to A9: not yet asked.
 4.10 **A10** (T-5007 IW-1, 2026-11-02): bug reports, enhancement requests and other structural items move to
 GitHub issues; field reports, live consults and notices stay on the sidecar. PRs are not a third kind: each
 PR is the fix or build for one issue. Open: which further structural kinds (agent suggested wrong
