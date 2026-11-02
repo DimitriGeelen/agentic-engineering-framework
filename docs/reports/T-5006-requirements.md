@@ -173,6 +173,20 @@ otherwise"** — the relayed issue names the real source project by default; a p
 gets "reported by a project in the maintainer's estate" with the mapping kept only in AEF's local ledger. The
 cleaning gate (F1) still removes hosts, IPs, paths, accounts and tokens; only the project name is allowed.
 
+4R.5 **F5 Bot accounts per peer.** GitHub machine accounts must be created and owned by a human; one free
+machine account per person (both reviews). Agent offered: no bots in this arc; one shared machine account; one
+per peer. **Operator (2026-11-02): alternative — identify peers by unique, stable project ids following the
+TermLink naming convention, instead of GitHub accounts.** Under discussion: identity comes from the id stamped
+by the relay, not from who is logged in to GitHub.
+4R.5.a A TermLink identity has three layers: host (`//<host>/…`), hub id (16 hex characters), project id (the
+project name). Agent recommended publishing the project id only. **Operator: the hub id might be worse, "because
+you give away part of a key."** Not verified whether the hub id is derived from key material; treated as
+sensitive either way. Requirement: hub ids and host names never appear in public text; the cleaning gate (F1)
+refuses them.
+4R.5.b **Operator (2026-11-02): confirmed.** No bot accounts in this arc. The relay stamps the project id (the
+project name) on the issue; nothing else from TermLink goes public. The full address stays in AEF's local
+ledger, used only to reach the project over the sidecar (F2, F3).
+
 ## 5 Glossary
 
 (filled as terms settle: contribution, PR, issue, relay, peer bot, source repo, mirror, landing)
