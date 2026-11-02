@@ -14,7 +14,9 @@ workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: [agents/termlink/bvp-estimator/estimator.py, lib/arc_close_readiness.py, lib/bvp.sh, lib/driver_sets.py, lib/resolver.py, web/blueprints/bvp.py, web/templates/bvp.html]
+components: [agents/termlink/bvp-estimator/estimator.py, 
+      lib/arc_close_readiness.py, lib/bvp.sh, lib/driver_sets.py, 
+      lib/resolver.py, web/blueprints/bvp.py, web/templates/bvp.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T21:08:38Z
-last_update: 2026-11-01T23:15:21Z
+last_update: '2026-11-02T21:15:21Z'
 date_finished: 2026-11-01T23:15:21Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -64,6 +66,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-11-02T21:15:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 7
+      tier: 2
+      effort: 8
+    rationale: blast_radius=7 (7-components-large-blast); tier=2 
+      (workflow:build); effort=8 (lines=367,acs=7)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-11-01T21:15:30Z'
