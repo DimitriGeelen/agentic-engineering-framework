@@ -84,7 +84,9 @@ answer to Q3 (below, A3), given ahead of order.
 4.2 A2, A4 to A9: not yet asked.
 4.3 **A3 Where a merged PR lands** (2026-11-02, given with A1): the operator merges, and the merge lands on
 GitHub; OneDev is no longer where it lands. This is option 3 of Q3: GitHub becomes the source repo.
-4.3.a Follow-up open: is OneDev retired, kept as a mirror of GitHub, or kept as a backup only?
+4.3.a Follow-up (2026-11-02): OneDev retired, a mirror of GitHub, or a backup only? **Operator: 1 — OneDev
+becomes a mirror of GitHub.** We push to GitHub; OneDev copies it (the reverse of today). OneDev's builds and
+the private copy on the operator's network stay.
 4.3.b Facts that bear on it: today `origin` is OneDev and pushes to GitHub; `fw mirror sync` runs every 15
 minutes in that direction; consumers already install from GitHub (`lib/consumer-recover.sh:19` calls it the
 canonical public mirror); the session, hooks, release train and handovers push to `origin`.
