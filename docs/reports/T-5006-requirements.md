@@ -81,7 +81,10 @@ consumers without the same review loop". Recorded as candidate requirements, not
 directly under Q3 (landing) and Q7 (gates).
 4.1.d Operator, on 4.1.c: "So I do merge it, but it lands in GitHub, not in OneDev anymore." Recorded as the
 answer to Q3 (below, A3), given ahead of order.
-4.2 A2, A4 to A9: not yet asked.
+4.2 **A2 Who may contribute** (2026-11-02): **1 — Mehdi first, as a pilot.** The whole circuit runs end to end
+with one contributor who knows the framework; it opens wider only after it has held. Reason given: with GitHub
+as the source repo (A3), a bad merge lands where consumers install from.
+4.2.a A4 to A9: not yet asked.
 4.3 **A3 Where a merged PR lands** (2026-11-02, given with A1): the operator merges, and the merge lands on
 GitHub; OneDev is no longer where it lands. This is option 3 of Q3: GitHub becomes the source repo.
 4.3.a Follow-up (2026-11-02): OneDev retired, a mirror of GitHub, or a backup only? **Operator: 1 — OneDev
