@@ -141,6 +141,15 @@ routes.
 4.12 **A12** (T-5007 IW-2): when the issue reaches fixed or released, AEF tells the source project's agent to
 check; their verdict comes back as a field report and confirms or reopens the issue.
 
+## 4R Review findings braided in (T-5007 reviews, 2026-11-02)
+
+Input from `T-5007-review-codex.md` (sound with fixes) and `T-5007-review-opencode.md` (unsound as specified,
+fixable). Each finding is put to the operator one at a time; the answer becomes a requirement or a conflict.
+
+4R.1 **F1 Cleaning is too weak.** `lib/issues.py:_scrub` (line 1441) replaces a local-host regex and this
+machine's own hostname with `[host]`; its docstring says names it cannot recognise are not caught. It runs only on
+release evidence (line 1521), never on issue bodies. Under discussion.
+
 ## 5 Glossary
 
 (filled as terms settle: contribution, PR, issue, relay, peer bot, source repo, mirror, landing)
