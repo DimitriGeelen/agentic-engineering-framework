@@ -8,5 +8,7 @@
     run timeout 600 python3 -m pytest tests/unit/t4835_review_seat_pycache_test.py -q -p no:cacheprovider
     echo "$output" | tail -15
     [ "$status" -eq 0 ]
-    [[ "$output" == *"5 passed"* ]]
+    # T-5029: a count, not a literal one — the file grows (T-4978, T-4999 added tests).
+    [[ "$output" =~ ([1-9][0-9]*)\ passed ]]
+    if [[ "$output" == *" failed"* ]]; then false; fi
 }
