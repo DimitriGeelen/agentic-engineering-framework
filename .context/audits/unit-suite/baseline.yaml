@@ -194,6 +194,73 @@ entries:
   added: '2026-10-19'
   expires: '2026-10-27'
   added_by: human
+- leg: bats
+  name: 'approvals_close_ready_arcs.bats: arc with status=in-progress, ratio<0.80, rec present → excluded'
+  file: approvals_close_ready_arcs.bats
+  owner: T-3611
+  added: '2026-11-02'
+  expires: '2026-11-09'
+  added_by: human
+- leg: bats
+  name: 'approvals_close_ready_arcs.bats: arc with status=in-progress, ratio>=0.80, no rec → included
+    with blocked_reason (T-2986)'
+  file: approvals_close_ready_arcs.bats
+  owner: T-3611
+  added: '2026-11-02'
+  expires: '2026-11-09'
+  added_by: human
+- leg: bats
+  name: 'approvals_close_ready_arcs.bats: arc with status=in-progress, ratio>=0.80, rec present → included'
+  file: approvals_close_ready_arcs.bats
+  owner: T-3611
+  added: '2026-11-02'
+  expires: '2026-11-09'
+  added_by: human
+- leg: bats
+  name: 'approvals_close_ready_arcs.bats: verdict is captured per arc (CLOSE / KEEP-OPEN / GO)'
+  file: approvals_close_ready_arcs.bats
+  owner: T-3611
+  added: '2026-11-02'
+  expires: '2026-11-09'
+  added_by: human
+- leg: bats
+  name: 'approvals_close_ready_arcs.bats: anchor task with empty ## Recommendation body → included with
+    blocked_reason (T-2986)'
+  file: approvals_close_ready_arcs.bats
+  owner: T-3611
+  added: '2026-11-02'
+  expires: '2026-11-09'
+  added_by: human
+- leg: bats
+  name: 'atomic_yaml_write_lint.bats: every lib/ and agents/ file that dumps YAML has an atomic-write
+    signal'
+  file: atomic_yaml_write_lint.bats
+  owner: T-3612
+  added: '2026-11-02'
+  expires: '2026-11-09'
+  added_by: human
+- leg: bats
+  name: 'audit_split_root_asset_lint.bats: shell-idiom ratchet (T-2649): PROJECT_ROOT framework-asset
+    sites in shell stay at the reviewed baseline'
+  file: audit_split_root_asset_lint.bats
+  owner: T-3614
+  added: '2026-11-02'
+  expires: '2026-11-09'
+  added_by: human
+- leg: bats
+  name: 'review_pipefail.bats: T-2206 bypass: FW_ALLOW_EMPTY_RECOMMENDATION=1 → exit 0 + NOTE + log'
+  file: review_pipefail.bats
+  owner: T-3609
+  added: '2026-11-02'
+  expires: '2026-11-09'
+  added_by: human
+- leg: pytest
+  name: tests/unit/test_operator_facing_stderr.py::test_every_stderr_render_site_is_sanitized
+  file: test_operator_facing_stderr.py
+  owner: T-3605
+  added: '2026-11-02'
+  expires: '2026-11-09'
+  added_by: human
 last_regenerated:
   at: '2026-11-01'
   report: /opt/999-Agentic-Engineering-Framework/.context/audits/unit-suite/LATEST.yaml
