@@ -179,3 +179,52 @@ def test_a_clean_run_prints_no_harness_error(tmp_path):
                        capture_output=True, text=True)
     assert r.returncode == 0 and "HARNESS ERROR" not in r.stderr
     assert (tmp_path / "result.md").read_text().strip() == "ok"
+
+
+#: T-4999 (ring20 msg e49375be): a seat that records its environment and, like ring20's app, writes
+#: to "$PROJECT_ROOT/data/state". Before the fix PROJECT_ROOT named the LIVE project.
+_ENV_SEAT = hk._OPENCODE.replace(
+    'mode = os.environ.get("STUB_MODE", "green")',
+    'mode = os.environ.get("STUB_MODE", "green")\n'
+    'open(os.path.join(os.environ["TMPDIR"], "seat-env.json"), "w").write(json.dumps('
+    '{k: os.environ.get(k) for k in ("PROJECT_ROOT", "FRAMEWORK_ROOT")}))\n'
+    'if os.environ.get("STUB_EDIT") == "live":\n'
+    '    d = os.path.join(os.environ["PROJECT_ROOT"], "data", "state")\n'
+    '    os.makedirs(d, exist_ok=True)\n'
+    '    open(os.path.join(d, "acks.json"), "w").write("[1]")\n', 1)
+
+
+class TestSeatNeverSeesTheLiveProject:
+    def _setup_env_seat(self, root):
+        _commit_module(root)
+        (_stub_dir(root) / "opencode").write_text(_ENV_SEAT)
+        (_stub_dir(root) / "opencode").chmod(0o755)
+
+    def test_seat_project_root_is_its_export_and_framework_root_is_unset(self, hrepo):
+        self._setup_env_seat(hrepo)
+        w = _run(hrepo, did="judge-t-9200-r1-opencode-envseat00001",
+                 seat_env={"PYTHONDONTWRITEBYTECODE": "1"})
+        env = json.loads((w / "tmp" / "seat-env.json").read_text())
+        assert env["PROJECT_ROOT"] == str(w / "tree")
+        assert env["FRAMEWORK_ROOT"] is None
+
+    def test_an_app_writing_under_project_root_never_reaches_the_live_project(self, hrepo):
+        self._setup_env_seat(hrepo)
+        w2 = _run_live_edit(hrepo, did="judge-t-9200-r1-opencode-envlive00002")
+        assert not (hrepo / "data").exists()                       # live project untouched
+        log = (w2 / "stderr.log").read_text()
+        assert "modified the export it reviewed" in log             # the write landed in the export
+        assert (w2 / "exit_code").read_text().strip() != "0"
+
+
+def _run_live_edit(root, did):
+    """`_run` with STUB_EDIT=live for the seat."""
+    import unittest.mock as um
+    real = subprocess.run
+
+    def run(cmd, *a, **kw):
+        if isinstance(cmd, list) and cmd[:1] == ["bash"] and kw.get("env"):
+            kw["env"] = {**kw["env"], "STUB_EDIT": "live"}
+        return real(cmd, *a, **kw)
+    with um.patch.object(subprocess, "run", run):
+        return _run(root, did=did, seat_env={"PYTHONDONTWRITEBYTECODE": "1"})
