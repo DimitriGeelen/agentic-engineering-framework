@@ -1460,3 +1460,10 @@ Direct pushes of AEF's own work stay as in A8. Residual 11.R.4 accepted with det
 is posted as a required check on the PR ("AEF review: merge"); an audit check afterwards flags any merge that did not
 meet both. The repo owner can still override in an emergency; the audit shows every override by name (residual 11.R.5
 accepted with detection).
+12.9 **11.Q-6 decided (operator, 2026-11-02): option 1.** A direct post's project stamp is a claim, not an identity
+(shared account). A direct verdict changes an issue's state (confirm, reopen) only once the same verdict also arrives
+over the sidecar from that project, which authenticates the sender. The GitHub post stays as the public record; an
+unconfirmed one is labelled as such and changes nothing. Residual 11.R.6 closed for state changes.
+12.10 **All round-1 operator questions answered** (Q-1 to Q-6, 2026-11-02). Next: round 2 — fold 12.3-12.9 into
+sections 5-10 (restate R-29, R-37, R-38, R-52, R-53, R-58 and A7-derived requirements), then an independent round-2
+review, then the operator's sign-off (card: 2-3 rounds).
