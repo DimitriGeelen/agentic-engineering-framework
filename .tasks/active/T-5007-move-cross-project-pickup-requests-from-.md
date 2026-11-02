@@ -13,7 +13,7 @@ arc_id: github-contributions
 components: []
 related_tasks: []
 created: 2026-11-02T07:57:21Z
-last_update: '2026-11-02T08:00:25Z'
+last_update: 2026-11-02T08:07:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -81,9 +81,9 @@ Peer projects send work requests to AEF over the sidecar (`fw pickup`, peer mess
 -->
 
 - **IW-1: Which cross-project traffic should move to GitHub issues, and which stays on the sidecar?**
-  confidence: 0
+  confidence: 2
   disposition: open
-  rationale: to be settled in dialogue with the operator; sidecar today carries pickups, field reports, consults and notices.
+  rationale: operator 2026-11-02 chose option 1 — bug reports, enhancement requests and other structural items move; field reports, consults, notices stay on the sidecar. Further structural kinds pending (report Dialogue Log).
 - **IW-2: Can every peer project file and read GitHub issues (accounts, tokens, private projects, host detail in reports)?**
   confidence: 0
   disposition: open

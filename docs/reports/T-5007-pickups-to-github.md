@@ -24,3 +24,10 @@ GitHub intake already has what pickups lack in public: a numbered thread, lifecy
 ### 2026-11-02 — operator raises the question
 - Raised together with T-5006 (Mehdi's PR proposal): "migrate from pickup request over sidecar, moving that also to GitHub".
 - Filed as its own inception (one inception, one question) in the same arc.
+
+### 2026-11-02 — IW-1: what moves
+- Agent offered: (1) work requests only, (2) all but live consults, (3) everything. Recommended 1.
+- **Operator chose 1:** bug reports, enhancement requests, and anything else structural; asked for suggestions of other structural kinds.
+- Agent's suggestions (pending operator's pick): documentation that disagrees with the code; design proposals like Mehdi's (GitHub Discussions or an issue labelled `proposal`); a sanitised per-release verdict thread. Security reports are the exception: they go to a private GitHub security advisory, never a public issue.
+- Stays on the sidecar: field reports with host detail, live consults, notices, replies.
+- **Operator added: PRs too, "but they are I guess part of either two?"** Agent: yes. A PR is not a third kind of request; it is the proposed fix for a bug issue or the build of an enhancement issue (Mehdi's rule 2: one PR, one issue). How PRs are taken in is T-5006's question; here they only count as the follow-up to an issue.
