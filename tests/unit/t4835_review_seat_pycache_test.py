@@ -186,9 +186,12 @@ def test_a_clean_run_prints_no_harness_error(tmp_path):
 _ENV_SEAT = hk._OPENCODE.replace(
     'mode = os.environ.get("STUB_MODE", "green")',
     'mode = os.environ.get("STUB_MODE", "green")\n'
-    'open(os.path.join(os.environ["TMPDIR"], "seat-env.json"), "w").write(json.dumps('
+    # the runtime's `--version` probe runs the binary with the run's own env; a real seat binary
+    # writes nothing there, so the stub acts only when it runs as the seat
+    'if a != ["--version"]:\n'
+    '    open(os.path.join(os.environ["TMPDIR"], "seat-env.json"), "w").write(json.dumps('
     '{k: os.environ.get(k) for k in ("PROJECT_ROOT", "FRAMEWORK_ROOT")}))\n'
-    'if os.environ.get("STUB_EDIT") == "live":\n'
+    'if a != ["--version"] and os.environ.get("STUB_EDIT") == "live":\n'
     '    d = os.path.join(os.environ["PROJECT_ROOT"], "data", "state")\n'
     '    os.makedirs(d, exist_ok=True)\n'
     '    open(os.path.join(d, "acks.json"), "w").write("[1]")\n', 1)
