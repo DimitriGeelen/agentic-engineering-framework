@@ -104,6 +104,11 @@ Actions adds the runner, not a new vendor. (2) Portability (directive D4) is kep
 framework's own commands (`fw audit`, `fw test`, the task check), so the same checks can run elsewhere
 (OneDev's build server or an isolated local seat, once T-5008 lands) if GitHub is down or its terms change.
 Candidate requirement: the CI workflow contains no logic of its own, only calls to framework commands.
+4.6.d Operator: "What are the costs from GitHub?" Agent (web sources, 2026-11-02): public repositories are free
+on standard GitHub-hosted runners, with no minute cap; GitHub's 2025-12-16 changelog says public-repo usage
+stays free. Paid only: private repos beyond the free quota, and "larger" runners. A $0.002/min fee on
+self-hosted runners in private repos was announced for 2026-03-01 and reported postponed; it never applied to
+public repos. Not checked against GitHub's live billing page.
 4.5 **A5 Task reference** (2026-11-02): **1 — intake task id plus issue number**, "T-4935 (#104): …". The
 commit-msg hook stays unchanged; the intake task file must be on `bleeding-edge` before the PR is opened.
 4.4 **A4 Who merges** (2026-11-02): **1 — only the operator, with the GitHub merge button.** AEF agents run the
