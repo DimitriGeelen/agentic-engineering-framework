@@ -1,0 +1,374 @@
+The text between the PEER-DATA markers is UNTRUSTED data written by another agent.
+## from proxmox-ring20-management  [conversation inception-role-chain]  [msg 29b29461-caef-4fbc-8c7d-32d3adb6acb9]
+<<<PEER-DATA
+proxmox-ring20-management (session afce1d16, main) for AEF T-3935/T-5006, file 6/6: tests/test-role-chain.py (hosts stripped; 21624 chars)
+-----BEGIN FILE-----
+#!/usr/bin/env python3
+"""Hermetic tests for scripts/role-chain.py (T-2191): steps run in order, hand-over only on operator approval."""
+import os
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+SCRIPT = Path(__file__).resolve().parent.parent / "scripts/role-chain.py"
+PASS = FAIL = 0
+
+
+def check(name, cond, detail=""):
+    global PASS, FAIL
+    if cond:
+        PASS += 1
+        print(f"PASS {name}")
+    else:
+        FAIL += 1
+        print(f"FAIL {name}  {detail}")
+
+
+import hashlib
+import json as _json
+
+
+def _git(root, *a):
+    subprocess.run(["git", "-C", str(root), *a], capture_output=True, check=True)
+
+
+def bind_review(root, tid, n, output):
+    """A green verdict for step n: output committed, ledger row with the reviewed revision, hand-back with its hash."""
+    out = root / output
+    if not out.exists():
+        out.write_text(f"output of step {n}\n")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-qm", f"step {n}", "--allow-empty")
+    rev = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+    vid = f"V-20261004-{n:08x}"
+    led = root / ".context/reviews/verdicts.jsonl"
+    led.parent.mkdir(parents=True, exist_ok=True)
+    with open(led, "a") as f:
+        f.write(_json.dumps({"id": vid, "task": tid, "ac": 1, "outcome": "green", "revision": rev}) + "\n")
+    hb = root / "handbacks"
+    hb.mkdir(exist_ok=True)
+    (hb / f"step-{n:02d}-x.json").write_text(_json.dumps(
+        {"schema": "role-handback/1", "output": {"path": output, "sha256": hashlib.sha256(out.read_bytes()).hexdigest()}}))
+    return vid
+
+
+def task(root, tid, status, n, ticked=False, where="active", reviewed=None, output=None):
+    """reviewed defaults to ticked: an approved step has both its agent review and the operator tick."""
+    reviewed = ticked if reviewed is None else reviewed
+    rbox, box = ("x" if reviewed else " "), ("x" if ticked else " ")
+    note = ""
+    if reviewed:
+        vid = bind_review(root, tid, n, output or f"out{n}.md")
+        note = f"  **Reviewer verdict:** green {vid} — fixture\n"
+    (root / ".tasks" / where / f"{tid}-x.md").write_text(
+        f"---\nid: {tid}\nstatus: {status}\n---\n### Human\n"
+        f"- [{rbox}] [REVIEW] Independent review: step {n} output meets its role card's completion conditions\n"
+        f"{note}"
+        f"- [{box}] [REVIEW] Step {n} output approved\n")
+
+
+with tempfile.TemporaryDirectory() as td:
+    root = Path(td)
+    for sub in ("active", "completed"):
+        (root / ".tasks" / sub).mkdir(parents=True)
+    _git(root, "init", "-q")
+    _git(root, "config", "user.email", "t@t")
+    _git(root, "config", "user.name", "t")
+    fwdir = root / ".agentic-framework" / "bin"
+    fwdir.mkdir(parents=True)
+    log = root / "fw.calls"
+    (fwdir / "fw").write_text(f"#!/usr/bin/env bash\necho \"$@\" >> {log}\n")
+    (fwdir / "fw").chmod(0o755)
+    chain = root / "chain.yaml"
+    chain.write_text("chain: c\narc: arc-x\nplan: plan.md\nrules: rules.md\ncommon: common.md\nadapter: adapter.md\nprofile: profile.md\nsteps:\n"
+                     "  - {step: 1, role: Requirements collector, task: T-0001, prompt: r1.md, output: out1.md, settles: [T-0100]}\n"
+                     "  - {step: 2, role: MVP specialist, task: T-0002, prompt: r2.md, output: out2.md}\n"
+                     "  - {step: 3, role: Architect, task: T-0003, prompt: r3.md, output: out3.md}\n")
+
+    def run(*args):
+        r = subprocess.run([sys.executable, str(SCRIPT), *args, str(chain)] if args[0] != "brief" else
+                           [sys.executable, str(SCRIPT), "brief", str(chain), args[1]],
+                           capture_output=True, text=True, env=dict(os.environ, ROLE_CHAIN_ROOT=td))
+        return r.returncode, r.stdout + r.stderr
+
+    task(root, "T-0001", "captured", 1)
+    task(root, "T-0002", "captured", 2)
+    task(root, "T-0003", "captured", 3)
+    rc, out = run("next", "--dry-run")
+    check("fresh chain: next offers step 1", rc == 0 and "Would start step 1: T-0001" in out, out)
+    check("brief names prompt, output and hand-over rule", "r1.md" in out and "out1.md" in out
+          and "Step 1 output approved" in out and "T-0100" in out
+          and "rules.md + common.md + r1.md + adapter.md + profile.md" in out, out)
+    rc, out = run("next")
+    check("next (real) calls fw work-on for step 1", rc == 0 and "work-on T-0001" in log.read_text(), log.read_text())
+
+    task(root, "T-0001", "started-work", 1)
+    rc, out = run("next", "--dry-run")
+    check("step 1 in progress, not approved: refuses (exit 3)", rc == 3 and "in progress" in out, out)
+    (root / "out1.md").write_text("x")
+    rc, out = run("next", "--dry-run")
+    check("output written, no agent review yet: refuses, says awaiting independent review",
+          rc == 3 and "awaiting independent review" in out and "fw reviewer judge" in out, out)
+    task(root, "T-0001", "started-work", 1, ticked=False, reviewed=True)
+    rc, out = run("next", "--dry-run")
+    check("T-2213: agent review green but operator has not ticked (step decides): refuses",
+          rc == 3 and "awaiting operator approval" in out, out)
+    rc, out = run("status")
+    check("status shows step 1 awaiting approval, step 2 waiting",
+          "awaiting operator approval" in out and "T-0002  waiting" in out, out)
+    task(root, "T-0001", "started-work", 1, ticked=True, reviewed=False)
+    rc, out = run("next", "--dry-run")
+    check("T-2213: operator ticked but no green agent review: refuses", rc == 3 and "independent review" in out, out)
+
+    task(root, "T-0001", "started-work", 1, ticked=True)
+    rc, out = run("next", "--dry-run")
+    check("operator ticked step 1: next offers step 2", rc == 0 and "Would start step 2: T-0002" in out, out)
+
+    task(root, "T-0002", "started-work", 2)
+    (root / ".tasks/active/T-0002-x.md").write_text("---\nstatus: started-work\n---\n- [x] [REVIEW] Step 1 output approved\n")
+    rc, out = run("next", "--dry-run")
+    check("a ticked box for the WRONG step number does not approve", rc == 3, out)
+
+    (root / ".tasks/active/T-0002-x.md").unlink()
+    task(root, "T-0002", "work-completed", 2, where="completed")
+    rc, out = run("next", "--dry-run")
+    check("T-2201: completed WITHOUT the tick is not approval (exit 3, says so)",
+          rc == 3 and "Completion is not approval" in out, out)
+    rc, out = run("status")
+    check("T-2201: status flags completed-without-approval as an error", "ERROR: completed without operator approval" in out, out)
+    task(root, "T-0002", "work-completed", 2, ticked=True, where="completed")
+    rc, out = run("next", "--dry-run")
+    check("completed WITH the tick is approved: next offers step 3", rc == 0 and "step 3" in out, out)
+
+    (root / ".tasks/active/T-0003-x.md").unlink()
+    task(root, "T-0003", "work-completed", 3, ticked=True, where="completed")
+    rc, out = run("next", "--dry-run")
+    check("all approved: chain finished (exit 4)", rc == 4 and "finished" in out, out)
+
+    (root / ".tasks/completed/T-0003-x.md").unlink()
+    rc, out = run("next", "--dry-run")
+    check("missing task file: refuses (exit 3)", rc == 3 and "does not exist" in out, out)
+
+    chain2 = root / "chain2.yaml"
+    chain2.write_text("chain: c2\nsteps:\n  - {step: 1, role: Evidence, task: T-0101, output: e.md, decides: false}\n"
+                      "  - {step: 2, role: Pseudo, task: T-0102, output: p.md}\n")
+    task(root, "T-0101", "started-work", 1, ticked=False, reviewed=True, output="e.md")
+    task(root, "T-0102", "captured", 2)
+    r2 = subprocess.run([sys.executable, str(SCRIPT), "next", str(chain2), "--dry-run"], capture_output=True,
+                        text=True, env=dict(os.environ, ROLE_CHAIN_ROOT=td))
+    check("T-2213: a step that does not decide advances on the green agent review alone",
+          r2.returncode == 0 and "Would start step 2" in r2.stdout, r2.stdout + r2.stderr)
+
+    # T-2213 slice 2: the green review must still describe the output
+    chain3 = root / "chain3.yaml"
+    chain3.write_text("chain: c3\nsteps:\n  - {step: 1, role: A, task: T-0201, output: a.md}\n  - {step: 2, role: B, task: T-0202, output: b.md}\n")
+    task(root, "T-0201", "started-work", 1, ticked=True, output="a.md")
+    task(root, "T-0202", "captured", 2)
+    def run3(*a):
+        r = subprocess.run([sys.executable, str(SCRIPT), *a, str(chain3)], capture_output=True, text=True,
+                           env=dict(os.environ, ROLE_CHAIN_ROOT=td))
+        return r.returncode, r.stdout + r.stderr
+    rc, out = run3("next", "--dry-run")
+    check("T-2213 s2: green review bound to unchanged output: next offers step 2", rc == 0 and "Would start step 2" in out, out)
+    (root / "a.md").write_text("edited after the review\n")
+    rc, out = run3("status")
+    check("T-2213 s2: output edited after review: status says review stale", "review stale" in out, out)
+    rc, out = run3("next", "--dry-run")
+    check("T-2213 s2: output edited after review: next refuses", rc == 3, out)
+
+    rc, out = run("brief", "2")
+    check("brief for a single step", rc == 0 and out.startswith("Step 2: MVP specialist"), out)
+
+# T-2214: dispatch a role to its own TermLink session, then collect its hand-back (dispatcher stubbed)
+import shutil  # noqa: E402
+REPO = Path(__file__).resolve().parent.parent
+with tempfile.TemporaryDirectory() as td:
+    root = Path(td)
+    for sub in ("active", "completed"):
+        (root / ".tasks" / sub).mkdir(parents=True)
+    _git(root, "init", "-q")
+    _git(root, "config", "user.email", "t@t")
+    _git(root, "config", "user.name", "t")
+    ddir = root / "dispatch"
+    stub = root / "fw-stub"
+    stub.write_text(f"""#!/usr/bin/env bash
+echo "$@" >> {root}/fw.calls
+if [ "$1 $2" = "termlink dispatch" ]; then
+  while [ $# -gt 0 ]; do [ "$1" = "--name" ] && name="$2"; shift; done
+  [ "${{STUB_MODE:-start}}" = "start" ] && mkdir -p {ddir}/$name && echo 0 > {ddir}/$name/exit_code
+fi
+exit 0
+""")
+    stub.chmod(0o755)
+    for f, body in (("rules.md", "RULES-TEXT"), ("common.md", "COMMON-TEXT"), ("adapter.md", "ADAPTER-TEXT"),
+                    ("profile.md", "PROFILE-TEXT"), ("in1.md", "input one"),
+                    ("card2.md", "CARD-TEXT\n## 6 Completion conditions\n\n6.1 one.\n")):
+        (root / f).write_text(body + "\n")
+    sch = "docs/designs/agent-authorization-broker/schemas/role-handback-1.schema.json"
+    (root / sch).parent.mkdir(parents=True)
+    shutil.copy(REPO / sch, root / sch)
+    (root / "scripts").mkdir()
+    shutil.copy(REPO / "scripts/role-handback-check.py", root / "scripts/role-handback-check.py")
+    chain = root / "chain.yaml"
+    chain.write_text("chain: c\nrules: rules.md\ncommon: common.md\nadapter: adapter.md\nprofile: profile.md\nsteps:\n"
+                     "  - {step: 1, role: Requirements, task: T-0301, prompt: card1.md, output: out1.md}\n"
+                     "  - {step: 2, role: Floor, task: T-0302, prompt: card2.md, inputs: [in1.md], output: out2.md}\n"
+                     "  - {step: 3, role: Architect, task: T-0303, prompt: card3.md, output: out3.md}\n")
+    task(root, "T-0301", "started-work", 1, ticked=True, output="out1.md")
+    task(root, "T-0302", "captured", 2)
+    task(root, "T-0303", "captured", 3)
+    env = dict(os.environ, ROLE_CHAIN_ROOT=td, ROLE_CHAIN_FW=str(stub), FW_DISPATCH_DIR=str(ddir),
+               ROLE_CHAIN_START_WAIT="2")
+
+    def rd(*a, **extra):
+        r = subprocess.run([sys.executable, str(SCRIPT), a[0], str(chain), *a[1:]], capture_output=True, text=True,
+                           env=dict(env, **extra))
+        return r.returncode, r.stdout + r.stderr
+
+    rc, out = rd("dispatch", "3")
+    check("T-2214: dispatch refuses a step that is not next (exit 3)", rc == 3 and "not the next step" in out, out)
+    rc, out = rd("dispatch", "2", "--dry-run")
+    check("T-2214: dispatch --dry-run names the brief and the fw termlink dispatch command",
+          rc == 0 and "step-02-brief.md" in out and "termlink dispatch" in out and "--strict-mcp-config" in out, out)
+    rc, out = rd("dispatch", "2", STUB_MODE="nostart")
+    check("T-2214: a dispatch whose worker never starts is refused (exit 5, fire-and-forget)", rc == 5 and "T-1648" in out, out)
+    rc, out = rd("dispatch", "2")
+    brief = root / "handbacks/step-02-brief.md"
+    text = brief.read_text() if brief.exists() else ""
+    order = [text.find(x) for x in ("RULES-TEXT", "COMMON-TEXT", "CARD-TEXT", "ADAPTER-TEXT", "PROFILE-TEXT")]
+    check("T-2214: dispatch starts the role and writes the brief", rc == 0 and text, out)
+    check("T-2214: brief carries rules, common, card, adapter, profile in that order", -1 not in order and order == sorted(order), order)
+    check("T-2214: brief gives inputs with sha256, the hand-back path and the prohibitions",
+          hashlib.sha256(b"input one\n").hexdigest() in text and "step-02-card2.json" in text
+          and "fw reviewer" in text and "outside the estate" in text, text[-800:])
+    rec = _json.loads((root / "handbacks/step-02-dispatch.json").read_text())
+    check("T-2214: dispatch record binds the brief by sha256",
+          rec["session"] == "role-02-card2" and rec["brief_sha256"] == hashlib.sha256(brief.read_bytes()).hexdigest(), rec)
+    w = ddir / "role-02-card2"
+    (w / "exit_code").unlink()
+    live = subprocess.Popen(["bash", "-c", "sleep 20; true", f"{w}/run.sh"])
+    try:
+        rc, out = rd("dispatch", "2")
+        check("T-2214: a live dispatch for the step blocks a second one", rc == 3 and "live dispatch" in out, out)
+    finally:
+        live.kill()
+        live.wait()
+    (w / "exit_code").write_text("0\n")
+    rc, out = rd("dispatch", "2")
+    rec2 = _json.loads((root / "handbacks/step-02-dispatch.json").read_text())
+    check("T-2214: a second round gets its own session name (-r2) and records the round",
+          rc == 0 and rec2["session"] == "role-02-card2-r2" and rec2["round"] == 2, out + str(rec2))
+    rc, out = rd("collect", "2", "--timeout", "1")
+    check("T-2214: collect without a hand-back record says so (exit 1)", rc == 1 and "without a hand-back" in out, out)
+    (root / "out2.md").write_text("floor\n")
+    (root / "handbacks/step-02-card2.json").write_text(_json.dumps({
+        "schema": "role-handback/1", "chain": "c", "step": 2, "role": "floor", "task": "T-0302", "status": "ready-for-review",
+        "output": {"path": "out2.md", "sha256": hashlib.sha256(b"floor\n").hexdigest()},
+        "inputs": [{"path": "in1.md", "sha256": hashlib.sha256(b"input one\n").hexdigest()}], "summary": "s",
+        "completion": [{"condition": "one", "met": True, "evidence": "e"}]}))
+    rc, out = rd("collect", "2", "--timeout", "1")
+    check("T-2214: collect with a valid hand-back prints the review command for the orchestrator",
+          rc == 0 and "VALID" in out and "fw reviewer judge T-0302" in out, out)
+
+# T-2213 revisions: a reopened step gets a new task; change requests from approved later steps reach its brief
+with tempfile.TemporaryDirectory() as td:
+    root = Path(td)
+    for sub in ("active", "completed"):
+        (root / ".tasks" / sub).mkdir(parents=True)
+    _git(root, "init", "-q")
+    _git(root, "config", "user.email", "t@t")
+    _git(root, "config", "user.name", "t")
+    for f in ("rules.md", "common.md", "adapter.md", "profile.md", "card1.md", "card2.md", "in.md"):
+        (root / f).write_text(f.upper() + "\n")
+    chain = root / "chain.yaml"
+    chain.write_text("chain: c\nrules: rules.md\ncommon: common.md\nadapter: adapter.md\nprofile: profile.md\nsteps:\n"
+                     "  - {step: 1, role: Req, task: T-0402, revisions: [T-0401], prompt: card1.md, inputs: [in.md], output: out1.md}\n"
+                     "  - {step: 2, role: Threat, task: T-0403, prompt: card2.md, inputs: [out1.md], output: out2.md}\n")
+    task(root, "T-0401", "started-work", 1, ticked=True, output="out1.md")   # v1, approved (record for T-0401)
+    old = root / "handbacks" / "step-01-x.json"
+    rec = _json.loads(old.read_text()); rec["task"] = "T-0401"; rec["inputs"] = []
+    old.write_text(_json.dumps(rec))
+    task(root, "T-0402", "captured", 1)
+    task(root, "T-0403", "started-work", 2, ticked=True, output="out2.md")
+    hb2 = sorted((root / "handbacks").glob("step-02-*.json"))[0]
+    rec2 = _json.loads(hb2.read_text())
+    rec2.update(task="T-0403", inputs=[{"path": "out1.md", "sha256": "0" * 64}],
+                change_requests=[{"step": 1, "what": "CR-9 add rate limits"}, {"step": 3, "what": "not for step 1"}])
+    hb2.write_text(_json.dumps(rec2))
+    env = dict(os.environ, ROLE_CHAIN_ROOT=td)
+
+    def rr(*a):
+        r = subprocess.run([sys.executable, str(SCRIPT), a[0], str(chain), *a[1:]], capture_output=True, text=True, env=env)
+        return r.returncode, r.stdout + r.stderr
+
+    rc, out = rr("status")
+    check("T-2213 rev: the new revision task is not approved by the old revision's ticks",
+          "T-0402  waiting" in out and "supersedes T-0401" in out, out)
+    check("T-2213 rev: an approved later step whose input moved gets a note", "inputs changed since its hand-back: out1.md" in out, out)
+    rc, out = rr("dispatch", "1", "--dry-run")
+    check("T-2213 rev: the reopened step is next and can be dispatched", rc == 0, out)
+    sys.path.insert(0, str(SCRIPT.parent))
+    os.environ["ROLE_CHAIN_ROOT"] = td
+    import importlib.util  # noqa: E402
+    spec = importlib.util.spec_from_file_location("rc", SCRIPT)
+    rcm = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(rcm)
+    rcm.CHAIN_DIR = root
+    d, steps = rcm.load(chain)
+    text = rcm.compose_brief(d, steps[0], root)
+    check("T-2213 rev: the brief carries the change requests aimed at this step only",
+          "CR-9 add rate limits" in text and "not for step 1" not in text and "supersedes T-0401" in text, text[-600:])
+    (root / "f.txt").write_text("1. fix R-33 scope\n2. align D-2\n")
+    text2 = rcm.compose_brief(d, steps[0], root, root / "f.txt")
+    check("T-2214: a remediation brief carries the review findings", "F.11" in text2 and "fix R-33 scope" in text2, text2[-300:])
+    check("T-2213 rev: the current revision's hand-back is chosen by task, not file order",
+          rcm.handback_record(steps[0], root) is None and rcm.handback_record(steps[1], root)["task"] == "T-0403")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-qm", "old record with task")
+    base = rcm.baseline_revision(steps[0])
+    head = subprocess.run(["git", "-C", str(root), "log", "-1", "--format=%H", "--", str(old)], capture_output=True, text=True).stdout.strip()
+    check("T-2213 rev: the baseline for a revision's review is the commit of the superseded revision's hand-back",
+          base == head, f"{base} vs {head}")
+    tf = root / ".tasks/active/T-0403-x.md"
+    changed = rcm.bind_criterion(steps[1], "out2.md", "a" * 64)
+    body = tf.read_text()
+    check("T-2213: the review criterion names the output under review (changes its digest)",
+          changed and "**Output under review:** `out2.md` sha256 " + "a" * 64 in body, body)
+    again = rcm.bind_criterion(steps[1], "out2.md", "a" * 64)
+    rcm.bind_criterion(steps[1], "out2.md", "b" * 64)
+    body = tf.read_text()
+    check("T-2213: same output leaves the line alone; a new output replaces it (one line, never two)",
+          not again and body.count("Output under review") == 1 and "b" * 64 in body, body)
+    evd = root / ".context/reviews/evidence/T-0402"
+    evd.mkdir(parents=True, exist_ok=True)
+    (evd / "AC1-x.md").write_text('```reviewer-judgement\n{"ac_verdict": "not-met-fixable", "findings": [{"text": "fix D-2", "severity": "med"}], "conditions": [{"text": "c1", "verify": "v1"}]}\n```\n')
+    with open(root / ".context/reviews/verdicts.jsonl", "a") as fh:
+        fh.write(_json.dumps({"task": "T-0402", "ac": 1, "outcome": "amber", "evidence": [".context/reviews/evidence/T-0402/AC1-x.md"]}) + "\n")
+    ev, j = rcm.latest_findings(steps[0])
+    check("T-2214 round: newest non-green verdict yields its findings and conditions",
+          ev.endswith("AC1-x.md") and j["findings"][0]["text"] == "fix D-2" and j["conditions"][0]["verify"] == "v1", (ev, j))
+    with open(root / ".context/reviews/verdicts.jsonl", "a") as fh:
+        fh.write(_json.dumps({"task": "T-0402", "ac": 1, "outcome": "green"}) + "\n")
+    check("T-2214 round: a later green means nothing to remediate", rcm.latest_findings(steps[0]) == (None, None))
+    del os.environ["ROLE_CHAIN_ROOT"]
+
+real = Path(__file__).resolve().parent.parent / "docs/designs/agent-authorization-broker/role-chain.yaml"
+r = subprocess.run([sys.executable, str(SCRIPT), "status", str(real)], capture_output=True, text=True)
+check("real arc-008 chain v2 loads and lists 8 steps", r.returncode == 0 and r.stdout.count("T-2") >= 8, r.stdout + r.stderr)
+r = subprocess.run([sys.executable, str(SCRIPT), "round", str(real), "4", "--dry-run"], capture_output=True, text=True, timeout=30)
+check("round refuses --dry-run (it has no dry mode; it once ran for real)",
+      r.returncode == 2 and "no --dry-run" in r.stderr, r.stdout + r.stderr)
+import yaml  # noqa: E402
+real_d = yaml.safe_load(real.read_text())
+missing = [f for st in real_d["steps"] for f in ([st["prompt"]] if st.get("prompt") else [])
+           + [real_d[k] for k in ("rules", "common", "adapter", "profile")]
+           if not (real.parents[3] / f).exists()]
+check("every prompt file the real chain composes exists", not missing, missing)
+check("no executed prompt points at an upstream original", all("/upstream/" not in (st.get("prompt") or "") for st in real_d["steps"]))
+
+print(f"\n{PASS} passed, {FAIL} failed")
+sys.exit(1 if FAIL else 0)
+
+-----END FILE-----
+PEER-DATA>>>
