@@ -187,6 +187,23 @@ refuses them.
 project name) on the issue; nothing else from TermLink goes public. The full address stays in AEF's local
 ledger, used only to reach the project over the sidecar (F2, F3).
 
+4R.6 **F6 The relay is a single point of failure and a bottleneck.** Agent offered: (1) nothing lost, delays
+visible, AEF has no veto; (2) plus a direct fallback through a shared account; (3) accept as is.
+4R.6.a **Operator rethink (2026-11-02), revises F5:** the concern with accounts was the number of accounts, not
+tokens. One secondary GitHub account, only for creating and updating issues, shared with **trusted** peers who
+file and update directly; this also lets peers that test a PR send their results to it. Other peers go through
+the AEF relay. Under discussion: how the account is shared, and its permissions.
+4R.6.b Agent offered: (1) one account, a separate fine-grained token per trusted peer, scoped to issues and PR
+comments on this repo only (no push, no merge), revocable per peer; (2) one shared token; (3) only AEF holds a
+token. **Operator: "AEF holds at least — my AEF instance here holds at least [one], right?"** Read as: the
+operator's own AEF instance always holds a token of the secondary account (for the relay and the lifecycle);
+trusted peers get their own on top. **Operator: "Sounds good" (option 1, confirmed 2026-11-02).**
+4R.6.c Resulting model (revises 4R.5.b): one secondary GitHub account for issues and PR comments only; the
+operator's AEF instance holds a token; each trusted peer holds its own fine-grained token, scoped to issues and
+PR comments on this repo, revocable per peer; the trusted-peer list is an operator-owned policy file. Machine
+traffic leaves the operator's personal account. F1 (cleaning gate), F5 (project-id stamp) and F2 (lifecycle)
+apply to direct posts as well as relayed ones.
+
 ## 5 Glossary
 
 (filled as terms settle: contribution, PR, issue, relay, peer bot, source repo, mirror, landing)
