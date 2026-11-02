@@ -133,6 +133,11 @@ an unmerged PR runs a stranger's code (G-128).
 4.7.b **Operator: "That means the risk automatically gets increased, because it comes from external."**
 Requirement: a PR from outside the estate is assessed one risk level higher than the same change made by us
 (low → medium, medium → high, high stays high). Its testing depth and review strength follow the raised level.
+4.7.c **A7 Where deeper tests run before the merge** (operator, 2026-11-02): **option 1** — the review seats
+read the PR first (they do not run it); only if they find nothing alarming does testing start. Trusted peer
+testers then run the PR in a throwaway copy of their project, never the live one, and post WORKS / FAILS on the
+PR through the secondary account (4R.6.c). Higher risk means more testers and more scenarios. When T-5009 (own
+isolated runner) exists, deep tests move there.
 4.5 **A5 Task reference** (2026-11-02): **1 — intake task id plus issue number**, "T-4935 (#104): …". The
 commit-msg hook stays unchanged; the intake task file must be on `bleeding-edge` before the PR is opened.
 4.4 **A4 Who merges** (2026-11-02): **1 — only the operator, with the GitHub merge button.** AEF agents run the
