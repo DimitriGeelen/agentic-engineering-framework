@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-02T12:15:35Z
-last_update: 2026-11-02T12:49:11Z
+last_update: 2026-11-02T13:19:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -112,8 +112,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The injector types non-urgent mail only into the most recently active interactive session; when that session is busy, the mail waits, and an older idle session is never chosen instead
-- [ ] The hook's no-injector fallback claims unclaimed mail only in the most recently active interactive session
+- [x] The injector asks `termlink main am-i` for each candidate and types only into the session that answers main (non-urgent waits while it is busy; urgent bypasses only into it); not-main and unknown leave no target; a termlink without the verb keeps today's rule (`lib/sidecar/main_session.py:gate`, `inject.py`)
+- [x] The prompt hook surfaces nothing in a not-main session, shows one line on unknown, and its no-injector fallback claims only when the answer is main or unsupported (`hooks.py:prompt`)
 - [x] Tests with two sessions of one project (an older idle one, a newer busy one) show the older one never receives or surfaces the message, and the newer one does once it is ready; the existing sidecar tests stay green
 - [ ] `fw sidecar status` (or `alerts`) shows which session, if any, holds each pending message
 - [x] Where `termlink main am-i` is missing, the hook keeps today's delivery and says so once per session ("main-only delivery not active: termlink lacks main am-i"), with a test (010's ask, msg ba5835e1)
