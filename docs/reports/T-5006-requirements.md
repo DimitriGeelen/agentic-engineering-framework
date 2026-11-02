@@ -176,7 +176,10 @@ intake. Covered.
 4.18.h Unsupported cases: a PR without an issue, or against `master`, is refused with a one-line reason (A16,
 4.4.a). **Open:** a PR that is high risk (every outside PR is raised one level, 4.7.b) needs a rung-5 panel, and a
 rung-5 panel cannot be assembled today (two launchable worker kinds; the antigravity seat is T-4997). Put to the
-operator.
+operator. **Operator (2026-11-02): option 1 — it waits.** Low- and medium-risk outside PRs proceed; a high-risk
+one is labelled "waiting for review strength" until a rung-5 panel can run. T-4997 becomes a dependency of this
+arc. No step-down for outside PRs.
+4.18.i **Interview complete** (2026-11-02): Q1-Q18 answered or settled; review findings F1-F9 braided in.
 4.13 **A13 The old path** — answered by F8 (4R.8): `fw pickup send` for bugs and features is wrapped onto the new
 route; learnings and patterns stay on the sidecar.
 4.17 **A17 Migration** — answered by F8 (4R.8): forward only.
