@@ -941,7 +941,8 @@ it was built on; the checks, read review and field tests it reports MUST all be 
 the PR MUST withdraw the recommendation (label removed, withdrawal comment) until it is rebuilt for the new head.
 6.11.4.a Functional (security relevant) · A16, 4.7 ("at least it should have been tested"), codex 3, opencode 2 · P1 ·
 test.
-6.11.4.b What the operator merges must be what was tested. This does not make an early merge impossible (11.Q-4).
+6.11.4.b What the operator merges must be what was tested. This does not make an early merge impossible (11.Q-4); 12.8 adds the branch rule (R-64) as friction and the
+audit of every merge (R-65) as detection.
 6.11.4.c Given a PR recommended at commit X, when the contributor pushes commit Y, then at the next sync the
 recommendation is marked withdrawn and the ready-for-merge label is gone.
 
@@ -984,7 +985,7 @@ on the source repo.
 6.12.1.a Security invariant · 12.2, A2, A4, Mehdi points 1 and 6 · P1 · inspection.
 6.12.1.b On a public repo anyone can fork and open PRs; a collaborator could push past the operator's merge (12.2).
 6.12.1.c Given the source repo's collaborator list, when inspected, then no outside contributor is on it; and given
-Mehdi's pilot PR, when inspected, then it comes from a fork owned by his own account.
+Mehdi's pilot PR, when inspected, then it comes from a fork owned by their own account.
 6.12.1.d Holds against: 2.7.a (malicious contributor pushing past the merge). Residual: the repo owner adding a
 collaborator by hand; R-58 detects a resulting outside commit not merged through a PR.
 
@@ -1171,27 +1172,30 @@ check is partly covered by "the framework task check" in R-12; its full scope is
 
 ## 9 Drawings
 
-9.0 Each drawing is Mermaid, render-checked with the Mermaid command-line renderer on 2026-11-02 (all three rendered
-without error; D-1, D-2 and D-3 changed in 0.3 and re-checked the same day). A node or edge marked "provisional" shows
-an open point, not a decision. The numbered textual equivalent below each drawing carries the same meaning without the diagram.
+9.0 Each drawing is Mermaid, render-checked with the Mermaid command-line renderer and the system Chrome (round 1:
+2026-11-02; round 2: D-1, D-2 and D-3 redrawn in 0.4 and re-checked on 2026-11-02, all without error). A node or edge
+marked "provisional" shows an open point, not a decision. The numbered textual equivalent below each drawing carries
+the same meaning without the diagram.
 
 ### 9.1 Drawing D-1: context view (structure)
 
 ```mermaid
 flowchart LR
   OP["Operator"]
-  MC["Outside contributor: Mehdi, pilot"]
+  MC["Outside contributor: own GitHub account, no rights on the repo"]
   TP["Trusted peer agents"]
   PP["Other peer agents"]
-  AEF["AEF agents: relay, review loop, sync"]
+  AEF["AEF agents: relay, review loop, sync, audit"]
   CON["Consumer projects"]
   subgraph GH["GitHub, public"]
-    SRC["Source repo: bleeding-edge, master, issues, PRs"]
+    SRC["Source repo: bleeding-edge, master, issues, PRs; branch rule"]
     CI["GitHub-hosted runners"]
     PVR["Private vulnerability reports"]
   end
+  SA["Secondary account: not a collaborator, classic token per holder"]
+  OPA["Operator's account: merge, lifecycle steps"]
+  TH["AEF isolated test hosts, T-5009"]
   OD["OneDev mirror, private"]
-  OWN["Own isolated runner, later"]
   subgraph ADV["Adversaries"]
     X1["2.7.a malicious contributor"]
     X2["2.7.b compromised peer token"]
@@ -1199,51 +1203,62 @@ flowchart LR
     X4["2.7.d hurried approver"]
     X5["2.7.e mirror sync"]
   end
-  MC -->|"fork PR, signed-off commits"| SRC
+  MC -->|"fork PR with test and evidence, signed-off commits"| SRC
   SRC -->|"PR code to check"| CI
   CI -->|"check results"| SRC
-  OP -->|"merge button, approvals"| SRC
-  AEF -->|"recommendations, relayed issues, lifecycle comments"| SRC
-  TP -->|"direct posts, WORKS or FAILS; provisional, 11.Q-1, 11.Q-5"| SRC
-  PP -->|"reports over sidecar"| AEF
-  TP -->|"reports and verdicts over sidecar"| AEF
-  AEF -->|"check requests, issue number or held"| PP
-  AEF -->|"one-screen recommendation, held reports"| OP
+  SRC -->|"unmerged PR code, after clean read"| TH
+  TH -->|"deeper test results"| AEF
+  OP --> OPA
+  OPA -->|"merge button, if checks and AEF review check are green"| SRC
+  AEF -->|"labels, close, reopen, hide, AEF review check; identity of the check provisional, 10.33"| OPA
+  AEF -->|"relayed issues, recommendations, comments"| SA
+  TP -->|"fixed-form verdicts only"| SA
+  SA -->|"issues and comments, never push or merge"| SRC
+  PP -->|"reports and verdicts over sidecar"| AEF
+  TP -->|"free-text reports, verdict confirmations over sidecar"| AEF
+  AEF -->|"be-tag check requests, issue number or held"| PP
+  AEF -->|"be-tag check requests"| TP
+  AEF -->|"one-screen recommendation, held reports, alarms"| OP
   SRC -->|"one-way mirror"| OD
-  SRC -->|"releases from master"| CON
+  SRC -->|"releases from master, blocked by an open FAILS"| CON
   MC -.->|"security report"| PVR
-  SRC -.->|"deep tests, later"| OWN
   X1 -.-> SRC
-  X2 -.-> SRC
+  X2 -.-> SA
   X3 -.-> AEF
   X4 -.-> OP
   X5 -.-> SRC
 ```
 
 9.1.1 Textual equivalent of D-1:
-9.1.1.a The GitHub source repo (`bleeding-edge`, `master`, issues, PRs) is the centre (R-1). GitHub-hosted runners and
-private vulnerability reporting sit beside it on GitHub.
-9.1.1.b The outside contributor sends a fork PR with signed-off commits to the source repo (R-9 to R-11), and sends
-security reports to private vulnerability reporting only (R-35).
-9.1.1.c The source repo sends PR code to GitHub-hosted runners; the runners send check results back to the PR
-(R-12, R-13). Deep tests move to the own isolated runner later (R-15, R-22).
-9.1.1.d The operator merges with the merge button and gives approvals on the source repo (R-8, R-25).
-9.1.1.e AEF agents write recommendations, relayed issues and lifecycle comments to the source repo through the
-secondary account (R-24, R-27, R-37, R-41), and send the operator one-screen recommendations and held reports
-(R-24, R-30).
-9.1.1.f Trusted peers post directly and post WORKS / FAILS to the source repo with their own token (R-18, R-38;
-provisional: whether direct posts stay as they are is 11.Q-1, and which kind of token is 11.Q-5), and
-send reports and verdicts to AEF over the sidecar. Other peers report to AEF over the sidecar only (R-27); AEF sends
-them check requests and an issue number or a held notice (R-30, R-42).
-9.1.1.g The source repo is mirrored one way to OneDev (R-2); consumers receive releases from `master` (R-6).
-9.1.1.h Adversaries and where they act: 2.7.a on the source repo through a PR; 2.7.b on the source repo through a
-peer token; 2.7.c inside AEF; 2.7.d at the operator's merge; 2.7.e on the source repo through the mirror sync.
+9.1.1.a The GitHub source repo (`bleeding-edge`, `master`, issues, PRs, and the branch rule on `bleeding-edge`) is the
+centre (R-1, R-64). GitHub-hosted runners and private vulnerability reporting sit beside it on GitHub.
+9.1.1.b The outside contributor works from their own GitHub account with no rights on the repo (R-59) and sends a fork
+PR carrying the test and the evidence, with signed-off commits (R-9 to R-11, R-62); security reports go to private
+vulnerability reporting only (R-35).
+9.1.1.c The source repo sends PR code to GitHub-hosted runners, which send check results back to the PR (R-12, R-13,
+R-54). After a clean read review, unmerged PR code goes to AEF's isolated test hosts for deeper tests, whose results go
+to AEF (R-17, R-22, R-53). No other estate host and no peer project receives unmerged outside code.
+9.1.1.d The operator merges through their own account, with the merge button, only when the checks and the AEF review
+check are green, unless they override (R-8, R-64, R-65).
+9.1.1.e AEF writes relayed issues, recommendations and comments through the secondary account (R-27, R-37), and
+performs lifecycle steps (labels, close, reopen, hiding a post) and the AEF review check through the operator's account
+(R-37, R-41, R-52, R-64; which identity posts the check is provisional, 10.33). AEF sends the operator one-screen
+recommendations, held reports and alarms (R-24, R-30, R-58, R-65).
+9.1.1.f The secondary account is not a collaborator: each holder has its own classic token; it opens issues and
+comments, never pushes or merges (R-37, R-38). Trusted peers post fixed-form verdicts only through it (R-60) and send
+free-text reports and the confirmation of each verdict to AEF over the sidecar (R-26, R-61). Other peers report to AEF
+over the sidecar only (R-27). AEF sends both kinds of peer be-tag check requests after a merge, and other peers an issue
+number or a held notice (R-30, R-42, R-63).
+9.1.1.g The source repo is mirrored one way to OneDev (R-2); consumers receive releases from `master`, and an open
+FAILS on a merged outside PR blocks the release (R-6, R-63).
+9.1.1.h Adversaries and where they act: 2.7.a on the source repo through a PR; 2.7.b through a token of the secondary
+account; 2.7.c inside AEF; 2.7.d at the operator's merge; 2.7.e on the source repo through the mirror sync.
 
 ### 9.2 Drawing D-2: main flow, with the refusal path and the relayed peer report (behaviour)
 
 ```mermaid
 flowchart TD
-  subgraph RELAY["Relayed peer report"]
+  subgraph RELAY["Relayed peer report, free text"]
     R1["Peer reports to AEF over sidecar"] --> R2["Recorded locally on arrival"]
     R2 --> R3{"Security report?"}
     R3 -->|yes| R4["Private route, no public issue"]
@@ -1253,11 +1268,18 @@ flowchart TD
     R7 -->|"AEF rewrites"| R5
     R7 -->|"limit passed"| R8["Surfaces to operator by name"]
     R6 -->|clean| R9["Matched against tasks and tickets"]
-    R9 --> R10["Issue filed or linked, sender gets issue number"]
+    R9 --> R10["Issue filed or linked through the secondary account, sender gets issue number"]
+  end
+  subgraph DIRECT["Direct verdict by a trusted peer"]
+    V01["Fixed-form verdict posted through the secondary account"] --> V02{"Scan: hit or free text?"}
+    V02 -->|yes| V03["Hidden, operator alerted"]
+    V02 -->|no| V04{"Same verdict over sidecar from that project?"}
+    V04 -->|no| V05["Labelled unconfirmed, changes nothing"]
+    V04 -->|yes| V06["Counts as a verdict"]
   end
   R10 --> I1
-  I1["Issue accepted, intake task on bleeding-edge"] --> P1["Contributor opens PR"]
-  P1 --> P2{"Base bleeding-edge and one issue linked?"}
+  I1["Issue accepted, intake task on bleeding-edge"] --> P1["Contributor opens PR from own fork"]
+  P1 --> P2{"Base bleeding-edge, one issue linked, test and evidence present?"}
   P2 -->|no| F1["AEF drafts one-line refusal"]
   P2 -->|yes| C1["GitHub checks on every PR: tests, audit, lint, task check; DCO check provisional, 10.6"]
   C1 -->|red| C2["Contributor changes the PR"]
@@ -1269,11 +1291,11 @@ flowchart TD
   K1 --> K2{"Required review rung available?"}
   K2 -->|no| K3["Labelled waiting for review strength; slot use provisional, 10.12"]
   K3 -->|"panel available"| K2
-  K2 -->|yes| V1["Review seats read the PR, do not run it"]
-  V1 -->|alarming| F1
-  V1 -->|clean| T1["Trusted testers run it in throwaway copies; isolation provisional, 10.9 and 11.Q-2"]
+  K2 -->|yes| RV["Review seats read the PR, do not run it"]
+  RV -->|alarming| F1
+  RV -->|clean| T1["Deeper tests on AEF isolated test hosts, if the risk calls for them; before T-5009 exists provisional, 10.31"]
   T1 -->|FAILS| C2
-  T1 -->|WORKS| D1["One-screen AEF recommendation for the head commit"]
+  T1 -->|WORKS| D1["One-screen recommendation for the head commit, posted also as the AEF review check"]
   D1 -->|"new push: recommendation withdrawn"| C1
   D1 --> D2{"Operator decides"}
   D2 -->|change| C2
@@ -1281,15 +1303,21 @@ flowchart TD
   F1 --> F2{"Operator approves refusal?"}
   F2 -->|yes| F3["One line posted, PR closed"]
   F2 -->|no| D1
-  D2 -->|merge| M1["Merged into bleeding-edge on GitHub"]
+  D2 -->|merge| BR{"Branch rule: checks green and AEF review check says merge?"}
+  BR -->|yes| M1["Merged into bleeding-edge on GitHub"]
+  BR -->|"no, owner overrides"| M1
+  M1 --> AU["Audit: merges without both conditions, overrides, outside commits not merged through a PR"]
   M1 --> M2["Mirrored to OneDev"]
-  M1 --> M3["be-tag, source project asked to check"]
-  M3 -->|FAILS| I1
+  M1 --> M3["be-tag, peers field-test, source project asked to check"]
+  V06 --> M3
+  M3 -->|FAILS| M6["Issue reopened, release to master blocked"]
+  M6 --> I1
   M3 -->|WORKS| M5["Issue confirmed"]
-  M1 --> M4["Goes out with the next release: master fast-forward"]
+  M3 -->|"no verdict yet: blocks release? provisional, 10.32"| M4
+  M5 --> M4["Goes out with the next release: master fast-forward"]
 ```
 
-9.2.1 Textual equivalent of D-2, relayed peer report:
+9.2.1 Textual equivalent of D-2, relayed peer report (all free text takes this route, R-26):
 9.2.1.a A peer reports to AEF over the sidecar; AEF records the report locally on arrival (R-30, R-31, R-56).
 9.2.1.b A security report goes to the private route and never becomes a public issue (R-35).
 9.2.1.c Otherwise AEF rewrites the report from the fixed template and stamps the project id, or the placeholder for
@@ -1297,11 +1325,17 @@ a project that opted out (R-28, R-33, R-34).
 9.2.1.d The cleaning gate checks the draft. On any hit, or if it cannot classify, the report is held with its reason
 visible and the sender is told; AEF rewrites and resubmits; past the held limit the report surfaces to the operator by
 name (R-29, R-30).
-9.2.1.e A clean draft is matched against tasks and tickets (R-45, R-46), then filed or linked; the sender receives the
-issue number. The issue then enters the main flow at 9.2.2.a.
+9.2.1.e A clean draft is matched against tasks and tickets (R-45, R-46), then filed or linked through the secondary
+account; the sender receives the issue number. The issue then enters the main flow at 9.2.2.a.
+9.2.1.f Direct verdict: a trusted peer posts a fixed-form verdict through the secondary account (R-60). AEF scans it
+right after it appears; a hit or any free text gets it hidden and the operator alerted (R-52). Otherwise it counts only
+when the same verdict arrives over the sidecar from the stamped project; until then it is labelled unconfirmed and
+changes nothing (R-61). A confirmed verdict counts in the field test step (9.2.4).
 9.2.2 Textual equivalent of D-2, main flow:
-9.2.2.a The issue is accepted and its intake task is on `bleeding-edge` (R-10). The contributor opens a PR.
-9.2.2.b If the base is not `bleeding-edge`, or no single issue is linked, AEF drafts a one-line refusal (R-6, R-9).
+9.2.2.a The issue is accepted and its intake task is on `bleeding-edge` (R-10). The contributor opens a PR from a fork
+of their own account (R-59).
+9.2.2.b If the base is not `bleeding-edge`, no single issue is linked, or the test and evidence are missing, AEF drafts
+a one-line refusal (R-6, R-9, R-62).
 9.2.2.c The GitHub checks run on every PR (tests, audit, lint, task check), whatever the queue (R-12, R-54); on red the
 contributor changes the PR and the checks run again. Where the DCO check runs is provisional (10.6, R-11).
 9.2.2.d With green checks, if three PRs already wait for the operator, the PR is labelled "waiting" and not reviewed
@@ -1310,17 +1344,21 @@ until a slot frees (R-23).
 PR is labelled "waiting for review strength" until it is (R-21); whether it holds a slot meanwhile is provisional
 (10.12).
 9.2.2.f Review seats read the PR without running it; if they find anything alarming, AEF drafts a refusal (R-17).
-9.2.2.g If the read is clean, trusted testers run the PR in throwaway copies (R-18, R-19); the isolation they need is
-provisional (10.9, 11.Q-2, R-53). FAILS sends it back to the contributor; WORKS leads to the one-screen recommendation
-for the head commit (R-20, R-24, R-55). A new push withdraws the recommendation and the PR goes back to the checks.
-9.2.2.h The operator decides: change (back to the contributor), refuse, or merge (R-8).
+9.2.2.g If the read is clean and the risk level calls for deeper tests, they run on AEF's isolated test hosts (R-19,
+R-22, R-53); what happens before those hosts exist is provisional (10.31). FAILS sends the PR back to the contributor;
+WORKS leads to the one-screen recommendation for the head commit, posted also as the AEF review check (R-20, R-24, R-55,
+R-64). A new push withdraws the recommendation and the PR goes back to the checks.
+9.2.2.h The operator decides: change (back to the contributor), refuse, or merge (R-8). A merge passes the branch rule
+(checks green and the AEF review check saying merge), or the owner overrides it (R-64).
 9.2.3 Textual equivalent of D-2, refusal path: every refusal, from intake, the read review or the operator's decision,
 is a one-line draft by AEF that goes to the operator; if approved, the line is posted and the PR closed; if not, the
 decision returns to the recommendation (R-25).
 9.2.4 Textual equivalent of D-2, after the merge: the merge lands on GitHub `bleeding-edge` (R-1) and is mirrored to
-OneDev (R-2); it goes out with the next release, a fast-forward of `master` (R-5, R-6), which is not conditioned on the
-source project's check. A be-tag is cut and the source project is asked to check (R-42); WORKS confirms the issue;
-FAILS reopens it (R-43).
+OneDev (R-2). The audit flags any merge without both conditions, every override, and any outside commit that did not
+arrive through an operator-merged PR (R-58, R-65). A be-tag is cut; peers field-test it and the source project is asked
+to check (R-42, R-63). WORKS confirms the issue; FAILS reopens it (R-43) and blocks the release to `master` (R-63).
+Whether a missing verdict also blocks the release is provisional (10.32). The release is a fast-forward of `master`
+(R-5, R-6).
 
 ### 9.3 Drawing D-3: lifecycle of a contribution (behaviour)
 
@@ -1339,8 +1377,8 @@ stateDiagram-v2
   Linked --> Closed : main ticket closed
   note right of Linked : with own pending check, provisional (open question 10.22)
   Accepted --> Fixed : fixed by our own work
-  Accepted --> PROpen : outside PR opened
-  PROpen --> RefusalDrafted : no issue, or base master
+  Accepted --> PROpen : outside PR opened from own fork
+  PROpen --> RefusalDrafted : no issue, base master, or no test and evidence
   PROpen --> Checked : checks green
   Checked --> PROpen : new push
   Checked --> Waiting : three PRs already waiting
@@ -1349,20 +1387,23 @@ stateDiagram-v2
   UnderReview --> WaitingStrength : rung not available
   WaitingStrength --> UnderReview : rung available
   UnderReview --> RefusalDrafted : read review alarming
-  UnderReview --> FieldTest : read review clean
-  note right of FieldTest : isolation provisional (open question 10.9)
-  FieldTest --> PROpen : FAILS, contributor changes
-  FieldTest --> Recommended : WORKS
+  UnderReview --> DeepTest : read clean, risk calls for deeper tests
+  UnderReview --> Recommended : read clean, no deeper tests needed
+  note right of DeepTest : on AEF isolated test hosts, before T-5009 exists provisional (10.31)
+  DeepTest --> PROpen : FAILS, contributor changes
+  DeepTest --> Recommended : WORKS
   Recommended --> PROpen : new push, recommendation withdrawn
   Recommended --> PROpen : operator asks for change
   Recommended --> RefusalDrafted : operator chooses refuse
   RefusalDrafted --> Refused : operator approves refusal
   RefusalDrafted --> PROpen : operator does not approve
-  Recommended --> Merged : operator merges
+  Recommended --> Merged : operator merges, branch rule met or overridden
   Refused --> [*]
   Merged --> Fixed : merged on bleeding-edge
-  Fixed --> Released : release
-  Fixed --> Accepted : FAILS reopens
+  Fixed --> FieldTest : be-tag cut, peers asked to check
+  FieldTest --> Accepted : FAILS reopens, release blocked
+  FieldTest --> Released : release, no open FAILS
+  note right of FieldTest : only sidecar-confirmed verdicts count, whether a missing verdict blocks the release is provisional (10.32)
   Released --> Accepted : FAILS reopens
   Released --> Closed : WORKS, or 14 days with no pending check
   Closed --> Accepted : FAILS reopens
@@ -1371,30 +1412,38 @@ stateDiagram-v2
 
 9.3.1 Textual equivalent of D-3 (states, then the allowed transitions):
 9.3.1.a States: Received, Processing, Held, Private, Filed, Linked, Accepted, PROpen, Checked, Waiting, UnderReview,
-WaitingStrength, FieldTest, Recommended, RefusalDrafted, Refused, Merged, Fixed, Released, Closed.
+WaitingStrength, DeepTest, Recommended, RefusalDrafted, Refused, Merged, Fixed, FieldTest, Released, Closed.
 9.3.1.b Received → Private for a security report, which ends there publicly (R-35). Received → Processing when AEF
 drafts from the template; Processing → Held when the cleaning gate refuses, and back when AEF rewrites (R-29, R-30);
 Processing → Filed when the gate passes (R-32's states).
 9.3.1.c Filed → Linked on a high-confidence match (R-46); Linked → Closed when the main ticket closes (R-47; for a
 linked ticket with its own pending check this transition is provisional, 10.22); Linked → Accepted, unlinked, when the
 linked reporter's own check FAILS (R-48). Filed → Accepted when intake accepts.
-9.3.1.d Accepted → Fixed when our own work fixes it; Accepted → PROpen when an outside PR is opened.
-9.3.1.e PROpen → RefusalDrafted when there is no issue or the base is `master` (R-6, R-9); PROpen → Checked when the
-checks are green (R-12); Checked → PROpen on a new push.
+9.3.1.d Accepted → Fixed when our own work fixes it; Accepted → PROpen when an outside PR is opened from the
+contributor's own fork (R-59).
+9.3.1.e PROpen → RefusalDrafted when there is no issue, the base is `master`, or the test and evidence are missing
+(R-6, R-9, R-62); PROpen → Checked when the checks are green (R-12); Checked → PROpen on a new push.
 9.3.1.f Checked → Waiting when three PRs already wait, and back when a slot frees (R-23); Checked → UnderReview when a
 slot is free.
 9.3.1.g UnderReview → WaitingStrength when the required rung is not available, and back when it is (R-21);
-UnderReview → RefusalDrafted when the read review is alarming (R-17); UnderReview → FieldTest when the read review is
-clean (R-17, R-18; isolation provisional, 10.9).
-9.3.1.h FieldTest → PROpen on FAILS (the contributor changes the PR); FieldTest → Recommended on WORKS (R-20, R-24).
+UnderReview → RefusalDrafted when the read review is alarming (R-17); UnderReview → DeepTest when the read is clean and
+the risk level calls for deeper tests, on AEF's isolated test hosts (R-17, R-19, R-22; before T-5009 exists
+provisional, 10.31); UnderReview → Recommended when the read is clean and no deeper tests are needed.
+9.3.1.h DeepTest → PROpen on FAILS (the contributor changes the PR); DeepTest → Recommended on WORKS (R-20, R-24).
 9.3.1.i Recommended → PROpen on a new push, which withdraws the recommendation (R-55), or when the operator asks for a
-change; → RefusalDrafted when the operator chooses to refuse; → Merged when the operator merges (R-8).
+change; → RefusalDrafted when the operator chooses to refuse; → Merged when the operator merges, with the branch rule
+met or overridden (R-8, R-64; an override is audited, R-65).
 9.3.1.j RefusalDrafted → Refused only when the operator approves the refusal; → PROpen when the operator does not
 (R-25). No refusal is posted without that approval.
-9.3.1.k Merged → Fixed (on `bleeding-edge`); Fixed → Released at release; Fixed or Released → Accepted when a FAILS
-verdict reopens it (R-43); Released → Closed on WORKS, or after 14 days with no pending check (R-44); Closed →
-Accepted when a FAILS verdict reopens it (R-43).
+9.3.1.k Merged → Fixed (on `bleeding-edge`); Fixed → FieldTest when the be-tag is cut and peers are asked to check
+(R-42, R-63); FieldTest → Accepted on FAILS, which reopens the issue and blocks the release (R-43, R-63); FieldTest →
+Released at a release with no open FAILS. Only sidecar-confirmed verdicts count (R-61); whether a missing verdict blocks
+the release is provisional (10.32). Released → Accepted when a FAILS verdict reopens it (R-43); Released → Closed on
+WORKS, or after 14 days with no pending check (R-44); Closed → Accepted when a FAILS verdict reopens it (R-43).
 9.3.1.l Ends: Refused, Closed, and (for the public record) Private.
+9.3.1.m Deviation from 0.3, recorded: an issue fixed by our own work now also passes FieldTest before Released, since
+R-42 asks the source project to check at fixed; for own fixes a FAILS does not block the release unless the normal
+release rules say so (R-63 covers merged outside PRs only).
 
 ## 10 Open questions
 
