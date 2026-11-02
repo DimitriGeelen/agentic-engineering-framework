@@ -88,6 +88,13 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 - **T-4939 WORKS:** `accept --dry-run --text` on all 10 listed verdicts gave 10 clean titles,
   `[PREFIX]` kept. Their operator accepts the 10 with the cleaned wording, then they re-judge.
 
+### be.25: 050-email-archive (msg 6475edfa), 2026-11-02
+- **WORKS.** be.20 → be.25 (22647d13a), in their HOME-less agent shell, no operator help.
+- **T-4993 WORKS:** `fw upgrade` ran to the end without HOME; `fw doctor` exits 0 there (12 WARN, 0 FAIL).
+- **T-4994 WORKS:** they dropped their own `lib/review.sh` patch and took ours verbatim; their guard test pins the derived verb, the inert `DECISION` fallback and no `go|no-go|defer` pipe.
+- The other 8 local patches re-merged clean; guard suites green; `fw grants show` still lists their 3 grants and `never_write`; Watchtower 200.
+- Their note (not ours): a jest suite hung once on startup and passed on retry.
+
 ### be.20: 050-email-archive (cedc1b89, f7527742), 2026-11-02
 - **Upgrade: FAILS on a HOME-less agent shell (filed T-4993).** be.16 → be.20 (99f36914b). `fw upgrade` died at step 4c/9 with `HOME: unbound variable` (lib/upgrade.sh:2623) after the vendor copy, so `.framework.yaml` was not updated. `fw doctor` dies the same way (bin/fw:2553). Their operator re-ran it with HOME set and it completed. Everything else worked:
   - the dry run named exactly their 10 local edits, and the real run applied them;
