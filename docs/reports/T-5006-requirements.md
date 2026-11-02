@@ -148,7 +148,15 @@ fixable). Each finding is put to the operator one at a time; the answer becomes 
 
 4R.1 **F1 Cleaning is too weak.** `lib/issues.py:_scrub` (line 1441) replaces a local-host regex and this
 machine's own hostname with `[host]`; its docstring says names it cannot recognise are not caught. It runs only on
-release evidence (line 1521), never on issue bodies. Under discussion.
+release evidence (line 1521), never on issue bodies.
+4R.1.a **Operator (2026-11-02): rewrite fresh** (option 1). AEF never copies a peer's text; it writes the issue
+from a fixed template; the cleaner is a gate that refuses on any hit, never a filter that repairs.
+4R.1.b **Operator: "What I do want to prevent: oh, it's not good enough, we ping it back and it disappears in the
+void."** Recorded as a requirement: a refusal never loses a report. Every peer report is recorded locally on
+arrival, before any public step; a refused draft stays in a visible "held" state with its reason; AEF rewrites
+it; a report still held after a set time (or attempts) surfaces to the operator by name (operator pending,
+Watchtower); the sending project is told either the issue number or that it is held and why. Nothing is ever
+bounced back to the sender as the only copy.
 
 ## 5 Glossary
 
