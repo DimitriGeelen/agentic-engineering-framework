@@ -216,6 +216,17 @@ the link in the main ticket, and when the main ticket is closed, closes all link
 4R.7.a Agent's view: agreed, with two refinements under discussion — (a) a linked reporter whose check FAILS
 reopens their own ticket (unlinked), because the symptom may differ; (b) a weak match is never linked
 silently: high confidence links, medium confidence posts "possible duplicate of #N" for the operator.
+4R.7.b **Operator: option 1 — the design plus both refinements.** Matching runs in `fw issues sync` on every new
+ticket (relayed and direct alike), against tasks and tickets, using the fabric, vector and BM25 search.
+
+4R.8 **F8 No migration plan.** **Operator (2026-11-02): option 1 — forward only, old command wrapped.** The 82
+processed pickups stay (each became a task); the 4 auto-deferred are filed on GitHub when their blocker clears;
+`fw pickup send` for bug reports and feature proposals routes to the new filing command (direct for trusted
+peers, relay for the rest); learnings and patterns stay on the sidecar; the GitHub issue templates ask for a
+cleaned description and the project id, not raw `fw doctor` output or logs.
+
+4R.9 **F9 "Fixed" must be tied to the source repo** (codex 8). Dissolved by A3: GitHub is the source repo, so a
+fix merged there is the authoritative one.
 
 ## 5 Glossary
 
