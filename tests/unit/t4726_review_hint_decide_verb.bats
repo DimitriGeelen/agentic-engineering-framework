@@ -4,7 +4,8 @@
 # The verb was hard-coded to `go`, so a NO-GO recommendation produced a
 # ready-to-paste GO (TermLink T-2958: three NO-GO -> GO records). The verb now
 # comes from the Recommendation's parsed verdict (web.shared.extract_recommendation);
-# anything it cannot map prints the literal placeholder `go|no-go|defer`.
+# anything it cannot map prints the inert placeholder `DECISION` (T-4994: it was `go|no-go|defer`,
+# which bash runs as a pipeline whose first stage is a GO).
 
 load ../test_helper
 
@@ -99,20 +100,22 @@ _decide_line() {
     [[ "$output" == *"inception decide T-9704 no-go \\" ]]
 }
 
-@test "T-4726: unparseable verdict -> literal go|no-go|defer placeholder" {
+@test "T-4726/T-4994: unparseable verdict -> inert DECISION placeholder, no pipe" {
     _make_inception T-9705 "**Recommendation:** SHIP IT maybe
 
 **Rationale:** the author never wrote a verdict token the parser knows."
     run _decide_line T-9705
     [ "$status" -eq 0 ]
-    [[ "$output" == *"inception decide T-9705 go|no-go|defer \\" ]]
+    [[ "$output" == *"inception decide T-9705 DECISION \\" ]]
+    [[ "$output" != *"|"* ]]
 }
 
 @test "T-4726: no Recommendation line -> placeholder and the fallback note" {
     _make_inception T-9706 "The author wrote prose here but never a Recommendation line at all, which is long enough to count as content."
     cd "$PROJECT_ROOT"
     run bash -c 'FW_ALLOW_UNREADY_HANDOFF=1 FW_ALLOW_EMPTY_RECOMMENDATION=1 "$FRAMEWORK_ROOT/bin/fw" task review T-9706 2>&1'
-    [[ "$output" == *"inception decide T-9706 go|no-go|defer \\"* ]]
+    [[ "$output" == *"inception decide T-9706 DECISION \\"* ]]
+    [[ "$output" == *"replace DECISION with go, no-go or defer"* ]]
     [[ "$output" == *"No \`**Recommendation:**\` line found"* ]]
     [[ "$output" != *"inception decide T-9706 go \\"* ]]
 }

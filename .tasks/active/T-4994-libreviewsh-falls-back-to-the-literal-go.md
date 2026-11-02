@@ -9,10 +9,10 @@ description: >
   DECISION plus a warning instead. Align upstream: an inert placeholder and a warning,
   never a shell metacharacter in a pasteable command.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-01T23:25:06Z
-last_update: '2026-11-01T23:30:58Z'
+last_update: 2026-11-02T07:04:01Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,20 +89,20 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 050-email-archive (msg cedc1b89) re-carried their T-2285 patch onto be.20 and hit a conflict in `lib/review.sh`. Our fallback verb is the literal `go|no-go|defer`; theirs is the inert token `DECISION` plus a warning.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** when an inception's Recommendation has no verdict the parser can map, `fw task review` prints `fw inception decide T-X go|no-go|defer --rationale "..."`, a line meant for pasting. Pasted into bash, the `|` characters make it a pipeline (`fw … go`, piped into a command named `no-go`, and so on), and the first stage runs a GO decision.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the fallback is an inert placeholder that no shell runs as a decision, plus a plain warning.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the line reads `fw inception decide T-X DECISION ...`; pasted, `fw inception decide` refuses `DECISION`; a warning line says to replace it with go, no-go or defer; mapped verdicts are unchanged.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `lib/review.sh` falls back to `DECISION` (no shell metacharacter) and prints a warning line naming go, no-go and defer; mapped verdicts are unchanged
+- [ ] `tests/unit/t4726_review_hint_decide_verb.bats` updated: the placeholder is `DECISION`, the warning is printed, and no `|` appears in the decide line; `fw inception decide T-X DECISION` is refused; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -385,3 +385,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4994-libreviewsh-falls-back-to-the-literal-go.md
 - **Context:** Initial task creation
+
+### 2026-11-02T07:04:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
