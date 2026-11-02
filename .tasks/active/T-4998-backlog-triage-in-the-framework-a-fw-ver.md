@@ -73,6 +73,11 @@ Backlogs only grow: capturing a task has an owner and a moment, pruning has neit
   - The shape: batches of about 10 tasks, each with a summary, evidence and the agent's proposal. The operator answers with six permanent choices: Prioritize, Keep, Park, Drop, Close (finished work), Tell me more.
   - In batch 1 the operator overrode the agent on 5 of 7 questions (three tasks the agent proposed to drop or park were prioritized). So proposals are never applied automatically, and no expiry may drop a task silently.
 - **010 (msg 10650d93; their T-3649).** Their page is built as a registered local change to our `web/` (a triage blueprint and template, plus one registration line), so AEF can lift it as-is. They will send the done-not-closed pattern (which evidence held, which gates refused, why) once their closers finish 56 agent-closable tasks.
+- **010's done-not-closed pattern (msg 2ebebae0, their T-3648):** four reader agents marked 56 tasks "done, nothing left for a human". Two closer agents re-checked the evidence and closed 43 through the normal gates (no force, no skip).
+  - **13 (23%) were NOT done on a second look:** a criterion with no record behind it, a partial fix, a defect still in code that a probe failed to reproduce, a filing never posted, a follow-up step not visibly done.
+  - **Lesson:** a first-pass "done" must be re-verified per criterion before closing. The 77% that held still needed honest fills: 16 four-part Contexts, 10 RCAs, 5 Evolution entries, 8 real verification lines.
+  - **Their page:** Watchtower `/triage` (their T-3649), using 055's six-choice pattern, as a registered local change that AEF can lift.
+  - **Gate rough edges they hit (none bypassed):** filed as T-5002 to T-5005.
 - **Framework gaps found:**
   1. Tasks have no honest non-completed end. The only statuses are captured, started-work, issues and work-completed; about 121 of 055's completed tasks say in their text that they were superseded, obsolete or dropped. A `dropped`/`superseded` ending (with a reason) is likely needed.
   2. `revisit_at` exists, but no 055 task used it, and no CLI verb sets it (T-2865).
