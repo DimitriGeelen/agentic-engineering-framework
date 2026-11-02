@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-02T14:02:18Z
-last_update: 2026-11-02T14:03:56Z
+last_update: 2026-11-02T14:18:42Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,9 +93,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The requirements document has a Glossary, Requirements R-n (each with type, source, rationale, priority, verification method and at least one acceptance criterion), Conflicts, and Earlier requirements (Mehdi's points 1-8 each kept, changed or dropped)
-- [ ] Every requirement saying something MUST be impossible names the adversary it holds against (stakeholders 2.7.a-e)
-- [ ] Drawings D-1 (context), D-2 (main flow including the refusal path) and D-3 (lifecycle of a contribution) are present as Mermaid blocks, each with a numbered caption and a textual equivalent
+- [x] The requirements document has a Glossary, Requirements R-n (each with type, source, rationale, priority, verification method and at least one acceptance criterion), Conflicts, and Earlier requirements (Mehdi's points 1-8 each kept, changed or dropped)
+- [x] Every requirement saying something MUST be impossible names the adversary it holds against (stakeholders 2.7.a-e)
+- [x] Drawings D-1 (context), D-2 (main flow including the refusal path) and D-3 (lifecycle of a contribution) are present as Mermaid blocks, each with a numbered caption and a textual equivalent
 - [ ] An independent review of the step-1 output is recorded, and its findings are dispositioned in the document
 
 ### Human
