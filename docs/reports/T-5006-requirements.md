@@ -1412,3 +1412,20 @@ and PRs; it cannot push or merge. The page covers organisation repos only.
 merges (the rulesets page does not say, 10.29); whether a GitHub App can hold one revocable key per holder; whether
 fork PRs get no secrets and a read-only token by default (stated by opencode 5; R-54 pins it either way); whether the
 account's security log records which token wrote a post.
+
+## 12 Operator dialogue after round 1 (2026-11-02)
+
+12.1 **11.Q-5 background.** The operator asked for more background. The agent explained, with GitHub's documentation:
+(a) a personal-account repo has no "issues only" collaborator role; triage exists only for organisation repos;
+(b) fine-grained tokens cannot write to a public repo owned by another account; (c) classic tokens can, but only
+with the rights the account itself has there; (d) on a public repo any GitHub user may open issues and comment.
+Combined: a secondary account that is NOT a collaborator, holding one classic token per trusted peer, can open
+issues and comment like any outside user and can never push or merge; lifecycle steps (labels, close, reopen) stay
+with AEF on the operator's account, as today. The agent added this as a fourth option and recommended it (no repo
+move); option B (move to an organisation) remains the clean long-term route. **Q-5 still open.**
+12.2 **Outside contributors' accounts.** Operator: "We also need an account for external collaborators, like
+Mehdi." Agent: outside contributors use their own GitHub accounts; fork + PR + issues need no rights on the repo;
+triage would need an organisation; collaborator would let them push past the operator's merge. **Operator: "see
+his proposal"** — Mehdi's own proposal (points 1 and 6: fork, branch from `bleeding-edge`, PR against it, the
+operator approves and merges). Recorded: outside contributors get no account from AEF and no rights on the repo;
+they work from their own account through forks and PRs. Consistent with A4 and A2.
