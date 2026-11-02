@@ -5726,3 +5726,22 @@ concerns:
   what_remains: T-4999 gives harness seats PROJECT_ROOT = their export and no FRAMEWORK_ROOT (be.24). Open — T-5000
     (the claude review seat runs with the live project as its cwd, by design) and T-5001 (void a seat that changed
     anything outside its export). Close when both are settled.
+- id: G-128
+  type: gap
+  title: Review seats are isolated by files but not by processes; a seat killed a consumer's production service
+  description: 'ring20-dashboard (msg b2be4058): on 2026-11-01 (be.15) an opencode seat started its own uvicorn
+    test server inside its export, then stopped it with pkill -f "uvicorn main:app" and kill -9 $(pgrep -f ...).
+    The pattern matched their production service too (same command line, same host, same user). It exited
+    cleanly, so Restart=on-failure did not fire; their watchdog then ran an unsupervised server for 12 h. The seat
+    was later voided for an export change, but nothing recorded the kill.'
+  severity: high
+  status: watching
+  detected_in: T-5008
+  observed: '2026-11-02'
+  reported_by: ring20-dashboard (field report)
+  blast_radius: every host where a review seat runs as the same user as live services
+  detection_gap: seat isolation (export, PROJECT_ROOT, tamper fingerprint) covers files only; no seat check covers
+    signals or processes, and no record shows a seat stopped a process
+  what_remains: T-5008 (process isolation for seats; interim refusal of pkill/killall/kill $(pgrep ...)); T-5001
+    (void and report seats that changed anything outside the export, processes included). Close when a seat cannot
+    signal a process it did not start.
