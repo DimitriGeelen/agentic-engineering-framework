@@ -158,6 +158,25 @@ name, phone numbers); content from a project's own data (for example a quoted em
 security weaknesses (private route, A15); and estate layout (which host runs what, network layout, backup
 locations). Project names are allowed unless a project opts out (F4). Anything the gate cannot classify is held
 for rewriting, never posted (F1).
+4.16 **A16 Your time and refusals** (operator, 2026-11-02): **option 1.** At most 3 outside PRs wait for the
+operator's merge at once; further ones are labelled "waiting" and not reviewed until a slot frees. Each PR gets a
+one-screen AEF recommendation (what it changes, risk level, test results, merge / change / refuse). A refusal is
+one line on the PR (Mehdi point 6), drafted by AEF and approved by the operator.
+4.18 **Q18 Gap review** (card 3.4), agent's pass:
+4.18.a Credential custody: the secondary account is owned by the operator (password, 2FA); each token lives in its
+holder's credential store, named in a registry, never in the repo (A11, 4R.6.c). Covered.
+4.18.b Compromised session or host: a peer host → revoke its token alone; the AEF host → revoke AEF's token;
+branch protection (A8) and operator-only merge (A4) cap the damage. Covered.
+4.18.c Approval fatigue: queue of 3 and one-screen summaries (A16). Covered.
+4.18.d Offline: GitHub down → PRs and direct posts wait; AEF down → the sidecar holds relay reports (F6). Covered.
+4.18.e Recovery: GitHub account lost → the OneDev mirror holds the history (A3.a) and the local issue ledger the
+intake. Covered.
+4.18.f Revocation: per-peer tokens; the operator-owned trusted list (4R.6.c). Covered.
+4.18.g Identity: contributors by GitHub account plus DCO (A9); peers by the stamped project id (F5). Covered.
+4.18.h Unsupported cases: a PR without an issue, or against `master`, is refused with a one-line reason (A16,
+4.4.a). **Open:** a PR that is high risk (every outside PR is raised one level, 4.7.b) needs a rung-5 panel, and a
+rung-5 panel cannot be assembled today (two launchable worker kinds; the antigravity seat is T-4997). Put to the
+operator.
 4.13 **A13 The old path** — answered by F8 (4R.8): `fw pickup send` for bugs and features is wrapped onto the new
 route; learnings and patterns stay on the sidecar.
 4.17 **A17 Migration** — answered by F8 (4R.8): forward only.
