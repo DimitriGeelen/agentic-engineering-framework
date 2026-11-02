@@ -118,6 +118,21 @@ task in this arc, scheduled next (not started now): build and test our own isola
 control (candidate: a throwaway VM or container on the operator's Proxmox, on a network segment that cannot
 reach other hosts, driven by OneDev's build server or registered as a runner), and prove it runs the same checks.
 The goal is control: the operator wants the checks to end up on their own infrastructure.
+4.4.a **Merge target** (operator, 2026-11-02, while discussing Q7): "where do I merge it to? To bleeding-edge."
+Confirmed: outside PRs target and are merged into `bleeding-edge` on GitHub (Mehdi's point 1); `master` keeps
+receiving fast-forwards at release time only (release train); nothing outside merges into `master`.
+4.7 **Q7 Gates before merge** — in discussion (2026-11-02). Agent offered review by reading, at a rung set by
+risk (1 / 3 / 5), or a floor of rung 3, or rung 5 always. Operator: "at least it should have been tested. How
+can we test it, and depending on the risk test it more thoroughly, and have the test results judged like we do
+with any external tester. It follows the normal review logic, maybe a little more stringent."
+4.7.a Agent's reading: (1) every PR is tested, not only read: the automated checks on GitHub (A6) always;
+(2) higher risk means deeper testing (more of the suite, then field tests in real projects); (3) the test
+results are judged the way field reports are (WORKS / FAILS with evidence), by the normal review logic, one
+step stricter (floor rung 3 for outside code). Open: where the deeper tests run before the merge, since running
+an unmerged PR runs a stranger's code (G-128).
+4.7.b **Operator: "That means the risk automatically gets increased, because it comes from external."**
+Requirement: a PR from outside the estate is assessed one risk level higher than the same change made by us
+(low → medium, medium → high, high stays high). Its testing depth and review strength follow the raised level.
 4.5 **A5 Task reference** (2026-11-02): **1 — intake task id plus issue number**, "T-4935 (#104): …". The
 commit-msg hook stays unchanged; the intake task file must be on `bleeding-edge` before the PR is opened.
 4.4 **A4 Who merges** (2026-11-02): **1 — only the operator, with the GitHub merge button.** AEF agents run the
