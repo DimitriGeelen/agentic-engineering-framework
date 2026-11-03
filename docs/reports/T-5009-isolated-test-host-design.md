@@ -111,6 +111,27 @@ PR waits for this anyway, and a linked-clone VM starts in seconds.
 - **Q-5 Template refresh?** Recommend monthly with the stable release, plus on demand when a PR names a missing
   dependency.
 
+## 8a Q-2 options: how information comes out (2026-11-03)
+
+Sources: `T-5009-review-codex.md`, `T-5009-review-opencode.md` (both subscription seats). Common to all three:
+guest-written disks and logs are hostile input, read inside a disposable reader VM, never mounted on the controller;
+deadlines, partial-log retention, explicit timeout/infrastructure-error states and destruction on every exit path are
+controller duties.
+
+| | A. Hardened disk-only | B. Disk + live serial log | C. Private enclave + collector VM |
+|---|---|---|---|
+| Out-channel | output disk; fsync'd phase markers; liveness from hypervisor counters | as A, plus the serial console streamed to a capped, sanitised collector | test VM's NIC on a bridge whose only peer is a throwaway collector VM |
+| You see | post-mortem only, where it stopped | live tail, boot failures and hangs as they happen; logs survive a kill | structured live results, single-test re-runs |
+| Added surface | none | one virtual device + hostile byte stream to a small receiver | guest network stack, listening service, firewall rules |
+| D1 Antifragility | 3 | 4 | 4 |
+| D2 Reliability | 4 | 5 | 3 |
+| D3 Usability | 2 | 4 | 5 |
+| D4 Portability | 5 | 4 | 3 |
+| Total | 14 | **17** | 15 |
+
+Both reviewers and the agent recommend **B**; C stays a documented later step for when structured incremental
+results prove necessary, after the threat modeler signs it off.
+
 ## 9 Dialogue log
 
 - 2026-11-03: operator chose "design first" for T-5009 (options were: design first / name a host now / park).
