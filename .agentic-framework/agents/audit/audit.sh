@@ -6504,6 +6504,9 @@ for gap in items:
     tc = gap.get('trigger_check', {})
     if tc.get('type') != 'auto':
         continue
+    # T-5053: concerns may carry name/summary instead of title; a KeyError in
+    # the try below would drop a triggered concern silently.
+    label = gap.get('title') or gap.get('name') or gap.get('summary') or '(untitled)'
 
     check_cmd = tc.get('check', '')
     threshold = tc.get('threshold', '')
@@ -6521,14 +6524,14 @@ for gap in items:
         if threshold.startswith('>= '):
             target = int(threshold.split('>= ')[1].split()[0])
             if value >= target:
-                print(f"  TRIGGERED: {gap['id']} — {gap['title']}")
+                print(f"  TRIGGERED: {gap.get('id', '?')} — {label}")
                 print(f"    Value: {value}, Threshold: {threshold}")
                 print(f"    Action: Review gap and decide — build or simplify")
                 triggered += 1
         elif threshold.startswith('> '):
             target = int(threshold.split('> ')[1].split()[0])
             if value > target:
-                print(f"  TRIGGERED: {gap['id']} — {gap['title']}")
+                print(f"  TRIGGERED: {gap.get('id', '?')} — {label}")
                 print(f"    Value: {value}, Threshold: {threshold}")
                 print(f"    Action: Review gap and decide — build or simplify")
                 triggered += 1
