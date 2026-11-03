@@ -363,6 +363,10 @@ FW_CONFIG_REGISTRY=(
     # T-5051: on some consumers (050) a push to the remote deploys production, so
     # the handover push must be switchable off per project, on every --commit path.
     "HANDOVER_PUSH|1|0 = handover commits locally and never pushes; for projects where a push deploys (050, T-5051)."
+    # T-5009: the isolated test host controller (fw testhost, lib/testhost.py).
+    "TESTHOST_BACKEND|stub|Hypervisor backend for fw testhost: stub (a temp dir and a child process, for tests) or proxmox (phase 4, refuses until the operator chooses the node). T-5009."
+    "TESTHOST_TIMEOUT|1800|Wall-clock seconds a fw testhost run may take before the controller stops the VM and records state timeout. T-5009."
+    "TESTHOST_SERIAL_CAP_BYTES|5242880|Bytes of sanitised serial-console log fw testhost keeps per run; past the cap a visible truncation line is written and the rest is drained and dropped. T-5009."
     # T-3080. ONE window for BOTH Tier 0 approval legs. Before this the CLI leg
     # (check-tier0.sh, `fw tier0 approve` grant) carried a bare 300 literal and
     # the Watchtower leg defaulted to 3600 via TIER0_WATCHTOWER_TTL — so the path
