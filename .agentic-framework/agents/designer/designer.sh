@@ -273,17 +273,25 @@ _sync_validator_at_tag() {
     [ -n "$v_sums" ] && [ -n "$v_kit" ] && [ -n "$v_sha" ] && [ -n "$v_path" ] || { echo "${_c_red}pin validator_* keys incomplete${_c_off}" >&2; return 3; }
     git -C "$tmp" show "${tag}:${v_sums}" > "$tmp/SHA256SUMS" 2>/dev/null || { echo "${_c_red}no ${v_sums} at tag ${tag}${_c_off}" >&2; return 4; }
     git -C "$tmp" show "${tag}:${v_src}" > "$tmp/validator.py" 2>/dev/null || { echo "${_c_red}no ${v_src} at tag ${tag}${_c_off}" >&2; return 4; }
-    local sums_actual line_sha actual
+    local sums_actual line_sha actual m_kit
     sums_actual="$(_sha256 "$tmp/SHA256SUMS")"
     line_sha="$(grep -E "[[:space:]]\*?$(basename "$v_src")\$" "$tmp/SHA256SUMS" | head -1 | cut -d' ' -f1)"
     actual="$(_sha256 "$tmp/validator.py")"
-    if [ "$sums_actual" != "$v_kit" ] || [ "$line_sha" != "$actual" ] || [ "$actual" != "$v_sha" ]; then
+    # T-5056: the MANIFEST at the same tag is the third anchor for the kit sums. Before
+    # this, only the pin was compared, although the comment above named the MANIFEST too.
+    # A MANIFEST without kit_sha256 (pre-kit releases) is named, not silently passed.
+    m_kit="$(_yaml_get "$tmp/MANIFEST.yaml" kit_sha256 2>/dev/null || true)"
+    if [ -z "$m_kit" ]; then
+        echo "  ${_c_red}!${_c_off} MANIFEST at ${tag} has no kit_sha256 — kit sums checked against the pin only" >&2
+        m_kit="$sums_actual"
+    fi
+    if [ "$sums_actual" != "$v_kit" ] || [ "$sums_actual" != "$m_kit" ] || [ "$line_sha" != "$actual" ] || [ "$actual" != "$v_sha" ]; then
         echo "${_c_red}validator sha256 MISMATCH — refusing to vendor it${_c_off}" >&2
-        echo "  kit SHA256SUMS: computed=${sums_actual} pin=${v_kit}" >&2
+        echo "  kit SHA256SUMS: computed=${sums_actual} pin=${v_kit} manifest=${m_kit}" >&2
         echo "  validator:      computed=${actual} kit-line=${line_sha:-?} pin=${v_sha}" >&2
         return 1
     fi
-    echo "  ${_c_grn}✓${_c_off} validator anchors: kit SHA256SUMS, kit line and pin agree (${v_src})"
+    echo "  ${_c_grn}✓${_c_off} validator anchors: kit SHA256SUMS (pin + MANIFEST), kit line and pin agree (${v_src})"
     [ "$dry_run" -eq 1 ] && return 0
     local dest="$PROJECT_ROOT/$v_path"
     mkdir -p "$(dirname "$dest")"
