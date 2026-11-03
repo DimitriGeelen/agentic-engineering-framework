@@ -194,10 +194,11 @@ _push_to_remotes() {
     fi
     echo -e "  ${CYAN}Push timeout: ${_push_timeout}s (${_push_timeout_source})${NC}"
     # T-1255 (G-007): When >1 remote is configured AND `origin` is one of them,
-    # push ONLY to origin. Mirroring (e.g. github) is OneDev's job via
-    # .onedev-buildspec.yml's PushRepository job. Pushing directly to mirror
-    # remotes caused github-ahead-of-onedev divergence whenever onedev briefly
-    # 502'd at handover time (T-1253 inception, PL-036).
+    # push ONLY to origin; the other remotes are mirrors that `fw mirror sync`
+    # fast-forwards from origin. Pushing directly to mirror remotes caused
+    # mirror-ahead-of-origin divergence whenever origin briefly 502'd at handover
+    # time (T-1253 inception, PL-036). T-5044: origin is GitHub since 2026-11-03;
+    # OneDev (remote `onedev`) is the mirror.
     # T-1474: Guard against the no-origin case. If no remote is named `origin`,
     # there is no canonical source for OneDev to mirror from, so the assumption
     # that other remotes are "mirrors" is invalid — push to all of them.
@@ -210,7 +211,7 @@ _push_to_remotes() {
     while IFS= read -r remote_name; do
         [ -z "$remote_name" ] && continue
         if [ "$_has_origin" = true ] && [ "$_remote_count" -gt 1 ] && [ "$remote_name" != "origin" ]; then
-            echo -e "  ${CYAN}Skipping $remote_name (mirrored from origin via PushRepository)${NC}"
+            echo -e "  ${CYAN}Skipping $remote_name (mirror: fw mirror sync fast-forwards it from origin)${NC}"
             continue
         fi
         if timeout "$_push_timeout" git -C "$PROJECT_ROOT" push --follow-tags "$remote_name" HEAD 2>&1; then

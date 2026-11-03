@@ -29,13 +29,13 @@ jobs:
         remoteUrl: https://github.com/DimitriGeelen/agentic-engineering-framework.git
         userName: DimitriGeelen
         passwordSecret: github-push-token
-        force: true
+        # T-5044 (2026-11-03): GitHub is the source repository now and OneDev its mirror
+        # (fw mirror sync fast-forwards OneDev from GitHub). This job must never overwrite
+        # GitHub again: force: true erased PRs #76, #77 and #79. No triggers: it does not
+        # run on its own; force is off in case someone starts it by hand.
+        force: false
         condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-    triggers:
-      - !BranchUpdateTrigger
-        branches: '**'
-      - !TagCreateTrigger
-        tags: '**'
+    triggers: []
     retryCondition: never
     maxRetries: 3
     retryDelay: 30

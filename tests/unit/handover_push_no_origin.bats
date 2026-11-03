@@ -36,8 +36,9 @@ teardown() {
 }
 
 @test "T-1255 mirror-skip preserved when origin exists (regression invariant)" {
-    # The "Skipping ... mirrored from origin" message and skip path must still exist.
-    grep -q 'Skipping \$remote_name (mirrored from origin via PushRepository)' "$FRAMEWORK_ROOT/agents/handover/handover.sh"
+    # The "Skipping ... mirror" message and skip path must still exist (T-5044 reworded it:
+    # GitHub is origin, OneDev the mirror, fw mirror sync fast-forwards it).
+    grep -q 'Skipping \$remote_name (mirror: fw mirror sync fast-forwards it from origin)' "$FRAMEWORK_ROOT/agents/handover/handover.sh"
 }
 
 # ---- Behavioural: simulate the guard logic in isolation ----
