@@ -132,6 +132,10 @@ controller duties.
 Both reviewers and the agent recommend **B**; C stays a documented later step for when structured incremental
 results prove necessary, after the threat modeler signs it off.
 
+**Q-2 answered 2026-11-03: B** — no NIC; input and bulk output on disks; live serial-console log to a capped,
+sanitised collector with no hypervisor token; output disks read in a disposable reader VM. Sections 3 and 4 are read
+with this amendment: "Network: none" stands, and the out-channel is disk + serial.
+
 ## 9 Dialogue log
 
 - 2026-11-03: operator chose "design first" for T-5009 (options were: design first / name a host now / park).
@@ -140,3 +144,5 @@ results prove necessary, after the threat modeler signs it off.
   difficult to get the right information out of it, and that in itself is a risk"; no human will coordinate sessions.
   Agent clarified that the controller automates the whole run (no interactive session). Operator asked for a short
   outside view from a subscription model before deciding; dispatched to codex (`T-5009-review-codex.md`). Q-2 open.
+- 2026-11-03: operator asked for three architectures weighed on functionality vs security and mapped to D1-D4;
+  opencode proposed A/B/C (section 8a). Operator answered "1" — **B, disk + live serial log**.
