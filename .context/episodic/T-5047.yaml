@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5047: Contributor documents for outside PRs: CONTRIBUTING.md rewritten from the plan, a pull request template, SECURITY.md (roadmap phase 0, PR 1 content)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-03T11:24:04Z
+# ============================================================================
+
+task_id: T-5047
+task_name: "Contributor documents for outside PRs: CONTRIBUTING.md rewritten from the plan, a pull request template, SECURITY.md (roadmap phase 0, PR 1 content)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-03T11:20:19Z
+completed: 2026-11-03T11:23:47Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-03T12:23:45+01:00
+last_commit: 2026-11-03T12:23:45+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  contributor documents for outside PRs — CONTRIBUTING (bleeding-edge, release channels, issue first, T-XXXX (#N) commits with DCO), PR template, SECURITY.md
+
+# Key outcomes
+outcomes:
+  - '`CONTRIBUTING.md` no longer names a `main` branch or `--no-verify` as an option, and describes branches and channels, the PR process, commit form with DCO, and security reporting'
+  - '`.github/pull_request_template.md` exists with the plan''s checklist (issue and task, approach and defect class, failing-then-passing test, evidence, fw audit and tests touched, fw doctor summary, what was not tested, DCO)'
+  - '`SECURITY.md` exists and sends reports to GitHub private vulnerability reporting, never public issues'
+  - 'The tests that read `CONTRIBUTING.md` (if any) and `tests/lint` stay green — no test reads these files; tests/lint 164/164'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'contributor documents for outside PRs — CONTRIBUTING (bleeding-edge, release channels, issue first, T-XXXX (#N) commits with DCO), PR template, SECURITY.md'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.github/pull_request_template.md'
+  - '.tasks/active/T-5047-contributor-documents-for-outside-prs-co.md'
+  - 'CONTRIBUTING.md'
+  - 'SECURITY.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-03T12:23:45'
+    action: 'T-5047: contributor documents for outside PRs — CONTRIBUTING (bleeding-edge, release channels, issue first, T-XXXX (#N) commits with DCO), PR template, SECURITY.md'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github-contributions, docs]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 7
+  lines_added: 582
+  lines_removed: 20
+  footprint_refreshed_at: '2026-11-03T11:24:16Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5047-contributor-documents-for-outside-prs-co.md
+generated_by: context-agent-hybrid
