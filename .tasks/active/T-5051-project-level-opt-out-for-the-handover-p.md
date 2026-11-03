@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-03T12:05:56Z
-last_update: 2026-11-03T13:10:46Z
+last_update: 2026-11-03T13:11:21Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -347,7 +347,7 @@ bin/fw watchtower current
 **Evidence:**
 - `handover.sh` has one push site, and every `--commit` path (pre-compact, checkpoint auto-handover, `fw handover --commit`) goes through it; a test pins the single push site.
 - `tests/unit/t5051_handover_push_optout.bats` 5/5: env and `.framework.yaml` both skip the push and print the line; unset pushes as today; 12 related suites green.
-- Shipped in `v1.8.16-be.29`; Watchtower restarted and current; `/config` shows the row.
+- Shipped in `v1.8.16-be.29`; Watchtower restarted and current; http://192.168.10.107:3000/config shows the row.
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
