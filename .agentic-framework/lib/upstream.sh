@@ -5,12 +5,9 @@
 
 set -euo pipefail
 
-# Colors (may already be sourced, but safe to re-declare)
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BOLD='\033[1m'
-NC='\033[0m'
+# Colors: the guarded set (terminal only, NO_COLOR respected) — T-5048.
+# shellcheck source=colors.sh
+source "$(dirname "${BASH_SOURCE[0]}")/colors.sh"
 
 # --- Configuration resolution ---
 
