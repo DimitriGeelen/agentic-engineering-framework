@@ -106,7 +106,8 @@ PR waits for this anyway, and a linked-clone VM starts in seconds.
 - **Q-2 Network for the test VM?** Recommend **none** (no NIC); alternative: a package mirror reachable through an
   allow-list, which widens what the threat modeler has to reason about.
 - **Q-3 Which hypervisor node, and does it host anything sensitive?** Operator's knowledge; recommend a node with no
-  production services, or the least sensitive one.
+  production services, or the least sensitive one. **2026-11-03: deferred** (operator: "proceed as suggested") —
+  AEF builds the controller against a stub hypervisor first (phase 3); the node is chosen before phase 4.
 - **Q-4 Limits per run?** Recommend 2 vCPU, 4 GB RAM, 20 GB disk, 30 minutes wall clock, one run at a time.
 - **Q-5 Template refresh?** Recommend monthly with the stable release, plus on demand when a PR names a missing
   dependency.
