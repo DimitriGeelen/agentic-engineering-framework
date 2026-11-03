@@ -42,11 +42,11 @@ teardown() {
     [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
 }
 
-# Body of the first `python3 << PYEOF` heredoc after the line matching $2 in file $1.
+# Body of the first python3 PYEOF heredoc after the line matching $2 in file $1.
 _heredoc_after() {
     awk -v anchor="$2" '
         index($0, anchor) { seen = 1 }
-        seen && !inside && /python3 << PYEOF/ { inside = 1; next }
+        seen && !inside && /python3 <<[ ]PYEOF/ { inside = 1; next }
         inside && /^PYEOF$/ { exit }
         inside { print }
     ' "$1"
@@ -57,7 +57,7 @@ _run_heredoc() {
     {
         echo "GAPS_FILE='$GAPS_FILE'"
         echo "PROJECT_ROOT='$TEST_TEMP_DIR'"
-        echo "python3 << PYEOF"
+        printf 'python3 %s PYEOF\n' '<<'
         cat "$1"
         echo "PYEOF"
     } > "$TEST_TEMP_DIR/run.sh"
@@ -80,7 +80,7 @@ _run_heredoc() {
 
 @test "audit trigger check reports a triggered concern that has no title (T-5053)" {
     awk '
-        /triggered_gaps=\$\(python3 << PYEOF/ { inside = 1; next }
+        /triggered_gaps=\$\(python3 <<[ ]PYEOF/ { inside = 1; next }
         inside && /^PYEOF$/ { exit }
         inside { print }
     ' "$FRAMEWORK_ROOT/agents/audit/audit.sh" > "$TEST_TEMP_DIR/audit.py"
