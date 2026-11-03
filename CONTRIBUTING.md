@@ -65,7 +65,11 @@ web/                      Watchtower dashboard (Flask + htmx)
 Use the [bug report template](https://github.com/DimitriGeelen/agentic-engineering-framework/issues/new?template=bug-report.yml). Include:
 - Steps to reproduce
 - Expected vs actual behavior
-- Output of `fw doctor`
+- The framework version and a summary of `fw doctor` (failures and warnings in your own words; do not paste host names, paths, user names or tokens)
+
+### Reporting Security Problems
+
+Never in a public issue. Use GitHub's private vulnerability reporting ("Report a vulnerability" on the Security tab); see [SECURITY.md](SECURITY.md).
 
 ### Suggesting Features
 
@@ -74,29 +78,40 @@ Use the [feature request template](https://github.com/DimitriGeelen/agentic-engi
 - Your proposed solution
 - Which subsystem it affects
 
+### Branches and Release Channels
+
+There is no `main` branch. Work lands on `bleeding-edge`; `master` only moves at a release.
+
+| Channel | What it is | Rhythm |
+|---|---|---|
+| Bleeding edge (`bleeding-edge`, pre-release tags `vX.Y.Z-be.N`) | Everything new, merged pull requests included | daily |
+| Pre-release | What two or three different projects showed working in the field | weekly |
+| Stable (`master`, release tags `vX.Y.Z`) | What ran as pre-release for at least two weeks, with no open failure | monthly |
+
+Check your change against the latest pre-release before you open a pull request.
+
 ### Pull Request Process
 
-1. **Fork and branch** from `main`
-2. **Create a task** for your work: `fw work-on "Description" --type build`
-3. **Reference the task** in every commit: `git commit -m "T-XXX: description"`
-4. **Run checks** before submitting:
-   ```bash
-   fw doctor        # Framework health
-   fw audit         # Compliance checks (90+ checks)
-   ```
-5. **Open a PR** against `main` with a clear description of what changed and why
-6. **Respond to review** — maintainers will review within a few days
+1. **Issue first.** Open or pick an issue and agree the approach in it before writing code. The maintainer's intake turns each issue into a framework task (for example #104 became T-4935); that task must exist on `bleeding-edge` before you open the pull request.
+2. **Fork and branch** from `bleeding-edge`. Suggested branch names: `fix/<issue>-<keyword>` or `feat/<issue>-<keyword>`.
+3. **One pull request per issue**, opened against `bleeding-edge`, with "Fixes #N" in the description.
+4. **Fill in the pull request template:** the approach and the class of defect it closes, a test that fails before the change and passes after it, the commands you ran with their output, `fw audit` and the tests you touched, a `fw doctor` summary, and what you did not test.
+5. **Checks run on GitHub** ("PR checks": the structural invariants plus the tests your change adds or changes). For a first-time contributor the maintainer approves the run with one click.
+6. **Review:** the framework's agents read the change, run the deeper tests on isolated hosts and post a one-screen recommendation. A change from outside is reviewed one risk level higher than the same change made internally.
+7. **The maintainer merges** into `bleeding-edge`; nobody else can. A refusal is one line on the pull request.
+8. **After the merge** the change ships in the next `be-tag` and is field-tested before it reaches pre-release and stable.
 
 ### Commit Messages
 
-Every commit must reference a task:
+Every commit names the intake task and the issue, and carries a sign-off:
 
 ```
-T-042: Fix login validation bug
-T-099: Add retry logic to API client
+T-4935 (#104): Fix the empty upgrade preview
+
+Signed-off-by: Your Name <you@example.com>
 ```
 
-This is enforced by the `commit-msg` hook. If you need to bypass (emergency only), use `--no-verify` and document the reason.
+`git commit -s` adds the `Signed-off-by:` line. By signing off you certify the [Developer Certificate of Origin](https://developercertificate.org/): you wrote the change, or have the right to submit it. The `commit-msg` hook checks the task reference; do not bypass it with `--no-verify`.
 
 ### Code Style
 
@@ -124,4 +139,4 @@ Typical first contributions:
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the project's existing license.
+Contributions are licensed under Apache-2.0, like the project (section 5 of the [licence](LICENSE)), with a DCO sign-off on every commit. There is no contributor licence agreement.
