@@ -102,7 +102,7 @@ PR waits for this anyway, and a linked-clone VM starts in seconds.
 
 ## 8 Open questions (asked one at a time; recommendation first)
 
-- **Q-1 VM or container?** Recommend **VM** (section 5).
+- **Q-1 VM or container?** Recommend **VM** (section 5). **Answered 2026-11-03: VM (option 1).**
 - **Q-2 Network for the test VM?** Recommend **none** (no NIC); alternative: a package mirror reachable through an
   allow-list, which widens what the threat modeler has to reason about.
 - **Q-3 Which hypervisor node, and does it host anything sensitive?** Operator's knowledge; recommend a node with no
@@ -114,3 +114,4 @@ PR waits for this anyway, and a linked-clone VM starts in seconds.
 ## 9 Dialogue log
 
 - 2026-11-03: operator chose "design first" for T-5009 (options were: design first / name a host now / park).
+- 2026-11-03, Q-1: operator answered "1" — VM, not container.
