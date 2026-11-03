@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-03T11:26:29Z
-last_update: 2026-11-03T13:39:25Z
+last_update: 2026-11-03T13:39:56Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -104,9 +104,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Both colour blocks in `bin/fw` use the same guard as `lib/colors.sh` (colour only when stdout or stderr is a terminal and NO_COLOR is unset; otherwise empty strings)
-- [ ] A test shows `bin/fw doctor --quick` written to a file, and with NO_COLOR=1, contains no ESC byte, and the header text "fw doctor - Framework Health Check" is matchable with `grep -F`
-- [ ] Tests that check `bin/fw` output for colours or headers stay green (find them with grep for the colour variables and the header strings); `bin/fw vendor self --check --task T-5048` clean
+- [x] Both colour blocks in `bin/fw` use the same guard as `lib/colors.sh` (colour only when stdout or stderr is a terminal and NO_COLOR is unset; otherwise empty strings)
+- [x] A test shows `bin/fw doctor --quick` written to a file, and with NO_COLOR=1, contains no ESC byte, and the header text "fw doctor - Framework Health Check" is matchable with `grep -F`
+- [x] Tests that check `bin/fw` output for colours or headers stay green (find them with grep for the colour variables and the header strings); `bin/fw vendor self --check --task T-5048` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -292,6 +292,10 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bash -n bin/fw
+timeout 600 bats tests/unit/t5048_fw_no_colour_in_files.bats > /tmp/.t5048.out 2>&1 && ! grep -q "^not ok" /tmp/.t5048.out
+test "$(grep -c '# skip' /tmp/.t5048.out)" -eq 0
+bin/fw vendor self --check --task T-5048
 
 ## RCA
 
