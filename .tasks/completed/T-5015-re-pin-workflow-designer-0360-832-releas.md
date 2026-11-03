@@ -33,12 +33,12 @@ description: >
   T-1370 validate-workflow.py --field-catalog PATH adds four io findings (optional:
   pass our field catalog in the /api/validate wrapper, our call).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [policy/designer-pin.yaml]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -67,8 +67,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-02T12:44:11Z
-last_update: 2026-11-03T16:24:11Z
-date_finished:
+last_update: 2026-11-03T16:34:10Z
+date_finished: 2026-11-03T16:34:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -408,3 +408,21 @@ bin/fw vendor self --check --task T-5015
 ### 2026-11-03T16:16:11Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-03T16:34:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9aa845a2
+- **Timestamp:** 2026-11-03T16:34:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `policy/designer-pin.yaml` at 0.38.0 (artifact, validator, kit sums and SKILL.md sha256 as announced in msg b9113129); `fw designer sync --from-tag designer-v0.38.0` verifies and installs with no mism
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/designer-pin.yaml in: `policy/designer-pin.yaml` at 0.38.0 (artifact, validator, kit sums and SKILL.md sha256 as announced in msg b9113129); `fw designer sync --from-tag de`
