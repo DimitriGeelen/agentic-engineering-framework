@@ -2,14 +2,68 @@ name: Test
 
 on:
   push:
-    branches: [main, master]
+    branches: [bleeding-edge, master]
   pull_request:
-    branches: [main, master]
+    branches: [bleeding-edge, master]
 
 jobs:
+  # T-5045: the required check for every pull request. Fast and deterministic on a
+  # bare runner: the structural invariant tests, plus the test files the pull request
+  # itself adds or changes (a contributor brings a test that fails before the change
+  # and passes after it). The full-suite jobs below stay as information only: many of
+  # their tests depend on a configured framework host and cannot pass here.
+  pr-checks:
+    name: PR checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install pyyaml pytest
+          git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats
+          sudo /tmp/bats/install.sh /usr/local
+          git config --global user.email "ci@example.invalid"
+          git config --global user.name "CI"
+
+      - name: Structural invariants (tests/lint)
+        run: bats tests/lint/
+
+      - name: Tests added or changed by this change
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="origin/${{ github.base_ref }}"
+          else
+            base="${{ github.event.before }}"
+            case "$base" in ''|0000000000000000000000000000000000000000) base="HEAD~1" ;; esac
+          fi
+          changed=$(git diff --name-only --diff-filter=AM "$base"...HEAD -- tests/ || true)
+          bats_files=$(printf '%s\n' "$changed" | grep -E '^tests/(unit|integration)/.*\.bats$' || true)
+          py_files=$(printf '%s\n' "$changed" | grep -E '^tests/unit/(test_.*|.*_test)\.py$' || true)
+          if [ -z "$bats_files$py_files" ]; then
+            echo "No test files added or changed."
+            exit 0
+          fi
+          rc=0
+          if [ -n "$bats_files" ]; then echo "$bats_files" | xargs bats || rc=1; fi
+          if [ -n "$py_files" ]; then echo "$py_files" | xargs python3 -m pytest -q || rc=1; fi
+          exit $rc
+
   bats:
     name: Bash Tests (bats-core)
     runs-on: ubuntu-latest
+    # T-5045: information only (see pr-checks). Many tests here need a configured
+    # framework host; the full suite has known, baselined reds.
+    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v4
@@ -131,6 +185,8 @@ jobs:
   playwright:
     name: Playwright UI Tests (Tier 3)
     runs-on: ubuntu-latest
+    # T-5045: information only (see pr-checks); needs a running Watchtower.
+    continue-on-error: true
 
     steps:
       - uses: actions/checkout@v4
