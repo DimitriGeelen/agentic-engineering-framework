@@ -1,8 +1,19 @@
 ---
 id: T-5054
-name: "Claude Code harness adapter for TermLink's contract: READY flag on Stop, cleared on UserPromptSubmit/PreToolUse, hand-over from transcript evidence (010 OD-7)"
+name: "Claude Code harness adapter for TermLink's contract: READY flag on Stop, cleared
+  on UserPromptSubmit/PreToolUse, hand-over from transcript evidence (010 OD-7)"
 description: >
-  010-termlink consult 6ac21ec0 / 1e72c5c4 (2026-11-03): per their operator rulings OD-7 and OD-9 (termlink repo docs/reports/T-3344-step1-rulings-summary.md items 2 and 3), TermLink owns the harness adapter CONTRACT and each harness team owns its adapter, so the Claude Code adapter is AEF's. Contract: termlink repo docs/design/interactive-agent-communication-01-requirements.md R-47, R-21, R-48; architecture 04 section 6.9. Being revised by 010 change requests CR-O2a..c (doorbell rings only when READY + no typing + no conversation, 300 s external fallback) and CR-O3 (lease renewal only on human-initiated prompts); 010 sends the revised contract when published. AEF has today only the T-5014 main-session gate. Taking this build on is the operator's decision; wait for the revised contract. Standing rule from 010's operator: nothing working is switched off until its replacement is field-proven, with explicit documented operator approval.
+  010-termlink consult 6ac21ec0 / 1e72c5c4 (2026-11-03): per their operator rulings
+  OD-7 and OD-9 (termlink repo docs/reports/T-3344-step1-rulings-summary.md items
+  2 and 3), TermLink owns the harness adapter CONTRACT and each harness team owns
+  its adapter, so the Claude Code adapter is AEF's. Contract: termlink repo docs/design/interactive-agent-communication-01-requirements.md
+  R-47, R-21, R-48; architecture 04 section 6.9. Being revised by 010 change requests
+  CR-O2a..c (doorbell rings only when READY + no typing + no conversation, 300 s external
+  fallback) and CR-O3 (lease renewal only on human-initiated prompts); 010 sends the
+  revised contract when published. AEF has today only the T-5014 main-session gate.
+  Taking this build on is the operator's decision; wait for the revised contract.
+  Standing rule from 010's operator: nothing working is switched off until its replacement
+  is field-proven, with explicit documented operator approval.
 
 status: captured
 workflow_type: build
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-03T15:34:51Z
-last_update: 2026-11-03T15:34:51Z
-date_finished: null
+last_update: '2026-11-03T15:45:26Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-03T15:45:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5054: Claude Code harness adapter for TermLink's contract: READY flag on Stop, cleared on UserPromptSubmit/PreToolUse, hand-over from transcript evidence (010 OD-7)
