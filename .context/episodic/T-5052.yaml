@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5052: Handover says 'committed locally only' even when its auto-commit failed (handover file under a gitignored .context/ not added); the commit should force-add the handover or report the failure
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-03T14:24:03Z
+# ============================================================================
+
+task_id: T-5052
+task_name: "Handover says 'committed locally only' even when its auto-commit failed (handover file under a gitignored .context/ not added); the commit should force-add the handover or report the failure"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-03T13:26:27Z
+completed: 2026-11-03T14:23:40Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-03T15:23:11+01:00
+last_commit: 2026-11-03T15:23:20+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  handover commit force-adds when handovers are tracked under an ignored .context/, says COMMIT FAILED otherwise; push line no longer claims a failed commit. vendor handover.sh
+
+# Key outcomes
+outcomes:
+  - 'Both commit paths (checkpoint and normal) force-add the handover file(s) when the handovers directory already has tracked files, so an ignored `.context/` no longer blocks the commit'
+  - 'When the handover commit fails, the output says `COMMIT FAILED` with the reason, and the HANDOVER_PUSH=0 line does not say "committed locally only"'
+  - 'When handovers are not tracked at all and the path is ignored, nothing is force-added and the output says the handover was not committed and why'
+  - 'New bats test covers: ignored + tracked handovers (commits), failed commit (COMMIT FAILED, no "committed locally only"); existing handover push tests stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/handover/handover.sh'
+  - 'agents/handover/handover.sh'
+  - 'tests/unit/handover_commit_scope.bats'
+  - 'tests/unit/t5052_handover_commit_honest.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-03T15:23:11'
+    action: 'T-5052: handover commit force-adds when handovers are tracked under an ignored .context/, says COMMIT FAILED otherwise; push line no longer claims a failed commit'
+  - time: '2026-11-03T15:23:20'
+    action: 'T-5052: vendor handover.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 57 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [handover, consumer]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 57
+  commits: 3
+  files_changed: 7
+  lines_added: 696
+  lines_removed: 17
+  footprint_refreshed_at: '2026-11-03T14:25:38Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5052-handover-says-committed-locally-only-eve.md
+generated_by: context-agent-hybrid

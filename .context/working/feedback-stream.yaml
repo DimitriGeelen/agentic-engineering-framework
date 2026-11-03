@@ -52985,3 +52985,21 @@ scan_id: R-0ae21398
 task_id: T-5048
 payload:
   task_file: .tasks/active/T-5048-binfw-writes-ansi-colour-codes-to-files-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-03T14:23:50Z'
+scan_id: R-6cb4ad01
+task_id: T-5052
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-03T14:23:50Z'
+scan_id: R-6cb4ad01
+task_id: T-5052
+payload:
+  task_file: .tasks/active/T-5052-handover-says-committed-locally-only-eve.md
