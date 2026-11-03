@@ -293,3 +293,38 @@ teardown() {
     after=$(git ls-remote mirror_diverged refs/heads/master | awk '{print $1}')
     [ "$after" = "$before" ]
 }
+
+@test "T-5044: mirror_sync also fast-forwards bleeding-edge, not only the default branch" {
+    git remote remove mirror_synced
+    git remote remove mirror_diverged
+    git remote remove mirror_unreachable
+    # bleeding-edge: mirror at c3, origin one commit further
+    git checkout -q -b bleeding-edge
+    git push -q origin bleeding-edge
+    git push -q mirror_behind bleeding-edge
+    echo c4 >> a && git add a && git commit -qm c4
+    git push -q origin bleeding-edge
+    local origin_be
+    origin_be=$(git ls-remote origin refs/heads/bleeding-edge | awk '{print $1}')
+
+    run mirror_sync
+    [ "$status" -eq 0 ]
+    [ "$(git ls-remote mirror_behind refs/heads/bleeding-edge | awk '{print $1}')" = "$origin_be" ]
+}
+
+@test "T-5044: FW_MIRROR_EXTRA_BRANCHES empty syncs the default branch only" {
+    git remote remove mirror_synced
+    git remote remove mirror_diverged
+    git remote remove mirror_unreachable
+    git checkout -q -b bleeding-edge
+    git push -q origin bleeding-edge
+    git push -q mirror_behind bleeding-edge
+    echo c4 >> a && git add a && git commit -qm c4
+    git push -q origin bleeding-edge
+    local before
+    before=$(git ls-remote mirror_behind refs/heads/bleeding-edge | awk '{print $1}')
+
+    FW_MIRROR_EXTRA_BRANCHES="" run mirror_sync
+    [ "$status" -eq 0 ]
+    [ "$(git ls-remote mirror_behind refs/heads/bleeding-edge | awk '{print $1}')" = "$before" ]
+}
