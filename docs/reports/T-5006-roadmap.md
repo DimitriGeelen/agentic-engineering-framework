@@ -35,7 +35,7 @@ written next to it.
 | 1.1 | `origin` = GitHub, OneDev a mirror; OneDev's force-push job off | AEF | T-5044 | Done 2026-11-03 | — |
 | 1.2 | Branch rules on GitHub: no force push or deletion on `bleeding-edge` and `master` | Operator | T-5044 | Open | 2026-11-04 |
 | 1.3 | Release train, mirror and `fw issues` follow the new origin | AEF | T-5044 | Done 2026-11-03: `v1.8.16-be.28` on GitHub and OneDev, same commit | — |
-| 1.4 | Audit alarm for outside commits that did not arrive through an operator-merged PR | AEF | T-5049 | Not started | 2026-11-06 |
+| 1.4 | Audit alarm for outside commits that did not arrive through an operator-merged PR | AEF | T-5049 | Done 2026-11-03 (fw audit, fw doctor, operator pending; author-based, forgery residual noted) | 2026-11-06 |
 
 ## Phase 2 — all agents track issues and changes in GitHub
 
