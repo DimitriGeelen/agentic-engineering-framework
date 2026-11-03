@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-03T11:10:42Z
-last_update: '2026-11-03T11:15:19Z'
+last_update: 2026-11-03T11:16:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,9 +100,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `test.yml` triggers on push and pull_request for `bleeding-edge` and `master`
-- [ ] A "PR checks" job runs `tests/lint` and the test files changed against the base branch; the full-suite jobs carry `continue-on-error: true` with a comment naming T-5045
-- [ ] A real GitHub Actions run of "PR checks" on `bleeding-edge` is green (run id recorded here)
+- [x] `test.yml` triggers on push and pull_request for `bleeding-edge` and `master`
+- [x] A "PR checks" job runs `tests/lint` and the test files changed against the base branch; the full-suite jobs carry `continue-on-error: true` with a comment naming T-5045
+- [x] A real GitHub Actions run of "PR checks" on `bleeding-edge` is green (run id recorded here) — run 41625817184 on cbb83e4b4, 2026-11-03: every step success, incl. "Structural invariants (tests/lint)" and "Tests added or changed by this change"
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,8 +288,18 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -c "import yaml; d=yaml.safe_load(open('.github/workflows/test.yml')); assert 'pr-checks' in d['jobs'] and 'bleeding-edge' in d[True]['pull_request']['branches']"
+grep -q "continue-on-error: true" .github/workflows/test.yml
 
 ## RCA
+
+**Symptom:** GitHub's Test workflow failed on every run since 2026-10-20 (three runs on `master`), and PRs to `bleeding-edge` got no checks at all.
+
+**Root cause:** the workflow ran the entire bats and pytest suites on a bare GitHub runner; many tests depend on a configured framework host (TermLink, git identity, cron, services), so it could not pass there. Its triggers named a `main` branch that does not exist and skipped `bleeding-edge`.
+
+**Why structurally allowed:** nothing watched GitHub Actions results; the framework's own gates run locally (pre-push audit, unit-suite cron), and GitHub was only a mirror that nobody merged on. An always-red check carries no signal, so it was ignored.
+
+**Prevention:** a small required job ("PR checks") that is deterministic on a bare runner; the full-suite jobs marked informational so red there no longer hides a real red. Watching Actions results is part of the outside-contributions flow (AEF posts a recommendation per PR, T-5006 Q-4).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
