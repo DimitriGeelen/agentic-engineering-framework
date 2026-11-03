@@ -1,5 +1,14 @@
 # Next session: carry-over
 
+## FIRST, update (2026-11-03 ~14:00Z; latest be.30 = 3f3f5d9f1)
+- Shipped since the noon handover: T-5051 (HANDOVER_PUSH=0 opt-out, be.29; 050 WORKS; partial-complete, operator
+  review of the config row http://192.168.10.107:3000/review/T-5051), T-5048 (no colour codes in files/pipes/NO_COLOR,
+  be.30, closed; ring20-dashboard told).
+- Next, in order: T-5052 (handover says "committed locally" even when its commit failed; force-add the handover file
+  under a gitignored .context/ — 050 waits), T-5049 (audit alarm 1.4), T-5009 (isolated test hosts), T-5015
+  (designer: pin 0.38.0 directly; hashes in the task), T-5053 (Gaps Register KeyError on title-less concerns),
+  T-5050 (upgrade backfill vs CTL-030 deadlock, 003 waits).
+
 ## FIRST (2026-11-03 ~12:00Z; latest be.28 = 8c677b8a0; GitHub IS NOW origin)
 - **NOTHING LEAVES RING20** (operator, furious, 2026-11-02): never the Artifact tool / Claude Docs / any outside
   service for project content; PDF/Word = pandoc + soffice locally. Memory: feedback_nothing_leaves_ring20.md.
