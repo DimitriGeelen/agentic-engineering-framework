@@ -189,3 +189,22 @@ def test_gzip_refused_with_zero_quality(client, project):
     resp = client.get("/api/field-catalog", headers={"Accept-Encoding": "gzip;q=0, identity"})
     assert resp.status_code == 200
     assert resp.headers.get("Content-Encoding") is None
+
+
+def test_t1312_extra_keys_pass_through_unchanged(client, project):
+    """T-5015: designer 0.36.0 builds read-only value rules from a row's extra keys
+    (832 contract T-1312). The route must return them untouched, plain and gzipped."""
+    row = {"ref": "crm.customer.email", "label": "Email", "system": "crm",
+           "entity": "Customer", "datatype": "string", "maxLength": 254,
+           "pattern": "^[^@]+@[^@]+$", "in": ["a", "b"], "description": "Contact email",
+           "example": "a@example.org", "valueSource": "user", "derivedFrom": ["crm.customer.id"],
+           "unit": "chars", "shape": {"kind": "scalar"}}
+    _write(project, {"version": 1, "attributes": [row]})
+    _configure(project, "catalog.json")
+    for gz in (False, True):
+        resp = _get(client, gz=gz)
+        assert resp.status_code == 200
+        got = _json(resp)["catalog"]["attributes"][0]
+        for key in ("datatype", "maxLength", "pattern", "valueSource", "unit"):
+            assert got[key] == row[key], key
+        assert got == row
