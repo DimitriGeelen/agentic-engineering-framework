@@ -133,3 +133,45 @@ _run_tty() {
     tmux -L "$SOCK" capture-pane -p -t "$name:" > "$T/entered.txt"
     ! grep -q '\^L' "$T/entered.txt" || false
 }
+
+@test "T-5059: both client hooks skip a read-only client" {
+    _run_tty
+    [ -s "$T/tmux.argv" ]
+    [ "$(grep -c '\[ #{client_readonly} = 1 \] || tmux -L ' "$T/tmux.argv")" -eq 2 ]
+}
+
+@test "T-5059: live, a read-only attach sends no ^L; a writable attach does (throwaway server)" {
+    command -v tmux >/dev/null 2>&1 || skip "tmux unavailable"
+    _run_tty
+    mapfile -t ARGV < "$T/tmux.argv"
+    SOCK="t5059-$$-${BATS_TEST_NUMBER:-0}"
+    local name="" i
+    for ((i = 0; i < ${#ARGV[@]}; i++)); do
+        [ "${ARGV[$i]}" = "-s" ] && { name="${ARGV[$((i + 1))]}"; break; }
+    done
+    [ -n "$name" ]
+    tmux -L "$SOCK" -f /dev/null new-session -d -s "$name" -x 80 -y 20 'cat -v'
+    for ((i = 0; i < ${#ARGV[@]}; i++)); do
+        if [ "${ARGV[$i]}" = "set-hook" ]; then
+            local g=()
+            i=$((i + 1))
+            while [ "$i" -lt "${#ARGV[@]}" ] && [ "${ARGV[$i]}" != ";" ]; do
+                g+=("${ARGV[$i]//"${ARGV[1]}"/$SOCK}")
+                i=$((i + 1))
+            done
+            tmux -L "$SOCK" "set-hook" "${g[@]}"
+        fi
+    done
+    # A read-only viewer attaches and leaves: the agent's pane must receive nothing.
+    # script(1) forwards end-of-input as Ctrl-D: keep its stdin open past the attach, or a
+    # writable client types EOF into `cat -v` and the pane exits before the hook's ^L lands.
+    sleep 4 | script -qec "timeout 2 tmux -L $SOCK attach -r -t '$name'" /dev/null >/dev/null 2>&1 || true
+    sleep 1.5
+    tmux -L "$SOCK" capture-pane -p -t "$name:" > "$T/readonly.txt"
+    ! grep -q '\^L' "$T/readonly.txt" || false
+    # Control: the operator's own (writable) attach still redraws.
+    sleep 4 | script -qec "timeout 2 tmux -L $SOCK attach -t '$name'" /dev/null >/dev/null 2>&1 || true
+    sleep 1.5
+    tmux -L "$SOCK" capture-pane -p -t "$name:" > "$T/writable.txt"
+    grep -q '\^L' "$T/writable.txt"
+}
