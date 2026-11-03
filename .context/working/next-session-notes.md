@@ -1,6 +1,29 @@
 # Next session: carry-over
 
-## FIRST (2026-11-02 ~00:30Z, ~760K used, all work pushed; latest be.24 = be290e092)
+## FIRST (2026-11-03 ~12:00Z; latest be.28 = 8c677b8a0; GitHub IS NOW origin)
+- **NOTHING LEAVES RING20** (operator, furious, 2026-11-02): never the Artifact tool / Claude Docs / any outside
+  service for project content; PDF/Word = pandoc + soffice locally. Memory: feedback_nothing_leaves_ring20.md.
+  Pronouns: Mehdi = they/them or by name (slipped repeatedly on 2026-11-02).
+- **Remote switch done (T-5044):** `origin` = GitHub, `onedev` = mirror (fw mirror sync, now also bleeding-edge).
+  OneDev's force-push job has no triggers. Open in T-5044: operator's GitHub branch rules (no force push/deletion on
+  bleeding-edge and master) and other clones elsewhere.
+- **Arc github-contributions (arc-027):** roadmap with status + dates `docs/reports/T-5006-roadmap.md`. Done today:
+  T-5045 (GitHub PR checks green), T-5047 (CONTRIBUTING/PR template/SECURITY), tracking issue #114 (pinned, mentions
+  @MikeEchoVoid). Next: T-5049 (audit alarm 1.4), then T-5009 (isolated test hosts; blocks Mehdi's code PRs).
+- **Role chain:** step 1 (T-5021) done, 3 review rounds; awaits operator sign-off
+  http://192.168.10.107:3000/review/T-5021 (sign-off list in requirements §14). Steps 2-8 = T-5022..T-5028.
+  Role-chain inputs (ring20 protocol, 9 cards, driver) stored in docs/reports/T-5006-inputs/role-chain/.
+  T-3935 = embed the chain as template arc (010 + ring20 + 1409 input recorded).
+- **Shipped yesterday:** be.26 T-5008 (seat PID namespace; residual: seat user, open), be.27 T-5014 (main-session
+  lease, live here; 010/ring20/050 confirmed). T-5014 open: SessionEnd release hook (operator wiring), upgrade hint.
+- **New tasks from peers (2026-11-02/03):** T-5010..T-5013 Watchtower, T-5015 designer 0.37.0 re-pin, T-5016 Anchor
+  (inception), T-5017..T-5020 sidecar receiver, T-5031..T-5034 access-grant self-grant (G-129 high), T-5035 ring20
+  bvp patches (text in docs/reports/T-5035-inputs/), T-5036 space-in-path grants, T-5037 batch verification
+  (inception), T-5038 orphan inbox fan-out, T-5039/T-5040 read-only allowlist + reviewer report path, T-5041 release
+  channels (inception, operator set the model), T-5042 seats cannot render Mermaid, T-5043/T-5046 paid seat path,
+  T-5048 bin/fw colour codes.
+
+## EARLIER (2026-11-02 ~00:30Z, ~760K used, all work pushed; latest be.24 = be290e092)
 - **Closed tonight:**
   - T-4977 (designer 0.35.0, be.16);
   - T-4976 (fixture leak plus lint);
