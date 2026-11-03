@@ -680,6 +680,8 @@ font-family: 'Outfit';
   .node-shape { transition: stroke-width 0.1s ease; }
   .node-label { fill: var(--text); font-family: var(--sans); font-size: 11px; font-weight: 500; pointer-events: none; }
   .node-label-sub { fill: var(--text-faint); font-family: var(--mono); font-size: 9px; pointer-events: none; }
+  /* T-1369: a document's [state]: brighter and larger than a sub-label, it is what makes the document a trigger (sweep) */
+  .data-state-label { fill: var(--text-dim); font-family: var(--mono); font-size: 10px; pointer-events: none; }
   /* Global label size (T-085): keyed off data-lsize on the svg root. The
      lane-fit ladder's explicit shrink steps use inline style, which wins
      over these rules by cascade priority. */
@@ -1278,6 +1280,15 @@ font-family: 'Outfit';
   .io-field-line2 select { flex: 1 1 0; min-width: 0; width: auto; }
   .io-field-line2 select[data-fattr="cardinality"] { flex-grow: 1.35; }   /* room for "cardinality —" (T-1302 sweep) */
   .io-field-row + .io-field-row { border-top: 1px dotted var(--border); padding-top: 5px; }   /* where a field ends (sweep) */
+  /* T-1365: the attribute's value rule from the project's field catalog, under its field row (read-only) */
+  .io-field-rule { grid-column: 1 / -1; min-width: 0; font-size: 11px; line-height: 1.45; color: var(--text-dim); overflow-wrap: anywhere; }
+  .io-field-rule summary { cursor: pointer; list-style-position: inside; }
+  .io-field-rule .r-name { color: var(--text); font-family: var(--mono); }
+  .io-field-rule .r-mono { font-family: var(--mono); }
+  .io-field-rule dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 2px 8px; margin: 4px 0 2px 12px; }
+  .io-field-rule dt { color: var(--text-dim); }   /* not --text-faint: too weak on dark (T-1365 sweep) */
+  .io-field-rule dd { margin: 0; min-width: 0; color: var(--text); }
+  .io-field-rule.none { color: var(--text-dim); font-style: italic; }
   .io-field-when { font-family: var(--mono); font-size: 10px; color: var(--text-dim); white-space: nowrap; }
   .io-attr-hint { grid-column: 2; font-size: 10px; color: var(--orange); }
   .io-attr-hint:empty { display: none; }
@@ -1752,10 +1763,16 @@ font-family: 'Outfit';
           <marker id="mf-end" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto">
             <path d="M0,0 L10,5 L0,10 z" fill="var(--bg)" stroke="var(--text-dim)" stroke-width="1.1" />
           </marker>
+          <!-- T-1369: a data association's open arrowhead (BPMN draws data associations dotted, open-headed) -->
+          <marker id="da-end" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M1,1 L9,5 L1,9" fill="none" stroke="var(--text-dim)" stroke-width="1.3" />
+          </marker>
         </defs>
         <g id="g-pool"></g>
         <!-- T-1120: the other pools of a collaboration and the message flows, read-only (no pointer events) -->
         <g id="g-collab" pointer-events="none"></g>
+        <!-- T-1369: documents (BPMN data objects) with their state and associations, read-only (no pointer events) -->
+        <g id="g-data" pointer-events="none"></g>
         <!-- T-286: id badges paint BELOW edges by default (arrows carry flow semantics;
              badges are secondary metadata) — the selected element's badge raises into
              g-badges-top. Both layers are pointer-events:none so badges never swallow
@@ -2335,6 +2352,10 @@ const STEP_WORD = {
   eventError: 'error', eventTimer: 'timer', eventMessage: 'message',
 };
 function stepWordOf(node) {
+  // T-1366: a plain third-party event whose native kind the canvas marks (conditional, signal) is named by that kind,
+  // not "link": it is not a link (T-1222 reviewer ruling), and the id said otherwise.
+  const plainWord = PLAIN_KIND_WORD[plainEventKind(node)];
+  if (plainWord) return plainWord;
   if (STEP_WORD[node.type]) return STEP_WORD[node.type];
   const tag = node.foreignTag || '';
   if (/Gateway$/.test(tag)) return 'gw';
@@ -4096,6 +4117,28 @@ function isPlainEvent(n) {
   return !!n && (n.type === 'linkEventCatch' || n.type === 'linkEventThrow') && !n.linkDef
     && (n.nativeEventDefs || []).length > 0;
 }
+// T-1366: the BPMN kind of a plain event's native definition ('conditional', 'signal', 'escalation', ...), or ''.
+// Read from the definition kept verbatim on import (T-1222); only the kinds in PLAIN_KIND_WORD get a marker and an id
+// word, the rest stay the unmarked plain event.
+function plainEventKind(n) {
+  if (!isPlainEvent(n)) return '';
+  const m = /^<(?:[\w.-]+:)?(\w+)EventDefinition\b/.exec(String(n.nativeEventDefs[0] || '').trim());
+  return m ? m[1] : '';
+}
+const PLAIN_KIND_WORD = { conditional: 'conditional', signal: 'signal' };
+const PLAIN_KIND_TYPE = { conditional: 'conditionalEvent', signal: 'signalEvent' };   // panel header / badge
+// T-1366: BPMN's kind marker inside a plain event: conditional = a lined sheet, signal = a triangle (filled on a throw).
+function plainKindMarker(g, n, cx, cy, stroke) {
+  const kind = plainEventKind(n);
+  if (kind === 'conditional') {
+    g.appendChild(el('rect', { x: cx - 5, y: cy - 6.5, width: 10, height: 13, fill: 'none', stroke, 'stroke-width': '1.2', 'data-kind-marker': kind }));
+    g.appendChild(el('path', { d: `M${cx - 3} ${cy - 3.5} H${cx + 3} M${cx - 3} ${cy - 0.5} H${cx + 3} M${cx - 3} ${cy + 2.5} H${cx + 3}`, stroke, 'stroke-width': '1' }));
+  } else if (kind === 'signal') {
+    const throwing = n.type === 'linkEventThrow';
+    g.appendChild(el('path', { d: `M${cx} ${cy - 6.5} L${cx + 6} ${cy + 4.5} L${cx - 6} ${cy + 4.5} Z`, stroke, 'stroke-width': '1.2',
+                               fill: throwing ? stroke : 'none', 'stroke-linejoin': 'round', 'data-kind-marker': kind }));
+  }
+}
 // T-1222: a catch imported from a third-party bpmn:boundaryEvent keeps its host, with or without a definition (a
 // designer-made link event never carries hostRef: that field belongs to the typed-event schema).
 function isPlainBoundary(n) {
@@ -4271,6 +4314,7 @@ function renderNodes() {
       const stroke = 'var(--text-faint)';
       g.appendChild(el('circle', { cx, cy, r, class: 'node-shape', fill: 'var(--surface-2)', stroke, 'stroke-width': '1.5' }));
       g.appendChild(el('circle', { cx, cy, r: r - 3.5, fill: 'none', stroke, 'stroke-width': '1.2' }));
+      plainKindMarker(g, n, cx, cy, 'var(--text-dim)');   // T-1366: kind marker, a step brighter than the ring (sweep: contrast)
       // T-1222: a plain third-party boundary catch keeps the BPMN boundary ring (dashed when non-interrupting).
       if (boundaryHostOf(n)) {
         const ringAttrs = { cx, cy, r: r + 3, fill: 'none', stroke, 'stroke-width': '1.2' };
@@ -4285,6 +4329,7 @@ function renderNodes() {
       const stroke = 'var(--text-faint)';
       g.appendChild(el('circle', { cx, cy, r, class: 'node-shape', fill: 'var(--surface-2)', stroke, 'stroke-width': '1.5' }));
       g.appendChild(el('circle', { cx, cy, r: r - 3.5, fill: 'var(--text-faint)', 'fill-opacity': '0.35', stroke, 'stroke-width': '1.2' }));
+      plainKindMarker(g, n, cx, cy, 'var(--text-dim)');   // T-1366: a signal throw shows the filled triangle
     } else if (n.type === 'linkEventThrow' || n.type === 'linkEventCatch') {
       // Off-page connector: hollow circle with a chevron arrow inside.
       // Throw = chevron pointing right (data leaves); catch = chevron pointing left (data enters).
@@ -5424,6 +5469,7 @@ function wrapText(s, max) {
 
 function renderEdges() {
   renderCollab();   // T-1120: kept pools + message flows; on every edge redraw, so a flow follows a dragged node
+  renderData();     // T-1369: documents and their associations, on every edge redraw, so a line follows a dragged task
   gEdges.innerHTML = '';
   gHandles.innerHTML = '';
   for (const e of state.edges) {
@@ -7287,6 +7333,64 @@ async function loadFieldCatalog() {
   } catch (e) { _fieldCatalog = null; aefRecordFault('field-catalog:load', e); }
   if (typeof renderProperties === 'function') renderProperties();
 }
+// T-1365: an attribute's value rule, shown under an aef:field whose fieldRef the catalog knows. The rule keys come from
+// the producer's SHACL property shape (greenfield: datatype, maxLength, pattern, in, description) plus its own
+// example / valueSource / derivedFrom; catalog contract T-1312 carries them through untouched. Read-only: nothing here
+// writes the map. null = no catalog, or the field is addressed by path (no rule to look up).
+function catalogRowFor(ref) { return (_fieldCatalog && ref) ? (_fieldCatalog.find(x => x.ref === ref) || null) : null; }
+function ruleValues(v) {   // `in`: an array, or a "|"-separated text
+  if (Array.isArray(v)) return v.filter(x => x !== null && x !== undefined && String(x) !== '').map(String);
+  return typeof v === 'string' && v.trim() ? v.split('|').map(s => s.trim()).filter(Boolean) : [];
+}
+function ioFieldRule(ref) {
+  if (!_fieldCatalog || !ref) return null;
+  const x = catalogRowFor(ref);
+  const box = document.createElement('div');
+  box.className = 'io-field-rule';
+  if (!x) {
+    box.classList.add('none'); box.dataset.rule = 'none';
+    box.textContent = 'not in the project\'s field catalog: no value rule';
+    return box;
+  }
+  box.dataset.rule = 'catalog';
+  const txt = v => (typeof v === 'string' || typeof v === 'number') ? String(v).trim() : '';
+  const values = ruleValues(x.in);
+  const dtype = txt(x.datatype).replace(/^xsd:/, '');
+  const bits = [];   // the one-line summary
+  if (dtype) bits.push(dtype);
+  if (txt(x.maxLength)) bits.push('max ' + txt(x.maxLength));
+  if (txt(x.pattern)) bits.push('pattern');
+  if (values.length) bits.push('one of ' + values.length);
+  else if (txt(x.example)) bits.push('e.g. ' + txt(x.example));
+  const det = document.createElement('details');
+  const sum = document.createElement('summary');
+  const nm = document.createElement('span');
+  nm.className = 'r-name';
+  nm.textContent = txt(x.notation) || txt(x.label) || x.ref;
+  sum.append(nm, document.createTextNode(bits.length ? ' · ' + bits.join(' · ') : ' · no value rule in the catalog'));
+  sum.title = 'how a value of this attribute is built (from the project\'s field catalog); click for the full rule';
+  det.appendChild(sum);
+  const dl = document.createElement('dl');
+  const add = (k, v, mono) => {
+    if (!v) return;
+    const dt = document.createElement('dt'); dt.textContent = k;
+    const dd = document.createElement('dd'); dd.textContent = v; if (mono) dd.className = 'r-mono';
+    dl.append(dt, dd);
+  };
+  add('meaning', txt(x.label));
+  add('format', txt(x.description));
+  add('type', [dtype, txt(x.maxLength) && ('max length ' + txt(x.maxLength)), txt(x.unit)].filter(Boolean).join(', '));
+  add('pattern', txt(x.pattern), true);
+  add('allowed', values.join(' | '));
+  add('example', txt(x.example) && (txt(x.example) + '  (made up, shape only)'), true);
+  add('comes from', txt(x.valueSource));
+  add('derived', txt(x.derivedFrom));
+  add('system', txt(x.systemLabel) || txt(x.system));
+  add('rule', txt(x.shape), true);
+  det.appendChild(dl);
+  box.appendChild(det);
+  return box;
+}
 const IO_CAT_MAX = 8;   // hits listed at once; type more words to narrow
 function ioCatalogMatches(q) {   // every word of q in the row's notation, label or ref (case-insensitive)
   const words = q.toLowerCase().split(/\s+/).filter(Boolean);
@@ -8066,7 +8170,8 @@ function _renderPropsInto(props, details) {
   // T-308: a bare catch event is presented as the neutral intermediate event it
   // actually is — the underlying n.type is unchanged and still exports as
   // <bpmn:intermediateCatchEvent>.
-  props.appendChild(propsHeader(isBareCatchEvent(n) ? 'intermediateEvent' : n.type, lensDeco('ids') ? displayIdOf(n) : '',
+  // T-1366: a plain event with a marked native kind (conditional, signal) is headed by that kind.
+  props.appendChild(propsHeader(PLAIN_KIND_TYPE[plainEventKind(n)] || (isBareCatchEvent(n) ? 'intermediateEvent' : n.type), lensDeco('ids') ? displayIdOf(n) : '',
     details ? null : () => deleteNode(n.id)));   // T-1127: no delete from inside the details view
   if (!details) {   // T-1127: every element can open its full details (a handoff's double-click jumps instead)
     const all = document.createElement('button');
@@ -8173,6 +8278,38 @@ function _renderPropsInto(props, details) {
     const note = document.createElement('div');
     note.className = 'field-hint';
     note.style.cssText = 'display:block;margin:2px 0 8px;line-height:1.45';
+    const kind = plainEventKind(n);   // T-1366: a conditional / signal event says what it waits for
+    if (kind === 'conditional' || kind === 'signal') {
+      let cond = '';
+      if (kind === 'conditional') {
+        const NS = 'http://www.omg.org/spec/BPMN/20100524/MODEL';
+        const d = new DOMParser().parseFromString(
+          `<r xmlns:bpmn="${NS}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">${n.nativeEventDefs[0]}</r>`, 'application/xml');
+        // by local name: a source written with BPMN as the default namespace is kept unprefixed (T-1222 strips xmlns)
+        const c = Array.from(d.getElementsByTagName('*')).find(e => e.localName === 'condition');
+        cond = c ? (c.textContent || '').trim() : '';
+      }
+      note.textContent = kind === 'conditional'
+        ? 'A conditional event: the flow waits here until a condition holds' + (cond ? ':' : ' (the source names none).')
+        : 'A signal event: the flow waits here for a broadcast signal.';
+      sBare.appendChild(note);
+      if (cond) {
+        const q = document.createElement('div');
+        q.className = 'field-hint';
+        q.style.cssText = 'display:block;margin:0 0 8px;padding:6px 8px;border-left:2px solid var(--border);'
+          + 'font-family:var(--mono);color:var(--text);white-space:pre-wrap;overflow-wrap:anywhere';
+        q.textContent = cond;
+        sBare.appendChild(q);
+      }
+      const keep = document.createElement('div');
+      keep.className = 'field-hint';
+      keep.style.cssText = 'display:block;margin:0 0 8px;line-height:1.45';
+      keep.textContent = kind === 'conditional'
+        ? 'The condition is kept exactly as the source wrote it; the designer cannot edit the condition yet.'
+        : 'The signal definition is kept exactly as the source wrote it; the designer cannot edit it yet.';
+      sBare.appendChild(keep);
+      props.appendChild(sBare);
+    } else {
     note.textContent = 'This event carries no kind and no handoff target — the source says only '
       + 'that something is awaited here. It is valid as it stands and exports unchanged.';
     sBare.appendChild(note);
@@ -8185,6 +8322,7 @@ function _renderPropsInto(props, details) {
     mkBtn.onclick = () => { sessionAuthoredLinks.add(n.uid); renderNodes(); renderProperties(); };
     sBare.appendChild(mkBtn);
     props.appendChild(sBare);
+    }
   } else if (n.type === 'linkEventCatch') {
     // Already presenting as a handoff — hold that reading for the rest of the
     // session so clearing the target field mid-edit doesn't flip the panel out
@@ -8491,6 +8629,7 @@ const LENS_TYPE_WORD = {
   scriptTask: 'Script task', subProcess: 'Sub-process', exclusiveGateway: 'Gateway (one path)',
   parallelGateway: 'Gateway (all paths)', linkEventThrow: 'Handoff out', linkEventCatch: 'Handoff in',
   eventError: 'Error event', eventTimer: 'Timer event', eventMessage: 'Message event', intermediateEvent: 'Event',
+  conditionalEvent: 'Conditional event', signalEvent: 'Signal event',   // T-1366: plain events with a marked kind
 };
 function propsHeader(typeName, id, onDelete) {
   const h = document.createElement('div');
@@ -8528,6 +8667,9 @@ function typeBadgeSvg(t) {
   if (t === 'linkEventCatch') return '<svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/><path d="M19 8 L11 14 L19 20" stroke="var(--accent)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   // T-308: neutral badge for a bare catch event — matches the canvas double ring.
   if (t === 'intermediateEvent') return '<svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="var(--surface-2)" stroke="var(--text-faint)" stroke-width="1.5"/><circle cx="14" cy="14" r="7.5" fill="none" stroke="var(--text-faint)" stroke-width="1.2"/></svg>';
+  // T-1366: plain events with a marked kind: the neutral double ring plus BPMN's marker, as on the canvas.
+  if (t === 'conditionalEvent') return '<svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="var(--surface-2)" stroke="var(--text-faint)" stroke-width="1.5"/><circle cx="14" cy="14" r="7.5" fill="none" stroke="var(--text-faint)" stroke-width="1.2"/><rect x="10.5" y="9.5" width="7" height="9" fill="none" stroke="var(--text-dim)" stroke-width="1"/><path d="M12 12 H16 M12 14 H16 M12 16 H16" stroke="var(--text-dim)" stroke-width="0.9"/></svg>';
+  if (t === 'signalEvent') return '<svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="var(--surface-2)" stroke="var(--text-faint)" stroke-width="1.5"/><circle cx="14" cy="14" r="7.5" fill="none" stroke="var(--text-faint)" stroke-width="1.2"/><path d="M14 9.5 L18 17 L10 17 Z" fill="none" stroke="var(--text-dim)" stroke-width="1.1" stroke-linejoin="round"/></svg>';
   if (t === 'eventError') return '<svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="var(--red-soft)" stroke="var(--red)" stroke-width="1.5"/><path d="M15 7 L9 15 L13 15 L11 21 L18 12 L14 12 Z" fill="var(--red)" stroke="none"/></svg>';
   if (t === 'eventTimer') return '<svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="1.5"/><circle cx="14" cy="14" r="6" fill="none" stroke="var(--blue)" stroke-width="1.2"/><path d="M14 14 V9 M14 14 L17.5 16" stroke="var(--blue)" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>';
   if (t === 'eventMessage') return '<svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11" fill="var(--green-soft)" stroke="var(--green)" stroke-width="1.5"/><rect x="8" y="10" width="12" height="8" rx="1" fill="none" stroke="var(--green)" stroke-width="1.3"/><path d="M8 10.5 L14 15 L20 10.5" stroke="var(--green)" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -9278,6 +9420,8 @@ function ioFieldsEditor(item) {
     del.onclick = () => { item.children = item.children.filter((_, j) => j !== i); if (!item.children.length) delete item.children; renderProperties(); };
     line2.appendChild(del);
     row.append(ks, addr, line2);
+    const rule = kind === 'fieldRef' ? ioFieldRule(el.getAttribute('fieldRef')) : null;   // T-1365
+    if (rule) row.appendChild(rule);
     sec.appendChild(row);
   });
   const add = document.createElement('div');
@@ -10702,13 +10846,32 @@ function maybeShowLaneFixNotice() {
     parts.push(`this file declares ${sk.length + 1} processes and only one can be opened — ` +
                `NOT imported, and NOT saved back: ${which}`);
   }
-  // T-1096: process data is KEPT and saved back but not drawn yet — say so; and name any data association that
-  // could not be kept because what it points at is not in the document (writing it would leave a dangling reference).
+  // T-1096: process data is KEPT and saved back; and name any data association that could not be kept because what it
+  // points at is not in the document (writing it would leave a dangling reference).
+  // T-1372: since T-1369 documents are DRAWN. Count them from the layout the canvas draws (dataLayout), and call "not
+  // shown yet" only what still is not: data stores, a document no task links to, and the associations to those. A
+  // bpmn:dataObject definition is never drawn in BPMN (its references are), so it is not counted as hidden. Before,
+  // every element and association read "not shown yet" while the documents were on the canvas (greenfield, 0.37.0).
   const kd = (typeof state === 'object' && state && state.dataKept) || null;
+  let docsLine = '';
   if (kd) {
-    const nObj = (kd.elements || []).length;
+    const pl = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
     const nAssoc = Object.values(kd.perNode || {}).reduce((a, m) => a + ((m.dataInputAssociation || []).length + (m.dataOutputAssociation || []).length), 0);
-    if (nObj || nAssoc) parts.push(`${nObj} data object/store element${nObj === 1 ? '' : 's'} and ${nAssoc} data association${nAssoc === 1 ? '' : 's'} kept unchanged and saved back, not shown yet`);
+    const L = dataLayout(state);
+    const drawn = L ? L.docs.length : 0, drawnLinks = L ? L.links.length : 0;
+    const stores = (kd.elements || []).filter(x => /^<(?:[\w.-]+:)?dataStoreReference\b/.test(String(x).trim())).length;
+    const unlinked = L ? L.unplaced.length : 0, otherAssoc = Math.max(0, nAssoc - drawnLinks);
+    // T-1372 sweep: plain words ("links", not "data associations"), the hidden items NAMED, and the good news last, so
+    // the notice's leading warning sign belongs to a warning (docsLine is pushed at the end of the notice).
+    const attr = (x, k) => { const m = new RegExp('\\b' + k + '="([^"]*)"').exec(String(x)); return m ? m[1] : ''; };
+    const storeNames = (kd.elements || []).filter(x => /^<(?:[\w.-]+:)?dataStoreReference\b/.test(String(x).trim()))
+      .map(x => attr(x, 'name') || attr(x, 'id'));
+    const unlinkedNames = (L ? L.unplaced : []).map(id => { const x = (kd.elements || []).find(e => attr(e, 'id') === id); return (x && attr(x, 'name')) || id; });
+    if (drawn) docsLine = `${pl(drawn, 'document')} drawn under the tasks that make or use ${drawn === 1 ? 'it' : 'them'}, with ${pl(drawnLinks, 'link')} to those tasks`;
+    const hidden = [stores && `${pl(stores, 'data store')} (${storeNames.join(', ')})`,
+                    unlinked && `${pl(unlinked, 'document')} no task links to (${unlinkedNames.join(', ')})`,
+                    otherAssoc && pl(otherAssoc, 'link')].filter(Boolean);
+    if (hidden.length) parts.push(`${hidden.join(', ')}: in the file and saved back unchanged, but not drawn`);
     if ((kd.skipped || []).length) parts.push(`${kd.skipped.length} data association${kd.skipped.length === 1 ? '' : 's'} NOT kept — ` +
       `${kd.skipped.length === 1 ? 'it points' : 'they point'} at something not in this file: ` + kd.skipped.map(s => `${s.id} → ${s.missing.join(', ')}`).join('; '));
   }
@@ -10731,6 +10894,7 @@ function maybeShowLaneFixNotice() {
   // T-1264: unmoved shapes and lines keep the file's own geometry (a node moved back into its lane, or by the person,
   // is redrawn); pool and lane outlines are still not written back
   if (nk.diRedrawn) parts.push(`on save, shapes that neither you nor this import moved keep this file's sizes and labels, and lines between them keep their bends; the file's original pool and lane outlines are NOT kept`);
+  if (docsLine) parts.push(docsLine);   // T-1372: last, so the leading warning sign belongs to a warning
   const show = parts.length > 0;
   // T-1327: one part per line. Run together with semicolons, seven parts made a 300px-tall paragraph at 1024 that
   // nobody reads. The "; " separators stay in the text (hidden), so textContent reads exactly as before.
@@ -13734,7 +13898,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.35.0';
+const APP_VERSION = '0.38.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
@@ -14756,6 +14920,130 @@ function renderCollab() {
       g.appendChild(el('text', { x: (m.x + n2.x) / 2 + 6, y: (m.y + n2.y) / 2 - 4, class: 'edge-label' }, [text(f.name)])); }
   }
 }
+// T-1369 (T-1363 GO, build B1): documents on the canvas. A bpmn:dataObjectReference (with its bpmn:dataState) and
+// the data associations that link it to tasks are KEPT on save since T-1096, verbatim, in state.dataKept; until now
+// nothing drew them, so a reader could not see which document a step makes or needs, nor in which state (the signed
+// order confirmation is the binding moment of a sale). Drawn here read-only, from the kept XML: nothing is written, so
+// the save is unchanged except for lane height (below). Geometry (operator 2026-11-02, option 1: "let the lane grow"):
+//   - every reference is placed by ONE rule, the file's own data-object DI is not used: under its anchor task, the
+//     task that PRODUCES it (its first output association), else the first that uses it (input), DATA_DOC_GAP below
+//     the task; several documents under one task stand side by side, centred under it. Greenfield's WT-01 put all 5
+//     of its documents outside every lane (above the pool, across lane borders), so a file's positions could not be
+//     trusted to read as "this step's document". With no associated task a reference is not drawn (nowhere to anchor
+//     it) and dataLayout reports it in `unplaced`;
+//   - the anchor task's LANE GROWS to hold its documents and their labels (growLanesForDocuments, once at import), and
+//     the lanes below move down with their nodes, keeping their layout. So a map with documents saves with taller
+//     lanes (operator's choice); a map without documents, or one the designer already grew, is unchanged;
+//   - each association is a straight dotted line between the borders of the task and the document, computed from the
+//     task's CURRENT position (a kept BPMNEdge would point where the task was in the file), with an open arrowhead
+//     towards the receiver: task -> document for an output, document -> task for an input.
+// Data stores (bpmn:dataStoreReference) are not drawn yet; they stay kept as before.
+const DATA_DOC_W = 36, DATA_DOC_H = 50, DATA_DOC_GAP = 34, DATA_DOC_SPACING = 24, DATA_LABEL_CH = 18, DATA_LABEL_LINE = 12;
+const DATA_LANE_MARGIN = 10;   // below the lowest label line, inside the lane
+// The labels under a document: its name wrapped, then [state]; the lines renderData draws and growLanesForDocuments makes room for.
+function dataLabelLines(d) { return [...(d.name ? wrapText(d.name, DATA_LABEL_CH) : []), ...(d.state ? ['[' + d.state + ']'] : [])]; }
+function dataLayout(s) {
+  const k = s && s.dataKept;
+  if (!k || !(k.elements || []).length) return null;
+  const NS = 'xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"'
+    + ' xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI"'
+    + ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"';
+  const parse = xml => {
+    const d = new DOMParser().parseFromString(`<r ${NS}>${xml}</r>`, 'application/xml');
+    return d.getElementsByTagName('parsererror').length ? null : d.documentElement.firstElementChild;
+  };
+  const docs = new Map();   // reference id -> { id, name, state, x, y, w, h, placed }
+  for (const xml of k.elements) {
+    const e = parse(xml);
+    if (!e || e.localName !== 'dataObjectReference' || !e.getAttribute('id')) continue;
+    const st = Array.from(e.children).find(c => c.localName === 'dataState');
+    docs.set(e.getAttribute('id'), { id: e.getAttribute('id'), name: e.getAttribute('name') || '',
+      state: st ? (st.getAttribute('name') || '') : '', x: null, y: null, w: DATA_DOC_W, h: DATA_DOC_H, placed: 'none' });
+  }
+  if (!docs.size) return null;
+  const links = [];   // { id, doc, node, dir: 'out' (task -> doc) | 'in' (doc -> task) }
+  for (const n of s.nodes || []) {
+    const per = (k.perNode || {})[n.uid]; if (!per) continue;
+    for (const [tag, dir, refTag] of [['dataOutputAssociation', 'out', 'targetRef'], ['dataInputAssociation', 'in', 'sourceRef']]) {
+      for (const xml of per[tag] || []) {
+        const e = parse(xml); if (!e) continue;
+        for (const r of Array.from(e.children).filter(c => c.localName === refTag)) {
+          const ref = r.textContent.trim();
+          if (docs.has(ref)) links.push({ id: e.getAttribute('id') || '', doc: ref, node: n, dir });
+        }
+      }
+    }
+  }
+  // The one placement rule: each document under its anchor task (the producer, else the first user), side by side.
+  const byAnchor = new Map();   // node uid -> { node, docs: [] } in document order
+  for (const doc of docs.values()) {
+    const first = links.filter(l => l.doc === doc.id).sort((a, b) => (a.dir === b.dir ? 0 : a.dir === 'out' ? -1 : 1))[0];
+    if (!first) continue;
+    const slot = byAnchor.get(first.node.uid) || { node: first.node, docs: [] };
+    slot.docs.push(doc); byAnchor.set(first.node.uid, slot);
+  }
+  for (const { node, docs: ds } of byAnchor.values()) {
+    const nd = dims(node), total = ds.length * DATA_DOC_W + (ds.length - 1) * DATA_DOC_SPACING;
+    ds.forEach((doc, i) => Object.assign(doc, { x: node.x + nd.w / 2 - total / 2 + i * (DATA_DOC_W + DATA_DOC_SPACING),
+      y: node.y + nd.h + DATA_DOC_GAP, anchor: node, placed: 'rule' }));
+  }
+  const unplaced = [...docs.values()].filter(d => d.placed === 'none').map(d => d.id);
+  return { docs: [...docs.values()].filter(d => d.placed !== 'none'), links: links.filter(l => docs.get(l.doc).placed !== 'none'), unplaced };
+}
+// The lowest point a document and its labels reach.
+function dataDocBottom(d) { return d.y + d.h + 13 + (dataLabelLines(d).length - 1) * DATA_LABEL_LINE + 4; }
+// Operator 2026-11-02 (option 1): grow each anchor task's lane until its documents and labels fit inside it, moving the
+// lanes below down WITH their nodes (by the same amount, so their layout is kept; unlike a manual resize, which
+// re-centres them). Never shrinks. Runs once at import, top lane first (a growth moves everything below it).
+function growLanesForDocuments(s) {
+  const lanesArr = (s && s.lanes) || [];
+  let grown = 0;
+  for (let i = 0; i < lanesArr.length; i++) {
+    const L = dataLayout(s); if (!L) return grown;
+    const lane = lanesArr[i];
+    const mine = L.docs.filter(d => d.anchor && d.anchor.lane === lane.id);
+    if (!mine.length) continue;
+    const top = laneTop(lane.id), need = Math.ceil(Math.max(...mine.map(dataDocBottom)) + DATA_LANE_MARGIN - (top + lane.height));
+    if (need <= 0) continue;
+    lane.height += need; grown++;
+    const below = new Set(lanesArr.slice(i + 1).map(l => l.id));
+    for (const n of s.nodes) if (below.has(n.lane)) n.y += need;
+  }
+  return grown;
+}
+// The point where the segment from a rectangle's centre towards (tx, ty) leaves the rectangle.
+function rectExit(r, tx, ty) {
+  const cx = r.x + r.w / 2, cy = r.y + r.h / 2, dx = tx - cx, dy = ty - cy;
+  if (!dx && !dy) return { x: cx, y: cy };
+  const s = Math.min(dx ? (r.w / 2) / Math.abs(dx) : Infinity, dy ? (r.h / 2) / Math.abs(dy) : Infinity);
+  return { x: cx + dx * s, y: cy + dy * s };
+}
+function renderData() {
+  const g = $('g-data'); if (!g) return;
+  g.innerHTML = '';
+  const L = dataLayout(state); if (!L) return;
+  const byId = new Map(L.docs.map(d => [d.id, d]));
+  for (const l of L.links) {
+    const d = byId.get(l.doc), nd = dims(l.node);
+    const nr = { x: l.node.x, y: l.node.y, w: nd.w, h: nd.h };
+    const a = rectExit(nr, d.x + d.w / 2, d.y + d.h / 2), b = rectExit(d, nr.x + nr.w / 2, nr.y + nr.h / 2);
+    const [p, q] = l.dir === 'out' ? [a, b] : [b, a];
+    g.appendChild(el('path', { d: `M${p.x.toFixed(1)},${p.y.toFixed(1)} L${q.x.toFixed(1)},${q.y.toFixed(1)}`, fill: 'none',
+      stroke: 'var(--text-dim)', 'stroke-width': '1.2', 'stroke-dasharray': '2 3', 'marker-end': 'url(#da-end)',
+      'data-data-assoc': l.id, 'data-dir': l.dir }));
+  }
+  for (const d of L.docs) {
+    const f = Math.min(10, d.w / 3);   // the folded corner
+    const grp = el('g', { 'data-data-object': d.id, 'data-placed': d.placed });
+    grp.appendChild(el('path', { d: `M${d.x},${d.y} H${d.x + d.w - f} L${d.x + d.w},${d.y + f} V${d.y + d.h} H${d.x} Z`,
+      fill: 'var(--surface-2)', stroke: 'var(--text-dim)', 'stroke-width': '1.3' }));
+    grp.appendChild(el('path', { d: `M${d.x + d.w - f},${d.y} V${d.y + f} H${d.x + d.w}`, fill: 'none', stroke: 'var(--text-dim)', 'stroke-width': '1.1' }));
+    const lines = dataLabelLines(d);
+    lines.forEach((t, i) => grp.appendChild(el('text', { x: d.x + d.w / 2, y: d.y + d.h + 13 + i * DATA_LABEL_LINE, 'text-anchor': 'middle',
+      class: i < lines.length - (d.state ? 1 : 0) ? 'node-label' : 'data-state-label', 'data-data-label': d.id }, [text(t)])));
+    g.appendChild(grp);
+  }
+}
 // T-1120: the DI the export writes for the kept pools — computed by collabLayout, so it equals the canvas.
 // bpmnElement -> serialized shape/edge (keeping the source DI element id where there was one).
 function collabDiXml(s) {
@@ -15708,7 +15996,10 @@ function parseBpmnXml(text) {
   // T-1342: attached boundary events onto their hosts now, as every render would. Display ids are numbered by position
   // (computeDisplayId), so numbering a file's boundary events at its own coordinates and saving them at their hosts'
   // renumbered them on the next open.
-  state = result; syncBoundaryPositions();
+  // T-1369 (operator's option 1): a lane grows to hold the documents of its tasks, the lanes below move down with their
+  // nodes. Before T-1264's capture, so the moved nodes count as moved (their kept DI no longer matches).
+  state = result; growLanesForDocuments(result);
+  syncBoundaryPositions();
   // T-1264: what of the file's own geometry differs from ours, at the positions now final (routing reads `state`)
   if (sourceCarriedDi) { state = result; captureImportedDi(doc, result, displayIdToUid, flowIdToUid); }
   state = prev;

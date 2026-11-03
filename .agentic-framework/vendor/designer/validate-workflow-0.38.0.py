@@ -22,7 +22,15 @@ Exit codes (AEF audit convention):
 
 Usage:
     python3 tools/validate-workflow.py <file> [--format {auto,yaml,xml}]
-                                              [--json] [--quiet]
+                                              [--json] [--quiet] [--field-catalog PATH] [--strict]
+
+    --field-catalog (T-1370): also check each io field and aef:expect against the project's field catalog (832 T-1312
+    format v1): unknown fieldRef, a field of another object, an expectation the attribute's rule forbids (error) or
+    merely repeats. An unreadable catalog is a load failure (exit 2). Without it, nothing changes.
+
+    --strict (T-1377): the general map rules refuse instead of warn: io incomplete or missing, a decision branch
+    without a condition, an unknown documentation prefix, an unlinked document, aef:position differing from DI (and
+    W-XML-GW-AMBIGUOUS). A map with steps and no io at all becomes an error too. Without it, they are warnings.
 
 Standalone by design (not wired into the vendored `fw` CLI) to respect the
 product/framework boundary and Directive 4 (Portability); the framework may
@@ -1093,8 +1101,14 @@ class Validator:
 class XmlValidator:
     """Validates the BPMN-XML export form (docs/designer/schema.md section 7)."""
 
-    def __init__(self):
+    def __init__(self, catalog=None, strict=False):
         self.findings = []
+        # T-1370: the project's field catalog (load_field_catalog), or None. Only the catalog checks read it; without
+        # one every other rule behaves exactly as before.
+        self.catalog = catalog
+        # T-1377: --strict. Two map-wide checks widen (see _check_general_map_rules) and run_xml raises STRICT_RULES to
+        # ERROR. Off by default, so every finding stays exactly as before.
+        self.strict = strict
 
     def err(self, rule, location, message):
         self.findings.append(Finding(ERROR, rule, location, message))
@@ -1136,6 +1150,8 @@ class XmlValidator:
         return {c.get("id") for c in self._flow_children(process) if id(c) not in top and c.get("id")}
 
     def validate(self, root):
+        # T-1377: kept, because the connectivity check below reuses the name `root` for a node id.
+        self._doc_root = root
         # section 7: root is bpmn:definitions containing a bpmn:process
         process = root.find("{%s}process" % BPMN_NS)
         if self._local(root.tag) != "definitions" or process is None:
@@ -1631,6 +1647,9 @@ class XmlValidator:
         # Mapping v1.1 lint on the io (T-1303, AEF spec T-4415): R1-R3.
         self._check_io_v11(process)
 
+        # T-1377 (T-1375 GO): the general map rules a consumer checked in its own script.
+        self._check_general_map_rules(self._doc_root, process, node_type, seq_flows, gateways, gateway_default)
+
     # Attributes that take a CURIE (mapping v1.1). `ref` is v1 and has its own read rule, so it is not read here.
     IO_CURIE_ATTRS = ("fieldRef", "typeRef", "conceptRef")
     IO_KEYLESS_OPERATIONS = ("update", "upsert", "delete")
@@ -1698,6 +1717,258 @@ class XmlValidator:
                         self.warn("W-XML-IO-MATCH-UNRESOLVED", loc,
                                   "a match field with neither fieldRef nor path: a key exists, but which "
                                   "field it is is not yet determined")
+                if self.catalog is not None:
+                    self._check_io_catalog(io, fields, loc)
+
+    # T-1377: the documentation-line prefixes of a step (832's rule C to its consumers; the authoring kit lists them).
+    # `Notes` opens the free part: from that line on, the text is the author's own and is not checked.
+    DOC_PREFIXES = ("Instruction:", "Screen:", "Decision:", "Keys:", "Open:", "Rule:", "Master:", "Detail:",
+                    "Mapping:")
+    DOC_FREE = "Notes"
+    # aef:position and DI both carry the shape's top-left corner (src parseBpmnXml, "GEOMETRY CONVENTION"); the
+    # designer writes both with one decimal, so anything beyond rounding is a real disagreement.
+    POSITION_DI_TOLERANCE = 0.5
+    DI_NS = "http://www.omg.org/spec/BPMN/20100524/DI"
+    DC_NS = "http://www.omg.org/spec/DD/20100524/DC"
+    # T-1377: what --strict raises to ERROR. The six general map rules, and W-XML-GW-AMBIGUOUS, which W-07 extends.
+    STRICT_RULES = ("W-XML-IO-INCOMPLETE", "W-XML-IO-MISSING", "W-XML-GW-BRANCH-UNCONDITIONED",
+                    "W-XML-GW-AMBIGUOUS", "W-XML-DOC-PREFIX", "W-XML-DATA-UNLINKED", "W-XML-POSITION-DI")
+
+    def _check_general_map_rules(self, root, process, node_type, seq_flows, gateways, gateway_default):
+        """T-1377 (inception T-1375 GO, from a consumer's own map check): six general rules, WARN by default.
+
+        G1 W-XML-IO-INCOMPLETE: an object io (one with typeRef or aef:field) that does not say which object (typeRef),
+           which system (sourceSystem on an input, targetSystem on an output, or derived as mapping v1.1 says: the
+           step's aef:meta default, else the system its typeRef prefix declares), or what the step does to it
+           (operation). v1.1 makes each optional; a map that leaves one out cannot say where its data comes from.
+        G2 W-XML-IO-MISSING: a step in a lane whose authority is "authority" (a system's lane) without any io, in a map
+           that carries io elsewhere. A map without any io stays silent: most of the corpus is io-free and valid by
+           its spec. Under strict, a map with steps and no io at all is one finding on the process.
+        G3 W-XML-GW-BRANCH-UNCONDITIONED: an outgoing flow of a deciding exclusiveGateway (two or more outgoing) with
+           no conditionExpression that is not its default. W-XML-GW-AMBIGUOUS already reports two or more such flows;
+           this reports the case it leaves silent, one unconditioned non-default branch.
+        G4 W-XML-DOC-PREFIX: a step's documentation line that starts with no known prefix (DOC_PREFIXES), before the
+           free `Notes` part. Only in documentation that uses the prefixes at all; under strict, in every step's.
+        G5 W-XML-DATA-UNLINKED: a dataObjectReference with no name, or linked to no step by a data association.
+        G6 W-XML-POSITION-DI: a node whose aef:position and DI bounds differ by more than POSITION_DI_TOLERANCE. The
+           designer draws from aef:position (T-340), so another tool that reads the DI shows a different map.
+        """
+        aef = "{%s}" % AEF_NS
+        children = self._flow_children(process)
+        by_id = {c.get("id"): c for c in children if c.get("id")}
+
+        # -- lanes: which steps are in a lane with authority="authority"
+        system_lane = set()
+        lane_set = process.find("{%s}laneSet" % BPMN_NS)
+        for lane in ([] if lane_set is None else lane_set.iter("{%s}lane" % BPMN_NS)):
+            lm = lane.find("{%s}extensionElements/{%s}laneMeta" % (BPMN_NS, AEF_NS))
+            if lm is not None and lm.get("authority") == "authority":
+                for ref in lane.findall("{%s}flowNodeRef" % BPMN_NS):
+                    system_lane.add((ref.text or "").strip())
+
+        # -- the prefix map's systems (mapping v1.1: a declared prefix may name its system)
+        prefix_system = {}
+        pext = process.find("{%s}extensionElements" % BPMN_NS)
+        if pext is not None:
+            for p in pext.iter(aef + "prefix"):
+                if p.get("name") and p.get("system"):
+                    prefix_system[p.get("name")] = p.get("system")
+
+        steps = [c for c in children if self._local(c.tag) in TYPE_PERFORMER and c.get("id")]
+        step_ios = {}
+        for step in steps:
+            ext = step.find("{%s}extensionElements" % BPMN_NS)
+            ios = [] if ext is None else [e for e in ext.iter() if e.tag in (aef + "input", aef + "output")]
+            step_ios[step.get("id")] = (ext, ios)
+        def object_io(io):
+            # mapping v1.1: an io about an object, with typeRef or field selection. A v1.0 io (name, type, required) is
+            # an argument, and AEF's maps give those to the few steps that take one, so it says nothing about the rest.
+            return bool(io.get("typeRef")) or any(c.tag == aef + "field" for c in io)
+        any_io = any(object_io(io) for _, ios in step_ios.values() for io in ios)
+
+        for step in steps:
+            sid = step.get("id")
+            ext, ios = step_ios[sid]
+            meta = None if ext is None else ext.find(aef + "meta")
+            # G1
+            index = {"input": 0, "output": 0}
+            for io in ios:
+                kind = self._local(io.tag)
+                loc = 'node \'%s\' %s[%d] "%s"' % (sid, kind, index[kind], io.get("name") or "")
+                index[kind] += 1
+                fields = [c for c in io if c.tag == aef + "field"]
+                if not io.get("typeRef") and not fields:
+                    continue   # a v1 io (name, type, required): not an object io
+                side = "sourceSystem" if kind == "input" else "targetSystem"
+                typeref = io.get("typeRef") or ""
+                pfx = typeref.split(":", 1)[0] if ":" in typeref else ""
+                system = io.get(side) or (meta.get(side) if meta is not None else None) or prefix_system.get(pfx)
+                missing = [what for what, have in (("typeRef (which object)", typeref),
+                                                   ("%s (which system)" % side, system),
+                                                   ("operation (read, create, update, upsert or delete)",
+                                                    io.get("operation")))
+                           if not have]
+                if missing:
+                    self.warn("W-XML-IO-INCOMPLETE", loc,
+                              "io_incomplete: an object io without %s; mapping v1.1 lets each be left out, but then "
+                              "the map cannot say where this data comes from or what the step does with it"
+                              % ", ".join(missing))
+            # G2
+            if any_io and not ios and sid in system_lane:
+                self.warn("W-XML-IO-MISSING", "node '%s'" % sid,
+                          "io_missing: step '%s' is in a system's lane (authority=\"authority\") and has no io, "
+                          "while this map gives io elsewhere: what it reads or writes is not recorded"
+                          % (step.get("name") or sid))
+            # G4
+            doc = step.find("{%s}documentation" % BPMN_NS)
+            lines = [] if doc is None else [l.strip() for l in (doc.text or "").split("\n") if l.strip()]
+            body = []
+            for l in lines:
+                if l.startswith(self.DOC_FREE):
+                    break
+                body.append(l)
+            if self.strict or any(l.startswith(self.DOC_PREFIXES) for l in body):
+                for l in body:
+                    if not l.startswith(self.DOC_PREFIXES):
+                        self.warn("W-XML-DOC-PREFIX", "node '%s'" % sid,
+                                  "doc_prefix: documentation line without a known prefix (%s, then %s for free "
+                                  "text): \"%s\"" % (" ".join(self.DOC_PREFIXES), self.DOC_FREE,
+                                                     l if len(l) <= 60 else l[:57] + "..."))
+        if self.strict and steps and not any_io:
+            self.warn("W-XML-IO-MISSING", "<process>",
+                      "io_missing: %d step(s) and no io at all: what any step reads or writes is not recorded"
+                      % len(steps))
+
+        # G3
+        out = {}
+        for f in seq_flows:
+            out.setdefault(f.get("sourceRef"), []).append(f)
+        for gid in gateways:
+            flows = out.get(gid, [])
+            if len(flows) < 2:
+                continue
+            bare = [f for f in flows if f.find("{%s}conditionExpression" % BPMN_NS) is None]
+            if len(bare) > 1:
+                continue   # W-XML-GW-AMBIGUOUS reports it
+            for f in bare:
+                if f.get("id") == gateway_default.get(gid):
+                    continue
+                # Located on the gateway, as W-XML-GW-AMBIGUOUS is, so the canvas marks the decision; the flow is named.
+                self.warn("W-XML-GW-BRANCH-UNCONDITIONED", "exclusiveGateway '%s'" % gid,
+                          "gw_branch_unconditioned: branch %s%s has no conditionExpression and is not the gateway's "
+                          "default: when it is taken is not written down"
+                          % (f.get("id") or "?", " (\"%s\")" % f.get("name") if f.get("name") else ""))
+
+        # G5
+        linked = set()
+        for e in root.iter():
+            if self._local(e.tag) in ("dataInputAssociation", "dataOutputAssociation"):
+                for c in e:
+                    if self._local(c.tag) in ("sourceRef", "targetRef"):
+                        linked.add((c.text or "").strip())
+        for d in children:
+            if self._local(d.tag) != "dataObjectReference":
+                continue
+            did = d.get("id") or "?"
+            if not (d.get("name") or "").strip():
+                self.warn("W-XML-DATA-UNLINKED", "dataObjectReference '%s'" % did,
+                          "data_unlinked: a document without a name")
+            if did not in linked:
+                self.warn("W-XML-DATA-UNLINKED", "dataObjectReference '%s'" % did,
+                          "data_unlinked: document \"%s\" is linked to no step (no data association makes or uses it)"
+                          % (d.get("name") or did))
+
+        # G6
+        bounds = {}
+        for shape in root.iter("{%s}BPMNShape" % self.DI_NS):
+            b = shape.find("{%s}Bounds" % self.DC_NS)
+            if b is not None and shape.get("bpmnElement"):
+                try:
+                    bounds[shape.get("bpmnElement")] = (float(b.get("x")), float(b.get("y")))
+                except (TypeError, ValueError):
+                    pass
+        for nid in sorted(node_type):
+            el = by_id.get(nid)
+            pos = None if el is None else el.find("{%s}extensionElements/{%s}position" % (BPMN_NS, AEF_NS))
+            if pos is None or nid not in bounds:
+                continue
+            try:
+                px, py = float(pos.get("x")), float(pos.get("y"))
+            except (TypeError, ValueError):
+                continue
+            dx, dy = bounds[nid]
+            if abs(px - dx) > self.POSITION_DI_TOLERANCE or abs(py - dy) > self.POSITION_DI_TOLERANCE:
+                self.warn("W-XML-POSITION-DI", "node '%s'" % nid,
+                          "position_di: aef:position (%g, %g) and the DI bounds (%g, %g) disagree: the designer draws "
+                          "the first, other BPMN tools the second" % (px, py, dx, dy))
+
+    def _check_io_catalog(self, io, fields, loc):
+        """T-1370 (T-1363 GO, build B2): an io's fields and expectations against the project's field catalog (contract
+        832 T-1312; its value-rule keys are SHACL's names, T-1365). Runs only when a catalog is given.
+
+        C1 W-XML-IO-FIELD-UNKNOWN, WARN: an aef:field fieldRef the catalog has no row for.
+        C2 W-XML-IO-FIELD-ENTITY, WARN: a field whose catalog `entity` is not the io's typeRef (an Account field on a
+           Lead io). An io whose typeRef is no entity of the catalog is exempt: a message that carries several objects
+           (rule F of the WT-01 mapping) types itself as the message, not as one object.
+        C3 E-XML-IO-EXPECT-CONTRADICTS, ERROR: an aef:expect whose const or aef:value the attribute's own rule
+           forbids: outside its `in`, failing its `pattern`, longer than its `maxLength` (AEF spec T-4415 C: an
+           expectation that contradicts the type is an error).
+        C4 W-XML-IO-EXPECT-REDUNDANT, WARN: an aef:expect that only restates the attribute's rule: the same pattern, or
+           the same set of allowed values (T-4415 C: one already implied by the type is a warning).
+        C1 and C2 are warnings because a catalog can be partial (greenfield's Novis rows carry no type source); C3 is
+        an error because the step demands what the attribute can never hold. Same location as R1-R3.
+        """
+        cat = self.catalog
+        typeref = io.get("typeRef") or ""
+        for f in fields:
+            ref = f.get("fieldRef")
+            if not ref:
+                continue
+            row = cat["rows"].get(ref)
+            if row is None:
+                self.warn("W-XML-IO-FIELD-UNKNOWN", loc,
+                          "fieldRef \"%s\" is not in the project's field catalog: no object or value rule to check "
+                          "it against" % ref)
+                continue
+            ent = row.get("entity") or ""
+            if typeref and ent and typeref in cat["entities"] and ent != typeref:
+                self.warn("W-XML-IO-FIELD-ENTITY", loc,
+                          "field %s belongs to %s in the catalog, but this io is %s: an attribute of another object "
+                          "(split the io per object, or retype it)" % (_cat_name(row, ref), ent, typeref))
+        for e in [c for c in io if c.tag == "{%s}expect" % AEF_NS]:
+            ref = e.get("fieldRef")
+            row = cat["rows"].get(ref) if ref else None
+            if row is None:
+                continue
+            name = _cat_name(row, ref)
+            allowed = _cat_values(row.get("in"))
+            pat = row.get("pattern") if isinstance(row.get("pattern"), str) else ""
+            maxlen = _cat_int(row.get("maxLength"))
+            literals = ([e.get("const")] if e.get("const") is not None else []) + \
+                       [v.text if v.text is not None else (v.get("value") or "")
+                        for v in e if v.tag == "{%s}value" % AEF_NS]
+            for lit in literals:
+                why = []
+                if allowed and row.get("datatype") != "xsd:boolean" and lit not in allowed:
+                    why.append("is not one of its allowed values (%s)" % " | ".join(allowed))
+                if pat and _cat_regex(pat) is not None and not _cat_regex(pat).search(lit):
+                    why.append("does not match its pattern %s" % pat)
+                if maxlen is not None and len(lit) > maxlen:
+                    why.append("is longer than its maxLength %d" % maxlen)
+                if why:
+                    self.err("E-XML-IO-EXPECT-CONTRADICTS", loc,
+                             "aef:expect on %s requires \"%s\", which the attribute's own rule forbids: it %s"
+                             % (name, lit, "; it ".join(why)))
+            own_vals = [v.text if v.text is not None else (v.get("value") or "")
+                        for v in e if v.tag == "{%s}value" % AEF_NS]
+            if pat and e.get("pattern") == pat:
+                self.warn("W-XML-IO-EXPECT-REDUNDANT", loc,
+                          "aef:expect on %s repeats the attribute's own pattern %s: the catalog already says it"
+                          % (name, pat))
+            elif allowed and own_vals and set(own_vals) == set(allowed):
+                self.warn("W-XML-IO-EXPECT-REDUNDANT", loc,
+                          "aef:expect on %s lists exactly the attribute's own allowed values: the catalog already "
+                          "says it" % name)
 
     def _node_y(self, node_el):
         """The node's drawn y from <aef:position>, or None when unpositioned.
@@ -2305,14 +2576,78 @@ def run_yaml(text):
     return validator.findings
 
 
-def run_xml(text):
-    validator = XmlValidator()
+# ---- T-1370: the project's field catalog (contract 832 T-1312, format v1) ----------------------------------------
+
+def load_field_catalog(path):
+    """Read a field catalog file: {"version": 1, "attributes": [{"ref": ..., "entity": ..., value-rule keys}]}.
+    Returns {"rows": {ref: row}, "entities": {entity, ...}}. Raises ValueError, naming what is wrong, for a file that is
+    not a T-1312 catalog: the checks must not run against half a catalog (the contract refuses it whole, too)."""
+    try:
+        with open(path, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+    except (OSError, ValueError) as exc:
+        raise ValueError("cannot read field catalog %s: %s" % (path, exc))
+    if not isinstance(data, dict) or data.get("version") != 1 or not isinstance(data.get("attributes"), list):
+        raise ValueError("field catalog %s is not format v1 (needs version: 1 and an attributes list)" % path)
+    rows = {}
+    for r in data["attributes"]:
+        if not isinstance(r, dict) or not isinstance(r.get("ref"), str) or not r["ref"].strip():
+            raise ValueError("field catalog %s has a row without a text ref" % path)
+        rows[r["ref"]] = r
+    return {"rows": rows, "entities": {r.get("entity") for r in rows.values() if isinstance(r.get("entity"), str) and r.get("entity")}}
+
+
+def _cat_name(row, ref):
+    """How a finding names an attribute: its notation (sfdc:Account.Id), else its label, else its ref."""
+    for k in ("notation", "label"):
+        if isinstance(row.get(k), str) and row[k].strip():
+            return row[k]
+    return ref
+
+
+def _cat_values(v):
+    """A row's `in`: an array, or one "|"-separated text (contract T-1312)."""
+    if isinstance(v, list):
+        return [str(x) for x in v if x is not None and str(x) != ""]
+    if isinstance(v, str) and v.strip():
+        return [s.strip() for s in v.split("|") if s.strip()]
+    return []
+
+
+def _cat_int(v):
+    try:
+        return int(str(v).strip()) if v is not None and str(v).strip() != "" else None
+    except ValueError:
+        return None
+
+
+_CAT_RE_CACHE = {}
+
+
+def _cat_regex(pattern):
+    """The row's pattern compiled, or None when Python's re cannot read it (the rule is ECMA-262; an unreadable one is
+    skipped, never guessed at)."""
+    if pattern not in _CAT_RE_CACHE:
+        try:
+            _CAT_RE_CACHE[pattern] = re.compile(pattern)
+        except re.error:
+            _CAT_RE_CACHE[pattern] = None
+    return _CAT_RE_CACHE[pattern]
+
+
+def run_xml(text, catalog=None, strict=False):
+    validator = XmlValidator(catalog, strict)
     try:
         root = ET.fromstring(text)
     except ET.ParseError as exc:
         validator.err("E-XML-PARSE", "<file>", "XML parse error: %s" % exc)
         return validator.findings
     validator.validate(root)
+    if strict:
+        # T-1377: a project that refuses on the general map rules. The code stays the same, so a grep finds both.
+        for f in validator.findings:
+            if f.rule in XmlValidator.STRICT_RULES and f.severity == WARN:
+                f.severity = ERROR
     return validator.findings
 
 
@@ -2359,7 +2694,25 @@ def main(argv=None):
     parser.add_argument(
         "--quiet", action="store_true", help="suppress the human-readable report"
     )
+    parser.add_argument(
+        "--field-catalog", metavar="PATH",
+        help="the project's field catalog (832 T-1312 format v1): also check each io field and aef:expect against it "
+             "(T-1370; XML form only)",
+    )
+    parser.add_argument(
+        "--strict", action="store_true",
+        help="refuse on the general map rules (T-1377; XML form only): io incomplete or missing, a decision branch "
+             "without a condition (and W-XML-GW-AMBIGUOUS), an unknown documentation prefix, an unlinked document, "
+             "aef:position differing from DI become errors; a map with steps and no io at all is one",
+    )
     args = parser.parse_args(argv)
+    catalog = None
+    if args.field_catalog:
+        try:
+            catalog = load_field_catalog(args.field_catalog)
+        except ValueError as exc:
+            sys.stderr.write("error: %s\n" % exc)
+            return 2
 
     try:
         with open(args.file, "r") as fh:
@@ -2370,7 +2723,7 @@ def main(argv=None):
         findings = [Finding(ERROR, "E-LOAD", args.file, "cannot read file: %s" % exc)]
     else:
         fmt = args.format if args.format != "auto" else detect_format(args.file, text)
-        findings = run_xml(text) if fmt == "xml" else run_yaml(text)
+        findings = run_xml(text, catalog, args.strict) if fmt == "xml" else run_yaml(text)
 
     # relabel the '<file>' placeholder location with the real path
     for f in findings:
