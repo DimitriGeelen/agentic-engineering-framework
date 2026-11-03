@@ -77,7 +77,9 @@ _t3691_active() {
     python3 - "$PROJECT_ROOT/.tasks/active/T-3691-design-conformance-gate.md" <<'PY'
 import re, sys
 p = sys.argv[1]; s = open(p).read()
-s = re.sub(r"(## Verification\n).*?(?=\n## )", r"\1\ntrue\n", s, flags=re.S)
+# T-5055: a real check, not `true` — the reviewer's tautology finding (severe,
+# deterministic) blocks the close since T-4197, which turned the controls red.
+s = re.sub(r"(## Verification\n).*?(?=\n## )", r"\1\ntest -f .framework.yaml\n", s, flags=re.S)
 # T-3691 carried an empty template ## Evolution ahead of its real one and closed
 # with --skip-evolution; drop the empty copy so the Evolution gate is satisfied
 # by T-3691's own real entry.
@@ -118,12 +120,13 @@ EOF
     _task T-3692 captured "" "Owns T-3691 item 3."
     _task T-3693 captured "" "Owns T-3691 item 5."
     run "$UPDATE_TASK" T-3691 --status work-completed
+    echo "$output" | tail -40   # shown by bats only when the test fails
     [ "$status" -eq 0 ]
     [ -f "$PROJECT_ROOT/.tasks/completed/T-3691-design-conformance-gate.md" ]
 }
 
 @test "self-deferral: agent cannot waive the gate with --skip-self-deferral" {
-    _task T-0100 started-work "" "$(_closeable_body true)
+    _task T-0100 started-work "" "$(_closeable_body 'test -f .framework.yaml')
 Remaining work deferred to T-0404."
     export CLAUDECODE=1
     run "$UPDATE_TASK" T-0100 --status work-completed --skip-self-deferral --reason "test"
@@ -138,7 +141,7 @@ Remaining work deferred to T-0404."
     printf 'id: arc-011\nslug: parallel-thing\nstatus: in-progress\nregister_docs:\n  - docs/architecture/side.md\n' \
         > "$PROJECT_ROOT/.context/arcs/parallel-thing.yaml"
     _register null unbuilt
-    _task T-0300 started-work arc-011 "$(_closeable_body true)
+    _task T-0300 started-work arc-011 "$(_closeable_body 'test -f .framework.yaml')
 R6 deferred."
     run "$UPDATE_TASK" T-0300 --status work-completed
     [ "$status" -ne 0 ]
@@ -147,7 +150,7 @@ R6 deferred."
 
 @test "register gate: owner closing while its row is partial REFUSED (T-3561 shape)" {
     _register T-0400 partial
-    _task T-0400 started-work "" "$(_closeable_body true)"
+    _task T-0400 started-work "" "$(_closeable_body 'test -f .framework.yaml')"
     run "$UPDATE_TASK" T-0400 --status work-completed
     [ "$status" -ne 0 ]
     [[ "$output" == *"R6: owned by T-0400 and still 'partial'"* ]]
@@ -156,7 +159,7 @@ R6 deferred."
 
 @test "register gate control: owner closes once its row is built" {
     _register T-0400 built
-    _task T-0400 started-work "" "$(_closeable_body true)"
+    _task T-0400 started-work "" "$(_closeable_body 'test -f .framework.yaml')"
     run "$UPDATE_TASK" T-0400 --status work-completed
     [ "$status" -eq 0 ]
     [ -f "$PROJECT_ROOT/.tasks/completed/T-0400-fixture.md" ]
