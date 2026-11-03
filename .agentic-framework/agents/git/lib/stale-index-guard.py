@@ -225,6 +225,15 @@ def main():
                   file=sys.stderr)
             print("If the working copy is unclosed too: fw task update T-XXX --status work-completed",
                   file=sys.stderr)
+            # T-5050: the other cause. A tool (an older fw upgrade's schema backfill) edited
+            # a task archived before CTL-030 existed, whose recorded horizon was never null.
+            # The agent cannot fix a closed record or unstage a task file; the operator can.
+            print("Or a tool edited an OLD archived task whose horizon predates CTL-030 (legacy",
+                  file=sys.stderr)
+            print("archive, e.g. an older fw upgrade's inception backfill). Operator, in their own",
+                  file=sys.stderr)
+            print("terminal, drops that edit:  git restore --staged --worktree -- <path>",
+                  file=sys.stderr)
             print(f"Deliberate:  {OVERRIDE}=1 git commit ...   (Tier-2, logged)", file=sys.stderr)
             return 1
 

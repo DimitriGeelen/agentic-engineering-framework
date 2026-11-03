@@ -52,13 +52,16 @@ def backfill_text(text: str) -> str:
 
 
 def _files(args: list[str]) -> list[Path]:
+    # T-5050: active tasks only. The fields exist so an agent can EDIT an inception past
+    # the T-2188 gate; closed records are not edited, and writing an archived one turned
+    # a legacy `horizon: now` into a CTL-030 commit blocker the consumer's agent could
+    # neither fix nor unstage (003, 2026-11-03).
     out: list[Path] = []
     for a in args:
         p = Path(a)
         if p.is_dir():
-            for sub in ("active", "completed"):
-                out += sorted((p / sub).glob("T-*.md"))
-        elif p.is_file():
+            out += sorted((p / "active").glob("T-*.md"))
+        elif p.is_file() and p.parent.name != "completed":
             out.append(p)
     return out
 
