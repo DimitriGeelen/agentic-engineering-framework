@@ -1,0 +1,27 @@
+id: lib/outside_commits.py
+name: outside_commits
+type: script
+subsystem: framework-core
+location: lib/outside_commits.py
+tags: []
+
+purpose: "Outside-commit alarm (T-5049, requirement R-58)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  - target: policy/internal-identities.yaml
+    type: reads
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  - target: agents/audit/audit.sh
+    type: calls
+  - target: bin/fw
+    type: calls
+  - target: lib/operator_pending.py
+    type: calls
+
+last_verified: 2026-11-03
+created_by: unknown
