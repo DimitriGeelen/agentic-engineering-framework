@@ -191,13 +191,26 @@ def issue_replies() -> list[dict]:
     return [{"issue": n, "count": len(rs), "class": rs[-1]["class"]} for n, rs in sorted(by_issue.items())]
 
 
+def outside_commit_alarms() -> list[dict]:
+    """T-5049 (R-58): outside commits on bleeding-edge that did not arrive through a PR the
+    operator merged. gh is only called when outside commits exist in range."""
+    sys.path.insert(0, str(FW / "lib"))
+    import outside_commits  # noqa: E402
+    outside_commits.PROJECT = PROJECT
+    return outside_commits.open_alarms()
+
+
 def collect() -> dict:
     ready, waiting = partial_complete()
     try:
         replies = issue_replies()
     except Exception:  # a broken ledger must not blank the operator's whole list
         replies = []
-    return {"issue_replies": replies, "inceptions": undecided_inceptions(), "reviews": ready, "runmes": unrun_runmes(),
+    try:
+        outside = outside_commit_alarms()
+    except Exception:  # same rule: a broken check must not blank the list (audit FAILs it)
+        outside = []
+    return {"outside_commits": outside, "issue_replies": replies, "inceptions": undecided_inceptions(), "reviews": ready, "runmes": unrun_runmes(),
             "paid_proposals": pending_proposals(), "waiting_on_agent": len(waiting)}
 
 
@@ -237,6 +250,13 @@ def render(data: dict) -> str:
                          f"({r['class']}) — `fw issues replies`")
         lines.append("")
         n += len(data["issue_replies"])
+    if data.get("outside_commits"):
+        lines.append("## Outside commits not merged by the operator (`python3 lib/outside_commits.py audit`)")
+        for a in data["outside_commits"]:
+            pr = f" — PR #{a['pr']}" if a.get("pr") is not None else ""
+            lines.append(f"- {a['short']} by {a['author']} — \"{a['subject']}\"{pr} — {a['reason']}")
+        lines.append("")
+        n += len(data["outside_commits"])
     if n == 0:
         lines.append("Nothing is waiting on the operator.")
     if data["waiting_on_agent"]:

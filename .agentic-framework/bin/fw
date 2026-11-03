@@ -5416,6 +5416,19 @@ if len(rows) > 5:
         fi
     fi
 
+    # T-5049 (R-58): outside contributors' commits on bleeding-edge not merged by the operator.
+    if [ -f "$FRAMEWORK_ROOT/lib/outside_commits.py" ]; then
+        local _oc_out _oc_rc=0
+        _oc_out=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/outside_commits.py" audit 2>&1) || _oc_rc=$?
+        if [ "$_oc_rc" -eq 0 ]; then
+            echo -e "  ${GREEN}OK${NC}  $(echo "$_oc_out" | tail -1)"
+        else
+            echo -e "  ${YELLOW}WARN${NC}  $(echo "$_oc_out" | tail -1) (python3 lib/outside_commits.py audit)"
+            echo "$_oc_out" | grep -E '^(FAIL|WARN|ERROR)' | head -5 | while IFS= read -r _ocl; do echo "         $_ocl"; done
+            warnings=$((warnings + 1))
+        fi
+    fi
+
     # T-3063 (leg 2 of T-3062): stuck push — the handover's unpushed count is a
     # snapshot and cannot distinguish "not pushed yet" from "has failed to push
     # for four sessions". lib/push-state.sh keeps the streak; this is where an
