@@ -135,6 +135,35 @@ _refuse_out_of_project_commit() {
     echo "  The handover was written; nothing was committed or pushed. Set PROJECT_ROOT to the repo that holds HANDOVER_DIR, or pass --no-commit."
 }
 
+# T-5052: stage and commit the handover file(s), and record what happened in
+# HANDOVER_COMMIT_STATUS (ok|failed) so no later line claims a commit that did
+# not happen. A project that ignores .context/ but already tracks handovers
+# (force-added by hand, as 050 did) gets its new handover force-added too; a
+# project that tracks none is left alone and told why nothing was committed.
+# $1: commit message; $2..: files. Needs GIT_AGENT.
+_commit_handover_files() {
+    local _msg="$1"; shift
+    local _add=(add)
+    if [ -n "$(git -C "$PROJECT_ROOT" ls-files -- "$HANDOVER_DIR" 2>/dev/null | head -1)" ]; then
+        _add=(add -f)
+    fi
+    local _err
+    if ! _err=$(git -C "$PROJECT_ROOT" "${_add[@]}" -- "$@" 2>&1); then
+        HANDOVER_COMMIT_STATUS=failed
+        echo -e "${RED}COMMIT FAILED (T-5052): the handover could not be staged — nothing was committed.${NC}"
+        echo "  git: $(printf '%s\n' "$_err" | grep -v '^hint:' | head -2 | tr '\n' ' ')"
+        echo "  The handovers directory is gitignored and holds no tracked handover. To track handovers, force-add one once: git add -f $HANDOVER_DIR/LATEST.md"
+        return 1
+    fi
+    if PROJECT_ROOT="$PROJECT_ROOT" "$GIT_AGENT" commit -m "$_msg" -- "$@"; then
+        HANDOVER_COMMIT_STATUS=ok
+    else
+        HANDOVER_COMMIT_STATUS=failed
+        echo -e "${RED}COMMIT FAILED (T-5052): the handover commit did not go through (see the git output above) — nothing was committed.${NC}"
+        return 1
+    fi
+}
+
 # T-2588: Shared push leg for both normal handovers and --checkpoint commits.
 # Checkpoint commits previously accumulated locally with no push — exactly the
 # state a checkpoint exists to protect gets stranded if the session dies or
@@ -156,7 +185,11 @@ _push_to_remotes() {
     fi
     case "$_hp" in
         0|false|False|FALSE|no|off)
-            echo "  Push skipped: HANDOVER_PUSH=0 for this project — committed locally only (T-5051)"
+            if [ "${HANDOVER_COMMIT_STATUS:-}" = failed ]; then
+                echo "  Push skipped: HANDOVER_PUSH=0 for this project — and the handover was NOT committed (COMMIT FAILED above, T-5052)"
+            else
+                echo "  Push skipped: HANDOVER_PUSH=0 for this project — committed locally only (T-5051)"
+            fi
             return 0
             ;;
     esac
@@ -491,11 +524,12 @@ CHECKPOINT_EOF
             GIT_AGENT="$FRAMEWORK_ROOT/agents/git/git.sh"
         fi
         if [ -n "$GIT_AGENT" ]; then
-            git -C "$PROJECT_ROOT" add "$HANDOVER_FILE"
             # T-3090: scope the commit by pathspec, not by the add. The add
             # bounds the index; without `--` the commit takes the WHOLE index,
             # including a concurrent session's staged-but-uncommitted work.
-            PROJECT_ROOT="$PROJECT_ROOT" "$GIT_AGENT" commit -m "$COMMIT_TASK: Checkpoint handover $SESSION_ID" -- "$HANDOVER_FILE"
+            # T-5052: the helper stages (force when handovers are tracked) and
+            # records the outcome; a failure is printed, never hidden.
+            _commit_handover_files "$COMMIT_TASK: Checkpoint handover $SESSION_ID" "$HANDOVER_FILE" || true
             # T-2588: push immediately — checkpoints exist to survive session
             # death, so a checkpoint commit stranded locally defeats the point.
             _push_to_remotes
@@ -1814,17 +1848,15 @@ elif [ "$AUTO_COMMIT" = true ]; then
     fi
 
     if [ -n "$GIT_AGENT" ]; then
-        # Stage handover files
-        git -C "$PROJECT_ROOT" add "$HANDOVER_FILE" "$HANDOVER_DIR/LATEST.md"
-
-        # Commit via git agent — pathspec-scoped (T-3090).
+        # Stage and commit via git agent — pathspec-scoped (T-3090), staged
+        # and checked by _commit_handover_files (T-5052).
         #
         # The `git add` above bounds STAGING only. Before T-3090 this commit had
         # no pathspec, so it took the whole index: on 2026-08-19 it swept two
         # files belonging to a concurrent session's T-3089 into d3d3e49db and
         # emptied that session's index mid-compose. The `--` below is what makes
         # the narrow add above actually mean what it looks like it means.
-        PROJECT_ROOT="$PROJECT_ROOT" "$GIT_AGENT" commit -m "$COMMIT_TASK: Session handover $SESSION_ID" -- "$HANDOVER_FILE" "$HANDOVER_DIR/LATEST.md"
+        _commit_handover_files "$COMMIT_TASK: Session handover $SESSION_ID" "$HANDOVER_FILE" "$HANDOVER_DIR/LATEST.md" || true
 
         # Push to all remotes (T-1144: prevent unpushed commit accumulation)
         # T-1277: bound the push so an unreachable remote (e.g. onedev behind a
