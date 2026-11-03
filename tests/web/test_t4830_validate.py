@@ -41,7 +41,8 @@ def test_clean_map_ok_with_no_findings(client):
     r = post(client, {"bpmn": CLEAN})
     assert r.status_code == 200
     d = r.get_json()
-    assert d == {"ok": True, "findings": [], "errors": 0, "warnings": 0}
+    # T-5058: "catalog" says whether the project's field catalog was used (AEF's own is configured).
+    assert d == {"ok": True, "findings": [], "errors": 0, "warnings": 0, "catalog": "used"}
 
 
 def test_warnings_keep_ok_true_and_shape(client):
@@ -115,3 +116,69 @@ def test_cross_origin_refused(client):
 def test_form_post_refused(client):
     r = client.post("/api/validate", data={"bpmn": CLEAN})
     assert r.status_code == 415
+
+
+# ── T-5058 (operator 2026-11-03): the project's field catalog on, strict off ──────────────
+UNKNOWN_FIELD = CLEAN.replace(
+    '<aef:position x="265.0" y="368.0"/>',
+    '<aef:position x="265.0" y="368.0"/>'
+    '<aef:input name="task" typeRef="Task"><aef:field fieldRef="aef.task.no_such_field"/></aef:input>',
+    1,
+)
+
+
+def _catalog_rules(d):
+    return [f["rule"] for f in d["findings"] if f["rule"].startswith("W-XML-IO-FIELD")]
+
+
+def test_t5058_fixture_carries_the_unknown_field():
+    assert UNKNOWN_FIELD != CLEAN and "aef.task.no_such_field" in UNKNOWN_FIELD
+
+
+def test_t5058_unknown_field_is_flagged_with_the_catalog(client):
+    d = post(client, {"bpmn": UNKNOWN_FIELD}).get_json()
+    assert d["catalog"] == "used"
+    assert "W-XML-IO-FIELD-UNKNOWN" in _catalog_rules(d)
+
+
+def test_t5058_no_catalog_configured_runs_as_before(client, monkeypatch):
+    monkeypatch.setenv("FW_DESIGNER_FIELD_CATALOG", "")
+    monkeypatch.setattr(designer_api, "_project_config",
+                        lambda key, default="": "" if key == "DESIGNER_FIELD_CATALOG" else default)
+    d = post(client, {"bpmn": UNKNOWN_FIELD}).get_json()
+    assert d["catalog"] == "none"
+    assert _catalog_rules(d) == []
+
+
+def test_t5058_malformed_catalog_is_reported_not_skipped(client, monkeypatch, tmp_path):
+    bad = tmp_path / "catalog.json"
+    bad.write_text('{"version": 2, "attributes": []}')
+    monkeypatch.setattr(designer_api, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setattr(designer_api, "_project_config",
+                        lambda key, default="": "catalog.json" if key == "DESIGNER_FIELD_CATALOG" else default)
+    d = post(client, {"bpmn": BROKEN}).get_json()
+    assert d["catalog"].startswith("unusable: ") and "version" in d["catalog"]
+    assert str(tmp_path) not in d["catalog"]
+    assert "E-XML-STRUCTURE" in [f["rule"] for f in d["findings"]]  # ordinary findings still returned
+
+
+def test_t5058_strict_is_never_passed(client, monkeypatch):
+    seen = {}
+    mod, _ = designer_api._load_validator()
+    real = mod.run_xml
+
+    def spy(text, *a, **kw):
+        seen.update(kw, args=a)
+        return real(text, *a, **kw)
+
+    monkeypatch.setattr(mod, "run_xml", spy)
+    post(client, {"bpmn": CLEAN})
+    assert "strict" not in seen and seen["args"] == ()
+
+
+def test_t5058_validator_without_catalog_parameter_is_unsupported(client, monkeypatch):
+    mod, _ = designer_api._load_validator()
+    real = mod.run_xml
+    monkeypatch.setattr(mod, "run_xml", lambda text: real(text))
+    d = post(client, {"bpmn": CLEAN}).get_json()
+    assert d["catalog"] == "unsupported" and d["errors"] == 0

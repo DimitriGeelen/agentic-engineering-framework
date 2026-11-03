@@ -187,12 +187,21 @@ def _project_config(key, default=""):
     return default if v is None else str(v).strip()
 
 
-def load_field_catalog(rel=None, root=None, max_bytes=None):
-    """Return (status, payload). 200 -> the catalog dict unchanged; 404/422 -> an
-    error string that names the rule broken and never a filesystem path."""
+def _field_catalog_path(rel=None, root=None):
+    """(root, resolved path) of the configured catalog, or (root, None) when none is configured.
+    One resolution for /api/field-catalog and /api/validate (T-5058)."""
     root = Path(root or PROJECT_ROOT).resolve()
     rel = _project_config("DESIGNER_FIELD_CATALOG") if rel is None else rel
     if not rel:
+        return root, None
+    return root, (root / rel).resolve()  # follows symlinks, so a link out of the root is caught
+
+
+def load_field_catalog(rel=None, root=None, max_bytes=None):
+    """Return (status, payload). 200 -> the catalog dict unchanged; 404/422 -> an
+    error string that names the rule broken and never a filesystem path."""
+    root, p = _field_catalog_path(rel, root)
+    if p is None:
         return 404, "no field catalog"
     if max_bytes is None:
         try:
@@ -202,7 +211,6 @@ def load_field_catalog(rel=None, root=None, max_bytes=None):
             max_bytes = _FIELD_CATALOG_MAX_DEFAULT
         if max_bytes < 1:
             max_bytes = _FIELD_CATALOG_MAX_DEFAULT
-    p = (root / rel).resolve()  # follows symlinks, so a link out of the root is caught
     if p != root and root not in p.parents:
         return 422, "field catalog path is outside the project root"
     if not p.is_file():
@@ -385,6 +393,35 @@ def _load_validator():
     return mod, None
 
 
+def _validator_catalog(mod):
+    """T-5058: (catalog for run_xml or None, state for the response).
+
+    The catalog passes AEF's own checks first (load_field_catalog: project root, size cap, v1
+    shape), then the validator's loader turns the same file into its form. States: "used";
+    "none" (no catalog configured, Check as before); "unsupported" (a pinned validator older
+    than 0.37.0 takes no catalog); "unusable: <reason>" (configured but refused: reported,
+    never silently skipped)."""
+    import inspect
+
+    status, payload = load_field_catalog()
+    if status == 404:
+        return None, "none"
+    if status != 200:
+        return None, f"unusable: {payload}"
+    loader = getattr(mod, "load_field_catalog", None)
+    try:
+        takes_catalog = "catalog" in inspect.signature(mod.run_xml).parameters
+    except (TypeError, ValueError):
+        takes_catalog = False
+    if not takes_catalog or not callable(loader):
+        return None, "unsupported"
+    _, path = _field_catalog_path()
+    try:
+        return loader(str(path)), "used"
+    except Exception as e:  # the validator's own refusal names what is wrong; keep the path out
+        return None, "unusable: " + str(e).replace(str(path), "<catalog>")
+
+
 @bp.route("/api/validate", methods=["POST"])
 def validate():
     # web/app.py exempts designer_api.* from the token CSRF (the vendored client sends none), so
@@ -401,8 +438,10 @@ def validate():
     mod, why = _load_validator()
     if mod is None:
         return _err(f"validator unavailable: {why}", 503)
+    catalog, catalog_state = _validator_catalog(mod)
     try:
-        found = mod.run_xml(bpmn)
+        # T-5058 (operator 2026-11-03): the project's field catalog on, strict off. Never pass strict.
+        found = mod.run_xml(bpmn, catalog=catalog) if catalog is not None else mod.run_xml(bpmn)
         findings = [
             {"severity": str(f.severity), "rule": str(f.rule),
              "location": str(f.location), "message": str(f.message)}
@@ -416,7 +455,7 @@ def validate():
     # T-4845: "ok" means the check ran (832 T-1300 §1); the designer treats anything else as
     # "could not check". Whether the map is clean is "errors", never "ok".
     return jsonify({"ok": True, "findings": findings,
-                    "errors": errors, "warnings": warnings})
+                    "errors": errors, "warnings": warnings, "catalog": catalog_state})
 
 
 @bp.route("/api/save", methods=["POST"])
