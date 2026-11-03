@@ -272,8 +272,20 @@ def _ensure_labels(names: list) -> None:
             raise IssuesError(f"cannot create label {n!r}: {q.stderr.strip()[:300]}", 2)
 
 
+def _github_remote() -> str:
+    """The git remote that points at GitHub. T-5044: GitHub became `origin` on
+    2026-11-03 (it was the `github` mirror before), so the name alone is no guide;
+    the URL is. Falls back to "github" when no remote names github.com."""
+    p = _run(["git", "remote", "-v"])
+    for line in (p.stdout or "").splitlines() if p.returncode == 0 else []:
+        parts = line.split()
+        if len(parts) >= 2 and "github.com" in parts[1]:
+            return parts[0]
+    return "github"
+
+
 def _commit_on_mirror(commit: str) -> None:
-    remote = os.environ.get("FW_ISSUES_GIT_REMOTE", "github")
+    remote = os.environ.get("FW_ISSUES_GIT_REMOTE") or _github_remote()
     branch = os.environ.get("FW_ISSUES_BRANCH", "bleeding-edge")
     p = _run(["git", "ls-remote", remote, f"refs/heads/{branch}"])
     tip = p.stdout.split()[0] if p.returncode == 0 and p.stdout.strip() else ""
