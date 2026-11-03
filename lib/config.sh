@@ -360,6 +360,9 @@ FW_CONFIG_REGISTRY=(
     # first, and reversible by construction, is the whole point of the ordering.
     "HANDOVER_DIGEST|1|Digest the three handover state dumps (Observation Inbox, Work in Progress, Awaiting Your Action) to count + regenerating command + top-N. 0 emits the full dumps as before. Narrative sections are unaffected either way. T-3028."
     "HANDOVER_DIGEST_TOP_N|5|How many entries each digested handover section retains in full before referring the reader to the regenerating command. T-3028."
+    # T-5051: on some consumers (050) a push to the remote deploys production, so
+    # the handover push must be switchable off per project, on every --commit path.
+    "HANDOVER_PUSH|1|0 = handover commits locally and never pushes; for projects where a push deploys (050, T-5051)."
     # T-3080. ONE window for BOTH Tier 0 approval legs. Before this the CLI leg
     # (check-tier0.sh, `fw tier0 approve` grant) carried a bare 300 literal and
     # the Watchtower leg defaulted to 3600 via TIER0_WATCHTOWER_TTL — so the path

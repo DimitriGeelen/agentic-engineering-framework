@@ -143,6 +143,23 @@ _refuse_out_of_project_commit() {
 _push_to_remotes() {
     _push_summary
     echo ""
+    # T-5051: project-level opt-out. On some consumers a push deploys, so the
+    # push is the operator's decision. Every --commit path (pre-compact hook,
+    # checkpoint auto-handover, fw handover --commit) reaches the push only
+    # through this function, so this one check covers them all. Standing
+    # config, not a bypass, so it is not written to the bypass log.
+    local _hp
+    if declare -f fw_config >/dev/null 2>&1; then
+        _hp=$(fw_config HANDOVER_PUSH 1 2>/dev/null || echo 1)
+    else
+        _hp="${FW_HANDOVER_PUSH:-1}"
+    fi
+    case "$_hp" in
+        0|false|False|FALSE|no|off)
+            echo "  Push skipped: HANDOVER_PUSH=0 for this project — committed locally only (T-5051)"
+            return 0
+            ;;
+    esac
     # T-4196: --no-push is an explicit, logged opt-out. Push stays the default
     # (CLAUDE.md §Session End, T-1144) — operator ruling 2026-10-13 on 832 OBS-413.
     if [ "$NO_PUSH" = true ]; then
