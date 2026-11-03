@@ -1780,6 +1780,16 @@ _fw_single_command_is_safe() {
                             ;;
                     esac
                     ;;
+                main)
+                    # T-5039: `main status` and `main am-i` read the main-session lease
+                    # (termlink's own help marks both read-only); claim, renew, release
+                    # and pin change it and stay absent.
+                    case "$tl_sub2" in
+                        status|am-i)
+                            return 0
+                            ;;
+                    esac
+                    ;;
                 remote)
                     # remote list/ping are network reads; remote inject/exec are not.
                     case "$tl_sub2" in
@@ -2054,6 +2064,28 @@ _fw_single_command_is_safe() {
                     return 0
                     ;;
             esac
+            ;;
+
+        # T-5039: GitHub CLI reads. Only verb pairs that print state are admitted;
+        # every write is absent by construction: `gh api` (it can POST/PATCH/DELETE),
+        # create/edit/merge/close/comment/review, `pr checkout` (writes the tree),
+        # `run download` (writes files with no redirect), rerun/cancel, release
+        # upload/delete. A `--web` flag only opens a browser; output redirects are
+        # caught by has_bash_write_pattern before this arm is consulted.
+        gh)
+            local gh_sub gh_sub2
+            gh_sub=$(echo "$cmd" | awk '{print $2}')
+            gh_sub2=$(echo "$cmd" | awk '{print $3}')
+            case "$gh_sub:$gh_sub2" in
+                run:view|run:list|run:watch|\
+                pr:view|pr:list|pr:diff|pr:checks|pr:status|\
+                issue:view|issue:list|issue:status|\
+                release:view|release:list|\
+                repo:view|workflow:view|workflow:list|auth:status)
+                    return 0
+                    ;;
+            esac
+            return 1
             ;;
 
         # Category 5: System utilities
