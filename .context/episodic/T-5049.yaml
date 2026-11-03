@@ -1,0 +1,99 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5049: Audit alarm: an outside contributor's commit on bleeding-edge that did not arrive through a PR the operator merged (roadmap 1.4)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-03T14:49:46Z
+# ============================================================================
+
+task_id: T-5049
+task_name: "Audit alarm: an outside contributor's commit on bleeding-edge that did not arrive through a PR the operator merged (roadmap 1.4)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-03T11:46:32Z
+completed: 2026-11-03T14:49:21Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-03T15:46:46+01:00
+last_commit: 2026-11-03T15:48:20+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  outside-commit alarm — policy/internal-identities.yaml, lib/outside_commits.py, wired into fw audit, fw doctor and fw operator pending, bats test. vendor outside_commits.py, operator_pending.py, audit.sh, bin/fw. fabric card for lib/outside_commits.py. tick Agent criteria, add verification
+
+# Key outcomes
+outcomes:
+  - 'Internal identities live in one committed policy file (operator, dispatch workers `dispatch+*@aef.local`, the historic fixture identity from T-3854, GitHub''s own `noreply@github.com` committer); a check only looks at commits after a recorded baseline commit, so history before the check existed is not re-judged'
+  - 'An outside-authored commit is accepted only when it is reachable from a GitHub merge (merge commit or squash, `(#N)` / `Merge pull request #N`) whose PR `merged_by` is the operator per `gh api`; without `gh` or network the result is WARN "unverified", never PASS'
+  - '`fw audit` reports FAIL naming commit, author and PR (if any); `fw doctor` shows the same as a WARN line; `fw operator pending` lists open alarms'
+  - 'bats test with a temp repo: internal commit silent; outside commit pushed directly → FAIL by name; outside commit via a squash marked `(#N)` with a stubbed `gh` saying merged_by=operator → silent; same with merged_by=someone else → FAIL'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-03 — how outside authors are recognised (requirements 10.36, provisional)'
+    chose: 'inverse list — any author email not matching `policy/internal-identities.yaml` is outside; only commits after a recorded baseline are judged; an outside commit is accepted only when `gh` confirms the operator merged its PR, and an unreachable `gh` is WARN "unverified", never a pass.'
+    rationale: 'unknown = outside, so a new outside author cannot slip through by not being listed; the baseline keeps the T-3854 fixture history and older commits from being re-judged.'
+    alternatives_rejected: ['a list of outside identities (misses every new contributor); the DCO line alone (anyone can write one).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/operator_pending.py'
+  - '.agentic-framework/lib/outside_commits.py'
+  - '.fabric/components/lib-outside_commits.yaml'
+  - '.tasks/active/T-5049-audit-alarm-an-outside-contributors-comm.md'
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - 'lib/operator_pending.py'
+  - 'lib/outside_commits.py'
+  - 'policy/internal-identities.yaml'
+  - 'tests/unit/t5049_outside_commits.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-03T15:46:46'
+    action: 'T-5049: outside-commit alarm — policy/internal-identities.yaml, lib/outside_commits.py, wired into fw audit, fw doctor and fw operator pending, bats test'
+  - time: '2026-11-03T15:47:10'
+    action: 'T-5049: vendor outside_commits.py, operator_pending.py, audit.sh, bin/fw'
+  - time: '2026-11-03T15:47:29'
+    action: 'T-5049: fabric card for lib/outside_commits.py'
+  - time: '2026-11-03T15:48:20'
+    action: 'T-5049: tick Agent criteria, add verification'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 182 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github-contributions, audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 182
+  commits: 5
+  files_changed: 15
+  lines_added: 1302
+  lines_removed: 7
+  footprint_refreshed_at: '2026-11-03T14:50:00Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5049-audit-alarm-an-outside-contributors-comm.md
+generated_by: context-agent-hybrid

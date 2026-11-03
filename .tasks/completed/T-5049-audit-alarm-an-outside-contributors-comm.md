@@ -11,12 +11,12 @@ description: >
   the operator, or PR metadata via gh), and where it reports (fw audit + fw doctor).
   Roadmap target 2026-11-06.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [github-contributions, audit]
-components: []
+components: [agents/audit/audit.sh, bin/fw, lib/outside_commits.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-03T11:46:32Z
-last_update: 2026-11-03T14:47:29Z
-date_finished:
+last_update: 2026-11-03T14:49:21Z
+date_finished: 2026-11-03T14:49:21Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -367,6 +367,12 @@ bin/fw vendor self --check --task T-5049
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-11-03 — how outside authors are recognised (requirements 10.36, provisional)
+- **Chose:** inverse list — any author email not matching `policy/internal-identities.yaml` is outside; only commits after a recorded baseline are judged; an outside commit is accepted only when `gh` confirms the operator merged its PR, and an unreachable `gh` is WARN "unverified", never a pass.
+- **Why:** unknown = outside, so a new outside author cannot slip through by not being listed; the baseline keeps the T-3854 fixture history and older commits from being re-judged.
+- **Rejected:** a list of outside identities (misses every new contributor); the DCO line alone (anyone can write one).
+- **Residual:** git author emails are self-declared. A commit forged under an internal email (the operator's, or `noreply@github.com`) passes as internal; this detects honest outside authorship, not forgery. Signed-commit verification would close it and belongs to the architect step (T-5006 role chain step 4). The policy file is writable by any same-user agent; changing it is an operator decision but not gated.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -386,3 +392,16 @@ bin/fw vendor self --check --task T-5049
 
 ### 2026-11-03T14:39:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-03T14:49:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6b46d861
+- **Timestamp:** 2026-11-03T14:49:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
