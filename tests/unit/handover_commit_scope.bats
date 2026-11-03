@@ -240,7 +240,13 @@ _assert_in_head() {
 @test "T-3090: both handover commit legs pass a -- pathspec" {
     # Source-level guard. The behavioural tests above prove do_commit honours a
     # pathspec; this proves the two callers that caused the incident send one.
-    run grep -c 'commit -m "\$COMMIT_TASK: .*" -- "\$HANDOVER_FILE"' \
+    # T-5052: both legs commit through _commit_handover_files, whose single
+    # commit passes its file arguments as the pathspec.
+    run grep -c 'commit -m "\$_msg" -- "\$@"' \
+        "$FRAMEWORK_ROOT/agents/handover/handover.sh"
+    [ "$status" -eq 0 ]
+    [ "$output" -eq 1 ]
+    run grep -c '_commit_handover_files "\$COMMIT_TASK: .*" "\$HANDOVER_FILE"' \
         "$FRAMEWORK_ROOT/agents/handover/handover.sh"
     [ "$status" -eq 0 ]
     [ "$output" -eq 2 ]
