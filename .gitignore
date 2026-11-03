@@ -1,5 +1,6 @@
 __pycache__/
 .context/runme/
+.context/testhost/
 .context/working/.tool-counter
 .context/working/.claude-fw-conversation
 .context/working/.transcript-path

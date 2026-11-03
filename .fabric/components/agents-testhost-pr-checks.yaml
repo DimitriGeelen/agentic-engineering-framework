@@ -1,0 +1,21 @@
+id: agents/testhost/pr-checks.sh
+name: pr-checks
+type: script
+subsystem: framework-core
+location: agents/testhost/pr-checks.sh
+tags: []
+
+purpose: "pr-checks.sh BASE-REF — the R-12 pull-request checks, one script for both places (R-14, T-5009)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-03
+created_by: unknown

@@ -1707,6 +1707,7 @@ show_help() {
     echo -e "  ${GREEN}approvals${NC} <cmd>      Approval queue (pending, status, expire)"
     echo -e "  ${GREEN}review-queue${NC}         List tasks awaiting human review (with verdicts)"
     echo -e "  ${GREEN}issues${NC} <cmd>         Inbound GitHub issues: sync (ingest, T-4078), comment, approve (T-4077)"
+    echo -e "  ${GREEN}testhost${NC} <cmd>       Isolated test host: run (--pr N | --commit SHA), watch, list (T-5009)"
     echo -e "  ${GREEN}verify-queue${NC}         Re-run stored Verification for that queue (--all, --task, --json)"
     echo -e "  ${GREEN}work-on${NC} <name|T-XXX> Create task + set focus + start (one-step gate)"
     echo -e "  ${GREEN}bus${NC} <cmd>            Result ledger for sub-agent dispatch (post, read, manifest, clear)"
@@ -12328,6 +12329,11 @@ YAMLEOF
     issues)
         # T-4077: GitHub issue intake. `comment` is the one outward verb; `sync` (T-4078) ingests.
         PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 "$FW_LIB_DIR/issues.py" "$@"
+        exit $?
+        ;;
+    testhost)
+        # T-5009: run the R-12 PR checks on a throwaway isolated test host (stub backend in phase 3).
+        PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 "$FW_LIB_DIR/testhost.py" "$@"
         exit $?
         ;;
     review)

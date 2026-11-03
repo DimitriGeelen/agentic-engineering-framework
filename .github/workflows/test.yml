@@ -35,10 +35,8 @@ jobs:
           git config --global user.email "ci@example.invalid"
           git config --global user.name "CI"
 
-      - name: Structural invariants (tests/lint)
-        run: bats tests/lint/
-
-      - name: Tests added or changed by this change
+      # T-5009 (R-14): the checks live in one script, shared with the isolated test host.
+      - name: PR checks (tests/lint, then tests added or changed by this change)
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             base="origin/${{ github.base_ref }}"
@@ -46,17 +44,7 @@ jobs:
             base="${{ github.event.before }}"
             case "$base" in ''|0000000000000000000000000000000000000000) base="HEAD~1" ;; esac
           fi
-          changed=$(git diff --name-only --diff-filter=AM "$base"...HEAD -- tests/ || true)
-          bats_files=$(printf '%s\n' "$changed" | grep -E '^tests/(unit|integration)/.*\.bats$' || true)
-          py_files=$(printf '%s\n' "$changed" | grep -E '^tests/unit/(test_.*|.*_test)\.py$' || true)
-          if [ -z "$bats_files$py_files" ]; then
-            echo "No test files added or changed."
-            exit 0
-          fi
-          rc=0
-          if [ -n "$bats_files" ]; then echo "$bats_files" | xargs bats || rc=1; fi
-          if [ -n "$py_files" ]; then echo "$py_files" | xargs python3 -m pytest -q || rc=1; fi
-          exit $rc
+          bash agents/testhost/pr-checks.sh "$base"
 
   bats:
     name: Bash Tests (bats-core)

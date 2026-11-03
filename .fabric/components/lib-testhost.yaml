@@ -1,0 +1,21 @@
+id: lib/testhost.py
+name: testhost
+type: script
+subsystem: framework-core
+location: lib/testhost.py
+tags: []
+
+purpose: "fw testhost — run the R-12 pull-request checks on a throwaway isolated test host (T-5009)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-03
+created_by: unknown

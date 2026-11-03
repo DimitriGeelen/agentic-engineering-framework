@@ -1,0 +1,21 @@
+id: agents/testhost/guest-run.sh
+name: guest-run
+type: script
+subsystem: framework-core
+location: agents/testhost/guest-run.sh
+tags: []
+
+purpose: "guest-run.sh INPUT-DIR OUTPUT-DIR — what the test VM's boot service runs (T-5009 phase 3)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-03
+created_by: unknown
