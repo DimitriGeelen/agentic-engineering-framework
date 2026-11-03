@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5050: fw upgrade's inception-schema backfill edits legacy closed tasks that carry horizon: now, which CTL-030 then refuses to commit; the agent cannot fix, unstage or commit them
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-03T16:10:49Z
+# ============================================================================
+
+task_id: T-5050
+task_name: "fw upgrade's inception-schema backfill edits legacy closed tasks that carry horizon: now, which CTL-030 then refuses to commit; the agent cannot fix, unstage or commit them"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-03T12:00:20Z
+completed: 2026-11-03T16:09:37Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-03T17:09:11+01:00
+last_commit: 2026-11-03T17:09:21+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception schema backfill touches active tasks only; CTL-030 refusal names the legacy-archive cause and the operator's restore command. vendor inception_schema_backfill.py, stale-index-guard.py
+
+# Key outcomes
+outcomes:
+  - '`lib/inception_schema_backfill.py` given a tasks dir backfills only `.tasks/active/`; a completed inception lacking the fields is left byte-identical (an explicit completed file path is also skipped)'
+  - 'CTL-030 refusal in `agents/git/lib/stale-index-guard.py` adds a legacy hint: a tool edited an already-archived task whose recorded horizon predates CTL-030; operator remedy `git restore --staged --worktree -- <path>`'
+  - 'Tests: backfill skips completed (bats or pytest); stale-index guard message contains the legacy hint; existing backfill and stale-index tests stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/stale-index-guard.py'
+  - '.agentic-framework/lib/inception_schema_backfill.py'
+  - 'agents/git/lib/stale-index-guard.py'
+  - 'lib/inception_schema_backfill.py'
+  - 'tests/unit/t3948_inception_schema_upgrade.bats'
+  - 'tests/unit/t4167_stale_index_guard.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-03T17:09:11'
+    action: 'T-5050: inception schema backfill touches active tasks only; CTL-030 refusal names the legacy-archive cause and the operator''s restore command'
+  - time: '2026-11-03T17:09:21'
+    action: 'T-5050: vendor inception_schema_backfill.py, stale-index-guard.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 249 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [upgrade, consumer]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 249
+  commits: 3
+  files_changed: 9
+  lines_added: 570
+  lines_removed: 6
+  footprint_refreshed_at: '2026-11-03T16:10:58Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5050-fw-upgrades-inception-schema-backfill-ed.md
+generated_by: context-agent-hybrid
