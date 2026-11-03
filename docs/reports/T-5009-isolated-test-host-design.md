@@ -115,3 +115,7 @@ PR waits for this anyway, and a linked-clone VM starts in seconds.
 
 - 2026-11-03: operator chose "design first" for T-5009 (options were: design first / name a host now / park).
 - 2026-11-03, Q-1: operator answered "1" — VM, not container.
+- 2026-11-03, Q-2 (network): operator objected to "no network": disk-only I/O sounds clunky, and "it's very
+  difficult to get the right information out of it, and that in itself is a risk"; no human will coordinate sessions.
+  Agent clarified that the controller automates the whole run (no interactive session). Operator asked for a short
+  outside view from a subscription model before deciding; dispatched to codex (`T-5009-review-codex.md`). Q-2 open.
