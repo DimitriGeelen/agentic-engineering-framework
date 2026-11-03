@@ -1,15 +1,20 @@
 ---
 id: T-5059
-name: "claude-fw tmux wrap: client-attached/client-resized hooks send C-l into the agent even for a read-only viewer (attach -r)"
+name: "claude-fw tmux wrap: client-attached/client-resized hooks send C-l into the
+  agent even for a read-only viewer (attach -r)"
 description: >
-  055 msg d2628100 (2026-11-03, be.26, their T-695), point 4: bin/claude-fw:263-264 hooks run send-keys C-l on every client-attached / client-resized, so a read-only viewer (tmux attach -r) writes a keystroke into the agent's pane. Confirmed in code. Fix direction: skip when #{client_readonly} is 1 (and the resize from a read-only client), keep the redraw for the operator's own client.
+  055 msg d2628100 (2026-11-03, be.26, their T-695), point 4: bin/claude-fw:263-264
+  hooks run send-keys C-l on every client-attached / client-resized, so a read-only
+  viewer (tmux attach -r) writes a keystroke into the agent's pane. Confirmed in code.
+  Fix direction: skip when #{client_readonly} is 1 (and the resize from a read-only
+  client), keep the redraw for the operator's own client.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: []
-components: []
+components: [bin/claude-fw, tests/unit/t4426_claude_fw_tmux_redraw.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-03T22:32:43Z
-last_update: 2026-11-03T22:32:43Z
-date_finished: null
+last_update: 2026-11-03T23:09:25Z
+date_finished: 2026-11-03T23:09:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-03T22:37:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5059: claude-fw tmux wrap: client-attached/client-resized hooks send C-l into the agent even for a read-only viewer (attach -r)
@@ -57,20 +79,20 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 055-agentic-fleet-cockpit (msg d2628100, 2026-11-03, on be.26, their T-695), point 4: viewers of a wrapped Claude write into it. 055 will attach no viewer until this is fixed (msg 69daa641).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `bin/claude-fw` sets `client-attached` and `client-resized` hooks (T-4426) that run `send-keys C-l` on the agent's pane for every client, so a read-only viewer (`tmux attach -r`) sends a keystroke into the agent. The redraw is wanted only for the operator's own (writable) client.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** a read-only client never causes a keystroke in the agent's pane; the operator's own attach and resize still redraw.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `tmux attach -r` to a wrapped session sends nothing; a normal attach still sends C-l.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The two client hooks skip `send-keys` when `#{client_readonly}` is 1, measured live that the format expands per triggering client inside `run-shell -b` (T-4426 found `if-shell -F` silently inert there)
+- [x] `tests/unit/t4426_claude_fw_tmux_redraw.bats` asserts the guard on both client hooks, and a live leg shows a read-only attach sends no C-l while a writable attach does
+- [x] Existing claude-fw tests stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -256,6 +278,9 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bash -n bin/claude-fw
+bats tests/unit/t4426_claude_fw_tmux_redraw.bats
+bin/fw vendor self --check --task T-5059
 
 ## RCA
 
@@ -272,6 +297,13 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** any client attaching to a wrapped Claude, a read-only viewer included, sent Ctrl-L into the agent's pane (055 msg d2628100).
+
+**Root cause:** T-4426 added `client-attached` / `client-resized` hooks to redraw Claude Code's screen for the operator, and wrote them for every client; the operator's terminal was the only client it had in mind.
+
+**Why structurally allowed:** T-4426's tests replayed only the copy-mode hook live; the client hooks were checked as argv text, and no test attached a second, read-only client.
+
+**Prevention:** the hooks skip `#{client_readonly}` = 1 (measured on tmux 3.4: 1 for `attach -r`, 0 otherwise); a live test attaches read-only (no ^L) and writable (^L). While building it, the live leg was flaky (2 of 3) because `script` forwarded end-of-input as Ctrl-D into the writable client, ending `cat -v`; stdin is now held open, 5 of 5 stable.
 
 ## Evolution
 
@@ -353,3 +385,20 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5059-claude-fw-tmux-wrap-client-attachedclien.md
 - **Context:** Initial task creation
+
+### 2026-11-03T22:37:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-03T23:09:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-413b2b73
+- **Timestamp:** 2026-11-03T23:09:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

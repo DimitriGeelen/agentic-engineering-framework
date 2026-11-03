@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5059: claude-fw tmux wrap: client-attached/client-resized hooks send C-l into the agent even for a read-only viewer (attach -r)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-03T23:10:06Z
+# ============================================================================
+
+task_id: T-5059
+task_name: "claude-fw tmux wrap: client-attached/client-resized hooks send C-l into the agent even for a read-only viewer (attach -r)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-03T22:32:43Z
+completed: 2026-11-03T23:09:25Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-04T00:08:50+01:00
+last_commit: 2026-11-04T00:09:01+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claude-fw tmux wrap — client-attached/client-resized hooks skip a read-only client, so a viewer never types into the agent. vendor claude-fw
+
+# Key outcomes
+outcomes:
+  - 'The two client hooks skip `send-keys` when `#{client_readonly}` is 1, measured live that the format expands per triggering client inside `run-shell -b` (T-4426 found `if-shell -F` silently inert there)'
+  - '`tests/unit/t4426_claude_fw_tmux_redraw.bats` asserts the guard on both client hooks, and a live leg shows a read-only attach sends no C-l while a writable attach does'
+  - 'Existing claude-fw tests stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - 'bin/claude-fw'
+  - 'tests/unit/t4426_claude_fw_tmux_redraw.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-04T00:08:50'
+    action: 'T-5059: claude-fw tmux wrap — client-attached/client-resized hooks skip a read-only client, so a viewer never types into the agent'
+  - time: '2026-11-04T00:09:01'
+    action: 'T-5059: vendor claude-fw'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 36 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 36
+  commits: 3
+  files_changed: 6
+  lines_added: 233
+  lines_removed: 18
+  footprint_refreshed_at: '2026-11-03T23:10:33Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5059-claude-fw-tmux-wrap-client-attachedclien.md
+generated_by: context-agent-hybrid
