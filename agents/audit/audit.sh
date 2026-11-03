@@ -3307,6 +3307,8 @@ _audit_collect() {
     _audit_prefetch vl env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" audit
 [ -f "$FRAMEWORK_ROOT/lib/human_ac_ticks.py" ] && \
     _audit_prefetch hat env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/human_ac_ticks.py" audit
+[ -f "$FRAMEWORK_ROOT/lib/outside_commits.py" ] && \
+    _audit_prefetch oc env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/outside_commits.py" audit
 [ -f "$FRAMEWORK_ROOT/lib/watchtower_decision_revert.py" ] && \
     _audit_prefetch wdr python3 -I "$FRAMEWORK_ROOT/lib/watchtower_decision_revert.py" --repo "$PROJECT_ROOT"
 [ -f "$FRAMEWORK_ROOT/lib/index_reconcile.py" ] && \
@@ -3379,6 +3381,30 @@ else
     fail "Human-AC ticks: lib/human_ac_ticks.py is missing — Human ticks UNVERIFIED" \
          "detector code unavailable" \
          "Restore it: bin/fw vendor self (or fw upgrade)"
+fi
+
+# T-5049 (R-58): an outside contributor's commit on bleeding-edge must have arrived through a
+# GitHub PR the operator merged. Unknown author = outside (policy/internal-identities.yaml);
+# gh unavailable = WARN "unverified", never PASS. No policy file = not configured (consumers).
+if [ -f "$FRAMEWORK_ROOT/lib/outside_commits.py" ]; then
+    _audit_collect oc
+    _oc_out=$_PF_OUT
+    _oc_rc=$_PF_RC
+    if [ "$_oc_rc" -eq 0 ]; then
+        pass "$(echo "$_oc_out" | tail -1)"
+    elif [ "$_oc_rc" -eq 1 ]; then
+        warn "$(echo "$_oc_out" | tail -1)" \
+             "$(echo "$_oc_out" | grep '^WARN' | head -3 | tr '\n' ';')" \
+             "Make gh work (gh auth status) and re-run: python3 lib/outside_commits.py audit — an unverified PR is not a pass"
+    elif [ "$_oc_rc" -eq 2 ]; then
+        fail "$(echo "$_oc_out" | tail -1)" \
+             "$(echo "$_oc_out" | grep '^FAIL' | head -3 | tr '\n' ';')" \
+             "operator: inspect the commit; revert it or record the merge (python3 lib/outside_commits.py audit names each one)"
+    else
+        fail "Outside commits: check could not run (rc=$_oc_rc) — outside commits UNVERIFIED" \
+             "$(echo "$_oc_out" | tail -2 | tr '\n' ';')" \
+             "Run: python3 lib/outside_commits.py audit"
+    fi
 fi
 
 # T-4988 (T-4965 GO): the operator-owned grant file. Silent without a committed file. WARN, not

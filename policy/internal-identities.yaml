@@ -1,0 +1,34 @@
+# Internal identities for the outside-commit alarm (T-5049, requirement R-58).
+#
+# lib/outside_commits.py judges every commit in baseline_commit..bleeding-edge. A commit
+# whose AUTHOR email matches none of the globs below is an OUTSIDE commit, and it must have
+# arrived through a GitHub pull request merged by operator_github_login — otherwise
+# `fw audit` FAILs and `fw operator pending` names it.
+#
+# Unknown author = outside. Listing nobody new is the safe direction: an outside author can
+# never slip through by not being listed. Adding an entry here, or moving the baseline, is
+# an OPERATOR decision — it silences the alarm for that identity or that history.
+#
+# Globs are fnmatch, case-insensitive.
+
+# Commits up to and including this one are not judged: history before the check existed.
+baseline_commit: b240a7043c04231b2643517068036b133571eb88
+
+operator_github_login: DimitriGeelen
+
+internal_authors:
+  # The operator's git identities.
+  - dimitirgeelen@hotmail.com
+  - dimitri@geelenandcompany.com
+  # The operator's GitHub no-reply address (commits made on github.com: web merges, edits).
+  - "*+DimitriGeelen@users.noreply.github.com"
+  - DimitriGeelen@users.noreply.github.com
+  # TermLink dispatch workers (fw termlink dispatch).
+  - "dispatch+*@aef.local"
+  # Reviewer dispatch workers (fw reviewer judge seats) and the plain reviewer identity.
+  - reviewer@aef.local
+  - "reviewer+*@aef.local"
+  # Historic test-fixture identity that leaked into real commits (T-3854).
+  - t@t.t
+  # GitHub's own identity (committer of web merges and squashes).
+  - noreply@github.com
