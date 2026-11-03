@@ -1,15 +1,21 @@
 ---
 id: T-5056
-name: "fw designer sync --from-tag: kit SHA256SUMS never compared with the MANIFEST's kit_sha256 (comment says it is), and kit files beyond the validator (SKILL.md) are never verified"
+name: "fw designer sync --from-tag: kit SHA256SUMS never compared with the MANIFEST's
+  kit_sha256 (comment says it is), and kit files beyond the validator (SKILL.md) are
+  never verified"
 description: >
-  Found by the T-5015 worker 2026-11-03 during the 0.38.0 re-pin: the kit SHA256SUMS hash is compared only with the pin, not with MANIFEST kit_sha256 at the tag, although the code comment claims both; SKILL.md (new in 0.38.0, sha256 4f2e4153..., 4349 B) has no pin key and is not fetched or checked. All hashes matched by hand this time; the gap is that the tool would not have caught a mismatch on those two.
+  Found by the T-5015 worker 2026-11-03 during the 0.38.0 re-pin: the kit SHA256SUMS
+  hash is compared only with the pin, not with MANIFEST kit_sha256 at the tag, although
+  the code comment claims both; SKILL.md (new in 0.38.0, sha256 4f2e4153..., 4349
+  B) has no pin key and is not fetched or checked. All hashes matched by hand this
+  time; the gap is that the tool would not have caught a mismatch on those two.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: []
-components: []
+components: [agents/designer/designer.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-03T16:34:08Z
-last_update: 2026-11-03T16:34:08Z
-date_finished: null
+last_update: 2026-11-03T20:22:23Z
+date_finished: 2026-11-03T20:22:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-03T20:16:16Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5056: fw designer sync --from-tag: kit SHA256SUMS never compared with the MANIFEST's kit_sha256 (comment says it is), and kit files beyond the validator (SKILL.md) are never verified
@@ -57,20 +80,20 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** the T-5015 worker (designer 0.38.0 re-pin, 2026-11-03) found that `fw designer sync --from-tag` compares the kit SHA256SUMS hash only with the pin, although the comment on `_sync_validator_at_tag` (agents/designer/designer.sh) says it is also compared with the MANIFEST's `kit_sha256` at the same tag.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** one of the three anchors the code claims is missing, so a release whose MANIFEST disagrees with its own kit sums would be vendored without a word. SKILL.md is not a separate gap: it is one of 15 kit files, AEF vendors only the validator from the kit, and every kit file's hash is inside SHA256SUMS, which this fix anchors to the MANIFEST.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the kit SHA256SUMS must match the pin AND the MANIFEST at the tag before the validator is vendored.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** a MANIFEST/kit mismatch refuses with a message naming all three values; a MANIFEST without `kit_sha256` is named on stderr, not passed silently; 0.38.0 still syncs.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `_sync_validator_at_tag` compares the kit SHA256SUMS hash with the MANIFEST's `kit_sha256` as well as the pin; mismatch refuses (exit 1) naming computed, pin and manifest values; missing `kit_sha256` is warned on stderr
+- [x] A test (new file `tests/unit/t5056_designer_kit_manifest_anchor.bats`, since `designer_sync_from_tag.bats` has no validator fixture) covers a MANIFEST kit_sha256 that differs from the kit sums and the sync refuses; existing designer tests stay green
+- [x] `bin/fw designer sync --from-tag designer-v0.38.0 --dry-run` still passes against the real tag
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -256,6 +279,10 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bash -n agents/designer/designer.sh
+bats tests/unit/t5056_designer_kit_manifest_anchor.bats
+bats tests/unit/designer_sync_from_tag.bats
+bin/fw vendor self --check --task T-5056
 
 ## RCA
 
@@ -272,6 +299,13 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** the 0.38.0 re-pin worker noticed the kit SHA256SUMS hash was never compared with the MANIFEST's `kit_sha256`.
+
+**Root cause:** T-4830 wrote the three-anchor intent in the function comment but implemented two (pin and the validator's line); the MANIFEST read happened in the caller and was never passed on.
+
+**Why structurally allowed:** no test exercised the validator-at-tag path at all; every sync test fixture had a pin without `validator_*` keys, so the function returned early.
+
+**Prevention:** `tests/unit/t5056_designer_kit_manifest_anchor.bats` is the first fixture with a kit and validator; it fails on the old code (shown) and covers match, MANIFEST mismatch and a MANIFEST without the key.
 
 ## Evolution
 
@@ -353,3 +387,20 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5056-fw-designer-sync---from-tag-kit-sha256su.md
 - **Context:** Initial task creation
+
+### 2026-11-03T20:16:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-03T20:22:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4f649985
+- **Timestamp:** 2026-11-03T20:22:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

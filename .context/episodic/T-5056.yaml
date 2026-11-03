@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5056: fw designer sync --from-tag: kit SHA256SUMS never compared with the MANIFEST's kit_sha256 (comment says it is), and kit files beyond the validator (SKILL.md) are never verified
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-03T20:22:46Z
+# ============================================================================
+
+task_id: T-5056
+task_name: "fw designer sync --from-tag: kit SHA256SUMS never compared with the MANIFEST's kit_sha256 (comment says it is), and kit files beyond the validator (SKILL.md) are never verified"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-03T16:34:08Z
+completed: 2026-11-03T20:22:23Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-03T17:35:23+01:00
+last_commit: 2026-11-03T21:21:59+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture designer-sync verification gap found in T-5015. designer sync anchors the kit SHA256SUMS to the MANIFEST kit_sha256 as well as the pin. vendor designer.sh
+
+# Key outcomes
+outcomes:
+  - '`_sync_validator_at_tag` compares the kit SHA256SUMS hash with the MANIFEST''s `kit_sha256` as well as the pin; mismatch refuses (exit 1) naming computed, pin and manifest values; missing `kit_sha256` is warned on stderr'
+  - 'A test (new file `tests/unit/t5056_designer_kit_manifest_anchor.bats`, since `designer_sync_from_tag.bats` has no validator fixture) covers a MANIFEST kit_sha256 that differs from the kit sums and the sync refuses; existing designer tests stay green'
+  - '`bin/fw designer sync --from-tag designer-v0.38.0 --dry-run` still passes against the real tag'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/designer/designer.sh'
+  - '.tasks/active/T-5056-fw-designer-sync---from-tag-kit-sha256su.md'
+  - 'agents/designer/designer.sh'
+  - 'tests/unit/t5056_designer_kit_manifest_anchor.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-03T17:35:23'
+    action: 'T-5056: capture designer-sync verification gap found in T-5015'
+  - time: '2026-11-03T21:21:54'
+    action: 'T-5056: designer sync anchors the kit SHA256SUMS to the MANIFEST kit_sha256 as well as the pin'
+  - time: '2026-11-03T21:21:59'
+    action: 'T-5056: vendor designer.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 228 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 228
+  commits: 4
+  files_changed: 7
+  lines_added: 632
+  lines_removed: 22
+  footprint_refreshed_at: '2026-11-03T20:22:57Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5056-fw-designer-sync---from-tag-kit-sha256su.md
+generated_by: context-agent-hybrid
