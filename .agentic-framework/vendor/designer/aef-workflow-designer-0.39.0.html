@@ -10858,18 +10858,23 @@ function maybeShowLaneFixNotice() {
     const pl = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
     const nAssoc = Object.values(kd.perNode || {}).reduce((a, m) => a + ((m.dataInputAssociation || []).length + (m.dataOutputAssociation || []).length), 0);
     const L = dataLayout(state);
-    const drawn = L ? L.docs.length : 0, drawnLinks = L ? L.links.length : 0;
-    const stores = (kd.elements || []).filter(x => /^<(?:[\w.-]+:)?dataStoreReference\b/.test(String(x).trim())).length;
-    const unlinked = L ? L.unplaced.length : 0, otherAssoc = Math.max(0, nAssoc - drawnLinks);
+    // T-1381: data stores are drawn too, by the same rule, so both kinds count as drawn; only an element no task links
+    // to (of either kind), and links to such elements, stay "not drawn".
+    const drawnDocs = L ? L.docs.filter(d => d.kind === 'document').length : 0;
+    const drawnStores = L ? L.docs.filter(d => d.kind === 'store').length : 0;
+    const drawnLinks = L ? L.links.length : 0, otherAssoc = Math.max(0, nAssoc - drawnLinks);
     // T-1372 sweep: plain words ("links", not "data associations"), the hidden items NAMED, and the good news last, so
     // the notice's leading warning sign belongs to a warning (docsLine is pushed at the end of the notice).
     const attr = (x, k) => { const m = new RegExp('\\b' + k + '="([^"]*)"').exec(String(x)); return m ? m[1] : ''; };
-    const storeNames = (kd.elements || []).filter(x => /^<(?:[\w.-]+:)?dataStoreReference\b/.test(String(x).trim()))
-      .map(x => attr(x, 'name') || attr(x, 'id'));
-    const unlinkedNames = (L ? L.unplaced : []).map(id => { const x = (kd.elements || []).find(e => attr(e, 'id') === id); return (x && attr(x, 'name')) || id; });
-    if (drawn) docsLine = `${pl(drawn, 'document')} drawn under the tasks that make or use ${drawn === 1 ? 'it' : 'them'}, with ${pl(drawnLinks, 'link')} to those tasks`;
-    const hidden = [stores && `${pl(stores, 'data store')} (${storeNames.join(', ')})`,
-                    unlinked && `${pl(unlinked, 'document')} no task links to (${unlinkedNames.join(', ')})`,
+    const unplacedOf = re => (L ? L.unplaced : []).map(id => (kd.elements || []).find(e => attr(e, 'id') === id))
+      .filter(x => x && re.test(String(x).trim())).map(x => attr(x, 'name') || attr(x, 'id'));
+    const unlinkedDocs = unplacedOf(/^<(?:[\w.-]+:)?dataObjectReference\b/);
+    const unlinkedStores = unplacedOf(/^<(?:[\w.-]+:)?dataStoreReference\b/);
+    const drawnWhat = [drawnDocs && pl(drawnDocs, 'document'), drawnStores && pl(drawnStores, 'data store')].filter(Boolean);
+    if (drawnWhat.length) docsLine = `${drawnWhat.join(' and ')} drawn under the tasks that make or use ` +
+      `${drawnDocs + drawnStores === 1 ? 'it' : 'them'}, with ${pl(drawnLinks, 'link')} to those tasks`;
+    const hidden = [unlinkedStores.length && `${pl(unlinkedStores.length, 'data store')} no task links to (${unlinkedStores.join(', ')})`,
+                    unlinkedDocs.length && `${pl(unlinkedDocs.length, 'document')} no task links to (${unlinkedDocs.join(', ')})`,
                     otherAssoc && pl(otherAssoc, 'link')].filter(Boolean);
     if (hidden.length) parts.push(`${hidden.join(', ')}: in the file and saved back unchanged, but not drawn`);
     if ((kd.skipped || []).length) parts.push(`${kd.skipped.length} data association${kd.skipped.length === 1 ? '' : 's'} NOT kept — ` +
@@ -13898,7 +13903,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.38.0';
+const APP_VERSION = '0.39.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
@@ -14937,8 +14942,13 @@ function renderCollab() {
 //   - each association is a straight dotted line between the borders of the task and the document, computed from the
 //     task's CURRENT position (a kept BPMNEdge would point where the task was in the file), with an open arrowhead
 //     towards the receiver: task -> document for an output, document -> task for an input.
-// Data stores (bpmn:dataStoreReference) are not drawn yet; they stay kept as before.
+// T-1381: data stores (bpmn:dataStoreReference) are drawn by the same rule, as BPMN draws them: a cylinder with its name
+// (and [state] when it has one). A store is anchored like a document: under the task that writes it (its first output
+// association), else the first that reads it; side by side with that task's documents. A store no task links to is not
+// drawn and the import notice names it. Each placed element carries `kind` ('document' | 'store').
 const DATA_DOC_W = 36, DATA_DOC_H = 50, DATA_DOC_GAP = 34, DATA_DOC_SPACING = 24, DATA_LABEL_CH = 18, DATA_LABEL_LINE = 12;
+const DATA_STORE_W = 44, DATA_STORE_H = 44, DATA_STORE_RY = 6;   // the cylinder; RY is half the height of its top ellipse
+const DATA_LABEL_PX = 6.4;   // a generous width per character of an 11px label (the .node-label font), for spacing
 const DATA_LANE_MARGIN = 10;   // below the lowest label line, inside the lane
 // The labels under a document: its name wrapped, then [state]; the lines renderData draws and growLanesForDocuments makes room for.
 function dataLabelLines(d) { return [...(d.name ? wrapText(d.name, DATA_LABEL_CH) : []), ...(d.state ? ['[' + d.state + ']'] : [])]; }
@@ -14952,13 +14962,16 @@ function dataLayout(s) {
     const d = new DOMParser().parseFromString(`<r ${NS}>${xml}</r>`, 'application/xml');
     return d.getElementsByTagName('parsererror').length ? null : d.documentElement.firstElementChild;
   };
-  const docs = new Map();   // reference id -> { id, name, state, x, y, w, h, placed }
+  const docs = new Map();   // reference id -> { id, kind, name, state, x, y, w, h, placed }
   for (const xml of k.elements) {
     const e = parse(xml);
-    if (!e || e.localName !== 'dataObjectReference' || !e.getAttribute('id')) continue;
+    if (!e || !e.getAttribute('id')) continue;
+    const kind = e.localName === 'dataObjectReference' ? 'document' : e.localName === 'dataStoreReference' ? 'store' : null;
+    if (!kind) continue;
     const st = Array.from(e.children).find(c => c.localName === 'dataState');
-    docs.set(e.getAttribute('id'), { id: e.getAttribute('id'), name: e.getAttribute('name') || '',
-      state: st ? (st.getAttribute('name') || '') : '', x: null, y: null, w: DATA_DOC_W, h: DATA_DOC_H, placed: 'none' });
+    docs.set(e.getAttribute('id'), { id: e.getAttribute('id'), kind, name: e.getAttribute('name') || '',
+      state: st ? (st.getAttribute('name') || '') : '', x: null, y: null,
+      w: kind === 'store' ? DATA_STORE_W : DATA_DOC_W, h: kind === 'store' ? DATA_STORE_H : DATA_DOC_H, placed: 'none' });
   }
   if (!docs.size) return null;
   const links = [];   // { id, doc, node, dir: 'out' (task -> doc) | 'in' (doc -> task) }
@@ -14983,9 +14996,17 @@ function dataLayout(s) {
     slot.docs.push(doc); byAnchor.set(first.node.uid, slot);
   }
   for (const { node, docs: ds } of byAnchor.values()) {
-    const nd = dims(node), total = ds.length * DATA_DOC_W + (ds.length - 1) * DATA_DOC_SPACING;
-    ds.forEach((doc, i) => Object.assign(doc, { x: node.x + nd.w / 2 - total / 2 + i * (DATA_DOC_W + DATA_DOC_SPACING),
-      y: node.y + nd.h + DATA_DOC_GAP, anchor: node, placed: 'rule' }));
+    // T-1381: each element takes a slot as wide as its shape or its widest label line, whichever is wider, and stands
+    // centred in it. Before, elements advanced by the page width alone, so two neighbours' labels ("Order confirmation"
+    // beside "Order book") overlapped: a label reaches past a 36px page by about 30px on each side.
+    const slotW = d => Math.max(d.w, ...dataLabelLines(d).map(t => t.length * DATA_LABEL_PX));
+    const nd = dims(node), total = ds.reduce((a, d) => a + slotW(d), 0) + (ds.length - 1) * DATA_DOC_SPACING;
+    let x = node.x + nd.w / 2 - total / 2;
+    for (const doc of ds) {
+      const sw = slotW(doc);
+      Object.assign(doc, { x: x + (sw - doc.w) / 2, y: node.y + nd.h + DATA_DOC_GAP, anchor: node, placed: 'rule' });
+      x += sw + DATA_DOC_SPACING;
+    }
   }
   const unplaced = [...docs.values()].filter(d => d.placed === 'none').map(d => d.id);
   return { docs: [...docs.values()].filter(d => d.placed !== 'none'), links: links.filter(l => docs.get(l.doc).placed !== 'none'), unplaced };
@@ -15026,18 +15047,41 @@ function renderData() {
   for (const l of L.links) {
     const d = byId.get(l.doc), nd = dims(l.node);
     const nr = { x: l.node.x, y: l.node.y, w: nd.w, h: nd.h };
-    const a = rectExit(nr, d.x + d.w / 2, d.y + d.h / 2), b = rectExit(d, nr.x + nr.w / 2, nr.y + nr.h / 2);
+    let a, b;
+    if (d.anchor === l.node) {
+      // T-1381 sweep: a shape anchored under this task. A centre-to-centre line would meet the task's bottom edge
+      // where its id badge sits, hiding the arrowhead in the badge text (Stock -> "Check stock"). Attach it to the
+      // bottom edge beside the badge, on the side the shape stands (right when centred): 8px in from the corner, which
+      // clears a centred badge up to about 15 characters on a 120px task.
+      const left = d.x + d.w / 2 < nr.x + nr.w / 2 - 1;
+      a = { x: left ? nr.x + 8 : nr.x + nr.w - 8, y: nr.y + nr.h };
+      b = rectExit(d, a.x, a.y);
+    } else {
+      a = rectExit(nr, d.x + d.w / 2, d.y + d.h / 2); b = rectExit(d, nr.x + nr.w / 2, nr.y + nr.h / 2);
+    }
     const [p, q] = l.dir === 'out' ? [a, b] : [b, a];
     g.appendChild(el('path', { d: `M${p.x.toFixed(1)},${p.y.toFixed(1)} L${q.x.toFixed(1)},${q.y.toFixed(1)}`, fill: 'none',
       stroke: 'var(--text-dim)', 'stroke-width': '1.2', 'stroke-dasharray': '2 3', 'marker-end': 'url(#da-end)',
       'data-data-assoc': l.id, 'data-dir': l.dir }));
   }
   for (const d of L.docs) {
-    const f = Math.min(10, d.w / 3);   // the folded corner
-    const grp = el('g', { 'data-data-object': d.id, 'data-placed': d.placed });
-    grp.appendChild(el('path', { d: `M${d.x},${d.y} H${d.x + d.w - f} L${d.x + d.w},${d.y + f} V${d.y + d.h} H${d.x} Z`,
-      fill: 'var(--surface-2)', stroke: 'var(--text-dim)', 'stroke-width': '1.3' }));
-    grp.appendChild(el('path', { d: `M${d.x + d.w - f},${d.y} V${d.y + f} H${d.x + d.w}`, fill: 'none', stroke: 'var(--text-dim)', 'stroke-width': '1.1' }));
+    let grp;
+    if (d.kind === 'store') {
+      // T-1381: BPMN's data store, a cylinder: the body with a curved bottom, the top ellipse, and the two rims under it.
+      const rx = d.w / 2, ry = DATA_STORE_RY, cx = d.x + rx, top = d.y + ry, bot = d.y + d.h - ry;
+      grp = el('g', { 'data-data-store': d.id, 'data-placed': d.placed });
+      grp.appendChild(el('path', { d: `M${d.x},${top} V${bot} A${rx},${ry} 0 0 0 ${d.x + d.w},${bot} V${top}`,
+        fill: 'var(--surface-2)', stroke: 'var(--text-dim)', 'stroke-width': '1.3' }));
+      grp.appendChild(el('ellipse', { cx, cy: top, rx, ry, fill: 'var(--surface-2)', stroke: 'var(--text-dim)', 'stroke-width': '1.3' }));
+      for (const dy of [5, 10]) grp.appendChild(el('path', { d: `M${d.x},${top + dy} A${rx},${ry} 0 0 0 ${d.x + d.w},${top + dy}`,
+        fill: 'none', stroke: 'var(--text-dim)', 'stroke-width': '1.1' }));
+    } else {
+      const f = Math.min(10, d.w / 3);   // the folded corner
+      grp = el('g', { 'data-data-object': d.id, 'data-placed': d.placed });
+      grp.appendChild(el('path', { d: `M${d.x},${d.y} H${d.x + d.w - f} L${d.x + d.w},${d.y + f} V${d.y + d.h} H${d.x} Z`,
+        fill: 'var(--surface-2)', stroke: 'var(--text-dim)', 'stroke-width': '1.3' }));
+      grp.appendChild(el('path', { d: `M${d.x + d.w - f},${d.y} V${d.y + f} H${d.x + d.w}`, fill: 'none', stroke: 'var(--text-dim)', 'stroke-width': '1.1' }));
+    }
     const lines = dataLabelLines(d);
     lines.forEach((t, i) => grp.appendChild(el('text', { x: d.x + d.w / 2, y: d.y + d.h + 13 + i * DATA_LABEL_LINE, 'text-anchor': 'middle',
       class: i < lines.length - (d.state ? 1 : 0) ? 'node-label' : 'data-state-label', 'data-data-label': d.id }, [text(t)])));
