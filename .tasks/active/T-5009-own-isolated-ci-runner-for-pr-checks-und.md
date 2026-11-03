@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-02T08:46:05Z
-last_update: '2026-11-03T17:09:24Z'
+last_update: 2026-11-03T20:01:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,7 +95,7 @@ bvp_scores_proposed:
 ### Agent
 - [x] Design note `docs/reports/T-5009-isolated-test-host-design.md` written: architecture, isolation mapped to each R-53 probe, R-54 compliance, who does what (operator steps as runmes), phases, open questions with recommendations
 - [ ] Operator answers recorded in the design note (VM or container, network, node and limits) before any build step
-- [ ] Controller verb runs a PR on a fresh host and destroys it afterwards; result file comes back, nothing else (test with a local stub of the host API)
+- [x] Controller verb runs a PR on a fresh host and destroys it afterwards; result file comes back, nothing else (test with a local stub of the host API)
 - [ ] R-53 probe PR: credential read, estate-host reach and other-project write each fail and are logged; host state gone after the run
 - [ ] R-15 parity: the R-12 checks on the own host give the same verdict as GitHub for one already-checked commit
 
@@ -283,6 +283,12 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_testhost_controller.py -q > /tmp/.t5009-pytest.out 2>&1 && grep -q passed /tmp/.t5009-pytest.out
+timeout 300 bats tests/lint/ > /tmp/.t5009-lint.out 2>&1 && ! grep -q "^not ok" /tmp/.t5009-lint.out
+test "$(grep -c '# skip' /tmp/.t5009-lint.out)" -eq 0
+python3 -c "import yaml;yaml.safe_load(open('.github/workflows/test.yml'))"
+grep -q "agents/testhost/pr-checks.sh" .github/workflows/test.yml
+bin/fw vendor self --check --task T-5009
 
 ## RCA
 
