@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5055: test_t3694_conformance_gate.bats: two control cases fail on current bleeding-edge
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-03T20:28:28Z
+# ============================================================================
+
+task_id: T-5055
+task_name: "test_t3694_conformance_gate.bats: two control cases fail on current bleeding-edge"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-03T15:36:54Z
+completed: 2026-11-03T20:26:45Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-03T16:38:01+01:00
+last_commit: 2026-11-03T21:26:44+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture pre-existing conformance-gate test failure; T-5054 Claude Code adapter backlog (010). conformance-gate fixtures use a real Verification check; bare true is a severe tautology finding that blocks close since T-4197
+
+# Key outcomes
+outcomes:
+  - 'The gate that refuses the two control closes is identified and named in the RCA, with its refusal text'
+  - 'The fix is in the fixture when the gate is right, or in the gate when it is wrong; the negative cases still fail for the conformance reason, not the other gate'
+  - '`bats tests/governance/test_t3694_conformance_gate.bats` passes in full'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'conformance-gate fixtures use a real Verification check; bare true is a severe tautology finding that blocks close since T-4197'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5054-claude-code-harness-adapter-for-termlink.md'
+  - '.tasks/active/T-5055-testt3694conformancegatebats-two-control.md'
+  - 'tests/governance/test_t3694_conformance_gate.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-03T16:38:01'
+    action: 'T-5055: capture pre-existing conformance-gate test failure; T-5054 Claude Code adapter backlog (010)'
+  - time: '2026-11-03T21:26:44'
+    action: 'T-5055: conformance-gate fixtures use a real Verification check; bare true is a severe tautology finding that blocks close since T-4197'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 289 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 289
+  commits: 3
+  files_changed: 6
+  lines_added: 877
+  lines_removed: 17
+  footprint_refreshed_at: '2026-11-03T20:28:57Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5055-testt3694conformancegatebats-two-control.md
+generated_by: context-agent-hybrid

@@ -2,12 +2,16 @@
 id: T-5055
 name: "test_t3694_conformance_gate.bats: two control cases fail on current bleeding-edge"
 description: >
-  Found 2026-11-03 during the T-5053 sweep: tests 2 (T-3691 control: same text closes once both targets are active) and 6 (register gate control: owner closes once its row is built) exit non-zero on the update-task.sh close; reproduced with T-5053's changes reverted, so pre-existing. Likely a later close gate refusing the fixture task. Unlocalised: find which gate refuses, then fix the fixture or the gate.
+  Found 2026-11-03 during the T-5053 sweep: tests 2 (T-3691 control: same text closes
+  once both targets are active) and 6 (register gate control: owner closes once its
+  row is built) exit non-zero on the update-task.sh close; reproduced with T-5053's
+  changes reverted, so pre-existing. Likely a later close gate refusing the fixture
+  task. Unlocalised: find which gate refuses, then fix the fixture or the gate.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-03T15:36:54Z
-last_update: 2026-11-03T15:36:54Z
-date_finished: null
+last_update: 2026-11-03T20:26:45Z
+date_finished: 2026-11-03T20:26:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-03T20:24:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5055: test_t3694_conformance_gate.bats: two control cases fail on current bleeding-edge
@@ -57,20 +78,20 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** found 2026-11-03 during the T-5053 sweep: `tests/governance/test_t3694_conformance_gate.bats` tests 2 ("T-3691 control: same text closes once both targets are active and name it") and 6 ("register gate control: owner closes once its row is built") fail; reproduced with T-5053's changes reverted, so pre-existing.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** both are control cases that expect `update-task.sh --status work-completed` to succeed on a fixture task. A close gate added after T-3694 (for example the four-part Context gate T-4907, a Verification-required gate, or the review-link validator) now refuses the fixture for a reason unrelated to the conformance gate, so the controls fail and the gate's negative cases prove less than they claim.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the controls prove what they say: a task the conformance gate should let through closes.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the refusing gate is named; the fixture is made complete for it (or the gate is fixed if it is wrong); all tests in the file pass.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The gate that refuses the two control closes is identified and named in the RCA, with its refusal text
+- [x] The fix is in the fixture when the gate is right, or in the gate when it is wrong; the negative cases still fail for the conformance reason, not the other gate
+- [x] `bats tests/governance/test_t3694_conformance_gate.bats` passes in full
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -256,6 +277,7 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bats tests/governance/test_t3694_conformance_gate.bats
 
 ## RCA
 
@@ -272,6 +294,13 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** the two control closes in `test_t3694_conformance_gate.bats` exited non-zero.
+
+**Root cause:** the fixtures' `## Verification` was a bare `true`. Since T-4197 (832 OBS-454), a severe deterministic reviewer finding blocks `work-completed`, and `true` is the `tautology` pattern in `lib/reviewer/static_scan.py`. Refusal text: "ERROR: Cannot complete — the reviewer found a severe, deterministic problem ... tautology at .../T-3691-design-conformance-gate.md". The gate is right; the fixture was wrong.
+
+**Why structurally allowed:** this file lives in `tests/governance/`, which the nightly unit suite (`tests/unit`) does not run, so the red went unseen when T-4197 landed.
+
+**Prevention:** the fixtures now use a real check (`test -f .framework.yaml`) with a comment naming T-4197; the controls echo the close output, so a future refusal names its gate in the bats failure. Follow-up worth checking: other fixtures that close with a `true` Verification, and whether `tests/governance/` is run anywhere on a schedule.
 
 ## Evolution
 
@@ -353,3 +382,20 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5055-testt3694conformancegatebats-two-control.md
 - **Context:** Initial task creation
+
+### 2026-11-03T20:24:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-03T20:26:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-989e7ff8
+- **Timestamp:** 2026-11-03T20:27:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
