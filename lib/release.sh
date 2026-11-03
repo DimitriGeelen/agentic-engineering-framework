@@ -9,12 +9,14 @@
 #
 # Designed to be run from cron on a weekly schedule and manually via `fw release`.
 
-# shellcheck disable=SC2034  # colors may be unset when sourced standalone
-: "${RED:=\\033[0;31m}"
-: "${GREEN:=\\033[0;32m}"
-: "${YELLOW:=\\033[1;33m}"
-: "${CYAN:=\\033[0;36m}"
-: "${NC:=\\033[0m}"
+# Colours: keep the caller's values, including the empty strings bin/fw and
+# lib/colors.sh set off a terminal or under NO_COLOR. The old `${RED:=...}`
+# treated empty as unset and put escape codes back into piped output (T-5048).
+# Sourced standalone (NC unset): take the guarded set from lib/colors.sh.
+if [ -z "${NC+x}" ]; then
+    # shellcheck source=colors.sh
+    source "$(dirname "${BASH_SOURCE[0]}")/colors.sh"
+fi
 
 # T-4431: -be pre-release tags never count as the latest release.
 # shellcheck source=release-tags.sh

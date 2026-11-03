@@ -59,13 +59,22 @@ _derive_version() {
 }
 FW_VERSION="$(_derive_version)"
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-BOLD='\033[1m'
-NC='\033[0m'
+# Colors — same guard as lib/colors.sh (T-5048): colour only when stdout or
+# stderr is a terminal and NO_COLOR is unset; otherwise every variable is empty,
+# so output written to a file or pipe carries no escape codes.
+if [[ ( -t 1 || -t 2 ) && -z "${NO_COLOR:-}" ]]; then
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    CYAN='\033[0;36m'
+    BOLD='\033[1m'
+    DIM='\033[2m'
+    NC='\033[0m'
+else
+    RED='' GREEN='' YELLOW='' CYAN='' BOLD='' DIM='' NC=''
+fi
+# Embedded Python blocks below apply the rule for their own stdout:
+# colour only when sys.stdout.isatty() and NO_COLOR is unset/empty.
 
 # --- Path Resolution ---
 
@@ -5768,6 +5777,8 @@ YELLOW = '\033[1;33m'
 CYAN = '\033[0;36m'
 BOLD = '\033[1m'
 NC = '\033[0m'
+if not sys.stdout.isatty() or os.environ.get('NO_COLOR'):  # T-5048
+    GREEN = YELLOW = CYAN = BOLD = NC = ''
 
 def status_color(s):
     s = s.lower() if s else ''
@@ -5896,6 +5907,9 @@ GREEN = '\033[0;32m'
 YELLOW = '\033[1;33m'
 CYAN = '\033[0;36m'
 NC = '\033[0m'
+RED = '\033[0;31m'
+if not sys.stdout.isatty() or os.environ.get('NO_COLOR'):  # T-5048
+    BOLD = GREEN = YELLOW = CYAN = NC = RED = ''
 
 task_file = None
 for subdir in ['active', 'completed']:
@@ -5910,7 +5924,7 @@ for subdir in ['active', 'completed']:
         break
 
 if not task_file:
-    print(f'\033[0;31mTask {task_id} not found\033[0m')
+    print(f'{RED}Task {task_id} not found{NC}')
     sys.exit(1)
 
 with open(task_file) as f:
@@ -6125,6 +6139,8 @@ GREEN = '\033[0;32m'
 YELLOW = '\033[1;33m'
 CYAN = '\033[0;36m'
 NC = '\033[0m'
+if not __import__('sys').stdout.isatty() or os.environ.get('NO_COLOR'):  # T-5048
+    BOLD = GREEN = YELLOW = CYAN = NC = ''
 
 def parse_iso(s):
     if not s: return None
@@ -6448,6 +6464,8 @@ YELLOW = '\033[1;33m'
 CYAN = '\033[0;36m'
 RED = '\033[0;31m'
 NC = '\033[0m'
+if not sys.stdout.isatty() or os.environ.get('NO_COLOR'):  # T-5048
+    BOLD = GREEN = YELLOW = CYAN = RED = NC = ''
 
 project_root = os.environ.get('PROJECT_ROOT', '.')
 active_dir = os.path.join(project_root, '.tasks', 'active')
@@ -6562,6 +6580,8 @@ while i < len(args):
 
 GREEN = '\033[0;32m'; YELLOW = '\033[1;33m'; CYAN = '\033[0;36m'
 RED = '\033[0;31m'; BOLD = '\033[1m'; NC = '\033[0m'
+if not sys.stdout.isatty() or os.environ.get('NO_COLOR'):  # T-5048
+    GREEN = YELLOW = CYAN = RED = BOLD = NC = ''
 
 project_root = os.environ.get('PROJECT_ROOT', '.')
 active_dir = os.path.join(project_root, '.tasks', 'active')
@@ -9280,6 +9300,8 @@ if ts:
 
 color = '\033[1;33m' if not expired else '\033[0;31m'
 nc = '\033[0m'
+if not sys.stdout.isatty() or os.environ.get('NO_COLOR'):  # T-5048
+    color = nc = ''
 print(f'  {color}{status.upper()}{nc}  {chash}  ({age_str})')
 print(f'    Risk: {risk}')
 print(f'    Cmd:  {preview}')
@@ -9328,6 +9350,8 @@ responded = resp.get('responded_at', '?')
 colors = {'approved': '\033[0;32m', 'rejected': '\033[0;31m', 'consumed': '\033[0;36m', 'expired': '\033[1;33m'}
 c = colors.get(status, '\033[0m')
 nc = '\033[0m'
+if not __import__('sys').stdout.isatty() or os.environ.get('NO_COLOR'):  # T-5048
+    c = nc = ''
 print(f'    {c}{status.upper():10}{nc}  {chash}  via {mechanism}  at {responded}')
 print(f'              {risk}')
 " 2>/dev/null
@@ -9804,6 +9828,14 @@ decision_rows.sort(key=lambda r: (order.get(r[0], 9), -r[1]))
 decided_rows.sort(key=lambda r: -r[1])
 
 NAME_W = 60
+
+# T-5048: the rows below carry colour inline. Off a terminal, or with NO_COLOR,
+# strip it at print so a file or pipe gets plain text.
+if not sys.stdout.isatty() or os.environ.get('NO_COLOR'):
+    import builtins as _bi
+    _ansi = re.compile(r'\x1b\[[0-9;]*m')
+    def print(*a, **k):
+        _bi.print(*(_ansi.sub('', x) if isinstance(x, str) else x for x in a), **k)
 
 def _verdict_color(v):
     # T-1576: NO-REC in cyan (call-to-action — agent should write a recommendation),
@@ -10462,13 +10494,16 @@ from lib.gaps import close_gap, GapCloseError
 gap_id = os.environ['GAP_ID']
 rationale = os.environ.get('RATIONALE') or None
 override = bool(os.environ.get('OVERRIDE_FLAG'))
+_nc = bool(os.environ.get('NO_COLOR'))  # T-5048: colour only on a terminal
+G, N = ('\033[0;32m', '\033[0m') if sys.stdout.isatty() and not _nc else ('', '')
+RE, NE = ('\033[0;31m', '\033[0m') if sys.stderr.isatty() and not _nc else ('', '')
 try:
     result = close_gap(gap_id, rationale=rationale, override=override, actor='cli')
-    print(f'\033[0;32mClosed\033[0m {gap_id} — verdict={result[\"verdict\"]}, closed_date={result[\"closed_date\"]}')
+    print(f'{G}Closed{N} {gap_id} — verdict={result[\"verdict\"]}, closed_date={result[\"closed_date\"]}')
     print(f'Audit: {result[\"audit_path\"]}')
     sys.exit(0)
 except GapCloseError as e:
-    print(f'\033[0;31mRefused\033[0m ({e.code}) {e.message}', file=sys.stderr)
+    print(f'{RE}Refused{NE} ({e.code}) {e.message}', file=sys.stderr)
     sys.exit(1)
 "
             exit $?
@@ -10482,7 +10517,11 @@ from lib.gaps import partition_gaps, status_breakdown
 GREEN = '\033[0;32m'
 YELLOW = '\033[1;33m'
 RED = '\033[0;31m'
+CYAN = '\033[0;36m'
+BOLD = '\033[1m'
 NC = '\033[0m'
+if not sys.stdout.isatty() or os.environ.get('NO_COLOR'):  # T-5048
+    GREEN = YELLOW = RED = CYAN = BOLD = NC = ''
 
 with open("$GAPS_FILE") as f:
     data = yaml.safe_load(f) or {}
@@ -10502,7 +10541,7 @@ gaps = data.get('concerns', data.get('gaps', [])) or []
 # printing five "command not found" lines above the report (L-408).
 outstanding, terminal = partition_gaps(gaps)
 
-print(f"\033[1mGaps Register\033[0m — {len(outstanding)} outstanding, {len(terminal)} closed, {len(gaps)} total")
+print(f"{BOLD}Gaps Register{NC} — {len(outstanding)} outstanding, {len(terminal)} closed, {len(gaps)} total")
 if outstanding:
     breakdown = ', '.join(f"{k} {v}" for k, v in status_breakdown(outstanding).items())
     print(f"  Outstanding by status: {breakdown}")
@@ -10558,16 +10597,16 @@ outstanding.sort(key=lambda g: (
 ))
 
 for gap in outstanding:
-    sev_colors = {'high': '\033[0;31m', 'medium': '\033[1;33m', 'low': '\033[0;36m'}
+    sev_colors = {'high': RED, 'medium': YELLOW, 'low': CYAN}
     sev = gap.get('severity', 'unknown')
-    color = sev_colors.get(sev, '\033[0m')
+    color = sev_colors.get(sev, NC)
     status = gap.get('status') if isinstance(gap.get('status'), str) else None
     # An entry with no status at all is a register defect, not a quiet gap —
     # say so on its line rather than letting it read as an ordinary entry.
     status_str = status if status else f"{RED}<unset>{NC}"
     # T-1840: defensive .get() — legacy consumer concerns.yaml entries
     # predating the title-field requirement crashed fw gaps with KeyError.
-    print(f"  {color}{gap.get('id', '?')}\033[0m [{sev}] ({status_str})  {gap.get('title') or '<untitled>'}")
+    print(f"  {color}{gap.get('id', '?')}{NC} [{sev}] ({status_str})  {gap.get('title') or '<untitled>'}")
     trigger = (gap.get('decision_trigger') or '').strip().split('\n')[0]
     if trigger:
         print(f"    Trigger: {trigger}")
@@ -10634,13 +10673,15 @@ PYEOF
         ;;
     decisions)
         python3 << 'PYDECISIONS'
-import os, yaml, re
+import os, sys, yaml, re
 
 BOLD = '\033[1m'
 GREEN = '\033[0;32m'
 YELLOW = '\033[1;33m'
 CYAN = '\033[0;36m'
 NC = '\033[0m'
+if not sys.stdout.isatty() or os.environ.get('NO_COLOR'):  # T-5048
+    BOLD = GREEN = YELLOW = CYAN = NC = ''
 
 project_root = os.environ.get('PROJECT_ROOT', '.')
 
@@ -10697,13 +10738,15 @@ PYDECISIONS
         ;;
     timeline)
         python3 << 'PYTIMELINE'
-import os, yaml
+import os, sys, yaml
 
 BOLD = '\033[1m'
 GREEN = '\033[0;32m'
 YELLOW = '\033[1;33m'
 CYAN = '\033[0;36m'
 NC = '\033[0m'
+if not sys.stdout.isatty() or os.environ.get('NO_COLOR'):  # T-5048
+    BOLD = GREEN = YELLOW = CYAN = NC = ''
 
 project_root = os.environ.get('PROJECT_ROOT', '.')
 handover_dir = os.path.join(project_root, '.context', 'handovers')
@@ -10764,9 +10807,11 @@ PYTIMELINE
         for _a in "$@"; do [ "$_a" = "--unfilled" ] && FW_LEARNINGS_UNFILLED=1; done
         if [ "$FW_LEARNINGS_UNFILLED" = "1" ]; then
             python3 << 'PYUNFILLED'
-import os, re, yaml
+import os, re, sys, yaml
 
 BOLD='\033[1m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'
+if not sys.stdout.isatty() or os.environ.get('NO_COLOR'):  # T-5048
+    BOLD = GREEN = YELLOW = NC = ''
 
 # Every shape a generator ever wrote at birth. A value matching one of these
 # tells a reader nothing the learning text does not already say, so it counts as
@@ -10807,13 +10852,15 @@ PYUNFILLED
             exit 0
         fi
         python3 << 'PYLEARNINGS'
-import os, yaml
+import os, sys, yaml
 
 BOLD = '\033[1m'
 GREEN = '\033[0;32m'
 YELLOW = '\033[1;33m'
 CYAN = '\033[0;36m'
 NC = '\033[0m'
+if not sys.stdout.isatty() or os.environ.get('NO_COLOR'):  # T-5048
+    BOLD = GREEN = YELLOW = CYAN = NC = ''
 
 project_root = os.environ.get('PROJECT_ROOT', '.')
 path = os.path.join(project_root, '.context', 'project', 'learnings.yaml')
@@ -10852,7 +10899,7 @@ PYLEARNINGS
             exit 0
         fi
         python3 << 'PYPATTERNS'
-import os, yaml
+import os, sys, yaml
 
 BOLD = '\033[1m'
 RED = '\033[0;31m'
@@ -10860,6 +10907,8 @@ GREEN = '\033[0;32m'
 YELLOW = '\033[1;33m'
 CYAN = '\033[0;36m'
 NC = '\033[0m'
+if not sys.stdout.isatty() or os.environ.get('NO_COLOR'):  # T-5048
+    BOLD = RED = GREEN = YELLOW = CYAN = NC = ''
 
 project_root = os.environ.get('PROJECT_ROOT', '.')
 path = os.path.join(project_root, '.context', 'project', 'patterns.yaml')
@@ -10922,13 +10971,15 @@ PYPATTERNS
             exit 0
         fi
         python3 << 'PYPRACTICES'
-import os, yaml
+import os, sys, yaml
 
 BOLD = '\033[1m'
 GREEN = '\033[0;32m'
 YELLOW = '\033[1;33m'
 CYAN = '\033[0;36m'
 NC = '\033[0m'
+if not sys.stdout.isatty() or os.environ.get('NO_COLOR'):  # T-5048
+    BOLD = GREEN = YELLOW = CYAN = NC = ''
 
 project_root = os.environ.get('PROJECT_ROOT', '.')
 path = os.path.join(project_root, '.context', 'project', 'practices.yaml')
@@ -10997,6 +11048,8 @@ GREEN = '\033[0;32m'
 YELLOW = '\033[1;33m'
 CYAN = '\033[0;36m'
 NC = '\033[0m'
+if not sys.stdout.isatty() or os.environ.get('NO_COLOR'):  # T-5048
+    BOLD = GREEN = YELLOW = CYAN = NC = ''
 
 if mode == 'semantic':
     from web.embeddings import search
@@ -11044,6 +11097,8 @@ GREEN = '\033[0;32m'
 YELLOW = '\033[1;33m'
 CYAN = '\033[0;36m'
 NC = '\033[0m'
+if not sys.stdout.isatty() or os.environ.get('NO_COLOR'):  # T-5048
+    BOLD = RED = GREEN = YELLOW = CYAN = NC = ''
 
 search_areas = [
     (os.path.join(project_root, '.tasks'), 'Tasks'),
@@ -11492,6 +11547,8 @@ GREEN = '\033[0;32m'
 YELLOW = '\033[1;33m'
 CYAN = '\033[0;36m'
 NC = '\033[0m'
+if not sys.stdout.isatty() or os.environ.get('NO_COLOR'):  # T-5048
+    BOLD = GREEN = YELLOW = CYAN = NC = ''
 
 project_root = os.environ.get('PROJECT_ROOT', '.')
 ep_dir = os.path.join(project_root, '.context', 'episodic')
