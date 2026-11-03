@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-03T12:05:56Z
-last_update: 2026-11-03T12:58:45Z
+last_update: 2026-11-03T13:10:10Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,6 +101,12 @@ bvp_scores_proposed:
 - [x] Tests that read `handover.sh`'s push path and the config-registry parity lint stay green; `bin/fw vendor self --check --task T-5051` clean
 
 ### Human
+- [ ] [REVIEW] The config page shows the new HANDOVER_PUSH row clearly
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find the row `HANDOVER_PUSH`.
+  **Expected:** the row is there with default 1 and a one-line description saying 0 makes handovers commit locally and never push; it sits and reads like the other rows.
+  **If not:** tell the agent what looks wrong (missing, wrong text, layout).
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
