@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5048: bin/fw writes ANSI colour codes to files and pipes and ignores NO_COLOR (bin/fw:71-77 and ~10874), so verification lines grepping fw doctor output never match
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-03T13:44:49Z
+# ============================================================================
+
+task_id: T-5048
+task_name: "bin/fw writes ANSI colour codes to files and pipes and ignores NO_COLOR (bin/fw:71-77 and ~10874), so verification lines grepping fw doctor output never match"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-03T11:26:29Z
+completed: 2026-11-03T13:43:31Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-03T14:24:20+01:00
+last_commit: 2026-11-03T14:39:56+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context and criteria. bin/fw writes no colour codes into files, pipes or under NO_COLOR. vendor sync (bin/fw, lib/release.sh, lib/upstream.sh). tick agent criteria, add verification lines
+
+# Key outcomes
+outcomes:
+  - 'Both colour blocks in `bin/fw` use the same guard as `lib/colors.sh` (colour only when stdout or stderr is a terminal and NO_COLOR is unset; otherwise empty strings)'
+  - 'A test shows `bin/fw doctor --quick` written to a file, and with NO_COLOR=1, contains no ESC byte, and the header text "fw doctor - Framework Health Check" is matchable with `grep -F`'
+  - 'Tests that check `bin/fw` output for colours or headers stay green (find them with grep for the colour variables and the header strings); `bin/fw vendor self --check --task T-5048` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/release.sh'
+  - '.agentic-framework/lib/upstream.sh'
+  - '.tasks/active/T-5048-binfw-writes-ansi-colour-codes-to-files-.md'
+  - 'bin/fw'
+  - 'lib/release.sh'
+  - 'lib/upstream.sh'
+  - 'tests/unit/t5048_fw_no_colour_in_files.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-03T14:24:20'
+    action: 'T-5048: context and criteria'
+  - time: '2026-11-03T14:38:58'
+    action: 'T-5048: bin/fw writes no colour codes into files, pipes or under NO_COLOR'
+  - time: '2026-11-03T14:39:25'
+    action: 'T-5048: vendor sync (bin/fw, lib/release.sh, lib/upstream.sh)'
+  - time: '2026-11-03T14:39:56'
+    action: 'T-5048: tick agent criteria, add verification lines'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 137 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [cli]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 137
+  commits: 5
+  files_changed: 11
+  lines_added: 815
+  lines_removed: 75
+  footprint_refreshed_at: '2026-11-03T13:45:03Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5048-binfw-writes-ansi-colour-codes-to-files-.md
+generated_by: context-agent-hybrid

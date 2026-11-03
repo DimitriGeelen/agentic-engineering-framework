@@ -52949,3 +52949,39 @@ scan_id: R-fc1fbb5b
 task_id: T-5047
 payload:
   task_file: .tasks/active/T-5047-contributor-documents-for-outside-prs-co.md
+---
+kind: scan_emitted
+timestamp: '2026-11-03T13:11:46Z'
+scan_id: R-114d3046
+task_id: T-5051
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-03T13:11:46Z'
+scan_id: R-114d3046
+task_id: T-5051
+payload:
+  task_file: .tasks/active/T-5051-project-level-opt-out-for-the-handover-p.md
+---
+kind: scan_emitted
+timestamp: '2026-11-03T13:44:37Z'
+scan_id: R-0ae21398
+task_id: T-5048
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-03T13:44:37Z'
+scan_id: R-0ae21398
+task_id: T-5048
+payload:
+  task_file: .tasks/active/T-5048-binfw-writes-ansi-colour-codes-to-files-.md
