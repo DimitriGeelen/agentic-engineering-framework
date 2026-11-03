@@ -169,6 +169,18 @@ _unclosed_task() {
     [[ "$output" == *"horizon: now"* ]]
 }
 
+@test "T-5050: an edit to a legacy archived task (horizon: now) is refused and names the operator remedy" {
+    printf -- '---\nid: T-004\nstatus: work-completed\nhorizon: now\n---\n# T-004\n' \
+        > "$REPO/.tasks/completed/T-004-legacy.md"
+    _commit_all "T-004: legacy archive, pre-CTL-030"
+    printf 'voi_score: 0.5\n' >> "$REPO/.tasks/completed/T-004-legacy.md"
+    git -C "$REPO" add .tasks/completed/T-004-legacy.md
+    _commit backfill
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"OLD archived task whose horizon predates CTL-030"* ]]
+    [[ "$output" == *"git restore --staged --worktree -- <path>"* ]]
+}
+
 @test "T-4584: the closed move (horizon: null re-staged) is allowed" {
     _unclosed_task
     git -C "$REPO" mv .tasks/active/T-003-z.md .tasks/completed/T-003-z.md

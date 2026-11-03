@@ -110,3 +110,16 @@ _valid() {   # a complete inception on disk
     grep -q 'inception_schema_backfill.py' "$FRAMEWORK_ROOT/lib/upgrade.sh"
     grep -q 'inception_schema_backfill.py' "$FRAMEWORK_ROOT/agents/task-create/update-task.sh"
 }
+
+@test "T-5050: backfill leaves archived inceptions byte-identical (dir and explicit path)" {
+    ARC="$TEST_TEMP_DIR/.tasks/completed/T-9102-archived-inception.md"
+    printf -- '---\nid: T-9102\nworkflow_type: inception\nstatus: work-completed\nhorizon: now\n---\nold\n' > "$ARC"
+    before=$(sha256sum "$ARC")
+    run python3 "$BACKFILL" "$TEST_TEMP_DIR/.tasks"
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"T-9102"* ]]
+    [[ "$output" == *"T-9100"* ]]
+    run python3 "$BACKFILL" "$ARC"
+    [[ "$output" == *"0 file(s) changed"* ]]
+    [ "$(sha256sum "$ARC")" = "$before" ]
+}
