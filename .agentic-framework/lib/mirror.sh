@@ -236,6 +236,19 @@ USAGE
         if ! mirror_sync_one "$remote" "$origin_head" "$dry_run" "$quiet" "$log_file" "$branch"; then
             rc=1
         fi
+        # T-5044: the release train works on bleeding-edge, not on the default
+        # branch. While OneDev was origin, its own push job carried every branch to
+        # GitHub; with GitHub as origin, this sync is the only thing that carries
+        # them to the mirror. Same fast-forward-only rule, per branch.
+        local _extra _extra_head
+        for _extra in ${FW_MIRROR_EXTRA_BRANCHES-bleeding-edge}; do
+            [ "$_extra" = "$branch" ] && continue
+            _extra_head=$(git -C "${PROJECT_ROOT:-.}" ls-remote origin "refs/heads/$_extra" 2>/dev/null | awk '{print $1}')
+            [ -z "$_extra_head" ] && continue
+            if ! mirror_sync_one "$remote" "$_extra_head" "$dry_run" "$quiet" "$log_file" "$_extra"; then
+                rc=1
+            fi
+        done
         # T-4673: tags are synced independently of the branch outcome — a
         # new tag ref is safe to add even when the branch needs a human.
         if ! mirror_sync_tags "$remote" "$dry_run" "$quiet" "$log_file"; then
