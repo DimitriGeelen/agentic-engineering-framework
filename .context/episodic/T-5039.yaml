@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5039: Read-only allowlist refuses plainly read-only commands: termlink main status / am-i, curl -s -o /dev/null -w, sed -n, git grep
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-03T21:01:33Z
+# ============================================================================
+
+task_id: T-5039
+task_name: "Read-only allowlist refuses plainly read-only commands: termlink main status / am-i, curl -s -o /dev/null -w, sed -n, git grep"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-02T21:44:45Z
+completed: 2026-11-03T21:01:08Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-03T22:00:40+01:00
+last_commit: 2026-11-03T22:00:45+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  read-only allowlist admits termlink main status/am-i and gh read verbs; every write verb and gh api stay gated. vendor safe-commands.sh
+
+# Key outcomes
+outcomes:
+  - '`termlink main` arm admits `status` and `am-i` only'
+  - '`gh` arm admits only read verbs: run view/list/watch, pr view/list/diff/checks/status, issue view/list/status, release view/list, repo view, workflow view/list, auth status; `gh api` and every write verb refused; `--jq` expressions with quotes and parentheses pass'
+  - 'bats test covers each admitted form and each refused write form (including `gh api -X POST`, `gh pr merge`, `gh run download`, `termlink main claim`); existing safe-commands tests stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - 'tests/unit/t5039_readonly_termlink_main_gh.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-03T22:00:40'
+    action: 'T-5039: read-only allowlist admits termlink main status/am-i and gh read verbs; every write verb and gh api stay gated'
+  - time: '2026-11-03T22:00:45'
+    action: 'T-5039: vendor safe-commands.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1396 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [gates]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1396
+  commits: 3
+  files_changed: 6
+  lines_added: 643
+  lines_removed: 0
+  footprint_refreshed_at: '2026-11-03T21:11:41Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5039-read-only-allowlist-refuses-plainly-read.md
+generated_by: context-agent-hybrid
