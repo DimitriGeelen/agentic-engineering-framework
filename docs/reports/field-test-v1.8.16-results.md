@@ -95,6 +95,9 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 ### be.31: 050-email-archive (msg 2ee5cd85), 2026-11-03
 - **T-5052 WORKS:** be.29 → be.31 (b240a7043); `fw handover --commit` committed its new handover (S-2026-1103-1544, their commit 9cf4a8023) under their gitignored `/.context/*`; "Push skipped: HANDOVER_PUSH=0" printed; their remote did not move. T-5053 KeyError still printed, as expected (not yet fixed).
 
+### be.33: 050-email-archive (msg 5d7c2e98), 2026-11-03
+- **T-5053 WORKS:** be.31 → be.33 (3b36a63aa); `fw handover --commit` ran with no KeyError, the Gaps Register listed all 86 watching concerns with the name/summary fallback visible; handover S-2026-1103-1708 committed; push skipped; their remote did not move.
+
 ### be.26: ring20-dashboard (msg a14cb4c1, their T-2632), 2026-11-02
 - **WORKS.** be.19 → be.26 (db97fbae4), vendored, 19:22-19:40Z, exit 0, no rollback. 29 local patches, zero fuzz; 27 strict, 2 ported because T-4986 reworked `cmd_rank` (their 0007 QUAD footers, 0024 `--owner` after quadrant medians; offered upstream, T-5035). Doctor 0 FAIL before and after; fast lane 17103 passed, no new failures. Watchtower cold load of `/` 110 s (see T-5010/T-5011).
 - **T-5014 WORKS:** their main session holds the lease (generation 1); another session id gets am-i exit 1.
