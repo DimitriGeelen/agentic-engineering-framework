@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-03T09:56:06Z
-last_update: 2026-11-03T10:05:01Z
+last_update: 2026-11-03T10:09:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -102,10 +102,12 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Before the swap, both branches match on the two remotes and every tag on OneDev also exists on GitHub (missing ones pushed, none moved)
-- [ ] `.onedev-buildspec.yml`: the push job has no triggers and `force: false`, with a comment naming T-5044
-- [ ] In this repo `origin` points at GitHub and `onedev` at the old origin; `bleeding-edge` tracks `origin/bleeding-edge`
-- [ ] Handover and `fw push` push to GitHub and skip the mirror; `fw mirror sync --dry-run` reports OneDev as the mirror to fast-forward; tests that read `lib/mirror.sh` and `agents/handover/handover.sh` pass
+- [x] Before the swap, both branches match on the two remotes and every tag on OneDev also exists on GitHub (missing ones pushed, none moved) — 2026-11-03: branches equal; tag names equal on both (v1.8.x are annotated on OneDev, lightweight on GitHub, same commits)
+- [x] `.onedev-buildspec.yml`: the push job has no triggers and `force: false`, with a comment naming T-5044
+- [x] In this repo `origin` points at GitHub and `onedev` at the old origin; `bleeding-edge` tracks `origin/bleeding-edge`
+- [x] Handover pushes to GitHub (origin) and skips the mirror; `fw mirror sync` fast-forwards OneDev, now for `bleeding-edge` too (it carried only the default branch before; 2 new tests); 58 handover-push and mirror tests plus the 2 new ones pass; live sync: both remotes at bd41f0387 on `bleeding-edge`
+- [ ] Other clones of this repo that still use OneDev as origin are listed and switched (operator runme)
+- [ ] GitHub branch rules on `bleeding-edge` and `master`: no force push, no deletion (operator, GitHub settings)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
