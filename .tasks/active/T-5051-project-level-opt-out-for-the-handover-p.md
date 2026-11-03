@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-03T12:05:56Z
-last_update: 2026-11-03T12:54:24Z
+last_update: 2026-11-03T12:58:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,10 +95,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A config key (e.g. `HANDOVER_PUSH`, default on; env `FW_HANDOVER_PUSH=0` or `.framework.yaml`) is registered in `lib/config.sh` with a description, and `handover.sh` reads it through the normal config resolution
-- [ ] With the key off, `_push_to_remotes` (or its caller) pushes nothing on every path (`--commit` from pre-compact, checkpoint auto-handover, `fw handover --commit`) and prints one line saying it committed locally and did not push
-- [ ] A bats test shows: key off → commit made, no push to a bare test remote, the line printed; key on (default) → push as today
-- [ ] Tests that read `handover.sh`'s push path and the config-registry parity lint stay green; `bin/fw vendor self --check --task T-5051` clean
+- [x] A config key (e.g. `HANDOVER_PUSH`, default on; env `FW_HANDOVER_PUSH=0` or `.framework.yaml`) is registered in `lib/config.sh` with a description, and `handover.sh` reads it through the normal config resolution
+- [x] With the key off, `_push_to_remotes` (or its caller) pushes nothing on every path (`--commit` from pre-compact, checkpoint auto-handover, `fw handover --commit`) and prints one line saying it committed locally and did not push
+- [x] A bats test shows: key off → commit made, no push to a bare test remote, the line printed; key on (default) → push as today
+- [x] Tests that read `handover.sh`'s push path and the config-registry parity lint stay green; `bin/fw vendor self --check --task T-5051` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -284,6 +284,13 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t5051_handover_push_optout.bats > /tmp/.t5051.out 2>&1 && ! grep -q "^not ok" /tmp/.t5051.out
+test "$(grep -c '# skip' /tmp/.t5051.out)" -eq 0
+timeout 300 bats tests/unit/handover_push_no_origin.bats tests/unit/t3063_push_state.bats tests/unit/t100144_handover_divergence.bats tests/unit/handover_checkpoint_push.bats > /tmp/.t5051b.out 2>&1 && ! grep -q "^not ok" /tmp/.t5051b.out
+timeout 300 bats tests/lint/config-registry-parity.bats tests/unit/lib_config.bats > /tmp/.t5051c.out 2>&1 && ! grep -q "^not ok" /tmp/.t5051c.out
+bash -n agents/handover/handover.sh
+bin/fw vendor self --check --task T-5051
+bin/fw watchtower current
 
 ## RCA
 
