@@ -1589,11 +1589,24 @@ with open("$GAPS_FILE") as f:
     data = yaml.safe_load(f)
 # T-397: concerns.yaml uses 'concerns' key, fallback to 'gaps'
 items = data.get('concerns', data.get('gaps', []))
+skipped = 0
 for item in items:
-    if item.get('status') != 'watching':
+    if not isinstance(item, dict) or item.get('status') != 'watching':
         continue
+    # T-5053: many concerns carry name/summary rather than title; a missing
+    # key used to raise KeyError and cut this section short with no message.
+    cid = item.get('id')
+    if not cid:
+        skipped += 1
+        continue
+    label = item.get('title') or item.get('name') or item.get('summary') or '(untitled)'
+    label = ' '.join(str(label).split())
+    if len(label) > 160:
+        label = label[:160].rstrip() + '…'
     sev = item.get('severity', 'unknown')
-    print(f"- **{item['id']}** [{sev}]: {item['title']}")
+    print(f"- **{cid}** [{sev}]: {label}")
+if skipped:
+    print(f"- _{skipped} watching concern(s) have no \`id\` and are not listed — check concerns.yaml._")
 PYEOF
         echo ""
         echo "Run \`fw audit\` to check if any trigger conditions are met."
