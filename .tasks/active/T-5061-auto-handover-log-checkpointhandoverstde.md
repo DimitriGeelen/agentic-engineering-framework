@@ -1,10 +1,20 @@
 ---
 id: T-5061
-name: "Auto-handover log .checkpoint.handover.stderr grew to 183 GB on the Greenfield laptop: capture and background log share one file, no size cap, no disk check (G-130)"
+name: "Auto-handover log .checkpoint.handover.stderr grew to 183 GB on the Greenfield
+  laptop: capture and background log share one file, no size cap, no disk check (G-130)"
 description: >
-  Greenfield laptop (.132), aef-greenfield-test, vendored 1.8.15+617; reported by dimitri-mint-dev (msg 54df24c0, 2026-11-04, their T-216). File reached 183.6 GB of one repeated handover push block; host disk full, WSL and the operator Claude crashed. Verified: budget-gate.sh:101 appends the background auto-handover's output to .checkpoint.handover.stderr while checkpoint.sh:285/299 uses the same file as the handover capture and tails it back to stderr (:317, :351). GNU tail -n alone is bounded (tested), so the loop is not localised yet. Fix: localise the loop; separate capture file from background log; size cap/rotation; doctor/audit check for oversized .context/working files. Evidence on the laptop: .context/working/checkpoint-handover-stderr-head-1MB.txt and -tail-1MB.txt.
+  Greenfield laptop (.132), aef-greenfield-test, vendored 1.8.15+617; reported by
+  dimitri-mint-dev (msg 54df24c0, 2026-11-04, their T-216). File reached 183.6 GB
+  of one repeated handover push block; host disk full, WSL and the operator Claude
+  crashed. Verified: budget-gate.sh:101 appends the background auto-handover's output
+  to .checkpoint.handover.stderr while checkpoint.sh:285/299 uses the same file as
+  the handover capture and tails it back to stderr (:317, :351). GNU tail -n alone
+  is bounded (tested), so the loop is not localised yet. Fix: localise the loop; separate
+  capture file from background log; size cap/rotation; doctor/audit check for oversized
+  .context/working files. Evidence on the laptop: .context/working/checkpoint-handover-stderr-head-1MB.txt
+  and -tail-1MB.txt.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-04T16:55:45Z
-last_update: 2026-11-04T16:55:45Z
-date_finished: null
+last_update: '2026-11-04T16:57:07Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-04T16:57:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=0
+      (no-signal); F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5061: Auto-handover log .checkpoint.handover.stderr grew to 183 GB on the Greenfield laptop: capture and background log share one file, no size cap, no disk check (G-130)
@@ -57,20 +84,22 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** on the Greenfield laptop (.132, project aef-greenfield-test, vendored 1.8.15+617), `.context/working/.checkpoint.handover.stderr` grew to 183,610,195,968 bytes of one repeated handover push block (last write 2026-11-04 14:49 local). The host disk filled, WSL failed to start and the operator Claude crashed. Found and reported by dimitri-mint-dev (msgs 54df24c0, e05b2330, their T-216). Gap G-130.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `agents/context/budget-gate.sh:101` (`_start_auto_handover`, T-3989) appends the background auto-handover's stdout+stderr to that file, and `agents/context/checkpoint.sh:285/299` uses the same file as the handover capture (truncating it) and tails it back to stderr (`:317`, `:351`), so the capture and the log feed each other. Nothing caps the file or checks free disk. GNU `tail -n` alone is bounded (tested 2026-11-04), so the exact loop is not yet localised; the reporter's laptop evidence (tail variant, file head/tail, timing) is pending while its WSL is down.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** no file under `.context/working/` can grow without bound, whatever the loop turns out to be, and an oversized one is named before it fills a disk.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the handover capture and the background log are separate files; the background log is capped (rotated or truncated at a set size, with a visible line saying so); `fw doctor` and `fw audit` WARN on any oversized file under `.context/working/` by name and size; the loop itself is localised once the laptop evidence arrives.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `checkpoint.sh` captures the handover into its own file (not `.checkpoint.handover.stderr`), so nothing it tails is a file its own stderr appends to
+- [ ] The background log written by `budget-gate.sh` is capped: before each append it is rotated or truncated when over a configured size (default small, e.g. 1 MB), and a line records that it was
+- [ ] `fw doctor` and `fw audit` WARN, naming file and size, on any file under `.context/working/` above a threshold (config key, default e.g. 100 MB)
+- [ ] Tests: capture and log paths differ; an oversized log is cut back before the next append; the doctor/audit check fires on a large fixture file and stays silent below it; existing budget-gate/checkpoint tests green
+- [ ] Root loop localised from the laptop evidence and named in the RCA (or, if the evidence never comes, the RCA says so and why the caps make it harmless)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -353,3 +382,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5061-auto-handover-log-checkpointhandoverstde.md
 - **Context:** Initial task creation
+
+### 2026-11-04T16:57:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
