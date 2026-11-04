@@ -5775,7 +5775,11 @@ concerns:
     exact capture shape (inner truncating write, then tail -5 capture to a stderr appended to the capture) is bounded on GNU
     here (288 bytes). No follow-mode tail or reader loop exists on this path in current code. Evidence: one real handover
     (S-2026-1104-1359, push dea63d7a..08b4b068), then its last 4-line window repeated with nothing between, ~28 MB/s for
-    ~1.8 h after the claude-fw terminator restart handover at 13:00Z. Pending: the shape replay on the laptop (uutils).'
+    ~1.8 h after the claude-fw terminator restart handover at 13:00Z. The shape replay on the laptop (uutils) is bounded too
+    (msg b9217c92: 288 bytes), and the laptop''s vendored checkpoint.sh has no follow-mode tail or loop around the tail. So the
+    unbounded writer is outside this code path (a repeated trigger around the terminator restart, or a second process
+    appending to the same file); not localisable without changes on that host. The structural fix (separate files, cap,
+    doctor/audit size check) does not depend on it.'
   severity: high
   status: watching
   detected_in: T-5061
