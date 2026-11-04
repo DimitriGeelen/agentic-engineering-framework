@@ -5770,12 +5770,12 @@ concerns:
     operator Claude crashed. Content: one handover push block repeated, the same commit range at head and tail. Verified in AEF
     code: agents/context/budget-gate.sh:101 (_start_auto_handover, T-3989) appends the background run''s stdout+stderr to that
     file, and agents/context/checkpoint.sh:285 uses the SAME file as its handover capture (truncating it, :299) and tails it back
-    to stderr (:317, :351). Loop localised 2026-11-04 (msg a758f221): the laptop''s tail is uutils coreutils 0.8.0 (the Rust
-    coreutils Ubuntu now ships), not GNU; GNU tail -n stops at the size it saw at start (tested here), uutils evidently keeps
-    reading what it appends, so `tail -5 f >&2` with stderr appended to f never ends. Evidence: one real handover
-    (S-2026-1104-1359, push dea63d7a..08b4b068), then its last 4-line window repeated with nothing between; trigger was the
-    claude-fw terminator restart handover at 13:00Z. Portability class: any script that reads a file while its own output
-    appends to that file is safe only under GNU semantics.'
+    to stderr (:317, :351). Loop NOT yet localised (2026-11-04): the laptop''s tail is uutils coreutils 0.8.0, not GNU, but
+    plain `tail -5 f >> f` is bounded on both (laptop repro msg 1e99805e: 4 -> 8 bytes; GNU 9.4 here), and replaying the
+    exact capture shape (inner truncating write, then tail -5 capture to a stderr appended to the capture) is bounded on GNU
+    here (288 bytes). No follow-mode tail or reader loop exists on this path in current code. Evidence: one real handover
+    (S-2026-1104-1359, push dea63d7a..08b4b068), then its last 4-line window repeated with nothing between, ~28 MB/s for
+    ~1.8 h after the claude-fw terminator restart handover at 13:00Z. Pending: the shape replay on the laptop (uutils).'
   severity: high
   status: watching
   detected_in: T-5061
