@@ -5761,3 +5761,22 @@ concerns:
   blast_radius: every project with policy/access-grants.yaml (050 today)
   detection_gap: the grant tests cover writes through the grant and refusals of listed verbs; none commits the grant file as the agent, creates it from nothing, or makes a link
   what_remains: T-5031 (agent commit of the grant file), T-5032 (symlinks), T-5033 (cd/variable paths), T-5034 (bootstrap write). Close when an agent cannot widen its own grants by any of the four routes.
+- id: G-130
+  type: gap
+  title: Auto-handover log file grew without bound (183 GB) and filled a host disk; no size cap, no disk-free check, capture and background log share one file
+  description: 'Greenfield laptop (.132), project aef-greenfield-test, vendored fw 1.8.15+617.g04afc9287; found and reported by
+    dimitri-mint-dev (msg 54df24c0, 2026-11-04, their T-216). .context/working/.checkpoint.handover.stderr reached
+    183,610,195,968 bytes (last write 2026-11-04 14:49 local); the host dropped to 3 GB free, WSL failed to start and the
+    operator Claude crashed. Content: one handover push block repeated, the same commit range at head and tail. Verified in AEF
+    code: agents/context/budget-gate.sh:101 (_start_auto_handover, T-3989) appends the background run''s stdout+stderr to that
+    file, and agents/context/checkpoint.sh:285 uses the SAME file as its handover capture (truncating it, :299) and tails it back
+    to stderr (:317, :351). The exact loop is not yet localised: GNU tail -n alone bounds its copy (tested), so a second writer,
+    a repeated trigger or a non-GNU tail is suspected.'
+  severity: high
+  status: watching
+  detected_in: T-5061
+  observed: '2026-11-04'
+  reported_by: dimitri-mint-dev (field report from the Greenfield laptop)
+  blast_radius: every consumer whose budget gate reaches the auto-handover (T-3989), i.e. every long session; disk exhaustion takes down the host
+  detection_gap: no size cap or rotation on any .context/working log, no free-disk check before writing, and no audit/doctor check for runaway files under .context/working
+  what_remains: T-5061 (localise the loop; separate capture from background log; cap the file; doctor/audit check for oversized .context/working files). Close when no .context/working file can grow without bound and doctor names one that does.
