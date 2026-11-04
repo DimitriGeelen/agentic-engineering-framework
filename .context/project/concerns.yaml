@@ -5770,8 +5770,12 @@ concerns:
     operator Claude crashed. Content: one handover push block repeated, the same commit range at head and tail. Verified in AEF
     code: agents/context/budget-gate.sh:101 (_start_auto_handover, T-3989) appends the background run''s stdout+stderr to that
     file, and agents/context/checkpoint.sh:285 uses the SAME file as its handover capture (truncating it, :299) and tails it back
-    to stderr (:317, :351). The exact loop is not yet localised: GNU tail -n alone bounds its copy (tested), so a second writer,
-    a repeated trigger or a non-GNU tail is suspected.'
+    to stderr (:317, :351). Loop localised 2026-11-04 (msg a758f221): the laptop''s tail is uutils coreutils 0.8.0 (the Rust
+    coreutils Ubuntu now ships), not GNU; GNU tail -n stops at the size it saw at start (tested here), uutils evidently keeps
+    reading what it appends, so `tail -5 f >&2` with stderr appended to f never ends. Evidence: one real handover
+    (S-2026-1104-1359, push dea63d7a..08b4b068), then its last 4-line window repeated with nothing between; trigger was the
+    claude-fw terminator restart handover at 13:00Z. Portability class: any script that reads a file while its own output
+    appends to that file is safe only under GNU semantics.'
   severity: high
   status: watching
   detected_in: T-5061
