@@ -7,15 +7,15 @@
 ## What It Does
 
 lib/mirror.sh — Mirror cascade auto-recovery (T-1594, T-1591 Prevention #3).
-The cascade is: local → origin (OneDev) → github (mirror via OneDev
-.onedev-buildspec.yml PushRepository job). When OneDev's mirror cron lags
-or fails silently, github stays behind origin. T-1592 added detection in
+The cascade is: local → origin → every other remote (a mirror). Until
+2026-11-03 origin was OneDev and GitHub its mirror (OneDev's PushRepository
+job); since T-5044 origin is GitHub and OneDev (remote `onedev`) the mirror,
+kept up to date only by this module. T-1592 added lag detection in
 `fw doctor`. This module closes the loop: when the move is fast-forward
 safe, push the lagging mirror up to origin's HEAD. Diverged state is
 logged but never auto-recovered — that requires human decision.
 Public functions (called from bin/fw dispatcher):
 mirror_main <subcommand> [args...]
-Subcommands:
 
 ## Used By (5)
 
