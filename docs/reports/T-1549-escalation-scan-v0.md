@@ -1,6 +1,6 @@
 # T-1549 — Layer B v0 Heuristic Scan Results
 
-**Run:** 2026-11-04T04:23:03.054475+00:00
+**Run:** 2026-11-05T04:23:02.781150+00:00
 **Corpus:** 4120 completed tasks
 **Bug-class identified:** 762 (18%)
 
@@ -13,7 +13,6 @@
 - `T-3640-priority-tier-0-check-tier0sh-blocks-onl` — PRIORITY Tier 0: check-tier0.sh blocks only 'pkill -9' — every other SIGKILL
 - `T-3709-dispatch-route-cache-silently-picks-haik` — Dispatch route cache silently picks haiku for build work: _route_cache_query_bes
 - `T-3712-fw-upgrade-step-5-reports-partial-missin` — fw upgrade step 5 reports PARTIAL missing hooks (check-paid-backend, check-workt
-- `T-3714-upgrading-a-consumer-from-a-bleeding-edg` — Upgrading a consumer from a bleeding-edge clone: shallow clone refused as foreig
 - `T-3715-after-fw-upgrade-a-restarted-claude-code` — After fw upgrade, a restarted Claude Code fleet agent stalls on the New MCP
 - `T-3746-hasbashwritepattern-misses-2-redirects-t` — has_bash_write_pattern misses 2>/&> redirects to files, sed w flag/command,
 - `T-3886-bare-fw-upgrade-from-a-consumer-auto-clo` — Bare fw upgrade from a consumer auto-clones the source with --depth=1, so ever_i
@@ -35,7 +34,8 @@
 - `T-4115-fw-task-stale-is-gated-as-a-write-with-n` — fw task stale is gated as a write with no focus although fw doctor advises
 - `T-4117-commit-msg-hook-in-a-consumer-refuses-wm` — commit-msg hook in a consumer refuses WM-NNN references after upgrading to
 - `T-4122-fw-test-lint-scans-git-ignored-scratch-c` — fw test lint scans git-ignored scratch clones (.context/scratch/**) and reports
-- ... +85 more in last 30 days
+- `T-4227-fwhookcrashtrap-classifies-a-usage-error` — fw_hook_crash_trap classifies a usage-error exit 1 as a hook crash (HOOK CRASHED
+- ... +84 more in last 30 days
 
 ## H2 — Learning IDs referenced across ≥3 tasks within 30 days
 
@@ -76,7 +76,7 @@ T-1548 (the inception that birthed this scan): bug_class=False has_rca=False lea
 | H1 flagged | 499 |
 | H2 repeat-learning patterns | 180 |
 | H3 flagged (strongest signal) | 265 |
-| Last-30-days bug-class | 110 |
+| Last-30-days bug-class | 109 |
 
 ## Read-out — GO/NO-GO for Layer B v1 (cron + register + Watchtower)
 
