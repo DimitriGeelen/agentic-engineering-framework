@@ -1,6 +1,6 @@
 # T-1549 — Layer B v0 Heuristic Scan Results
 
-**Run:** 2026-11-05T04:23:02.781150+00:00
+**Run:** 2026-11-06T04:23:03.485013+00:00
 **Corpus:** 4120 completed tasks
 **Bug-class identified:** 762 (18%)
 
@@ -16,8 +16,6 @@
 - `T-3715-after-fw-upgrade-a-restarted-claude-code` — After fw upgrade, a restarted Claude Code fleet agent stalls on the New MCP
 - `T-3746-hasbashwritepattern-misses-2-redirects-t` — has_bash_write_pattern misses 2>/&> redirects to files, sed w flag/command,
 - `T-3886-bare-fw-upgrade-from-a-consumer-auto-clo` — Bare fw upgrade from a consumer auto-clones the source with --depth=1, so ever_i
-- `T-3957-sidecar-projectid-ignores-railprojectlab` — Sidecar project_id ignores RAIL_PROJECT_LABEL (010; their local fix 93297d781)
-- `T-3962-audits-reviewer-verdict-ledger-fail-show` — Audit's reviewer-verdict-ledger FAIL shows only the first 3 failing rows and no 
 - `T-3973-testtaskpairacdgate-b2b4-historic-regres` — test_task_pair_acd_gate B2+B4 historic regression runs the gate against the
 - `T-3975-t-3974-regression-vendorselfwithhold-lin` — T-3974 regression: vendor_self_withhold lint fails on the new .tasks/workflow se
 - `T-4051-fw-doctor-flags-the-on-path-claude-fw-ro` — fw doctor flags the on-PATH claude-fw router (T-2854) as drifted from repo
@@ -35,7 +33,9 @@
 - `T-4117-commit-msg-hook-in-a-consumer-refuses-wm` — commit-msg hook in a consumer refuses WM-NNN references after upgrading to
 - `T-4122-fw-test-lint-scans-git-ignored-scratch-c` — fw test lint scans git-ignored scratch clones (.context/scratch/**) and reports
 - `T-4227-fwhookcrashtrap-classifies-a-usage-error` — fw_hook_crash_trap classifies a usage-error exit 1 as a hook crash (HOOK CRASHED
-- ... +84 more in last 30 days
+- `T-4303-a-binfw-that-does-not-parse-blocks-every` — A bin/fw that does not parse blocks every hook, so the operator cannot reach
+- `T-4306-fw-watchtower-stop-reports-failure-when-` — fw watchtower stop reports failure when the server process is a zombie
+- ... +82 more in last 30 days
 
 ## H2 — Learning IDs referenced across ≥3 tasks within 30 days
 
@@ -76,7 +76,7 @@ T-1548 (the inception that birthed this scan): bug_class=False has_rca=False lea
 | H1 flagged | 499 |
 | H2 repeat-learning patterns | 180 |
 | H3 flagged (strongest signal) | 265 |
-| Last-30-days bug-class | 109 |
+| Last-30-days bug-class | 107 |
 
 ## Read-out — GO/NO-GO for Layer B v1 (cron + register + Watchtower)
 
