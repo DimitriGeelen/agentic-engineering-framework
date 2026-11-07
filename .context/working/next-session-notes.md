@@ -1,6 +1,22 @@
 # Next session: carry-over
 
-## FIRST, update (2026-11-03 ~14:00Z; latest be.30 = 3f3f5d9f1)
+## FIRST (2026-11-07; HOST SHUTDOWN PREP; latest be.40 = 1571b30cd)
+- The operator asked to prepare THIS host for shutdown. 14 local agents were asked (sidecar, conversation
+  host-shutdown-2026-11-07, urgent) to commit, push, write handovers and reply 'READY <project>'. Check their
+  replies first after restart; anything not pushed is in those replies.
+- Shipped 2026-11-03..07: T-5052, T-5053, T-5050, T-5049, T-5015 (designer 0.38.0), T-5057 (0.39.0), T-5056,
+  T-5055, T-5039, T-5059, T-5061 code (be.31..be.40). 050 confirmed T-5051/5052/5053 WORKS.
+- T-5061 (G-130, 183 GB log on the Greenfield laptop): code done in be.40 (separate capture, caps, doctor/audit
+  oversize check); task OPEN for the RCA: the unbounded writer was never localised (tail bounded on GNU and uutils,
+  shape replay bounded on both). Close it with the RCA saying so, or with the cause if the laptop shows it again.
+- T-5058 partial-complete: operator looks at designer Check, http://192.168.10.107:3000/review/T-5058
+- T-5009: phase 3 built (fw testhost, stub); waits on operator Q-3 (hypervisor node). Design note section 8a: B.
+- Next, in order: T-5060 (log why a wrapped session ended; wrap vs --termlink docs; 055 waits), issue #98
+  follow-up (embed endpoint WARN with SEMANTIC_RECALL=0), T-5062 (.mirror-sync.log unbounded), T-5054 (backlog).
+- Roadmap: first pre-release target 2026-11-10 is likely not provable (field proof thin beyond 050); propose a new
+  date to the operator rather than cut unproven.
+
+## Earlier FIRST, update (2026-11-03 ~14:00Z; latest be.30 = 3f3f5d9f1)
 - Shipped since the noon handover: T-5051 (HANDOVER_PUSH=0 opt-out, be.29; 050 WORKS; partial-complete, operator
   review of the config row http://192.168.10.107:3000/review/T-5051), T-5048 (no colour codes in files/pipes/NO_COLOR,
   be.30, closed; ring20-dashboard told).
