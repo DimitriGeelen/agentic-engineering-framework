@@ -44,7 +44,13 @@ _run_doctor() {
 @test "T-2507: checkpoint.sh branches on the handover's TRUE rc (capture to file, not pipe-to-tail)" {
     # The old form `handover.sh --commit 2>&1 | tail -5 >&2` masked the rc without
     # pipefail; the fix redirects to a capture file and tests the direct exit code.
-    run grep -Eq 'handover\.sh" --commit >"\$_ah_capture" 2>&1' "$CHECKPOINT"
+    # T-5061: the capture is now capped through `head -c`; the true rc survives because the
+    # same subshell sets pipefail. Pin both halves of that, not the old literal redirect.
+    run grep -Eq 'handover\.sh" --commit 2>&1 \\$' "$CHECKPOINT"
+    [ "$status" -eq 0 ]
+    run grep -Eq '\| head -c "\$_ah_cap" >"\$_ah_capture"' "$CHECKPOINT"
+    [ "$status" -eq 0 ]
+    run grep -Eq '^ +set -o pipefail$' "$CHECKPOINT"
     [ "$status" -eq 0 ]
     run grep -Eq 'handover\.sh" --commit 2>&1 \| tail' "$CHECKPOINT"
     [ "$status" -ne 0 ]

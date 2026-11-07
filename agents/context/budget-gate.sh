@@ -94,11 +94,23 @@ SIGNAL_EOF
 # FW_CHECKPOINT_SH overrides the script started: test suites that exercise the critical
 # path set FW_CHECKPOINT_SH=/bin/true, or every blocked case starts a real handover
 # (ring20-dashboard: 40 cases 110 s -> 6.7 s, T-4006; docs/context-compaction.md).
+# T-5061 (G-130): the background log is bounded. It is rotated to .1 when already over the cap,
+# and each run's output passes through `head -c`, so a runaway writer is cut off by SIGPIPE
+# (183 GB on the Greenfield laptop) and the cut is recorded on the log's last line.
 _start_auto_handover() {
     local tokens="${1:-0}"
+    local _log="$CONTEXT_DIR/working/.checkpoint.handover.stderr"
+    local _cap="${FW_HANDOVER_LOG_MAX_BYTES:-1048576}"
+    case "$_cap" in ''|*[!0-9]*) _cap=1048576 ;; esac
     {
-        ( cd "${PROJECT_ROOT:-.}" && setsid nohup bash "${FW_CHECKPOINT_SH:-$SCRIPT_DIR/checkpoint.sh}" auto-handover "$tokens" \
-            >>"$CONTEXT_DIR/working/.checkpoint.handover.stderr" 2>&1 </dev/null & ) >/dev/null 2>&1
+        if [ "$(stat -c %s "$_log" 2>/dev/null || echo 0)" -gt "$_cap" ]; then
+            mv -f "$_log" "$_log.1"
+        fi
+        ( cd "${PROJECT_ROOT:-.}" && FW_HL_LOG="$_log" FW_HL_CAP="$_cap" setsid nohup bash -c '
+            bash "$1" auto-handover "$2" 2>&1 </dev/null | head -c "$FW_HL_CAP" >>"$FW_HL_LOG"
+            [ "${PIPESTATUS[0]}" = 141 ] && echo "[budget-gate] auto-handover output cut at $FW_HL_CAP bytes (T-5061, G-130)" >>"$FW_HL_LOG"
+            exit 0' _ "${FW_CHECKPOINT_SH:-$SCRIPT_DIR/checkpoint.sh}" "$tokens" \
+            >/dev/null 2>&1 </dev/null & ) >/dev/null 2>&1
     } 2>/dev/null || true
     echo "  AUTO-HANDOVER: started in the background (log: .context/working/.compact-log). Do not start another." >&2
 }
