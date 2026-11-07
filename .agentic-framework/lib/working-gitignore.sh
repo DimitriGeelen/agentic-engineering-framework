@@ -83,6 +83,12 @@ fw_working_ignore_rules() {
         '.fleet-failure-state.json' \
         'vector-index-health.json' \
         '.checkpoint.handover.stderr' \
+        '.checkpoint.handover.stderr.1' \
+        '.checkpoint.handover.capture' \
+        'owner-handover' \
+        'owner-handover.jsonl' \
+        'tier0-read-refusals.jsonl' \
+        'vendor-missing-markers.json' \
         '.terminator.handover.out' \
         '.handover-cooldown' \
         '.inception-research-warnings' \

@@ -5430,6 +5430,24 @@ if len(rows) > 5:
         fi
     fi
 
+    # T-5061 (G-130): a runaway file under .context/working/ (183 GB on the Greenfield laptop).
+    if [ -f "$FRAMEWORK_ROOT/lib/working-oversize.sh" ]; then
+        # shellcheck source=/dev/null
+        source "$FRAMEWORK_ROOT/lib/working-oversize.sh"
+        local _wo_out _wo_bytes _wo_path
+        _wo_out=$(fw_working_oversized "$CONTEXT_DIR/working")
+        if [ -z "$_wo_out" ]; then
+            echo -e "  ${GREEN}OK${NC}  No oversized file under .context/working/ (limit $(fw_working_human_size "${FW_WORKING_FILE_WARN_BYTES:-1073741824}"))"
+        else
+            echo -e "  ${YELLOW}WARN${NC}  Oversized file(s) under .context/working/ — a runaway writer can fill the disk (T-5061)"
+            while read -r _wo_bytes _wo_path; do
+                echo "         $(fw_working_human_size "$_wo_bytes")  .context/working/$_wo_path"
+            done <<< "$_wo_out"
+            echo "         Look at what writes it, then truncate it: : > .context/working/<file>"
+            warnings=$((warnings + 1))
+        fi
+    fi
+
     # T-3063 (leg 2 of T-3062): stuck push — the handover's unpushed count is a
     # snapshot and cannot distinguish "not pushed yet" from "has failed to push
     # for four sessions". lib/push-state.sh keeps the streak; this is where an

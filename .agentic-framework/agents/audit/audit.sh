@@ -3407,6 +3407,21 @@ if [ -f "$FRAMEWORK_ROOT/lib/outside_commits.py" ]; then
     fi
 fi
 
+# T-5061 (G-130): a runaway file under .context/working/ filled a host disk (183 GB, Greenfield
+# laptop). WARN by name and size; database files are skipped (large by design).
+if [ -f "$FRAMEWORK_ROOT/lib/working-oversize.sh" ]; then
+    # shellcheck source=/dev/null
+    source "$FRAMEWORK_ROOT/lib/working-oversize.sh"
+    _wo_out=$(fw_working_oversized "$CONTEXT_DIR/working")
+    if [ -z "$_wo_out" ]; then
+        pass "No oversized file under .context/working/"
+    else
+        warn "Oversized file(s) under .context/working/ ($(echo "$_wo_out" | wc -l)) — a runaway writer can fill the disk" \
+             "$(echo "$_wo_out" | head -3 | while read -r _b _p; do printf '%s %s; ' "$(fw_working_human_size "$_b")" "$_p"; done)" \
+             "Find what writes it, then truncate: : > .context/working/<file> (threshold FW_WORKING_FILE_WARN_BYTES, T-5061)"
+    fi
+fi
+
 # T-4988 (T-4965 GO): the operator-owned grant file. Silent without a committed file. WARN, not
 # FAIL: the trailer makes an agent or script change VISIBLE; it cannot prove who wrote it (the
 # same-user residual, T-3581), and an invalid file already grants nothing.
