@@ -14,6 +14,7 @@ Read-only. Does not block, modify, or alert.
 """
 from __future__ import annotations
 
+import json
 import re
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
@@ -34,6 +35,17 @@ RCA_SECTION_RE = re.compile(
     r"^##+\s*(RCA|Root\s*Cause|Why\s*This\s*Happened)\b", re.I | re.M
 )
 LEARNING_REF_RE = re.compile(r"\b([LP]L?-\d{3,4})\b")
+
+
+def yaml_str(value: str) -> str:
+    """Quote a string as a YAML double-quoted scalar (T-5063).
+
+    A JSON string literal is a valid YAML double-quoted scalar: every escape
+    json.dumps emits (\\" \\\\ \\n \\t \\uXXXX) is one YAML accepts. The old
+    `replace('"', "'")` left the backslash of a raw `\\"` behind, producing the
+    invalid YAML escape `\\'` (T-4056's title), and the whole file stopped parsing.
+    """
+    return json.dumps(str(value), ensure_ascii=False)
 
 
 def parse_frontmatter(text: str) -> dict:
@@ -264,12 +276,11 @@ def main() -> None:
         f.write(f"report_md: {REPORT.relative_to(ROOT)}\n")
         f.write("recent_sample:\n")
         for tid, name in recent_flagged[:10]:
-            safe_name = name.replace('"', "'")
-            f.write(f'  - tid: "{tid}"\n')
-            f.write(f'    name: "{safe_name}"\n')
+            f.write(f"  - tid: {yaml_str(tid)}\n")
+            f.write(f"    name: {yaml_str(name)}\n")
         f.write("h2_top:\n")
         for lid, tids in h2_top:
-            f.write(f'  - learning: "{lid}"\n')
+            f.write(f"  - learning: {yaml_str(lid)}\n")
             f.write(f"    task_count: {len(tids)}\n")
 
     print(f"Report written: {REPORT}")
