@@ -80,6 +80,35 @@ _cfw_pin_project
 # behaviour each time, because the wrapper's own banner said the restart worked.
 HEADLESS=0
 
+# T-5060 (055 msg d2628100): the wrapper's own usage, including which launch mode a fleet
+# viewer needs. Only as the FIRST argument, so `claude-fw -p --help` etc. still reach claude.
+_cfw_usage() {
+    cat <<'USAGE'
+claude-fw — Claude Code wrapper for framework projects (auto-restart, peer mail, TermLink)
+
+Usage:
+  claude-fw [claude-args...]          Run Claude (default: wrapped in a private tmux session)
+  claude-fw --no-restart [args...]    Run without auto-restart at critical budget
+  claude-fw --termlink [args...]      Register as a TermLink session instead of the tmux wrap
+  claude-fw --help | -h               This text (Claude's own options: claude --help)
+
+Launch modes:
+  default (tmux wrap)  Behaves like a plain terminal; peer messages can be typed into it.
+                       Closing the window ends Claude (no hidden Claude, T-4003). Watch it
+                       read-only from another terminal: tmux -L fw-agents-<id> attach -r
+                       (tmux -L fw-agents-<id> ls lists it). Not visible to TermLink viewers.
+  --termlink           Use when a fleet viewer (TermLink list/attach/output) must see the
+                       session, or it must outlive the window. Env: TL_CLAUDE_ENABLED=1.
+  FW_CLAUDE_FW_NO_TMUX=1  Opt out of the wrap (peer mail then waits for your next prompt).
+
+Why a session ended: one line per end in .context/working/continuous-run.jsonl
+  (event "exit"; reason e.g. no-signal, signal-hup = window closed, signal-term = killed).
+USAGE
+}
+case "${1:-}" in
+    --help|-h) _cfw_usage; exit 0 ;;
+esac
+
 for arg in "$@"; do
     case "$arg" in
         --no-restart)
@@ -946,6 +975,25 @@ PY
     } 2>/dev/null || true
     return 0
 }
+
+# T-5060 (055 msg d2628100): a session ended by a signal used to leave NO line — the loop
+# events above are only written where `command claude` returns. Closing the window of a
+# wrapped session (tmux destroy-unattached, T-4003/T-4049) or a kill sends HUP/TERM; with
+# no trap the wrapper died silently, so "Claude vanished at 20:51" had nothing on disk.
+# Bash runs the trap once the foreground claude has exited (it gets the same signal), then
+# the EXIT trap still does its cleanup.
+_cfw_on_signal() {
+    local sig="$1" code="$2" detail
+    case "$sig" in
+        HUP) detail="terminal closed: its window was closed, or the last client left the wrapped tmux session (destroy-unattached ends Claude, T-4003). To watch without ending it: tmux attach -r, or launch with --termlink" ;;
+        *)   detail="terminated by SIG$sig (a kill, a service stop or a host shutdown)" ;;
+    esac
+    trap - HUP TERM
+    _record_loop_event exit "signal-$(printf '%s' "$sig" | tr 'A-Z' 'a-z')" "$detail" "$code"
+    exit "$code"
+}
+trap '_cfw_on_signal HUP 129' HUP
+trap '_cfw_on_signal TERM 143' TERM
 
 # Set higher bash timeout for long framework operations (audit, fabric, embeddings)
 # Default is 120s which is too short. T-501/T-435.
