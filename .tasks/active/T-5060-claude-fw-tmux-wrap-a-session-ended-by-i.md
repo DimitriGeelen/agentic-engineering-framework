@@ -15,10 +15,10 @@ description: >
   the agent alive without clients is the operator's decision (it reverses T-4003's
   'no hidden Claude').
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-03T22:32:44Z
-last_update: '2026-11-03T22:46:12Z'
+last_update: 2026-11-08T14:24:22Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,20 +95,23 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 055 msg d2628100 (2026-11-03, on be.26), points 1-3: 055's operator laptop Claude, running under the claude-fw tmux wrap, vanished at 20:51 and nothing on disk said why. The wrap ends Claude when its last client closes (destroy-unattached, deliberate since T-4003/T-4049). 055 also could not see the wrapped Claude from its TermLink-based viewer and did not know `--termlink` is the route for that.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** claude-fw records every loop exit in `.context/working/continuous-run.jsonl` (`_record_loop_event`, T-3182), but only on the paths where `command claude` returns normally. When the window closes, tmux destroys the session and the pane gets SIGHUP; claude-fw has no HUP/TERM trap, so it dies without a record. The wrap-vs-`--termlink` choice is not written down in `claude-fw`'s usage text or in FRAMEWORK.md.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** every end of a claude-fw session leaves one line saying why, including a window close and a kill; and an operator or peer can read in one place which launch mode a fleet viewer needs.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** closing the window of a wrapped session writes an `exit` event with reason `signal-hup` (TERM: `signal-term`) to `continuous-run.jsonl`; `claude-fw --help` prints the usage block including when to use `--termlink`; FRAMEWORK.md has a short section on the two modes. Keeping Claude alive without clients stays out of scope (operator decision; it reverses T-4003's "no hidden Claude").
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] claude-fw traps HUP and TERM and records an `exit` event (`signal-hup` / `signal-term`, with a plain-language detail naming the likely cause) in `.context/working/continuous-run.jsonl` before it exits; the recorder stays never-fatal
+- [x] Test: a real tmux-wrapped claude-fw (stub `claude`) whose last client is killed leaves a `signal-hup` line; a TERM leaves a `signal-term` line; a normal exit still records as before
+- [x] `claude-fw --help` / `-h` prints the usage block (wrap vs `--termlink`, opt-out `FW_CLAUDE_FW_NO_TMUX=1`) and exits 0 without starting Claude
+- [x] FRAMEWORK.md documents the two launch modes: default tmux wrap (closing the window ends Claude, read-only viewing with `tmux attach -r`) vs `--termlink` (visible to TermLink fleet viewers), and where the end reason is logged
+- [ ] 055 is told on its inbox what shipped and in which be-tag
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -391,3 +394,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5060-claude-fw-tmux-wrap-a-session-ended-by-i.md
 - **Context:** Initial task creation
+
+### 2026-11-08T13:41:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

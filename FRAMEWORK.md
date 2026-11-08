@@ -286,6 +286,17 @@ Each agent has a bash script (mechanical) and AGENT.md (intelligence/guidance).
 
 **Do not end a session without generating a handover.**
 
+### Launch Modes (Claude Code wrapper `claude-fw`)
+`claude-fw` starts Claude Code with auto-restart and peer-mail delivery. Pick the mode by who needs to see the session (`claude-fw --help` prints the same):
+
+| Mode | Use when | Behaviour |
+|------|----------|-----------|
+| default (tmux wrap) | a person works in a terminal window | Runs in a private tmux session that behaves like the terminal, so peer messages can be typed in. **Closing the window ends Claude** (no hidden Claude, T-4003). Watch read-only from another terminal with `tmux -L fw-agents-<id> attach -r` (`tmux -L fw-agents-<id> ls`). Not visible to TermLink viewers. |
+| `--termlink` | a fleet viewer must see or reach it (TermLink list/attach/output), or it must outlive the window | Registers as a TermLink session; same as `TL_CLAUDE_ENABLED=1`. |
+| `FW_CLAUDE_FW_NO_TMUX=1` | you do not want the wrap | Plain terminal; peer mail waits for your next prompt. |
+
+**Why a session ended** is one line per end in `.context/working/continuous-run.jsonl` (`"event": "exit"`). The reason is, for example, `no-signal` (Claude exited normally), `signal-hup` (the window was closed or its last tmux client left) or `signal-term` (killed, service stop, shutdown) (T-5060).
+
 ## fw CLI
 
 The `fw` command is the single entry point for all framework operations:
