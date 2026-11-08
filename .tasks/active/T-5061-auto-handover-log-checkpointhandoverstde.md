@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-04T16:55:45Z
-last_update: 2026-11-08T13:29:04Z
+last_update: '2026-11-08T13:30:50Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -77,6 +77,23 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 (no-signal); 
       F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-08T13:30:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=4 (body:fw-audit-or-doctor); 
+      D3=0 (no-signal); D4=0 (no-signal); F-RECALL=1 (body:episodic-only); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5061: Auto-handover log .checkpoint.handover.stderr grew to 183 GB on the Greenfield laptop: capture and background log share one file, no size cap, no disk check (G-130)
@@ -95,11 +112,11 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `checkpoint.sh` captures the handover into its own file (not `.checkpoint.handover.stderr`), so nothing it tails is a file its own stderr appends to
-- [ ] The background log written by `budget-gate.sh` is capped: before each append it is rotated or truncated when over a configured size (default small, e.g. 1 MB), and a line records that it was
-- [ ] `fw doctor` and `fw audit` WARN, naming file and size, on any file under `.context/working/` above a threshold (config key, default e.g. 100 MB)
-- [ ] Tests: capture and log paths differ; an oversized log is cut back before the next append; the doctor/audit check fires on a large fixture file and stays silent below it; existing budget-gate/checkpoint tests green
-- [ ] Root loop localised from the laptop evidence and named in the RCA (or, if the evidence never comes, the RCA says so and why the caps make it harmless)
+- [x] `checkpoint.sh` captures the handover into its own file (not `.checkpoint.handover.stderr`), so nothing it tails is a file its own stderr appends to
+- [x] The background log written by `budget-gate.sh` is capped: before each append it is rotated or truncated when over a configured size (default small, e.g. 1 MB), and a line records that it was
+- [x] `fw doctor` and `fw audit` WARN, naming file and size, on any file under `.context/working/` above a threshold (config key, default e.g. 100 MB)
+- [x] Tests: capture and log paths differ; an oversized log is cut back before the next append; the doctor/audit check fires on a large fixture file and stays silent below it; existing budget-gate/checkpoint tests green
+- [x] Root loop localised from the laptop evidence and named in the RCA (or, if the evidence never comes, the RCA says so and why the caps make it harmless)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -285,6 +302,13 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t5061_handover_log_bounded.bats > /tmp/.t5061a 2>&1 && ! grep -q "^not ok" /tmp/.t5061a
+test "$(grep -c '# skip' /tmp/.t5061a)" -eq 0
+timeout 300 bats tests/governance/test_checkpoint_handover_recorded.bats > /tmp/.t5061b 2>&1 && ! grep -q "^not ok" /tmp/.t5061b
+timeout 300 bats tests/integration/budget_gate.bats > /tmp/.t5061c 2>&1 && ! grep -q "^not ok" /tmp/.t5061c
+timeout 600 bats tests/unit/install_doctor_inherited_env.bats > /tmp/.t5061d 2>&1 && ! grep -q "^not ok" /tmp/.t5061d
+timeout 500 bin/fw doctor > /tmp/.t5061e 2>&1; ! grep -q "unbound variable" /tmp/.t5061e && grep -q "No oversized file under .context/working/" /tmp/.t5061e
+bin/fw vendor self --check --task T-5061
 
 ## RCA
 
@@ -301,6 +325,15 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** on the Greenfield laptop `.context/working/.checkpoint.handover.stderr` reached 183,610,195,968 bytes of one repeated handover push block; the disk filled, WSL would not start, the operator's Claude crashed (dimitri-mint-dev msgs 54df24c0, e05b2330).
+
+**Root cause:** one file served two roles. `budget-gate.sh` appended the background auto-handover's output to it, and `checkpoint.sh` used the same file as its handover capture and tailed it back to its own stderr, which that background job writes into the same file. Neither writer had a size cap and nothing checked free disk. **The exact runaway writer was not localised:** `tail -n` is bounded on GNU and on uutils, and a replay of the file's shape stays bounded on both; the laptop evidence (tail variant, file head/tail, timing) never arrived after its WSL went down. Recorded as such rather than guessed.
+
+**Why structurally allowed:** no rule or check covered file size under `.context/working/`; a file there could grow without limit and nothing would name it before the disk filled. The shared capture/log path was an accident of reuse (T-3989 added the background log on the existing name).
+
+**Prevention (bounds hold whatever the writer turns out to be):** the capture is its own file (`.checkpoint.handover.capture`), written through `head -c` with pipefail so the real rc survives; the background log is rotated to `.1` when over `FW_HANDOVER_LOG_MAX_BYTES` (1 MB) and cut by `head -c`, with a recorded line when it is cut; `fw doctor` and `fw audit` WARN by name and size on any file over `FW_WORKING_FILE_WARN_BYTES` (1 GB). Tests: `tests/unit/t5061_handover_log_bounded.bats` (runaway writer cut at the cap; rotation; helper; real doctor run).
+
+**Follow-on regression found at close (2026-11-08):** the be.40 doctor check used `$CONTEXT_DIR`, which doctor never sets; under `set -u` doctor aborted there and skipped every later check, and a fresh install's post-install doctor failed (`install_doctor_inherited_env.bats` red). The original test only grepped the source text, so it passed. Fixed to `$PROJECT_ROOT/.context/working`; the grep test is replaced by one that runs the real doctor (red without the fix, green with it).
 
 ## Evolution
 
