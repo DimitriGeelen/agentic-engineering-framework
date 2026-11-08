@@ -53237,3 +53237,21 @@ scan_id: R-2d4ee3d8
 task_id: T-5063
 payload:
   task_file: .tasks/active/T-5063-escalation-scan-v0-writes-invalid-yaml-w.md
+---
+kind: scan_emitted
+timestamp: '2026-11-08T13:34:03Z'
+scan_id: R-c75bb54e
+task_id: T-5061
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-08T13:34:03Z'
+scan_id: R-c75bb54e
+task_id: T-5061
+payload:
+  task_file: .tasks/active/T-5061-auto-handover-log-checkpointhandoverstde.md

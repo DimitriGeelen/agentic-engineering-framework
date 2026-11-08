@@ -1,0 +1,115 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5061: Auto-handover log .checkpoint.handover.stderr grew to 183 GB on the Greenfield laptop: capture and background log share one file, no size cap, no disk check (G-130)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-08T13:34:16Z
+# ============================================================================
+
+task_id: T-5061
+task_name: "Auto-handover log .checkpoint.handover.stderr grew to 183 GB on the Greenfield laptop: capture and background log share one file, no size cap, no disk check (G-130)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-04T16:55:45Z
+completed: 2026-11-08T13:30:36Z
+duration_days: 4
+updates_count: 3
+first_commit: 2026-11-04T17:55:56+01:00
+last_commit: 2026-11-08T14:30:02+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  register G-130 (auto-handover log grew to 183 GB on the Greenfield laptop) and capture the bug. context and criteria (separate capture, cap the log, doctor/audit size check, localise the loop). G-130 loop localised — uutils tail (Rust coreutils) re-reads its own appended output. G-130 corrected — uutils tail alone is bounded too; loop not yet localised. G-130 — laptop replay bounded too; unbounded writer is outside the capture code path. bound the auto-handover files (G-130) — capture in its own file and capped, background log rotated and capped, doctor/audit name oversized .context/working files; working-ignore rail green (4 runtime names it flagged added). vendor the bounded auto-handover files and oversize check; fabric card. fw doctor no longer aborts at the oversize check (CONTEXT_DIR unbound). vendor bin/fw (doctor CONTEXT_DIR fix)
+
+# Key outcomes
+outcomes:
+  - '`checkpoint.sh` captures the handover into its own file (not `.checkpoint.handover.stderr`), so nothing it tails is a file its own stderr appends to'
+  - 'The background log written by `budget-gate.sh` is capped: before each append it is rotated or truncated when over a configured size (default small, e.g. 1 MB), and a line records that it was'
+  - '`fw doctor` and `fw audit` WARN, naming file and size, on any file under `.context/working/` above a threshold (config key, default e.g. 100 MB)'
+  - 'Tests: capture and log paths differ; an oversized log is cut back before the next append; the doctor/audit check fires on a large fixture file and stays silent below it; existing budget-gate/checkpoint tests green'
+  - 'Root loop localised from the laptop evidence and named in the RCA (or, if the evidence never comes, the RCA says so and why the caps make it harmless)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'vendor bin/fw (doctor CONTEXT_DIR fix)'
+    source: git-mined
+  - description: 'register G-130 (auto-handover log grew to 183 GB on the Greenfield laptop) and capture the bug'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/context/budget-gate.sh'
+  - '.agentic-framework/agents/context/checkpoint.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/working-gitignore.sh'
+  - '.agentic-framework/lib/working-oversize.sh'
+  - '.context/project/concerns.yaml'
+  - '.fabric/components/lib-working-oversize.yaml'
+  - '.tasks/active/T-5061-auto-handover-log-checkpointhandoverstde.md'
+  - 'agents/audit/audit.sh'
+  - 'agents/context/budget-gate.sh'
+  - 'agents/context/checkpoint.sh'
+  - 'bin/fw'
+  - 'lib/working-gitignore.sh'
+  - 'lib/working-oversize.sh'
+  - 'tests/governance/test_checkpoint_handover_recorded.bats'
+  - 'tests/unit/t5061_handover_log_bounded.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-04T17:55:56'
+    action: 'T-5061: register G-130 (auto-handover log grew to 183 GB on the Greenfield laptop) and capture the bug'
+  - time: '2026-11-04T17:58:10'
+    action: 'T-5061: context and criteria (separate capture, cap the log, doctor/audit size check, localise the loop)'
+  - time: '2026-11-04T17:59:18'
+    action: 'T-5061: G-130 loop localised — uutils tail (Rust coreutils) re-reads its own appended output'
+  - time: '2026-11-04T19:43:04'
+    action: 'T-5061: G-130 corrected — uutils tail alone is bounded too; loop not yet localised'
+  - time: '2026-11-04T19:43:44'
+    action: 'T-5061: G-130 — laptop replay bounded too; unbounded writer is outside the capture code path'
+  - time: '2026-11-07T19:17:05'
+    action: 'T-5061: bound the auto-handover files (G-130) — capture in its own file and capped, background log rotated and capped, doctor/audit name oversized .context/working files; working-ignore rail green (4 runtime names it flagged added)'
+  - time: '2026-11-07T19:17:18'
+    action: 'T-5061: vendor the bounded auto-handover files and oversize check; fabric card'
+  - time: '2026-11-08T14:29:04'
+    action: 'T-5061: fw doctor no longer aborts at the oversize check (CONTEXT_DIR unbound)'
+  - time: '2026-11-08T14:30:02'
+    action: 'T-5061: vendor bin/fw (doctor CONTEXT_DIR fix)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 9 commit(s), 5554 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5554
+  commits: 10
+  files_changed: 20
+  lines_added: 919
+  lines_removed: 41
+  footprint_refreshed_at: '2026-11-08T13:34:48Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5061-auto-handover-log-checkpointhandoverstde.md
+generated_by: context-agent-hybrid
