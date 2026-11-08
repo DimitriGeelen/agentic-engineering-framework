@@ -53291,3 +53291,21 @@ scan_id: R-21789790
 task_id: T-5064
 payload:
   task_file: .tasks/active/T-5064-fw-doctor-embed-endpoint-warn-ignores-se.md
+---
+kind: scan_emitted
+timestamp: '2026-11-08T16:25:54Z'
+scan_id: R-4add5b97
+task_id: T-5065
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-08T16:25:54Z'
+scan_id: R-4add5b97
+task_id: T-5065
+payload:
+  task_file: .tasks/active/T-5065-re-pin-workflow-designer-0390---0400-832.md

@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5065: Re-pin Workflow Designer 0.39.0 -> 0.40.0 (832 release, designer-v0.40.0)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-08T16:26:08Z
+# ============================================================================
+
+task_id: T-5065
+task_name: "Re-pin Workflow Designer 0.39.0 -> 0.40.0 (832 release, designer-v0.40.0)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-08T16:10:56Z
+completed: 2026-11-08T16:25:44Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-08T17:11:04+01:00
+last_commit: 2026-11-08T17:22:39+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — re-pin Workflow Designer 0.40.0 (832 msg 9cb2eaaa). re-pin Workflow Designer 0.39.0 -> 0.40.0 (832 msg 9cb2eaaa); pull-at-tag verified (MANIFEST build + kit_sha256, pin, kit SHA256SUMS); validator unchanged. vendor self — designer 0.40.0 build, validator and pin (replaces 0.39.0 in the vendored copy)
+
+# Key outcomes
+outcomes:
+  - '`policy/designer-pin.yaml` at 0.40.0 (build sha256/bytes as announced, kit sums from the MANIFEST at the tag, validator unchanged); `fw designer sync --from-tag designer-v0.40.0` verifies all anchors and installs with no mismatch'
+  - '`vendor/designer/` holds the 0.40.0 build (older builds stay in the repo; the vendored copy carries only the pinned one, as in T-5057); vendored copy synced; `fw designer check-currency` reports current'
+  - 'Existing designer tests green; Watchtower restarted, `bin/fw watchtower current` passes, `/designer` serves 0.40.0'
+  - '832 told the pin reads 0.40.0 with the sha256, so they can close T-1385'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/designer-pin.yaml'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.40.0.html'
+  - '.agentic-framework/vendor/designer/validate-workflow-0.40.0.py'
+  - '.tasks/active/T-5065-re-pin-workflow-designer-0390---0400-832.md'
+  - 'policy/designer-pin.yaml'
+  - 'vendor/designer/aef-workflow-designer-0.40.0.html'
+  - 'vendor/designer/validate-workflow-0.40.0.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-08T17:11:04'
+    action: 'T-5065: capture — re-pin Workflow Designer 0.40.0 (832 msg 9cb2eaaa)'
+  - time: '2026-11-08T17:22:30'
+    action: 'T-5065: re-pin Workflow Designer 0.39.0 -> 0.40.0 (832 msg 9cb2eaaa); pull-at-tag verified (MANIFEST build + kit_sha256, pin, kit SHA256SUMS); validator unchanged'
+  - time: '2026-11-08T17:22:39'
+    action: 'T-5065: vendor self — designer 0.40.0 build, validator and pin (replaces 0.39.0 in the vendored copy)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 14
+  commits: 4
+  files_changed: 10
+  lines_added: 19714
+  lines_removed: 49
+  footprint_refreshed_at: '2026-11-08T16:26:36Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5065-re-pin-workflow-designer-0390---0400-832.md
+generated_by: context-agent-hybrid

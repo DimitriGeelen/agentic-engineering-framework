@@ -6,12 +6,12 @@ description: >
   dist/aef-workflow-designer-0.40.0.html sha256 49aec7d91b44691ca31e135f95e141e553225e7f846634449a1214e533cc8436
   (1339583 bytes). Same procedure as T-5057.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [policy/designer-pin.yaml]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-08T16:10:56Z
-last_update: 2026-11-08T16:22:39Z
-date_finished:
+last_update: 2026-11-08T16:25:44Z
+date_finished: 2026-11-08T16:25:44Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -98,10 +98,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `policy/designer-pin.yaml` at 0.40.0 (build sha256/bytes as announced, kit sums from the MANIFEST at the tag, validator unchanged); `fw designer sync --from-tag designer-v0.40.0` verifies all anchors and installs with no mismatch
-- [ ] `vendor/designer/` holds the 0.40.0 build (older builds stay in the repo; the vendored copy carries only the pinned one, as in T-5057); vendored copy synced; `fw designer check-currency` reports current
-- [ ] Existing designer tests green; Watchtower restarted, `bin/fw watchtower current` passes, `/designer` serves 0.40.0
-- [ ] 832 told the pin reads 0.40.0 with the sha256, so they can close T-1385
+- [x] `policy/designer-pin.yaml` at 0.40.0 (build sha256/bytes as announced, kit sums from the MANIFEST at the tag, validator unchanged); `fw designer sync --from-tag designer-v0.40.0` verifies all anchors and installs with no mismatch
+- [x] `vendor/designer/` holds the 0.40.0 build (older builds stay in the repo; the vendored copy carries only the pinned one, as in T-5057); vendored copy synced; `fw designer check-currency` reports current
+- [x] Existing designer tests green; Watchtower restarted, `bin/fw watchtower current` passes, `/designer` serves 0.40.0
+- [x] 832 told the pin reads 0.40.0 with the sha256, so they can close T-1385
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,6 +287,12 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -c "import yaml; assert yaml.safe_load(open('policy/designer-pin.yaml'))['version'] == '0.40.0'"
+test "$(sha256sum vendor/designer/aef-workflow-designer-0.40.0.html | cut -c1-64)" = "49aec7d91b44691ca31e135f95e141e553225e7f846634449a1214e533cc8436"
+bin/fw designer check-currency > /tmp/.t5065a 2>&1 && grep -q "pin current" /tmp/.t5065a
+timeout 300 bats tests/unit/t3064_designer_onboarding_install.bats > /tmp/.t5065b 2>&1 && ! grep -q "^not ok" /tmp/.t5065b
+bin/fw watchtower current
+bin/fw vendor self --check --task T-5065
 
 ## RCA
 
@@ -388,3 +394,16 @@ bvp_scores_proposed:
 ### 2026-11-08T16:20:50Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-08T16:25:44Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4add5b97
+- **Timestamp:** 2026-11-08T16:25:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
