@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-11-08T19:47:48Z
-last_update: 2026-11-08T19:52:09Z
+last_update: 2026-11-08T19:55:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -57,6 +57,9 @@ On 2026-11-08 the operator asked 1409-sprind for "a write-up to 999 how we can u
 ## Open Questions
 
 - **IW-1: Is "run a project's jobs on another machine" a framework pattern (owned by AEF, usable by every project), or 1409's and the node operator's own setup that AEF only documents?**
+  confidence: 2
+  disposition: answered
+  rationale: Both, in stages: the contract and its nine rules become a framework pattern document now, and two lessons are AEF bugs to fix now; the client tooling (`fw pool`) stays 1409's until a second project asks (assessment in docs/reports/T-5066-remote-nodes-writeup.md).
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
