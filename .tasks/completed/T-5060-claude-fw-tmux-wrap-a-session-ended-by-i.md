@@ -15,12 +15,12 @@ description: >
   the agent alive without clients is the operator's decision (it reverses T-4003's
   'no hidden Claude').
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/claude-fw]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -49,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-03T22:32:44Z
-last_update: '2026-11-08T14:31:55Z'
-date_finished:
+last_update: 2026-11-08T14:40:11Z
+date_finished: 2026-11-08T14:40:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -128,7 +128,7 @@ bvp_scores_proposed:
 - [x] Test: a real tmux-wrapped claude-fw (stub `claude`) whose last client is killed leaves a `signal-hup` line; a TERM leaves a `signal-term` line; a normal exit still records as before
 - [x] `claude-fw --help` / `-h` prints the usage block (wrap vs `--termlink`, opt-out `FW_CLAUDE_FW_NO_TMUX=1`) and exits 0 without starting Claude
 - [x] FRAMEWORK.md documents the two launch modes: default tmux wrap (closing the window ends Claude, read-only viewing with `tmux attach -r`) vs `--termlink` (visible to TermLink fleet viewers), and where the end reason is logged
-- [ ] 055 is told on its inbox what shipped and in which be-tag
+- [x] 055 is told on its inbox what shipped and in which be-tag
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -429,3 +429,26 @@ bin/fw vendor self --check --task T-5060
 ### 2026-11-08T13:41:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-08T14:40:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a334ca54
+- **Timestamp:** 2026-11-08T14:40:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — claude-fw traps HUP and TERM and records an `exit` event (`signal-hup` / `signal-term`, with a plain-language detail naming the likely cause) in `.context/working/continuous-run.jsonl` before it exits
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/continuous-run.jsonl in: claude-fw traps HUP and TERM and records an `exit` event (`signal-hup` / `signal-term`, with a plain-language detail naming the likely cause) in `.con`
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 137
+     - evidence: `command -v tmux >/dev/null`

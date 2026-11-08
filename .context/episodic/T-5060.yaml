@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5060: claude-fw tmux wrap: a session ended by its last client closing leaves no record, and the wrap vs --termlink choice for fleet viewers is undocumented
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-08T14:40:35Z
+# ============================================================================
+
+task_id: T-5060
+task_name: "claude-fw tmux wrap: a session ended by its last client closing leaves no record, and the wrap vs --termlink choice for fleet viewers is undocumented"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-03T22:32:44Z
+completed: 2026-11-08T14:40:11Z
+duration_days: 5
+updates_count: 3
+first_commit: 2026-11-08T15:24:23+01:00
+last_commit: 2026-11-08T15:25:27+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claude-fw records why a session ended on HUP/TERM; --help and FRAMEWORK.md explain wrap vs --termlink. vendor bin/claude-fw. task record — context, criteria, verification, RCA
+
+# Key outcomes
+outcomes:
+  - 'claude-fw traps HUP and TERM and records an `exit` event (`signal-hup` / `signal-term`, with a plain-language detail naming the likely cause) in `.context/working/continuous-run.jsonl` before it exits; the recorder stays never-fatal'
+  - 'Test: a real tmux-wrapped claude-fw (stub `claude`) whose last client is killed leaves a `signal-hup` line; a TERM leaves a `signal-term` line; a normal exit still records as before'
+  - '`claude-fw --help` / `-h` prints the usage block (wrap vs `--termlink`, opt-out `FW_CLAUDE_FW_NO_TMUX=1`) and exits 0 without starting Claude'
+  - 'FRAMEWORK.md documents the two launch modes: default tmux wrap (closing the window ends Claude, read-only viewing with `tmux attach -r`) vs `--termlink` (visible to TermLink fleet viewers), and where the end reason is logged'
+  - '055 is told on its inbox what shipped and in which be-tag'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - '.tasks/active/T-5060-claude-fw-tmux-wrap-a-session-ended-by-i.md'
+  - 'FRAMEWORK.md'
+  - 'bin/claude-fw'
+  - 'tests/unit/t5060_claude_fw_end_reason.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-08T15:24:23'
+    action: 'T-5060: claude-fw records why a session ended on HUP/TERM; --help and FRAMEWORK.md explain wrap vs --termlink'
+  - time: '2026-11-08T15:24:50'
+    action: 'T-5060: vendor bin/claude-fw'
+  - time: '2026-11-08T15:25:27'
+    action: 'T-5060: task record — context, criteria, verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 6727 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6727
+  commits: 5
+  files_changed: 9
+  lines_added: 1074
+  lines_removed: 17
+  footprint_refreshed_at: '2026-11-08T14:41:08Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5060-claude-fw-tmux-wrap-a-session-ended-by-i.md
+generated_by: context-agent-hybrid
