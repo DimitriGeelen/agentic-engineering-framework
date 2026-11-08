@@ -121,3 +121,54 @@ has_tag() { git ls-remote --tags "$1" "refs/tags/$2" | grep -q "refs/tags/$2$"; 
     [[ "$output" == *"would push"*"v1.8.14-be.1"* ]]
     ! has_tag "$TMP/github.git" v1.8.14-be.1 || false
 }
+
+# --- T-5062: the mirror log stays bounded --------------------------------------------
+# On the AEF host 113,219 of 125,422 log lines were one `tag-differs` line per tag per
+# 15-minute run, for the same 90 tags since 2026-10-22, and nothing trimmed the file.
+
+LOGF() { echo "$REPO/.context/working/.mirror-sync.log"; }
+
+@test "T-5062: several differing tags give ONE tags-differ line per run, not one per tag" {
+    for t in v1.8.10 v1.8.11 v1.8.12; do
+        git -C "$REPO" tag -a "$t" -m origin-version
+        git -C "$REPO" push -q origin "refs/tags/$t"
+        git -C "$REPO" tag -d "$t" >/dev/null
+        git -C "$REPO" tag -a "$t" -m github-version master
+        git -C "$REPO" push -q github "refs/tags/$t"
+    done
+    run mir mirror_sync --quiet
+    [ "$(grep -cP '\tgithub:tags\ttags-differ\t' "$(LOGF)")" -eq 1 ]
+    [ "$(grep -cP '\ttag-differs\t' "$(LOGF)")" -eq 0 ]
+    line=$(grep -P '\ttags-differ\t' "$(LOGF)")
+    [ "$(cut -f4 <<< "$line")" = "3" ]
+    [[ "$(cut -f5 <<< "$line")" == *v1.8.10*v1.8.11*v1.8.12* ]]
+}
+
+@test "T-5062: an oversized log is trimmed to its newest lines and records the trim" {
+    mkdir -p "$(dirname "$(LOGF)")"
+    for i in $(seq 1 3000); do printf '2026-01-01T00:00:00Z\tgithub\tin-sync\told-%s\tx\n' "$i"; done > "$(LOGF)"
+    FW_MIRROR_LOG_MAX_BYTES=10000 FW_MIRROR_LOG_KEEP_LINES=100 run mir mirror_sync --quiet
+    n=$(wc -l < "$(LOGF)")
+    [ "$n" -le 110 ]                                    # 100 kept + this run's lines
+    grep -qP '\tlog\ttrimmed\t' "$(LOGF)"
+    grep -q 'old-3000' "$(LOGF)"                        # newest old line kept
+    ! grep -qP '\told-1\t' "$(LOGF)"                     # oldest gone
+}
+
+@test "T-5062: a log under the cap is left alone" {
+    mkdir -p "$(dirname "$(LOGF)")"
+    printf '2026-01-01T00:00:00Z\tgithub\tin-sync\tkeep-me\tx\n' > "$(LOGF)"
+    run mir mirror_sync --quiet
+    grep -q keep-me "$(LOGF)"
+    ! grep -qP '\tlog\ttrimmed\t' "$(LOGF)"
+}
+
+@test "T-5062: the stuck-diverged check still fires after a trim" {
+    mkdir -p "$(dirname "$(LOGF)")"
+    { for i in $(seq 1 3000); do printf '2026-01-01T00:00:00Z\tgithub\tin-sync\tpad-%s\tx\n' "$i"; done
+      for i in 1 2 3 4 5; do printf '2026-01-02T00:00:00Z\tonedev\tdiverged\ta\tb\n'; done; } > "$(LOGF)"
+    ( cd "$REPO"; source "$ROOT/lib/mirror.sh"; FW_MIRROR_LOG_MAX_BYTES=10000 FW_MIRROR_LOG_KEEP_LINES=50 mirror_log_trim "$(LOGF)" )
+    grep -qP '\tlog\ttrimmed\t' "$(LOGF)"
+    run mir mirror_stuck_diverged_check "$(LOGF)" 4
+    [[ "$output" == *onedev* ]]
+}
