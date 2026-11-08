@@ -4455,24 +4455,43 @@ print(" ".join(sorted(dm.host_shared_address_keys())))' "$FRAMEWORK_ROOT" 2>/dev
     # so env overrides (FW_EMBED_HOST) and the `or OLLAMA_HOST` fallback are
     # honoured exactly as the embed path honours them — a check that resolved the
     # host differently from the code under test would be worse than none.
-    if [ -f "$FRAMEWORK_ROOT/web/embeddings.py" ]; then
-        local _embed_host
-        _embed_host="$(PROJECT_ROOT="$PROJECT_ROOT" python3 -c "
+    #
+    # T-5064 (issue #98 follow-up): SEMANTIC_RECALL=0 means no embeddings are wanted on this
+    # host, so the probe is a SKIP, read the same way as the T-3862 index check. And failover
+    # is claimed only when it exists: T-3017 retries on EMBED_BULK_HOST, and only when that
+    # differs from EMBED_HOST (web/embeddings.py:_fallback_host). With one host, or a dead
+    # alternative, embeddings fail and the line says so.
+    if [ -f "$FRAMEWORK_ROOT/web/embeddings.py" ] && \
+       [ "$(source "$FRAMEWORK_ROOT/lib/config.sh" && PROJECT_ROOT="$PROJECT_ROOT" fw_config SEMANTIC_RECALL 1)" = "0" ]; then
+        echo -e "  ${CYAN}SKIP${NC}  embed endpoint check (SEMANTIC_RECALL=0: semantic recall not configured on this host)"
+    elif [ -f "$FRAMEWORK_ROOT/web/embeddings.py" ]; then
+        local _embed_host _embed_alt _embed_hosts
+        _embed_hosts="$(PROJECT_ROOT="$PROJECT_ROOT" python3 -c "
 import sys
 sys.path.insert(0, '$FRAMEWORK_ROOT/web')
 try:
     from config import Config
-    print(Config.EMBED_HOST or '')
+    h = Config.EMBED_HOST or ''
+    b = getattr(Config, 'EMBED_BULK_HOST', '') or ''
+    print(h)
+    print(b if b and b != h else '')
 except Exception:
     print('')
+    print('')
 " 2>/dev/null)"
+        _embed_host="$(sed -n 1p <<< "$_embed_hosts")"
+        _embed_alt="$(sed -n 2p <<< "$_embed_hosts")"
         if [ -z "$_embed_host" ]; then
             echo -e "  ${CYAN}INFO${NC}  embed endpoint not configured (no embed_host, no ollama_host)"
         elif curl -sf --max-time 3 "${_embed_host%/}/api/tags" >/dev/null 2>&1; then
             echo -e "  ${GREEN}OK${NC}  embed endpoint reachable ($_embed_host)"
-        else
-            _doctor_warn_host "embed endpoint not reachable on $_embed_host; embeds still succeed via T-3017 failover, so nothing else will report this"
+        elif [ -n "$_embed_alt" ] && curl -sf --max-time 3 "${_embed_alt%/}/api/tags" >/dev/null 2>&1; then
+            _doctor_warn_host "embed endpoint not reachable on $_embed_host; embeds still succeed via T-3017 failover to $_embed_alt, so nothing else will report this"
             echo -e "         Unset embed_host in .context/settings.yaml to resolve to ollama_host, or start the endpoint. See T-3045."
+        else
+            _doctor_warn_host "embed endpoint not reachable on $_embed_host and no other embed host answers${_embed_alt:+ ($_embed_alt is down too)}: embedding calls will fail"
+            echo -e "         Start the endpoint (or point embed_host/ollama_host in .context/settings.yaml at one that runs),"
+            echo -e "         or, if this host does not use semantic recall: fw config set SEMANTIC_RECALL 0. See T-3045, T-5064."
         fi
     fi
 
