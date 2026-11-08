@@ -596,6 +596,21 @@ font-family: 'Outfit';
     line-height: 1;
   }
   .clean-nudge-x:hover { color: var(--text); }
+  /* T-1384: the visible advisories read as ONE card. syncAdvisoryDock() gives them one width and stacks them with no gap.
+     The top row keeps the top corners and the last row keeps the bottom corners and the shadow; borders between rows
+     overlap by 1px.
+     On a narrow canvas (under DOCK_NARROW_PX) a notice with more than one part shows its first part and a ".dock-more"
+     control naming how many parts it hides. Hidden parts stay in the DOM, so every part's text is unchanged and one
+     click away. At 1024 with both panels open, the dock took 270 of 685px (39%). */
+  .clean-nudge.dock-row { border-radius: 0; box-shadow: none; }
+  .clean-nudge.dock-row.dock-first { border-top-left-radius: 6px; border-top-right-radius: 6px; }
+  .clean-nudge.dock-row.dock-last { border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.35); }
+  .clean-nudge.dock-collapsed .notice-part + .notice-part, .clean-nudge.dock-collapsed .notice-rest { display: none; }
+  .dock-more { background: transparent; border: none; color: var(--accent); cursor: pointer; font-size: 11px;
+    padding: 2px 4px; white-space: nowrap; flex: none; }
+  .dock-more:hover { text-decoration: underline; }
+  #clean-nudge .btn { padding: 3px 10px; }
+  .clean-nudge.dock-row .clean-nudge-msg { flex: 1 1 auto; }   /* one card: every row's controls end at its right edge */
 
   /* SVG element styles */
   .lane-bg { transition: fill 0.15s ease, stroke 0.15s ease; }
@@ -1802,6 +1817,7 @@ font-family: 'Outfit';
            each other. -->
       <div class="clean-nudge" id="lane-fix-notice" style="display:none">
         <span class="clean-nudge-msg" id="lane-fix-msg"></span>
+        <button class="dock-more" type="button" hidden></button>
         <button class="clean-nudge-x" id="lane-fix-dismiss" type="button" title="Dismiss">✕</button>
       </div>
       <div class="clean-nudge" id="clean-nudge" style="display:none">
@@ -1814,6 +1830,7 @@ font-family: 'Outfit';
            visible; it is just said once). Same dock, same house style as the two above. -->
       <div class="clean-nudge" id="authority-summary" style="display:none">
         <span class="clean-nudge-msg" id="authority-summary-msg"></span>
+        <button class="dock-more" type="button" hidden></button>
         <button class="clean-nudge-x" id="authority-summary-dismiss" type="button" title="Dismiss">✕</button>
       </div>
     </div>
@@ -2137,9 +2154,16 @@ function syncAuthoritySummary(count) {
   if (!box || !msg) return;
   const show = count.missing > 0 && _authSummaryDismissed !== authSummaryKey();
   if (show) {
-    const t = `⚠ This map declares no authority: none of its ${count.missing} element${count.missing === 1 ? '' : 's'} ` +
-              `carries one and no lane offers a default (markers summarised here, not drawn per element)`;
-    if (msg.textContent !== t) msg.textContent = t;
+    // T-1384: a head and a rest, so a narrow dock can show the head alone. textContent is the same sentence as before.
+    const head = '⚠ This map declares no authority';
+    const rest = `: none of its ${count.missing} element${count.missing === 1 ? '' : 's'} ` +
+                 `carries one and no lane offers a default (markers summarised here, not drawn per element)`;
+    if (msg.textContent !== head + rest) {
+      const h = document.createElement('span'); h.className = 'notice-head'; h.textContent = head;
+      const r = document.createElement('span'); r.className = 'notice-rest'; r.textContent = rest;
+      msg.replaceChildren(h, r);
+      delete box.dataset.expanded;   // a new statement opens collapsed again on a narrow canvas
+    }
   }
   const d = show ? '' : 'none';
   if (box.style.display !== d) box.style.display = d;
@@ -10904,6 +10928,7 @@ function maybeShowLaneFixNotice() {
   // T-1327: one part per line. Run together with semicolons, seven parts made a 300px-tall paragraph at 1024 that
   // nobody reads. The "; " separators stay in the text (hidden), so textContent reads exactly as before.
   if (show && msg) {
+    delete el.dataset.expanded;   // T-1384: each import's notice opens collapsed again on a narrow canvas
     msg.textContent = '';
     parts.forEach((p, i) => {
       const line = document.createElement('span');
@@ -10927,17 +10952,55 @@ function maybeShowLaneFixNotice() {
 function syncAdvisoryDock() {
   const wrap = document.querySelector('.canvas-wrap');
   if (!wrap) return;
-  const shown = [$('lane-fix-notice'), $('clean-nudge'), $('authority-summary')]
-    .filter(e => e && e.style.display !== 'none');
+  const all = [$('lane-fix-notice'), $('clean-nudge'), $('authority-summary')].filter(Boolean);
+  const shown = all.filter(e => e.style.display !== 'none');
+  // T-1384: on a narrow canvas a notice with more than one part shows its first part and a control naming how many
+  // parts it hides; the person can open it (and close it again). A wide canvas shows every part, as before.
+  const narrow = wrap.clientWidth < DOCK_NARROW_PX;
+  for (const e of all) {
+    const extra = e.querySelectorAll('.notice-part + .notice-part, .notice-rest').length;
+    const can = narrow && extra > 0;
+    const collapsed = can && e.dataset.expanded !== '1';
+    e.classList.toggle('dock-collapsed', collapsed);
+    const more = e.querySelector('.dock-more');
+    if (more) {
+      if (more.hidden !== !can) more.hidden = !can;
+      const label = collapsed ? `▸ ${extra} more` : '▾ less';
+      if (can && more.textContent !== label) more.textContent = label;
+      const tip = collapsed ? `Show the ${extra} hidden part${extra === 1 ? '' : 's'} of this notice` : 'Show only the first part';
+      if (can && more.title !== tip) more.title = tip;
+      if (more.getAttribute('aria-expanded') !== String(!collapsed)) more.setAttribute('aria-expanded', String(!collapsed));
+    }
+    e.classList.toggle('dock-row', shown.includes(e));
+    e.classList.toggle('dock-first', e === shown[0]);
+    e.classList.toggle('dock-last', e === shown[shown.length - 1]);
+  }
+  // One card: one width (the widest row's natural width, still capped by max-width), no gap between rows.
+  for (const e of shown) if (e.style.width) e.style.width = '';
+  // getBoundingClientRect, rounded UP: offsetWidth rounds a fractional natural width down, and 1px short wraps a line
+  const w = Math.ceil(shown.reduce((m, e) => Math.max(m, e.getBoundingClientRect().width), 0));
+  for (const e of shown) { const s = w + 'px'; if (e.style.width !== s) e.style.width = s; }
+  for (const e of all) if (!shown.includes(e) && e.style.width) e.style.width = '';
   let y = 12;
   for (const e of shown) {
     const top = y + 'px';
     if (e.style.top !== top) e.style.top = top;
-    y += e.offsetHeight + 8;
+    y += e.offsetHeight - 1;   // T-1384: rows share their 1px border (was + 8, a gap per box)
   }
+  if (shown.length) y += 9;    // the card's bottom edge and the same 8px breathing room as before
   const pad = shown.length ? y + 'px' : '';
   if (wrap.style.paddingTop !== pad) wrap.style.paddingTop = pad;
+  _dockObserver?.takeRecords();   // our own writes above must not re-run this (the observer watches these attributes)
 }
+const DOCK_NARROW_PX = 700;   // T-1384: canvas width under which the dock collapses long notices to their first part
+let _dockObserver = null;
+document.addEventListener('click', ev => {
+  const more = ev.target.closest?.('.clean-nudge .dock-more');
+  if (!more) return;
+  const box = more.closest('.clean-nudge');
+  if (box.dataset.expanded === '1') delete box.dataset.expanded; else box.dataset.expanded = '1';
+  syncAdvisoryDock();
+});
 
 // ── Align rows (T-094) ──────────────────────────────────────────────────────
 // Explicit one-shot action: snap each cluster of near-aligned row-mates (chains
@@ -11869,6 +11932,7 @@ $('lane-fix-dismiss').onclick = () => {
 // observed rather than called from each site, so a new path cannot forget it.
 {
   const mo = new MutationObserver(() => syncAdvisoryDock());
+  _dockObserver = mo;   // T-1384: syncAdvisoryDock drops the records its own writes caused
   for (const id of ['lane-fix-notice', 'clean-nudge', 'lane-fix-msg', 'authority-summary', 'authority-summary-msg']) {
     const e = $(id);
     if (e) mo.observe(e, { attributes: true, attributeFilter: ['style', 'class'], childList: true, characterData: true, subtree: true });
@@ -13903,7 +13967,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.39.0';
+const APP_VERSION = '0.40.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
