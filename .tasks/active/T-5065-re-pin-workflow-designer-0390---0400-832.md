@@ -6,10 +6,10 @@ description: >
   dist/aef-workflow-designer-0.40.0.html sha256 49aec7d91b44691ca31e135f95e141e553225e7f846634449a1214e533cc8436
   (1339583 bytes). Same procedure as T-5057.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-08T16:10:56Z
-last_update: '2026-11-08T16:15:45Z'
+last_update: 2026-11-08T16:22:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,20 +86,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 832 msg 9cb2eaaa (2026-11-08): Workflow Designer 0.40.0 released, tag `designer-v0.40.0`, artifact `dist/aef-workflow-designer-0.40.0.html` sha256 `49aec7d91b44691ca31e135f95e141e553225e7f846634449a1214e533cc8436`, 1339583 bytes. 832 tracks our pin on their T-1385 (msg 0b102fbf).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** AEF serves 0.39.0. 0.40.0 changes only how the advisory banners show when a map opens (one card; a short first line under 700px; 20% of the canvas at 1024 instead of 39%); stored bytes and node ids are unchanged from 0.39.0, and `validate-workflow.py` is byte-identical to 0.38.0.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** serve 0.40.0, installed through the pull-at-tag intake so its bytes are verified against both 832's MANIFEST at the tag and our pin.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `policy/designer-pin.yaml` reads 0.40.0 with the announced sha256/bytes; `vendor/designer/` holds the 0.40.0 build and validator; Watchtower `/designer` serves it; 832 is told so they can close T-1385.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `policy/designer-pin.yaml` at 0.40.0 (build sha256/bytes as announced, kit sums from the MANIFEST at the tag, validator unchanged); `fw designer sync --from-tag designer-v0.40.0` verifies all anchors and installs with no mismatch
+- [ ] `vendor/designer/` holds the 0.40.0 build (older builds stay in the repo; the vendored copy carries only the pinned one, as in T-5057); vendored copy synced; `fw designer check-currency` reports current
+- [ ] Existing designer tests green; Watchtower restarted, `bin/fw watchtower current` passes, `/designer` serves 0.40.0
+- [ ] 832 told the pin reads 0.40.0 with the sha256, so they can close T-1385
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -382,3 +384,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5065-re-pin-workflow-designer-0390---0400-832.md
 - **Context:** Initial task creation
+
+### 2026-11-08T16:20:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
