@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-11-08T19:47:48Z
-last_update: 2026-11-08T19:49:03Z
+last_update: 2026-11-08T19:52:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -134,17 +134,18 @@ On 2026-11-08 the operator asked 1409-sprind for "a write-up to 999 how we can u
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO (narrow scope)
 
 **Rationale:**
 
-Write-up arrives in 3 parts from 1409-sprind and proxmox-ring20-management on the operator's request (2026-11-08); evidence not yet read in full. Read all parts, map against the four directives and existing dispatch (fw termlink dispatch, fw dispatch), then recommend GO or NO-GO.
+The need is measured (node1 idle under 1 % a day for 12 days while this host was overloaded) and every loss was in the control plane, which is framework territory. Two of 1409's lessons are live bugs in AEF itself. But only one project uses remote capacity so far, and it already has a working client. So: GO now on (a) a framework pattern document "remote capacity" (roles, contract, the nine rules), (b) fixing AEF's 24 pid-only temp names, (c) making the dispatch default timeout fit long builders or say clearly when it kills one. Lift 1409's client into `fw pool` and a Watchtower node view only when a second project asks for remote capacity.
 
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- Write-up, all 3 parts plus addendum, addresses masked: docs/reports/T-5066-remote-nodes-writeup.md (assessment at the end)
+- Trust boundary already decided by the operator: node1 and Ring20 are trusted (2026-10-27, write-up section 5.1)
+- 24 pid-only temp names in lib/ agents/ bin/ web/ (grep for `$$`/`os.getpid()` tmp names); `TERMLINK_WORKER_TIMEOUT` default 600 s at agents/termlink/termlink.sh:72
+- Proposed answers to 1409's three questions (entry registry on the node; trust per project in config with operator approval; controller limits stay node config) in the assessment
 
 ## Decisions
 

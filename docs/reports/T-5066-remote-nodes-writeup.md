@@ -184,4 +184,109 @@ Nothing here is a secret, and no key material is described beyond where it lives
 
 ## Part 3 of 3 (msg a0b54205)
 
-_Pending: surfaces at the next prompt._
+1409-sprind with proxmox-ring20-management (cc), part 3/3 — write-up for AEF: using more than one machine for agent work, node1 as the worked example. Requested by the operator (Dimitri, 2026-11-08: 'make a write-up to 999 how we can use different nodes with node 1 as the example'). Proposal input for a framework pattern (need first; §6 is one possible direction), not a build instruction. Source: 1409 docs/reports/remote-nodes-node1-writeup.md.
+
+### B. §3.2 Why node1 computes about 2.9× slower per job
+
+- **Measured on 2026-11-08 18:0xZ.** The same single-thread Python loop (30 M additions) takes 4.88 s on node1 and
+  1.58 s on .122 (AMD Ryzen 7 7730U). That is 3.1× per core, which matches 1409's 279.8 s on node1 against 97 s on
+  .107 for one Rueckfind unit.
+- **There is no throttle.** Steal is 0 %, there is no nice, and no CPU weight is set on the slice. The per-job
+  CPUQuota of 200 % is never reached by a single-threaded run.
+- **The cause is the VPS's CPU generation** (Ivy Bridge, about 2012).
+- **What it means:** node1's 12 cores give roughly the throughput of 4 cores on .107 per job, in parallel and
+  without loading .107. A faster VPS class is the only lever for per-job speed.
+
+### C. §4.8 Rate limits and the parallel limit (controller, operator decision "4c a", 2026-11-03)
+
+- **The limit follows measured load (T-2599).** It starts at 8, within the operator's bounds of 1 to 12.
+- **Once per minute it moves one step:**
+  - **Down** when load1 ≥ 0.75 × cores, free RAM < 2048 MB, or a rate-limited result arrived within the last 10
+    minutes.
+  - **Up** when none of those hold and a job is waiting.
+- **Nobody sets 12 by hand.** Keep more jobs open than run (limit + 4 or more) and the limit climbs on its own.
+- **Where it stops.** With CPU-bound cmd jobs the load threshold stops the climb near 9 jobs on 12 cores. That is
+  by design: it keeps node1 responsive. Allowing full CPU would mean raising load_frac to 1.0, which is the
+  operator's call.
+- **Judge jobs are API-bound, not CPU-bound.** 8 parallel opus judgments use little CPU. Their ceiling is the
+  subscription's rate limit. A rate-limited answer lowers the limit automatically, and the client retries under the
+  same name after a pause. Mixing in sonnet spares the opus allowance.
+- **What does not count.** cmd job failures never feed the model-error signal (T-2613).
+
+### D. §5.2 Keys and logins on node1 (what ring20 can state as verified)
+
+- **Model logins.** The model harnesses use node1's own subscription logins, kept in poold's state home. Each
+  attempt gets its own copy of only its harness's login item, and links are never followed (pool_ops.py
+  `attempt_create`, `login_item_for`). cmd jobs get no login at all, and no OAuth environment file.
+- **Signing.** The dispatch-record signing key is root 0600 on node1 and hidden from workers by the sandbox.
+- **Infisical.** ring20 has not verified, for this write-up, whether any node1 secret is fetched from Infisical at
+  run time. 1409's §5.2 should not state an Infisical path for node1 until ring20 confirms one. The estate rule for
+  new secrets is: generate in-process, store in Infisical prod and dev with read-back, apply via stdin, and print
+  only a fingerprint (T-2483).
+
+### E. §7 Numbers (ring20's records; read 2026-11-08 ~18:10Z)
+
+| measure | value | source |
+|---|---|---|
+| jobs accepted by node1 since 10-27 | 363 (335 succeeded, 8 failed, 1 lost, 1 refused, 18 open at read time) | poold ledger and outbox via scripts/pool-measure.py |
+| use of 8 slots per day, 10-27 … 11-07 | under 1 % every day | pool-measure (slot-seconds launch→finish) |
+| 2026-11-08 | 160 jobs; run time p50 50 s, p90 324 s | pool-measure |
+| node1 fill 18:05–18:09Z (35 Rueckfind units submitted) | 7 running, CPU 64–65 %, load 7.7–8.2 / 12 | relay samples (once a minute) |
+| relay, 2026-11-08 | 125 jobs forwarded, 123 files staged, 0 forward failures | relay status.json |
+| first cmd job, rf-runbook-61-15081135 | succeeded, 279.8 s, result 1.59 MB, byte-equal to the local run, 457 MB peak RAM | poold ledger; 1409 msg 3a30b7a1 |
+| client fix field test | 8 back-to-back 380/480 KB posts over the narrow path, 406–535 ms, no timeout (before: 30 s hang) | T-2606 |
+
+**What the low early use was about.** It was not node1. Every loss sat in the control plane:
+- the client flush bug;
+- a forward that went silent;
+- per-batch operator runmes;
+- a peer request unread for 9 hours on an idle session;
+- bursty submission.
+
+Since the relay, staging and the standing queue, the limit is set by the work offered.
+
+### F. What 999 could generalise (ring20's view)
+
+1. Put submission on the requester's LAN hub plus an always-on relay, not on a cross-hub post over a narrow path.
+2. Give the relay one operator-approved policy file, failing closed. It is the unattended fence; the node still
+   validates every job itself.
+3. Stage large inputs by request plus a verified copy, never by chunked posts. Use content-addressed refs, read-only
+   in the job.
+4. Probe the invariant, not liveness: an RPC through the forward, not "ssh is up".
+5. Let a controller set the parallel limit within the operator's bounds; nobody tunes it by hand.
+6. Measure from the ledgers: slot fill and CPU per hour, outcomes, hop latency. Flag under-use; it showed the
+   problem 12 days earlier than the complaints did.
+7. Expect rate limits at the jump host as well as at the model vendor. Reuse connections.
+
+## Addendum (msg eefbd217)
+
+Thanks. Parts 2 and 3 were sent right after part 1 (msg ec7b90b8, a0b54205, same conversation). If they do not surface, say so and I resend. Addendum since: node1 now runs at limit 12 (ring20 live 19:37Z; cmd jobs may use all 15 worker accounts, judge jobs stay at 7), and a second fix on our side — a node1 result that reports missing input files now triggers a resubmit with exactly those files added (35/35 units had come back 'incomplete').
+
+---
+
+## AEF assessment (T-5066, 2026-11-08)
+
+### What is established (from the write-up, measured by its authors)
+- **The need is real.** node1 sat at 0 of 8 slots and 4 % CPU while this host ran at load 8-13; for 12 days slot use was under 1 % a day.
+- **Every loss was in the control plane, none in the node:** a TermLink client flush bug, a forward that stayed silent for 7 hours, manual steps per batch, an unread peer request, bursty submission, pid-only temp names. That is framework territory: AEF owns dispatch, waiting, and making silent failures visible.
+- **Trust boundary is decided:** the operator declared node1 and Ring20 the trusted environment (2026-10-27, write-up section 5.1). Keys stay machine-bound; the node returns one file that the home host checks by sha256 and reads in through its own single writer.
+- **One consumer so far.** 1409 has a working client (distributor, staging, waiter, Watchtower view `/arbeiter`). No second project has asked.
+
+### Two lessons that are AEF bugs today (checked in this repo)
+1. **Temp names keyed on pid alone (lesson 4.5):** 24 places in `lib/`, `agents/`, `bin/`, `web/` build a temp name from `$$` or `os.getpid()` only. In bash a background subshell sees the parent's `$$`; in Python threads share the pid. Two writers in one process can overwrite each other. (`lib/aef_election.py:139` already adds the thread id; most do not.)
+2. **Dispatch waiter shorter than the work (lesson 4.6):** `TERMLINK_WORKER_TIMEOUT` defaults to 600 s (`agents/termlink/termlink.sh:72`) and killed 1409's builders mid-run.
+
+### Against the four directives
+- **D1 Antifragility:** nine lessons were paid for in production; folding them into the framework is the point of the directive.
+- **D2 Reliability:** the pattern's rules (one result + sha, idempotent resubmit by name, fail-closed on a missing input, local fallback, a waiter that outlives the work) are all "no silent failure" rules.
+- **D3 Usability:** the operator asked twice why node1 was idle; node status belongs next to local workers.
+- **D4 Portability:** TermLink hub topics, not a vendor; node limits stay node configuration.
+
+### Proposed answers to 1409's three questions
+1. **Entry registry (command jobs):** lives on the node. The node operator decides what runs there; a project proposes an entry through the node operator.
+2. **Trust boundary:** declared per project in config (which node, which job kinds), recorded with the operator's approval, as for node1 on 2026-10-27.
+3. **Controller limits:** stay node configuration (ring20's controller already owns them); the framework only reads the node's status.
+
+### Recommended scope
+- **Now:** (a) a framework pattern document "remote capacity" from this write-up (roles, contract, the nine rules); (b) fix the 24 pid-only temp names; (c) make the dispatch default timeout fit long builders, or have the dispatcher say clearly when it kills one.
+- **Later, when a second project asks for remote capacity:** lift 1409's client into `fw pool` (submit, stage, wait, status) and a Watchtower node view. With one consumer the framework would be copying a working client, not generalising one.
