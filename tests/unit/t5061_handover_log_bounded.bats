@@ -82,7 +82,20 @@ _wait_for() {   # $1 = grep pattern in $LOG
     [ "$(fw_working_human_size 183610195968)" = "171.0G" ]
 }
 
-@test "T-5061: fw doctor and fw audit call the oversize check" {
-    grep -q 'fw_working_oversized "$CONTEXT_DIR/working"' "$FRAMEWORK_ROOT/bin/fw"
+@test "T-5061: fw audit calls the oversize check" {
     grep -q 'fw_working_oversized "$CONTEXT_DIR/working"' "$FRAMEWORK_ROOT/agents/audit/audit.sh"
+}
+
+# Behavioural, not a grep of the source: the first version passed a text check while
+# doctor died on `CONTEXT_DIR: unbound variable` at this check and skipped every later one.
+@test "T-5061: fw doctor names an oversized working file and runs on past the check" {
+    mkdir -p "$PROJ/.tasks/active" "$PROJ/.tasks/completed"
+    echo "framework_root: $FRAMEWORK_ROOT" > "$PROJ/.framework.yaml"
+    truncate -s 3000000 "$PROJ/.context/working/.checkpoint.handover.stderr"
+    run bash -c "unset CONTEXT_DIR; FRAMEWORK_ROOT='$FRAMEWORK_ROOT' PROJECT_ROOT='$PROJ' FW_WORKING_FILE_WARN_BYTES=2000000 timeout 300 '$FRAMEWORK_ROOT/bin/fw' doctor 2>&1"
+    [[ "$output" != *"unbound variable"* ]]
+    [[ "$output" == *"Oversized file(s) under .context/working/"* ]]
+    [[ "$output" == *".context/working/.checkpoint.handover.stderr"* ]]
+    # doctor reached its closing summary, so nothing after this check was skipped
+    [[ "$output" == *"Project "*"warning(s)"* ]] || [[ "$output" == *"Project "*": healthy"* ]]
 }

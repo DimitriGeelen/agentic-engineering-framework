@@ -5435,7 +5435,9 @@ if len(rows) > 5:
         # shellcheck source=/dev/null
         source "$FRAMEWORK_ROOT/lib/working-oversize.sh"
         local _wo_out _wo_bytes _wo_path
-        _wo_out=$(fw_working_oversized "$CONTEXT_DIR/working")
+        # PROJECT_ROOT, not CONTEXT_DIR: doctor never sets CONTEXT_DIR, and under set -u the
+        # unbound name aborted doctor here, skipping every later check (T-5061 regression, be.40).
+        _wo_out=$(fw_working_oversized "$PROJECT_ROOT/.context/working")
         if [ -z "$_wo_out" ]; then
             echo -e "  ${GREEN}OK${NC}  No oversized file under .context/working/ (limit $(fw_working_human_size "${FW_WORKING_FILE_WARN_BYTES:-1073741824}"))"
         else
