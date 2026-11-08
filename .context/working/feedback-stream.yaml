@@ -53183,3 +53183,57 @@ scan_id: R-413b2b73
 task_id: T-5059
 payload:
   task_file: .tasks/active/T-5059-claude-fw-tmux-wrap-client-attachedclien.md
+---
+kind: scan_emitted
+timestamp: '2026-11-07T06:18:47Z'
+scan_id: R-f8329b54
+task_id: T-1985
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-07T06:18:47Z'
+scan_id: R-f8329b54
+task_id: T-1985
+payload:
+  task_file: .tasks/active/T-1985-t-1950a-reviewer-auto-tick-reviewer-agen.md
+---
+kind: override_expired
+timestamp: '2026-11-07T06:18:47Z'
+scan_id: R-f8329b54
+task_id: T-1985
+payload:
+  id: OV-f3632338
+  pattern_id: mock-only-integration
+  expired_at: '2026-08-20T07:40:14Z'
+---
+kind: override_expired
+timestamp: '2026-11-07T06:18:47Z'
+scan_id: R-f8329b54
+task_id: T-1985
+payload:
+  id: OV-21992fcb
+  pattern_id: AC-verify-mismatch
+  expired_at: '2026-08-20T07:40:18Z'
+---
+kind: scan_emitted
+timestamp: '2026-11-08T09:26:42Z'
+scan_id: R-2d4ee3d8
+task_id: T-5063
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-08T09:26:42Z'
+scan_id: R-2d4ee3d8
+task_id: T-5063
+payload:
+  task_file: .tasks/active/T-5063-escalation-scan-v0-writes-invalid-yaml-w.md
