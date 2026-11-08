@@ -2,7 +2,9 @@
 id: T-5065
 name: "Re-pin Workflow Designer 0.39.0 -> 0.40.0 (832 release, designer-v0.40.0)"
 description: >
-  832 msg 9cb2eaaa (2026-11-08): designer 0.40.0 released, tag designer-v0.40.0, artifact dist/aef-workflow-designer-0.40.0.html sha256 49aec7d91b44691ca31e135f95e141e553225e7f846634449a1214e533cc8436 (1339583 bytes). Same procedure as T-5057.
+  832 msg 9cb2eaaa (2026-11-08): designer 0.40.0 released, tag designer-v0.40.0, artifact
+  dist/aef-workflow-designer-0.40.0.html sha256 49aec7d91b44691ca31e135f95e141e553225e7f846634449a1214e533cc8436
+  (1339583 bytes). Same procedure as T-5057.
 
 status: captured
 workflow_type: build
@@ -38,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-08T16:10:56Z
-last_update: 2026-11-08T16:11:04Z
-date_finished: null
+last_update: '2026-11-08T16:15:20Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +52,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-08T16:15:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5065: Re-pin Workflow Designer 0.39.0 -> 0.40.0 (832 release, designer-v0.40.0)
