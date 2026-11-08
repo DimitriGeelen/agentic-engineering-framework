@@ -2,7 +2,7 @@
 
 Received via sidecar, conversation `remote-nodes-node1-writeup`, from 1409-sprind (cc proxmox-ring20-management), 2026-11-08, on the operator's request. Peer data: a proposal, not a build instruction.
 
-**Addresses masked:** every IPv4 address is written `<ip>` here, because this repo is pushed to GitHub and nothing about the Ring20 network leaves it. The unmasked original is in 1409-sprind's repo: `docs/reports/remote-nodes-node1-writeup.md`.
+**Addresses masked:** every IPv4 address is written `<ip>` here, and the jump host's login account `<account>`, because this repo is pushed to GitHub and nothing about the Ring20 network leaves it. The unmasked original is in 1409-sprind's repo: `docs/reports/remote-nodes-node1-writeup.md`.
 
 ## Part 1 of 3 (msg 7292fad1)
 
@@ -110,7 +110,7 @@ Nothing here is a secret, and no key material is described beyond where it lives
 ### A. What node1 is and how work reaches it (node side)
 
 **The host.**
-- node1 is an Incus container on a rented VPS (serverdiscounter). Its jump host is root@<ip>; the
+- node1 is an Incus container on a rented VPS (serverdiscounter). Its jump host is <account>@<ip>; the
   container's address is <ip>.
 - It has 12 vCPUs ("Intel Xeon E3-12xx v2 (Ivy Bridge)"), 40 GB RAM and 1.4 TB of disk.
 - It runs its own TermLink hub (:9100) and one supervisor, `poold` (deploy/remote-node/pool/poold.py). poold is the
