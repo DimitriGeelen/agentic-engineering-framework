@@ -139,10 +139,13 @@ mirror_sync_tags() {
         [ "$quiet" -eq 0 ] && echo "  $remote: tags not compared (unreachable)" >&2
         return 1
     fi
+    # T-5062: differing tags are summarised in ONE line per run. One line per tag per run
+    # was 90 lines every 15 minutes for the same 90 tags (113k of a 125k-line log).
+    local -a _differs=()
     while read -r kind tag sha; do
         [ -z "$kind" ] && continue
         if [ "$kind" = "differs" ]; then
-            mirror_log_event "$log_file" "$remote:tags" "tag-differs" "$tag" ""
+            _differs+=("$tag")
             [ "$quiet" -eq 0 ] && echo "  $remote: tag $tag differs from origin — not moved (manual decision)" >&2
             continue
         fi
@@ -173,7 +176,32 @@ mirror_sync_tags() {
             rc=1
         fi
     done <<< "$diff"
+    if [ "${#_differs[@]}" -gt 0 ]; then
+        local _names="${_differs[*]}"
+        [ "${#_names}" -gt 400 ] && _names="${_names:0:400} ..."
+        mirror_log_event "$log_file" "$remote:tags" "tags-differ" "${#_differs[@]}" "$_names"
+    fi
     return "$rc"
+}
+
+# T-5062: keep .mirror-sync.log bounded. Over FW_MIRROR_LOG_MAX_BYTES (1 MB) it is cut back
+# to its last FW_MIRROR_LOG_KEEP_LINES (5000) lines: the NEWEST lines stay, because
+# mirror_stuck_diverged_check reads the last outcomes per remote. Never fatal.
+mirror_log_trim() {
+    local file="$1"
+    local cap="${FW_MIRROR_LOG_MAX_BYTES:-1048576}" keep="${FW_MIRROR_LOG_KEEP_LINES:-5000}"
+    case "$cap" in ''|*[!0-9]*) cap=1048576 ;; esac
+    case "$keep" in ''|*[!0-9]*) keep=5000 ;; esac
+    [ -f "$file" ] || return 0
+    local size; size=$(stat -c %s "$file" 2>/dev/null || wc -c < "$file")
+    [ "${size:-0}" -gt "$cap" ] || return 0
+    local tmp="$file.trim.$$"
+    if tail -n "$keep" "$file" > "$tmp" 2>/dev/null && mv -f "$tmp" "$file"; then
+        mirror_log_event "$file" "log" "trimmed" "$size" "kept last $keep lines (cap $cap bytes)"
+    else
+        rm -f "$tmp" 2>/dev/null
+    fi
+    return 0
 }
 
 mirror_sync() {
@@ -207,6 +235,7 @@ USAGE
     done
 
     local log_file="${PROJECT_ROOT:-.}/.context/working/.mirror-sync.log"
+    mirror_log_trim "$log_file"   # T-5062
 
     local origin_head
     origin_head=$(git -C "${PROJECT_ROOT:-.}" ls-remote origin HEAD 2>/dev/null | awk '{print $1}')
