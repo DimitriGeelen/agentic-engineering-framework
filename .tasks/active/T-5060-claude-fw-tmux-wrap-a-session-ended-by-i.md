@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-03T22:32:44Z
-last_update: 2026-11-08T14:24:49Z
+last_update: 2026-11-08T14:25:27Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -297,6 +297,13 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+command -v tmux >/dev/null
+timeout 300 bats tests/unit/t5060_claude_fw_end_reason.bats > /tmp/.t5060a 2>&1 && ! grep -q "^not ok" /tmp/.t5060a
+test "$(grep -c '# skip' /tmp/.t5060a)" -eq 0
+timeout 300 bats tests/unit/t3182_loop_exit_recorder.bats > /tmp/.t5060b 2>&1 && ! grep -q "^not ok" /tmp/.t5060b
+timeout 300 bats tests/unit/t4003_claude_fw_tmux_wrap.bats > /tmp/.t5060c 2>&1 && ! grep -q "^not ok" /tmp/.t5060c
+grep -q "### Launch Modes (Claude Code wrapper" FRAMEWORK.md
+bin/fw vendor self --check --task T-5060
 
 ## RCA
 
@@ -313,6 +320,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** 055's tmux-wrapped Claude disappeared at 20:51 with nothing on disk saying why.
+
+**Root cause:** T-3182 recorded loop events only where `command claude` returns. A window close (tmux destroy-unattached) or a kill reaches the wrapper as HUP/TERM; with no trap, bash died on the signal and never reached a recording path.
+
+**Why structurally allowed:** T-3182's own test scans every `exit` inside the loop for a preceding recorder call. A signal death has no `exit` statement, so the scan could not see it. T-4003 made window-close-ends-Claude the design, but no task asked what record that end leaves.
+
+**Prevention:** HUP/TERM traps record `signal-hup` / `signal-term`; `tests/unit/t5060_claude_fw_end_reason.bats` destroys a real tmux session and kills a real process group (red without the traps). Measured on the way: the kernel's HUP reaches only the pane's session leader, so the trap runs once claude itself exits on its lost terminal. A child that ignores its tty would keep the wrapper waiting, which matches the old behaviour for such a child.
 
 ## Evolution
 
