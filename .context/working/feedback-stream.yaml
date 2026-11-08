@@ -53273,3 +53273,21 @@ scan_id: R-a334ca54
 task_id: T-5060
 payload:
   task_file: .tasks/active/T-5060-claude-fw-tmux-wrap-a-session-ended-by-i.md
+---
+kind: scan_emitted
+timestamp: '2026-11-08T16:05:09Z'
+scan_id: R-21789790
+task_id: T-5064
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-08T16:05:09Z'
+scan_id: R-21789790
+task_id: T-5064
+payload:
+  task_file: .tasks/active/T-5064-fw-doctor-embed-endpoint-warn-ignores-se.md

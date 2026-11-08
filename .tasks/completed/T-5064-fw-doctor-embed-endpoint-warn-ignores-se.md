@@ -6,12 +6,12 @@ description: >
   fw doctor: embed endpoint WARN ignores SEMANTIC_RECALL=0 and claims a failover that
   may not exist (issue #98 follow-up)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-08T15:40:16Z
-last_update: '2026-11-08T16:01:06Z'
-date_finished:
+last_update: 2026-11-08T16:04:36Z
+date_finished: 2026-11-08T16:04:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -98,10 +98,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `SEMANTIC_RECALL=0` → the embed endpoint line is `SKIP` (no WARN), read the same way as the T-3862 index check
-- [ ] Recall on, primary unreachable: the failover sentence appears only when a different `EMBED_BULK_HOST` answers; with no reachable alternative the WARN says embeddings will fail and names both remedies
-- [ ] Test runs the real `fw doctor` on a fixture for the three cases (SKIP; no failover; failover reachable) and fails on the old code
-- [ ] Reply posted on issue #98 naming the fix and the be-tag, and the submitter's reply settled in the ledger
+- [x] `SEMANTIC_RECALL=0` → the embed endpoint line is `SKIP` (no WARN), read the same way as the T-3862 index check
+- [x] Recall on, primary unreachable: the failover sentence appears only when a different `EMBED_BULK_HOST` answers; with no reachable alternative the WARN says embeddings will fail and names both remedies
+- [x] Test runs the real `fw doctor` on a fixture for the three cases (SKIP; no failover; failover reachable) and fails on the old code
+- [x] Reply posted on issue #98 naming the fix and the be-tag, and the submitter's reply settled in the ledger
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,6 +287,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 bats tests/unit/t5064_doctor_embed_endpoint.bats > /tmp/.t5064a 2>&1 && ! grep -q "^not ok" /tmp/.t5064a
+test "$(grep -c '# skip' /tmp/.t5064a)" -eq 0
+timeout 400 bats tests/unit/t3045_embed_host_resolution.bats > /tmp/.t5064b 2>&1 && ! grep -q "^not ok" /tmp/.t5064b
+bin/fw vendor self --check --task T-5064
 
 ## RCA
 
@@ -303,6 +307,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** on a host with `SEMANTIC_RECALL=0` and no network, `fw doctor` WARNed that the embed endpoint was unreachable and that "embeds still succeed via T-3017 failover", which was false (issue #98 follow-up).
+
+**Root cause:** two checks own one setting. T-3862 taught the vector-index check to read `SEMANTIC_RECALL`; the T-3045 embed endpoint check, in another part of doctor, was not touched. Separately, T-3045 wrote the failover sentence as a fixed string, true on the host it was written on (a sidecar plus a GPU host), without probing whether an alternative host exists.
+
+**Why structurally allowed:** nothing maps a config switch to every check that should honour it, and T-3045's own test covered host resolution, not the message. The wrong sentence only shows on a single-host or offline install, which this repo's host never is.
+
+**Prevention:** the message is now derived from a probe of the failover host, and `tests/unit/t5064_doctor_embed_endpoint.bats` runs the real doctor for the off, single-dead-host and live-failover cases (all three red on the old code). Learning: when a setting switches a subsystem off, grep every doctor/audit check of that subsystem, not only the one that was reported.
 
 ## Evolution
 
@@ -384,3 +395,16 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5064-fw-doctor-embed-endpoint-warn-ignores-se.md
 - **Context:** Initial task creation
+
+### 2026-11-08T16:04:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-21789790
+- **Timestamp:** 2026-11-08T16:05:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
