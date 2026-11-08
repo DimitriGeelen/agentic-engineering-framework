@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5062: .mirror-sync.log appends without a limit (7.5 MB here, every 15 min cron); same class as G-130
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-08T17:54:09Z
+# ============================================================================
+
+task_id: T-5062
+task_name: ".mirror-sync.log appends without a limit (7.5 MB here, every 15 min cron); same class as G-130"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-07T18:10:45Z
+completed: 2026-11-08T17:53:37Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-08T18:52:41+01:00
+last_commit: 2026-11-08T18:52:53+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  mirror log bounded — one tags-differ line per run, trim to newest lines over 1 MB. vendor lib/mirror.sh
+
+# Key outcomes
+outcomes:
+  - '`mirror_sync_tags` writes ONE `tags-differ` line per run (count in field 4, the tag names in field 5, capped in length) instead of one `tag-differs` line per tag; nothing is pushed or moved differently'
+  - 'Each `fw mirror sync` run trims `.mirror-sync.log` to its last `FW_MIRROR_LOG_KEEP_LINES` (default 5000) lines when the file is over `FW_MIRROR_LOG_MAX_BYTES` (default 1 MB), keeping the newest lines and writing a line that records the trim'
+  - 'Tests: 90 differing tags give one line; an oversized log is trimmed to its tail and the stuck-diverged check still fires on a stuck remote after the trim; existing mirror tests green'
+  - 'The current 7.9 MB log is trimmed on this host by the next sync run (no hand deletion), and the 90 differing tags are reported to the operator as their decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/mirror.sh'
+  - '.tasks/active/T-5062-mirror-synclog-appends-without-a-limit-7.md'
+  - 'lib/mirror.sh'
+  - 'tests/unit/t4673_tags_reach_mirror.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-08T18:52:41'
+    action: 'T-5062: mirror log bounded — one tags-differ line per run, trim to newest lines over 1 MB'
+  - time: '2026-11-08T18:52:53'
+    action: 'T-5062: vendor lib/mirror.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1422 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1422
+  commits: 3
+  files_changed: 7
+  lines_added: 632
+  lines_removed: 23
+  footprint_refreshed_at: '2026-11-08T17:54:37Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5062-mirror-synclog-appends-without-a-limit-7.md
+generated_by: context-agent-hybrid

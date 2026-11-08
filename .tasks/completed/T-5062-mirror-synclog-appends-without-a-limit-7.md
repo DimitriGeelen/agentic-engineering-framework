@@ -10,12 +10,12 @@ description: >
   name it only very late. Fix direction: rotate or cap like T-5061's budget-gate log
   (keep last N bytes or rotate to .1 over a size).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/mirror.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-07T18:10:45Z
-last_update: 2026-11-08T17:52:53Z
-date_finished:
+last_update: 2026-11-08T17:53:37Z
+date_finished: 2026-11-08T17:53:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -92,10 +92,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `mirror_sync_tags` writes ONE `tags-differ` line per run (count in field 4, the tag names in field 5, capped in length) instead of one `tag-differs` line per tag; nothing is pushed or moved differently
-- [ ] Each `fw mirror sync` run trims `.mirror-sync.log` to its last `FW_MIRROR_LOG_KEEP_LINES` (default 5000) lines when the file is over `FW_MIRROR_LOG_MAX_BYTES` (default 1 MB), keeping the newest lines and writing a line that records the trim
-- [ ] Tests: 90 differing tags give one line; an oversized log is trimmed to its tail and the stuck-diverged check still fires on a stuck remote after the trim; existing mirror tests green
-- [ ] The current 7.9 MB log is trimmed on this host by the next sync run (no hand deletion), and the 90 differing tags are reported to the operator as their decision
+- [x] `mirror_sync_tags` writes ONE `tags-differ` line per run (count in field 4, the tag names in field 5, capped in length) instead of one `tag-differs` line per tag; nothing is pushed or moved differently
+- [x] Each `fw mirror sync` run trims `.mirror-sync.log` to its last `FW_MIRROR_LOG_KEEP_LINES` (default 5000) lines when the file is over `FW_MIRROR_LOG_MAX_BYTES` (default 1 MB), keeping the newest lines and writing a line that records the trim
+- [x] Tests: 90 differing tags give one line; an oversized log is trimmed to its tail and the stuck-diverged check still fires on a stuck remote after the trim; existing mirror tests green
+- [x] The current 7.9 MB log is trimmed on this host by the next sync run (no hand deletion), and the 90 differing tags are reported to the operator as their decision
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,22 +281,23 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t4673_tags_reach_mirror.bats > /tmp/.t5062a 2>&1 && ! grep -q "^not ok" /tmp/.t5062a
+test "$(grep -c '# skip' /tmp/.t5062a)" -eq 0
+timeout 300 bats tests/unit/test_mirror_sync.bats > /tmp/.t5062b 2>&1 && ! grep -q "^not ok" /tmp/.t5062b
+test "$(stat -c %s .context/working/.mirror-sync.log)" -lt 2097152
+bin/fw vendor self --check --task T-5062
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `.context/working/.mirror-sync.log` reached 7,958,081 bytes / 125,422 lines on the AEF host, growing every 15 minutes (found while fixing G-130, T-5061).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** two things. T-4673 logged one `tag-differs` line per differing tag per run; since 2026-10-22 the same 90 tags differ on OneDev (113,219 lines, 90% of the file). And the log, like the G-130 file, had no size cap at all.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** append-only logs under `.context/working/` had no size rule until T-5061, and a log whose lines repeat the same steady state has nothing that notices the repetition. The per-run cost (90 short lines) looks harmless; only the product with a 15-minute cron over weeks is not.
+
+**Prevention:** one `tags-differ` summary line per run; `mirror_log_trim` cuts the log to its newest 5000 lines over 1 MB on every run (newest kept, so the doctor's stuck-diverged check keeps its history); T-5061's oversize WARN remains the backstop for any other file. Tests in `t4673_tags_reach_mirror.bats` (3 of 4 red on the old code).
+
+**The 90 tags, measured:** all 90 point to the SAME commit on origin (GitHub) and on OneDev; only the annotated tag object differs (re-created tags). Released code is identical on both. Whether to align the tag objects (a Tier 0 tag move on OneDev, 90 times) is the operator's call; recommendation: leave them.
 
 ## Evolution
 
@@ -382,3 +383,16 @@ bvp_scores_proposed:
 ### 2026-11-08T17:50:20Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-08T17:53:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-83cc72b3
+- **Timestamp:** 2026-11-08T17:53:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
