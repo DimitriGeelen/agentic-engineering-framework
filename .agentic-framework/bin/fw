@@ -11796,6 +11796,14 @@ PYPREDICT
         fi
 
         case "${1:-all}" in
+            bundle)
+                # T-5070: the node1 unit-suite package (T-5069 spec)
+                shift
+                # shellcheck source=/dev/null
+                source "$FRAMEWORK_ROOT/lib/test-bundle.sh"
+                PROJECT_ROOT="$PROJECT_ROOT" fw_test_bundle "$@"
+                exit $?
+                ;;
             --lint|lint)
                 # ShellCheck linting
                 if ! command -v shellcheck >/dev/null 2>&1; then
@@ -12134,6 +12142,7 @@ PYPREDICT
                 echo "  web           Pytest web tests only"
                 echo "  playwright    Playwright UI tests (alias: ui)"
                 echo "  lint          ShellCheck linting on all .sh files"
+                echo "  bundle        Build the node1 unit-suite package (git bundle, one commit; T-5070)"
                 exit 0
                 ;;
         esac
