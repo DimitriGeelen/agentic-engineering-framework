@@ -33,7 +33,7 @@ TASK="T-3411"
 FW="$ROOT/bin/fw"
 
 # A value review with a 200k budget is hours, not minutes. The dispatch
-# default is 600s (TERMLINK_WORKER_TIMEOUT), which would kill every worker
+# default is 3600s (TERMLINK_WORKER_TIMEOUT, T-5068), which would kill every worker
 # mid-Phase-2, so both legs pass an explicit timeout.
 REVIEW_TIMEOUT="${SEQ_REVIEW_TIMEOUT:-21600}"
 FIT_TIMEOUT="${SEQ_FIT_TIMEOUT:-21600}"

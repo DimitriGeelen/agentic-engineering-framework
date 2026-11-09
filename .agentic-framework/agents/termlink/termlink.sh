@@ -69,7 +69,7 @@ _all_wdirs() {
         done
     done
 }
-TERMLINK_WORKER_TIMEOUT=$(fw_config_int "TERMLINK_WORKER_TIMEOUT" 600)
+TERMLINK_WORKER_TIMEOUT=$(fw_config_int "TERMLINK_WORKER_TIMEOUT" 3600)   # T-5068: 600 killed 23% of real runs
 
 die() { echo -e "${RED}ERROR:${NC} $1" >&2; exit 1; }
 
@@ -678,6 +678,7 @@ cmd_status() {
                 local cs
                 cs=$(cat "$wdir/close_state" 2>/dev/null)
                 [ "$cs" = "n/a" ] || close_tag="  close: $cs"
+                [ "$cs" = "timeout" ] && close_tag="  close: TIMEOUT (killed by watchdog; fw termlink result $name)"   # T-5068
             fi
             printf "  %-20s  status: %-20s  session: %s%s%s\n" "$name" "$status" "$session_alive" "$task_tag" "$close_tag"
         done
@@ -2169,6 +2170,11 @@ fi
 if [ "$CLOSE_STATE" = "incomplete" ]; then
     echo "WARNING: worker exited 0 but $CLOSE_TASK is still started-work — close not run"
 fi
+# T-5068: a watchdog kill used to show only as close_state "timeout"; 1409 read killed
+# builders as finished. Say it plainly, with the limit and how to raise it.
+if [ "$CLOSE_STATE" = "timeout" ]; then
+    echo "WARNING: worker killed by the watchdog after ${TIMEOUT}s — its work may be partial. Raise the limit: --timeout <seconds> on dispatch, or fw config set TERMLINK_WORKER_TIMEOUT <seconds>" | tee -a "$WDIR/stderr.log"
+fi
 # Same best-effort jq pattern as the meta.json rewrite above.
 if command -v jq >/dev/null 2>&1 && [ -f "$WDIR/meta.json" ]; then
     jq --arg cs "$CLOSE_STATE" --arg ct "$CLOSE_TASK" \
@@ -2322,6 +2328,11 @@ cmd_result() {
             echo -e "${YELLOW}WARN${NC}  close_state: incomplete — ${ct:-the dispatched task} is still started-work (worker exited 0, close not run)"
         elif [ "$cs" = "no-verdict" ]; then
             echo -e "${YELLOW}WARN${NC}  close_state: no-verdict — the review seat exited 0 and left no verdict (T-4844)"
+        elif [ "$cs" = "timeout" ]; then
+            # T-5068: the limit that killed it is in meta.json; name it and the remedy.
+            local lim
+            lim=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("timeout",""))' "$wdir/meta.json" 2>/dev/null)
+            echo -e "${YELLOW}WARN${NC}  close_state: timeout — the watchdog KILLED this worker after ${lim:-?}s; ${ct:-its task} may be half done. Re-dispatch with --timeout <seconds> (or fw config set TERMLINK_WORKER_TIMEOUT <seconds>)"
         elif [ "$cs" != "n/a" ]; then
             echo "close_state: $cs${ct:+ ($ct)}"
         fi
