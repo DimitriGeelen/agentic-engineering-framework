@@ -83,7 +83,7 @@ mirror_sync_one() {
         # 7+ hours with only "push-failed" in the log; took a consumer pickup
         # to surface the actual blocking error (T-1603 hook).
         local _push_err
-        _push_err=$(mktemp 2>/dev/null || echo "/tmp/mirror-push-err.$$")
+        _push_err=$(mktemp 2>/dev/null || echo "/tmp/mirror-push-err.${BASHPID:-$$}")
         if git -C "${PROJECT_ROOT:-.}" push "$remote" "$branch" >/dev/null 2>"$_push_err"; then
             mirror_log_event "$log_file" "$remote" "synced" "$mirror_head" "$origin_head"
             [ "$quiet" -eq 0 ] && echo "  $remote: synced ${mirror_head:0:9} → ${origin_head:0:9}"
@@ -195,7 +195,7 @@ mirror_log_trim() {
     [ -f "$file" ] || return 0
     local size; size=$(stat -c %s "$file" 2>/dev/null || wc -c < "$file")
     [ "${size:-0}" -gt "$cap" ] || return 0
-    local tmp="$file.trim.$$"
+    local tmp="$file.trim.${BASHPID:-$$}"
     if tail -n "$keep" "$file" > "$tmp" 2>/dev/null && mv -f "$tmp" "$file"; then
         mirror_log_event "$file" "log" "trimmed" "$size" "kept last $keep lines (cap $cap bytes)"
     else

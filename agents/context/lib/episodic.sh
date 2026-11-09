@@ -487,16 +487,18 @@ HEREDOC
     # the next divergence between template and real-data emission gets caught
     # at write time, not at downstream consumer-read time.
     if command -v python3 >/dev/null 2>&1; then
-        if ! python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" "$episodic_file" 2>/tmp/episodic-yaml-err.$$; then
+        # T-5067: name fixed once; ${BASHPID} in the redirect of python3 would expand in the child.
+        local _yaml_err="/tmp/episodic-yaml-err.${BASHPID:-$$}"
+        if ! python3 -c "import yaml,sys; yaml.safe_load(open(sys.argv[1]))" "$episodic_file" 2>"$_yaml_err"; then
             echo -e "${RED}Episodic YAML validation failed: $episodic_file${NC}" >&2
-            cat /tmp/episodic-yaml-err.$$ >&2
-            rm -f /tmp/episodic-yaml-err.$$
+            cat "$_yaml_err" >&2
+            rm -f "$_yaml_err"
             echo "" >&2
             echo "The episodic generator produced invalid YAML. This is a generator bug; do not edit the output by hand." >&2
             echo "Capture the source task and report on framework:pickup with msg_type=pickup-bug-report." >&2
             exit 2
         fi
-        rm -f /tmp/episodic-yaml-err.$$
+        rm -f "$_yaml_err"
     fi
 
     # T-1719 A1: make the episodic retrievable now rather than at the next hourly

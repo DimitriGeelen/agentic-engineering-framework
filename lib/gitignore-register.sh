@@ -49,6 +49,9 @@ FW_GITIGNORE_IDREF_RE='T-[0-9]+|G-[0-9]+|OBS-[0-9]+|L-[0-9]+|C-[0-9]+|P-[0-9]+'
 fw_gitignore_unregistered_defers() {
     local root="${1:-${PROJECT_ROOT:-$PWD}}"
     local gi="$root/.gitignore"
+    # T-5067: one name per writer, fixed once here. ${BASHPID} must not appear in the
+    # redirect of an external command: bash expands that in the forked child (awk's pid).
+    local out="/tmp/.fw-gitignore-defers.${BASHPID:-$$}"
 
     [ -f "$gi" ] || return 0
 
@@ -72,13 +75,13 @@ fw_gitignore_unregistered_defers() {
             }
         }
         END { flush() }
-    ' "$gi" > /tmp/.fw-gitignore-defers.$$ 2>/dev/null
+    ' "$gi" > "$out" 2>/dev/null
 
     local rc=0
-    if [ -s /tmp/.fw-gitignore-defers.$$ ]; then
-        cat /tmp/.fw-gitignore-defers.$$
+    if [ -s "$out" ]; then
+        cat "$out"
         rc=1
     fi
-    rm -f /tmp/.fw-gitignore-defers.$$
+    rm -f "$out"
     return $rc
 }

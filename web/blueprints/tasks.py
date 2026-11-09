@@ -1152,7 +1152,7 @@ def update_task_owner(task_id):
         rec_dir.mkdir(parents=True, exist_ok=True)
         # Write beside, then os.replace: a symlink planted at the record path is replaced, never
         # followed (code review, T-4969).
-        tmp = rec_dir / f".{task_id}.{os.getpid()}.tmp"
+        tmp = rec_dir / f".{task_id}.{os.getpid()}-{os.urandom(4).hex()}.tmp"
         tmp.write_text(json.dumps({"task": task_id, "owner": owner, "ts": time.time(),
                                    "by": "watchtower"}), encoding="utf-8")
         os.replace(tmp, rec)

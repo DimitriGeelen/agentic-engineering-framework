@@ -74,7 +74,7 @@ def set_ready_for_input(ready: bool) -> None:
     # enough for Claude Code to kill the hook and discard its output. The flag
     # is advisory state, not a durable record: a crash that loses it reads as
     # "not ready", which is the safe direction.
-    tmp = path.with_suffix(f".yaml.{os.getpid()}.tmp")
+    tmp = path.with_suffix(f".yaml.{os.getpid()}-{os.urandom(4).hex()}.tmp")
     try:
         tmp.write_text(f"# Ready for input: {ready}\n"
                        f"ready: {str(ready).lower()}\n"
@@ -291,7 +291,7 @@ def set_session_ready(hook_input: dict, ready: bool) -> dict | None:
     record = dict(ident, ready=bool(ready),
                   updated_at=datetime.now(timezone.utc).isoformat())
     path = _session_path(ident["session_id"])
-    tmp = path.with_suffix(f".json.{os.getpid()}.tmp")
+    tmp = path.with_suffix(f".json.{os.getpid()}-{os.urandom(4).hex()}.tmp")
     try:
         tmp.write_text(json.dumps(record), encoding="utf-8")
         os.replace(tmp, path)
@@ -309,7 +309,7 @@ def clear_session_ready(session_id: str) -> None:
         return
     record["ready"] = False
     record["updated_at"] = datetime.now(timezone.utc).isoformat()
-    tmp = path.with_suffix(f".json.{os.getpid()}.tmp")
+    tmp = path.with_suffix(f".json.{os.getpid()}-{os.urandom(4).hex()}.tmp")
     try:
         tmp.write_text(json.dumps(record), encoding="utf-8")
         os.replace(tmp, path)

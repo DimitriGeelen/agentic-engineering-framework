@@ -696,7 +696,7 @@ _vendor_sync_changed() {
 # created by redirect, so it gets the umask mode a plain `>` would), then it is
 # moved into place or discarded. A no-op re-vendor leaves $1's mtime alone.
 _vendor_write_if_changed() {
-    local f="$1" tmp="$1.fw-vendor-tmp.$$"
+    local f="$1" tmp="$1.fw-vendor-tmp.${BASHPID:-$$}"
     cat > "$tmp" || { rm -f "$tmp"; return 1; }
     if [ -f "$f" ] && [ ! -L "$f" ] && cmp -s "$tmp" "$f"; then
         rm -f "$tmp"
@@ -5267,14 +5267,14 @@ if len(rows) > 5:
     if [ "${_has_origin:-0}" -ge 1 ]; then
         local _other_remotes _origin_refs _origin_dump
         _other_remotes=$(echo "$_all_remotes" | grep -vx 'origin' 2>/dev/null)
-        _origin_dump=$(mktemp 2>/dev/null || echo "/tmp/fw-origin-refs.$$")
+        _origin_dump=$(mktemp 2>/dev/null || echo "/tmp/fw-origin-refs.${BASHPID:-$$}")
         timeout 10 git -C "$PROJECT_ROOT" ls-remote origin 'refs/heads/*' 'refs/tags/*' 2>/dev/null | sort -k2 > "$_origin_dump" 2>/dev/null
         _origin_refs=$(wc -l < "$_origin_dump" 2>/dev/null)
         if [ -n "$_other_remotes" ] && [ "${_origin_refs:-0}" -gt 0 ]; then
             local _other _other_dump _diverge _orig_only _mirr_only _orig_names _other_names
             while IFS= read -r _other; do
                 [ -z "$_other" ] && continue
-                _other_dump=$(mktemp 2>/dev/null || echo "/tmp/fw-${_other}-refs.$$")
+                _other_dump=$(mktemp 2>/dev/null || echo "/tmp/fw-${_other}-refs.${BASHPID:-$$}")
                 timeout 10 git -C "$PROJECT_ROOT" ls-remote "$_other" 'refs/heads/*' 'refs/tags/*' 2>/dev/null | sort -k2 > "$_other_dump" 2>/dev/null
                 if [ ! -s "$_other_dump" ]; then
                     echo -e "  ${CYAN}SKIP${NC}  Mirror divergence ($_other unreachable)"
