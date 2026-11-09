@@ -206,3 +206,36 @@ result_with_close_state() {  # <close_state> <task-id>
     run grep -q "close_state" <<< "$output"
     [ "$status" -eq 1 ]
 }
+
+# --- T-5068: a watchdog kill is unmistakable -------------------------------------
+# 1409 read builders killed at the 600 s default as finished: close_state "timeout"
+# was a plain line. Now run.sh warns with the limit, result leads with a WARN.
+
+@test "T-5068: a watchdog-killed worker prints a WARNING naming the limit and the remedy" {
+    : > "$WDIR/timed_out"
+    block=$(extract_block)
+    { echo '#!/bin/bash'; echo "PROJECT_DIR='$PROJ'"; echo "WDIR='$WDIR'"; echo "EXIT_CODE=137"; echo "TIMEOUT=900"; echo "$block"; } > "$TEST_TEMP_DIR/run.sh"
+    run bash "$TEST_TEMP_DIR/run.sh"
+    [ "$(cat "$WDIR/close_state")" = "timeout" ]
+    [[ "$output" == *"WARNING: worker killed by the watchdog after 900s"* ]]
+    [[ "$output" == *"--timeout"* ]]
+    [[ "$output" == *"TERMLINK_WORKER_TIMEOUT"* ]]
+    grep -q "killed by the watchdog" "$WDIR/stderr.log"
+}
+
+@test "T-5068: fw termlink result leads with a WARN for a timeout, naming the limit from meta.json" {
+    local dd="$TEST_TEMP_DIR/dispatch"
+    mkdir -p "$dd/w1"
+    printf '{"name":"w1","timeout":1500}\n' > "$dd/w1/meta.json"
+    run result_with_close_state timeout T-9002
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"WARN"*"close_state: timeout"*"KILLED"*"1500s"* ]]
+    [[ "$output" == *"T-9002 may be half done"* ]]
+    [[ "$output" == *"--timeout"* ]]
+}
+
+@test "T-5068: the default worker timeout is 3600 s in the dispatcher, the config registry and Watchtower" {
+    grep -q '"TERMLINK_WORKER_TIMEOUT" 3600)' "$SRC"
+    grep -q '"TERMLINK_WORKER_TIMEOUT|3600|' "${BATS_TEST_DIRNAME}/../../lib/config.sh"
+    grep -q '("TERMLINK_WORKER_TIMEOUT", "3600"' "${BATS_TEST_DIRNAME}/../../web/blueprints/config.py"
+}
