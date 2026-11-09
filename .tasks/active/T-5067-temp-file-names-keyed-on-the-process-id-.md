@@ -4,12 +4,12 @@ name: "Temp file names keyed on the process id alone can collide between writers
 description: >
   Temp file names keyed on the process id alone can collide between writers in one process (24 places; 1409 lesson 4.5, T-5066)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/audit/audit.sh, agents/context/lib/episodic.sh, bin/fw, lib/gitignore-register.sh, lib/govd_sandbox.py, lib/mirror.sh, lib/sidecar/adapter.py, lib/sidecar/addressing.py, lib/sidecar/inject.py, lib/sidecar/watcher.py, lib/spawn.py, lib/vector-index-health.sh, lib/vector_index_health.py, web/blueprints/tasks.py, web/embeddings.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-09T16:14:15Z
-last_update: 2026-11-09T16:47:09Z
-date_finished: null
+last_update: 2026-11-09T17:08:25Z
+date_finished: 2026-11-09T17:06:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -75,6 +75,12 @@ date_finished: null
 - [x] Every test file that reads a changed file passes; vendored copy synced
 
 ### Human
+- [ ] [REVIEW] Changing a task's owner in Watchtower still works (the only web change is the temp file name this action writes; nothing visible changed)
+  **Steps:**
+  1. Open http://192.168.10.107:3000/tasks/T-5067
+  2. In the Owner dropdown, choose `agent`; then choose `human` again
+  **Expected:** each change shows a confirmation under the dropdown, no error text, and the page still shows the owner you chose last (`human`)
+  **If not:** note the error text shown under the dropdown and reopen this task
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -264,6 +270,7 @@ timeout 300 bats tests/unit/t2994_gitignore_register.bats > /tmp/.t5067c 2>&1 &&
 timeout 300 bats tests/unit/t4673_tags_reach_mirror.bats > /tmp/.t5067d 2>&1 && ! grep -q "^not ok" /tmp/.t5067d
 timeout 300 python3 -m pytest -q tests/web/test_t4969_owner_route_handover.py > /tmp/.t5067e 2>&1 && grep -q passed /tmp/.t5067e && ! grep -q failed /tmp/.t5067e
 bin/fw vendor self --check --task T-5067
+bin/fw watchtower current
 
 ## RCA
 
@@ -345,6 +352,15 @@ bin/fw vendor self --check --task T-5067
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** All agent work is done and tested. The only web change is the name of the temp file the owner dropdown writes (`.context/working/owner-handover/`), so this check is a quick confirmation that the dropdown still works; nothing on any page looks different.
+
+**Evidence:**
+- 27 temp names made unique per writer; lint `tests/lint/t5067-no-pid-only-tmp-names.bats` passes on the tree and flags 26 sites on the old code
+- Full unit suite after the change: 0 failures (bats and pytest); `tests/web/test_t4969_owner_route_handover.py` 3/3
+- Watchtower restarted, `bin/fw watchtower current` passes
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -372,3 +388,21 @@ bin/fw vendor self --check --task T-5067
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5067-temp-file-names-keyed-on-the-process-id-.md
 - **Context:** Initial task creation
+
+### 2026-11-09T17:06:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2fcfce5f
+- **Timestamp:** 2026-11-09T17:07:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `web/embeddings.py` reindex and build scratch names stay pid-only ON PURPOSE (one writer under an exclusive flock; `_SCRATCH_RE` parses the pid to sweep a dead owner's copy), with a comment saying so 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/embeddings.py in: `web/embeddings.py` reindex and build scratch names stay pid-only ON PURPOSE (one writer under an exclusive flock; `_SCRATCH_RE` parses the pid to swe`
