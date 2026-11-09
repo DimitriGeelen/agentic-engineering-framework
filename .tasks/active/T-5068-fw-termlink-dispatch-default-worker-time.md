@@ -1,15 +1,18 @@
 ---
 id: T-5068
-name: "fw termlink dispatch default worker timeout (600 s) kills long builders mid-run without saying why (1409 lesson 4.6, T-5066)"
+name: "fw termlink dispatch default worker timeout (600 s) kills long builders mid-run
+  without saying why (1409 lesson 4.6, T-5066)"
 description: >
-  fw termlink dispatch default worker timeout (600 s) kills long builders mid-run without saying why (1409 lesson 4.6, T-5066)
+  fw termlink dispatch default worker timeout (600 s) kills long builders mid-run
+  without saying why (1409 lesson 4.6, T-5066)
 
 status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: [agents/termlink/termlink.sh, lib/config.sh, tools/prompt-sequence/run-sequence.sh, web/blueprints/config.py]
+components: [agents/termlink/termlink.sh, lib/config.sh, 
+      tools/prompt-sequence/run-sequence.sh, web/blueprints/config.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-09T17:13:55Z
-last_update: 2026-11-09T17:37:00Z
+last_update: '2026-11-09T17:45:30Z'
 date_finished: 2026-11-09T17:31:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -50,6 +53,16 @@ date_finished: 2026-11-09T17:31:35Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-09T17:45:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 5
+      tier: 2
+      effort: 8
+    rationale: blast_radius=5 (4-components-medium-blast); tier=2 
+      (workflow:build); effort=8 (lines=338,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5068: fw termlink dispatch default worker timeout (600 s) kills long builders mid-run without saying why (1409 lesson 4.6, T-5066)
