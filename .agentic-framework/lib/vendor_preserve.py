@@ -563,7 +563,7 @@ def cmd_post(a):
             {k: v for k, v in stamp.items() if k != "written_at"}:
         print(f"  ✓ {STAMP} ({len(files)} files, unchanged)")
         return rc
-    tmp = f"{sp}.fw-vendor-tmp.{os.getpid()}"
+    tmp = f"{sp}.fw-vendor-tmp.{os.getpid()}-{os.urandom(4).hex()}"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(stamp, fh, indent=0, sort_keys=True)
         fh.write("\n")

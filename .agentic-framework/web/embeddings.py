@@ -1149,6 +1149,8 @@ def reindex_incremental() -> dict:
     # than a live run's working file. Sweep those (dead pids only) first.
     swept = sweep_stale_scratch()
 
+    # T-5067: pid-only on purpose — one reindex at a time (exclusive flock above), and
+    # _SCRATCH_RE parses this pid to sweep a dead owner's copy.
     tmp_path = DB_PATH.with_suffix(DB_PATH.suffix + f".reindex.{os.getpid()}.tmp")
 
     # A partial run parks its work here instead of throwing it away. The diff

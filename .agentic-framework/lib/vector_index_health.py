@@ -701,7 +701,7 @@ def record(result: dict, project_root: Path) -> bool:
             return False
         turned_red = result["status"] == "FAIL" and prev != "FAIL"
         try:
-            tmp = state.with_suffix(f".json.tmp.{os.getpid()}")
+            tmp = state.with_suffix(f".json.tmp.{os.getpid()}-{os.urandom(4).hex()}")
             tmp.write_text(json.dumps({
                 "status": result["status"], "ts": result["ts"], "previous": prev,
                 "reasons": [c["message"] for c in result["checks"] if c["verdict"] == "FAIL"],

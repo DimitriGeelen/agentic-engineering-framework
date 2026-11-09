@@ -267,7 +267,7 @@ def update_outcome_row(
         if not found:
             return False
 
-        tmp = DISPATCHES_LOG.with_suffix(DISPATCHES_LOG.suffix + f".tmp.{os.getpid()}")
+        tmp = DISPATCHES_LOG.with_suffix(DISPATCHES_LOG.suffix + f".tmp.{os.getpid()}-{os.urandom(4).hex()}")
         tmp.write_text("\n".join(rows) + "\n")
         os.replace(tmp, DISPATCHES_LOG)
         return True

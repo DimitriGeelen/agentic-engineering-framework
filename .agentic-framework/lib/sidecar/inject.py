@@ -190,7 +190,7 @@ def _publish_injectable(tagged_ids: list[str], candidates: list[dict] | None = N
               "ready": r.get("ready") is True, "updated_at": r.get("updated_at")}
              for r in (candidates or [])]
     try:
-        tmp = _injectable_path().with_suffix(f".json.{os.getpid()}.tmp")
+        tmp = _injectable_path().with_suffix(f".json.{os.getpid()}-{os.urandom(4).hex()}.tmp")
         tmp.write_text(json.dumps({"at": datetime.now(timezone.utc).isoformat(),
                                    "tagged": tagged_ids, "candidates": cands}), encoding="utf-8")
         os.replace(tmp, _injectable_path())

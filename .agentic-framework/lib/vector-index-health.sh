@@ -95,7 +95,7 @@ _vih_record_fail_without_python() {
     local state="$dir/vector-index-health.json"
     mkdir -p "$dir" 2>/dev/null || return 1
     prev=$(grep -o '"status"[[:space:]]*:[[:space:]]*"[A-Z]*"' "$state" 2>/dev/null | head -1 | grep -o '[A-Z]*"$' | tr -d '"')
-    tmp="$state.tmp.$$"
+    tmp="$state.tmp.${BASHPID:-$$}"
     printf '{\n  "status": "FAIL",\n  "ts": %s,\n  "previous": "%s",\n  "reasons": ["vector index health check did not run (python3 missing?)"]\n}\n' \
         "$(date +%s)" "${prev:-UNKNOWN}" > "$tmp" 2>/dev/null && mv -f "$tmp" "$state" 2>/dev/null || { rm -f "$tmp"; return 1; }
     [ "${prev:-}" != "FAIL" ]

@@ -392,7 +392,7 @@ def _drain_spool() -> list[str]:
                 stored.append(env["client_msg_id"])
             else:
                 keep.append(dict(env, _spool_error=err))
-        tmp = spool.with_suffix(f".jsonl.{os.getpid()}.tmp")
+        tmp = spool.with_suffix(f".jsonl.{os.getpid()}-{os.urandom(4).hex()}.tmp")
         tmp.write_text("".join(json.dumps(e) + "\n" for e in keep), encoding="utf-8")
         os.replace(tmp, spool)
         if not keep:
@@ -489,7 +489,7 @@ def write_liveness(state: dict) -> None:
              "# lib/sidecar/watcher.py. Not live = seq stalled 2 ticks OR probe failed."]
     for k in _LIVENESS_KEYS:
         lines.append(f"{k}: {_yaml_scalar(state.get(k))}")
-    tmp = path.with_suffix(f".yaml.{os.getpid()}.tmp")
+    tmp = path.with_suffix(f".yaml.{os.getpid()}-{os.urandom(4).hex()}.tmp")
     tmp.write_text("\n".join(lines) + "\n", encoding="utf-8")
     os.replace(tmp, path)
 
@@ -712,7 +712,7 @@ def _write_follower(state: dict) -> None:
     if project_gone():   # T-3777: never recreate a deleted project
         return
     try:
-        tmp = follower_path().with_suffix(f".json.{os.getpid()}.tmp")
+        tmp = follower_path().with_suffix(f".json.{os.getpid()}-{os.urandom(4).hex()}.tmp")
         tmp.write_text(json.dumps(dict(state, updated_at=_now().isoformat())), encoding="utf-8")
         os.replace(tmp, follower_path())
     except OSError:

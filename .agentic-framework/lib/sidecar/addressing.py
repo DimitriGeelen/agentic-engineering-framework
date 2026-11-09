@@ -80,7 +80,7 @@ def load_peers() -> dict:
 def _save_peers(data: dict) -> None:
     path = peers_path()
     path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(f".json.{os.getpid()}.tmp")
+    tmp = path.with_suffix(f".json.{os.getpid()}-{os.urandom(4).hex()}.tmp")
     tmp.write_text(json.dumps(data, indent=2, sort_keys=True), encoding="utf-8")
     os.replace(tmp, path)
 

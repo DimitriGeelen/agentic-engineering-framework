@@ -242,7 +242,7 @@ def emit_profile(source, project_root, out_dir) -> dict:
     written = {}
     for name, text in render_all(r).items():
         # T-4948 (L-493): same-dir temp + os.replace, never a truncated artefact.
-        tmp = out / f".{name}.tmp.{os.getpid()}"
+        tmp = out / f".{name}.tmp.{os.getpid()}-{os.urandom(4).hex()}"
         tmp.write_text(text)
         os.replace(tmp, out / name)
         written[name] = sha256_text(text)

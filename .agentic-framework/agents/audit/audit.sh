@@ -667,8 +667,8 @@ _audit_write_lock_holder() {
         echo "pid=$$"
         echo "since=$(date +%s)"
         echo "job=audit.sh ${_AUDIT_ARGV[*]}"
-    } > "$AUDIT_LOCK_HOLDER_FILE.$$" 2>/dev/null \
-        && mv -f "$AUDIT_LOCK_HOLDER_FILE.$$" "$AUDIT_LOCK_HOLDER_FILE" 2>/dev/null
+    } > "$AUDIT_LOCK_HOLDER_FILE.${BASHPID:-$$}" 2>/dev/null \
+        && mv -f "$AUDIT_LOCK_HOLDER_FILE.${BASHPID:-$$}" "$AUDIT_LOCK_HOLDER_FILE" 2>/dev/null
     return 0
 }
 _audit_clear_lock_holder() {
