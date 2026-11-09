@@ -4,12 +4,12 @@ name: "fw termlink dispatch default worker timeout (600 s) kills long builders m
 description: >
   fw termlink dispatch default worker timeout (600 s) kills long builders mid-run without saying why (1409 lesson 4.6, T-5066)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/termlink/termlink.sh, lib/config.sh, tools/prompt-sequence/run-sequence.sh, web/blueprints/config.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-09T17:13:55Z
-last_update: 2026-11-09T17:27:33Z
-date_finished: null
+last_update: 2026-11-09T17:37:00Z
+date_finished: 2026-11-09T17:31:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -69,10 +69,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A worker killed by the watchdog: `run.sh` prints `WARNING: worker killed after <N> s ...` naming `--timeout` and `TERMLINK_WORKER_TIMEOUT`; `fw termlink result <name>` leads with a WARN line saying the work may be partial and how to raise the limit; `fw termlink status` shows the worker as timed out
-- [ ] The default `TERMLINK_WORKER_TIMEOUT` is kept or changed on evidence from this repo's dispatch history (durations and timeouts), recorded in Decisions
-- [ ] Tests: a fixture worker dir with `close_state: timeout` makes `result` print the WARN with the limit; existing termlink tests green
-- [ ] 1409 told what changed
+- [x] A worker killed by the watchdog: `run.sh` prints `WARNING: worker killed by the watchdog after <N>s ...` naming `--timeout` and `TERMLINK_WORKER_TIMEOUT`; `fw termlink result <name>` leads with a WARN line saying the work may be partial and how to raise the limit; `fw termlink status` shows the worker as TIMEOUT
+- [x] The default `TERMLINK_WORKER_TIMEOUT` is kept or changed on evidence from this repo's dispatch history (durations and timeouts), recorded in Decisions
+- [x] Tests: a fixture worker dir with `close_state: timeout` makes `result` print the WARN with the limit; existing termlink tests green
+- [x] 1409 told what changed
 
 ### Human
 - [ ] [REVIEW] Watchtower's config page shows the new worker time limit
@@ -351,7 +351,7 @@ Shots: `.context/visual/T-5068/config@{1024,1440,1920}.png` (`fw ux shots T-5068
 **Evidence:**
 - 1025 finished workers in `.context/dispatch/`: over 600 s 22.7%, over 1800 s 8.2%, over 3600 s 2.5%, over 7200 s 0.9%; 2 watchdog kills recorded
 - `tests/unit/t3440_close_state.bats` 17/17, the three new tests red on the old code; dispatch integration tests 29/29
-- Watchtower restarted; `/config` shows `TERMLINK_WORKER_TIMEOUT 3600 default`
+- Watchtower restarted; http://192.168.10.107:3000/config shows `TERMLINK_WORKER_TIMEOUT 3600 default` (screenshots at 1024/1440/1920 read, see Visual Verification)
 
 ## Decisions
 
@@ -376,3 +376,16 @@ Shots: `.context/visual/T-5068/config@{1024,1440,1920}.png` (`fw ux shots T-5068
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5068-fw-termlink-dispatch-default-worker-time.md
 - **Context:** Initial task creation
+
+### 2026-11-09T17:31:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c53b7381
+- **Timestamp:** 2026-11-09T17:33:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
