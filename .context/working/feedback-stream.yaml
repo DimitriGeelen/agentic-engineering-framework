@@ -53327,3 +53327,57 @@ scan_id: R-83cc72b3
 task_id: T-5062
 payload:
   task_file: .tasks/active/T-5062-mirror-synclog-appends-without-a-limit-7.md
+---
+kind: scan_emitted
+timestamp: '2026-11-09T17:07:20Z'
+scan_id: R-2fcfce5f
+task_id: T-5067
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-09T17:07:20Z'
+scan_id: R-2fcfce5f
+task_id: T-5067
+payload:
+  task_file: .tasks/active/T-5067-temp-file-names-keyed-on-the-process-id-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-09T17:33:14Z'
+scan_id: R-c53b7381
+task_id: T-5068
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-09T17:33:14Z'
+scan_id: R-c53b7381
+task_id: T-5068
+payload:
+  task_file: .tasks/active/T-5068-fw-termlink-dispatch-default-worker-time.md
+---
+kind: scan_emitted
+timestamp: '2026-11-09T19:42:00Z'
+scan_id: R-1058775c
+task_id: T-5069
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-09T19:42:00Z'
+scan_id: R-1058775c
+task_id: T-5069
+payload:
+  task_file: .tasks/active/T-5069-run-aefs-unit-suite-on-node1-as-per-file.md

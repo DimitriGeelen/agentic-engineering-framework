@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5069: Run AEF's unit suite on node1 as per-file cmd jobs: deliver the job spec to ring20 (operator yes, 2026-11-09)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-09T19:42:29Z
+# ============================================================================
+
+task_id: T-5069
+task_name: "Run AEF's unit suite on node1 as per-file cmd jobs: deliver the job spec to ring20 (operator yes, 2026-11-09)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-09T17:21:56Z
+completed: 2026-11-09T19:41:59Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-09T20:37:52+01:00
+last_commit: 2026-11-09T20:37:52+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  node1 unit-suite job spec for ring20 — commands, versions, measured offline split, 46 MB bundle
+
+# Key outcomes
+outcomes:
+  - '`docs/reports/T-5069-node1-unit-suite-spec.md` gives: the exact per-file bats and pytest commands (as `agents/audit/unit-suite.sh` runs them), toolchain versions, exact Python package versions, the skip list with how it was found, the shallow repo size, and the slow files with their measured times here'
+  - 'No host address or login in the committed spec (the repo goes to GitHub); the generic loopback 127.0.0.1 is the only address, and names no machine'
+  - 'Spec sent to ring20 on the consult conversation; what it does not settle (hashes, skip list completeness) is said plainly'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5069-run-aefs-unit-suite-on-node1-as-per-file.md'
+  - 'docs/reports/T-5069-node1-unit-suite-spec.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-09T20:37:52'
+    action: 'T-5069: node1 unit-suite job spec for ring20 — commands, versions, measured offline split, 46 MB bundle'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 140 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 140
+  commits: 2
+  files_changed: 5
+  lines_added: 685
+  lines_removed: 5
+  footprint_refreshed_at: '2026-11-09T19:43:02Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5069-run-aefs-unit-suite-on-node1-as-per-file.md
+generated_by: context-agent-hybrid
