@@ -1,6 +1,22 @@
 # Next session: carry-over
 
-## FIRST (2026-11-07; HOST SHUTDOWN PREP; latest be.40 = 1571b30cd)
+## FIRST (2026-11-08/09; latest be.44 = 9408fdc5b; shutdown CALLED OFF)
+- Host shutdown called off by the operator ("not planning to reboot near time soon"); all 9 agents that replied
+  were told. 1409's 913 commits are on OneDev (operator pushed via runme, --no-verify, after a NAS bundle).
+- Closed: T-5063 (escalation-scan YAML quoting, unblocked pre-push), T-5061 (183 GB log: RCA, writer never
+  localised; plus fw doctor CONTEXT_DIR abort fixed, be.41), T-5060 (claude-fw records signal-hup/term end reason,
+  --help, FRAMEWORK.md Launch Modes, be.42; 055 will report after upgrade), T-5064 (issue #98 follow-up, be.43,
+  reply posted on GitHub, awaiting submitter), T-5065 (designer 0.40.0 pinned and served; 832 T-1385), T-5062
+  (mirror log bounded, 7.9 MB -> 0.3 MB; 90 differing OneDev tags = same commits, tag objects only, leave).
+- OPEN for the operator: T-5066 inception (remote capacity / node1, recommendation GO narrow)
+  http://192.168.10.107:3000/inception/T-5066 — after GO: build tasks for (a) pattern doc, (b) 24 pid-only temp
+  names, (c) TERMLINK_WORKER_TIMEOUT 600 s. Tell 1409 the decision (conversation remote-nodes-node1-writeup).
+  Keep IPs and the jump account masked in anything committed (1409 asked; operator: leave old history).
+- Waiting on field reports: dimitri-mint-dev (be.41, T-5061), 055 (be.42, T-5060), issue #98 submitter (be.43).
+- T-5054 stays parked: needs 010's revised adapter contract and an operator decision.
+- No planned agent work left; operator queue: bin/fw operator pending (2 GO inceptions: T-4299, T-4371).
+
+## Earlier FIRST (2026-11-07; HOST SHUTDOWN PREP; latest be.40 = 1571b30cd)
 - The operator asked to prepare THIS host for shutdown. 14 local agents were asked (sidecar, conversation
   host-shutdown-2026-11-07, urgent) to commit, push, write handovers and reply 'READY <project>'. Check their
   replies first after restart; anything not pushed is in those replies.
