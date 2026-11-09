@@ -117,6 +117,8 @@ The three excluded folders are history (old handovers, archived peer mail, revie
 
 So the package to stage is a **git bundle of the trimmed tree with one commit: 46.2 MB**, one file under the 64 MB limit. On node1: `git clone <bundle> repo`, then run the jobs in `repo/`. It needs to be rebuilt for each code version AEF wants tested.
 
+**Built by `bin/fw test bundle [--ref REF] [--out FILE] [--max-mb N]` (T-5070, 2026-11-09).** Default location: `/opt/999-Agentic-Engineering-Framework/.context/scratch/node1-bundles/aef-unit-suite-<sha12>.bundle`. That folder holds only these bundles, so it is the one to approve on the relay (gitignored, never committed). It builds from a commit (default `HEAD`, never the working folder), leaves out the three folders, makes the one commit with git plumbing (no hooks), and refuses over the cap. It prints the source ref, the bundle commit id, size and sha256. The **bundle commit id is the identity**: the same ref always gives the same id. The file's sha256 is not stable between builds, because git packs the same content slightly differently. First build: source `6a9812165`, bundle commit `a5f1f812c`, 46.3 MB, 23 s; a clone of it has one commit on `bleeding-edge`, and sample tests (including two that need git) pass in it.
+
 **Keep on the AEF host (44 more files):** they fail even with the one-commit repo because they depend on this host itself: the host's cron setup (15), installed git hooks (6), the repository's real location (project-boundary tests, 6), git history deeper than one commit (2), and other host specifics. Rebuilding those on node1 is not worth it:
 
 ```
@@ -163,3 +165,11 @@ These times are inflated: with 12 files running at once and no network, some tes
 - Hashes for the Python packages (see section 2).
 - Whether node1's own TermLink or tmux would make some of the 16 skipped files pass; AEF keeps them local either way.
 - How results flow back into AEF's audit (the nightly report and the pre-push gate read `.context/audits/unit-suite/LATEST.yaml`). That is AEF's next task once the entry exists.
+
+## 7. ring20's contract (received 2026-11-09, msg 5716f844; valid once runme `t2626-aef-unit` has run)
+
+- **Entries** `aef.bats` and `aef.pytest`; **env** `aef-unit-1` (a toolchain name, not a hash): a venv with the 19 pins above plus their dependencies, wheels only, hashes taken once on node1 and installed with `--require-hashes`; bats-core 1.13.0, git, jq.
+- **Per job:** ref `repo.bundle` = AEF's bundle, staged once per code version from `.context/scratch/node1-bundles/` via `pool:stage`; every job reuses its sha. The job bundle is a folder with ONE file `target.txt` holding one path (`tests/unit/foo.bats` for `aef.bats`, `tests/unit/test_x.py` for `aef.pytest`); the fixed runner refuses anything else. It clones the bundle to `repo/` and runs the exact command from section 1 with a private TMPDIR, `timeout -k 10 900`, loopback on, under an 1800 s cap, 6 GB memory, 4 GB scratch.
+- **Result:** `unit.log` (stdout+stderr, plus a last line `aef-run-unit: exit N`), gzip+base64 in `result_json`; `exit_code` = the test run's.
+- **Submit** (on the AEF host): `pool-client.py submit-cmd FOLDER --client 999-Agentic-Engineering-Framework --entry aef.bats --env aef-unit-1 --name NAME --unit U --step S --ref repo.bundle=SHA`. Up to 12 run at once on node1.
+- **Do not send before ring20's go.**
