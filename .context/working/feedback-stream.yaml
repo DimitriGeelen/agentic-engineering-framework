@@ -53399,3 +53399,21 @@ scan_id: R-8fef2493
 task_id: T-5070
 payload:
   task_file: .tasks/active/T-5070-fw-test-bundle-build-the-node1-unit-suit.md
+---
+kind: scan_emitted
+timestamp: '2026-11-09T23:58:34Z'
+scan_id: R-0ff5aaf7
+task_id: T-5071
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-09T23:58:34Z'
+scan_id: R-0ff5aaf7
+task_id: T-5071
+payload:
+  task_file: .tasks/active/T-5071-trial-run-of-aefs-unit-tests-on-node1-3-.md
