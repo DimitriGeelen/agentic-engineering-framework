@@ -173,3 +173,20 @@ These times are inflated: with 12 files running at once and no network, some tes
 - **Result:** `unit.log` (stdout+stderr, plus a last line `aef-run-unit: exit N`), gzip+base64 in `result_json`; `exit_code` = the test run's.
 - **Submit** (on the AEF host): `pool-client.py submit-cmd FOLDER --client 999-Agentic-Engineering-Framework --entry aef.bats --env aef-unit-1 --name NAME --unit U --step S --ref repo.bundle=SHA`. Up to 12 run at once on node1.
 - **Do not send before ring20's go.**
+
+## 8. Trial on node1 (T-5071, 2026-11-09/10)
+
+Bundle of `6a945030e` (bundle commit `9d74378b`, 46.3 MB) staged with `pool-client ref-put` (162 chunks); six jobs submitted with `submit-cmd`, client `999-Agentic-Engineering-Framework`, env `aef-unit-1`. First attempt waited on refs because node1's ref store was full (2 GiB cap, ring20's side); after ring20 raised it to 100 GiB the bundle was re-staged and the jobs ran within their 1 h window.
+
+| File | Here | node1 | Same? |
+|---|---|---|---|
+| t3051_exec_bit_gates.bats (needs git) | 5 ok | 5 ok, exit 0 | yes |
+| t4673_tags_reach_mirror.bats | 14 ok | 14 ok, exit 0 | yes |
+| t5067_tmp_name_per_writer.bats | 2 ok | 2 ok, exit 0 | yes |
+| test_t3642_escalation_negation.py | 20 passed | 20 passed, exit 0 | yes |
+| test_t5063_escalation_scan_yaml_str.py | 8 passed | 8 passed, exit 0 | yes |
+| test_sidecar_receiver_t3693.py (server on 127.0.0.1) | 52 passed (15 s) | 40 passed, 12 failed (132 s), exit 1 | **no** |
+
+**The one difference, explained:** 11 of the 12 failures are `receiver: server did not come up within 10s`: `fw sidecar receiver start` waits a fixed 10 s for its server (`lib/sidecar_cli.py:964`), and node1 (about 3x slower per core, all 12 slots busy at the time) needed longer. The twelfth (`serve()` returned 3, "a live receiver already serves this agent") is a knock-on: the receiver of the test before it was still registered after its timeout. Loopback itself works on node1 (40 tests of this file talk to the server over 127.0.0.1). The fixed 10 s is an AEF weakness, not a node1 fault: the same start fails on any slow or busy host.
+
+Result format confirmed: `unit.log` ends with `aef-run-unit: exit N`; `pool-result.json` names the dispatch, the checked job sha256 and `outcome`.
