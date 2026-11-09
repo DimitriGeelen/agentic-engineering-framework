@@ -1,15 +1,21 @@
 ---
 id: T-5067
-name: "Temp file names keyed on the process id alone can collide between writers in one process (24 places; 1409 lesson 4.5, T-5066)"
+name: "Temp file names keyed on the process id alone can collide between writers in
+  one process (24 places; 1409 lesson 4.5, T-5066)"
 description: >
-  Temp file names keyed on the process id alone can collide between writers in one process (24 places; 1409 lesson 4.5, T-5066)
+  Temp file names keyed on the process id alone can collide between writers in one
+  process (24 places; 1409 lesson 4.5, T-5066)
 
 status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: [agents/audit/audit.sh, agents/context/lib/episodic.sh, bin/fw, lib/gitignore-register.sh, lib/govd_sandbox.py, lib/mirror.sh, lib/sidecar/adapter.py, lib/sidecar/addressing.py, lib/sidecar/inject.py, lib/sidecar/watcher.py, lib/spawn.py, lib/vector-index-health.sh, lib/vector_index_health.py, web/blueprints/tasks.py, web/embeddings.py]
+components: [agents/audit/audit.sh, agents/context/lib/episodic.sh, bin/fw, 
+      lib/gitignore-register.sh, lib/govd_sandbox.py, lib/mirror.sh, 
+      lib/sidecar/adapter.py, lib/sidecar/addressing.py, lib/sidecar/inject.py, 
+      lib/sidecar/watcher.py, lib/spawn.py, lib/vector-index-health.sh, 
+      lib/vector_index_health.py, web/blueprints/tasks.py, web/embeddings.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-09T16:14:15Z
-last_update: 2026-11-09T17:08:25Z
+last_update: '2026-11-09T17:15:24Z'
 date_finished: 2026-11-09T17:06:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -50,6 +56,16 @@ date_finished: 2026-11-09T17:06:45Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-09T17:15:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 9
+      tier: 2
+      effort: 8
+    rationale: blast_radius=9 (15-components-cross-cutting); tier=2 
+      (workflow:build); effort=8 (lines=355,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5067: Temp file names keyed on the process id alone can collide between writers in one process (24 places; 1409 lesson 4.5, T-5066)
