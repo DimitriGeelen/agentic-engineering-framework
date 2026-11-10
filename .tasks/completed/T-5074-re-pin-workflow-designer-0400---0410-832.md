@@ -10,12 +10,12 @@ description: >
   markers instead of invented ones; existing maps byte-identical. Same procedure as
   T-5065; check /api/validate tests.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [policy/designer-pin.yaml]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-10T23:20:37Z
-last_update: 2026-11-10T23:40:56Z
-date_finished:
+last_update: 2026-11-10T23:44:30Z
+date_finished: 2026-11-10T23:44:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -102,10 +102,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `policy/designer-pin.yaml` at 0.41.0 (build sha256/bytes as announced; validator sha256/bytes and kit sums from the MANIFEST at the tag); `fw designer sync --from-tag designer-v0.41.0` verifies all anchors and installs with no mismatch
-- [ ] Vendored copy carries only the 0.41.0 build and validator; `fw designer check-currency` reports current
-- [ ] Designer tests and `/api/validate` tests green; any test that pinned E-XML-LANES-EMPTY for a process WITHOUT a laneSet is updated to the new rule, an empty laneSet still raising it
-- [ ] Watchtower restarted, `bin/fw watchtower current` passes, `/designer/app` serves sha256 5bc6d19f...; 832 told after the push
+- [x] `policy/designer-pin.yaml` at 0.41.0 (build sha256/bytes as announced; validator sha256/bytes and kit sums from the MANIFEST at the tag); `fw designer sync --from-tag designer-v0.41.0` verifies all anchors and installs with no mismatch
+- [x] Vendored copy carries only the 0.41.0 build and validator; `fw designer check-currency` reports current
+- [x] Designer tests and `/api/validate` tests green; any test that pinned E-XML-LANES-EMPTY for a process WITHOUT a laneSet is updated to the new rule, an empty laneSet still raising it — no AEF test pinned it (grep of tests/, web/, lib/: none); validator tests 44 passed, web designer 51 passed, designer bats green
+- [x] Watchtower restarted, `bin/fw watchtower current` passes, `/designer/app` serves sha256 5bc6d19f...; 832 told after the push (pin checked on GitHub first)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,6 +291,13 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -c "import yaml; d=yaml.safe_load(open('policy/designer-pin.yaml')); assert d['version'] == '0.41.0' and d['validator_bytes'] == 138405"
+test "$(sha256sum vendor/designer/aef-workflow-designer-0.41.0.html | cut -c1-64)" = "5bc6d19f555c1e4bdb17e7103a26bbd7c3bd272dbdc14c7fc6814a7e45a0b319"
+test "$(sha256sum vendor/designer/validate-workflow-0.41.0.py | cut -c1-64)" = "1edc2d7f0502e8011af7b280ab3a1fdb431b291096ef63518d6b4b252dce002c"
+timeout 300 bats tests/unit/t3064_designer_onboarding_install.bats > /tmp/.t5074a 2>&1 && ! grep -q "^not ok" /tmp/.t5074a
+timeout 300 python3 -m pytest -q -p no:cacheprovider tests/web/test_t4830_validate.py > /tmp/.t5074b 2>&1 && grep -q passed /tmp/.t5074b && ! grep -q failed /tmp/.t5074b
+bin/fw watchtower current
+bin/fw vendor self --check --task T-5074
 
 ## RCA
 
@@ -392,3 +399,16 @@ bvp_scores_proposed:
 ### 2026-11-10T23:31:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-10T23:44:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c248281b
+- **Timestamp:** 2026-11-10T23:45:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
