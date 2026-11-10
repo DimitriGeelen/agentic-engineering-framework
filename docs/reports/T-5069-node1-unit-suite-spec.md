@@ -60,6 +60,14 @@ PyYAML==6.0.3
 
 `playwright` (1.55.0) is installed here but only the browser tests use it, and those are not in `tests/unit`.
 
+**Correction (2026-11-10, found on node1, T-5073):** the list above missed three packages, because the first scan did not read Python embedded in bats files and could not see namespace packages. `tests/unit/bvp_auto_promote.bats` and `bvp_auto_promote_enable.bats` failed on node1 with `ModuleNotFoundError: No module named 'ruamel'` and pass here. Add:
+
+```
+ruamel.yaml==0.19.1
+jsonschema==4.25.1
+openai==2.21.0
+```
+
 **Hashes:** not included. Producing sha256 hashes needs the wheels, and AEF did not download them on its own initiative. ring20 can generate the hash-pinned list from these exact versions when it builds the environment (`pip download` + `pip hash`, or `pip-compile --generate-hashes`).
 
 ## 3. What needs network, loopback, or this host's live services (measured)
