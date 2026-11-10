@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5072: fw sidecar receiver start waits a fixed 10 s for its server; on a slow or busy host it fails (node1 trial, 11 failures)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-10T21:14:57Z
+# ============================================================================
+
+task_id: T-5072
+task_name: "fw sidecar receiver start waits a fixed 10 s for its server; on a slow or busy host it fails (node1 trial, 11 failures)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-10T08:29:06Z
+completed: 2026-11-10T21:13:37Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-10T09:48:56+01:00
+last_commit: 2026-11-10T09:49:07+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  receiver start waits FW_SIDECAR_RECEIVER_START_S (default 30 s) instead of a fixed 10 s. vendor lib/sidecar_cli.py
+
+# Key outcomes
+outcomes:
+  - '`receiver start` waits `FW_SIDECAR_RECEIVER_START_S` seconds (default 30; a bad value falls back to 30) and still returns as soon as the server answers'
+  - 'On timeout the message names the limit, `FW_SIDECAR_RECEIVER_START_S`, and the server log path'
+  - 'Tests: a server that answers after 1.5 s with the limit at 1 s fails with the new message; the same with the limit at 5 s starts; a bad value falls back to the default; red on the old code'
+  - '`test_sidecar_receiver_t3693.py` and the other receiver tests pass here; the 14 excluded files are run on node1 once the fix is in a bundle — here: 598 passed (sidecar/receiver set); node1 (bundle of 590b7d0bf, T-5073 run BC): all 14 + test_t5072 exit 0, test_sidecar_receiver_t3693.py 52 passed (trial before the fix: 40 passed, 12 failed)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'receiver start waits FW_SIDECAR_RECEIVER_START_S (default 30 s) instead of a fixed 10 s'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.tasks/active/T-5072-fw-sidecar-receiver-start-waits-a-fixed-.md'
+  - 'lib/sidecar_cli.py'
+  - 'tests/unit/test_t5072_receiver_start_limit.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-10T09:48:56'
+    action: 'T-5072: receiver start waits FW_SIDECAR_RECEIVER_START_S (default 30 s) instead of a fixed 10 s'
+  - time: '2026-11-10T09:49:07'
+    action: 'T-5072: vendor lib/sidecar_cli.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 764 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 764
+  commits: 3
+  files_changed: 7
+  lines_added: 678
+  lines_removed: 11
+  footprint_refreshed_at: '2026-11-10T21:15:33Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5072-fw-sidecar-receiver-start-waits-a-fixed-.md
+generated_by: context-agent-hybrid

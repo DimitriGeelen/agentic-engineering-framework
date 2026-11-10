@@ -53417,3 +53417,21 @@ scan_id: R-0ff5aaf7
 task_id: T-5071
 payload:
   task_file: .tasks/active/T-5071-trial-run-of-aefs-unit-tests-on-node1-3-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-10T21:14:24Z'
+scan_id: R-11035152
+task_id: T-5072
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-10T21:14:24Z'
+scan_id: R-11035152
+task_id: T-5072
+payload:
+  task_file: .tasks/active/T-5072-fw-sidecar-receiver-start-waits-a-fixed-.md

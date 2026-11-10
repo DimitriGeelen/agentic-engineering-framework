@@ -8,12 +8,12 @@ description: >
   the 12th was a knock-on. The same fixed wait fails a real user on any slow host.
   Make the wait longer and configurable, and say clearly how to raise it.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/sidecar_cli.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-10T08:29:06Z
-last_update: '2026-11-10T09:00:31Z'
-date_finished:
+last_update: 2026-11-10T21:13:37Z
+date_finished: 2026-11-10T21:13:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -103,7 +103,7 @@ cost_estimate_proposed:
 - [x] `receiver start` waits `FW_SIDECAR_RECEIVER_START_S` seconds (default 30; a bad value falls back to 30) and still returns as soon as the server answers
 - [x] On timeout the message names the limit, `FW_SIDECAR_RECEIVER_START_S`, and the server log path
 - [x] Tests: a server that answers after 1.5 s with the limit at 1 s fails with the new message; the same with the limit at 5 s starts; a bad value falls back to the default; red on the old code
-- [ ] `test_sidecar_receiver_t3693.py` and the other receiver tests pass here; the 14 excluded files are run on node1 once the fix is in a bundle
+- [x] `test_sidecar_receiver_t3693.py` and the other receiver tests pass here; the 14 excluded files are run on node1 once the fix is in a bundle — here: 598 passed (sidecar/receiver set); node1 (bundle of 590b7d0bf, T-5073 run BC): all 14 + test_t5072 exit 0, test_sidecar_receiver_t3693.py 52 passed (trial before the fix: 40 passed, 12 failed)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,8 +289,19 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 python3 -m pytest -q -p no:cacheprovider tests/unit/test_t5072_receiver_start_limit.py > /tmp/.t5072a 2>&1 && grep -q passed /tmp/.t5072a && ! grep -q failed /tmp/.t5072a
+timeout 300 python3 -m pytest -q -p no:cacheprovider tests/unit/test_sidecar_receiver_t3693.py > /tmp/.t5072b 2>&1 && grep -q passed /tmp/.t5072b && ! grep -q failed /tmp/.t5072b
+bin/fw vendor self --check --task T-5072
 
 ## RCA
+
+**Symptom:** on node1 (about 3x slower per core, all slots busy) `test_sidecar_receiver_t3693.py` failed 12 of 52: 11 with `receiver: server did not come up within 10s`, 1 because the timed-out server was still registered ("a live receiver already serves this agent").
+
+**Root cause:** `fw sidecar receiver start` waited a hard-coded 10 s for its server to answer, then terminated it without waiting for it to exit. Both were tuned on one fast host.
+
+**Why structurally allowed:** every run of the suite until now happened on the same fast machine, so a timing margin that only fails on a slow host could not show up. Nothing made the limit visible or adjustable.
+
+**Prevention:** the limit is `FW_SIDECAR_RECEIVER_START_S` (default 30 s, bad values fall back), the timed-out server is waited for (killed after 5 s), the message names the limit, setting and server log. `tests/unit/test_t5072_receiver_start_limit.py` pins the behaviour with a deterministic slow stand-in server. Running the suite on node1 (T-5073) is itself the structural change: a slower second host now exercises timing margins on every bulk run.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -389,3 +400,16 @@ cost_estimate_proposed:
 
 ### 2026-11-10T08:32:53Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-10T21:13:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-11035152
+- **Timestamp:** 2026-11-10T21:14:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
