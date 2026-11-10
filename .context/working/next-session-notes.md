@@ -1,6 +1,28 @@
 # Next session: carry-over
 
-## FIRST (2026-11-08/09; latest be.44 = 9408fdc5b; shutdown CALLED OFF)
+## FIRST (2026-11-10; latest be.45; node1 bulk run IN FLIGHT)
+- node1 now runs AEF unit tests (operator yes 2026-11-09). Spec + contract + trial: docs/reports/T-5069-node1-unit-suite-spec.md
+  (sections 1-8). Package: `bin/fw test bundle` (T-5070) -> .context/scratch/node1-bundles/ (the folder ring20's relay
+  copies from). Client: /usr/local/bin/pool-client (root-owned, sha256 pinned in spec), POOL hub = ring20 relay :9100,
+  state .context/scratch/node1-pool-state. Entries aef.bats / aef.pytest, env aef-unit-1, --ref repo.bundle=<sha>.
+- T-5073 bulk run IN FLIGHT on bundle of 590b7d0bf (sha e2acf490..., carries T-5072): driver
+  scratchpad node1_bulk.sh (one-off, NOT in repo): first .context/scratch/node1-jobs/listBC.txt (63, names aef-t5073r-*),
+  then listA.txt (1,488, names aef-t5073-*); results .context/scratch/node1-results/run-590b-{BC,A}/summary.tsv(.part)
+  + progress.log. 32 earlier successes in .../bulk-6a945030-r2 (old bundle). Job names are single-use keys.
+  When done: compare (scratchpad node1_compare.sh: re-runs each node1 failure here), write spec section 9, tell ring20,
+  close T-5073; then close T-5072 (its AC4: the 14 receiver files ran on node1 with the fix).
+- Incidents: node1 isolation was NOT in place until 2026-11-10 16:17Z (PrivateNetwork ignored in the Incus container);
+  ring20 fixed it with per-job netns, proven by effect. AEF exposure checked: bundle = git-tracked files of a public
+  commit, no secrets. 44 jobs had "no result file" from ring20's first netns rollout (08:41Z), not our suite.
+- Closed this stretch: T-5063, T-5061, T-5060, T-5064, T-5065, T-5062, T-5069, T-5070, T-5071; partial-complete
+  (operator check, GO): T-5067 (27 pid-only temp names; lint at pre-push), T-5068 (worker timeout 600 -> 3600 s,
+  measured; WARN on watchdog kill). T-5072 (receiver start wait FW_SIDECAR_RECEIVER_START_S, default 30 s) committed,
+  open for its node1 AC.
+- Waiting on operator: T-5066 inception (GO narrow), reviews T-5067 / T-5068 (links via bin/fw operator pending).
+- Next after node1: link node1 results into the nightly unit-suite report (pre-push + audit read
+  .context/audits/unit-suite/LATEST.yaml); result format is in spec section 7.
+
+## Earlier FIRST (2026-11-08/09; latest be.44 = 9408fdc5b; shutdown CALLED OFF)
 - Host shutdown called off by the operator ("not planning to reboot near time soon"); all 9 agents that replied
   were told. 1409's 913 commits are on OneDev (operator pushed via runme, --no-verify, after a NAS bundle).
 - Closed: T-5063 (escalation-scan YAML quoting, unblocked pre-push), T-5061 (183 GB log: RCA, writer never
