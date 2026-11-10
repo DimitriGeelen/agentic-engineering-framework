@@ -897,6 +897,21 @@ def _reclaim_orphan_receivers(agent: str, root, quiet: bool) -> list[int]:
     return left
 
 
+_RECEIVER_START_DEFAULT_S = 30.0
+
+
+def _receiver_start_limit() -> float:
+    """Seconds `receiver start` waits for its server (T-5072). FW_SIDECAR_RECEIVER_START_S,
+    default 30; an empty, non-numeric or non-positive value falls back to the default."""
+    raw = os.environ.get("FW_SIDECAR_RECEIVER_START_S", "")
+    try:
+        val = float(raw)
+    except ValueError:
+        return _RECEIVER_START_DEFAULT_S
+    # finite and positive only: "inf" would wait forever, "nan" compares false everywhere
+    return val if val > 0 and val != float("inf") else _RECEIVER_START_DEFAULT_S
+
+
 def _start_receiver(agent: str, port, no_inject: bool, quiet: bool) -> tuple[int, dict | None]:
     """Start the receiver process. (rc, triple-file info): rc 0 started,
     1 already running, 2 refused/failed."""
@@ -961,7 +976,11 @@ def _start_receiver(agent: str, port, no_inject: bool, quiet: bool) -> tuple[int
         stdin=subprocess.DEVNULL, stdout=log, stderr=log, cwd=root, env=env,
         start_new_session=True)
 
-    deadline = time.time() + 10
+    # T-5072: the start wait was a fixed 10 s; on a slow or busy host (node1 trial, ~3x slower
+    # per core, all slots busy) the server needed longer and the start failed. The loop still
+    # exits as soon as the server answers, so a longer limit costs a healthy start nothing.
+    limit = _receiver_start_limit()
+    deadline = time.time() + limit
     while time.time() < deadline:
         info = lifecycle.read_triple_file()
         if info and info.get("pid") == proc.pid and lifecycle.health(str(info["url"])):
@@ -973,7 +992,15 @@ def _start_receiver(agent: str, port, no_inject: bool, quiet: bool) -> tuple[int
         time.sleep(0.1)
     else:
         proc.terminate()
-        print("receiver: server did not come up within 10s", file=sys.stderr)
+        # Let it go before returning: a server still alive and registered made the NEXT
+        # start refuse as "already served" (the 12th node1 failure).
+        try:
+            proc.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+        print(f"receiver: server did not come up within {limit:g}s — on a slow or busy host raise "
+              f"FW_SIDECAR_RECEIVER_START_S (see {receiver._receiver_dir() / 'server.log'})",
+              file=sys.stderr)
         return 2, None
 
     if not quiet:
