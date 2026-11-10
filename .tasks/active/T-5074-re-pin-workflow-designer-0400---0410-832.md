@@ -10,10 +10,10 @@ description: >
   markers instead of invented ones; existing maps byte-identical. Same procedure as
   T-5065; check /api/validate tests.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-10T23:20:37Z
-last_update: '2026-11-10T23:31:29Z'
+last_update: 2026-11-10T23:40:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,20 +90,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 832 msg 0f7e1dbe (2026-11-10): Workflow Designer 0.41.0 released, tag `designer-v0.41.0`, artifact sha256 `5bc6d19f555c1e4bdb17e7103a26bbd7c3bd272dbdc14c7fc6814a7e45a0b319`, 1344321 bytes. 832 tracks our pin on their T-1387 (msg fa766395).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** AEF serves 0.40.0. 0.41.0 stops inventing lanes and a participant for files that declare none (saves provenance markers instead), keeps more `aef:eventDef` content, and changes the validator: a process with no `<bpmn:laneSet>` no longer raises `E-XML-LANES-EMPTY`. Maps the designer saved before, all 24 in our corpus included, are byte-identical. The validator change can move AEF's `/api/validate` results, which unlike T-5065 makes our own tests part of the check.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** serve 0.41.0 through the pull-at-tag intake, with AEF's validate tests confirming the new validator behaves as 832 describes.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `policy/designer-pin.yaml` at 0.41.0 (build and validator anchors from the tag); the new build and validator vendored; designer and `/api/validate` tests green; Watchtower serves sha256 `5bc6d19f...`; 832 told only after the push has gone through.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `policy/designer-pin.yaml` at 0.41.0 (build sha256/bytes as announced; validator sha256/bytes and kit sums from the MANIFEST at the tag); `fw designer sync --from-tag designer-v0.41.0` verifies all anchors and installs with no mismatch
+- [ ] Vendored copy carries only the 0.41.0 build and validator; `fw designer check-currency` reports current
+- [ ] Designer tests and `/api/validate` tests green; any test that pinned E-XML-LANES-EMPTY for a process WITHOUT a laneSet is updated to the new rule, an empty laneSet still raising it
+- [ ] Watchtower restarted, `bin/fw watchtower current` passes, `/designer/app` serves sha256 5bc6d19f...; 832 told after the push
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -386,3 +388,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5074-re-pin-workflow-designer-0400---0410-832.md
 - **Context:** Initial task creation
+
+### 2026-11-10T23:31:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
