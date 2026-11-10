@@ -2945,7 +2945,17 @@ function laneCenterY(laneId) {
   return laneTop(laneId) + l.height / 2;
 }
 function poolHeight() {
-  return POOL_HEADER + getLanes().reduce((s, l) => s + l.height, 0);
+  const lanes = getLanes();
+  if (lanes.length) return POOL_HEADER + lanes.reduce((s, l) => s + l.height, 0);
+  // T-358 (AB): a map that declares no lanes has no bands to add up, so the pool encloses its nodes instead, as its right
+  // edge already does (contentRightEdgeNatural): the lowest node's bottom plus room for its name below it, and at least
+  // one default lane's height so an empty map still draws a body.
+  let bottom = POOL_Y + POOL_HEADER + 130;
+  for (const n of (state?.nodes || [])) {
+    const d = dims(n) || NODE_DEFAULTS.serviceTask;
+    bottom = Math.max(bottom, n.y + d.h + 50 /* name below the shape, then a margin */);
+  }
+  return bottom - POOL_Y;
 }
 // Absolute x of the pool's right edge. Grows past POOL_WIDTH to enclose the
 // right-most node so wide diagrams (e.g. long decision fans) are never clipped:
@@ -4117,7 +4127,7 @@ function renderPool() {
   const stripH = 24;
   const addStrip = el('g', { class: 'pool-add-lane-strip' });
   addStrip.appendChild(el('rect', { x: px, y: stripY, width: pw, height: stripH, rx: 3, class: 'pool-add-lane-strip-bg' }));
-  addStrip.appendChild(el('text', { x: px + pw / 2, y: stripY + 16, class: 'pool-add-lane-strip-text', 'text-anchor': 'middle' }, [text('+ Add another lane')]));
+  addStrip.appendChild(el('text', { x: px + pw / 2, y: stripY + 16, class: 'pool-add-lane-strip-text', 'text-anchor': 'middle' }, [text(lanesArr.length ? '+ Add another lane' : '+ Add a lane')]));   // T-358: a map with no lanes has no other
   addStrip.addEventListener('click', ev => { ev.stopPropagation(); addLane(); });
   gPool.appendChild(addStrip);
 }
@@ -13787,7 +13797,7 @@ function aefExtensionXml(node) {
     // T-1222: a node typed from its native definition carries its kind there; <aef:eventDef> is added only once a
     // binding is set, so an unedited open-and-save adds nothing and a user's binding edit is never dropped.
     if (binding || !(node.nativeEventDefs || []).length)
-    out += `        <aef:eventDef kind="${escAttr(EVENT_KIND[node.type])}" binding="${escAttr(binding)}"/>\n`;
+    out += eventDefXml(node, EVENT_KIND[node.type], binding);
   } else if (aef.eventDefKind) {
     // T-259 (T-257 GO): re-emit the preservation passthrough captured at import
     // for hosts the typed-catch override skips (start/throw carriers). Canonical
@@ -13795,7 +13805,7 @@ function aefExtensionXml(node) {
     // AEF's intake already accepted on the surviving catch (fixture v2:238).
     // else-if: a typed-catch node always emits via EVENT_KIND above, so a stale
     // passthrough can never produce a duplicate eventDef.
-    out += `        <aef:eventDef kind="${escAttr(aef.eventDefKind)}" binding="${escAttr(aef.eventDefBinding || '')}"/>\n`;
+    out += eventDefXml(node, aef.eventDefKind, aef.eventDefBinding || '');
   }
   // T-204 Slice 2: boundary perimeter position — presentational layout hint (v1 §1
   // presentational class, like aef:position). The host attachment + interrupting flag
@@ -13967,7 +13977,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.40.0';
+const APP_VERSION = '0.41.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
@@ -14099,6 +14109,7 @@ function buildBpmnXml(s) {
     lines.push(`  <!--${safeCommentData(s.docComment)}-->`);
     lines.push(``);
   }
+  const collabStart = lines.length;   // T-358 pool half: dropped again below when the source declared no participant
   lines.push(`  <bpmn:collaboration id="${escAttr(ids.collab)}"${pk && pk.collabAttrs ? keptAttrsXml(pk.collabAttrs) : ''}>`);
   // T-1326: the collaboration's and our pool's documentation and other tools' extensions, as they arrived
   for (const x of (pk && pk.collabDocs) || []) lines.push(`    ${x}`);
@@ -14132,6 +14143,9 @@ function buildBpmnXml(s) {
   for (const x of pkOut.collabArtifacts) lines.push(`    ${x}`);   // T-1326: tCollaboration's artifacts follow the flows
   lines.push(`  </bpmn:collaboration>`);
   lines.push(``);
+  // T-358 pool half (operator ruling 2026-11-09, AB): a source that declared no participant gets no invented one. The
+  // collaboration stays only when it carries something of the source's (another pool, a message flow, an artifact).
+  if (s.poolDeclared === false && !s.collab && !(pkOut.collabArtifacts || []).length) lines.splice(collabStart, lines.length - collabStart);
   lines.push(`  <bpmn:process id="${escAttr(ids.proc)}"${ids.exec == null ? '' : ` isExecutable="${escAttr(ids.exec)}"`}${pk && pk.procAttrs ? keptAttrsXml(pk.procAttrs) : ''}>`);
   // T-1326: the process's documentation, first (tBaseElement order)
   for (const x of (pk && pk.procDocs) || []) lines.push(`    ${x}`);
@@ -14157,6 +14171,14 @@ function buildBpmnXml(s) {
   // and pageWidth — absent when unset, so every map that does not carry it
   // exports byte-identically and the UNSET default stays genuinely inert.
   if (wm.kind) wmAttrs.push(`kind="${escAttr(wm.kind)}"`);
+  // T-358 (AB): a map with no lanes says how it came to have none, so the next import (ours or a peer's) does not have
+  // to guess. Written ONLY while there are no lanes: once a person adds one the map is authored and the marker goes.
+  // Inert to other tools: an attribute of our own aef:workflowMeta inside bpmn:extensionElements.
+  const lanesToEmit = s.lanes || defaultLanes();
+  if (!lanesToEmit.length && /^defaulted:/.test(s.laneProvenance || '')) wmAttrs.push(`laneProvenance="${escAttr(s.laneProvenance)}"`);
+  // T-358 pool half (AB): the pool the canvas shows was not declared by the source. Written whether or not the
+  // collaboration below is dropped, so a re-open knows even where it has to be written (multiple-diagrams).
+  if (s.poolDeclared === false) wmAttrs.push(`poolProvenance="defaulted:no-participant"`);
   lines.push(`      <aef:workflowMeta ${wmAttrs.join(' ')}/>`);
   for (const x of s.procMetaKept || []) lines.push(`      ${x}`);   // T-1249: process-level aef:meta, verbatim
   for (const x of (pk && pk.procExt) || []) lines.push(`      ${x}`);   // T-1326: other tools' process extensions
@@ -14164,9 +14186,9 @@ function buildBpmnXml(s) {
   // T-1096: the process's own ioSpecification, kept — tCallableElement places it before the laneSet
   if (s.dataKept) for (const x of s.dataKept.procIo || []) lines.push(`    ${x}`);
 
-  // lane set
-  lines.push(`    <bpmn:laneSet id="LaneSet_1">`);
-  const lanesToEmit = s.lanes || defaultLanes();
+  // lane set. T-358: none when the map has no lanes; an empty <bpmn:laneSet> is the shape the importer's partition
+  // reads as a defect (defaulted:empty-laneset), so it is never written.
+  if (lanesToEmit.length) lines.push(`    <bpmn:laneSet id="LaneSet_1">`);
   for (const lane of lanesToEmit) {
     lines.push(`      <bpmn:lane id="${escAttr(lane.id)}" name="${escAttr(lane.name)}">`);
     lines.push(`        <bpmn:extensionElements>`);
@@ -14180,7 +14202,7 @@ function buildBpmnXml(s) {
     }
     lines.push(`      </bpmn:lane>`);
   }
-  lines.push(`    </bpmn:laneSet>`);
+  if (lanesToEmit.length) lines.push(`    </bpmn:laneSet>`);
 
   // nodes. T-1339: one node's lines, ending with its close tag (a container's contents go before that, below).
   const nodeLines = n => {
@@ -14573,6 +14595,16 @@ function elementKept(el, readAttrs, skipChild) {
     children.push(keptElementXml(c));
   }
   return (attrs.length || children.length || ext.length) ? { attrs, children, ext } : null;
+}
+// T-347 AC3: <aef:eventDef> with what the source carried beyond kind and binding (node.eventDefKept), kept only while the
+// node's kind is the one it came with: a node retyped to another kind writes kind and binding alone, as T-1325 drops a
+// retyped element's old attributes. A designer-written eventDef carries nothing more, so its bytes do not change.
+const EVENT_DEF_READ_ATTRS = new Set(['kind', 'binding']);
+function eventDefXml(node, kind, binding) {
+  const k = node.eventDefKept && node.eventDefKept.kind === kind ? node.eventDefKept : null;
+  const open = `        <aef:eventDef kind="${escAttr(kind)}" binding="${escAttr(binding)}"${k ? keptAttrsXml(k.attrs) : ''}`;
+  if (!k || !k.children.length) return `${open}/>\n`;
+  return `${open}>\n` + k.children.map(x => `          ${x}\n`).join('') + `        </aef:eventDef>\n`;
 }
 // A foreign prefix the export root does not declare is declared on the element that uses it (xml: needs none).
 function keptAttrsXml(attrs) {
@@ -15398,7 +15430,16 @@ function parseBpmnXml(text) {
   } else {
     laneProvenance = 'defaulted:empty-laneset';
   }
-  if (!lanes.length) lanes.push(...defaultLanes());
+  // T-358 (operator ruling 2026-11-08, AB: drop + mark). A document that declares no lanes is opened with NO lanes:
+  // under T-888 clause 1 a lane is a partition, so a lane-less file declares none and nothing is missing. Before, this
+  // pushed defaultLanes() and every node of a peer's file came back in `Human · Sovereignty`. The emitter writes the
+  // provenance into aef:workflowMeta while the map still has no lanes (buildBpmnXml), and it is read back here, so a
+  // map this designer saved keeps saying how it came to have none. The values keep their T-358 names ("defaulted:")
+  // because the probes and the partition read them; nothing is defaulted any more.
+  const carriedLaneProv = aefMetaEl && aefMetaEl.getAttribute('laneProvenance');
+  // T-358 pool half (operator ruling 2026-11-09, AB): a save of a map whose source declared no participant says so here.
+  const carriedPoolProv = aefMetaEl && aefMetaEl.getAttribute('poolProvenance');
+  if (!lanes.length && carriedLaneProv && /^defaulted:/.test(carriedLaneProv)) laneProvenance = carriedLaneProv;
 
   // ---- nodes ----
   const REVERSE_TYPE = {}; // bpmn-tag → our node type
@@ -15778,6 +15819,10 @@ function parseBpmnXml(text) {
       const kept = elementKept(el, NODE_READ_ATTRS, c => nodeWorkEls.has(c));
       const defaultRef = el.getAttribute('default');
       const keptNode = (kept || defaultRef) ? { type, ...(foreignTag ? { foreignTag } : {}), ...(kept || { attrs: [], children: [], ext: [] }), ...(defaultRef ? { defaultRef } : {}) } : null;
+      // T-347 AC3: <aef:eventDef> is read for kind and binding only (T-204, T-259); whatever else it holds is kept with
+      // the kind it came with, and written back by eventDefXml while the node still has that kind.
+      const evKept = eventDefEl ? elementKept(eventDefEl, EVENT_DEF_READ_ATTRS) : null;
+      const eventDefKept = evKept ? { kind: eventDefEl.getAttribute('kind') || '', attrs: evKept.attrs, children: evKept.children } : null;
 
       // Default position if none was encoded — simple flow layout per lane
       if (x == null || isNaN(x) || y == null || isNaN(y)) {
@@ -15800,6 +15845,7 @@ function parseBpmnXml(text) {
         ...(nativeEventDefs.length ? { nativeEventDefs } : {}),
         ...(aefKept ? { aefKept } : {}),
         ...(keptNode ? { kept: keptNode } : {}),
+        ...(eventDefKept ? { eventDefKept } : {}),
         ...(originalId ? { originalId } : {}),
       });
       displayIdToUid.set(displayId, uid);
@@ -16025,6 +16071,9 @@ function parseBpmnXml(text) {
   const result = {
     // T-1262: with no participant to read, the pool is the designer's own Pool_<id>, never the process id, which
     // the process itself now keeps (one id, two elements).
+    // T-358 pool half (AB): false when the source declared no participant (or our own save marked it as added), so the
+    // emitter writes no invented collaboration and participant, and marks the pool where it must still write one.
+    poolDeclared: !!partEl && !carriedPoolProv,
     pool: { id: partEl?.getAttribute('id') || `Pool_${workflowMeta.id}`,
             name: partEl?.getAttribute('name') || procName },
     workflowMeta,

@@ -1308,10 +1308,14 @@ class XmlValidator:
             [] if lane_set is None
             else lane_set.findall("{%s}lane" % BPMN_NS)
         )
-        if not declared_lanes:
+        # T-358 (operator ruling 2026-11-08, AB; T-888 clause 1): a process with NO <bpmn:laneSet> declares no
+        # partition, which is a valid map, not a missing one (a third-party file, or one the designer saved without
+        # inventing lanes). A <bpmn:laneSet> with no <bpmn:lane> in it is still an error: it declares a partition and
+        # leaves it empty. Re-pointing this rule at "every task-like element has an authority" (T-888) is separate.
+        if lane_set is not None and not declared_lanes:
             self.err(
                 "E-XML-LANES-EMPTY",
-                "<bpmn:laneSet>" if lane_set is not None else "<bpmn:process>",
+                "<bpmn:laneSet>",
                 "no <bpmn:lane> declared; section 3 requires at least one lane",
             )
 
