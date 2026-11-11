@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4359: GH #102: Human-criterion classification only matches English keywords, so in a non-English project every review goes to an AI reviewer and the Awaiting review column (#92) stays empty
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-11T17:46:12Z
+# ============================================================================
+
+task_id: T-4359
+task_name: "GH #102: Human-criterion classification only matches English keywords, so in a non-English project every review goes to an AI reviewer and the Awaiting review column (#92) stays empty"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-18T23:07:29Z
+completed: 2026-11-11T17:44:24Z
+duration_days: 24
+updates_count: 3
+first_commit: 2026-10-20T22:16:29+02:00
+last_commit: 2026-11-11T18:44:20+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  record that GH #102 waits on the operator's design choice (4 options, recommend a language-neutral [OPERATOR] marker); no source change. [OPERATOR] tag pins a Human criterion operator-only in any language (GH #102)
+
+# Key outcomes
+outcomes:
+  - 'Operator has chosen a design option from ## Context (recorded under ## Decisions) — BLOCKER, nothing below starts before it'
+  - 'Regression test: a non-English Human criterion that the chosen design marks operator-only (e.g. Dutch "publiceren naar productie") classifies `OPERATOR-ONLY` via `lib/delegation.py:classify`; the test fails on the pre-fix code'
+  - 'English routing unchanged: the existing delegation tests (`tests/unit/*delegat*`) stay green'
+  - '`bin/fw vendor self --check --task T-4359` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-11 — design option (operator decision)'
+    chose: 'option 1, a language-neutral author marker `[OPERATOR]` that pins a Human criterion OPERATOR-ONLY before any keyword test. Operator: asked "What''s the best solution?", got B1 recommended, answered "Start" (2026-11-11 ~17:05Z).'
+    rationale: 'works in every language, no heuristic, English routing (T-3557) unchanged; option 2 can be layered on later.'
+    alternatives_rejected: ['2 now (per-project word lists, never complete); 3 (language-guessing heuristic can fail open); 4 (built-in translations, unbounded).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/delegation.py'
+  - '.fabric/components/tests-unit-test_t4359_operator_marker.yaml'
+  - '.tasks/active/T-4359-gh-102-human-criterion-classification-on.md'
+  - 'CLAUDE.md'
+  - 'lib/delegation.py'
+  - 'tests/unit/test_t4359_operator_marker.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T22:16:29'
+    action: 'T-4359: record that GH #102 waits on the operator''s design choice (4 options, recommend a language-neutral [OPERATOR] marker); no source change'
+  - time: '2026-11-11T18:44:20'
+    action: 'T-4359: [OPERATOR] tag pins a Human criterion operator-only in any language (GH #102)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 34236 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github, mikeechovoid]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 34236
+  commits: 3
+  files_changed: 9
+  lines_added: 333
+  lines_removed: 15
+  footprint_refreshed_at: '2026-11-11T17:46:36Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4359-gh-102-human-criterion-classification-on.md
+generated_by: context-agent-hybrid
