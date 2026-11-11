@@ -12,7 +12,10 @@ workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: [bin/fw, bin/watchtower.sh, lib/config.sh, lib/watchtower.sh, tests/unit/t3379_review_placeholder_foreign_port.bats, tests/unit/t4239_default_bind_loopback.bats, web/blueprints/config.py, web/config.py]
+components: [bin/fw, bin/watchtower.sh, lib/config.sh, lib/watchtower.sh, 
+      tests/unit/t3379_review_placeholder_foreign_port.bats, 
+      tests/unit/t4239_default_bind_loopback.bats, web/blueprints/config.py, 
+      web/config.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:42:59Z
-last_update: 2026-11-11T18:07:39Z
+last_update: '2026-11-11T18:15:23Z'
 date_finished: 2026-11-11T18:07:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -62,6 +65,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-11-11T18:15:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 7
+      tier: 2
+      effort: 8
+    rationale: blast_radius=7 (8-components-large-blast); tier=2 
+      (workflow:build); effort=8 (lines=348,acs=9)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-10-17T13:46:22Z'
