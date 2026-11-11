@@ -205,5 +205,20 @@ Bundle of `590b7d0bf` (carries T-5072), env `aef-unit-1` then `aef-unit-2` (adds
 
 - **Collected:** 1,262 of the remaining-files run, plus 32 + 63 + 16 + 2 earlier; 2 results orphaned by a ring20 restart (republish fix pending on their side); **192 files not yet sent** (`.context/scratch/node1-jobs/listA3.txt`).
 - **Every node1 failure re-run here** (same command, same commit): **29 files fail only on node1**, none fails here. Raw table: `docs/reports/T-5073-node1-compare-590b.tsv`.
-- **Causes seen so far (first pass, not complete):** node1 sandbox differences, not AEF code: read-only root file system (t4395 writes `/t4395-probe`), open-file limit (t4400 "Too many open files"), `playwright` not installed (test_playwright_server_adoption.py — the spec's claim that only browser tests need it was wrong), the bundle's excluded `.context/handovers` (test_search_inclusion_set.py), no systemd scope / tmux / live TermLink (t4647, t3277, t4426, termlink.bats, t4641, ...), host cron (bvp_auto_promote_enable.bats), and 2 files at the 900 s cap (init_project_shape_detection, t5061). 13 files still need their cause read from `unit.log`.
+- **Causes seen so far (first pass, not complete):** node1 sandbox differences, not AEF code: read-only root file system (t4395 writes `/t4395-probe`), open-file limit (t4400 "Too many open files"), `playwright` not installed (test_playwright_server_adoption.py — the spec's claim that only browser tests need it was wrong), the bundle's excluded `.context/handovers` (test_search_inclusion_set.py), no systemd scope / tmux / live TermLink (t4647, t3277, t4426, termlink.bats, t4641, ...), host cron (bvp_auto_promote_enable.bats), and 2 files at the 900 s cap (init_project_shape_detection, t5061). The rest were read on 2026-11-11 (below).
+- **Bundle ruled out:** the 11 files whose `unit.log` did not show a cause were re-run here inside a fresh clone of the same bundle (`git clone` of `aef-unit-suite-590b7d0bf2b8.bundle`, `CLAUDECODE` unset). All 11 pass there, so the tracked-files-only bundle is not the cause; node1's sandbox is.
+- **Classification of all 29:**
+
+  | Class | Files | Action |
+  |---|---|---|
+  | Sandbox limit (read-only `/`, open-file limit, no `unshare --pid`) | t4395, t4400, t5008 | ask ring20 / local-only |
+  | Root without permission override: `Permission denied` writing a file the test made read-only (t4493 line 74) | t4493 (seen); t2990, t3636, t4858, t2293 likely the same | ask ring20 to confirm; else local-only |
+  | Missing tool: playwright, opencode, tmux, systemd, live TermLink | test_playwright_server_adoption.py, t4844, t4217, t5060, t4426, t3277, t4647, termlink.bats, t4641 | local-only (or ask for playwright) |
+  | Missing host state: no git identity, host cron, `.context/handovers` left out of the bundle | git_identity_check, t2452, t3062 (both run `fw doctor`/audit on the checkout), bvp_auto_promote_enable, test_search_inclusion_set.py | local-only; git_identity_check should set its own identity |
+  | CPU speed: 5 ms per-fire budget measured at 6.1–9.1 ms | hook_telemetry, hook_telemetry_race | local-only (timing budget is host-specific) |
+  | 900 s cap | init_project_shape_detection, t5061 | raise the cap for these two or local-only |
+  | No network or listener in the sandbox | t4332 (Watchtower health check), t3580 (dispatcher env.json not written) | local-only; t3580 to be read once more |
+  | **Test bug (real)** | t4108 `test_ancestry_probe_sees_a_claude_named_ancestor` | fix the test |
+
+- **The real bug (t4108):** the test makes a fake `claude` wrapper that `exec`s Python, and `exec` replaces the wrapper, so no process named `claude` is left in the chain. The probe returns True here only because this agent session itself runs under Claude Code; on node1 it correctly returns False. The test proves nothing locally. Fix: keep the fake `claude` alive as the parent (run the child, do not `exec`). Same pattern, milder: git_identity_check relies on the host's git identity.
 - **Next:** classify the 13; decide per class: add to the local-only list, ask ring20 for an env change (playwright, open-file limit), or fix the test; send the 192; then wire results into the nightly report.
