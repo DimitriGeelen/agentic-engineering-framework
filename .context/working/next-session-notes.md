@@ -1,6 +1,13 @@
 # Next session: carry-over
 
-## FIRST (2026-11-11 ~10:40Z) — read this block first
+## STANDING (operator, 2026-11-11 ~21:20Z): "I don't want to check, we have external reviewers for that"
+- Checks a reviewer can judge (render, taste, wording, deterministic — class REVIEWER_JUDGES) go to
+  `bin/fw reviewer judge T-XXX`, NOT to the operator. Do not hand the operator /review links for them.
+- Only the risk classes stay with the operator (tier-0/bypass, act-in-the-world, sovereignty fields,
+  `[OPERATOR]`-tagged). Decisions (inceptions) are still the operator's.
+- Applied first to T-4355, T-4239, T-5080, T-5079, T-5081 (2026-11-11).
+
+## FIRST (2026-11-11 ~10:40Z) — read this block first (node1 part is DONE: run complete, T-5073 results in spec §9)
 - node1 run (T-5073) PAUSED on ring20's health alarm; resume ONLY after proxmox-ring20-management says green.
   Then: collect the 2 orphaned results (names in .context/scratch/node1-jobs/A2-uncollected-names.txt), send the
   192 left (.context/scratch/node1-jobs/listA3.txt) with the scratchpad driver pattern: entries aef2.bats/aef2.pytest,
