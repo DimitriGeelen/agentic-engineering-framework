@@ -53651,3 +53651,21 @@ scan_id: R-207be477
 task_id: T-5075
 payload:
   task_file: .tasks/active/T-5075-t4108-ancestry-test-passes-only-under-cl.md
+---
+kind: scan_emitted
+timestamp: '2026-11-11T19:10:58Z'
+scan_id: R-b33cfd11
+task_id: T-5076
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-11T19:10:58Z'
+scan_id: R-b33cfd11
+task_id: T-5076
+payload:
+  task_file: .tasks/active/T-5076-libcostssh-resolves-its-own-folder-from-.md
