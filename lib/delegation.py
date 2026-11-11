@@ -107,7 +107,16 @@ CLASS_TO_DELEGATION = {
     "act-in-the-world": OPERATOR_ONLY,
     "tier0-or-bypass": OPERATOR_ONLY,
     "sovereignty-field": OPERATOR_ONLY,
+    # T-4359 (GitHub #102): the author said so, in any language.
+    "operator-marked": OPERATOR_ONLY,
 }
+
+# T-4359 (GitHub #102): the risk classes below are found only through ENGLISH
+# regexes, so a criterion written in another language ("publiceren naar productie")
+# matched none of them and went to an AI reviewer: the carve-out failed open.
+# An `[OPERATOR]` tag at the start of the criterion (alone or beside another
+# prefix) pins it OPERATOR-ONLY before any keyword test, whatever the language.
+_OPERATOR_MARK_RE = re.compile(r"^\s*(?:\[[A-Za-z-]+\]\s*)*\[OPERATOR\]", re.IGNORECASE)
 
 # Nothing converts any more (T-4916): every delegable class stays under `### Human` and
 # closes on an independent recorded verdict (`fw reviewer judge`). Criteria an earlier
@@ -560,6 +569,7 @@ def classify(
     inception criterion that is also tier-0 / sovereignty / act-in-the-world stays
     human. Routing for each class is CLASS_TO_DELEGATION, nowhere else.
 
+      0. operator-marked    (OPERATOR-ONLY — `[OPERATOR]` tag, any language, T-4359)
       1. tier0-or-bypass    (OPERATOR-ONLY — the tier the human owns by definition)
       2. sovereignty-field  (OPERATOR-ONLY — a human made this write, on purpose)
       3. act-in-the-world   (OPERATOR-ONLY — outside this repo / the operator's machine)
@@ -572,6 +582,11 @@ def classify(
     """
     title = criterion.title
     body = criterion.producer_text
+
+    if _OPERATOR_MARK_RE.match(title):
+        return _classified("operator-marked",
+                           "the author marked it [OPERATOR]: only the operator closes it "
+                           "(language-neutral, T-4359)")
 
     hit = _m(_TIER0_OR_BYPASS_RE, body)
     if hit:

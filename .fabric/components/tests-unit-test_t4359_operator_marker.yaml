@@ -1,0 +1,21 @@
+id: tests/unit/test_t4359_operator_marker.py
+name: test_t4359_operator_marker
+type: script
+subsystem: tests
+location: tests/unit/test_t4359_operator_marker.py
+tags: []
+
+purpose: "T-4359 (GitHub #102) — the risk carve-outs were found only through English regexes, so a Human criterion written in another language matched none of them and went to an AI reviewer."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-11
+created_by: unknown

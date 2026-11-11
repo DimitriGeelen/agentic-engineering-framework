@@ -46,7 +46,7 @@ origin: {kind: "peer", source: "github#102"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T23:07:29Z
-last_update: '2026-10-31T13:15:34Z'
+last_update: 2026-11-11T17:18:22Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -126,6 +126,14 @@ bvp_scores_proposed:
 
 ## Context
 
+**Background / trigger:** GitHub issue #102 (MikeEchoVoid, accepted 2026-10-19): in a project whose task criteria are not in English, nothing is ever classed operator-only.
+
+**Problem / hypothesis:** `lib/delegation.py:classify` finds the operator-only classes (tier-0, sovereignty, act-in-the-world) only with English regexes, so a non-English irreversible act (Dutch "publiceren naar productie") falls through to an AI reviewer: the safety carve-out fails open.
+
+**Goal:** a way for any author, in any language, to say "only the operator closes this", without changing English routing.
+
+**Expected outcome:** an `[OPERATOR]` tag at the start of a Human criterion (operator chose option 1 on 2026-11-11) classes it `operator-marked`, routed OPERATOR-ONLY before any keyword test; existing delegation tests stay green.
+
 **STOPPED — awaiting operator design decision (worker w4359, 2026-10-20).** The retro
 (docs/reports/T-4339-github-issue-retro.md §3 #102 "Awaiting the maintainer's decision";
 §4 row #102 "design choice needed") routes the *how* of this fix to the operator. No source
@@ -161,10 +169,10 @@ carve-outs.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Operator has chosen a design option from ## Context (recorded under ## Decisions) — BLOCKER, nothing below starts before it
-- [ ] Regression test: a non-English Human criterion that the chosen design marks operator-only (e.g. Dutch "publiceren naar productie") classifies `OPERATOR-ONLY` via `lib/delegation.py:classify`; the test fails on the pre-fix code
-- [ ] English routing unchanged: the existing delegation tests (`tests/unit/*delegat*`) stay green
-- [ ] `bin/fw vendor self --check --task T-4359` clean
+- [x] Operator has chosen a design option from ## Context (recorded under ## Decisions) — BLOCKER, nothing below starts before it
+- [x] Regression test: a non-English Human criterion that the chosen design marks operator-only (e.g. Dutch "publiceren naar productie") classifies `OPERATOR-ONLY` via `lib/delegation.py:classify`; the test fails on the pre-fix code
+- [x] English routing unchanged: the existing delegation tests (`tests/unit/*delegat*`) stay green
+- [x] `bin/fw vendor self --check --task T-4359` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -342,6 +350,9 @@ carve-outs.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest -q tests/unit/test_t4359_operator_marker.py tests/unit/test_delegation_classifier.py
+bats tests/unit/t3445_delegation_close_path.bats
+bin/fw vendor self --check --task T-4359
 
 ## RCA
 
@@ -359,7 +370,20 @@ carve-outs.
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** in a project whose criteria are not in English, nothing was ever classed operator-only; a Dutch irreversible act went to an AI reviewer (GitHub #102).
+
+**Root cause:** the three operator-only classes are recognised only by English regexes in `lib/delegation.py`, and an unrecognised criterion falls through to `unclassified`, which routes to a reviewer. The safety carve-out failed open for every other language.
+
+**Why structurally allowed:** every fixture in the classifier tests is English, and the fall-through default changed from "human" to "reviewer" in T-3557 without a check of what that does to text the keywords cannot read.
+
+**Prevention:** `[OPERATOR]` gives authors a language-neutral way to pin a criterion to the operator (`tests/unit/test_t4359_operator_marker.py`, which also pins the remaining gap: an unmarked non-English criterion still goes to a reviewer, so the gap is visible, not hidden); CLAUDE.md documents the tag where the other Human-criterion prefixes are described.
+
 ## Evolution
+
+### 2026-11-11 — the gap stays visible on purpose
+- **What changed:** option 1 needs authors to use the tag; an untagged non-English criterion still routes to a reviewer.
+- **Plan impact:** the test pins that remaining gap explicitly (`test_the_gap_unmarked_dutch_criterion_goes_to_a_reviewer`), so a later option 2 (per-project vocabulary) has a ready failing case to flip.
+- **Triggered:** nothing new filed; option 2 stays the follow-up the recommendation named, to file if a project asks for automatic carve-outs.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
