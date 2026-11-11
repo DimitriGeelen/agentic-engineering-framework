@@ -389,6 +389,11 @@ bin/fw vendor self --check --task T-4360
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-11-11 — the issue held two defects; only one was ours to fix without the operator
+- **What changed:** #103 asked for any of three things (default to localhost, reuse the running host on restart, warn on widening). The restart defect is a plain bug; the default changes how the operator reaches Watchtower today, so it is a decision.
+- **Plan impact:** this task fixes restart (reuse + warn); the default moved to T-4239, where the operator chose "this machine only" with this repo keeping LAN access (2026-11-11).
+- **Triggered:** T-5078 — the new restart test exposed a race in `fw_pid_alive` (a zombie reaped mid-check read as alive), fixed separately before this task could close.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
