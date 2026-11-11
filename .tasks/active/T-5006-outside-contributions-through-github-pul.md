@@ -13,7 +13,7 @@ arc_id: github-contributions
 components: []
 related_tasks: []
 created: 2026-11-02T07:55:22Z
-last_update: 2026-11-02T13:31:22Z
+last_update: 2026-11-11T22:11:06Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -174,13 +174,18 @@ Mehdi (GitHub contributor, author of issues #98, #104, #106) wants to send pull 
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO
 
 **Rationale:**
 
-Filed from Mehdi's proposal on 2026-11-02. The four facts it cites are verified, but the central question is open: GitHub is a mirror fed from OneDev, and PRs merged there (#76, #77, #79) were erased by a history rewrite. Where a contributor's merge lands, and how it gets back to the source repo, must be settled before GO or NO-GO.
+Revised 2026-11-11. The question that held this at DEFER is settled in the plan: GitHub becomes the source repository and the private server its mirror, so a merged pull request can no longer be erased by a mirror sync, as happened to #76, #77 and #79 (`docs/reports/T-5006-draft-plan-for-mehdi.md` lines 68-70). The pilot contributor has reviewed the plan and accepted its stricter points (DCO sign-off, review before merge, one risk level higher), and answered the four open questions; the operator accepted the answers the same day and called the contributor trusted. GO means: run the pilot as planned. Code pull requests still wait for the isolated test hosts (T-5009), and the role-chain steps (T-5021 onward) stay the delivery plan.
+
+(Filed 2026-11-02 as DEFER: the four facts cited were verified, but where a contributor's merge lands, and how it gets back to the source repo, was open.)
 
 **Evidence:**
+- GitHub #114, comment 6807371666 (2026-11-11): Mehdi accepts the plan and answers the four questions; recorded in `docs/reports/T-5006-draft-plan-for-mehdi.md` (commit b6a2addcb).
+- Reply posted on #114 (comment 6808319260) with the operator's acceptance.
+- #106 accepted as T-5082 (operator approval AP-106-accept) for pilot PR 2.
 
 <!-- Add evidence bullets as exploration progresses (file paths,
      commit hashes, test results). The filing-time recommendation
