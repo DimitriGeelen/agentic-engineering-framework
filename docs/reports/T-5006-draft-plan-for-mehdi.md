@@ -137,11 +137,18 @@ The design runs through a fixed chain of roles, one task per step; each step nee
 
 ## Open questions
 
-Four points are still open; your view on each would help before the maintainer signs the plan off.
+Four points were open. Mehdi answered on 2026-11-11 (GitHub #114, comment 6807371666) and the maintainer
+accepted all four as written the same day ("yes, certainly, he's a trusted collaborator of the framework").
 
-- [ ] **Documentation-only pull requests:** may they skip the linked-issue rule, as you proposed?
-- [ ] **Branch names:** should `fix/<issue>-<keyword>` and `feat/<issue>-<keyword>` become a rule, or stay guidance?
-- [ ] **Template content:** anything you would add to or drop from the checklist above?
-- [ ] **End of the pilot:** what would show you that the process works well enough to open it to others?
+- [x] **Documentation-only pull requests:** may skip the linked issue for form only (typo, broken link,
+  layout). As soon as a change rewords a rule or describes a behaviour differently, it needs an issue like
+  any other.
+- [x] **Branch names:** guidance, not a rule. The issue number is already in every commit and in the pull
+  request.
+- [x] **Template content:** add two lines, "Version tested against (be-tag or commit)" and "Test environment
+  (for example non-root account, no network)". Nothing removed.
+- [x] **End of the pilot:** PR 2 (the #106 fix, T-5082) goes through the whole circuit without a workaround
+  (checks, review, merge, present in the next pre-release, tried on a project); a pull request that is
+  refused or sent back gets its one-line reason; and no merged commit is lost.
 
 Not for this review: how the framework relays bug reports from the maintainer's own projects to GitHub issues. That part is internal and decided separately.
