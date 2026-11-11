@@ -206,6 +206,7 @@ def review(task_id):
         task_id=task_id,
         task_name=fm.get("name", ""),
         task_status=fm.get("status", ""),
+        status_label=_status_label(task_file, fm.get("status", "")),
         task_owner=fm.get("owner", ""),
         workflow_type=fm.get("workflow_type", ""),
         human_acs=human_acs,
@@ -269,6 +270,15 @@ def review_pause_resolve(task_id, dispatch_id):
     ), 303
 
 
+def _status_label(task_file, status):
+    """T-5085: a task waiting for review already has status work-completed while it is still in
+    active/; a green WORK-COMPLETED badge reads as 'done'. Label it for what it is."""
+    status = str(status or "").strip()
+    if status == "work-completed" and task_file.parent.name == "active":
+        return "awaiting review"
+    return status
+
+
 @bp.route("/review/<task_id>/acs")
 def review_acs_fragment(task_id):
     """htmx polling endpoint — returns just the AC list fragment."""
@@ -327,6 +337,11 @@ def review_acs_fragment(task_id):
         "_review_acs.html",
         handed_back=handed_back,
         with_operator=with_operator,
+        # T-5085: the reloaded list also refreshes the header's status and owner (hx-swap-oob),
+        # which otherwise stay as they were at page load and contradict the note.
+        as_fragment=True,
+        task_owner=fm.get("owner", ""),
+        status_label=_status_label(task_file, fm.get("status", "")),
         task_id=task_id,
         workflow_type=fm.get("workflow_type", ""),
         human_acs=human_acs,

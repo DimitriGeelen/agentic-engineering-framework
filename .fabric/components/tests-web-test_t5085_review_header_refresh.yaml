@@ -1,0 +1,21 @@
+id: tests/web/test_t5085_review_header_refresh.py
+name: test_t5085_review_header_refresh
+type: script
+subsystem: tests
+location: tests/web/test_t5085_review_header_refresh.py
+tags: []
+
+purpose: "T-5085: the review page header (status badge, Owner line) stayed as it was at page load after a tick, contradicting the hand-back note, and labelled a task awaiting review as 'work-completed'."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-11
+created_by: unknown

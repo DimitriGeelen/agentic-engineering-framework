@@ -295,6 +295,7 @@
         }
         .badge-startedwork { background: #3b82f622; color: #1d4ed8; border: 1px solid #3b82f655; }
         .badge-workcompleted { background: #10b98122; color: #047857; border: 1px solid #10b98155; }
+        .badge-awaitingreview { background: #f59e0b22; color: #b45309; border: 1px solid #f59e0b55; }  /* T-5085 */
 
         /* T-1195: Recommendation block (T-1539: per-verdict colour) */
         .recommendation-block {
@@ -454,8 +455,9 @@
     <div class="review-header">
         <h2>{{ task_id }}: {{ task_name }}</h2>
         <div class="review-meta">
-            <span class="status-badge badge-{{ task_status|replace('-','') }}">{{ task_status }}</span>
-            <span>Owner: {{ task_owner }}</span>
+            {% set _label = status_label or task_status %}
+            <span id="review-status" class="status-badge badge-{{ _label|replace('-','')|replace(' ','') }}">{{ _label }}</span>
+            <span id="review-owner">Owner: {{ task_owner }}</span>
             {# T-2624 read-value wiring: this review IS the tl_human_review stage of the
                task-lifecycle map. Bare ?load (no v=) resolves server-latest; the T-2599
                302 mints the nonce. #}

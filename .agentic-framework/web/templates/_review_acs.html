@@ -166,3 +166,10 @@
 {% endif %}
 
 </div>{# T-2114: end of hx-target="#content" reset wrapper #}
+{% if as_fragment %}
+{# T-5085: the header (review.html) is rendered once at page load; only this list reloads after a
+   tick. Send its status badge and owner line out of band so they agree with the note above.
+   Only from the fragment route: the full page includes this template inline and has them already. #}
+<span id="review-status" hx-swap-oob="true" class="status-badge badge-{{ status_label|replace('-','')|replace(' ','') }}">{{ status_label }}</span>
+<span id="review-owner" hx-swap-oob="true">Owner: {{ task_owner }}</span>
+{% endif %}
