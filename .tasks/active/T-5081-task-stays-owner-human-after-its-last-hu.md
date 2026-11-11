@@ -1,8 +1,17 @@
 ---
 id: T-5081
-name: "Task stays owner: human after its last Human criterion is ticked outside the reviewer path (832 proposal)"
+name: "Task stays owner: human after its last Human criterion is ticked outside the
+  reviewer path (832 proposal)"
 description: >
-  Proposal from 832 (2026-11-11, their operator: 'we stopped the rubber stamping'). lib/verdict_ledger.py verdict apply hands a human-owned task back to the agent only when no Human criterion is open (L3781), but returns early (L3773) when nothing new was ticked/withdrawn/recited, so the hand-back only fires on a reviewer verdict. When the operator ticks the last open criterion in Watchtower the task stays owner: human with nothing left to judge, and the operator must close or hand it over by hand. Confirmed in code. Design question to settle: hand back on every read with no open Human criterion, or have the Watchtower tick path apply the same rule; keep R-033 (only when nothing Human is open).
+  Proposal from 832 (2026-11-11, their operator: 'we stopped the rubber stamping').
+  lib/verdict_ledger.py verdict apply hands a human-owned task back to the agent only
+  when no Human criterion is open (L3781), but returns early (L3773) when nothing
+  new was ticked/withdrawn/recited, so the hand-back only fires on a reviewer verdict.
+  When the operator ticks the last open criterion in Watchtower the task stays owner:
+  human with nothing left to judge, and the operator must close or hand it over by
+  hand. Confirmed in code. Design question to settle: hand back on every read with
+  no open Human criterion, or have the Watchtower tick path apply the same rule; keep
+  R-033 (only when nothing Human is open).
 
 status: captured
 workflow_type: build
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-11T17:10:53Z
-last_update: 2026-11-11T17:10:53Z
-date_finished: null
+last_update: '2026-11-11T17:15:30Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-11T17:15:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5081: Task stays owner: human after its last Human criterion is ticked outside the reviewer path (832 proposal)
