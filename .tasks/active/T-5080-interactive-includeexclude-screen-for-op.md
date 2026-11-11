@@ -307,6 +307,37 @@ bats tests/unit/t4355_doctor_absent_components.bats
 python3 .agentic-framework/lib/optional_components.py
 bin/fw vendor self --check --task T-5080
 
+## Screen capture (evidence for the reviewer)
+
+The screen is a terminal UI, not a web page, so there are no browser shots. This is a real run of
+`bin/fw config components` in a 24x100 pseudo-terminal (temp project), replayed into plain text. The line
+under the cursor is drawn in reverse video, which plain text cannot show; on opening it is `termlink`.
+
+```
+---- screen on opening ----
+Optional components — what this project includes
+Up/Down move   Space include/exclude   Enter save   q quit without saving
+
+ [x] termlink    Cross-terminal sessions and workers (fw termlink, dispatch)
+ [x] node        Node.js, runs the TypeScript hooks (Python fallback without it)
+ [x] bats        Shell test runner (framework repo tests)
+ [x] shellcheck  Shell script linter
+ [x] pi          Pi coding agent (workflows with worker_kind: pi)  (not installed)
+ [x] ollama      Local model server (ollama-loop workflows)
+ [x] litellm     LiteLLM proxy (workflows that set ANTHROPIC_BASE_URL)
+
+[x] included   [ ] excluded on purpose (fw doctor shows OK, not a warning)
+
+---- after Down, Space (node excluded) ----
+ [x] termlink    ...
+ [ ] node        Node.js, runs the TypeScript hooks (Python fallback without it)
+ ...
+```
+
+Leaving with q prints `Left without saving; nothing changed.` and writes nothing (test
+`test_screen_q_leaves_without_saving`); Enter writes `ABSENT_COMPONENTS` (test
+`test_screen_space_toggles_and_enter_saves`).
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
