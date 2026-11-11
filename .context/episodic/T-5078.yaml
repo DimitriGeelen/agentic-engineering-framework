@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5078: fw_pid_alive reports a just-reaped process as alive (state read races the reap)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-11T17:24:40Z
+# ============================================================================
+
+task_id: T-5078
+task_name: "fw_pid_alive reports a just-reaped process as alive (state read races the reap)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-11T16:56:01Z
+completed: 2026-11-11T17:22:07Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-11T18:22:05+01:00
+last_commit: 2026-11-11T18:22:05+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw_pid_alive treats a process reaped mid-check as gone (was: alive)
+
+# Key outcomes
+outcomes:
+  - '`fw_pid_alive` returns not-alive when the state read comes back empty and the pid is gone'
+  - 'Regression test simulates the race (state read fails after a successful `kill -0`) and fails without the fix'
+  - 'Existing pid-alive tests (t4306, t4337, test_t4216_pid_alive_eperm.py) stay green'
+  - 't4360 restart test passes 10 runs in a row (10/10, 2026-11-11)'
+  - '`bin/fw vendor self --check` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/pid-alive.sh'
+  - '.fabric/components/tests-unit-t5078_pid_alive_reap_race.yaml'
+  - '.tasks/active/T-5078-fwpidalive-reports-a-just-reaped-process.md'
+  - 'lib/pid-alive.sh'
+  - 'tests/unit/t5078_pid_alive_reap_race.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-11T18:22:05'
+    action: 'T-5078: fw_pid_alive treats a process reaped mid-check as gone (was: alive)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 26
+  commits: 2
+  files_changed: 8
+  lines_added: 594
+  lines_removed: 5
+  footprint_refreshed_at: '2026-11-11T17:24:53Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5078-fwpidalive-reports-a-just-reaped-process.md
+generated_by: context-agent-hybrid

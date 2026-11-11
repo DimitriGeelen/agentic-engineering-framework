@@ -53525,3 +53525,21 @@ scan_id: R-f0dcef56
 task_id: T-5077
 payload:
   task_file: .tasks/active/T-5077-sedi-libcompatsh-libpathssh-fallback-tur.md
+---
+kind: scan_emitted
+timestamp: '2026-11-11T17:24:26Z'
+scan_id: R-016871e2
+task_id: T-5078
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-11T17:24:26Z'
+scan_id: R-016871e2
+task_id: T-5078
+payload:
+  task_file: .tasks/active/T-5078-fwpidalive-reports-a-just-reaped-process.md
