@@ -52,6 +52,7 @@ do_config() {
         get)   _config_get "$@" ;;
         list)  _config_list "$@" ;;
         overrides) _config_overrides "$@" ;;
+        components) python3 "$(dirname "${BASH_SOURCE[0]}")/config_components.py" "$@" ;;  # T-5080
         help|--help|-h) _config_help ;;
         *)
             echo -e "${RED:-}Unknown config subcommand: $subcmd${NC:-}" >&2
@@ -72,6 +73,8 @@ _config_help() {
     echo "  fw config get --file KEY   Get the value stored in the file only"
     echo "  fw config list             Show all custom settings"
     echo "  fw config overrides        Show all non-default settings (env + file)"
+    echo "  fw config components       Choose optional components to leave out (arrow keys + space;"
+    echo "                             --list, --set \"termlink node\" without a terminal)"
     echo ""
     echo "Examples:"
     echo "  fw config set watchtower.port 3001"

@@ -103,12 +103,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw config components --list` prints each optional component with included/excluded and installed/missing
-- [ ] `fw config components --set "<names>"` writes `ABSENT_COMPONENTS` (refuses an unknown name, writes nothing then); `--set ""` clears it
-- [ ] The interactive screen: arrow keys move, space toggles, Enter saves, q/Esc quits without saving; driven end-to-end through a pseudo-terminal in a test
-- [ ] Without a terminal, the bare command prints the non-interactive usage and exits non-zero (no hang)
-- [ ] The component list comes from one place shared with `fw doctor` (no second copy of the seven names)
-- [ ] `bin/fw vendor self --check --task T-5080` clean
+- [x] `fw config components --list` prints each optional component with included/excluded and installed/missing
+- [x] `fw config components --set "<names>"` writes `ABSENT_COMPONENTS` (refuses an unknown name, writes nothing then); `--set ""` clears it
+- [x] The interactive screen: arrow keys move, space toggles, Enter saves, q/Esc quits without saving; driven end-to-end through a pseudo-terminal in a test
+- [x] Without a terminal, the bare command prints the non-interactive usage and exits non-zero (no hang)
+- [x] The component list comes from one place shared with `fw doctor` (no second copy of the seven names) — `lib/optional_components.py`
+- [x] `bin/fw vendor self --check --task T-5080` clean
 
 ### Human
 - [ ] [REVIEW] The screen is simple to use
@@ -302,6 +302,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_t5080_config_components.py
+bats tests/unit/t4355_doctor_absent_components.bats
+python3 .agentic-framework/lib/optional_components.py
+bin/fw vendor self --check --task T-5080
 
 ## RCA
 
@@ -371,6 +375,15 @@ bvp_scores_proposed:
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+
+**Rationale:** The screen you asked for works: `fw config components` lists the seven optional components, arrow keys move, space switches a line between included and excluded, Enter saves, q leaves without changing anything. It writes the same setting `fw doctor` reads (T-4355). Scripts and agents use `--list` and `--set`. What is left is your feel for how simple it is.
+
+**Evidence:**
+- `tests/unit/test_t5080_config_components.py` 8/8, two of them driving the real screen through a pseudo-terminal (Down, Space, Enter saves `node`; Space, q saves nothing).
+- One list for doctor and the screen: `lib/optional_components.py` (a .py file so `fw vendor` ships it; a first .txt version was not vendored and was replaced). The vendored copy runs on its own.
+- `tests/unit/t4355_doctor_absent_components.bats` 5/5 with doctor reading the shared list.
 
 ## Decisions
 

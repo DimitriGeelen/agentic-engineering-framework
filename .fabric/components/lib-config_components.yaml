@@ -1,0 +1,21 @@
+id: lib/config_components.py
+name: config_components
+type: script
+subsystem: framework-core
+location: lib/config_components.py
+tags: []
+
+purpose: "fw config components — choose which optional components a project leaves out (T-5080)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-11
+created_by: unknown

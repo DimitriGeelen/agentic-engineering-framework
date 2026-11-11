@@ -1,0 +1,21 @@
+id: lib/optional_components.py
+name: optional_components
+type: script
+subsystem: framework-core
+location: lib/optional_components.py
+tags: []
+
+purpose: "Optional components a project may leave out on purpose (T-4355, T-5080)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-11
+created_by: unknown

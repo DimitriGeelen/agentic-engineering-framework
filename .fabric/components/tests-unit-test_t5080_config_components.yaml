@@ -1,0 +1,21 @@
+id: tests/unit/test_t5080_config_components.py
+name: test_t5080_config_components
+type: script
+subsystem: tests
+location: tests/unit/test_t5080_config_components.py
+tags: []
+
+purpose: "T-5080 — `fw config components`: choose the optional components a project leaves out (operator request 2026-11-11: \"arrow keys and space ... included, excluded\"). Writes ABSENT_COMPONENTS (T-4355)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-11
+created_by: unknown

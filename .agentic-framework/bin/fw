@@ -2088,7 +2088,9 @@ do_doctor() {
     # instead of a permanent WARN. Fixed allowlist, so a typo cannot silence
     # anything: an unknown name is itself a WARN. A component a workflow needs
     # (pi, ollama, litellm) still WARNs at its own check.
-    local _doctor_known_optional="termlink node bats shellcheck pi ollama litellm"
+    # T-5080: the list lives in one file, shared with `fw config components`.
+    local _doctor_known_optional
+    _doctor_known_optional=$(python3 "$FRAMEWORK_ROOT/lib/optional_components.py" 2>/dev/null)
     local _doctor_absent
     _doctor_absent=$(fw_config "ABSENT_COMPONENTS" "" 2>/dev/null || true)
     _doctor_absent=" ${_doctor_absent//,/ } "
