@@ -11,7 +11,7 @@ description: >
   inbox or decisions). Builds on T-4355; terminal first, Watchtower /config later
   if wanted.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-11T17:10:03Z
-last_update: '2026-11-11T17:16:07Z'
+last_update: 2026-11-11T18:10:43Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,20 +91,32 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** operator, 2026-11-11, while approving GH #98 (T-4355): "a config page where people just can very simply select ... using arrow keys and space ... included, excluded"; "a first start" of an older wish for a page that configures what an AEF install includes or excludes (not found written down anywhere; recorded here).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** T-4355 added `ABSENT_COMPONENTS`, but setting it means knowing the seven valid names and typing them into `fw config set`. People should be able to see the optional components and toggle them.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** a terminal screen, `fw config components`: one line per optional component with its state (included / excluded) and whether it is installed; arrow keys move, space toggles, Enter saves, q or Esc leaves without saving.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the screen writes `ABSENT_COMPONENTS` through the same config path as `fw config set`, so `fw doctor` reflects the choice; without a terminal it refuses the interactive form and prints the non-interactive one (`--list`, `--set "termlink node"`), so scripts and agents can use it too.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw config components --list` prints each optional component with included/excluded and installed/missing
+- [ ] `fw config components --set "<names>"` writes `ABSENT_COMPONENTS` (refuses an unknown name, writes nothing then); `--set ""` clears it
+- [ ] The interactive screen: arrow keys move, space toggles, Enter saves, q/Esc quits without saving; driven end-to-end through a pseudo-terminal in a test
+- [ ] Without a terminal, the bare command prints the non-interactive usage and exits non-zero (no hang)
+- [ ] The component list comes from one place shared with `fw doctor` (no second copy of the seven names)
+- [ ] `bin/fw vendor self --check --task T-5080` clean
+
+### Human
+- [ ] [REVIEW] The screen is simple to use
+  **Steps:**
+  1. In a terminal: `cd /opt/999-Agentic-Engineering-Framework && bin/fw config components`
+  2. Move with the arrow keys, press space on a line, press q to leave without saving
+  **Expected:** the screen is easy to read, the toggle is obvious, and leaving with q changes nothing (`bin/fw config get ABSENT_COMPONENTS` is still empty).
+  **If not:** say what was unclear; the agent adjusts the screen.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -387,3 +399,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5080-interactive-includeexclude-screen-for-op.md
 - **Context:** Initial task creation
+
+### 2026-11-11T18:10:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
