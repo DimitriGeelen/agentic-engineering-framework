@@ -3039,6 +3039,44 @@ _NOT_WORK = (".context/", ".tasks/")
 #: generated from is judged on the source path itself.
 _RELEASE_ARTIFACTS = ("dist/",)
 
+#: T-5079 (832 proposal): a project may declare more release-artifact paths in RELEASE_ARTIFACT_PATHS.
+#: The list exempts paths from the staleness check below, so it is read ONLY from .framework.yaml as
+#: committed at HEAD (an env var or an uncommitted edit cannot widen it), every entry must be a
+#: directory at least two levels deep, and none may lie under a source or framework-state tree.
+_ARTIFACT_KEY = "RELEASE_ARTIFACT_PATHS"
+_ARTIFACT_PROTECTED = ("lib/", "bin/", "agents/", "web/", "policy/", "tests/", "src/",
+                       _NOT_WORK[0], _NOT_WORK[1], ".claude/", ".git/", ".agentic-framework/",
+                       ".fabric/")
+
+
+def declared_release_artifacts(root: Path) -> tuple[tuple[str, ...], list[tuple[str, str]]]:
+    """(accepted prefixes, [(entry, why refused)]) from RELEASE_ARTIFACT_PATHS at HEAD."""
+    rc, text = _git_out(root, "show", "HEAD:.framework.yaml")
+    if rc != 0:
+        return (), []
+    raw = ""
+    for line in text.splitlines():
+        if line.startswith(f"{_ARTIFACT_KEY}:"):
+            raw = line.split(":", 1)[1].strip().strip("'\"")
+            break
+    ok: list[str] = []
+    bad: list[tuple[str, str]] = []
+    for e in raw.replace(",", " ").split():
+        why = ""
+        if not e.endswith("/"):
+            why = "must be a directory ending in /"
+        elif e.startswith("/") or ".." in e.split("/") or any(c in e for c in "*?[]{}~$\\"):
+            why = "must be a plain relative path (no leading /, no .., no globs or variables)"
+        elif len([x for x in e.split("/") if x]) < 2:
+            why = "must be at least two levels deep (a whole top-level tree is too broad)"
+        elif e.startswith(_ARTIFACT_PROTECTED):
+            why = "lies under a source or framework-state tree"
+        if why:
+            bad.append((e, why))
+        else:
+            ok.append(e)
+    return tuple(ok), bad
+
 
 def _stale_fault(ctx: _Ctx, row: dict) -> tuple[str, str] | None:
     """A green reviewed revision R. If work for the task landed after R, the green is about code
@@ -3050,6 +3088,7 @@ def _stale_fault(ctx: _Ctx, row: dict) -> tuple[str, str] | None:
     rc, out = _git_out(ctx.root, "log", f"{rev}..HEAD", f"--grep={ctx.task_id}", "--name-only",
                        "--format=%x1e%H%x1f%B%x1d")
     rc2, diff = _git_out(ctx.root, "diff", "--no-renames", "--name-only", rev, "HEAD") if rc == 0 else (rc, "")
+    artifacts = _RELEASE_ARTIFACTS + declared_release_artifacts(ctx.root)[0]  # T-5079
     if rc != 0 or rc2 != 0:
         return "stale-review", f"git cannot say what changed since reviewed revision {rev[:9]} — refusing"
     changed = set(diff.splitlines())
@@ -3062,7 +3101,7 @@ def _stale_fault(ctx: _Ctx, row: dict) -> tuple[str, str] | None:
         if not ref.search(msg):
             continue
         work = [f for f in files.splitlines() if f.strip() and f in changed
-                and not f.startswith(_NOT_WORK + _RELEASE_ARTIFACTS)]
+                and not f.startswith(_NOT_WORK + artifacts)]
         if work:
             return "stale-review", (f"{ctx.task_id} work changed after reviewed revision {rev[:9]} "
                                     f"(commit {sha[:9]} touches {work[0]}) — the verdict is about "
@@ -3837,6 +3876,12 @@ def audit(root: Path | None = None) -> tuple[int, list[str]]:
              for run in _read(RUNS, root)
              if run.get("kind") == "run" and review_policy.is_step_down(run.get("ceiling_decision"))]
     downs += green_degraded_lines(root)
+    # T-5079: a declared release-artifact list exempts paths from the staleness check; show it.
+    _arts, _refused = declared_release_artifacts(root)
+    if _arts:
+        downs.append(f"INFO release artifacts declared ({_ARTIFACT_KEY}, exempt from verdict "
+                     f"staleness): " + " ".join(_arts))
+    downs += [f"WARN {_ARTIFACT_KEY} entry {e!r} ignored: {why}" for e, why in _refused]
     if not n and not led.torn and not led.faults and not led.missing \
             and not _read(APPLIED, root) and not comps_exist:
         return 0, downs + ["verdict ledger: empty or absent (path is off until a review dispatch writes rows)"]

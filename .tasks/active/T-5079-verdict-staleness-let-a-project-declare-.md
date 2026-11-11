@@ -12,10 +12,10 @@ description: >
   to weigh: the list exempts paths from a review gate, so it must be committed config,
   audited, and never match source.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-11T16:58:12Z
-last_update: '2026-11-11T17:01:07Z'
+last_update: '2026-11-11T19:19:24Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,6 +85,22 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-11T19:19:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=4 (body:fw-audit-or-doctor); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5079: Verdict staleness: let a project declare extra release-artifact paths (832 proposal)
@@ -92,22 +108,31 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 832-Workflow-designer, 2026-11-11 (sidecar msg 4a06d57d, conversation verdict-stale-release-commits): their release commit names every shipped task and adds a generated `docs/authoring-kit/calibration-records/<V>.yaml`, so each release withdrew the reviewer verdicts of every shipped task (T-347 needed a re-judge and failed a close). AEF chose option (b) with guards; 832 agreed (msg 3124ab73).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `lib/verdict_ledger.py` `_stale_fault` treats any later commit naming the task and touching a path outside `.context/`, `.tasks/` and `dist/` as changed work. A project's own generated release files are not work, but there is no way to say so.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** a project can declare its generated release-artifact paths, without giving anyone a way to exempt real source from review.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `RELEASE_ARTIFACT_PATHS` (both config registries) lists directory prefixes; it is read only from `.framework.yaml` as committed at HEAD; each entry must be a plain relative directory at least two levels deep and outside source/framework-state trees, else it is ignored and `fw audit` WARNs; accepted entries are shown by the verdict-ledger audit.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A commit naming the task that touches only a declared artifact path no longer makes a green verdict stale; a commit touching source still does
+- [x] The list is read from `.framework.yaml` at HEAD only: an uncommitted edit or an `FW_RELEASE_ARTIFACT_PATHS` env var does not widen it
+- [x] Entries that are top-level, absolute, contain `..`/globs, or lie under lib/ bin/ agents/ web/ policy/ tests/ src/ or framework-state trees are ignored, and the verdict-ledger audit WARNs about each; accepted ones appear as an INFO line
+- [x] `RELEASE_ARTIFACT_PATHS` is in both config registries (parity lint green); existing verdict-ledger tests stay green (43 files, 845 passed)
+- [x] `bin/fw vendor self --check --task T-5079` clean
 
 ### Human
+- [ ] [REVIEW] The new setting reads clearly on Watchtower's settings page
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find the row `RELEASE_ARTIFACT_PATHS`
+  **Expected:** the row is there with an empty default, and its description makes clear it is only for files a release generates, and what it refuses.
+  **If not:** note what is unclear; the agent fixes the description in `lib/config.sh` and `web/blueprints/config.py`.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -291,6 +316,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/t5079_declared_release_artifacts_test.py tests/unit/t4779_stale_review_release_test.py
+bats tests/lint/config-registry-parity.bats
+bin/fw watchtower current
+bin/fw vendor self --check --task T-5079
 
 ## RCA
 
@@ -361,6 +390,14 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** 832's releases no longer have to throw away their reviewer approvals. A project lists the folders its release generates in `RELEASE_ARTIFACT_PATHS`; a release commit that touches only those leaves the approvals standing, while any source change in the same commit still withdraws them. Because the list loosens a review check, it is read only from the committed config, unsafe entries are refused and reported by `fw audit`, and accepted ones are shown there. Left for you: how the new settings row reads.
+
+**Evidence:**
+- `tests/unit/t5079_declared_release_artifacts_test.py` 8/8: without the setting the 832 release still withdraws; with it, it does not; source in the same commit still withdraws; an uncommitted edit or an env var does not count; eight unsafe entry shapes are refused; audit shows accepted and WARNs refused.
+- Parity lint green (both registries).
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -388,3 +425,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5079-verdict-staleness-let-a-project-declare-.md
 - **Context:** Initial task creation
+
+### 2026-11-11T19:19:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
