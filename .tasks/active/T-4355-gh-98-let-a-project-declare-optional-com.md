@@ -418,6 +418,11 @@ unknown name in the list is itself a WARN, so a typo cannot silence anything.
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-11-11 — mechanism (operator decision)
+- **Chose:** option 1, one declaration list (`ABSENT_COMPONENTS`): doctor prints OK "absent by choice" for listed optional components; an unrecognised name WARNs. Operator: asked "What's the best solution?", got A1 recommended, answered "Start" (2026-11-11 ~17:05Z).
+- **Why:** one key covers every optional component, the line stays visible as OK, and a typo cannot silence anything.
+- **Rejected:** 2 (a key per component: more to learn, same effect); 3 (generic suppression by check id: can hide real drift).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:

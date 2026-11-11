@@ -89,20 +89,23 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 832-Workflow-designer reported it on 2026-11-11 (sidecar msg 01a69304, their T-1393). An operator runme job run as the operator user failed its preflight because `fw task update` had left a task file root-owned 0600 with ACL effective `---`. 634 of their task files had drifted. Reproduced here: `_sed_i` turns a 0664 file into 0600. **1,639 of our 5,066 task files** are 0600, and on them the `user:dimitri-mint-dev:rwx` ACL entry inherited from `.tasks/active` is effective `---`.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `lib/compat.sh` `_sed_i` (and the inline fallback in `lib/paths.sh`) writes the edited text to `mktemp "${file}.XXXXXX"` and moves it over the file. `mktemp` creates 0600, and `mv` replaces the inode, so the file's mode, owner and ACL are the temp file's, not the original's. A 0600 mode also sets the ACL mask to `---`, which removes every named-user entry's access.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** editing a file through `_sed_i` leaves its mode, owner and ACL as they were, without giving up the atomic replace (task files are read constantly by hooks, so a half-written file must never be visible).
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `fw task update` and every other `_sed_i` caller keep file permissions; the 1,639 drifted task files are restored to 0664 (operator chose D1, 2026-11-11), so `dimitri-mint-dev` can read them again.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `_sed_i` copies the original file's mode, owner (when run as root) and ACL onto the temp file before the atomic `mv`; the `lib/paths.sh` fallback keeps at least the mode
+- [ ] Regression test: a 0664 file keeps 0664 after `_sed_i`; a file with a named-user ACL entry keeps it effective (skipped where setfacl is missing); fails without the fix
+- [ ] `fw task update T-XXX --add-tag x` on a 0664 task file leaves it 0664 (end-to-end through the real caller)
+- [ ] The drifted task files are reset to 0664 after the fix, and the commit lists every file it changed
+- [ ] Existing tests that source `lib/compat.sh` stay green; `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -368,6 +371,15 @@ bvp_scores_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-11 — repair of drifted files (operator decision)
+- **Chose:** D1, the agent resets the drifted task files to 0664 after the fix, listing every file in the commit. Operator answered "Start" to the recommendation (2026-11-11 ~17:05Z).
+- **Rejected:** a runme for the operator (same effect, more operator work); leaving them (dimitri-mint-dev stays locked out).
+
+### 2026-11-11 — how to keep the metadata
+- **Chose:** keep the atomic temp-file-and-`mv`, and copy the original's mode, owner (as root) and ACL onto the temp file first.
+- **Why:** task files are read all the time by hooks; writing back into the same inode (832's first suggestion) leaves a moment where a reader sees a truncated file, and a crash mid-write leaves it truncated for good.
+- **Rejected:** write back through the original inode (keeps metadata trivially, loses atomicity).
 
 ## Decision
 

@@ -423,6 +423,11 @@ carve-outs.
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-11-11 — design option (operator decision)
+- **Chose:** option 1, a language-neutral author marker `[OPERATOR]` that pins a Human criterion OPERATOR-ONLY before any keyword test. Operator: asked "What's the best solution?", got B1 recommended, answered "Start" (2026-11-11 ~17:05Z).
+- **Why:** works in every language, no heuristic, English routing (T-3557) unchanged; option 2 can be layered on later.
+- **Rejected:** 2 now (per-project word lists, never complete); 3 (language-guessing heuristic can fail open); 4 (built-in translations, unbounded).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:

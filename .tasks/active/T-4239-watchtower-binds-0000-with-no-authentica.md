@@ -386,6 +386,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-11-11 — default bind address (operator decision, GH #103 second half)
+- **Chose:** default `HOST` becomes `127.0.0.1` (this machine only); this framework repo sets `HOST 0.0.0.0` in the same change so http://192.168.10.107:3000 keeps working; release notes and an `fw doctor` hint tell consumers who reach Watchtower from other machines the one command to restore it. Operator: asked "What's the best solution?", got C-local recommended, answered "Start" (2026-11-11 ~17:05Z).
+- **Why:** Watchtower has no login and can record Human decisions; every new install exposed it network-wide without anyone choosing that (reported independently by two consumers).
+- **Rejected:** keep `0.0.0.0` (convenient, unsafe by default).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
