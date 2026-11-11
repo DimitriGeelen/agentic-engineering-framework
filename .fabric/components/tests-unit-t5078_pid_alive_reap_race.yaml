@@ -1,0 +1,21 @@
+id: tests/unit/t5078_pid_alive_reap_race.bats
+name: t5078_pid_alive_reap_race
+type: script
+subsystem: tests
+location: tests/unit/t5078_pid_alive_reap_race.bats
+tags: []
+
+purpose: "T-5078 — fw_pid_alive ran `kill -0` (true on a zombie) and then read the process state. When the parent reaped the zombie in between, the read came back empty, and empty is not \"Z\", so a process that no longer existed read as ALIVE."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-11
+created_by: unknown

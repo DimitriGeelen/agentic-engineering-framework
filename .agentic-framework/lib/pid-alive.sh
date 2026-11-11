@@ -19,5 +19,12 @@ fw_pid_alive() {
     else
         state=$(ps -o stat= -p "$pid" 2>/dev/null | tr -d '[:space:]') || true
     fi
+    # T-5078: an empty read means the process vanished between `kill -0` and the
+    # state read (its parent reaped the zombie). Empty is not "Z", so without this
+    # re-check a process that no longer exists read as alive, and `watchtower stop`
+    # reported "Failed to stop" for a stop that had worked.
+    if [ -z "$state" ]; then
+        kill -0 "$pid" 2>/dev/null || return 1
+    fi
     [ "${state:0:1}" != "Z" ]
 }
