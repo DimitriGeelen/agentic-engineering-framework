@@ -1,0 +1,21 @@
+id: tests/unit/t5077_sed_i_keeps_file_meta.bats
+name: t5077_sed_i_keeps_file_meta
+type: script
+subsystem: tests
+location: tests/unit/t5077_sed_i_keeps_file_meta.bats
+tags: []
+
+purpose: "T-5077 (832 T-1393) — _sed_i rewrote a file through mktemp (0600) + mv, so every file it edited became 0600."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-11
+created_by: unknown

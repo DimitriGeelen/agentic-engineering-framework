@@ -117,11 +117,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `_sed_i` copies the original file's mode, owner (when run as root) and ACL onto the temp file before the atomic `mv`; the `lib/paths.sh` fallback keeps at least the mode
-- [ ] Regression test: a 0664 file keeps 0664 after `_sed_i`; a file with a named-user ACL entry keeps it effective (skipped where setfacl is missing); fails without the fix
-- [ ] `fw task update T-XXX --add-tag x` on a 0664 task file leaves it 0664 (end-to-end through the real caller)
-- [ ] The drifted task files are reset to 0664 after the fix, and the commit lists every file it changed
-- [ ] Existing tests that source `lib/compat.sh` stay green; `bin/fw vendor self --check` clean
+- [x] `_sed_i` copies the original file's mode, owner (when run as root) and ACL onto the temp file before the atomic `mv`; the `lib/paths.sh` fallback keeps at least the mode
+- [x] Regression test: a 0664 file keeps 0664 after `_sed_i`; a file with a named-user ACL entry keeps it effective (skipped where setfacl is missing); fails without the fix
+- [x] `fw task update T-XXX --add-tag x` on a 0664 task file leaves it 0664 (end-to-end through the real caller)
+- [x] The drifted task files are reset to 0664 after the fix, and the commit lists every file it changed (git does not track read/write modes, so the list is `docs/reports/T-5077-mode-repair.md`: 1,639 files)
+- [x] Existing tests that source `lib/compat.sh` stay green; `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -307,6 +307,12 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bats tests/unit/t5077_sed_i_keeps_file_meta.bats
+bats tests/unit/lib_compat.bats
+bash -n lib/compat.sh
+bash -n lib/paths.sh
+test "$(find .tasks -name '*.md' -perm 600 | wc -l)" -eq 0
+bin/fw vendor self --check --task T-5077
 
 ## RCA
 
@@ -323,6 +329,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** task files edited by `fw task update` ended up mode 0600; on hosts where another account reaches the repo through a POSIX ACL, that account lost all access (832: an operator job failed; AEF: 1,639 of 5,066 task files, `dimitri-mint-dev` effective `---`).
+
+**Root cause:** `_sed_i` replaced the file with a fresh `mktemp` file (always 0600, owned by the caller) instead of editing it, and nothing carried the original file's mode, owner or ACL across. A 0600 mode also zeroes the ACL mask, so the inherited named-user entry silently stopped granting anything.
+
+**Why structurally allowed:** the tests of `_sed_i` checked the text it produced, never the file's metadata; the agent runs as root, which reads any file whatever its mode, so the agent itself never saw the lock-out. Only another account could, and nothing checks access from another account.
+
+**Prevention:** `_sed_i` copies mode, owner (as root) and ACL onto the temp file before the atomic move; `tests/unit/t5077_sed_i_keeps_file_meta.bats` checks mode, ACL entry and owner (fails 4 of 5 on the old helper); the task Verification also asserts no task file is 0600. Learning: a rewrite through a temp file must carry the file's metadata, and tests run as root cannot see permission damage.
 
 ## Evolution
 
