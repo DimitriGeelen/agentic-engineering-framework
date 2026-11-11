@@ -27,7 +27,9 @@ set -euo pipefail
 
 # Source colors if not already loaded
 if [ -z "${GREEN:-}" ]; then
-    source "${FRAMEWORK_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}/lib/colors.sh"
+    # T-5076: BASH_SOURCE, not $0 — sourced from `bash -c`, $0 is "bash" and the
+    # fallback pointed one level above the repo (hidden wherever FRAMEWORK_ROOT is set).
+    source "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/lib/colors.sh"
 fi
 
 # Source paths helper (fw_claude_project_dir_name) if not already loaded (T-2380)

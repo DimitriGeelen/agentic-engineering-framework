@@ -7,10 +7,10 @@ description: >
   fails. Hidden locally because agent shells export FRAMEWORK_ROOT. Found by node1
   run (T-5073, test_t4386_doctor_perf.py). Fix: use BASH_SOURCE[0].
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-11T16:45:33Z
-last_update: '2026-11-11T17:01:06Z'
+last_update: 2026-11-11T19:08:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,20 +87,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** the node1 unit-suite run (T-5073, 2026-11-11) failed `tests/unit/test_t4386_doctor_perf.py::test_costs_current_reads_only_the_newest_transcript` with `lib/costs.sh: line 30: .../tree/lib/colors.sh: No such file`. It fails in a clean clone too once `FRAMEWORK_ROOT` is unset; it passes here only because agent shells export `FRAMEWORK_ROOT`.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `lib/costs.sh` finds its own folder with `$(cd "$(dirname "$0")/.." && pwd)` when `FRAMEWORK_ROOT` is unset. Sourced from `bash -c`, `$0` is `bash`, so the path is resolved against the current directory and points one level above the repo; sourcing `colors.sh` then fails under `set -e`.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** `lib/costs.sh` finds the framework from its own location however it is loaded.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** resolution uses `${BASH_SOURCE[0]}`; the T-4386 test passes with `FRAMEWORK_ROOT` unset; other `lib/*.sh` files with the same `$0` pattern are listed (fixed if they are sourced the same way).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/costs.sh` resolves its folder from `${BASH_SOURCE[0]}`, not `$0`
+- [x] `test_t4386_doctor_perf.py` passes with `FRAMEWORK_ROOT` and `PROJECT_ROOT` unset (regression: fails on the old file) — new test `test_costs_sh_finds_its_own_folder_without_framework_root` removes both itself, so it bites on every host
+- [x] Other `lib/*.sh` files using the `dirname "$0"` fallback for the framework root are listed in this task, and fixed where they are meant to be sourced — `grep -n 'dirname "$0"' lib/*.sh` finds none besides costs.sh
+- [x] `bin/fw vendor self --check --task T-5076` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -286,6 +288,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_t4386_doctor_perf.py
+bats tests/unit/lib_costs.bats
+bash -n lib/costs.sh
+bin/fw vendor self --check --task T-5076
 
 ## RCA
 
@@ -302,6 +308,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** on node1, sourcing `lib/costs.sh` failed with `.../lib/colors.sh: No such file`; locally it worked.
+
+**Root cause:** the fallback for an unset `FRAMEWORK_ROOT` used `$0`, which names the script only when the file is executed. Sourced, `$0` is the caller (`bash` under `bash -c`), so the folder was worked out from the current directory.
+
+**Why structurally allowed:** every agent shell and every `fw` call exports `FRAMEWORK_ROOT`, so the fallback never ran where the tests ran; the existing test also loaded `colors.sh` first and inherited the environment. And `source x && y` turns errexit off inside `x`, which makes a failed load inside a sourced file easy to miss.
+
+**Prevention:** `${BASH_SOURCE[0]}`; a test that removes `FRAMEWORK_ROOT`/`PROJECT_ROOT` itself, runs from a foreign directory, and checks stderr (fails on the old file); a grep of `lib/*.sh` found no other `dirname "$0"` fallback. Learning: tests that run under an agent inherit its environment, so a fallback for a missing variable needs a test that removes the variable on purpose.
 
 ## Evolution
 
@@ -383,3 +397,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5076-libcostssh-resolves-its-own-folder-from-.md
 - **Context:** Initial task creation
+
+### 2026-11-11T19:08:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

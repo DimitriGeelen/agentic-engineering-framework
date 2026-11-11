@@ -36,6 +36,23 @@ def _costs_current(jsonl_dir):
         capture_output=True, text=True, timeout=60)
 
 
+def test_costs_sh_finds_its_own_folder_without_framework_root(tmp_path):
+    # T-5076 (found by the node1 run, T-5073): with FRAMEWORK_ROOT unset, costs.sh
+    # resolved its folder from $0, which is "bash" under `bash -c`, so colors.sh was
+    # looked up relative to the current directory and sourcing failed. Agent shells
+    # export FRAMEWORK_ROOT, which hid it locally; this test removes it on purpose and
+    # runs from a foreign directory.
+    env = {k: v for k, v in os.environ.items()
+           if k not in ("FRAMEWORK_ROOT", "PROJECT_ROOT", "GREEN", "NC", "RED", "YELLOW")}
+    # No `&&` after source: a list like `source x && y` switches errexit off inside x,
+    # which would let the failed colors.sh load pass silently.
+    r = subprocess.run(["bash", "-c", 'source "$1/lib/costs.sh"; echo LOADED', "_", str(ROOT)],
+                       capture_output=True, text=True, timeout=60, cwd=tmp_path, env=env)
+    assert "No such file" not in r.stderr, r.stderr
+    assert r.returncode == 0, r.stderr
+    assert "LOADED" in r.stdout
+
+
 def test_costs_current_reads_only_the_newest_transcript(tmp_path):
     # An older "transcript" that cannot be opened: the pre-fix code parsed every
     # file before picking the newest, and raised on this one.
