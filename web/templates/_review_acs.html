@@ -112,6 +112,14 @@
         Untick a check to take it back.
     </div>
 </div>
+{% elif with_operator %}
+{# T-5084: waiting for review with a Human check open -> it is the operator's turn. #}
+<div class="complete-section" id="task-with-operator-marker">
+    <div style="border-left: 4px solid #6b7280; padding: 0.75rem 1rem; background: rgba(0,0,0,0.02); border-radius: 4px;">
+        <strong>A Human check is open: the task is with you.</strong>
+        When every check is ticked it goes back to the agent to close.
+    </div>
+</div>
 {% elif task_completed %}
 {# T-2081 / T-2082 (L-441 sibling of T-1575): non-inception sibling guard.
    Without this, the 5-second poll on #ac-container wipes the POST-swap

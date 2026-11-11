@@ -311,7 +311,12 @@ def review_acs_fragment(task_id):
     # returned the Complete button. This guard short-circuits the branch so the
     # poll renders a "✓ Task completed" panel instead.
     status = (fm.get("status") or "").strip().lower()
-    task_completed = status in ("work-completed", "completed")
+    # T-5084: a task waiting for review is already work-completed while still in active/;
+    # only a task file in completed/ is closed. (T-2081's guard keyed on status alone and
+    # showed "Task completed" for every partial-complete task.)
+    task_completed = task_file.parent.name == "completed"
+    with_operator = (task_file.parent.name == "active" and status == "work-completed"
+                     and total_count > 0 and not all_checked)
     # T-5081: the review page swaps nothing from the tick response (hx-swap="none") and
     # reloads this fragment instead, so the hand-back is shown from task state: every Human
     # check ticked, the agent owns it, and it is still open (in active/).
@@ -321,6 +326,7 @@ def review_acs_fragment(task_id):
     return render_template(
         "_review_acs.html",
         handed_back=handed_back,
+        with_operator=with_operator,
         task_id=task_id,
         workflow_type=fm.get("workflow_type", ""),
         human_acs=human_acs,

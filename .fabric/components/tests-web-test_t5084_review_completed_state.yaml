@@ -1,0 +1,21 @@
+id: tests/web/test_t5084_review_completed_state.py
+name: test_t5084_review_completed_state
+type: script
+subsystem: tests
+location: tests/web/test_t5084_review_completed_state.py
+tags: []
+
+purpose: "T-5084: the review page said \"Task completed\" for any work-completed task, including one still waiting for review in active/ with a Human check open (found by the T-5081 reviewer judge after an untick)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-11
+created_by: unknown
