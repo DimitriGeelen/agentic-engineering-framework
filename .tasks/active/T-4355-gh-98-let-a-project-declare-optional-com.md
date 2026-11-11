@@ -432,6 +432,15 @@ bin/fw vendor self --check --task T-4355
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The setting you chose (option 1) works and is tested. Listing a part as left out on purpose turns its `fw doctor` warning into an OK line that says so; a part that is missing but not listed still warns; a misspelled name warns. The only thing left for you is a look at how the new row reads on the settings page.
+
+**Evidence:**
+- `tests/unit/t4355_doctor_absent_components.bats`: 5/5 pass, running the real `fw doctor` with TermLink and Node.js hidden; the old code has none of the new messages, so the checks cannot pass without the change.
+- Commit 8a72f9779: `bin/fw`, `lib/config.sh`, `web/blueprints/config.py`; config parity lint green.
+- Watchtower restarted; `bin/fw watchtower current` OK; http://192.168.10.107:3000/config shows `ABSENT_COMPONENTS`.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
