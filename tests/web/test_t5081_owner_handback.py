@@ -124,6 +124,25 @@ def test_no_provenance_row_means_no_tick_and_no_handback(repo, monkeypatch):
     assert "- [ ] [REVIEW] Second human check" in tf.read_text()
 
 
+def test_review_page_fragment_shows_the_handback(repo, monkeypatch):
+    # The /review page discards the tick response (hx-swap="none") and reloads /review/<id>/acs,
+    # so the note there comes from task state, not from the response (found by the screenshot).
+    root, tf, client = repo
+    from web.blueprints import review as review_bp
+    monkeypatch.setattr(review_bp, "PROJECT_ROOT", root)
+    app = Flask(__name__, template_folder=str(FRAMEWORK_ROOT / "web" / "templates"))
+    app.register_blueprint(review_bp.bp)
+    app.jinja_env.globals.setdefault("csrf_token", lambda: "t")
+    rc = app.test_client()
+    assert "handed back to the agent" not in rc.get("/review/T-9002/acs").get_data(as_text=True)
+    tick(client, tf, "First human check")
+    tick(client, tf, "Second human check")
+    html = rc.get("/review/T-9002/acs").get_data(as_text=True)
+    assert "Every Human check is ticked: handed back to the agent to close." in html
+    tick(client, tf, "Second human check")
+    assert "handed back to the agent" not in rc.get("/review/T-9002/acs").get_data(as_text=True)
+
+
 def test_one_rule_for_both_paths():
     src = (FRAMEWORK_ROOT / "lib" / "verdict_ledger.py").read_text()
     assert "owner_handback(new_text" in src

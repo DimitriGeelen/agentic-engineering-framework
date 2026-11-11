@@ -103,6 +103,15 @@
         <span style="color: {{ _dec_color }}; font-weight: 700;">{{ _dec_upper }}</span>
     </div>
 </div>
+{% elif handed_back %}
+{# T-5081: every Human check ticked on a task still open -> it went back to the agent,
+   which closes it. Shown from task state because this page discards the tick response. #}
+<div class="complete-section" id="task-handed-back-marker">
+    <div style="border-left: 4px solid #10b981; padding: 0.75rem 1rem; background: rgba(0,0,0,0.02); border-radius: 4px;">
+        <strong style="color: #10b981;">Every Human check is ticked: handed back to the agent to close.</strong>
+        Untick a check to take it back.
+    </div>
+</div>
 {% elif task_completed %}
 {# T-2081 / T-2082 (L-441 sibling of T-1575): non-inception sibling guard.
    Without this, the 5-second poll on #ac-container wipes the POST-swap
