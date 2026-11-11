@@ -380,6 +380,14 @@ before each; files `.context/visual/T-5081/{last-tick,untick}@{1024,1440,1920}.p
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The review page now shows the hand-back after the operator's last tick, the gap the T-5081 screenshots exposed. Shots of the real page at all three widths show the note after the last tick and its absence after unticking.
+
+**Evidence:**
+- Shots `.context/visual/T-5081/{last-tick,untick}@{1024,1440,1920}.png` with capture manifests.
+- `test_review_page_fragment_shows_the_handback` plus the other T-5081 tests (7 passed); review-page tests 154 passed.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
