@@ -198,3 +198,12 @@ Bundle of `6a945030e` (bundle commit `9d74378b`, 46.3 MB) staged with `pool-clie
 **The one difference, explained:** 11 of the 12 failures are `receiver: server did not come up within 10s`: `fw sidecar receiver start` waits a fixed 10 s for its server (`lib/sidecar_cli.py:964`), and node1 (about 3x slower per core, all 12 slots busy at the time) needed longer. The twelfth (`serve()` returned 3, "a live receiver already serves this agent") is a knock-on: the receiver of the test before it was still registered after its timeout. Loopback itself works on node1 (40 tests of this file talk to the server over 127.0.0.1). The fixed 10 s is an AEF weakness, not a node1 fault: the same start fails on any slow or busy host.
 
 Result format confirmed: `unit.log` ends with `aef-run-unit: exit N`; `pool-result.json` names the dispatch, the checked job sha256 and `outcome`.
+
+## 9. Full run on node1 — interim (T-5073, 2026-11-10/11)
+
+Bundle of `590b7d0bf` (carries T-5072), env `aef-unit-1` then `aef-unit-2` (adds ruamel.yaml, openai). Paused 2026-11-11 ~10:12Z on ring20's node1 health alarm (their new canary; node1 itself ran jobs).
+
+- **Collected:** 1,262 of the remaining-files run, plus 32 + 63 + 16 + 2 earlier; 2 results orphaned by a ring20 restart (republish fix pending on their side); **192 files not yet sent** (`.context/scratch/node1-jobs/listA3.txt`).
+- **Every node1 failure re-run here** (same command, same commit): **29 files fail only on node1**, none fails here. Raw table: `docs/reports/T-5073-node1-compare-590b.tsv`.
+- **Causes seen so far (first pass, not complete):** node1 sandbox differences, not AEF code: read-only root file system (t4395 writes `/t4395-probe`), open-file limit (t4400 "Too many open files"), `playwright` not installed (test_playwright_server_adoption.py — the spec's claim that only browser tests need it was wrong), the bundle's excluded `.context/handovers` (test_search_inclusion_set.py), no systemd scope / tmux / live TermLink (t4647, t3277, t4426, termlink.bats, t4641, ...), host cron (bvp_auto_promote_enable.bats), and 2 files at the 900 s cap (init_project_shape_detection, t5061). 13 files still need their cause read from `unit.log`.
+- **Next:** classify the 13; decide per class: add to the local-only list, ask ring20 for an env change (playwright, open-file limit), or fix the test; send the 192; then wire results into the nightly report.
