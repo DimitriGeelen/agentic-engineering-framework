@@ -10,8 +10,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 github_issue: 98
 arc_id: mikeechovoid-requests
 tags: [github, mikeechovoid]
@@ -46,7 +46,7 @@ origin: {kind: "peer", source: "github#98"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T23:04:36Z
-last_update: '2026-11-11T17:45:33Z'
+last_update: 2026-11-11T21:58:58Z
 date_finished: 2026-11-11T17:39:09Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -181,7 +181,7 @@ unknown name in the list is itself a WARN, so a typo cannot silence anything.
 - [x] Existing doctor tests stay green; `bin/fw vendor self --check` clean (doctor_hook_counters.bats fails identically on the pre-change bin/fw and is already in the unit-suite baseline)
 
 ### Human
-- [ ] [REVIEW] The new setting reads clearly on Watchtower's settings page
+- [x] [REVIEW] The new setting reads clearly on Watchtower's settings page
   **Steps:**
   1. Open http://192.168.10.107:3000/config
   2. Find the row `ABSENT_COMPONENTS`
@@ -231,6 +231,7 @@ unknown name in the list is itself a WARN, so a typo cannot silence anything.
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261111-34bc09fa — reviewer-judge-t-4355-r3-55f89dbab33f:reviewer (rung rung-3-termlink-single-reviewer), digest 49d4bb9284fd; dispatch judge-t-4355-r3-55f89dbab33f; evidence: .context/reviews/evidence/T-4355/AC1-judge-t-4355-r3-55f89dbab33f.md, .context/reviews/evidence/T-4355/01-config-judge-t-4355-r3-55f89dbab33f.png, .context/reviews/evidence/T-4355/config-1024-judge-t-4355-r3-55f89dbab33f.png, .context/reviews/evidence/T-4355/config-1440-judge-t-4355-r3-55f89dbab33f.png, .context/reviews/evidence/T-4355/config-1920-judge-t-4355-r3-55f89dbab33f.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 

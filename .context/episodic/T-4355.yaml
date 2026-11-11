@@ -1,0 +1,122 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4355: GH #98: Let a project declare optional components absent by choice, so fw doctor stays green and readable
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-11T22:00:25Z
+# ============================================================================
+
+task_id: T-4355
+task_name: "GH #98: Let a project declare optional components absent by choice, so fw doctor stays green and readable"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-18T23:04:36Z
+completed: 2026-11-11T17:45:33Z
+duration_days: 24
+updates_count: 3
+first_commit: 2026-10-20T22:16:56+02:00
+last_commit: 2026-11-11T22:43:50+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  stop before build, #98 mechanism is the operator's choice per T-4339 retro; options and ACs recorded. ABSENT_COMPONENTS — fw doctor reports optional components left out on purpose as OK (GH #98). recommendation for the /config review. partial-complete — awaiting operator /config check. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (antigravity seat antigravity, recorded by the runtime)
+
+# Key outcomes
+outcomes:
+  - 'Operator''s mechanism choice (option 1/2/3 in Context) recorded under ## Decisions before any source edit'
+  - 'A component declared absent by choice makes `fw doctor` print OK (naming the declaration) instead of WARN for that component'
+  - 'An undeclared absent component still WARNs, and an unrecognised name in the declaration WARNs'
+  - 'Regression test under tests/unit/ covers all three cases and fails without the fix'
+  - 'Existing doctor tests stay green; `bin/fw vendor self --check` clean (doctor_hook_counters.bats fails identically on the pre-change bin/fw and is already in the unit-suite baseline)'
+  - '[REVIEW] The new setting reads clearly on Watchtower''s settings page'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-11 — mechanism (operator decision)'
+    chose: 'option 1, one declaration list (`ABSENT_COMPONENTS`): doctor prints OK "absent by choice" for listed optional components; an unrecognised name WARNs. Operator: asked "What''s the best solution?", got A1 recommended, answered "Start" (2026-11-11 ~17:05Z).'
+    rationale: 'one key covers every optional component, the line stays visible as OK, and a typo cannot silence anything.'
+    alternatives_rejected: ['2 (a key per component: more to learn, same effect); 3 (generic suppression by check id: can hide real drift).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/web/blueprints/config.py'
+  - '.context/reviews/applied.jsonl'
+  - '.context/reviews/evidence/T-4355/01-config-judge-t-4355-r3-4cad042acfec.png'
+  - '.context/reviews/evidence/T-4355/01-config-judge-t-4355-r3-55f89dbab33f.png'
+  - '.context/reviews/evidence/T-4355/AC1-judge-t-4355-r3-45b3d768c47c.md'
+  - '.context/reviews/evidence/T-4355/AC1-judge-t-4355-r3-4cad042acfec.md'
+  - '.context/reviews/evidence/T-4355/AC1-judge-t-4355-r3-55f89dbab33f.md'
+  - '.context/reviews/evidence/T-4355/AC1-judge-t-4355-r3-8344b3fb6e78.md'
+  - '.context/reviews/evidence/T-4355/config-1024-judge-t-4355-r3-55f89dbab33f.png'
+  - '.context/reviews/evidence/T-4355/config-1440-judge-t-4355-r3-55f89dbab33f.png'
+  - '.context/reviews/evidence/T-4355/config-1920-judge-t-4355-r3-55f89dbab33f.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.fabric/components/tests-unit-t4355_doctor_absent_components.yaml'
+  - '.tasks/active/T-4355-gh-98-let-a-project-declare-optional-com.md'
+  - 'bin/fw'
+  - 'lib/config.sh'
+  - 'tests/unit/t4355_doctor_absent_components.bats'
+  - 'web/blueprints/config.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T22:16:56'
+    action: 'T-4355: stop before build, #98 mechanism is the operator''s choice per T-4339 retro; options and ACs recorded'
+  - time: '2026-11-11T18:36:09'
+    action: 'T-4355: ABSENT_COMPONENTS — fw doctor reports optional components left out on purpose as OK (GH #98)'
+  - time: '2026-11-11T18:39:05'
+    action: 'T-4355: recommendation for the /config review'
+  - time: '2026-11-11T18:41:17'
+    action: 'T-4355: partial-complete — awaiting operator /config check'
+  - time: '2026-11-11T22:37:26'
+    action: 'T-4355: reviewer verdict'
+  - time: '2026-11-11T22:39:00'
+    action: 'T-4355: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-11T22:40:42'
+    action: 'T-4355: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-11T22:43:50'
+    action: 'T-4355: reviewer verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 34240 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github, mikeechovoid]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 34240
+  commits: 9
+  files_changed: 27
+  lines_added: 601
+  lines_removed: 19
+  footprint_refreshed_at: '2026-11-11T22:01:34Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4355-gh-98-let-a-project-declare-optional-com.md
+generated_by: context-agent-hybrid
