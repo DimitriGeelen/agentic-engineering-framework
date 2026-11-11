@@ -45,7 +45,7 @@ origin: {kind: "peer", source: "github#98"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T23:04:36Z
-last_update: '2026-10-31T13:15:34Z'
+last_update: 2026-11-11T17:14:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -125,6 +125,14 @@ bvp_scores_proposed:
 
 ## Context
 
+**Background / trigger:** GitHub issue #98 (MikeEchoVoid, accepted 2026-10-19): a project that leaves an optional component out on purpose gets a permanent `fw doctor` WARN for it.
+
+**Problem / hypothesis:** doctor has no way to know a missing component was a choice, so the WARN never clears; a list of permanent warnings hides the ones that matter.
+
+**Goal:** let a project declare optional components absent by choice, without giving any way to silence real problems.
+
+**Expected outcome:** `ABSENT_COMPONENTS` (operator chose option 1 on 2026-11-11) makes doctor print OK "absent by choice" for listed components; undeclared missing components and components a workflow needs still WARN; an unknown name WARNs.
+
 GH #98 (enhancement, not a bug): a project that leaves out an optional component on purpose
 (TermLink, pi, bats/shellcheck and similar) gets a permanent `fw doctor` WARN, today emitted
 through `_doctor_warn_host` (`bin/fw:1859`, call sites e.g. `bin/fw:2441`, `:2448`, `:3938`,
@@ -156,12 +164,19 @@ unknown name in the list is itself a WARN, so a typo cannot silence anything.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Operator's mechanism choice (option 1/2/3 in Context) recorded under ## Decisions before any source edit
-- [ ] A component declared absent by choice makes `fw doctor` print OK (naming the declaration) instead of WARN for that component
-- [ ] An undeclared absent component still WARNs, and an unrecognised name in the declaration WARNs
-- [ ] Regression test under tests/unit/ covers all three cases and fails without the fix
+- [x] Operator's mechanism choice (option 1/2/3 in Context) recorded under ## Decisions before any source edit
+- [x] A component declared absent by choice makes `fw doctor` print OK (naming the declaration) instead of WARN for that component
+- [x] An undeclared absent component still WARNs, and an unrecognised name in the declaration WARNs
+- [x] Regression test under tests/unit/ covers all three cases and fails without the fix
+- [x] Existing doctor tests stay green; `bin/fw vendor self --check` clean (doctor_hook_counters.bats fails identically on the pre-change bin/fw and is already in the unit-suite baseline)
 
 ### Human
+- [ ] [REVIEW] The new setting reads clearly on Watchtower's settings page
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find the row `ABSENT_COMPONENTS`
+  **Expected:** the row is there with an empty default, and its description says which components can be listed and that a needed or misspelled one still warns.
+  **If not:** note what is missing or unclear; the agent fixes the description in `lib/config.sh` and `web/blueprints/config.py`.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -337,6 +352,11 @@ unknown name in the list is itself a WARN, so a typo cannot silence anything.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bats tests/unit/t4355_doctor_absent_components.bats
+bats tests/lint/config-registry-parity.bats
+bash -n bin/fw
+bin/fw watchtower current
+bin/fw vendor self --check --task T-4355
 
 ## RCA
 
@@ -377,6 +397,11 @@ unknown name in the list is itself a WARN, so a typo cannot silence anything.
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-11 — scope of "optional", and a follow-up the operator asked for
+- **What changed:** reading the doctor code showed pi, ollama and litellm already warn only when a workflow needs them; TermLink, Node.js, bats and shellcheck warned whenever missing. So the declaration changes those four sites; the other three are accepted in the list but their need-based WARN stays, which is the "still WARN when required" rule from the option text.
+- **Plan impact:** the setting had to be registered in both config registries (`lib/config.sh`, `web/blueprints/config.py`, parity lint), which makes this task touch a render surface and adds a [REVIEW] check of the /config row.
+- **Triggered:** T-5080 — operator asked (2026-11-11) for a simple arrow-keys-and-space screen to include/exclude components, writing this setting; first step of a wider "configure what AEF includes" wish.
 
 ## Recommendation
 

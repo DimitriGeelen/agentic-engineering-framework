@@ -2083,6 +2083,31 @@ do_doctor() {
         host_warnings=$((host_warnings + 1))
     }
 
+    # T-4355 (GitHub #98): optional components a project leaves out on purpose.
+    # Listed in ABSENT_COMPONENTS, a missing one reads OK "absent by choice"
+    # instead of a permanent WARN. Fixed allowlist, so a typo cannot silence
+    # anything: an unknown name is itself a WARN. A component a workflow needs
+    # (pi, ollama, litellm) still WARNs at its own check.
+    local _doctor_known_optional="termlink node bats shellcheck pi ollama litellm"
+    local _doctor_absent
+    _doctor_absent=$(fw_config "ABSENT_COMPONENTS" "" 2>/dev/null || true)
+    _doctor_absent=" ${_doctor_absent//,/ } "
+    _doctor_absent_by_choice() {
+        case "$_doctor_absent" in *" $1 "*) return 0 ;; esac
+        return 1
+    }
+    _doctor_absent_ok() {
+        echo -e "  ${GREEN}OK${NC}  $1 not installed — absent by choice (ABSENT_COMPONENTS)"
+    }
+    local _ac_name
+    for _ac_name in $_doctor_absent; do
+        case " $_doctor_known_optional " in
+            *" $_ac_name "*) ;;
+            *) echo -e "  ${YELLOW}WARN${NC}  ABSENT_COMPONENTS names '$_ac_name', which is not an optional component (known: $_doctor_known_optional)"
+               warnings=$((warnings + 1)) ;;
+        esac
+    done
+
     # Check 1: Framework directory
     if [ -d "$FRAMEWORK_ROOT/agents" ] && [ -f "$FRAMEWORK_ROOT/FRAMEWORK.md" ]; then
         echo -e "  ${GREEN}OK${NC}  Framework installation"
@@ -2715,6 +2740,8 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
                     echo -e "  ${YELLOW}WARN${NC}  bats installed but no unit tests found in tests/unit/"
                     warnings=$((warnings + 1))
                 fi
+            elif _doctor_absent_by_choice bats; then
+                _doctor_absent_ok "bats"
             else
                 _doctor_warn_host "bats not installed (run: git clone https://github.com/bats-core/bats-core && ./install.sh /usr/local)"
             fi
@@ -2722,6 +2749,8 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
 
         if command -v shellcheck >/dev/null 2>&1; then
             echo -e "  ${GREEN}OK${NC}  ShellCheck linter"
+        elif _doctor_absent_by_choice shellcheck; then
+            _doctor_absent_ok "shellcheck"
         else
             _doctor_warn_host "shellcheck not installed (run: apt install shellcheck  # or brew install shellcheck)"
         fi
@@ -4309,6 +4338,8 @@ print(" ".join(sorted(dm.host_shared_address_keys())))' "$FRAMEWORK_ROOT" 2>/dev
             fi
         fi
         fi  # T-2452/F6-style --quick guard
+    elif _doctor_absent_by_choice termlink; then
+        _doctor_absent_ok "TermLink"
     else
         _doctor_warn_host "TermLink not installed (cargo install termlink)"
     fi
@@ -4550,6 +4581,8 @@ except Exception:
             else
                 echo -e "  ${GREEN}OK${NC}  TypeScript build (${#_ts_files[@]} source(s))"
             fi
+        elif _doctor_absent_by_choice node; then
+            _doctor_absent_ok "Node.js"
         else
             _doctor_warn_host "Node.js not found (TS hooks will use Python fallback)"
         fi

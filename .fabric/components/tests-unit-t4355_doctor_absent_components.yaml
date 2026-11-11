@@ -1,0 +1,21 @@
+id: tests/unit/t4355_doctor_absent_components.bats
+name: t4355_doctor_absent_components
+type: script
+subsystem: tests
+location: tests/unit/t4355_doctor_absent_components.bats
+tags: []
+
+purpose: "T-4355 (GitHub #98) — a project that leaves out an optional component on purpose got a permanent `fw doctor` WARN for it. ABSENT_COMPONENTS lists such components; doctor then reports OK \"absent by choice\"."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-11
+created_by: unknown
