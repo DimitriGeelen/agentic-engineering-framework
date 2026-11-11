@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5075: t4108 ancestry test passes only under Claude Code
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-11T19:07:37Z
+# ============================================================================
+
+task_id: T-5075
+task_name: "t4108 ancestry test passes only under Claude Code"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-11T15:05:35Z
+completed: 2026-11-11T19:07:02Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-11T16:05:48+01:00
+last_commit: 2026-11-11T20:06:52+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — t4108 ancestry test vacuous outside Claude Code (found by T-5073). t4108 ancestry test proves the probe on any host (fake claude stays a live parent; control reads False)
+
+# Key outcomes
+outcomes:
+  - 'The fake `claude` wrapper runs Python as a child (no `exec`), so a process named `claude` is in the chain'
+  - 'The test no longer depends on the host: started from a parent chain with no Claude process (via `setsid` + a neutral parent), it still passes; a control with a non-Claude wrapper name returns False'
+  - 'The rest of `t4108_issues_security_test.py` stays green (8 passed)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5075-t4108-ancestry-test-passes-only-under-cl.md'
+  - 'tests/unit/t4108_issues_security_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-11T16:05:48'
+    action: 'T-5075: capture — t4108 ancestry test vacuous outside Claude Code (found by T-5073)'
+  - time: '2026-11-11T20:06:52'
+    action: 'T-5075: t4108 ancestry test proves the probe on any host (fake claude stays a live parent; control reads False)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 241 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 241
+  commits: 3
+  files_changed: 5
+  lines_added: 561
+  lines_removed: 19
+  footprint_refreshed_at: '2026-11-11T19:07:56Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5075-t4108-ancestry-test-passes-only-under-cl.md
+generated_by: context-agent-hybrid
