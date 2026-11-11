@@ -306,13 +306,13 @@ bin/fw vendor self --check --task T-5083
 Shots of a throwaway demo project (scratchpad, own git repo, task T-9002 with two Human checks,
 the first pre-ticked) served by a second Watchtower running this repo's code; an agent never ticks
 a Human box on a real task. Taken with fw's `ux_shots` code one shot at a time, resetting the demo
-before each; files `.context/visual/T-5081/{last-tick,untick}@{1024,1440,1920}.png`, manifests
-`.context/visual/T-5081/*.capture.json`.
+before each; files `.context/visual/T-5083/{last-tick,untick}@{1024,1440,1920}.png`, manifests
+`.context/visual/T-5083/*.capture.json` (retaken 2026-11-12 after T-5084).
 
 | state | control | 1024 | 1440 | 1920 | note |
 |-------|---------|------|------|------|------|
 | last-tick | review page after ticking the last Human check | ok | ok | ok | green note under the list; the header's "Owner:" line refreshes only on reload |
-| untick | review page after unticking it again | ok | ok | ok | note gone, progress 1/2 |
+| untick | review page after unticking it again | ok | ok | ok | hand-back note gone, progress 1/2, "A Human check is open: the task is with you." (T-5084) |
 
 ## RCA
 

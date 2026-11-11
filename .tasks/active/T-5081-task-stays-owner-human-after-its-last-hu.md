@@ -322,7 +322,7 @@ owner agent, task still in active/). Test: `test_review_page_fragment_shows_the_
 | state | control | 1024 | 1440 | 1920 | note |
 |-------|---------|------|------|------|------|
 | last-tick | review page after ticking the last Human check | ok | ok | ok | green note "Every Human check is ticked: handed back to the agent to close." under the list; the header's "Owner:" line refreshes only on reload |
-| untick | review page after unticking it again | ok | ok | ok | note gone, progress 1/2, box open |
+| untick | review page after unticking it again | ok | ok | ok | "A Human check is open: the task is with you." (T-5084; it said "Task completed" before), progress 1/2, box open; retaken 2026-11-12 |
 
 On the task page and the /approvals list the tick response replaces the checkbox, so the note
 appears right next to it (fragment below, from the test fixture).
