@@ -29,6 +29,9 @@ FIREWALL_STATE_FILE="$PROJECT_ROOT/.context/working/watchtower.firewall"
 # T-1287: port + url triple alongside pid (foundation for T-1284 3-layer discovery)
 PORT_FILE="$PROJECT_ROOT/.context/working/watchtower.port"
 URL_FILE="$PROJECT_ROOT/.context/working/watchtower.url"
+# T-4360 (GitHub #103): the address the running instance is bound to, so a plain
+# restart can come back on it instead of re-resolving to the 0.0.0.0 default.
+HOST_FILE="$PROJECT_ROOT/.context/working/watchtower.host"
 LOG_FILE="$PROJECT_ROOT/.context/working/watchtower.log"
 DEFAULT_PORT=$(fw_config "PORT" 3000)
 
@@ -167,7 +170,7 @@ do_stop() {
 
     if ! _pid_alive "$pid"; then
         log_warn "Stale PID file (PID $pid not running). Cleaning up."
-        rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE"
+        rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE" "$HOST_FILE"
         close_recorded_firewall_rules "$FIREWALL_STATE_FILE"
         return 0
     fi
@@ -200,7 +203,7 @@ do_stop() {
         return 1
     fi
 
-    rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE"
+    rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE" "$HOST_FILE"
     # T-4323: remove the UFW rule(s) start added; a stopped server serves no port.
     close_recorded_firewall_rules "$FIREWALL_STATE_FILE"
     log_info "Watchtower stopped."
@@ -454,7 +457,7 @@ do_start() {
         if ! _pid_alive "$new_pid"; then
             log_error "Watchtower exited immediately. Last 10 lines of log:"
             tail -10 "$LOG_FILE" >&2
-            rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE"
+            rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE" "$HOST_FILE"
             exit 1
         fi
 
@@ -468,7 +471,7 @@ do_start() {
                 log_error "Port $port responds but identifies as a FOREIGN service, not this project's Watchtower."
                 log_error "  Refusing to write a triple pointing at it. Aborting."
                 kill -KILL "$new_pid" 2>/dev/null || true
-                rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE"
+                rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE" "$HOST_FILE"
                 exit 1
             fi
             log_info "Health check passed (identity verified)."
@@ -493,6 +496,7 @@ do_start() {
             fi
             printf '%s\n' "$port" > "${PORT_FILE}.tmp" && mv "${PORT_FILE}.tmp" "$PORT_FILE"
             printf '%s\n' "$url"  > "${URL_FILE}.tmp"  && mv "${URL_FILE}.tmp"  "$URL_FILE"
+            printf '%s\n' "${FW_HOST:-0.0.0.0}" > "${HOST_FILE}.tmp" && mv "${HOST_FILE}.tmp" "$HOST_FILE"
 
             echo ""
             echo -e "${BOLD}Watchtower is running${NC}"
@@ -516,13 +520,39 @@ do_start() {
     kill -TERM "$new_pid" 2>/dev/null || true
     sleep 1
     kill -KILL "$new_pid" 2>/dev/null || true
-    rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE"
+    rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE" "$HOST_FILE"
     exit 1
 }
 
 # ---------------------------------------------------------------------------
 # restart — Stop then start
 # ---------------------------------------------------------------------------
+# T-4360: true for the all-interfaces addresses.
+_watchtower_host_is_any() {
+    case "${1//[[:space:]]/}" in
+        ''|0.0.0.0|::|'[::]'|'*') return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+# T-4360: the address the RUNNING instance listens on, or nothing. The host file
+# start writes is the record; for an instance started before it existed, ask
+# the kernel which address our pid holds the recorded port on.
+_watchtower_running_host() {
+    is_running || return 0
+    local h=""
+    [ -f "$HOST_FILE" ] && h=$(tr -d '[:space:]' < "$HOST_FILE" 2>/dev/null)
+    if [ -z "$h" ] && command -v ss >/dev/null 2>&1 && [ -f "$PORT_FILE" ]; then
+        local pid port addr
+        pid=$(get_pid); port=$(tr -d '[:space:]' < "$PORT_FILE" 2>/dev/null)
+        addr=$(ss -tlnpH 2>/dev/null | awk -v p=":$port" -v id="pid=$pid," \
+            'index($0, id) && substr($4, length($4) - length(p) + 1) == p {print $4; exit}') || true
+        [ -n "$addr" ] && h="${addr%:*}" && h="${h#[}" && h="${h%]}"
+        [ "$h" = "*" ] && h="0.0.0.0"
+    fi
+    printf '%s' "$h"
+}
+
 do_restart() {
     # T-2598 (OBS-097): remember the running port BEFORE do_stop deletes the
     # triple file — a bare `restart` must come back on the SAME port, not fall
@@ -532,6 +562,23 @@ do_restart() {
     # last port first. Keep the value across do_stop, which deletes the triple.
     local prev_port=""
     [ -f "$PORT_FILE" ] && prev_port=$(cat "$PORT_FILE" 2>/dev/null)
+    # T-4360 (GitHub #103): likewise remember the running ADDRESS. Without this a
+    # restart from any shell lacking FW_HOST (an agent session) re-resolved to the
+    # 0.0.0.0 default and silently widened a host-specific instance to every
+    # interface. An explicit FW_HOST or HOST setting still wins, but says so when
+    # it widens.
+    local prev_host
+    prev_host=$(_watchtower_running_host)
+    if [ -n "$prev_host" ]; then
+        local explicit_host="${FW_HOST:-}"
+        [ -n "$explicit_host" ] || explicit_host=$(_fw_config_file_val "HOST" 2>/dev/null || true)
+        if [ -z "$explicit_host" ]; then
+            export FW_HOST="$prev_host"
+            log_info "Keeping the running address $prev_host (set FW_HOST or HOST to change it)."
+        elif _watchtower_host_is_any "$explicit_host" && ! _watchtower_host_is_any "$prev_host"; then
+            log_warn "Restart WIDENS Watchtower from $prev_host to $explicit_host (all interfaces), as FW_HOST/HOST asks."
+        fi
+    fi
     do_stop
     sleep 1
     if [ -n "$prev_port" ] && [ ! -f "$PORT_FILE" ]; then
