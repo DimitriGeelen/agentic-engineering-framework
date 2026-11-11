@@ -9,12 +9,12 @@ description: >
   task files drifted, an operator runme failed). Reproduced here: 0664 -> 0600. Also
   lib/paths.sh:497 fallback.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [field-report]
-components: []
+components: [lib/compat.sh, lib/paths.sh, tests/unit/t5077_sed_i_keeps_file_meta.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-11T16:46:02Z
-last_update: 2026-11-11T17:13:15Z
-date_finished:
+last_update: 2026-11-11T17:20:32Z
+date_finished: 2026-11-11T17:20:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -433,3 +433,21 @@ bin/fw vendor self --check --task T-5077
 
 ### 2026-11-11T17:13:15Z — status-update [task-update-agent]
 - **Change:** tags: +field-report
+
+### 2026-11-11T17:20:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f0dcef56
+- **Timestamp:** 2026-11-11T17:20:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/unit/t5077_sed_i_keeps_file_meta.bats`

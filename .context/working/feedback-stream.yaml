@@ -53507,3 +53507,21 @@ scan_id: R-00d0af2e
 task_id: T-4361
 payload:
   task_file: .tasks/active/T-4361-gh-104-project-boundary-gate-hard-codes-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-11T17:20:47Z'
+scan_id: R-f0dcef56
+task_id: T-5077
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-11T17:20:47Z'
+scan_id: R-f0dcef56
+task_id: T-5077
+payload:
+  task_file: .tasks/active/T-5077-sedi-libcompatsh-libpathssh-fallback-tur.md

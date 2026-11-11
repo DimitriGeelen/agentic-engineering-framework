@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5077: _sed_i (lib/compat.sh, lib/paths.sh fallback) turns every file it edits into 0600
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-11T17:21:23Z
+# ============================================================================
+
+task_id: T-5077
+task_name: "_sed_i (lib/compat.sh, lib/paths.sh fallback) turns every file it edits into 0600"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-11T16:46:02Z
+completed: 2026-11-11T17:20:32Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-11-11T17:46:09+01:00
+last_commit: 2026-11-11T18:20:29+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — _sed_i leaves edited files 0600 (832 report, reproduced). _sed_i keeps the file's mode, owner and ACL (832 report); paths.sh fallback keeps the mode. reset 1,639 task files from 0600 to 0664 (operator D1); list in docs/reports/T-5077-mode-repair.md
+
+# Key outcomes
+outcomes:
+  - '`_sed_i` copies the original file''s mode, owner (when run as root) and ACL onto the temp file before the atomic `mv`; the `lib/paths.sh` fallback keeps at least the mode'
+  - 'Regression test: a 0664 file keeps 0664 after `_sed_i`; a file with a named-user ACL entry keeps it effective (skipped where setfacl is missing); fails without the fix'
+  - '`fw task update T-XXX --add-tag x` on a 0664 task file leaves it 0664 (end-to-end through the real caller)'
+  - 'The drifted task files are reset to 0664 after the fix, and the commit lists every file it changed (git does not track read/write modes, so the list is `docs/reports/T-5077-mode-repair.md`: 1,639 files)'
+  - 'Existing tests that source `lib/compat.sh` stay green; `bin/fw vendor self --check` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-11 — repair of drifted files (operator decision)'
+    chose: 'D1, the agent resets the drifted task files to 0664 after the fix, listing every file in the commit. Operator answered "Start" to the recommendation (2026-11-11 ~17:05Z).'
+    alternatives_rejected: ['a runme for the operator (same effect, more operator work); leaving them (dimitri-mint-dev stays locked out).']
+  - decision: '2026-11-11 — how to keep the metadata'
+    chose: 'keep the atomic temp-file-and-`mv`, and copy the original''s mode, owner (as root) and ACL onto the temp file first.'
+    rationale: 'task files are read all the time by hooks; writing back into the same inode (832''s first suggestion) leaves a moment where a reader sees a truncated file, and a crash mid-write leaves it truncated for good.'
+    alternatives_rejected: ['write back through the original inode (keeps metadata trivially, loses atomicity).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/compat.sh'
+  - '.agentic-framework/lib/paths.sh'
+  - '.fabric/components/tests-unit-t5077_sed_i_keeps_file_meta.yaml'
+  - '.tasks/active/T-5077-sedi-libcompatsh-libpathssh-fallback-tur.md'
+  - 'docs/reports/T-5077-mode-repair.md'
+  - 'lib/compat.sh'
+  - 'lib/paths.sh'
+  - 'tests/unit/t5077_sed_i_keeps_file_meta.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-11T17:46:09'
+    action: 'T-5077: capture — _sed_i leaves edited files 0600 (832 report, reproduced)'
+  - time: '2026-11-11T18:19:43'
+    action: 'T-5077: _sed_i keeps the file''s mode, owner and ACL (832 report); paths.sh fallback keeps the mode'
+  - time: '2026-11-11T18:20:29'
+    action: 'T-5077: reset 1,639 task files from 0600 to 0664 (operator D1); list in docs/reports/T-5077-mode-repair.md'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 34 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [field-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 34
+  commits: 5
+  files_changed: 14
+  lines_added: 2346
+  lines_removed: 21
+  footprint_refreshed_at: '2026-11-11T17:21:38Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5077-sedi-libcompatsh-libpathssh-fallback-tur.md
+generated_by: context-agent-hybrid
