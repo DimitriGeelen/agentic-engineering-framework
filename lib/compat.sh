@@ -6,6 +6,25 @@
 #
 # Usage: source "$FRAMEWORK_ROOT/lib/compat.sh"
 
+# T-5077: copy FILE's mode, owner (when root) and POSIX ACL onto DST, so an
+# atomic temp-file-and-mv rewrite keeps them. mktemp creates 0600; moving that
+# over the file made every edited file 0600, and a 0600 mode also zeroes the ACL
+# mask, which locked out named users who reach the repo through an ACL
+# (832 T-1393: 634 task files; here 1,639). Best effort: never fails the edit.
+_fw_copy_file_meta() {
+    local src="$1" dst="$2" m o
+    m=$(stat -c %a "$src" 2>/dev/null || stat -f %Lp "$src" 2>/dev/null) || m=""
+    [ -n "$m" ] && chmod "$m" "$dst" 2>/dev/null
+    if [ "$(id -u 2>/dev/null)" = "0" ]; then
+        o=$(stat -c %u:%g "$src" 2>/dev/null || stat -f %u:%g "$src" 2>/dev/null) || o=""
+        [ -n "$o" ] && chown "$o" "$dst" 2>/dev/null
+    fi
+    if command -v getfacl >/dev/null 2>&1 && command -v setfacl >/dev/null 2>&1; then
+        getfacl -p -- "$src" 2>/dev/null | setfacl --set-file=- -- "$dst" 2>/dev/null
+    fi
+    return 0
+}
+
 # Portable in-place sed edit.
 # Works on both GNU sed (Linux) and BSD sed (macOS).
 # Usage: _sed_i 'expression' file
@@ -18,6 +37,7 @@ _sed_i() {
     local tmp
     tmp=$(mktemp "${file}.XXXXXX") || return 1
     if sed "$expr" "$file" > "$tmp"; then
+        _fw_copy_file_meta "$file" "$tmp"
         mv "$tmp" "$file"
     else
         rm -f "$tmp"

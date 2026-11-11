@@ -494,7 +494,11 @@ source "$FRAMEWORK_ROOT/lib/compat.sh" 2>/dev/null || {
     _sed_i() {
         local expr="$1" file="$2"
         local tmp
-        tmp=$(mktemp "${file}.XXXXXX") && sed "$expr" "$file" > "$tmp" && mv "$tmp" "$file"
+        # T-5077: keep the file's mode (mktemp creates 0600; the full copy in
+        # lib/compat.sh also keeps owner and ACL).
+        tmp=$(mktemp "${file}.XXXXXX") && sed "$expr" "$file" > "$tmp" \
+            && { chmod "$(stat -c %a "$file" 2>/dev/null || stat -f %Lp "$file" 2>/dev/null)" "$tmp" 2>/dev/null || true; } \
+            && mv "$tmp" "$file"
     }
 }
 
