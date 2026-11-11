@@ -1,6 +1,22 @@
 # Next session: carry-over
 
-## FIRST (2026-11-10; latest be.45; node1 bulk run IN FLIGHT)
+## FIRST (2026-11-11 ~10:40Z) — read this block first
+- node1 run (T-5073) PAUSED on ring20's health alarm; resume ONLY after proxmox-ring20-management says green.
+  Then: collect the 2 orphaned results (names in .context/scratch/node1-jobs/A2-uncollected-names.txt), send the
+  192 left (.context/scratch/node1-jobs/listA3.txt) with the scratchpad driver pattern: entries aef2.bats/aef2.pytest,
+  env aef-unit-2, bundle sha e2acf490... (590b7d0bf), names aef-t5073-*. The driver script lived in the session
+  scratchpad and will be gone: rebuild it from spec section 8/9 (submit-cmd + wait, batches of 16, stop on a batch with
+  no accepted submission or no unit.log; submit log OUTSIDE the job folder).
+- Interim result in spec section 9 + docs/reports/T-5073-node1-compare-590b.tsv: 29 files fail ONLY on node1 (sandbox
+  differences: read-only /, open-file limit, playwright missing, excluded handovers, no systemd/tmux/termlink, cron,
+  2 timeouts); 13 still need their cause read. Then decide per class (local-only list / ask ring20 / fix test).
+- GitHub issues (arc-021), operator said go: #104 DONE (T-4361 closed, released stage posted). Next: #102 T-4359,
+  #103 T-4360, #98 T-4355 (re-run `fw issues release v1.8.15 --range v1.8.14..v1.8.15` after each closes; operator:
+  "post what is ready"). Roadmap blockers for the operator: GitHub branch rules (1.2), T-5021 sign-off, T-5009 Q-3.
+- Closed since the last block: T-5072 (receiver start limit, proven on node1), T-5074 (designer 0.41.0), T-4361.
+  832: field-profile/field-suggestions not planned (T-4737). 010: told about Watchtower's secret form and its limits.
+
+## Earlier FIRST (2026-11-10; latest be.45; node1 bulk run IN FLIGHT)
 - node1 now runs AEF unit tests (operator yes 2026-11-09). Spec + contract + trial: docs/reports/T-5069-node1-unit-suite-spec.md
   (sections 1-8). Package: `bin/fw test bundle` (T-5070) -> .context/scratch/node1-bundles/ (the folder ring20's relay
   copies from). Client: /usr/local/bin/pool-client (root-owned, sha256 pinned in spec), POOL hub = ring20 relay :9100,
