@@ -13,12 +13,12 @@ description: >
   no open Human criterion, or have the Watchtower tick path apply the same rule; keep
   R-033 (only when nothing Human is open).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [lib/delegation.py, lib/verdict_ledger.py, tests/web/test_t5081_owner_handback.py, web/blueprints/tasks.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -47,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-11T17:10:53Z
-last_update: 2026-11-11T20:54:36Z
-date_finished:
+last_update: 2026-11-11T21:07:52Z
+date_finished: 2026-11-11T21:07:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -419,3 +419,21 @@ bin/fw vendor self --check --task T-5081
 ### 2026-11-11T20:54:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-11T21:07:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0f739ce2
+- **Timestamp:** 2026-11-11T21:08:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — One function decides the hand-back; `verdict_ledger.apply` and Watchtower's `toggle_ac` both call it (no second copy of the rule) — `lib/delegation.py` `owner_handback`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/delegation.py in: One function decides the hand-back; `verdict_ledger.apply` and Watchtower's `toggle_ac` both call it (no second copy of the rule) — `lib/delegation.py`
