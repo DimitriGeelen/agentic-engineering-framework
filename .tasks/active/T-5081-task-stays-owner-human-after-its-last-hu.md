@@ -308,14 +308,24 @@ bin/fw vendor self --check --task T-5081
 
 ## Visual Verification
 
-The note appears only right after a Human box is ticked or unticked. An agent must never tick a
-Human box on a real task, so there is no browser shot of a live page; the exact HTML Watchtower
-returns was captured instead, from the throwaway fixture task the tests use (temp git repo, same
-`toggle-ac` endpoint, same Flask blueprint). The fragment replaces the checkbox in place.
+An agent must never tick a Human box on a real task, so the shots come from a throwaway demo
+project (scratchpad, own git repo, task T-9002 with two Human checks, the first pre-ticked), served
+by a second Watchtower on a local port running this repo's code. Taken with fw's own `ux_shots`
+code one shot at a time (the demo is reset before each, since a tick changes its state); manifests
+with step and shot sha256s: `.context/visual/T-5081/{last-tick,untick}.capture.json`.
+
+**Found by taking these shots, and fixed in this task:** the review page (`_review_acs.html`) posts
+the tick with `hx-swap="none"` and reloads the check list, so the note in the tick response never
+showed there. The reloaded list now shows the hand-back from task state (all Human checks ticked,
+owner agent, task still in active/). Test: `test_review_page_fragment_shows_the_handback`.
 
 | state | control | 1024 | 1440 | 1920 | note |
 |-------|---------|------|------|------|------|
-| last-tick | checkbox + hand-back note | unreachable | unreachable | unreachable | needs a Human tick on a real task (agent may not); HTML fragment below instead |
+| last-tick | review page after ticking the last Human check | ok | ok | ok | green note "Every Human check is ticked: handed back to the agent to close." under the list; the header's "Owner:" line refreshes only on reload |
+| untick | review page after unticking it again | ok | ok | ok | note gone, progress 1/2, box open |
+
+On the task page and the /approvals list the tick response replaces the checkbox, so the note
+appears right next to it (fragment below, from the test fixture).
 
 ```
 tick first (one still open): owner=human
