@@ -13,8 +13,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
 components: [bin/fw, lib/config-file.sh, lib/config_components.py, lib/optional_components.py, tests/unit/test_t5080_config_components.py]
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-11T17:10:03Z
-last_update: 2026-11-11T18:19:37Z
+last_update: 2026-11-11T22:33:48Z
 date_finished: 2026-11-11T18:19:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -111,12 +111,13 @@ bvp_scores_proposed:
 - [x] `bin/fw vendor self --check --task T-5080` clean
 
 ### Human
-- [ ] [REVIEW] The screen is simple to use
+- [x] [REVIEW] The screen is simple to use
   **Steps:**
   1. In a terminal: `cd /opt/999-Agentic-Engineering-Framework && bin/fw config components`
   2. Move with the arrow keys, press space on a line, press q to leave without saving
   **Expected:** the screen is easy to read, the toggle is obvious, and leaving with q changes nothing (`bin/fw config get ABSENT_COMPONENTS` is still empty).
   **If not:** say what was unclear; the agent adjusts the screen.
+  **Reviewer verdict:** green V-20261111-3674e079 — reviewer-judge-t-5080-r5-opencode-313b9a3715f9:opencode (rung rung-5-panel:opencode), digest a2fd7175922e; dispatch judge-t-5080-r5-opencode-313b9a3715f9; evidence: .context/reviews/evidence/T-5080/AC1-judge-t-5080-r5-opencode-313b9a3715f9.md; ledger .context/reviews/verdicts.jsonl
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
