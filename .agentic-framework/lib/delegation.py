@@ -529,6 +529,32 @@ def human_criteria(text: str) -> list[Criterion]:
     return [c for c in parse_criteria(text) if c.subhead.lower().startswith("human")]
 
 
+_OWNER_RE = re.compile(r"(?m)^owner:[ \t]*(\S*)")
+
+
+def owner_handback(text: str, *, reopened: bool = False) -> str | None:
+    """T-5081: the ONE hand-back rule, for the reviewer path and the operator's own ticks.
+
+    - A Human criterion was reopened (a reviewer green withdrawn, or the operator unticked a
+      box on a task waiting for review) and the agent owns the task: it goes back to `human`.
+    - The operator owns it and no Human criterion is left open: it goes to `agent`, whoever
+      ticked the last box (a reviewer's green or the operator in Watchtower; operator
+      decision 2026-11-11). The agent then closes it.
+    Returns the new owner, or None when nothing changes."""
+    m = _OWNER_RE.search(text)
+    owner = m.group(1) if m else ""
+    if reopened and owner != "human":
+        return "human"
+    if owner == "human" and not [c for c in human_criteria(text) if not c.ticked]:
+        return "agent"
+    return None
+
+
+def set_owner(text: str, owner: str) -> str:
+    """The task text with its frontmatter `owner:` set (first occurrence only)."""
+    return re.sub(r"(?m)^owner:.*$", f"owner: {owner}", text, count=1)
+
+
 # ── Classification ───────────────────────────────────────────────────────────
 
 

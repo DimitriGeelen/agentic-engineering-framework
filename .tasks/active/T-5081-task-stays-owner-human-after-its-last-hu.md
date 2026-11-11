@@ -13,10 +13,10 @@ description: >
   no open Human criterion, or have the Watchtower tick path apply the same rule; keep
   R-033 (only when nothing Human is open).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-11T17:10:53Z
-last_update: '2026-11-11T17:16:07Z'
+last_update: 2026-11-11T20:54:36Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,22 +93,31 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 832-Workflow-designer, 2026-11-11 (sidecar msg 74d806aa, their operator: "we stopped the rubber stamping"): their T-358 stayed `owner: human` with nothing left to judge after the operator ticked its last open Human criterion in Watchtower.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `lib/verdict_ledger.py` `apply` hands a human-owned task back to the agent only when no Human criterion is open, and only on a reviewer verdict (it returns early otherwise). A tick by the operator in Watchtower (`web/blueprints/tasks.py` `toggle_ac`) never runs that rule, so the operator has to close or hand over the task by hand: a rubber stamp.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the operator's tick of the last open Human criterion hands the task back the same way a reviewer's green does (operator chose this, 2026-11-11).
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** one shared rule (owner human + no open Human criterion -> owner agent; a Human box unticked again on an agent-owned partial-complete task -> owner human) used by both the reviewer path and the Watchtower tick path; the Watchtower response says what happened.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] One function decides the hand-back; `verdict_ledger.apply` and Watchtower's `toggle_ac` both call it (no second copy of the rule) — `lib/delegation.py` `owner_handback`
+- [x] Watchtower: ticking the last open Human box on a human-owned task sets `owner: agent`; ticking one that leaves another open changes nothing
+- [x] Watchtower: unticking a Human box on an agent-owned task that is waiting for review sets `owner: human` again
+- [x] The tick still writes its provenance row first; if that fails, neither the tick nor the owner change happens
+- [x] Existing toggle-ac and verdict-ledger tests stay green; `bin/fw watchtower current`; `bin/fw vendor self --check --task T-5081` clean (1,225 passed: verdict-ledger, delegation, tasks-page)
 
 ### Human
+- [ ] [REVIEW] The hand-back note reads clearly when you tick your last check
+  **Steps:**
+  1. Open any task waiting for your review, e.g. http://192.168.10.107:3000/review/T-5079
+  2. Tick its last open check
+  **Expected:** next to the box a short note says the task is handed back to the agent to close; if you untick it again, the note says it is back with you.
+  **If not:** say what the note should say instead; the agent changes the wording in `web/blueprints/tasks.py`.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -292,6 +301,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/web/test_t5081_owner_handback.py tests/web/test_t4070_watchtower_tick_provenance.py
+python3 -m pytest -q tests/unit/t4779_stale_review_release_test.py
+bin/fw watchtower current
+bin/fw vendor self --check --task T-5081
 
 ## RCA
 
@@ -362,6 +375,14 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** Built as you chose: when you tick the last open check of a task in Watchtower, the task goes back to the agent to close, using the same rule an AI reviewer's approval already used; unticking hands it back to you. One function now holds that rule for both paths. Your tick's provenance record is still written first; if that fails, nothing changes. Left for you: how the short note next to the box reads.
+
+**Evidence:**
+- `tests/web/test_t5081_owner_handback.py` 6/6: one of two ticked changes nothing; last tick hands back; untick returns it; Agent boxes never trigger it; a failed provenance write leaves tick and owner unchanged; the reviewer path calls the same function. Two of these fail on the old Watchtower code.
+- `tests/web/test_t4070_watchtower_tick_provenance.py` still green; verdict-ledger suite re-run (see Updates).
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -372,6 +393,11 @@ bvp_scores_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-11 — what the operator's last tick does (operator decision)
+- **Chose:** hand the task back to the agent (owner: agent), the same rule a reviewer's green already applies; unticking again hands it back to the operator. Operator picked "Hand back to agent (Recommended)" in the question of 2026-11-11.
+- **Why:** removes the extra close click without making a mistaken tick irreversible; one rule for both paths.
+- **Rejected:** close at once on the last tick (a mistaken tick closes the task); a "Close now" button (keeps a click); keep as today.
 
 ## Decision
 
@@ -389,3 +415,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5081-task-stays-owner-human-after-its-last-hu.md
 - **Context:** Initial task creation
+
+### 2026-11-11T20:54:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

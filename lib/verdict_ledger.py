@@ -128,6 +128,8 @@ from lib.delegation import (  # noqa: E402
     classify,
     frontmatter,
     human_criteria,
+    owner_handback,
+    set_owner,
 )
 
 VERDICTS = Path(".context/reviews/verdicts.jsonl")
@@ -3814,12 +3816,11 @@ def apply(task_id: str, root: Path | None = None) -> dict:
     new_text = "\n".join(lines)
 
     still_open = [c for c in human_criteria(new_text) if not c.ticked]
-    if result["withdrawn"] and owner != "human":
-        new_text = re.sub(r"(?m)^owner:.*$", "owner: human", new_text, count=1)
-        result["owner_after"] = "human"
-    elif owner == "human" and not still_open:
-        new_text = re.sub(r"(?m)^owner:.*$", "owner: agent", new_text, count=1)
-        result["owner_after"] = "agent"
+    # T-5081: the one hand-back rule, shared with Watchtower's tick path.
+    new_owner = owner_handback(new_text, reopened=bool(result["withdrawn"]))
+    if new_owner:
+        new_text = set_owner(new_text, new_owner)
+        result["owner_after"] = new_owner
     path.write_text(new_text, encoding="utf-8")
     kind = "verdict-apply" if hits else ("verdict-withdraw" if result["withdrawn"] else "verdict-recite")
     _append(APPLIED, {"ts": _now(), "task": task_id, "kind": kind,

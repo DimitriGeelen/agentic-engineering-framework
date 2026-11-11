@@ -1303,8 +1303,36 @@ def toggle_ac(task_id):
                     f'provenance record ({_escape(_tick_err[:1500])})</p>', 500)
     if ok:
         checked_attr = "checked" if new_state else ""
-        return f'<input type="checkbox" {checked_attr} onchange="this.form.requestSubmit()" style="margin:0;">'
+        note = _owner_after_human_tick(task_file, old_text)
+        return (f'<input type="checkbox" {checked_attr} onchange="this.form.requestSubmit()" style="margin:0;">'
+                + (f' <small>{_escape(note)}</small>' if note else ""))
     return f'<p style="color: var(--pico-del-color);">Error: {err}</p>', 500
+
+
+def _owner_after_human_tick(task_file, old_text):
+    """T-5081 (operator decision 2026-11-11): the operator's tick runs the same hand-back rule a
+    reviewer's green does. Last open Human box ticked on a human-owned task -> owner: agent (the
+    agent then closes it); a Human box unticked on an agent-owned task waiting for review ->
+    owner: human. Only Human boxes count. Returns a short note for the page, or ''."""
+    try:
+        from lib.delegation import frontmatter, human_criteria, owner_handback, set_owner
+        new_text = task_file.read_text()
+        before = sum(c.ticked for c in human_criteria(old_text))
+        after = sum(c.ticked for c in human_criteria(new_text))
+        if after == before:
+            return ""
+        status = str((frontmatter(new_text) or {}).get("status", ""))
+        reopened = after < before and status == "work-completed"
+        if after < before and not reopened:
+            return ""
+        new_owner = owner_handback(new_text, reopened=reopened)
+        if not new_owner:
+            return ""
+        task_file.write_text(set_owner(new_text, new_owner))
+        return ("Every Human check is ticked: handed back to the agent to close."
+                if new_owner == "agent" else "A Human check is open again: back with you.")
+    except Exception:  # noqa: BLE001 - the tick itself stands; ownership is re-judged at close
+        return ""
 
 
 @bp.route("/api/task/<task_id>/description", methods=["POST"])
