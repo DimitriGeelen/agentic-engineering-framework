@@ -1,0 +1,105 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5079: Verdict staleness: let a project declare extra release-artifact paths (832 proposal)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-11T22:01:13Z
+# ============================================================================
+
+task_id: T-5079
+task_name: "Verdict staleness: let a project declare extra release-artifact paths (832 proposal)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-11T16:58:12Z
+completed: 2026-11-11T19:37:07Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-11T17:58:20+01:00
+last_commit: 2026-11-11T22:45:46+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — per-project release-artifact paths for verdict staleness (832 proposal). RELEASE_ARTIFACT_PATHS — a project's generated release files do not make reviewer verdicts stale (832 proposal). partial-complete — awaiting operator /config check. reviewer verdict
+
+# Key outcomes
+outcomes:
+  - 'A commit naming the task that touches only a declared artifact path no longer makes a green verdict stale; a commit touching source still does'
+  - 'The list is read from `.framework.yaml` at HEAD only: an uncommitted edit or an `FW_RELEASE_ARTIFACT_PATHS` env var does not widen it'
+  - 'Entries that are top-level, absolute, contain `..`/globs, or lie under lib/ bin/ agents/ web/ policy/ tests/ src/ or framework-state trees are ignored, and the verdict-ledger audit WARNs about each; accepted ones appear as an INFO line'
+  - '`RELEASE_ARTIFACT_PATHS` is in both config registries (parity lint green); existing verdict-ledger tests stay green (43 files, 845 passed)'
+  - '`bin/fw vendor self --check --task T-5079` clean'
+  - '[REVIEW] The new setting reads clearly on Watchtower''s settings page'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.agentic-framework/web/blueprints/config.py'
+  - '.context/reviews/evidence/T-5079/01-config-judge-t-5079-r3-99728bfcce67.png'
+  - '.context/reviews/evidence/T-5079/AC1-judge-t-5079-r3-99728bfcce67.md'
+  - '.context/reviews/evidence/T-5079/config@1024-judge-t-5079-r3-99728bfcce67.png'
+  - '.context/reviews/evidence/T-5079/config@1440-judge-t-5079-r3-99728bfcce67.png'
+  - '.context/reviews/evidence/T-5079/config@1920-judge-t-5079-r3-99728bfcce67.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.fabric/components/tests-unit-t5079_declared_release_artifacts_test.yaml'
+  - '.tasks/active/T-5079-verdict-staleness-let-a-project-declare-.md'
+  - 'lib/config.sh'
+  - 'lib/verdict_ledger.py'
+  - 'tests/unit/t5079_declared_release_artifacts_test.py'
+  - 'web/blueprints/config.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-11T17:58:20'
+    action: 'T-5079: capture — per-project release-artifact paths for verdict staleness (832 proposal)'
+  - time: '2026-11-11T20:37:03'
+    action: 'T-5079: RELEASE_ARTIFACT_PATHS — a project''s generated release files do not make reviewer verdicts stale (832 proposal)'
+  - time: '2026-11-11T20:37:59'
+    action: 'T-5079: partial-complete — awaiting operator /config check'
+  - time: '2026-11-11T22:45:46'
+    action: 'T-5079: reviewer verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 158 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 158
+  commits: 5
+  files_changed: 22
+  lines_added: 813
+  lines_removed: 20
+  footprint_refreshed_at: '2026-11-11T22:01:26Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5079-verdict-staleness-let-a-project-declare-.md
+generated_by: context-agent-hybrid

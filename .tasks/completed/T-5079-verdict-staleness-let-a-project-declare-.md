@@ -14,8 +14,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
 components: [lib/config.sh, lib/verdict_ledger.py, tests/unit/t5079_declared_release_artifacts_test.py, web/blueprints/config.py]
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-11T16:58:12Z
-last_update: 2026-11-11T19:37:07Z
+last_update: 2026-11-11T22:00:33Z
 date_finished: 2026-11-11T19:37:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -127,7 +127,7 @@ bvp_scores_proposed:
 - [x] `bin/fw vendor self --check --task T-5079` clean
 
 ### Human
-- [ ] [REVIEW] The new setting reads clearly on Watchtower's settings page
+- [x] [REVIEW] The new setting reads clearly on Watchtower's settings page
   **Steps:**
   1. Open http://192.168.10.107:3000/config
   2. Find the row `RELEASE_ARTIFACT_PATHS`
@@ -177,6 +177,7 @@ bvp_scores_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261111-0cc98a77 — reviewer-judge-t-5079-r3-99728bfcce67:reviewer (rung rung-3-termlink-single-reviewer), digest 9ae61342ade1; dispatch judge-t-5079-r3-99728bfcce67; evidence: .context/reviews/evidence/T-5079/AC1-judge-t-5079-r3-99728bfcce67.md, .context/reviews/evidence/T-5079/01-config-judge-t-5079-r3-99728bfcce67.png, .context/reviews/evidence/T-5079/config@1024-judge-t-5079-r3-99728bfcce67.png, .context/reviews/evidence/T-5079/config@1440-judge-t-5079-r3-99728bfcce67.png, .context/reviews/evidence/T-5079/config@1920-judge-t-5079-r3-99728bfcce67.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 

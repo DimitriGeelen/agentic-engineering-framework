@@ -53669,3 +53669,39 @@ scan_id: R-b33cfd11
 task_id: T-5076
 payload:
   task_file: .tasks/active/T-5076-libcostssh-resolves-its-own-folder-from-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-11T19:37:26Z'
+scan_id: R-d5c2ae81
+task_id: T-5079
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-11T19:37:26Z'
+scan_id: R-d5c2ae81
+task_id: T-5079
+payload:
+  task_file: .tasks/active/T-5079-verdict-staleness-let-a-project-declare-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-11T21:08:08Z'
+scan_id: R-0f739ce2
+task_id: T-5081
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-11T21:08:08Z'
+scan_id: R-0f739ce2
+task_id: T-5081
+payload:
+  task_file: .tasks/active/T-5081-task-stays-owner-human-after-its-last-hu.md
