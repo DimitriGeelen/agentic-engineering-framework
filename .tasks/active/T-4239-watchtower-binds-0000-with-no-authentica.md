@@ -7,10 +7,10 @@ description: >
   claim 11 + proposal 2 (cf. dimitri-mint-dev T-095). Security default. Keep this
   repo's operator setup working (explicit FW_HOST / config).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:42:59Z
-last_update: '2026-10-31T13:15:33Z'
+last_update: 2026-11-11T17:50:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -120,16 +120,32 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Background / trigger:** dimitri-mint-dev's review of v1.8.10 (their T-118, claim 11 / proposal 2) and, independently, GitHub #103 (MikeEchoVoid) both report that Watchtower listens on every network interface by default. Operator decision 2026-11-11 (C-local): default to this machine only; this repo keeps LAN access.
+
+**Problem / hypothesis:** Watchtower has no login, and it can tick Human criteria and record decisions. With `0.0.0.0` as the default, every fresh install is reachable from the whole network without anyone having chosen that.
+
+**Goal:** network exposure becomes an explicit choice; the operator's own setup here keeps working unchanged.
+
+**Expected outcome:** the `HOST` default is `127.0.0.1` everywhere it is resolved (`lib/config.sh`, `web/config.py`, `bin/watchtower.sh`, `lib/watchtower.sh`, Watchtower's /config registry); this repo sets `HOST 0.0.0.0` in `.framework.yaml`, so http://192.168.10.107:3000 keeps working; `fw doctor` tells a project on the default how to open it to the network; release notes say so. A running instance keeps its address on restart (T-4360), so an install that was on `0.0.0.0` changes only at its next fresh start.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] With no `FW_HOST` and no `HOST` setting, a fresh `watchtower start` listens on 127.0.0.1 only (test)
+- [x] Every place that resolves the default uses 127.0.0.1 (registry, web/config.py, watchtower.sh, lib/watchtower.sh); parity lint green
+- [x] This repo's `.framework.yaml` sets `HOST: 0.0.0.0`; after restart the live Watchtower still listens on 0.0.0.0:3000
+- [x] `fw doctor` prints the one command to open Watchtower to the network when it is on the loopback default
+- [x] Existing Watchtower tests green (t4041 updated for the new default); `bin/fw vendor self --check --task T-4239` clean
+- [x] Release-notes entry for the next release names the change and the one-line opt-in
 
 ### Human
+- [ ] [REVIEW] Watchtower still opens from your other machine
+  **Steps:**
+  1. On another machine on your network, open http://192.168.10.107:3000
+  2. Open http://192.168.10.107:3000/config and find the `HOST` row
+  **Expected:** the page loads as before; the `HOST` row shows default 127.0.0.1 and this repo's value 0.0.0.0, and its description reads clearly.
+  **If not:** tell the agent; the quick restore is `cd /opt/999-Agentic-Engineering-Framework && bin/fw config set HOST 0.0.0.0 && bin/fw watchtower restart`.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -305,6 +321,14 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bats tests/unit/t4239_default_bind_loopback.bats
+bats tests/unit/t4041_watchtower_fw_host.bats
+bats tests/unit/t3379_review_placeholder_foreign_port.bats
+bats tests/unit/t4323_firewall_rule_cleanup.bats
+bats tests/lint/config-registry-parity.bats
+grep -q '^HOST: 0.0.0.0' .framework.yaml
+bin/fw watchtower current
+bin/fw vendor self --check --task T-4239
 
 ## RCA
 
@@ -375,6 +399,16 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** Your decision (C-local) is in: a fresh install now answers on its own machine only, and this repo keeps network access through `HOST: 0.0.0.0` in `.framework.yaml`. The live Watchtower was restarted on the new code and still listens on 0.0.0.0:3000. What remains is your check from another machine.
+
+**Evidence:**
+- `tests/unit/t4239_default_bind_loopback.bats` 4/4: fresh start with nothing set listens on 127.0.0.1 only; `HOST: 0.0.0.0` opens it; `fw doctor` prints the opt-in command; all five places agree on the default.
+- 40 Watchtower test files: 37 green on the first run; t4041, t3379 and t4323 encoded the old default and were updated; vendor parity green after sync.
+- `ss` after restart: `0.0.0.0:3000`; http://192.168.10.107:3000/ returns 200; `bin/fw watchtower current` OK.
+- Release notes draft: `docs/releases/v1.8.16-notes.md` (Behaviour changes).
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -407,3 +441,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4239-watchtower-binds-0000-with-no-authentica.md
 - **Context:** Initial task creation
+
+### 2026-11-11T17:50:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

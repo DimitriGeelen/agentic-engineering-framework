@@ -76,7 +76,7 @@ class Config:
 
     # -- Flask -----------------------------------------------------------
     SECRET_KEY = os.environ.get("FW_SECRET_KEY", "")
-    HOST = os.environ.get("FW_HOST", "0.0.0.0")
+    HOST = os.environ.get("FW_HOST", "127.0.0.1")  # T-4239: this machine only unless chosen
     PORT = int(os.environ.get("FW_PORT", "3000"))
 
     # -- Timeouts --------------------------------------------------------

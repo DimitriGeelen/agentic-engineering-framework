@@ -57,12 +57,19 @@ _resolve() {
         bash -c 'source "$FRAMEWORK_ROOT/lib/watchtower.sh"; _watchtower_url'
 }
 
-@test "FW_HOST is a registered config key defaulting to 0.0.0.0" {
-    grep -q '"HOST|0.0.0.0|' "$(ROOT)/lib/config.sh"
+@test "FW_HOST is a registered config key defaulting to 127.0.0.1 (T-4239)" {
+    grep -q '"HOST|127.0.0.1|' "$(ROOT)/lib/config.sh"
 }
 
-@test "probe host is localhost when FW_HOST is unset, 0.0.0.0 or ::" {
-    for v in "" 0.0.0.0 ::; do
+@test "probe host is 127.0.0.1 when FW_HOST is unset (T-4239 default: this machine only)" {
+    run env -i PATH="$PATH" HOME="$TEST_TEMP_DIR" PROJECT_ROOT="$PROJ" FRAMEWORK_ROOT="$(ROOT)" \
+        bash -c 'source "$FRAMEWORK_ROOT/lib/watchtower.sh"; _watchtower_probe_host'
+    [ "$status" -eq 0 ]
+    [ "$output" = "127.0.0.1" ]
+}
+
+@test "probe host is localhost when FW_HOST is 0.0.0.0 or ::" {
+    for v in 0.0.0.0 ::; do
         run env -i PATH="$PATH" HOME="$TEST_TEMP_DIR" PROJECT_ROOT="$PROJ" FRAMEWORK_ROOT="$(ROOT)" FW_HOST="$v" \
             bash -c 'source "$FRAMEWORK_ROOT/lib/watchtower.sh"; _watchtower_probe_host'
         [ "$status" -eq 0 ]

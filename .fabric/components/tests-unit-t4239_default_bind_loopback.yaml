@@ -1,0 +1,21 @@
+id: tests/unit/t4239_default_bind_loopback.bats
+name: t4239_default_bind_loopback
+type: script
+subsystem: tests
+location: tests/unit/t4239_default_bind_loopback.bats
+tags: []
+
+purpose: "T-4239 (dimitri-mint-dev T-118 claim 11; GitHub #103) — Watchtower has no login and can record Human decisions, yet a fresh start with nothing configured listened on every interface."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-11
+created_by: unknown

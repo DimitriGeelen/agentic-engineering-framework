@@ -30,7 +30,7 @@ FIREWALL_STATE_FILE="$PROJECT_ROOT/.context/working/watchtower.firewall"
 PORT_FILE="$PROJECT_ROOT/.context/working/watchtower.port"
 URL_FILE="$PROJECT_ROOT/.context/working/watchtower.url"
 # T-4360 (GitHub #103): the address the running instance is bound to, so a plain
-# restart can come back on it instead of re-resolving to the 0.0.0.0 default.
+# restart can come back on it instead of re-resolving to the default.
 HOST_FILE="$PROJECT_ROOT/.context/working/watchtower.host"
 LOG_FILE="$PROJECT_ROOT/.context/working/watchtower.log"
 DEFAULT_PORT=$(fw_config "PORT" 3000)
@@ -402,7 +402,7 @@ do_start() {
         printf '%s\n' "http://$(_watchtower_probe_host):${port}" > "$URL_FILE"
         [ "$allocated" -eq 1 ] && persist_port "$port"
         log_info "Foreground (--debug): output below, Ctrl-C to stop."
-        export FW_HOST="$(fw_config "HOST" "0.0.0.0" 2>/dev/null || echo 0.0.0.0)"
+        export FW_HOST="$(fw_config "HOST" "127.0.0.1" 2>/dev/null || echo 127.0.0.1)"
         export WATCHTOWER_URL="http://$(_watchtower_probe_host):${port}"
         exec python3 -m web.app --port "$port" --debug
     fi
@@ -412,7 +412,7 @@ do_start() {
     # exported into the server so processes Watchtower itself starts (the
     # inception decide chain) can find it instead of guessing another port.
     local _bound_host _probe
-    _bound_host=$(fw_config "HOST" "0.0.0.0" 2>/dev/null || echo "0.0.0.0")
+    _bound_host=$(fw_config "HOST" "127.0.0.1" 2>/dev/null || echo "127.0.0.1")
     export FW_HOST="$_bound_host"
     _probe=$(_watchtower_probe_host)
     export WATCHTOWER_URL="http://${_probe}:${port}"
@@ -479,7 +479,7 @@ do_start() {
             # T-4297: pass the bind host (loopback never touches UFW) and honour the
             # operator's opt-in from config; without it nothing is opened.
             FW_WATCHTOWER_OPEN_FIREWALL="${FW_WATCHTOWER_OPEN_FIREWALL:-$(fw_config "WATCHTOWER_OPEN_FIREWALL" "0" 2>/dev/null || echo 0)}" \
-                ensure_firewall_open "$port" "Agentic Framework" "${FW_HOST:-0.0.0.0}" "$FIREWALL_STATE_FILE"
+                ensure_firewall_open "$port" "Agentic Framework" "${FW_HOST:-127.0.0.1}" "$FIREWALL_STATE_FILE"
 
             local lan_ip
             lan_ip=$(detect_lan_ip)
@@ -496,7 +496,7 @@ do_start() {
             fi
             printf '%s\n' "$port" > "${PORT_FILE}.tmp" && mv "${PORT_FILE}.tmp" "$PORT_FILE"
             printf '%s\n' "$url"  > "${URL_FILE}.tmp"  && mv "${URL_FILE}.tmp"  "$URL_FILE"
-            printf '%s\n' "${FW_HOST:-0.0.0.0}" > "${HOST_FILE}.tmp" && mv "${HOST_FILE}.tmp" "$HOST_FILE"
+            printf '%s\n' "${FW_HOST:-127.0.0.1}" > "${HOST_FILE}.tmp" && mv "${HOST_FILE}.tmp" "$HOST_FILE"
 
             echo ""
             echo -e "${BOLD}Watchtower is running${NC}"
@@ -856,7 +856,8 @@ case "$cmd" in
         echo ""
         echo "Environment:"
         echo "  FW_PORT  Default port (default: 3000)"
-        echo "  FW_HOST  Bind address (default: 0.0.0.0 = all interfaces). A specific address is"
+        echo "  FW_HOST  Bind address (default: 127.0.0.1 = this machine only; 0.0.0.0 = all interfaces,"
+        echo "           persist with: fw config set HOST 0.0.0.0). A specific address is"
         echo "           what start probes, writes to the url file and exports as WATCHTOWER_URL"
         ;;
     *)

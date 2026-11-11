@@ -97,14 +97,14 @@ _watchtower_identity_state() {
 # _watchtower_bound_host
 #
 # T-4041 (GitHub #88): the address Watchtower was told to bind (FW_HOST — read by
-# web/config.py, default 0.0.0.0). Prints it, bracketed for IPv6, and returns 0
+# web/config.py, default 127.0.0.1 since T-4239). Prints it, bracketed for IPv6, and returns 0
 # only when it is a SPECIFIC address. Returns 1 for unset / 0.0.0.0 / :: (all
 # interfaces), where localhost reaches the server. A server bound to one
 # non-loopback interface does not answer on localhost, so probing localhost alone
 # never finds it.
 _watchtower_bound_host() {
     local _h
-    _h=$(fw_config "HOST" "0.0.0.0" 2>/dev/null || echo "0.0.0.0")
+    _h=$(fw_config "HOST" "127.0.0.1" 2>/dev/null || echo "127.0.0.1")
     _h="${_h//[[:space:]]/}"
     case "$_h" in
         ''|0.0.0.0|::|'[::]') return 1 ;;

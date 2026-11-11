@@ -21,6 +21,9 @@
 
 load ../test_helper
 
+# T-4239: with no HOST configured Watchtower binds 127.0.0.1, so the placeholder names
+# that address (the probe host), not localhost.
+
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TEMP_DIR/proj"
@@ -95,7 +98,7 @@ _placeholder() {
 
     run _placeholder
     [ "${output%%|*}" = "2" ]
-    [ "${output#*|}" = "http://localhost:${tport}" ]
+    [ "${output#*|}" = "http://127.0.0.1:${tport}" ]
 }
 
 @test "triple-file port held by a foreign service falls back to a free configured port" {
@@ -108,7 +111,7 @@ _placeholder() {
 
     run _placeholder
     [ "${output%%|*}" = "2" ]
-    [ "${output#*|}" = "http://localhost:${cport}" ]
+    [ "${output#*|}" = "http://127.0.0.1:${cport}" ]
 }
 
 @test "every candidate foreign-held: a non-resolvable .invalid placeholder, still non-empty, still exit 2" {
@@ -134,5 +137,5 @@ _placeholder() {
 
     run _placeholder
     [ "${output%%|*}" = "2" ]
-    [ "${output#*|}" = "http://localhost:${cport}" ]
+    [ "${output#*|}" = "http://127.0.0.1:${cport}" ]
 }

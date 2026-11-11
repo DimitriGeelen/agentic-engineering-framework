@@ -3310,6 +3310,12 @@ PY
             if [ -n "$_wt_ident" ] && echo "$_wt_ident" | grep -q "\"service\"[[:space:]]*:[[:space:]]*\"watchtower\"" \
                 && echo "$_wt_ident" | grep -q "\"project_root\"[[:space:]]*:[[:space:]]*\"$PROJECT_ROOT\""; then
                 echo -e "  ${GREEN}OK${NC}  Watchtower running ($_wt_url, pid $_wt_pid)"
+                # T-4239: the default bind is this machine only. Say how to open
+                # it, so a project that relied on network access is not left guessing.
+                case "$(tr -d '[:space:]' < "$PROJECT_ROOT/.context/working/watchtower.host" 2>/dev/null)" in
+                    127.*|::1|localhost)
+                        echo -e "  ${CYAN}INFO${NC}  Watchtower answers on this machine only (HOST default 127.0.0.1, T-4239). To open it to your network: fw config set HOST 0.0.0.0 && fw watchtower restart" ;;
+                esac
                 # T-2938: alive and identifying correctly is NOT the same as
                 # running current code. Flask serves with debug=False here, so
                 # there is no reloader — a process started before a web/ commit

@@ -101,7 +101,7 @@ _lib() {
 }
 
 @test "T-4323: watchtower.sh start passes the state file to ensure_firewall_open" {
-    grep -qE 'ensure_firewall_open "\$port" "Agentic Framework" "\$\{FW_HOST:-0\.0\.0\.0\}" "\$FIREWALL_STATE_FILE"' "$FRAMEWORK_ROOT/bin/watchtower.sh"
+    grep -qE 'ensure_firewall_open "\$port" "Agentic Framework" "\$\{FW_HOST:-127\.0\.0\.1\}" "\$FIREWALL_STATE_FILE"' "$FRAMEWORK_ROOT/bin/watchtower.sh"
 }
 
 @test "T-4323: orphan scan lists labelled rules with no listener, once per port" {
