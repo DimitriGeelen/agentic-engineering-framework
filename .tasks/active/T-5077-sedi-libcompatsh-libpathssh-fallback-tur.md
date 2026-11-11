@@ -1,8 +1,13 @@
 ---
 id: T-5077
-name: "_sed_i (lib/compat.sh, lib/paths.sh fallback) turns every file it edits into 0600"
+name: "_sed_i (lib/compat.sh, lib/paths.sh fallback) turns every file it edits into
+  0600"
 description: >
-  Reported by 832 (their T-1393, 2026-11-11). _sed_i writes via mktemp (0600) then mv over the file, so mode drops to 0600; on hosts where the operator reaches the repo via a POSIX ACL the mask is zeroed and the operator loses access (832: 634 task files drifted, an operator runme failed). Reproduced here: 0664 -> 0600. Also lib/paths.sh:497 fallback.
+  Reported by 832 (their T-1393, 2026-11-11). _sed_i writes via mktemp (0600) then
+  mv over the file, so mode drops to 0600; on hosts where the operator reaches the
+  repo via a POSIX ACL the mask is zeroed and the operator loses access (832: 634
+  task files drifted, an operator runme failed). Reproduced here: 0664 -> 0600. Also
+  lib/paths.sh:497 fallback.
 
 status: captured
 workflow_type: build
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-11T16:46:02Z
-last_update: 2026-11-11T16:46:02Z
-date_finished: null
+last_update: '2026-11-11T17:00:30Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-11T17:00:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5077: _sed_i (lib/compat.sh, lib/paths.sh fallback) turns every file it edits into 0600
