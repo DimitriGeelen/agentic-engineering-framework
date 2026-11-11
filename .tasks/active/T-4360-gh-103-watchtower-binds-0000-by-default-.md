@@ -339,7 +339,7 @@ bats tests/unit/t4360_watchtower_restart_keeps_host.bats
 bats tests/unit/t4041_watchtower_fw_host.bats
 bats tests/unit/t4332_watchtower_start_exit_zero.bats
 bash -n bin/watchtower.sh
-bin/fw vendor self --check
+bin/fw vendor self --check --task T-4360
 
 ## RCA
 
