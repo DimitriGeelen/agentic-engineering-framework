@@ -53543,3 +53543,21 @@ scan_id: R-016871e2
 task_id: T-5078
 payload:
   task_file: .tasks/active/T-5078-fwpidalive-reports-a-just-reaped-process.md
+---
+kind: scan_emitted
+timestamp: '2026-11-11T17:27:56Z'
+scan_id: R-34f2d95a
+task_id: T-4360
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-11T17:27:56Z'
+scan_id: R-34f2d95a
+task_id: T-4360
+payload:
+  task_file: .tasks/active/T-4360-gh-103-watchtower-binds-0000-by-default-.md

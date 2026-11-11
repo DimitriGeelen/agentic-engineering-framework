@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4360: GH #103: Watchtower binds 0.0.0.0 by default, and a plain restart silently widens a host-specific instance to all interfaces
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-11T17:28:15Z
+# ============================================================================
+
+task_id: T-4360
+task_name: "GH #103: Watchtower binds 0.0.0.0 by default, and a plain restart silently widens a host-specific instance to all interfaces"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T23:08:11Z
+completed: 2026-11-11T17:26:36Z
+duration_days: 24
+updates_count: 3
+first_commit: 2026-11-11T17:47:54+01:00
+last_commit: 2026-11-11T18:26:34+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  restart keeps the running Watchtower address (GH #103); explicit widening WARNs. fabric card for the restart-keeps-host test. per-task vendor check in Verification. evolution note (issue held two defects; T-5078 found on the way)
+
+# Key outcomes
+outcomes:
+  - '`do_start` records the bound address (`.context/working/watchtower.host`); `do_restart` reads it (or the running pid''s listening address when the file is missing) before stopping'
+  - 'Restart with neither `FW_HOST` nor `HOST` set comes back on the previous address (test: start on 127.0.0.2, restart without FW_HOST, listener is 127.0.0.2, not 0.0.0.0)'
+  - 'Explicit `FW_HOST` on restart still wins; when it widens a specific address to `0.0.0.0` a WARN names both addresses'
+  - 'Regression test under tests/unit/ fails without the fix; existing t4041 and t4332 tests stay green'
+  - '`bin/fw vendor self --check` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'evolution note (issue held two defects; T-5078 found on the way)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/watchtower.sh'
+  - '.fabric/components/tests-unit-t4360_watchtower_restart_keeps_host.yaml'
+  - '.tasks/active/T-4360-gh-103-watchtower-binds-0000-by-default-.md'
+  - 'bin/watchtower.sh'
+  - 'tests/unit/t4360_watchtower_restart_keeps_host.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-11T17:47:54'
+    action: 'T-4360: restart keeps the running Watchtower address (GH #103); explicit widening WARNs'
+  - time: '2026-11-11T17:48:06'
+    action: 'T-4360: fabric card for the restart-keeps-host test'
+  - time: '2026-11-11T18:24:54'
+    action: 'T-4360: per-task vendor check in Verification'
+  - time: '2026-11-11T18:26:34'
+    action: 'T-4360: evolution note (issue held two defects; T-5078 found on the way)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 34218 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github, mikeechovoid]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 34218
+  commits: 5
+  files_changed: 8
+  lines_added: 391
+  lines_removed: 21
+  footprint_refreshed_at: '2026-11-11T17:28:27Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4360-gh-103-watchtower-binds-0000-by-default-.md
+generated_by: context-agent-hybrid
