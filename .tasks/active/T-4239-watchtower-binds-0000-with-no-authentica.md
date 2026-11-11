@@ -342,6 +342,14 @@ grep -q '^HOST: 0.0.0.0' .framework.yaml
 bin/fw watchtower current
 bin/fw vendor self --check --task T-4239
 
+## Visual Verification
+
+Shots: `bin/fw ux shots T-4239 config=http://192.168.10.107:3000/config` → `.context/visual/T-4239/config@{1024,1440,1920}.png` (full page), taken through the LAN address 192.168.10.107, which is itself evidence that Watchtower still answers on the network after the change.
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| config | `HOST` row (default 127.0.0.1, this repo's value 0.0.0.0, description) | ok | ok | ok | page reached via the LAN address, not localhost |
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches

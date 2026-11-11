@@ -321,6 +321,14 @@ bats tests/lint/config-registry-parity.bats
 bin/fw watchtower current
 bin/fw vendor self --check --task T-5079
 
+## Visual Verification
+
+Shots: `bin/fw ux shots T-5079 config=http://192.168.10.107:3000/config` → `.context/visual/T-5079/config@{1024,1440,1920}.png` (full page).
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| config | `RELEASE_ARTIFACT_PATHS` row (key, empty default, description) | ok | ok | ok | row sits in the settings table with the other registry keys |
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
