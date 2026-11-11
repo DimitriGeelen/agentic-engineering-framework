@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4361: GH #104: Project-boundary gate hard-codes /root/.local/ and /root/.claude/, so a non-root account cannot read its own tools, and there is no setting to allow a path
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-11T09:45:52Z
+# ============================================================================
+
+task_id: T-4361
+task_name: "GH #104: Project-boundary gate hard-codes /root/.local/ and /root/.claude/, so a non-root account cannot read its own tools, and there is no setting to allow a path"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T23:08:48Z
+completed: 2026-11-11T09:42:01Z
+duration_days: 24
+updates_count: 3
+first_commit: 2026-10-20T22:11:48+02:00
+last_commit: 2026-10-20T23:41:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  boundary gate follows the running account's $HOME for .claude/.local zones; BOUNDARY_EXTRA_READ_PATHS adds read-only paths (GH #104); regression test. restore spacing on the neighbouring registry row. reviewer verdict
+
+# Key outcomes
+outcomes:
+  - 'The boundary gate''s allowlists (Write/Edit zone, Bash write zone, read-side allowlist) derive the home-directory entries from the running account''s `$HOME` (`$HOME/.claude/`, `$HOME/.local/`), not literal `/root/` — a non-root account can read `$HOME/.local/...` and write `$HOME/.claude/...`'
+  - 'A registry config key (`BOUNDARY_EXTRA_READ_PATHS` / `FW_BOUNDARY_EXTRA_READ_PATHS`, colon-separated absolute paths) admits extra paths for Bash reads only (writes stay project/tmp/claude); relative, empty and `/` entries are ignored, never widened to the whole filesystem'
+  - 'The block messages name the effective allowlist and the config key, so a blocked agent sees how to allow a path'
+  - 'Regression bats `tests/unit/t4361_boundary_home_paths.bats` fails on the pre-fix hook and passes after; existing boundary tests stay green'
+  - '[REVIEW] The new BOUNDARY_EXTRA_READ_PATHS row on /config reads clearly next to its neighbours'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-project-boundary.sh'
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/web/blueprints/config.py'
+  - '.context/reviews/evidence/T-4361/01-config-judge-t-4361-r3-a8b91548f76d.png'
+  - '.context/reviews/evidence/T-4361/AC1-judge-t-4361-r3-a8b91548f76d.md'
+  - '.context/reviews/evidence/T-4361/config@1024-judge-t-4361-r3-a8b91548f76d.png'
+  - '.context/reviews/evidence/T-4361/config@1440-judge-t-4361-r3-a8b91548f76d.png'
+  - '.context/reviews/evidence/T-4361/config@1920-judge-t-4361-r3-a8b91548f76d.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-4361-gh-104-project-boundary-gate-hard-codes-.md'
+  - 'agents/context/check-project-boundary.sh'
+  - 'lib/config.sh'
+  - 'tests/unit/t4361_boundary_home_paths.bats'
+  - 'web/blueprints/config.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T22:11:48'
+    action: 'T-4361: boundary gate follows the running account''s $HOME for .claude/.local zones; BOUNDARY_EXTRA_READ_PATHS adds read-only paths (GH #104); regression test'
+  - time: '2026-10-20T22:14:10'
+    action: 'T-4361: restore spacing on the neighbouring registry row'
+  - time: '2026-10-20T23:41:35'
+    action: 'T-4361: reviewer verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 33753 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github, mikeechovoid]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 33753
+  commits: 4
+  files_changed: 18
+  lines_added: 457
+  lines_removed: 26
+  footprint_refreshed_at: '2026-11-11T09:46:44Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4361-gh-104-project-boundary-gate-hard-codes-.md
+generated_by: context-agent-hybrid

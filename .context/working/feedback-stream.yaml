@@ -53453,3 +53453,57 @@ scan_id: R-c248281b
 task_id: T-5074
 payload:
   task_file: .tasks/active/T-5074-re-pin-workflow-designer-0400---0410-832.md
+---
+kind: scan_emitted
+timestamp: '2026-11-11T06:17:21Z'
+scan_id: R-43e85426
+task_id: T-2205
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-11T06:17:21Z'
+scan_id: R-43e85426
+task_id: T-2205
+payload:
+  task_file: .tasks/active/T-2205-t-2204-slice-b--pretooluse-writeedit-hoo.md
+---
+kind: scan_emitted
+timestamp: '2026-11-11T06:17:23Z'
+scan_id: R-7864d3af
+task_id: T-2240
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-11T06:17:23Z'
+scan_id: R-7864d3af
+task_id: T-2240
+payload:
+  task_file: .tasks/active/T-2240-wire-fw-vendor-self---dry-run-into-pre-p.md
+---
+kind: scan_emitted
+timestamp: '2026-11-11T09:44:22Z'
+scan_id: R-00d0af2e
+task_id: T-4361
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-11T09:44:22Z'
+scan_id: R-00d0af2e
+task_id: T-4361
+payload:
+  task_file: .tasks/active/T-4361-gh-104-project-boundary-gate-hard-codes-.md
