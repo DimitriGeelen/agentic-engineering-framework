@@ -5,10 +5,10 @@ description: >
   fake claude wrapper execs python so no claude ancestor remains; passes locally only
   because the session runs under Claude Code (found by T-5073 node1 run)
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -39,7 +39,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-11T15:05:35Z
-last_update: '2026-11-11T15:15:49Z'
+last_update: 2026-11-11T19:05:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,20 +85,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** the node1 unit-suite run (T-5073, 2026-11-11) failed `tests/unit/t4108_issues_security_test.py::test_ancestry_probe_sees_a_claude_named_ancestor`; it passes here.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** the test makes a fake `claude` script that `exec`s Python. `exec` replaces the script, so no process named `claude` is left in the chain. The probe returns True here only because the agent session running the test is itself under Claude Code; on node1 (no Claude ancestor) it correctly returns False. The test proves nothing here.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the test proves the probe finds a Claude-named ancestor, on any host.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the fake `claude` stays alive as the parent of the Python child, and the test runs with the real ancestry cut off, so it passes because of the fake parent and fails without it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The fake `claude` wrapper runs Python as a child (no `exec`), so a process named `claude` is in the chain
+- [x] The test no longer depends on the host: started from a parent chain with no Claude process (via `setsid` + a neutral parent), it still passes; a control with a non-Claude wrapper name returns False
+- [x] The rest of `t4108_issues_security_test.py` stays green (8 passed)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -284,6 +285,7 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/t4108_issues_security_test.py
 
 ## RCA
 
@@ -300,6 +302,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `test_ancestry_probe_sees_a_claude_named_ancestor` failed on node1 and passed on the dev host.
+
+**Root cause:** the fake `claude` wrapper used `exec`, which replaces the wrapper with Python, so no `claude` process existed in the chain. On the dev host the probe still returned True because the real agent session (Claude Code) was an ancestor of the test run.
+
+**Why structurally allowed:** the test had no control: nothing checked that the True came from the fake rather than from the environment, and every local run happens under an agent, which is exactly the environment that hid it. It took a host with no agent above the suite (node1) to show it.
+
+**Prevention:** the wrapper now runs Python as a child, the test cuts off its own parent chain (`setsid` + orphaning), and a control with a neutral wrapper name must read False, so a pass can only come from the fake. Learning: a test of an environment probe needs a control that runs in the same set-up and expects the opposite answer.
 
 ## Evolution
 
@@ -381,3 +391,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5075-t4108-ancestry-test-passes-only-under-cl.md
 - **Context:** Initial task creation
+
+### 2026-11-11T19:05:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

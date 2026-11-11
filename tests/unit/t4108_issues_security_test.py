@@ -5,6 +5,7 @@ import os
 import stat
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -90,15 +91,39 @@ def test_env_unset_does_not_escape_when_a_claude_ancestor_exists(monkeypatch):
     assert issues._is_agent() is False
 
 
-def test_ancestry_probe_sees_a_claude_named_ancestor(tmp_path):
-    fake = tmp_path / "claude"
-    fake.write_text("#!/bin/sh\nexec \"$@\"\n")
-    fake.chmod(0o755)
+def _ancestry_under(tmp_path, wrapper_name):
+    """Run the probe as the CHILD of a wrapper named `wrapper_name`, with the test's own
+    parent chain cut off (T-5075). The wrapper runs Python as a child (no `exec`), so a
+    process with that name really is in the chain; `setsid` plus an at-once-exiting shell
+    orphans the wrapper, so init adopts it and whatever runs the test (an agent session
+    under Claude Code, or none) is no longer an ancestor."""
+    w = tmp_path / wrapper_name
+    w.write_text('#!/bin/sh\n"$@"\n')
+    w.chmod(0o755)
+    out = tmp_path / f"{wrapper_name}.out"
     code = ("import sys; sys.path.insert(0, %r); import issues; print(issues._agent_ancestry())"
             % str(ROOT / "lib"))
     e = {k: v for k, v in os.environ.items() if k not in ("CLAUDECODE", "AI_AGENT", "CLAUDE_CODE_ENTRYPOINT")}
-    r = subprocess.run([str(fake), sys.executable, "-c", code], env=e, capture_output=True, text=True)
-    assert r.stdout.strip() == "True", r.stderr
+    subprocess.run(["setsid", "sh", "-c", f'("{w}" "{sys.executable}" -c "$0" > "{out}" 2>&1 &)', code],
+                   env=e, check=True)
+    for _ in range(100):
+        if out.exists() and out.read_text().strip():
+            break
+        time.sleep(0.05)
+    return out.read_text().strip()
+
+
+def test_ancestry_probe_sees_a_claude_named_ancestor(tmp_path):
+    # T-5075: the old version exec'd away its fake `claude` and passed only because the
+    # agent session running the suite is itself under Claude Code (it failed on node1).
+    assert _ancestry_under(tmp_path, "claude") == "True"
+
+
+def test_ancestry_probe_control_cut_off_chain_has_no_claude(tmp_path):
+    # Control: the same set-up with a neutral wrapper name reads False, which proves the
+    # test's own (possibly Claude) parent chain really is cut off. Without this the test
+    # above could pass for the wrong reason again.
+    assert _ancestry_under(tmp_path, "plainwrap") == "False"
 
 
 def test_human_override_rows_are_not_accepted(env, monkeypatch):
