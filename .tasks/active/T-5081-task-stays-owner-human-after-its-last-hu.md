@@ -306,6 +306,26 @@ python3 -m pytest -q tests/unit/t4779_stale_review_release_test.py
 bin/fw watchtower current
 bin/fw vendor self --check --task T-5081
 
+## Visual Verification
+
+The note appears only right after a Human box is ticked or unticked. An agent must never tick a
+Human box on a real task, so there is no browser shot of a live page; the exact HTML Watchtower
+returns was captured instead, from the throwaway fixture task the tests use (temp git repo, same
+`toggle-ac` endpoint, same Flask blueprint). The fragment replaces the checkbox in place.
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| last-tick | checkbox + hand-back note | unreachable | unreachable | unreachable | needs a Human tick on a real task (agent may not); HTML fragment below instead |
+
+```
+tick first (one still open): owner=human
+  <input type="checkbox" checked onchange="this.form.requestSubmit()" style="margin:0;">
+tick last open check: owner=agent
+  <input type="checkbox" checked ...> <small>Every Human check is ticked: handed back to the agent to close.</small>
+untick it again: owner=human
+  <input type="checkbox" ...> <small>A Human check is open again: back with you.</small>
+```
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
