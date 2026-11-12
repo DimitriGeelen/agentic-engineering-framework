@@ -6,12 +6,12 @@ description: >
   Operator 2026-11-12: run pilot code-PR tests in a no-NIC VM on the proxmox node
   (design: docs/reports/T-5009-isolated-test-host-design.md)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/testhost/guest-run.sh, lib/testhost.py, lib/testhost_proxmox.py]
 related_tasks: [T-5009, T-5099, T-5100, T-5006]
 arc_id: github-contributions
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -41,8 +41,8 @@ arc_id: github-contributions
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T16:07:48Z
-last_update: 2026-11-12T17:26:04Z
-date_finished:
+last_update: 2026-11-12T17:26:06Z
+date_finished: 2026-11-12T17:26:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -396,3 +396,16 @@ bin/fw vendor self --check --task T-5098
 
 ### 2026-11-12T17:15:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-12T17:26:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d470e7c3
+- **Timestamp:** 2026-11-12T17:28:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
