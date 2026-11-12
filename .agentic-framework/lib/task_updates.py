@@ -10,7 +10,7 @@ Usage:  <entry text on stdin> | python3 lib/task_updates.py append TASK_FILE
 
 The entry is inserted after the last non-blank line of the first '## Updates'
 section (the same section the gate bounds), separated by one blank line. With no
-'## Updates' section the entry is appended at end of file, as before.
+'## Updates' section, one is added at end of file and the entry goes under it (T-5087).
 """
 import os
 import re
@@ -24,7 +24,10 @@ def insert_entry(text: str, entry: str) -> str:
         return text
     m = re.search(r"^## Updates[ \t]*$", text, re.M)
     if not m:
-        return text + ("" if text.endswith("\n") or not text else "\n") + "\n" + entry + "\n"
+        # T-5087 (GitHub #107): create the section. Appending the bare entry glued it onto the
+        # last section, often ## Verification, where P-011 then refused the close.
+        sep = "" if text.endswith("\n") or not text else "\n"
+        return text + sep + ("\n" if text else "") + "## Updates\n\n" + entry + "\n"
     nxt = re.search(r"^## ", text[m.end():], re.M)
     hi = m.end() + nxt.start() if nxt else len(text)
     head = text[:hi].rstrip("\n")

@@ -55,3 +55,8 @@ without being asked. And Watchtower `/designer` for every map at once.
 
 # At least one project-specific learning exists
 python3 -c "import yaml; d=yaml.safe_load(open('.context/project/learnings.yaml')); assert len(d.get('learnings',[])) >= 1, 'No learnings found'"
+
+## Updates
+
+### __DATE__ — task-created [fw-init]
+- **Action:** Auto-created by `fw init` (existing-project onboarding)

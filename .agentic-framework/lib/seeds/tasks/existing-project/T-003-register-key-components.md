@@ -56,3 +56,8 @@ rendered.
 # Fabric has registered components
 test -d .fabric/components
 test "$(ls .fabric/components/*.yaml 2>/dev/null | wc -l)" -ge "3"
+
+## Updates
+
+### __DATE__ — task-created [fw-init]
+- **Action:** Auto-created by `fw init` (existing-project onboarding)
