@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5105: fw reviewer judge: 'No REVIEWER_JUDGES criteria' on a taste criterion, and a panel run with 1 seat dispatched and 0 ledger rows (055 report)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-12T23:56:34Z
+# ============================================================================
+
+task_id: T-5105
+task_name: "fw reviewer judge: 'No REVIEWER_JUDGES criteria' on a taste criterion, and a panel run with 1 seat dispatched and 0 ledger rows (055 report)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-12T19:37:50Z
+completed: 2026-11-12T23:56:03Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-12T20:39:52+01:00
+last_commit: 2026-11-13T00:56:01+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  055's exact criterion and the seatless rung-5 run recorded; first hypothesis. _all_wdirs linear and fork-free (associative array, no basename); status lists with one termlink list — review seats no longer time out before registering (055 report, reproduced on T-5106). vendor sync. criteria ticked with evidence, RCA, verification; split T-5111 (status listing of old dirs)
+
+# Key outcomes
+outcomes:
+  - '`_all_wdirs` de-duplicates with an associative array and no subprocess per dir; output (order, shadowing of a name in an earlier root) unchanged (test)'
+  - 'With ~7,000 worker dirs, `_all_wdirs` finishes in under 2 s (test with a generated tree: 297 ms)'
+  - '`fw reviewer judge T-5106` registers its seat and records a verdict (before: dispatch timed out at 120 s, 0 ledger rows; after: green in 1 m 34 s). `fw termlink status` went from over 6 m 40 s to 1 m 47 s; the remaining per-dir cost for ~6,800 finished dirs is split out as T-5111 (it does not affect dispatch)'
+  - 'Point 1 (055''s taste criterion classed no REVIEWER_JUDGES) reproduced with their exact text on bleeding-edge: it classes REVIEWER-JUDGES (unclassified without the render flag, render-surface with it), so not reproducible here; 055 asked for their be-tag and `fw task delegate T-506 --dry-run` output, and a difference found there gets its own task'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.tasks/active/T-5105-fw-reviewer-judge-no-reviewerjudges-crit.md'
+  - '.tasks/active/T-5111-fw-termlink-status-takes-1m47-with-6800-.md'
+  - 'agents/termlink/termlink.sh'
+  - 'tests/unit/t5105_all_wdirs_linear.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-12T20:39:52'
+    action: 'T-5105: 055''s exact criterion and the seatless rung-5 run recorded; first hypothesis'
+  - time: '2026-11-13T00:51:35'
+    action: 'T-5105: _all_wdirs linear and fork-free (associative array, no basename); status lists with one termlink list — review seats no longer time out before registering (055 report, reproduced on T-5106)'
+  - time: '2026-11-13T00:51:42'
+    action: 'T-5105: vendor sync'
+  - time: '2026-11-13T00:56:01'
+    action: 'T-5105: criteria ticked with evidence, RCA, verification; split T-5111 (status listing of old dirs)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 258 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 258
+  commits: 6
+  files_changed: 9
+  lines_added: 1299
+  lines_removed: 32
+  footprint_refreshed_at: '2026-11-12T23:56:52Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5105-fw-reviewer-judge-no-reviewerjudges-crit.md
+generated_by: context-agent-hybrid
