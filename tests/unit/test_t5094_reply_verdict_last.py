@@ -40,3 +40,9 @@ def test_real_replies_are_closable(n):
 ])
 def test_verdict_placement(text, want):
     assert issues.classify_reply(text, "a", "a") == want
+
+
+def test_thank_you_quotes_the_verdict_not_the_test_details():
+    assert issues._verdict_sentence(REAL[103]) == "Confirmed fixed, thank you."
+    assert issues._verdict_sentence(REAL[102]).startswith("That solves it for us")
+    assert issues._verdict_sentence("Confirmed fixed. Details follow.") == ""

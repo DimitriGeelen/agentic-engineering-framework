@@ -952,6 +952,16 @@ def _affirms(sentence: str) -> bool:
     return bool(_AFFIRM_RE.search(sentence) or _BARE_CONFIRM_RE.search(sentence.strip()))
 
 
+def _verdict_sentence(text: str) -> str:
+    """T-5094: the sentence that confirmed the fix (the first, else one in the last paragraph), so
+    the thank-you quotes the verdict rather than the test details. "" when the first sentence is it."""
+    sents = _sentences(text)
+    if not sents or _affirms(sents[0]):
+        return ""
+    last_para = re.split(r"\n\s*\n", (text or "").strip())[-1]
+    return next((s for s in _sentences(last_para) if _affirms(s)), "")
+
+
 def classify_reply(text: str, author: str = "", issue_author: str = "") -> str:
     """confirmed | close-ok | not-fixed | other. Pure. `confirmed` needs the issue author's own reply,
     a sentence that affirms the fix (the first one, or any in the last paragraph, T-5094), and no
@@ -1257,7 +1267,7 @@ def confirm_close(n: int, reply_id: str, dry_run: bool = False, note: str = "", 
         raise IssuesError(f"reply {reply_id} OKs closing but carries a suggestion: file the follow-up, then "
                           f"`fw issues confirm-close {n} --reply-id {reply_id} --note \"Your suggestion is "
                           f"tracked as T-XXXX.\"`", 2)
-    ok = _close_ok_sentence(text) if cls == "close-ok" else ""
+    ok = _close_ok_sentence(text) if cls == "close-ok" else _verdict_sentence(text)
     body = _confirm_body(_now()[:10], _quote(ok) if ok else _quote(text),
                          (live or {}).get("url") or reply.get("url") or "",
                          _caveats(text, skip=ok), fixed["tasks"], fixed, cls, note)
