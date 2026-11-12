@@ -5515,6 +5515,11 @@ concerns:
     the launcher's own project or CLAUDE_PROJECT_DIR, so a session operating on another project looks normal
   what_remains: T-4217 strips the paths from the dispatch spawn; T-4218 makes claude-fw set them explicitly and fw refuse
     a foreign inherited PROJECT_ROOT. Close when both land and a polluted-server test shows a clean session.
+  recurrences: '2026-11-12: two more instances of the same class outside tmux. (1) AEF T-5073: the agent''s env leaked
+    FRAMEWORK_ROOT into the node1 clone check (spec section 9 corrected). (2) 832 be.47 rehearsal: their runner cleared
+    PROJECT_ROOT/CONTEXT_DIR/TASKS_DIR but not FRAMEWORK_ROOT, so an upgraded clone''s fw ran with their old be.26
+    registry (832 msg 952b3d75; fixed on their side as 832 T-1398, commit 09d7b93df, which also clears FW_ROUTED_FROM
+    and pins it with a test). The fw-side refusal of a foreign inherited FRAMEWORK_ROOT is still open.'
 - id: G-117
   type: gap
   title: fw upgrade silently deletes a consumer's own rules inside CLAUDE.md governance sections
