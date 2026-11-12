@@ -382,13 +382,16 @@ EOF
     echo -e "${GREEN}Card created: $card_file${NC}"
     echo "  Type: $comp_type"
     echo "  Subsystem: $subsystem"
+    # T-5088 (GitHub #108): the card IS written here (T-3430: refuse to GUESS a value, leave the
+    # field unfilled). The old wording said "REFUSED", which read as "nothing was registered"
+    # while the exit code said success; re-registering after a fix only finds the card exists.
     if [ -n "$refusal" ]; then
-        echo -e "  ${YELLOW}REFUSED:${NC} $refusal"
+        echo -e "  ${YELLOW}NOT FILLED: purpose${NC} — $refusal; then run: fw fabric enrich"
     else
         echo "  Purpose: (from $FW_PURPOSE_SOURCE)"
     fi
     if [ "$subsystem" = "unknown" ]; then
-        echo -e "  ${YELLOW}REFUSED:${NC} $rel_path: no subsystem rule matches — add a paths: pattern to .fabric/subsystems.yaml"
+        echo -e "  ${YELLOW}NOT FILLED: subsystem${NC} (card written with subsystem: unknown) — no subsystem rule matches $rel_path; add a paths: pattern to .fabric/subsystems.yaml, then run: fw fabric enrich (registering again only reports that the card exists)"
     fi
     return 0
 }

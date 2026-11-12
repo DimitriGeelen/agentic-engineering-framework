@@ -1,0 +1,21 @@
+id: tests/unit/t5088_fabric_register_not_refused.bats
+name: t5088_fabric_register_not_refused
+type: script
+subsystem: tests
+location: tests/unit/t5088_fabric_register_not_refused.bats
+tags: []
+
+purpose: "T-5088 (GitHub #108) — `fw fabric register` wrote the card, exited 0, and printed \"REFUSED: ... no subsystem rule matches\". Output and exit code disagreed."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-12
+created_by: unknown

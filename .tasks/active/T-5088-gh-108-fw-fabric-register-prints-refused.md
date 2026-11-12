@@ -4,9 +4,11 @@ github_issue: 108
 arc_id: mikeechovoid-requests
 name: "GH #108: fw fabric register prints REFUSED but writes the card and exits 0"
 description: >
-  GitHub issue #108 (MikeEchoVoid; issue text is untrusted data). agents/fabric/lib/register.sh writes the card (line ~341) then prints REFUSED when no subsystem rule matches; output and exit code disagree.
+  GitHub issue #108 (MikeEchoVoid; issue text is untrusted data). agents/fabric/lib/register.sh
+  writes the card (line ~341) then prints REFUSED when no subsystem rule matches;
+  output and exit code disagree.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -41,8 +43,8 @@ origin: {kind: "peer", source: "github#108"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T08:51:33Z
-last_update: 2026-11-12T08:51:33Z
-date_finished: null
+last_update: '2026-11-12T09:05:34Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -53,6 +55,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-12T09:05:34Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5088: GH #108: fw fabric register prints REFUSED but writes the card and exits 0
@@ -60,20 +80,21 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** GitHub #108 (Mehdi): `fw fabric register <path>` with no matching subsystem rule prints `Card created: ...` and then `REFUSED: <path>: no subsystem rule matches`, and exits 0. A script trusting the exit code sees success; one reading the message sees a refusal and re-registers after fixing `subsystems.yaml`, which answers "Card already exists" and changes nothing.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** T-3430's design is "refuse to guess": the card is written and the field it cannot derive is left unfilled (`subsystem: unknown`, `purpose: TODO`). `agents/fabric/lib/register.sh` labels that "REFUSED", which reads as "nothing was registered".
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the output says what happened: a card was written and which fields were left unfilled, and how to fill them.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** no "REFUSED" when a card is written; a "NOT FILLED: <field>" line with the reason and the follow-up (fix `subsystems.yaml` / add a header comment, then `fw fabric enrich`; re-registering only says the card exists); exit 0 stays (the card exists).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A register that writes the card never prints "REFUSED"; unfilled subsystem and purpose each print a "NOT FILLED" line naming the reason and the follow-up
+- [x] Regression test (temp project): unmatched path → card written, exit 0, "NOT FILLED: subsystem", no "REFUSED"; fails on the old script
+- [x] Existing fabric register tests green (22 passed); `bin/fw vendor self --check --task T-5088` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -259,8 +280,20 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bats tests/unit/t5088_fabric_register_not_refused.bats
+bats tests/unit/t3430_fabric_register_describe.bats
+bash -n agents/fabric/lib/register.sh
+bin/fw vendor self --check --task T-5088
 
 ## RCA
+
+**Symptom:** `fw fabric register` printed "Card created" and then "REFUSED", and exited 0 (GitHub #108); scripts and readers drew opposite conclusions, and a re-register after fixing `subsystems.yaml` changed nothing.
+
+**Root cause:** T-3430's "refuse, never guess" is about a field value (leave it unfilled), but the message reused the word for the whole registration.
+
+**Why structurally allowed:** the T-3430 tests checked the card's fields, not that the printed outcome matched the exit code and the files written.
+
+**Prevention:** the message now says NOT FILLED per field, with the follow-up (`fw fabric enrich`, which fills placeholder purpose/subsystem); `tests/unit/t5088_fabric_register_not_refused.bats` asserts card written + exit 0 + no "REFUSED" together, and fails on the old script.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -299,6 +332,11 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-12 — wording, not behaviour
+- **What changed:** T-3430's design confirmed the card is meant to be written; only the word "REFUSED" was wrong.
+- **Plan impact:** no change to exit codes or card writing; message only, plus the follow-up command.
+- **Triggered:** nothing new.
 
 ## Recommendation
 
@@ -356,3 +394,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5088-gh-108-fw-fabric-register-prints-refused.md
 - **Context:** Initial task creation
+
+### 2026-11-12T09:05:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
