@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5095: GH 98 follow-up: Playwright can be declared absent by choice
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-12T10:08:30Z
+# ============================================================================
+
+task_id: T-5095
+task_name: "GH 98 follow-up: Playwright can be declared absent by choice"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-12T09:50:33Z
+completed: 2026-11-12T10:07:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-12T11:04:46+01:00
+last_commit: 2026-11-12T11:04:57+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  playwright is an optional component — ABSENT_COMPONENTS=playwright turns both doctor Playwright WARNs into absent by choice (GH #98). vendor sync
+
+# Key outcomes
+outcomes:
+  - '`playwright` is in `lib/optional_components.py`'
+  - 'With ABSENT_COMPONENTS=playwright and no Playwright installed, `fw doctor` prints no Playwright WARN (pip and MCP lines read absent by choice) — bats test'
+  - 'Without it, the pip WARN is still printed — bats test'
+  - 'The ABSENT_COMPONENTS description in `lib/config.sh` lists playwright'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/optional_components.py'
+  - '.tasks/active/T-5095-gh-98-follow-up-playwright-can-be-declar.md'
+  - 'bin/fw'
+  - 'lib/config.sh'
+  - 'lib/optional_components.py'
+  - 'tests/unit/t5095_playwright_absent_by_choice.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-12T11:04:46'
+    action: 'T-5095: playwright is an optional component — ABSENT_COMPONENTS=playwright turns both doctor Playwright WARNs into absent by choice (GH #98)'
+  - time: '2026-11-12T11:04:57'
+    action: 'T-5095: vendor sync'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 16
+  commits: 3
+  files_changed: 11
+  lines_added: 562
+  lines_removed: 12
+  footprint_refreshed_at: '2026-11-12T10:08:42Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5095-gh-98-follow-up-playwright-can-be-declar.md
+generated_by: context-agent-hybrid

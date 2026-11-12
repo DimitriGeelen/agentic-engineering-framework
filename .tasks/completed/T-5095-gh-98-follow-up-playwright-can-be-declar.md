@@ -4,12 +4,12 @@ name: "GH 98 follow-up: Playwright can be declared absent by choice"
 description: >
   Mehdi (be.46 test on #98): the Playwright pip package is still a permanent fw doctor WARN; it is not in the optional components list
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/config.sh, lib/optional_components.py]
 related_tasks: [T-4355, T-5080]
 github_issue: 98
 arc_id: mikeechovoid-requests
@@ -40,8 +40,8 @@ arc_id: mikeechovoid-requests
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T09:50:33Z
-last_update: 2026-11-12T10:04:56Z
-date_finished: null
+last_update: 2026-11-12T10:07:22Z
+date_finished: 2026-11-12T10:07:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -70,10 +70,10 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `playwright` is in `lib/optional_components.py`
-- [ ] With ABSENT_COMPONENTS=playwright and no Playwright installed, `fw doctor` prints no Playwright WARN (pip and MCP lines read absent by choice) — bats test
-- [ ] Without it, the pip WARN is still printed — bats test
-- [ ] The ABSENT_COMPONENTS description in `lib/config.sh` lists playwright
+- [x] `playwright` is in `lib/optional_components.py`
+- [x] With ABSENT_COMPONENTS=playwright and no Playwright installed, `fw doctor` prints no Playwright WARN (pip and MCP lines read absent by choice) — bats test
+- [x] Without it, the pip WARN is still printed — bats test
+- [x] The ABSENT_COMPONENTS description in `lib/config.sh` lists playwright
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -259,6 +259,10 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t5095_playwright_absent_by_choice.bats tests/unit/t4355_doctor_absent_components.bats > /tmp/.t5095v 2>&1 && ! grep -q "^not ok" /tmp/.t5095v
+test "$(grep -c '# skip' /tmp/.t5095v)" -eq 0
+python3 -m pytest tests/unit/test_t5080_config_components.py -q > /tmp/.t5095p 2>&1 && grep -q passed /tmp/.t5095p
+bin/fw vendor self --check --task T-5095
 
 ## RCA
 
@@ -299,6 +303,11 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-12 — Playwright has two doctor checks, not one
+- **What changed:** Mehdi named only the pip-package WARN, but doctor also WARNs when .mcp.json lacks the Playwright MCP server. A project without UI tests wants both quiet, so one ABSENT_COMPONENTS name covers both lines.
+- **Plan impact:** none; the single list from T-5080 took the new entry without other changes.
+- **Triggered:** nothing new. His reply on #98 was classed "not fixed" only because it contains "UI regression tests"; settled by hand with reply-ack rather than a classifier change.
 
 ## Recommendation
 
@@ -356,3 +365,16 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5095-gh-98-follow-up-playwright-can-be-declar.md
 - **Context:** Initial task creation
+
+### 2026-11-12T10:07:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8c1d0814
+- **Timestamp:** 2026-11-12T10:08:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
