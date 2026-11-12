@@ -9,6 +9,9 @@ Task: T-
 
 ## Evidence
 
+Version tested against (be-tag or commit):
+Test environment (for example non-root account, no network):
+
 <!-- The commands you ran and their output. Do not paste host names, paths, user names or tokens. -->
 
 ## Checklist
