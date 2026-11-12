@@ -2,7 +2,10 @@
 id: T-5101
 name: "Re-pin Workflow Designer 0.41.0 -> 0.42.0 (832 release, designer-v0.42.0)"
 description: >
-  832 msg 952b3d75 (2026-11-12): designer-v0.42.0, dist/aef-workflow-designer-0.42.0.html sha256 c2fe4a55d8397873140150b6180623ef2875d270bbbec16f41fb0419b198a292, 1351062 bytes; validator unchanged since 0.41.0; field-profile controls now hidden where not served (our T-4737). Same route as T-5074.
+  832 msg 952b3d75 (2026-11-12): designer-v0.42.0, dist/aef-workflow-designer-0.42.0.html
+  sha256 c2fe4a55d8397873140150b6180623ef2875d270bbbec16f41fb0419b198a292, 1351062
+  bytes; validator unchanged since 0.41.0; field-profile controls now hidden where
+  not served (our T-4737). Same route as T-5074.
 
 status: captured
 workflow_type: build
@@ -38,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T17:36:12Z
-last_update: 2026-11-12T17:42:59Z
-date_finished: null
+last_update: '2026-11-12T17:45:32Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +53,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-12T17:45:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5101: Re-pin Workflow Designer 0.41.0 -> 0.42.0 (832 release, designer-v0.42.0)
