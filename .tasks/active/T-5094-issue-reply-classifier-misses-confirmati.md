@@ -38,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T09:23:51Z
-last_update: 2026-11-12T09:27:52Z
+last_update: 2026-11-12T09:30:29Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -68,10 +68,11 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The three real replies (#102, #103, #104, verbatim in a test) classify as `confirmed` or `close-ok`
-- [ ] A verdict in the last paragraph counts only when that paragraph has no counter-signal; strong negatives anywhere still win (test cases)
-- [ ] Every existing case in test_t4660_issue_replies.py and test_t4668_close_ok.py keeps its class
-- [ ] #102, #103 and #104 are closed with `fw issues confirm-close`
+- [x] The three real replies (#102, #103, #104, verbatim in a test) classify as `confirmed` or `close-ok`
+- [x] A verdict in the last paragraph counts only when that paragraph has no counter-signal; strong negatives anywhere still win (test cases)
+- [x] Every existing case in test_t4660_issue_replies.py and test_t4668_close_ok.py keeps its class
+- [x] #102, #103 and #104 are closed with `fw issues confirm-close`
+- [x] The thank-you comment quotes the verdict sentence, not the first line of test details
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,6 +258,8 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5094_reply_verdict_last.py tests/unit/test_t4660_issue_replies.py tests/unit/test_t4668_close_ok.py tests/unit/test_t4669_reply_ack.py -q > /tmp/.t5094 2>&1 && grep -q passed /tmp/.t5094
+bin/fw vendor self --check --task T-5094
 
 ## RCA
 
@@ -273,6 +276,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw issues confirm-close` refused three plain confirmations from Mehdi (#102, #103, #104) with "decide it by hand", and there is no hand path for an outside issue (`fw issues close` takes internal issues only).
+
+**Root cause:** `classify_reply` only looked at the first sentence for the verdict. It was written from the 2026-10-22 replies, which all opened with "Confirmed fixed …". Mehdi's be.46 replies put the test details first and the verdict last, or used phrases the patterns lacked ("Confirmed, thank you.", "This can be closed.", "That solves it").
+
+**Why structurally allowed:** the test table was built only from replies of the first style, so nothing tested where the verdict sits. The refusal message points to a manual path that does not exist for external issues.
+
+**Prevention:** `tests/unit/test_t5094_reply_verdict_last.py` pins the three real replies verbatim, plus cases that keep the rule conservative: a verdict in a middle paragraph, a counter-signal in the verdict paragraph, a strong negative anywhere.
 
 ## Evolution
 
