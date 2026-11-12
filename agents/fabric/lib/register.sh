@@ -167,6 +167,34 @@ do_register() {
     _do_register_file "$file_path"
 }
 
+# _fabric_slug REL_PATH — the card name for a file (T-1659, T-5089 / GitHub #109).
+# Directories join with "-" and a leading dot on the whole path is dropped, exactly as
+# before; the basename loses its trailing extension. A DOTFILE basename is different:
+# its leading dot is not an extension separator, so `.gitignore` used to strip to ""
+# (card `.fabric/components/.yaml`), a second dotfile collided by registration order,
+# and `.framework.yaml` became `framework`. Its dot now becomes a `dot-` prefix:
+# .gitignore -> dot-gitignore, .framework.yaml -> dot-framework, a/.env -> a-dot-env.
+# Every non-dotfile path keeps its old slug, so existing cards are not renamed.
+_fabric_slug() {
+    local rel="$1" dir="" base="$1" stem
+    if [[ "$rel" == */* ]]; then
+        dir="${rel%/*}"
+        base="${rel##*/}"
+    fi
+    if [[ "$base" == .* ]]; then
+        stem="${base#.}"
+        stem=$(printf '%s' "$stem" | sed 's|\.[^./-]*$||')
+        stem="dot-${stem}"
+    else
+        stem=$(printf '%s' "$base" | sed 's|\.[^./-]*$||')
+    fi
+    if [ -n "$dir" ]; then
+        printf '%s-%s' "$(printf '%s' "$dir" | sed 's|/|-|g; s|^\.||')" "$stem"
+    else
+        printf '%s' "$stem"
+    fi
+}
+
 _do_register_file() {
     local rel_path="$1"
 
@@ -196,7 +224,18 @@ _do_register_file() {
     # to an empty slug — produced `.fabric/components/.yaml` (single shared
     # file silently overwritten on every register).
     local slug
-    slug=$(echo "$rel_path" | sed 's|/|-|g; s|\.[^./-]*$||; s|^\.||')
+    slug=$(_fabric_slug "$rel_path")
+
+    # T-5089: a dotfile registered before the dot- rule has its card under the old slug.
+    # If that card names this very file, it is this file's card: do not write a second.
+    local _legacy_slug _legacy_card
+    _legacy_slug=$(printf '%s' "$rel_path" | sed 's|/|-|g; s|\.[^./-]*$||; s|^\.||')
+    _legacy_card="$COMPONENTS_DIR/${_legacy_slug}.yaml"
+    if [ "$_legacy_slug" != "$slug" ] && [ -n "$_legacy_slug" ] && [ -f "$_legacy_card" ] \
+        && [ "$(grep -m1 '^location:' "$_legacy_card" | sed 's|^location: *||')" = "$rel_path" ]; then
+        echo -e "${YELLOW}Card already exists: $_legacy_card${NC}"
+        return 0
+    fi
 
     local card_file="$COMPONENTS_DIR/${slug}.yaml"
     if [ -f "$card_file" ]; then

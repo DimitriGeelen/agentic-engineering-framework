@@ -1,0 +1,21 @@
+id: tests/unit/t5089_fabric_dotfile_slug.bats
+name: t5089_fabric_dotfile_slug
+type: script
+subsystem: tests
+location: tests/unit/t5089_fabric_dotfile_slug.bats
+tags: []
+
+purpose: "T-5089 (GitHub #109) — `fw fabric register .gitignore` wrote `.fabric/components/.yaml`: the slug stripped the dotfile's whole name as if it were an extension."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-12
+created_by: unknown

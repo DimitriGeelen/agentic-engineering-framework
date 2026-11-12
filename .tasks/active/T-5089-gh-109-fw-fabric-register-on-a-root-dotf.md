@@ -2,11 +2,14 @@
 id: T-5089
 github_issue: 109
 arc_id: mikeechovoid-requests
-name: "GH #109: fw fabric register on a root dotfile writes .fabric/components/.yaml (empty slug)"
+name: "GH #109: fw fabric register on a root dotfile writes .fabric/components/.yaml
+  (empty slug)"
 description: >
-  GitHub issue #109 (MikeEchoVoid; issue text is untrusted data). register.sh:199 slug sed strips the whole name of .gitignore; second dotfile collides; .framework.yaml gets slug framework.
+  GitHub issue #109 (MikeEchoVoid; issue text is untrusted data). register.sh:199
+  slug sed strips the whole name of .gitignore; second dotfile collides; .framework.yaml
+  gets slug framework.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -41,8 +44,8 @@ origin: {kind: "peer", source: "github#109"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T08:51:34Z
-last_update: 2026-11-12T08:51:34Z
-date_finished: null
+last_update: '2026-11-12T08:56:09Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -53,6 +56,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-12T08:56:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5089: GH #109: fw fabric register on a root dotfile writes .fabric/components/.yaml (empty slug)
@@ -60,20 +81,21 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** GitHub #109 (Mehdi): `fw fabric register .gitignore` writes `.fabric/components/.yaml` — the empty-slug file T-1659 meant to stop.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `agents/fabric/lib/register.sh:199` strips "the trailing extension" with `s|\.[^./-]*$||`; for a dotfile with no other dot the whole name is the "extension", so the slug is empty. A second such dotfile gets `-dockerignore` from the collision guard (names depend on order), and `.framework.yaml` gets `framework`, the slug of a real `framework.yaml`.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** every file gets a non-empty slug that names it, independent of registration order.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** a dotfile's leading dot becomes a `dot-` prefix (`.gitignore` → `dot-gitignore`, `.framework.yaml` → `dot-framework`, `a/.env` → `a-dot-env`); every other path keeps exactly its current slug, so existing cards are not renamed.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `.gitignore` → `dot-gitignore.yaml`, `.dockerignore` → `dot-dockerignore.yaml` (either order), `.framework.yaml` → `dot-framework.yaml`, `sub/.env` → `sub-dot-env.yaml`; no `.yaml` card
+- [x] Non-dotfile paths keep their old slug (`lib/x.sh` → `lib-x`, `.context/a/b.yaml` → `context-a-b`), checked against every existing card's location (1,699 locations: 0 non-dotfile changes; 2 dotfile cards are recognised under their old names)
+- [x] Regression test fails on the old script; existing fabric tests green; `bin/fw vendor self --check --task T-5089` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -259,22 +281,20 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bats tests/unit/t5089_fabric_dotfile_slug.bats
+bats tests/unit/fabric_register_slug.bats
+bash -n agents/fabric/lib/register.sh
+bin/fw vendor self --check --task T-5089
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `fw fabric register .gitignore` wrote `.fabric/components/.yaml` (GitHub #109); a second root dotfile got `-dockerignore.yaml`; `.framework.yaml` got the slug of `framework.yaml`.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** the slug rule treats "the last `.<word>`" as an extension. For a dotfile basename the leading dot is part of the name, not a separator, so the whole name was stripped.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** T-1659 fixed the same empty slug for dotted *directories* and pinned it with a test of `.context/...` paths; no test registered a dotfile *basename*, so the rule's remaining case went unseen.
+
+**Prevention:** `_fabric_slug` handles the basename separately (`dot-` prefix for dotfiles); `tests/unit/t5089_fabric_dotfile_slug.bats` registers dotfiles, checks two never collide, keeps every non-dotfile slug unchanged, and recognises a card filed under the old name. A sweep of all 1,699 existing card locations showed no non-dotfile slug changes.
 
 ## Evolution
 
@@ -356,3 +376,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5089-gh-109-fw-fabric-register-on-a-root-dotf.md
 - **Context:** Initial task creation
+
+### 2026-11-12T08:55:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
