@@ -2,7 +2,10 @@
 id: T-5102
 name: "Accept a mail_hub key in .framework.yaml (010-termlink request P-46, arc-011)"
 description: >
-  010 msg 3cc6ba9b (2026-11-12): mail_hub: {id: <16 hex hub id>, address: <host:port>} declares which hub carries a project's mail (TermLink DR-7 A, R-54, format V-7). AEF owns the key and its doc: accepted by fw config/validation and documented; TermLink P-11 reads it. Proposal; scope before building.
+  010 msg 3cc6ba9b (2026-11-12): mail_hub: {id: <16 hex hub id>, address: <host:port>}
+  declares which hub carries a project's mail (TermLink DR-7 A, R-54, format V-7).
+  AEF owns the key and its doc: accepted by fw config/validation and documented; TermLink
+  P-11 reads it. Proposal; scope before building.
 
 status: captured
 workflow_type: build
@@ -38,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T17:57:15Z
-last_update: 2026-11-12T17:57:15Z
-date_finished: null
+last_update: '2026-11-12T18:00:34Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +53,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-12T18:00:34Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5102: Accept a mail_hub key in .framework.yaml (010-termlink request P-46, arc-011)
