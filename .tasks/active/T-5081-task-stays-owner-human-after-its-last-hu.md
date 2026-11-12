@@ -112,7 +112,8 @@ bvp_scores_proposed:
 - [x] Existing toggle-ac and verdict-ledger tests stay green; `bin/fw watchtower current`; `bin/fw vendor self --check --task T-5081` clean (1,225 passed: verdict-ledger, delegation, tasks-page)
 
 ### Human
-- [ ] [REVIEW] The hand-back note reads clearly when you tick your last check
+- [ ] [REVIEW] The hand-back note reads clearly when you tick your last check: on a task waiting for your review, ticking its last open check shows a note below the check list saying the task is handed back to the agent to close; unticking a check again shows a note saying the task is with you.
+  **Restated:** 2026-11-12, accepting V-20261111-199aed98; was: [REVIEW] The hand-back note reads clearly when you tick your last check
   **Steps:**
   1. Open any task waiting for your review, e.g. http://192.168.10.107:3000/review/T-5079
   2. Tick its last open check

@@ -152,7 +152,8 @@ bvp_scores_proposed:
 - [x] Release-notes entry for the next release names the change and the one-line opt-in
 
 ### Human
-- [ ] [REVIEW] Watchtower still opens from your other machine
+- [ ] [REVIEW] Watchtower still opens from your other machine: http://192.168.10.107:3000 loads, and on /config the FW_HOST row shows default 127.0.0.1 and current value 0.0.0.0 (this repo HOST), with a clear description.
+  **Restated:** 2026-11-12, accepting V-20261112-1a556912; was: [REVIEW] Watchtower still opens from your other machine
   **Steps:**
   1. On another machine on your network, open http://192.168.10.107:3000
   2. Open http://192.168.10.107:3000/config and find the `HOST` row
