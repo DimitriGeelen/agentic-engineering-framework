@@ -41,7 +41,7 @@ arc_id: github-contributions
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T16:07:48Z
-last_update: 2026-11-12T17:25:37Z
+last_update: 2026-11-12T17:26:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,12 +98,12 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `guest-run.sh` ends every run with one framed result block on stdout (begin marker with sha256 and length, gzip + base64 lines, end marker) carrying result.json and the capped checks log; the plain log stays text (test)
-- [ ] The controller takes the block out of the serial log, checks length and sha256, decompresses with a hard size cap (a compression bomb is refused), and treats a missing, truncated or bad block as infra-error (tests)
-- [ ] The stub backend still passes its existing tests; a stub run with no output disk gets its result from the serial block alone (test)
-- [ ] `ProxmoxBackend` (own module): clone from the template into the pool, refuse a clone that has any network device, upload the ISO and attach it read-only, start, stream the serial console through termproxy, stop, destroy the VM and delete the ISO on every exit path; list_pool reports leftovers (tests against a fake API)
-- [ ] The token is read from a file under `.context/secrets/` (never from `.framework.yaml`), TLS is verified against a configured CA file, and nothing guest-produced is ever written outside the run dir (tests / code read)
-- [ ] All existing testhost tests pass
+- [x] `guest-run.sh` ends every run that has a nonce with one framed result block on stdout (begin marker with sha256 and length, gzip + base64 lines, end marker) carrying result.json and the capped checks log; the plain log stays text (test)
+- [x] The controller takes the block out of the serial log, checks length and sha256, decompresses with a hard size cap (a compression bomb is refused), and treats a missing, truncated or bad block as infra-error (tests); a block without this run's nonce is ignored (test)
+- [x] The stub backend still passes its existing tests; a stub run with no output disk gets its result from the serial block alone (test)
+- [x] `ProxmoxBackend` (own module): clone from the template into the pool, refuse a clone that has any network device, upload the ISO and attach it read-only, start, stream the serial console through termproxy, stop, destroy the VM and delete the ISO on every exit path; list_pool reports leftovers (tests against a fake API; the termproxy websocket itself is proven at the first live run, see Evolution)
+- [x] The token is read from a file (default `.context/secrets/testhost-pve-token`, mode 0600 enforced; never from `.framework.yaml`), TLS is verified against a configured CA file, and nothing guest-produced is written outside the run dir (tests / code read)
+- [x] All existing testhost tests pass (31 passed)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,6 +289,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 python3 -m pytest tests/unit/test_t5098_testhost_design_a.py tests/unit/test_testhost_controller.py -q > /tmp/.t5098 2>&1 && grep -q passed /tmp/.t5098
+bin/fw vendor self --check --task T-5098
 
 ## RCA
 
@@ -329,6 +331,11 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-12 — a nonce, because the PR shares the serial line
+- **What changed:** the PR's own test output goes to the same serial console as the result block, so a PR could print a fake "passed" block. Each run now gets a random nonce on the ISO; the guest reads it as root before the checks, and the controller keeps only a block carrying it. In the VM this holds only if the boot service copies the CD into a root-only directory before calling guest-run.sh; that unit belongs to the template (T-5099).
+- **Plan impact:** the template's boot service must (1) copy the CD to a root-only dir, (2) unmount the CD, (3) run guest-run.sh as root with that dir, writing stdout to the serial console, (4) power off. Recorded for T-5099.
+- **Triggered:** nothing new. Not verified until the live run: the termproxy websocket path (`_termproxy_chunks`), the real upload endpoint and the token's permissions; the tests use a fake API and a fake serial console. The first live run (T-5099, then the R-53 probe) is where those are proven.
 
 ## Recommendation
 
