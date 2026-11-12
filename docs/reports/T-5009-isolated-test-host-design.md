@@ -109,8 +109,9 @@ PR waits for this anyway, and a linked-clone VM starts in seconds.
   production services, or the least sensitive one. **2026-11-03: deferred** (operator: "proceed as suggested") —
   AEF builds the controller against a stub hypervisor first (phase 3); the node is chosen before phase 4.
 - **Q-4 Limits per run?** Recommend 2 vCPU, 4 GB RAM, 20 GB disk, 30 minutes wall clock, one run at a time.
+  **Answered 2026-11-12: 4 vCPU, 8 GB RAM, 40 GB disk, 60 minutes wall clock, one run at a time.**
 - **Q-5 Template refresh?** Recommend monthly with the stable release, plus on demand when a PR names a missing
-  dependency.
+  dependency. **Answered 2026-11-12: as recommended (monthly with the stable release, plus on demand).**
 
 ## 8a Q-2 options: how information comes out (2026-11-03)
 
@@ -147,3 +148,7 @@ with this amendment: "Network: none" stands, and the out-channel is disk + seria
   outside view from a subscription model before deciding; dispatched to codex (`T-5009-review-codex.md`). Q-2 open.
 - 2026-11-03: operator asked for three architectures weighed on functionality vs security and mapped to D1-D4;
   opencode proposed A/B/C (section 8a). Operator answered "1" — **B, disk + live serial log**.
+- 2026-11-12: operator, "let's focus on everything we can enable Medi to start putting in pull requests"; the pilot
+  plan was signed off with code PRs waiting for this host. Q-4: "4 vCPU, 8 GB, 40 GB, 60 min" (one run at a time).
+  Q-5: monthly + on demand (recommended). Q-3: "Let AEF propose one" — AEF reads the node list read-only and proposes
+  the least sensitive node with room for the Q-4 limits; the operator confirms.
