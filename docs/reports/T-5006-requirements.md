@@ -1921,3 +1921,13 @@ Asked one item at a time, with the agent's recommendation; the operator's answer
   release only with WORKS (with evidence) from two different peers, or one peer plus the operator's own check; one
   peer's confirmed WORKS alone may close the issue but does not count for the release. (Note for the planner: this
   tightens the standing release ruling T-4146 for outside-PR fixes only, unless the operator extends it.)
+- **14.9 (10.32 remainder):** a merged outside PR with no positive field verdict goes to **the operator's release
+  question** (standing ruling T-4146), not an outright block; with 14.8 it needs two peers (or one plus the operator)
+  to count as confirmed.
+- **14.10 (10.2 pilot):** a PR from another account during the pilot is **labelled "waiting" with one polite line**
+  (the project is piloting outside contributions with one contributor; the PR is kept and looked at when the pilot
+  ends); nothing is reviewed or merged meanwhile. **Pilot exit** as accepted on 2026-11-11: PR 2 runs the whole
+  circuit without a workaround, a refused or returned PR gets its one-line reason, and no merged commit is lost.
+  R-7 is testable now.
+- **14.11 (10.35 scan bound):** answered above: within 5 minutes, alert after 15 minutes without a run.
+- **14.12 (6.0.b priorities):** **accepted as proposed** (P1 needed for the pilot, P2 before opening wider, P3 later); the planner (step 8) flags any P1 not needed for the pilot, and the operator may move items later.
