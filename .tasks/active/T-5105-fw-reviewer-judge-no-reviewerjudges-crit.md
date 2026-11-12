@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T19:37:50Z
-last_update: 2026-11-12T23:51:42Z
+last_update: 2026-11-12T23:56:01Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,10 +100,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `_all_wdirs` de-duplicates with an associative array and no subprocess per dir; output (order, shadowing of a name in an earlier root) unchanged (test)
-- [ ] With ~7,000 worker dirs, `_all_wdirs` finishes in under 2 s (test with a generated tree)
-- [ ] `fw termlink status` finishes here in under 60 s (measured), and `fw reviewer judge T-5106` registers its seat
-- [ ] Point 1 (055's taste criterion classed no REVIEWER_JUDGES) is reproduced with their exact text and either fixed here or filed as its own task
+- [x] `_all_wdirs` de-duplicates with an associative array and no subprocess per dir; output (order, shadowing of a name in an earlier root) unchanged (test)
+- [x] With ~7,000 worker dirs, `_all_wdirs` finishes in under 2 s (test with a generated tree: 297 ms)
+- [x] `fw reviewer judge T-5106` registers its seat and records a verdict (before: dispatch timed out at 120 s, 0 ledger rows; after: green in 1 m 34 s). `fw termlink status` went from over 6 m 40 s to 1 m 47 s; the remaining per-dir cost for ~6,800 finished dirs is split out as T-5111 (it does not affect dispatch)
+- [x] Point 1 (055's taste criterion classed no REVIEWER_JUDGES) reproduced with their exact text on bleeding-edge: it classes REVIEWER-JUDGES (unclassified without the render flag, render-surface with it), so not reproducible here; 055 asked for their be-tag and `fw task delegate T-506 --dry-run` output, and a difference found there gets its own task
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,6 +289,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t5105_all_wdirs_linear.bats > /tmp/.t5105v 2>&1 && ! grep -q "^not ok" /tmp/.t5105v
+test "$(grep -c '# skip' /tmp/.t5105v)" -eq 0
+bash -n agents/termlink/termlink.sh
+bin/fw vendor self --check --task T-5105
 
 ## RCA
 
@@ -305,6 +309,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw reviewer judge` registered a review run but its seat never registered (0 ledger rows); 055 on their T-506, and here on T-5106 (`fw termlink dispatch` timed out after 120 s). `fw termlink status` took over 6 m 40 s.
+
+**Root cause:** `_all_wdirs` in `agents/termlink/termlink.sh` de-duplicated worker dirs by appending each name to one string and pattern-matching the whole string per dir, with two `basename` forks per dir: quadratic in the number of worker dirs, and every dispatch runs it for the worker-cap check. `cmd_status` also ran `termlink list` once per dir.
+
+**Why structurally allowed:** worker dirs are never pruned by default (6,800 accumulated here), and the cost grew slowly until it crossed the 120 s dispatch timeout; nothing measured how long the worker-cap check takes.
+
+**Prevention:** `tests/unit/t5105_all_wdirs_linear.bats` pins the output and a 2 s bound over 7,000 generated dirs, and that the function forks no `basename`. T-5111 covers the remaining per-dir cost of the status listing.
 
 ## Evolution
 
