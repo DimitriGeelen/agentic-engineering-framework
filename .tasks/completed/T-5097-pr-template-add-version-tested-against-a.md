@@ -4,10 +4,10 @@ name: "PR template: add Version tested against and Test environment (Mehdi's #11
 description: >
   Mehdi answered on #114 (comment 6807371666) that the PR template should ask for the version tested against and the test environment; the operator accepted on 2026-11-11
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: [T-5006, T-5047]
@@ -39,8 +39,8 @@ arc_id: github-contributions
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T12:40:17Z
-last_update: 2026-11-12T12:41:21Z
-date_finished: null
+last_update: 2026-11-12T12:41:23Z
+date_finished: 2026-11-12T12:41:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -361,3 +361,16 @@ test "$(grep -c '^- \[ \]' .github/pull_request_template.md)" -eq 6
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5097-pr-template-add-version-tested-against-a.md
 - **Context:** Initial task creation
+
+### 2026-11-12T12:41:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-79a147c9
+- **Timestamp:** 2026-11-12T12:41:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
