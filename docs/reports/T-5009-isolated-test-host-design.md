@@ -226,6 +226,11 @@ straight into that file by the runme; it is never printed, logged or sent over t
   Infisical following the estate pattern, printed only as a fingerprint; this host's 0600 file is written from the
   Infisical copy, never printed. Which of the two this host reads is the operator's choice.
 
+**Operator, 2026-11-12:** (1) ring20 builds the node side as its own task, with its runmes from ring20-manager,
+exactly per this spec; AEF reads the runmes against the spec before the operator runs them. (2) Token in Infisical
+**and** a 0600 file on this host written from the Infisical copy; the controller reads the file, Infisical stays the
+source for rotation.
+
 ## 9 Dialogue log
 
 - 2026-11-03: operator chose "design first" for T-5009 (options were: design first / name a host now / park).
