@@ -2815,6 +2815,8 @@ print(f'{total}|{\",\".join(missing)}')
     # MCP is auto-managed by fw upgrade; pip needs manual install.
     if python3 -c "import playwright" 2>/dev/null; then
         echo -e "  ${GREEN}OK${NC}  Playwright pip package (test runner)"
+    elif _doctor_absent_by_choice playwright; then
+        _doctor_absent_ok "Playwright pip package"
     else
         echo -e "  ${YELLOW}WARN${NC}  Playwright pip package missing — UI regression tests can't run"
         echo -e "         Install: pip install playwright pytest-playwright && playwright install chromium"
@@ -2822,6 +2824,8 @@ print(f'{total}|{\",\".join(missing)}')
     fi
     if [ -f "$mcp_json" ] && grep -q '"playwright"' "$mcp_json" 2>/dev/null; then
         echo -e "  ${GREEN}OK${NC}  Playwright MCP server (agent UI verification)"
+    elif _doctor_absent_by_choice playwright; then
+        _doctor_absent_ok "Playwright MCP server"
     else
         echo -e "  ${YELLOW}WARN${NC}  Playwright MCP server not in .mcp.json"
         echo -e "         Run: fw upgrade  # auto-adds the MCP block"
