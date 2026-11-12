@@ -1,0 +1,159 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5081: Task stays owner: human after its last Human criterion is ticked outside the reviewer path (832 proposal)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-12T08:25:34Z
+# ============================================================================
+
+task_id: T-5081
+task_name: "Task stays owner: human after its last Human criterion is ticked outside the reviewer path (832 proposal)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-11T17:10:53Z
+completed: 2026-11-11T21:07:52Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-11T18:10:59+01:00
+last_commit: 2026-11-12T09:17:24+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — owner hand-back only fires on reviewer verdicts (832 proposal). the operator's last Human tick in Watchtower hands the task back to the agent (832 proposal, operator decision). partial-complete — awaiting operator check of the note. visual evidence — captured hand-back note fragments (live shot needs a Human tick an agent may not make). reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). evidence — real shots at every width (demo project); review-page gap split out as T-5083
+
+# Key outcomes
+outcomes:
+  - 'One function decides the hand-back; `verdict_ledger.apply` and Watchtower''s `toggle_ac` both call it (no second copy of the rule) — `lib/delegation.py` `owner_handback`'
+  - 'Watchtower: ticking the last open Human box on a human-owned task sets `owner: agent`; ticking one that leaves another open changes nothing'
+  - 'Watchtower: unticking a Human box on an agent-owned task that is waiting for review sets `owner: human` again'
+  - 'The tick still writes its provenance row first; if that fails, neither the tick nor the owner change happens'
+  - 'Existing toggle-ac and verdict-ledger tests stay green; `bin/fw watchtower current`; `bin/fw vendor self --check --task T-5081` clean (1,225 passed: verdict-ledger, delegation, tasks-page)'
+  - '[REVIEW] The hand-back note reads clearly when you tick your last check: on a task waiting for your review, ticking its last open check shows a note below the check list saying the task is handed back to the agent to close; unticking a check again shows a note saying the task is with you.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-11 — what the operator''s last tick does (operator decision)'
+    chose: 'hand the task back to the agent (owner: agent), the same rule a reviewer''s green already applies; unticking again hands it back to the operator. Operator picked "Hand back to agent (Recommended)" in the question of 2026-11-11.'
+    rationale: 'removes the extra close click without making a mistaken tick irreversible; one rule for both paths.'
+    alternatives_rejected: ['close at once on the last tick (a mistaken tick closes the task); a "Close now" button (keeps a click); keep as today.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/delegation.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.agentic-framework/web/blueprints/tasks.py'
+  - '.context/reviews/applied.jsonl'
+  - '.context/reviews/evidence/T-5081/01-review-t-5079-judge-t-5081-r3-2825eb9193ca.png'
+  - '.context/reviews/evidence/T-5081/01-review-t-5079-judge-t-5081-r3-3b0f4e6e9d2e.png'
+  - '.context/reviews/evidence/T-5081/01-review-t-5079-judge-t-5081-r3-a6538f8d969d.png'
+  - '.context/reviews/evidence/T-5081/01-review-t-5079-judge-t-5081-r3-b47e68bafa9e.png'
+  - '.context/reviews/evidence/T-5081/01-review-t-5079-judge-t-5081-r3-fe2ca0244c27.png'
+  - '.context/reviews/evidence/T-5081/02-tasks-judge-t-5081-r3-2825eb9193ca.png'
+  - '.context/reviews/evidence/T-5081/02-tasks-judge-t-5081-r3-3b0f4e6e9d2e.png'
+  - '.context/reviews/evidence/T-5081/02-tasks-judge-t-5081-r3-a6538f8d969d.png'
+  - '.context/reviews/evidence/T-5081/02-tasks-judge-t-5081-r3-b47e68bafa9e.png'
+  - '.context/reviews/evidence/T-5081/02-tasks-judge-t-5081-r3-fe2ca0244c27.png'
+  - '.context/reviews/evidence/T-5081/AC1-judge-t-5081-r3-2825eb9193ca.md'
+  - '.context/reviews/evidence/T-5081/AC1-judge-t-5081-r3-3b0f4e6e9d2e.md'
+  - '.context/reviews/evidence/T-5081/AC1-judge-t-5081-r3-a6538f8d969d.md'
+  - '.context/reviews/evidence/T-5081/AC1-judge-t-5081-r3-b47e68bafa9e.md'
+  - '.context/reviews/evidence/T-5081/AC1-judge-t-5081-r3-fbde63f7ed4c.md'
+  - '.context/reviews/evidence/T-5081/AC1-judge-t-5081-r3-fe2ca0244c27.md'
+  - '.context/reviews/evidence/T-5081/last-tick-1024-judge-t-5081-r3-2825eb9193ca.png'
+  - '.context/reviews/evidence/T-5081/last-tick-1024-judge-t-5081-r3-3b0f4e6e9d2e.png'
+  - '.context/reviews/evidence/T-5081/last-tick-1024-judge-t-5081-r3-a6538f8d969d.png'
+  - '.context/reviews/evidence/T-5081/last-tick-1024-judge-t-5081-r3-b47e68bafa9e.png'
+  - '.context/reviews/evidence/T-5081/last-tick-1440-judge-t-5081-r3-2825eb9193ca.png'
+  - '.context/reviews/evidence/T-5081/last-tick-1440-judge-t-5081-r3-3b0f4e6e9d2e.png'
+  - '.context/reviews/evidence/T-5081/last-tick-1440-judge-t-5081-r3-a6538f8d969d.png'
+  - '.context/reviews/evidence/T-5081/last-tick-1440-judge-t-5081-r3-b47e68bafa9e.png'
+  - '.context/reviews/evidence/T-5081/last-tick-1920-judge-t-5081-r3-2825eb9193ca.png'
+  - '.context/reviews/evidence/T-5081/last-tick-1920-judge-t-5081-r3-3b0f4e6e9d2e.png'
+  - '.context/reviews/evidence/T-5081/last-tick-1920-judge-t-5081-r3-a6538f8d969d.png'
+  - '.context/reviews/evidence/T-5081/last-tick-1920-judge-t-5081-r3-b47e68bafa9e.png'
+  - '.context/reviews/evidence/T-5081/untick-1024-judge-t-5081-r3-2825eb9193ca.png'
+  - '.context/reviews/evidence/T-5081/untick-1024-judge-t-5081-r3-3b0f4e6e9d2e.png'
+  - '.context/reviews/evidence/T-5081/untick-1024-judge-t-5081-r3-a6538f8d969d.png'
+  - '.context/reviews/evidence/T-5081/untick-1024-judge-t-5081-r3-b47e68bafa9e.png'
+  - '.context/reviews/evidence/T-5081/untick-1440-judge-t-5081-r3-2825eb9193ca.png'
+  - '.context/reviews/evidence/T-5081/untick-1440-judge-t-5081-r3-3b0f4e6e9d2e.png'
+  - '.context/reviews/evidence/T-5081/untick-1440-judge-t-5081-r3-a6538f8d969d.png'
+  - '.context/reviews/evidence/T-5081/untick-1440-judge-t-5081-r3-b47e68bafa9e.png'
+  - '.context/reviews/evidence/T-5081/untick-1920-judge-t-5081-r3-2825eb9193ca.png'
+  - '.context/reviews/evidence/T-5081/untick-1920-judge-t-5081-r3-3b0f4e6e9d2e.png'
+  - '.context/reviews/evidence/T-5081/untick-1920-judge-t-5081-r3-a6538f8d969d.png'
+  - '.context/reviews/evidence/T-5081/untick-1920-judge-t-5081-r3-b47e68bafa9e.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.fabric/components/tests-web-test_t5081_owner_handback.yaml'
+  - '.tasks/active/T-5081-task-stays-owner-human-after-its-last-hu.md'
+  - 'lib/delegation.py'
+  - 'lib/verdict_ledger.py'
+  - 'tests/web/test_t5081_owner_handback.py'
+  - 'web/blueprints/tasks.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-11T18:10:59'
+    action: 'T-5081: capture — owner hand-back only fires on reviewer verdicts (832 proposal)'
+  - time: '2026-11-11T22:07:51'
+    action: 'T-5081: the operator''s last Human tick in Watchtower hands the task back to the agent (832 proposal, operator decision)'
+  - time: '2026-11-11T22:08:43'
+    action: 'T-5081: partial-complete — awaiting operator check of the note'
+  - time: '2026-11-11T22:43:36'
+    action: 'T-5081: visual evidence — captured hand-back note fragments (live shot needs a Human tick an agent may not make)'
+  - time: '2026-11-11T23:01:22'
+    action: 'T-5081: reviewer verdict'
+  - time: '2026-11-11T23:03:29'
+    action: 'T-5081: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-11T23:47:45'
+    action: 'T-5081: evidence — real shots at every width (demo project); review-page gap split out as T-5083'
+  - time: '2026-11-11T23:55:59'
+    action: 'T-5081: reviewer verdict'
+  - time: '2026-11-12T00:34:57'
+    action: 'T-5081: reviewer verdict'
+  - time: '2026-11-12T00:58:31'
+    action: 'T-5081: reviewer verdict'
+  - time: '2026-11-12T09:17:24'
+    action: 'T-5081: reviewer verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 11 commit(s), 236 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 236
+  commits: 12
+  files_changed: 59
+  lines_added: 1124
+  lines_removed: 37
+  footprint_refreshed_at: '2026-11-12T08:25:55Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5081-task-stays-owner-human-after-its-last-hu.md
+generated_by: context-agent-hybrid

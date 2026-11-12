@@ -15,8 +15,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
 components: [lib/delegation.py, lib/verdict_ledger.py, tests/web/test_t5081_owner_handback.py, web/blueprints/tasks.py]
 related_tasks: []
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-11T17:10:53Z
-last_update: 2026-11-11T21:07:52Z
+last_update: 2026-11-12T08:25:10Z
 date_finished: 2026-11-11T21:07:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -112,7 +112,7 @@ bvp_scores_proposed:
 - [x] Existing toggle-ac and verdict-ledger tests stay green; `bin/fw watchtower current`; `bin/fw vendor self --check --task T-5081` clean (1,225 passed: verdict-ledger, delegation, tasks-page)
 
 ### Human
-- [ ] [REVIEW] The hand-back note reads clearly when you tick your last check: on a task waiting for your review, ticking its last open check shows a note below the check list saying the task is handed back to the agent to close; unticking a check again shows a note saying the task is with you.
+- [x] [REVIEW] The hand-back note reads clearly when you tick your last check: on a task waiting for your review, ticking its last open check shows a note below the check list saying the task is handed back to the agent to close; unticking a check again shows a note saying the task is with you.
   **Restated:** 2026-11-12, accepting V-20261111-199aed98; was: [REVIEW] The hand-back note reads clearly when you tick your last check
   **Steps:**
   1. Open any task waiting for your review, e.g. http://192.168.10.107:3000/review/T-5079
@@ -163,6 +163,7 @@ bvp_scores_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261112-90746542 — reviewer-judge-t-5081-r3-3b0f4e6e9d2e:reviewer (rung rung-3-termlink-single-reviewer), digest 5a3fa8612d51; dispatch judge-t-5081-r3-3b0f4e6e9d2e; evidence: .context/reviews/evidence/T-5081/AC1-judge-t-5081-r3-3b0f4e6e9d2e.md, .context/reviews/evidence/T-5081/01-review-t-5079-judge-t-5081-r3-3b0f4e6e9d2e.png, .context/reviews/evidence/T-5081/02-tasks-judge-t-5081-r3-3b0f4e6e9d2e.png, .context/reviews/evidence/T-5081/last-tick-1024-judge-t-5081-r3-3b0f4e6e9d2e.png, .context/reviews/evidence/T-5081/last-tick-1440-judge-t-5081-r3-3b0f4e6e9d2e.png, .context/reviews/evidence/T-5081/last-tick-1920-judge-t-5081-r3-3b0f4e6e9d2e.png, .context/reviews/evidence/T-5081/untick-1024-judge-t-5081-r3-3b0f4e6e9d2e.png, .context/reviews/evidence/T-5081/untick-1440-judge-t-5081-r3-3b0f4e6e9d2e.png, .context/reviews/evidence/T-5081/untick-1920-judge-t-5081-r3-3b0f4e6e9d2e.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
