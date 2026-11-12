@@ -108,6 +108,12 @@ PR waits for this anyway, and a linked-clone VM starts in seconds.
 - **Q-3 Which hypervisor node, and does it host anything sensitive?** Operator's knowledge; recommend a node with no
   production services, or the least sensitive one. **2026-11-03: deferred** (operator: "proceed as suggested") —
   AEF builds the controller against a stub hypervisor first (phase 3); the node is chosen before phase 4.
+  **Answered 2026-11-12 (interim): node1**, the rented VPS ring20 runs, off the Ring20 estate, network isolation in
+  place since 2026-11-10. It is used until a dedicated host works (proxmox3, retired, did not come up today).
+  **Exception to Q-1, recorded:** node1 gives containers, not VMs, and other projects' jobs share it; how a slot is
+  separated from them is asked of ring20 before the first run, and the R-53 probe PR is run there first. Rejected:
+  the 'proxmox' node (CI registry push credentials on CT 400, 4 CPU threads) and this AEF host (the operator's
+  GitHub login, every project, the review signing key and skill secrets; ruled out by R-53).
 - **Q-4 Limits per run?** Recommend 2 vCPU, 4 GB RAM, 20 GB disk, 30 minutes wall clock, one run at a time.
   **Answered 2026-11-12: 4 vCPU, 8 GB RAM, 40 GB disk, 60 minutes wall clock, one run at a time.**
 - **Q-5 Template refresh?** Recommend monthly with the stable release, plus on demand when a PR names a missing
@@ -152,3 +158,7 @@ with this amendment: "Network: none" stands, and the out-channel is disk + seria
   plan was signed off with code PRs waiting for this host. Q-4: "4 vCPU, 8 GB, 40 GB, 60 min" (one run at a time).
   Q-5: monthly + on demand (recommended). Q-3: "Let AEF propose one" — AEF reads the node list read-only and proposes
   the least sensitive node with room for the Q-4 limits; the operator confirms.
+- 2026-11-12, Q-3: the node list needed an elevated credential (request timed out); ring20 measured instead and
+  proposed 'proxmox' with caveats (4 CPU threads; CT 400 holds CI registry push credentials; USB disk), proxmox3 as
+  the cleanest but retired. Operator: proxmox3 "doesn't work now directly"; suggested this host or node1 "for this
+  run, until we have something better". Agent advised strongly against this host (R-53). Operator: **node1**.
