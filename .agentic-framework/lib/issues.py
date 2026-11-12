@@ -234,10 +234,13 @@ def _maintainer_login() -> str:
     return login
 
 
-def _marked_on_issue(issue: int, stage: str) -> bool:
+def _marked_on_issue(issue: int, stage: str, tasks=None) -> bool:
     """Read the stage marker back from the issue. Untrusted text: only the marker is looked for,
     and only in comments by the authenticated maintainer login — any other account, the reporter
-    included, can write a marker and so suppress a stage (T-4108)."""
+    included, can write a marker and so suppress a stage (T-4108). T-5096: for a per-task stage
+    named with tasks, a marked comment that names other tasks only does not count; one that names
+    no task at all still does (the safe reading)."""
+    tasks = [t for t in (tasks or []) if t] if stage in PER_TASK_STAGES else []
     me = _maintainer_login()
     p = _gh(["issue", "view", str(issue), "--repo", _repo(), "--json", "comments"])
     if p.returncode != 0:
@@ -252,7 +255,8 @@ def _marked_on_issue(issue: int, stage: str) -> bool:
             continue
         body = c.get("body") or ""
         for m in MARKER_RE.finditer(body):
-            if stage in m.group(1).split("+"):
+            named = set(re.findall(r"\bT-\d+\b", body))
+            if stage in m.group(1).split("+") and (not tasks or not named or named & set(tasks)):
                 return True
     return False
 
@@ -501,7 +505,7 @@ def cmd_comment(a) -> int:
     if st == "fixed-on-bleeding-edge":
         _need(a, "commit", "test_cmd")
         _commit_on_mirror(a.commit)
-    if not a.dry_run and _marked_on_issue(a.issue, st):
+    if not a.dry_run and _marked_on_issue(a.issue, st, a.task):
         print(f"#{a.issue} stage {st} already marked on the issue — not posting again")
         return 0
 
