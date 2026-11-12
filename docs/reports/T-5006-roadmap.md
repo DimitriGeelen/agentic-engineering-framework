@@ -11,7 +11,7 @@ written next to it.
 
 | Phase | Status | Target |
 |---|---|---|
-| 0 Mehdi can start | Plan signed off 2026-11-12: PR 1 (documents) now, code PRs after T-5009; branch rules runme ready for the operator | 2026-11-12 |
+| 0 Mehdi can start | Plan signed off 2026-11-12: PR 1 (documents) now, code PRs after T-5009; branch rules on | Done 2026-11-12 |
 | 1 GitHub becomes the source | Switched; release proof and audit alarm outstanding | 2026-11-06 |
 | 2 All agents track issues in GitHub | Waiting: step-1 sign-off, then role-chain steps 2-8 | 2026-11-27 |
 | 3 Quality floor for code PRs | Partly started (T-5008 shipped in part) | 2026-11-14 |
@@ -34,7 +34,7 @@ written next to it.
 | # | Step | Who | Task | Status | Target |
 |---|---|---|---|---|---|
 | 1.1 | `origin` = GitHub, OneDev a mirror; OneDev's force-push job off | AEF | T-5044 | Done 2026-11-03 | — |
-| 1.2 | Branch rules on GitHub: no force push or deletion on `bleeding-edge` and `master` | Operator | T-5044 | Runme ready 2026-11-12 (`.context/runme/branch-rules-github`) | 2026-11-12 |
+| 1.2 | Branch rules on GitHub: no force push or deletion on `bleeding-edge` and `master` | Operator | T-5044 | Done 2026-11-12: ruleset 27125484 active (deletion + non_fast_forward on both branches) | — |
 | 1.3 | Release train, mirror and `fw issues` follow the new origin | AEF | T-5044 | Done 2026-11-03: `v1.8.16-be.28` on GitHub and OneDev, same commit | — |
 | 1.4 | Audit alarm for outside commits that did not arrive through an operator-merged PR | AEF | T-5049 | Done 2026-11-03 (fw audit, fw doctor, operator pending; author-based, forgery residual noted) | 2026-11-06 |
 
