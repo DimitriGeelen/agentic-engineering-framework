@@ -9,7 +9,7 @@ description: >
   T-002..T-006 have no ## Updates; update-task appends at end of file, i.e. into ##
   Verification, and the close is refused.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ origin: {kind: "peer", source: "github#107"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T08:51:33Z
-last_update: 2026-11-12T09:45:45Z
+last_update: 2026-11-12T10:37:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,20 +90,20 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Mehdi (MikeEchoVoid) filed GitHub #107. In a project initialised with `fw init` on existing code, onboarding tasks T-002 to T-006 have no `## Updates` section; their last section is `## Verification`. The first status change appends its entry there, and the close is then refused: "the ## Verification block contains line(s) bash cannot parse". The operator has to repair the file by hand.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Two faults. (1) The five seed files in `lib/seeds/tasks/existing-project/` were written without `## Updates` (T-001, T-007 and all greenfield seeds have it). (2) `lib/task_updates.py` appends at end of file when `## Updates` is missing, so any task file without the section gets its entry glued onto whatever section is last, often Verification.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Status entries always land in a `## Updates` section, never inside Verification.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** All seed tasks have `## Updates`, and `task_updates.py` creates the section when a task file lacks it.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Every seed task under `lib/seeds/tasks/` has a `## Updates` section (test)
+- [ ] `task_updates.py append` on a file with no `## Updates` adds the heading, then the entry; the Verification block is unchanged (test)
+- [ ] Existing behaviour with a `## Updates` section is unchanged (t4812 tests still pass)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,8 +289,19 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5087_updates_section.py -q > /tmp/.t5087v 2>&1 && grep -q passed /tmp/.t5087v
+timeout 600 bats tests/unit/t4812_closed_record_append.bats > /tmp/.t5087b 2>&1 && ! grep -q "^not ok" /tmp/.t5087b
+bin/fw vendor self --check --task T-5087
 
 ## RCA
+
+**Symptom:** in a project initialised on existing code, onboarding tasks T-002 to T-006 could not be closed: their first status entry landed inside `## Verification`, and P-011 refused "the ## Verification block contains line(s) bash cannot parse" (GitHub #107, Mehdi).
+
+**Root cause:** the five seeds were written without `## Updates`, and `lib/task_updates.py` (T-4812) appended at end of file when the section was missing, so the entry joined whatever section came last.
+
+**Why structurally allowed:** no test checked that every seed has `## Updates`, and the fallback in `task_updates.py` was kept as "as before" without asking which section the end of file belongs to. The existing-project seeds are only exercised in a fresh `fw init` on a project with existing files, which our own tests did not take through a status change.
+
+**Prevention:** `tests/unit/test_t5087_updates_section.py` checks every seed (greenfield, existing-project, upgrade) for the section, and pins that the writer creates `## Updates` instead of writing into Verification. The second leg also protects any hand-made task file that lacks the section.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -386,3 +397,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5087-gh-107-existing-project-onboarding-seeds.md
 - **Context:** Initial task creation
+
+### 2026-11-12T10:24:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -59,3 +59,8 @@ gate says no.
 test "$(ls .tasks/completed/T-*.md 2>/dev/null | wc -l)" -ge "1"
 # At least one episodic summary exists
 test "$(ls .context/episodic/T-*.yaml 2>/dev/null | wc -l)" -ge "1"
+
+## Updates
+
+### __DATE__ — task-created [fw-init]
+- **Action:** Auto-created by `fw init` (existing-project onboarding)

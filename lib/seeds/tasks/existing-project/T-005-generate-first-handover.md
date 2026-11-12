@@ -52,3 +52,8 @@ of a session.
 test -f .context/handovers/LATEST.md
 # No unfilled TODOs in handover
 test "$(grep -c '\[TODO' .context/handovers/LATEST.md || true)" = "0"
+
+## Updates
+
+### __DATE__ — task-created [fw-init]
+- **Action:** Auto-created by `fw init` (existing-project onboarding)

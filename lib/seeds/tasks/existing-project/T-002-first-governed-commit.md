@@ -81,3 +81,8 @@ which gates guard each transition.
 # task". A bare -n test cannot express it: it only asks whether anything
 # printed at all.
 s=$(git log --grep='^T-002:' -1 --format=%s); [ "${s%%:*}" = "T-002" ]
+
+## Updates
+
+### __DATE__ — task-created [fw-init]
+- **Action:** Auto-created by `fw init` (existing-project onboarding)
