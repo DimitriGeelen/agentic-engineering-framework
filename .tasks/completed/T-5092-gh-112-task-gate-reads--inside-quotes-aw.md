@@ -8,12 +8,12 @@ description: >
   has_bash_write_pattern (~2005) scans raw text ignoring quotes; 2>9 inside an awk
   program matches the redirect rule.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [github, mikeechovoid]
-components: []
+components: [agents/context/lib/safe-commands.sh, lib/shell_write_scan.py, tests/unit/t2936_bootstrap_quoted_redirect.bats, tests/unit/t3245_trailer_quote_strip.bats]
 related_tasks: []
 origin: {kind: "peer", source: "github#112"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -43,8 +43,8 @@ origin: {kind: "peer", source: "github#112"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T08:51:36Z
-last_update: 2026-11-12T11:35:22Z
-date_finished:
+last_update: 2026-11-12T11:35:46Z
+date_finished: 2026-11-12T11:35:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -117,10 +117,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `has_bash_write_pattern` returns "no write" for `awk -F: '$2>9' notes.txt`, `awk '$1>3' f`, `grep -E 'a>b' f`, `echo "a > b"` (test)
-- [ ] Still "write": awk with a redirected print/printf; `bash -c`/`sh -c`/`eval`/`ssh`/perl/python/sudo with a quoted `>`; a double-quoted `$(...)` or backtick with `>`; an unquoted redirect beside a quoted `>`; an unbalanced quote (test). (awk `| "sh"`, `system(` and `| getline` with no `>` never matched this scan, before or after; the blanking also refuses to blank any awk program that has them.)
-- [ ] Commands with no `>` at all never call the new helper (code read; test that the helper is only reached on a redirect match)
-- [ ] Every existing test of `safe-commands.sh` and the task gate passes
+- [x] `has_bash_write_pattern` returns "no write" for `awk -F: '$2>9' notes.txt`, `awk '$1>3' f`, `grep -E 'a>b' f`, `echo "a > b"` (test)
+- [x] Still "write": awk with a redirected print/printf; `bash -c`/`sh -c`/`eval`/`ssh`/perl/python/sudo with a quoted `>`; a double-quoted `$(...)` or backtick with `>`; an unquoted redirect beside a quoted `>`; an unbalanced quote (test). (awk `| "sh"`, `system(` and `| getline` with no `>` never matched this scan, before or after; the blanking also refuses to blank any awk program that has them.)
+- [x] Commands with no `>` at all never call the new helper (code read; test that the helper is only reached on a redirect match)
+- [x] Every existing test of `safe-commands.sh` and the task gate passes (132 bats files, 1,406 ok after t2936 and t3245 were made to isolate their own mechanism; 24 pytest)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -422,3 +422,16 @@ bin/fw vendor self --check --task T-5092
 
 ### 2026-11-12T11:11:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-12T11:35:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-74d64af3
+- **Timestamp:** 2026-11-12T11:36:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
