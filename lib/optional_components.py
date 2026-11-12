@@ -16,6 +16,7 @@ COMPONENTS = (
     ("pi", "pi", "Pi coding agent (workflows with worker_kind: pi)"),
     ("ollama", "ollama", "Local model server (ollama-loop workflows)"),
     ("litellm", "litellm", "LiteLLM proxy (workflows that set ANTHROPIC_BASE_URL)"),
+    ("playwright", "playwright", "Playwright browser tests (pip package and MCP server; UI regression tests)"),
 )
 
 NAMES = tuple(c[0] for c in COMPONENTS)
