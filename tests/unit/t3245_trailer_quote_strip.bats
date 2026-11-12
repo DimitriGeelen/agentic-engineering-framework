@@ -89,6 +89,17 @@ s = s.replace(old, new)
 open(p, 'w').write(s)
 PY
     bash -n "$m/agents/context/lib/safe-commands.sh" || return 1
+    # T-5092 blanks an inert quoted `>` inside has_bash_write_pattern itself, which alone
+    # would clear the trailer. Off in the mutant, so the mutant isolates the T-3245 strip.
+    python3 - "$m/lib/shell_write_scan.py" <<'PY' >&2 || return 1
+import sys
+p = sys.argv[1]
+s = open(p).read()
+old = "def inert_quote_blanked(text: str) -> str | None:\n"
+if s.count(old) != 1:
+    sys.exit("T-5092 helper not found once")
+open(p, "w").write(s.replace(old, old + "    return None  # mutant: T-5092 blanking off\n"))
+PY
     printf '%s' "$m"
 }
 

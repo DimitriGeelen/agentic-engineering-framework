@@ -2211,16 +2211,24 @@ has_bash_write_pattern() {
     done
 
     # Redirect operators (but not comparison operators like 2>&1)
-    if grep -qE '[^2>&]>[^>&]|>>' <<< "$_scan"; then
-        return 0
-    fi
-
-    # T-3746 (832 T-1005): the exemption above excludes `2>` and `&>` wholesale,
-    # but only the fd-duplication form (`2>&1`, `&>&2`) writes nothing. `2>err.log`
-    # and `&>out.log` redirect to a FILE and must count. /dev/null targets were
-    # already stripped from _scan, so `2>/dev/null` stays a read.
-    if grep -qE '(2|&)>[^>&]' <<< "$_scan"; then
-        return 0
+    # T-3746 (832 T-1005): the second rule — the exemption in the first excludes `2>`
+    # and `&>` wholesale, but only the fd-duplication form (`2>&1`, `&>&2`) writes
+    # nothing. `2>err.log` and `&>out.log` redirect to a FILE and must count.
+    # /dev/null targets were already stripped from _scan, so `2>/dev/null` stays a read.
+    # T-5092 (GitHub #112): on a match, the rules are re-read with INERT quoted text
+    # blanked (lib/shell_write_scan.py inert_quote_blanked), so `awk -F: '$2>9' f` is
+    # not a redirect. Quoted text that can run (sh -c, eval, perl, an awk print > f,
+    # "$(...)") is never blanked; any helper failure keeps the match: fail closed.
+    if grep -qE '[^2>&]>[^>&]|>>' <<< "$_scan" || grep -qE '(2|&)>[^>&]' <<< "$_scan"; then
+        local _unq
+        _unq=$(python3 -I -c 'import sys
+sys.path.insert(0, sys.argv[1])
+import shell_write_scan as s
+r = s.inert_quote_blanked(sys.argv[2])
+sys.stdout.write(r) if r is not None else sys.exit(1)' "$_FW_SAFE_COMMANDS_LIB" "$_scan" 2>/dev/null) || return 0
+        if grep -qE '[^2>&]>[^>&]|>>' <<< "$_unq" || grep -qE '(2|&)>[^>&]' <<< "$_unq"; then
+            return 0
+        fi
     fi
 
     # In-place sed. T-4479: anchored on a FLAG token, not a bare `-i` substring,

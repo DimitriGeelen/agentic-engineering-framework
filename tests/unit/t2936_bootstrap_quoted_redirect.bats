@@ -44,6 +44,10 @@ _gate() {
     # moment the fix is committed (t2927 leg 9, green when written, red within the
     # hour).
     source "$FRAMEWORK_ROOT/agents/context/lib/safe-commands.sh"
+    # T-5092 now also clears an inert quoted `>` inside the predicate itself. Its helper is
+    # stubbed to fail here (the scan then fails closed, as before T-5092), so this leg still
+    # measures what the T-2936 quote strip has to overcome.
+    python3() { return 1; }
     run has_bash_write_pattern 'bin/fw task create --name "count 11->10" --start'
     [ "$status" -eq 0 ]
 }

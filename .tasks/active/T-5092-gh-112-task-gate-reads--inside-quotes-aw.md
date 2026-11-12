@@ -8,7 +8,7 @@ description: >
   has_bash_write_pattern (~2005) scans raw text ignoring quotes; 2>9 inside an awk
   program matches the redirect rule.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -43,7 +43,7 @@ origin: {kind: "peer", source: "github#112"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T08:51:36Z
-last_update: '2026-11-12T09:01:23Z'
+last_update: 2026-11-12T11:34:58Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -82,6 +82,23 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-12T11:12:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 3
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=0 (no-signal); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5092: GH #112: task gate reads > inside quotes (awk $2>9) as a file write
@@ -89,20 +106,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Mehdi filed GitHub #112 (1.8.14, reproduced on 1.8.15). During onboarding, `awk -F: '$2>9' notes.txt` was refused by the task gate as a file write. `has_bash_write_pattern` (`agents/context/lib/safe-commands.sh`) reads the `>` inside the quoted awk program as a redirect (rule `(2|&)>[^>&]` sees `2>9`; `[^2>&]>[^>&]` catches `awk '$1>3'`).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The two redirect rules scan the raw text and ignore quoting. A `>` inside quotes is a redirect only when the quoted text is run as code that can write: a shell (`bash -c`, `eval`, `ssh`), another interpreter (perl, python…), a command substitution inside double quotes, or an awk program whose `print`/`printf` is redirected or that calls `system(`. Ignoring quotes everywhere would therefore open the gate, so the fix has to be narrow.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A `>` that is plain text inside quotes is not a write. Every quoted `>` that can still write keeps blocking.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `awk -F: '$2>9' notes.txt`, `awk '$1>3' f` and `grep 'a>b' f` pass the scan. Still writes: `awk '{print > "out"}' f`, `awk '{print $1 | "sh"}'`, `awk '{system("x")}'`, `bash -c 'echo x > f'`, `echo "$(date > f)"`, `perl -e '...>...'`, and any unquoted redirect on the same line.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `has_bash_write_pattern` returns "no write" for `awk -F: '$2>9' notes.txt`, `awk '$1>3' f`, `grep -E 'a>b' f`, `echo "a > b"` (test)
+- [ ] Still "write": awk with a redirected print/printf; `bash -c`/`sh -c`/`eval`/`ssh`/perl/python/sudo with a quoted `>`; a double-quoted `$(...)` or backtick with `>`; an unquoted redirect beside a quoted `>`; an unbalanced quote (test). (awk `| "sh"`, `system(` and `| getline` with no `>` never matched this scan, before or after; the blanking also refuses to blank any awk program that has them.)
+- [ ] Commands with no `>` at all never call the new helper (code read; test that the helper is only reached on a redirect match)
+- [ ] Every existing test of `safe-commands.sh` and the task gate passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,6 +306,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 bats tests/unit/t5092_quoted_comparison_not_a_write.bats tests/unit/t3746_write_pattern_fd_redirects.bats tests/unit/t3643_devnull_not_a_write.bats tests/unit/t4479_write_scan_herestring.bats tests/unit/context_safe_commands.bats > /tmp/.t5092v 2>&1 && ! grep -q "^not ok" /tmp/.t5092v
+test "$(grep -c '# skip' /tmp/.t5092v)" -eq 0
+bin/fw vendor self --check --task T-5092
 
 ## RCA
 
@@ -304,6 +325,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `awk -F: '$2>9' notes.txt`, a read, was refused by the task gate as a file write during onboarding (GitHub #112, Mehdi).
+
+**Root cause:** the two redirect rules in `has_bash_write_pattern` are regexes over the raw command text. They cannot tell a `>` in a quoted awk comparison from a shell redirect.
+
+**Why structurally allowed:** the rules were tuned on shell redirect spellings (T-3643, T-3746, T-4479). Their tests had no quoted comparison, and the gate is only active when no task is focused (onboarding, fresh sessions), so few people hit it.
+
+**Prevention:** `tests/unit/t5092_quoted_comparison_not_a_write.bats` pins the quoted comparisons as reads and, in the same file, every quoted form that can still write.
 
 ## Evolution
 
@@ -328,6 +357,11 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-12 — narrow blanking, not "ignore quotes"
+- **What changed:** Mehdi's report reads as "the scan ignores quotes". Ignoring quotes everywhere would let `bash -c 'echo x > f'` and `awk '{print > "f"}'` through, so the fix blanks only quoted text that cannot run, and only after a redirect rule has matched (no cost on the common path).
+- **Plan impact:** the helper lives in `lib/shell_write_scan.py` (`inert_quote_blanked`), next to the tokeniser the other gates share; `safe-commands.sh` calls it the way it already calls `git_output_risk`.
+- **Triggered:** nothing filed. The scan never judged awk `system(` or `| "sh"` with no `>`; that is the task gate's existing scope (it is not an interpreter analyser), unchanged here.
 
 ## Recommendation
 
@@ -385,3 +419,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5092-gh-112-task-gate-reads--inside-quotes-aw.md
 - **Context:** Initial task creation
+
+### 2026-11-12T11:11:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
