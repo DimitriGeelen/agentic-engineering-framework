@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T22:42:06Z
-last_update: 2026-11-12T23:18:45Z
+last_update: 2026-11-12T23:19:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,11 +100,11 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `_build_basename_index` indexes only the top-level files of `.context/working/`, not its subfolders (test)
-- [ ] `_exists_anywhere` skips `.context/working/` subfolders too (test)
-- [ ] Both walks stop at a file-count budget or a time budget, mark the result truncated and log one warning; a truncated tree walk answers "exists" for an unknown name, so no link is marked dead on partial evidence (tests)
-- [ ] The existing basename-index tests (T-3736) and the link-resolution tests pass
-- [ ] Watchtower restarted and current
+- [x] `_build_basename_index` indexes only the top-level files of `.context/working/`, not its subfolders (test)
+- [x] `_exists_anywhere` skips `.context/working/` subfolders too (test)
+- [x] Both walks stop at a file-count budget or a time budget, mark the result truncated and log one warning; a truncated tree walk answers "exists" for an unknown name, so no link is marked dead on partial evidence (tests)
+- [x] The existing basename-index tests (T-3736) and the link-resolution tests pass (692 of 693 unit and 215 of 220 web tests that read web/shared.py; the 6 failures predate this change: 5 also fail with web/shared.py at HEAD (T-5109), 1 is a test-order flake from other tests reloading web.shared (T-5110), passing alone and in every subset)
+- [x] Watchtower restarted and current (task page 200 in 0.3 s; `/file/web/shared.py` link renders, no dead links)
 
 ### Human
 - [ ] [REVIEW] File links in rendered pages still resolve after the change
