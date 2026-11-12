@@ -9,12 +9,12 @@ description: >
   all request threads wait on _INDEX_LOCK. Bug: an unbounded working dir freezes every
   page.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [web/shared.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T22:42:06Z
-last_update: 2026-11-12T23:48:53Z
-date_finished:
+last_update: 2026-11-12T23:48:56Z
+date_finished: 2026-11-12T23:48:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -107,12 +107,13 @@ bvp_scores_proposed:
 - [x] Watchtower restarted and current (task page 200 in 0.3 s; `/file/web/shared.py` link renders, no dead links)
 
 ### Human
-- [ ] [REVIEW] File links in rendered pages still resolve after the change
+- [x] [REVIEW] File links in rendered pages still resolve after the change
   **Steps:**
   1. Open http://192.168.10.107:3000/tasks/T-5106
   2. Check that the reference to `web/shared.py` in the task text is a clickable link that opens the file
   **Expected:** the link opens the file viewer; no reference is shown as a dead link
   **If not:** note which reference stopped resolving
+  **Reviewer verdict:** green V-20261112-7a09da82 — reviewer-judge-t-5106-r3-73685c4dad76:reviewer (rung rung-3-termlink-single-reviewer), digest 84fe58bc8966; dispatch judge-t-5106-r3-73685c4dad76; evidence: .context/reviews/evidence/T-5106/AC1-judge-t-5106-r3-73685c4dad76.md, .context/reviews/evidence/T-5106/01-tasks-t-5106-judge-t-5106-r3-73685c4dad76.png, .context/reviews/evidence/T-5106/task-page@1024-judge-t-5106-r3-73685c4dad76.png, .context/reviews/evidence/T-5106/task-page@1440-judge-t-5106-r3-73685c4dad76.png, .context/reviews/evidence/T-5106/task-page@1920-judge-t-5106-r3-73685c4dad76.png; ledger .context/reviews/verdicts.jsonl
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -424,3 +425,23 @@ Captures: `.context/visual/T-5106/task-page@{1024,1440,1920}.png` (`fw ux shots 
 
 ### 2026-11-12T22:49:01Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-12T23:48:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-95b2be86
+- **Timestamp:** 2026-11-12T23:49:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — The existing basename-index tests (T-3736) and the link-resolution tests pass (692 of 693 unit and 215 of 220 web tests that read web/shared.py; the 6 failures predate this change: 5 also fail with we
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: The existing basename-index tests (T-3736) and the link-resolution tests pass (692 of 693 unit and 215 of 220 web tests that read web/shared.py; the 6`
+- **AC#5 (Agent)** — Watchtower restarted and current (task page 200 in 0.3 s; `/file/web/shared.py` link renders, no dead links)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=file/web/shared.py in: Watchtower restarted and current (task page 200 in 0.3 s; `/file/web/shared.py` link renders, no dead links)`
