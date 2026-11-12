@@ -15,6 +15,8 @@ Configuration (env FW_<KEY> > .framework.yaml), every key required, nothing gues
   TESTHOST_PVE_TEMPLATE     VMID of the template (no network device, serial0 present)
   TESTHOST_PVE_ISO_STORAGE  storage that holds ISO images
   TESTHOST_PVE_CA           CA file the node's TLS certificate is checked against
+  TESTHOST_PVE_VMID_RANGE   e.g. 9501-9509: the only VMIDs a clone may get, and the only ones any
+                            operation accepts (ring20 review 2026-11-12; T-5099)
   TESTHOST_PVE_TOKEN_FILE   default .context/secrets/testhost-pve-token, one line
                             "user@realm!tokenid=secret", mode 0600 (refused when group/world
                             readable). The token never goes into .framework.yaml or a VM.
@@ -30,7 +32,7 @@ from pathlib import Path
 from urllib.parse import quote, urlparse
 
 KEYS = ("TESTHOST_PVE_URL", "TESTHOST_PVE_NODE", "TESTHOST_PVE_POOL", "TESTHOST_PVE_TEMPLATE",
-        "TESTHOST_PVE_ISO_STORAGE", "TESTHOST_PVE_CA")
+        "TESTHOST_PVE_ISO_STORAGE", "TESTHOST_PVE_CA", "TESTHOST_PVE_VMID_RANGE")
 DEFAULT_TOKEN_FILE = ".context/secrets/testhost-pve-token"
 TASK_TIMEOUT = 300
 _NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,62}")
@@ -94,6 +96,12 @@ class ProxmoxBackend:
                         + " (the operator's T-5099 runmes set them); use --backend stub meanwhile")
         if not cfg["TESTHOST_PVE_TEMPLATE"].isdigit():
             raise error("TESTHOST_PVE_TEMPLATE must be a VMID")
+        m = re.fullmatch(r"(\d{3,9})-(\d{3,9})", cfg["TESTHOST_PVE_VMID_RANGE"])
+        if not m or int(m.group(1)) > int(m.group(2)) or int(m.group(2)) - int(m.group(1)) > 99:
+            raise error("TESTHOST_PVE_VMID_RANGE must be LOW-HIGH, at most 100 ids (e.g. 9501-9509)")
+        lo, hi = int(m.group(1)), int(m.group(2))
+        if lo <= int(cfg["TESTHOST_PVE_TEMPLATE"]) <= hi:
+            raise error("the template's VMID must lie outside TESTHOST_PVE_VMID_RANGE")
         for k in ("TESTHOST_PVE_NODE", "TESTHOST_PVE_POOL", "TESTHOST_PVE_ISO_STORAGE"):
             if not _NAME.fullmatch(cfg[k]):
                 raise error(f"{k} has characters a Proxmox name does not")
@@ -118,6 +126,7 @@ class ProxmoxBackend:
         self.api, self.cfg = api, cfg
         self.node, self.pool = cfg["TESTHOST_PVE_NODE"], cfg["TESTHOST_PVE_POOL"]
         self.template, self.iso_storage = int(cfg["TESTHOST_PVE_TEMPLATE"]), cfg["TESTHOST_PVE_ISO_STORAGE"]
+        self.vmid_range = range(lo, hi + 1)
         self.iso_builder = iso_builder or build_iso
         self.serial_opener = serial_opener or self._termproxy_chunks
         self.fw_root = Path(framework_root or os.environ.get("FRAMEWORK_ROOT")
@@ -127,8 +136,10 @@ class ProxmoxBackend:
     # ── helpers ──────────────────────────────────────────────────────────────
 
     def _vm(self, vm_id) -> int:
-        if not re.fullmatch(r"\d{3,9}", str(vm_id)) or int(vm_id) == self.template:
-            raise self.error(f"bad vm id {vm_id!r}")
+        if (not re.fullmatch(r"\d{3,9}", str(vm_id)) or int(vm_id) == self.template
+                or int(vm_id) not in self.vmid_range):
+            raise self.error(f"bad vm id {vm_id!r} (outside {self.vmid_range.start}-"
+                             f"{self.vmid_range.stop - 1})")
         return int(vm_id)
 
     def _q(self, vmid) -> str:
@@ -150,9 +161,25 @@ class ProxmoxBackend:
     # ── backend interface ────────────────────────────────────────────────────
 
     def clone(self) -> str:
-        vmid = int(self.api.get("/cluster/nextid"))
-        self._wait(self.api.post(f"{self._q(self.template)}/clone", newid=vmid,
-                                 name=f"aef-pr-{vmid}", pool=self.pool, full=0))
+        """Clone into the first free VMID of the configured block (never /cluster/nextid)."""
+        pool = self.api.get(f"/pools/{self.pool}") or {}
+        taken = {m.get("vmid") for m in pool.get("members", [])}
+        vmid = None
+        for cand in self.vmid_range:
+            if cand in taken:
+                continue
+            try:
+                self._wait(self.api.post(f"{self._q(self.template)}/clone", newid=cand,
+                                         name=f"aef-pr-{cand}", pool=self.pool, full=0))
+            except Exception as e:  # noqa: BLE001
+                if "already exists" in str(e):
+                    continue
+                raise
+            vmid = cand
+            break
+        if vmid is None:
+            raise self.error(f"no free VMID in {self.vmid_range.start}-{self.vmid_range.stop - 1}; "
+                             "fw testhost list / clean the pool")
         cfg = self.api.get(f"{self._q(vmid)}/config") or {}
         nets = sorted(k for k in cfg if re.fullmatch(r"net\d+", k))
         if nets or "serial0" not in cfg:
