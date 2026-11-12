@@ -9,12 +9,12 @@ description: >
   T-002..T-006 have no ## Updates; update-task appends at end of file, i.e. into ##
   Verification, and the close is refused.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [github, mikeechovoid]
-components: []
+components: [lib/task_updates.py]
 related_tasks: []
 origin: {kind: "peer", source: "github#107"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -44,8 +44,8 @@ origin: {kind: "peer", source: "github#107"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T08:51:33Z
-last_update: 2026-11-12T10:37:27Z
-date_finished:
+last_update: 2026-11-12T10:37:47Z
+date_finished: 2026-11-12T10:37:47Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -101,9 +101,9 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Every seed task under `lib/seeds/tasks/` has a `## Updates` section (test)
-- [ ] `task_updates.py append` on a file with no `## Updates` adds the heading, then the entry; the Verification block is unchanged (test)
-- [ ] Existing behaviour with a `## Updates` section is unchanged (t4812 tests still pass)
+- [x] Every seed task under `lib/seeds/tasks/` has a `## Updates` section (test)
+- [x] `task_updates.py append` on a file with no `## Updates` adds the heading, then the entry; the Verification block is unchanged (test)
+- [x] Existing behaviour with a `## Updates` section is unchanged (t4812 tests still pass)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -341,6 +341,11 @@ bin/fw vendor self --check --task T-5087
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-11-12 — fixed the writer as well as the seeds
+- **What changed:** Mehdi's report named the seeds and suggested, as a possibility, that `task_updates.py` create the missing section. Both are done: the seeds are the instance, the end-of-file append is the class (any hand-made task file without `## Updates` hit it too).
+- **Plan impact:** none. The T-4812 closed-record gate still accepts the append on a closed task without the section (t4812 test 5 green).
+- **Triggered:** nothing new.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -400,3 +405,16 @@ bin/fw vendor self --check --task T-5087
 
 ### 2026-11-12T10:24:53Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-12T10:37:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c98af4e4
+- **Timestamp:** 2026-11-12T10:38:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

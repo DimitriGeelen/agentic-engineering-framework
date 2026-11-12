@@ -53903,3 +53903,21 @@ scan_id: R-30976759
 task_id: T-5096
 payload:
   task_file: .tasks/active/T-5096-fw-issues-comment-refuses-a-stage-alread.md
+---
+kind: scan_emitted
+timestamp: '2026-11-12T10:38:04Z'
+scan_id: R-c98af4e4
+task_id: T-5087
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-12T10:38:04Z'
+scan_id: R-c98af4e4
+task_id: T-5087
+payload:
+  task_file: .tasks/active/T-5087-gh-107-existing-project-onboarding-seeds.md
