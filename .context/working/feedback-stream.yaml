@@ -53921,3 +53921,21 @@ scan_id: R-c98af4e4
 task_id: T-5087
 payload:
   task_file: .tasks/active/T-5087-gh-107-existing-project-onboarding-seeds.md
+---
+kind: scan_emitted
+timestamp: '2026-11-12T10:49:39Z'
+scan_id: R-02449f57
+task_id: T-5090
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-12T10:49:39Z'
+scan_id: R-02449f57
+task_id: T-5090
+payload:
+  task_file: .tasks/active/T-5090-gh-110-mcp-and-cryptography-are-imported.md

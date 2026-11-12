@@ -9,12 +9,12 @@ description: >
   imports mcp; web/secrets_store.py imports cryptography; neither is in a requirements
   file or install step.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [github, mikeechovoid]
-components: []
+components: [agents/mcp/framework_mcp_server.py]
 related_tasks: []
 origin: {kind: "peer", source: "github#110"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -44,8 +44,8 @@ origin: {kind: "peer", source: "github#110"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T08:51:34Z
-last_update: 2026-11-12T10:48:11Z
-date_finished:
+last_update: 2026-11-12T10:48:32Z
+date_finished: 2026-11-12T10:48:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -101,9 +101,9 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `web/requirements.txt` names `mcp` and `cryptography`, each with a comment saying which code needs it (test)
-- [ ] With `mcp` hidden, `framework_mcp_server.py` exits non-zero with a message naming `mcp` and `pip install`, and no traceback (test)
-- [ ] With `mcp` present, the server module still imports (test)
+- [x] `web/requirements.txt` names `mcp` and `cryptography`, each with a comment saying which code needs it (test)
+- [x] With `mcp` hidden, `framework_mcp_server.py` exits non-zero with a message naming `mcp` and `pip install`, and no traceback (test)
+- [x] With `mcp` present, the server module still imports (test)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,6 +289,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t5090_declared_deps.bats tests/unit/t4238_python_deps_hint.bats > /tmp/.t5090v 2>&1 && ! grep -q "^not ok" /tmp/.t5090v
+test "$(grep -c '# skip' /tmp/.t5090v)" -eq 0
+bin/fw vendor self --check --task T-5090
 
 ## RCA
 
@@ -305,6 +308,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** in an environment built from `web/requirements.txt`, the `fw` MCP server died at every session start ("connection closed" in Claude Code), and `/settings/` answered 500 (GitHub #110, Mehdi, on 1.8.14 and 1.8.15).
+
+**Root cause:** `mcp` (T-2265, framework MCP server) and `cryptography` (`web/secrets_store.py`) were imported by shipped code but never added to the requirements file.
+
+**Why structurally allowed:** the development host had both installed by hand, so nothing here failed. No check compares third-party imports with the requirements file, and Watchtower's start check (T-4304) lists only the modules on its start path.
+
+**Prevention:** `tests/unit/t5090_declared_deps.bats` pins both declarations and the MCP server's install hint. A general imports-vs-requirements lint would catch the next such package; it is not built here.
 
 ## Evolution
 
@@ -329,6 +340,11 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-12 — declared, not degraded; /settings/ left as it is
+- **What changed:** Mehdi offered two remedies, "declared ... or the code degrades cleanly". Declaring covers both packages. The MCP server also degrades cleanly now (it is a script, so a one-line hint costs nothing). `/settings/` still answers 500 without `cryptography`: changing it is a web render-surface change with its own review cycle, and with the package declared it should not happen in an environment built from the requirements file.
+- **Plan impact:** none for this task.
+- **Triggered:** nothing filed. If a field report shows the 500 again, it gets its own task.
 
 ## Recommendation
 
@@ -389,3 +405,21 @@ bvp_scores_proposed:
 
 ### 2026-11-12T10:43:03Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-12T10:48:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-02449f57
+- **Timestamp:** 2026-11-12T10:49:39Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `web/requirements.txt` names `mcp` and `cryptography`, each with a comment saying which code needs it (test)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/requirements.txt in: `web/requirements.txt` names `mcp` and `cryptography`, each with a comment saying which code needs it (test)`

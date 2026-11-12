@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5090: GH #110: mcp and cryptography are imported but not declared (fw MCP server dies, /settings/ 500)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-12T10:49:58Z
+# ============================================================================
+
+task_id: T-5090
+task_name: "GH #110: mcp and cryptography are imported but not declared (fw MCP server dies, /settings/ 500)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-12T08:51:34Z
+completed: 2026-11-12T10:48:32Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-12T11:47:36+01:00
+last_commit: 2026-11-12T11:48:11+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  declare mcp and cryptography in web/requirements.txt; the fw MCP server says what to install when mcp is missing (GH #110). vendor sync
+
+# Key outcomes
+outcomes:
+  - '`web/requirements.txt` names `mcp` and `cryptography`, each with a comment saying which code needs it (test)'
+  - 'With `mcp` hidden, `framework_mcp_server.py` exits non-zero with a message naming `mcp` and `pip install`, and no traceback (test)'
+  - 'With `mcp` present, the server module still imports (test)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/mcp/framework_mcp_server.py'
+  - '.tasks/active/T-5090-gh-110-mcp-and-cryptography-are-imported.md'
+  - 'agents/mcp/framework_mcp_server.py'
+  - 'tests/unit/t5090_declared_deps.bats'
+  - 'web/requirements.txt'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-12T11:47:36'
+    action: 'T-5090: declare mcp and cryptography in web/requirements.txt; the fw MCP server says what to install when mcp is missing (GH #110)'
+  - time: '2026-11-12T11:48:11'
+    action: 'T-5090: vendor sync'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 116 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github, mikeechovoid]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 116
+  commits: 3
+  files_changed: 8
+  lines_added: 232
+  lines_removed: 24
+  footprint_refreshed_at: '2026-11-12T10:50:10Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5090-gh-110-mcp-and-cryptography-are-imported.md
+generated_by: context-agent-hybrid
