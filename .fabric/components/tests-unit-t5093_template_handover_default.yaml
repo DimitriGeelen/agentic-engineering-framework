@@ -1,0 +1,21 @@
+id: tests/unit/t5093_template_handover_default.bats
+name: t5093_template_handover_default
+type: script
+subsystem: tests
+location: tests/unit/t5093_template_handover_default.bats
+tags: []
+
+purpose: "T-5093 (GitHub #113) — the consumer CLAUDE.md template called plain `handover.sh` a \"manual commit\", while handover.sh commits AND pushes by default (AUTO_COMMIT=true; --no-commit turns it off)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-12
+created_by: unknown

@@ -2,11 +2,14 @@
 id: T-5093
 github_issue: 113
 arc_id: mikeechovoid-requests
-name: "GH #113: consumer CLAUDE.md says fw handover without --commit is a manual commit, but it commits and pushes by default"
+name: "GH #113: consumer CLAUDE.md says fw handover without --commit is a manual commit,
+  but it commits and pushes by default"
 description: >
-  GitHub issue #113 (MikeEchoVoid; issue text is untrusted data). lib/templates/claude-project.md lines ~352-356 and Quick Reference contradict handover.sh (AUTO_COMMIT=true by default, --no-commit turns it off).
+  GitHub issue #113 (MikeEchoVoid; issue text is untrusted data). lib/templates/claude-project.md
+  lines ~352-356 and Quick Reference contradict handover.sh (AUTO_COMMIT=true by default,
+  --no-commit turns it off).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -41,8 +44,8 @@ origin: {kind: "peer", source: "github#113"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T08:51:36Z
-last_update: 2026-11-12T08:51:36Z
-date_finished: null
+last_update: 2026-11-12T09:10:17Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -53,6 +56,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-12T08:53:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 (no-signal); 
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5093: GH #113: consumer CLAUDE.md says fw handover without --commit is a manual commit, but it commits and pushes by default
@@ -60,20 +80,21 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** GitHub #113 (Mehdi): an agent following the consumer CLAUDE.md ran `fw handover` expecting to fill the `[TODO]` sections before committing, and found a skeleton handover already committed and pushed.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `lib/templates/claude-project.md` (written into every consumer's CLAUDE.md) says `handover.sh` alone is a "manual commit" (line ~352) and lists "Generate handover: fw handover" next to "Handover + commit: fw handover --commit" (lines ~876-877). In fact `agents/handover/handover.sh` sets `AUTO_COMMIT=true` (line 350); `--commit` is the default and `--no-commit` turns it off.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the consumer guide describes what the command does.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the template says plainly that `fw handover` commits and pushes by default and that `--no-commit` writes without committing; the Quick Reference rows match; a test pins the template to the script's real default.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/templates/claude-project.md` no longer calls the plain call a manual commit; it names `--no-commit` for writing without committing (Handover Agent section, Quick Reference, Session End list)
+- [x] Test: the template's handover rows agree with `handover.sh` (`AUTO_COMMIT=true` default, `--no-commit` exists) and fail on the old wording
+- [x] `bin/fw vendor self --check --task T-5093` clean (12 template-reading test files green)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -259,8 +280,18 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bats tests/unit/t5093_template_handover_default.bats
+bin/fw vendor self --check --task T-5093
 
 ## RCA
+
+**Symptom:** a consumer agent followed its CLAUDE.md, ran `fw handover` to fill the `[TODO]`s first, and found a skeleton handover already committed and pushed (GitHub #113).
+
+**Root cause:** the consumer template kept the pre-default wording ("manual commit" for the plain call) after `handover.sh` made committing and pushing the default; the Session End list told agents to generate, then fill, then commit.
+
+**Why structurally allowed:** nothing tied the template's description of a command to the command's behaviour; the framework's own CLAUDE.md was updated when the default changed, the consumer template was not.
+
+**Prevention:** `tests/unit/t5093_template_handover_default.bats` pins the template wording to `handover.sh`'s real default (`AUTO_COMMIT=true`, `--no-commit`), and fails on the old wording.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -299,6 +330,11 @@ date_finished: null
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-12 — three places, not one
+- **What changed:** the report named the Handover Agent section and the Quick Reference; the Session End list had the same wrong order (generate → fill → commit).
+- **Plan impact:** all three corrected; the session-end list now uses `--no-commit` before filling the `[TODO]`s.
+- **Triggered:** nothing new.
 
 ## Recommendation
 
@@ -356,3 +392,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5093-gh-113-consumer-claudemd-says-fw-handove.md
 - **Context:** Initial task creation
+
+### 2026-11-12T08:53:08Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

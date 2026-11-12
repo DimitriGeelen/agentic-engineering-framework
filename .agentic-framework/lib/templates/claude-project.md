@@ -349,11 +349,11 @@ Review the checklist in `agents/session-capture/AGENT.md` and ensure:
 **When to use:** MANDATORY at end of every session.
 
 ```bash
-# Create handover (manual commit)
+# Create handover, then commit AND push it (the default; same as --commit)
 ./agents/handover/handover.sh
 
-# Create handover and auto-commit via git agent
-./agents/handover/handover.sh --commit
+# Write the handover only, without committing (fill the [TODO] sections, then commit yourself)
+./agents/handover/handover.sh --no-commit
 ```
 
 Creates a forward-looking context document in `.context/handovers/` to enable the next session to continue seamlessly.
@@ -873,8 +873,8 @@ This gate is non-negotiable. The PreToolUse hook will block Write/Edit without a
 | Read bus results | `fw bus read T-XXX [R-NNN]` | |
 | Bus manifest | `fw bus manifest [T-XXX]` | |
 | Clear bus channel | `fw bus clear T-XXX` | |
-| Generate handover | `fw handover` | `./agents/handover/handover.sh` |
-| Handover + commit | `fw handover --commit` | `./agents/handover/handover.sh --commit` |
+| Handover, commit and push (default) | `fw handover` | `./agents/handover/handover.sh` |
+| Handover without committing | `fw handover --no-commit` | `./agents/handover/handover.sh --no-commit` |
 | Read last handover | `cat .context/handovers/LATEST.md` | |
 | **Start inception** | **`fw inception start "name"`** | Creates inception task + sets focus |
 | Inception status | `fw inception status` | Lists active inception tasks |
@@ -908,9 +908,9 @@ When context budget hits critical, `checkpoint.sh` auto-generates a handover and
 1. Run session capture checklist (`agents/session-capture/AGENT.md`)
 2. Create tasks for all uncaptured work
 3. Update practices with learnings
-4. Generate handover: `fw handover`
+4. Generate the handover without committing: `fw handover --no-commit` (plain `fw handover` commits and pushes at once)
 5. Fill in the [TODO] sections in the handover document
-6. Commit all changes with task references
+6. Commit all changes with task references, and push
 7. Run `fw metrics` to verify state
 
 **Do not end a session without generating a handover.**
