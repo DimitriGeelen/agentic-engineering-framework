@@ -1,0 +1,12 @@
+# T-5099: what the test template carries (T-5009 design A). The VM has no network card, so every
+# dependency of the checks is baked in here. Parity source: .github/workflows/test.yml (pr-checks
+# job: pyyaml, pytest, bats-core from git) plus web/requirements.txt for the deeper web tests.
+# Changing this file means rebuilding the template (monthly with the stable release, or on demand).
+#
+# base image: Debian 12 "bookworm" genericcloud amd64 (qcow2), sha512 checked against SHA512SUMS
+apt: bash coreutils util-linux procps git ca-certificates python3 python3-venv python3-pip jq gawk sed grep findutils diffutils file xz-utils sqlite3 shellcheck
+bats-core: v1.11.0
+pip (into /opt/aef-venv, on PATH for the testhost user): pyyaml pytest
+pip -r: web/requirements.txt
+git config (testhost user): user.email ci@example.invalid, user.name CI
+users: testhost (no password, no sudo, no ssh keys); no network configuration; no qemu guest agent

@@ -168,6 +168,46 @@ section 3 step 2-5 and of 8a B:
 - **Weakest wall, accepted by the operator:** co-tenancy with CT 400 / CT 401 on the node; the standalone MacBook
   host (T-5100) is the fix.
 
+## 8c Node-side specification (T-5099), for ring20's check and the operator's approval
+
+Everything here is an estate change on the 'proxmox' node; AEF does not run it. Names in `<>` are for ring20 to fill
+from the node's own conventions.
+
+**1. Pool, user, role, token**
+
+| Item | Value |
+|---|---|
+| Pool | `aef-pr-test` (comment "AEF throwaway PR test VMs, T-5009") |
+| User | `aef-testhost@pve`, no password, no other groups or ACLs |
+| Role `AEFPRTest` | `VM.Allocate VM.Config.CDROM VM.Config.Disk VM.Config.Options VM.PowerMgmt VM.Console VM.Audit Pool.Audit` |
+| Role `AEFPRTemplate` | `VM.Clone VM.Audit` |
+| Role `AEFPRIso` | `Datastore.AllocateTemplate Datastore.Audit` |
+| Role `AEFPRDisk` | `Datastore.AllocateSpace` |
+| ACLs (user, propagate) | `/pool/aef-pr-test` AEFPRTest; `/vms/<template-vmid>` AEFPRTemplate; `/storage/<iso-storage>` AEFPRIso; `/storage/<disk-storage>` AEFPRDisk. Nothing on `/`, `/nodes`, `/access`, `/sdn`, other VMs or storages |
+| Token | `aef-testhost@pve!prtest`, privilege separation **off** (inherits exactly the ACLs above), expiry: the operator's choice, recorded |
+
+The template VM is **not** in the pool, so the token can clone it but never change or delete it.
+`fw testhost check-token` (T-5099) reads `GET /access/permissions` with the token and fails on any privilege outside
+these four paths and the pool's own VMs, and on any listed privilege that is missing. It runs before the first test
+run and after every ACL change.
+
+**2. Template VM** `<template-vmid>`, name `aef-testhost-tpl`, not in the pool:
+
+- Debian 12 genericcloud amd64 image, sha512 checked against Debian's `SHA512SUMS`; disk 40 GB on `<disk-storage>`.
+- 2 vCPU, 8 GB RAM, `serial0: socket`, `vga: serial0`, **no `netN` device** in the final template (a build-time
+  NIC is removed before converting to a template), no QEMU guest agent, no cloud-init drive left attached.
+- Contents per `agents/testhost/template/packages.txt`; the `testhost` user (no password, no sudo, no keys);
+  `aef-testhost-boot.sh` at `/usr/local/sbin/` (0755) and `aef-testhost.service` enabled; serial getty off, so
+  only the run's output appears on the console.
+- Build check, before converting: boot it once with a hand-made `AEFRUN` ISO holding a bundle of a known commit
+  and a nonce; the console must show `== PHASE lint end rc=0` and the framed result block, and the VM must power
+  off by itself.
+
+**3. On this host (AEF, operator runme):** `TESTHOST_PVE_*` keys in `.framework.yaml` (URL, node, pool, template
+VMID, ISO storage, disk storage, CA file path), the node's CA certificate in `.context/secrets/testhost-pve-ca.pem`,
+and the token in `.context/secrets/testhost-pve-token` (0600). The token secret is created on the node and written
+straight into that file by the runme; it is never printed, logged or sent over the sidecar.
+
 ## 9 Dialogue log
 
 - 2026-11-03: operator chose "design first" for T-5009 (options were: design first / name a host now / park).

@@ -1,0 +1,16 @@
+# T-5099: the test VM runs aef-testhost-boot.sh once at boot, output on the serial console.
+[Unit]
+Description=AEF isolated test run (T-5009)
+After=local-fs.target
+ConditionPathExists=/usr/local/sbin/aef-testhost-boot.sh
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/aef-testhost-boot.sh
+StandardOutput=tty
+StandardError=tty
+TTYPath=/dev/ttyS0
+TimeoutStartSec=infinity
+
+[Install]
+WantedBy=multi-user.target

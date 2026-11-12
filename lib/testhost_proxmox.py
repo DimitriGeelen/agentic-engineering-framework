@@ -294,6 +294,48 @@ class ProxmoxBackend:
         if errors:
             raise self.error("; ".join(errors)[:300])
 
+    # ── T-5099: what the token may do, and nothing more ─────────────────────
+
+    def required_privileges(self, disk_storage):
+        return {
+            f"/pool/{self.pool}": {"VM.Allocate", "VM.Config.CDROM", "VM.Config.Disk",
+                                   "VM.Config.Options", "VM.PowerMgmt", "VM.Console",
+                                   "VM.Audit", "Pool.Audit"},
+            f"/vms/{self.template}": {"VM.Clone", "VM.Audit"},
+            f"/storage/{self.iso_storage}": {"Datastore.AllocateTemplate", "Datastore.Audit"},
+            f"/storage/{disk_storage}": {"Datastore.AllocateSpace"},
+        }
+
+    def check_token(self, disk_storage):
+        """-> (ok, lines). Reads the token's effective permissions (GET /access/permissions) and
+        fails on any privilege outside the pool, its member VMs, the template VM and the two
+        storages, and on any required privilege that is missing."""
+        if not disk_storage or not _NAME.fullmatch(disk_storage):
+            raise self.error("TESTHOST_PVE_DISK_STORAGE is not set (the storage clones' disks use)")
+        need = self.required_privileges(disk_storage)
+        perms = self.api.get("/access/permissions") or {}
+        pool = self.api.get(f"/pools/{self.pool}") or {}
+        members = {f"/vms/{m.get('vmid')}" for m in pool.get("members", [])
+                   if m.get("type") == "qemu"}
+        ok, lines = True, []
+        for path in sorted(perms):
+            privs = sorted(k for k, v in (perms[path] or {}).items() if v)
+            if not privs:
+                continue
+            if path in need or path in members:
+                continue
+            ok = False
+            lines.append(f"FAIL  privileges outside the test pool: {path}: {', '.join(privs)}")
+        for path, want in sorted(need.items()):
+            have = {k for k, v in (perms.get(path) or {}).items() if v}
+            missing = sorted(want - have)
+            if missing:
+                ok = False
+                lines.append(f"FAIL  missing on {path}: {', '.join(missing)}")
+            else:
+                lines.append(f"OK    {path}: {', '.join(sorted(want))}")
+        return ok, lines
+
     def list_pool(self):
         pool = self.api.get(f"/pools/{self.pool}") or {}
         out = [f"vm {m.get('vmid')}" for m in pool.get("members", [])

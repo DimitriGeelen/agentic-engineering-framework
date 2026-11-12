@@ -1,0 +1,21 @@
+id: agents/testhost/template/aef-testhost-boot.sh
+name: aef-testhost-boot
+type: script
+subsystem: framework-core
+location: agents/testhost/template/aef-testhost-boot.sh
+tags: []
+
+purpose: "aef-testhost-boot.sh — the test VM's only job (T-5099; T-5009 design A, section 8b). Runs once at boot as root, from aef-testhost.service, stdout/stderr on the serial console. 1. find the CD labelled AEFRUN, mount it read-only 2."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-12
+created_by: unknown

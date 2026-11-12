@@ -6,13 +6,14 @@ description: >
   Operator 2026-11-12: run pilot code-PR tests in a no-NIC VM on the proxmox node
   (design: docs/reports/T-5009-isolated-test-host-design.md)
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
 components: []
-related_tasks: []
+related_tasks: [T-5009, T-5098, T-5100, T-5006]
+arc_id: github-contributions
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -40,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T16:07:51Z
-last_update: '2026-11-12T16:16:01Z'
+last_update: 2026-11-12T17:59:00Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,20 +87,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 2026-11-12 the operator chose a no-NIC VM on the 'proxmox' node for testing outside code PRs (T-5009, design A in section 8b), and "T-5099 first". T-5098 built the controller's Proxmox backend; it refuses until a pool, a pool-limited token, a template and their configuration exist.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Nothing exists on the node yet. The template must carry every dependency (no network), run the checks once at boot from a root-only copy of the CD (so the PR's user cannot read the run's nonce) and power off. The token must reach this host without passing through chat or logs, and it must be shown to reach nothing beyond its pool and two storages. The node-side mechanics (storage names, snippets, VMID ranges, how the node is reached) are ring20's knowledge and an estate change the operator approves; AEF's side is the specification, the in-guest files and the checks.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Everything AEF owns for the template and token is in the repo, a spec tells ring20 and the operator exactly what to create, and a check proves the token's reach before any run.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `agents/testhost/template/` holds the package list, boot script and service; `fw testhost check-token` reports the token's effective permissions and fails on anything outside the pool, the template and the two storages; a spec in the design note lists the node-side steps; ring20 has checked it; the operator's runme for the token lands it in a 0600 file without echoing it.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `agents/testhost/template/` has packages.txt (parity with the workflow's pr-checks job), aef-testhost-boot.sh (copy CD to a 0700 dir, unmount, run guest-run.sh from the copy, power off) and aef-testhost.service (serial console output) (files + syntax check)
+- [ ] `fw testhost check-token` reads the token's effective permissions through the API and fails when any path outside the pool, the template VM and the two storages carries a privilege, or when a needed privilege is missing (tests against a fake API)
+- [ ] The design note has the node-side spec: pool, role privileges, ACL paths, token (privilege-separated off, no expiry decision left implicit), template settings (no NIC, serial0, CPU/RAM/disk), boot service install, and the build's verification
+- [ ] The token runme writes the secret straight into `.context/secrets/testhost-pve-token` with mode 0600 and prints only a confirmation (code read of the runme)
+- [ ] ring20 has reviewed the spec against the node, and its answer is recorded
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -382,3 +385,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5099-t-5009-phase-2-operator-runmes-for-the-i.md
 - **Context:** Initial task creation
+
+### 2026-11-12T17:53:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
