@@ -43,9 +43,10 @@ fi
 work="$(mktemp -d "${TMPDIR:-/tmp}/testhost-work.XXXXXX")"
 raw_log="$(mktemp "${TMPDIR:-/tmp}/testhost-log.XXXXXX")"
 cp "$bundle" "$work/pr.bundle"          # the PR's user never needs to reach INPUT-DIR
+cp "$here/pr-checks.sh" "$work/pr-checks.sh"   # T-5099: INPUT-DIR is root-only in the VM
 runas=()
 if [ "$(id -u)" -eq 0 ] && id testhost >/dev/null 2>&1; then
-    chown testhost "$work" "$work/pr.bundle" "$raw_log"
+    chown testhost "$work" "$work/pr.bundle" "$work/pr-checks.sh" "$raw_log"
     runas=(runuser -u testhost --)
 fi
 
@@ -55,7 +56,7 @@ echo "== testhost guest: clone =="
 
 echo "== testhost guest: checks =="
 rc=0
-( cd "$work/src" && "${runas[@]}" bash "$here/pr-checks.sh" origin/base ) 2>&1 | tee "$raw_log" || rc=$?
+( cd "$work/src" && "${runas[@]}" bash "$work/pr-checks.sh" origin/base ) 2>&1 | tee "$raw_log" || rc=$?
 finished="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 head -c "$log_cap" "$raw_log" > "$out_dir/checks.log"
