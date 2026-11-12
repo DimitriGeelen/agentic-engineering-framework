@@ -1888,3 +1888,25 @@ the standing rulings T-4020 / T-4146.
 `T-5006-draft-plan-for-mehdi.md` the direct answer to the closing question, the release channels, PR 1's corrections
 (`master`, branch from `bleeding-edge`), PR 2's example #106 checked on the latest pre-release, and the 28-October CI
 re-verification check as the step after the pilot.
+
+## 15 Operator sign-off of section 14 (2026-11-12)
+
+Asked one item at a time, with the agent's recommendation; the operator's answer is recorded verbatim in meaning.
+
+- **10.35 (prerequisite of 14.1):** the scan runs **within 5 minutes** of a post: a small job every 5 minutes reads
+  new posts and comments from peer accounts and hides hits; no run for 15 minutes raises a push alert to the operator.
+  (Copies already e-mailed to watchers within seconds are outside any interval.)
+- **14.1 (11.R.1 disclosure):** **accepted, as bounded** by the 5-minute scan (10.35): a token holder, including a
+  thief, can post arbitrary text that is public until hidden, and copies may be permanent; limited by tokens only for
+  trusted peers, fixed-form direct posts, no push or merge rights, revocation on misuse.
+- **14.2 (11.R.2 public PR run outside procedure):** **accepted.** Outside AEF's control for public code; AEF never asks
+  for it. Added as a requirement for the next roles: one line in the peer guidance and CONTRIBUTING, "never run
+  unmerged PR code on a host with credentials; the isolated test host does that".
+- **14.3 (11.R.4 session credential lands outside commits):** **reopened** (no longer accepted with detection only).
+  Carried to the threat modeler (T-5022) as a requirement: prevention, not only detection. Candidates to weigh: a
+  separate push credential for the AEF session that cannot land others' commits, the organisation move (T-5030),
+  signed-commit rules (insufficient alone: a contributor's own signed commits also pass).
+- **14.4 (11.R.5 owner bypass):** **confirmed**, accepted with detection: owner overrides are shown by name afterwards;
+  installs in between receive them.
+- **14.5 (11.R.6 false stamp):** **confirmed**: closed for state changes (only a sidecar-confirmed verdict changes
+  state); a false stamp can remain in the public record, labelled unconfirmed.
