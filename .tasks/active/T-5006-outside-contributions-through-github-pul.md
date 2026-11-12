@@ -178,7 +178,7 @@ Mehdi (GitHub contributor, author of issues #98, #104, #106) wants to send pull 
 
 **Rationale:**
 
-2026-11-12: the operator said "5006 is not ready". The GO of 2026-11-11 below was premature; it is withdrawn and this inception is not up for decision until the operator says it is. What is still missing is to be recorded here from the operator's answer.
+2026-11-12: the operator said "5006 is not ready". The GO of 2026-11-11 below was premature; it is withdrawn. **What it waits for (operator, 2026-11-12): the role chain first** — steps 1 to 8 (T-5021 requirements sign-off, T-5022 threat model, T-5023 to T-5028) must be done before this go/no-go is presented again. Mehdi's answers on #114 feed step 1; they do not replace the chain.
 
 (Withdrawn GO rationale, 2026-11-11, kept for the record:) The question that held this at DEFER is settled in the plan: GitHub becomes the source repository and the private server its mirror, so a merged pull request can no longer be erased by a mirror sync, as happened to #76, #77 and #79 (`docs/reports/T-5006-draft-plan-for-mehdi.md` lines 68-70). The pilot contributor has reviewed the plan and accepted its stricter points (DCO sign-off, review before merge, one risk level higher), and answered the four open questions; the operator accepted the answers the same day and called the contributor trusted. GO means: run the pilot as planned. Code pull requests still wait for the isolated test hosts (T-5009), and the role-chain steps (T-5021 onward) stay the delivery plan.
 
