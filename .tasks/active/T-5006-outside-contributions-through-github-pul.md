@@ -13,7 +13,7 @@ arc_id: github-contributions
 components: []
 related_tasks: []
 created: 2026-11-02T07:55:22Z
-last_update: 2026-11-12T14:31:02Z
+last_update: 2026-11-12T19:33:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -179,6 +179,14 @@ Mehdi (GitHub contributor, author of issues #98, #104, #106) wants to send pull 
 **Rationale:**
 
 2026-11-12: the operator said "5006 is not ready". The GO of 2026-11-11 below was premature; it is withdrawn. **What it waits for (operator, 2026-11-12): the role chain first** — steps 1 to 8 (T-5021 requirements sign-off, T-5022 threat model, T-5023 to T-5028) must be done before this go/no-go is presented again. Mehdi's answers on #114 feed step 1; they do not replace the chain.
+
+**Status, end of 2026-11-12 (this go/no-go still DEFER; the next step is the operator's T-5021 sign-off):**
+- The pilot runs inside its limits meanwhile: the operator signed off the **pilot plan** (not this decision): Mehdi may open PR 1 (documents) now; code PRs wait for the isolated test host (T-5009). Told on #114 (comment 6824120027).
+- Branch protection on: GitHub ruleset 27125484 (no force push, no deletion on `bleeding-edge` and `master`).
+- PR template has Mehdi's two lines (T-5097).
+- #106, the planned PR 2 example, was already fixed by T-4234 in v1.8.15; T-5082 is obsolete once Mehdi confirms; PR 2 needs another small issue.
+- Test host T-5009: design A decided after review round 3; controller backend built and tested (T-5098); node side specified and reviewed by ring20, who builds it as their T-2661 with the operator's approval (T-5099).
+- **Role chain:** step 1 (T-5021) is done and reviewed twice; it waits only for the operator's sign-off of section 14 of `docs/reports/T-5006-requirements.md` (14.1-14.14). Steps 2-8 cannot start before it.
 
 (Withdrawn GO rationale, 2026-11-11, kept for the record:) The question that held this at DEFER is settled in the plan: GitHub becomes the source repository and the private server its mirror, so a merged pull request can no longer be erased by a mirror sync, as happened to #76, #77 and #79 (`docs/reports/T-5006-draft-plan-for-mehdi.md` lines 68-70). The pilot contributor has reviewed the plan and accepted its stricter points (DCO sign-off, review before merge, one risk level higher), and answered the four open questions; the operator accepted the answers the same day and called the contributor trusted. GO means: run the pilot as planned. Code pull requests still wait for the isolated test hosts (T-5009), and the role-chain steps (T-5021 onward) stay the delivery plan.
 

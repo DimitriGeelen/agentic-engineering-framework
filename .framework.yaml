@@ -23,7 +23,7 @@ PROTECT_MASTER: 1
 # project again, and the symptom is an absence, which nothing prompts you to look
 # for.
 project_name: 999-Agentic-Engineering-Framework
-INCEPTION_COMMIT_LIMIT: 45
+INCEPTION_COMMIT_LIMIT: 60
 NTFY_URL: https://ntfy-ring20.docker.ring20.geelenandcompany.com
 RAIL_IDENTITY_FILE: .context/rail-identity.key
 CONTEXT_WINDOW: 975000
