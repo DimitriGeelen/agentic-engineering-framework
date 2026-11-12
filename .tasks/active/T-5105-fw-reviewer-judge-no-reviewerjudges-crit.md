@@ -38,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T19:37:50Z
-last_update: 2026-11-12T19:37:50Z
+last_update: 2026-11-12T19:39:52Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -57,9 +57,9 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 055-agentic-fleet-cockpit (msgs ef4771a0, 903de6d2, 2026-11-12), on their T-506, vendored be.4x, no local patch. (1) The Human criterion `[REVIEW] The new layout looks right and gives more room where it is needed` (Steps: open their terminals page and look at a few panes; Expected: "controls on top, activity and charts at the bottom, nothing cramped or cut off"; If not: say what looks wrong) got "No REVIEWER_JUDGES criteria" from `fw reviewer judge`. (2) A judge run was registered in `.context/reviews/review-runs.jsonl` (run_id run-t-506-9ace0e7da3, 2026-11-12T17:56:51Z, rung-5 panel, required_vendors 3, seats claude-code/codex/+1, acs [1]) but no row in review-dispatches, completions, verdicts or recorded names it, and no worker directory exists: the seats were never dispatched or never wrote a start row.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** (1) unknown; reproduce with that exact criterion text against `lib/delegation.py`. (2) Likely the rung-5 panel: CLAUDE.md says no rung-5 panel can be assembled yet (only some worker kinds launch), so the judge may register the run and then stop silently instead of refusing with a reason. A run registered with no seats is a silent failure either way.
 
 **Goal:** <what we are trying to achieve>
 
