@@ -774,6 +774,47 @@ _INDEX_LOCK = _threading.Lock()
 _TREE_LOCK = _threading.Lock()
 
 
+# T-5106 (1409, 2.58M files under .context/working/ froze every page): both walks below
+# are bounded. .context/working/ contributes its top-level files only (worker areas, scratch
+# and caches below it can be any size), and each walk stops at a file-count or time budget.
+# On truncation the walk logs once and fails open: a name it could not reach stays plain
+# text and is never marked dead.
+_WALK_SHALLOW = (".context/working",)
+_WALK_MAX_FILES = 200_000
+_WALK_MAX_SECONDS = 10.0
+_WALK_WARNED: set = set()
+
+
+def _bounded_walk(base, label: str, skip_dirs, state: dict):
+    """os.walk(base) with the T-5106 bounds; yields (root, files). Sets state["truncated"]
+    when a budget stops it. `state` carries the shared count and deadline of one build."""
+    import time as _t
+    base_s = str(base)
+    for root, dirs, files in os.walk(base_s):
+        rel = os.path.relpath(root, PROJECT_ROOT)
+        if any(rel == p for p in _WALK_SHALLOW):
+            dirs[:] = []                       # top-level files only
+        else:
+            dirs[:] = [d for d in dirs if d not in skip_dirs]
+        state["files"] += len(files)
+        if state["files"] > _WALK_MAX_FILES or _t.monotonic() > state["deadline"]:
+            state["truncated"] = True
+            if label not in _WALK_WARNED:
+                _WALK_WARNED.add(label)
+                import logging as _lg
+                _lg.getLogger(__name__).warning(
+                    "T-5106: %s walk stopped at %d files / %.0fs budget; unresolved names stay "
+                    "plain text", label, state["files"], _WALK_MAX_SECONDS)
+            yield root, files
+            return
+        yield root, files
+
+
+def _walk_state() -> dict:
+    import time as _t
+    return {"files": 0, "deadline": _t.monotonic() + _WALK_MAX_SECONDS, "truncated": False}
+
+
 def _basename_index(force_fresh: bool = False) -> dict:
     """basename -> sorted repo-relative paths, over the viewable directories only.
 
@@ -798,12 +839,13 @@ def _basename_index(force_fresh: bool = False) -> dict:
 def _build_basename_index(now: float) -> dict:
     idx: dict = {}
     suffixes = tuple("." + e for e in VIEWABLE_EXTENSIONS)
+    state = _walk_state()
     for prefix in VIEWABLE_DIR_PREFIXES:
         base = PROJECT_ROOT / prefix
-        if not base.is_dir():
+        if not base.is_dir() or state["truncated"]:
             continue
-        for root, dirs, files in os.walk(base):
-            dirs[:] = [d for d in dirs if d not in ("__pycache__", "node_modules", ".git")]
+        for root, files in _bounded_walk(base, "basename index",
+                                         ("__pycache__", "node_modules", ".git"), state):
             for f in files:
                 if f.endswith(suffixes):
                     rel = os.path.relpath(os.path.join(root, f), PROJECT_ROOT)
@@ -823,6 +865,7 @@ def _build_basename_index(now: float) -> dict:
             idx.setdefault(f, []).insert(0, f)
     import time as _t
     _BASENAME_INDEX["index"] = idx
+    _BASENAME_INDEX["truncated"] = state["truncated"]
     # T-4547: age counts from when the walk FINISHED. Stamping `now` (read
     # before the walk) published an index already past its TTL whenever the
     # walk took longer than the TTL, so the next miss walked again.
@@ -857,12 +900,15 @@ def _exists_anywhere(name: str) -> bool:
             now = _t.monotonic()
             if now - _TREE_NAMES["built"] >= _BASENAME_MISS_TTL:
                 names = set()
-                for _root, dirs, files in os.walk(PROJECT_ROOT):
-                    dirs[:] = [d for d in dirs if d not in _TREE_SKIP_DIRS]
+                state = _walk_state()
+                for _root, files in _bounded_walk(PROJECT_ROOT, "tree names", _TREE_SKIP_DIRS,
+                                                  state):
                     names.update(files)
                 _TREE_NAMES["names"] = frozenset(names)
+                _TREE_NAMES["truncated"] = state["truncated"]
                 _TREE_NAMES["built"] = _t.monotonic()  # T-4547: after the walk
-    return name in _TREE_NAMES["names"]
+    # T-5106: on a truncated walk an unseen name may still exist; "exists" keeps it plain text.
+    return name in _TREE_NAMES["names"] or bool(_TREE_NAMES.get("truncated"))
 
 
 def _resolve_ref(path: str):
