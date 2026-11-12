@@ -9,12 +9,12 @@ description: >
   _tok_iter splits on | ; & etc. without regard to quoting, so a quoted regex alternation
   yields a fake /home/ argument.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [github, mikeechovoid]
-components: []
+components: [lib/shell_write_scan.py]
 related_tasks: []
 origin: {kind: "peer", source: "github#111"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -44,8 +44,8 @@ origin: {kind: "peer", source: "github#111"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T08:51:35Z
-last_update: 2026-11-12T11:05:46Z
-date_finished:
+last_update: 2026-11-12T11:06:01Z
+date_finished: 2026-11-12T11:06:01Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -101,10 +101,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `grep -rE '/home/|192\.168\.' docs/` passes the boundary hook (test)
-- [ ] The pattern given with `-e`, after `--`, behind sudo/xargs, and for rg with `-g GLOB`, passes (test)
-- [ ] Still blocked: an outside file operand after the pattern, `-f FILE`, `--exclude-from FILE`, an unknown option before the pattern, a sed script naming an outside path, `bash -c 'cat <outside>'` (test)
-- [ ] Every existing boundary test passes
+- [x] `grep -rE '/home/|192\.168\.' docs/` passes the boundary hook (test)
+- [x] The pattern given with `-e`, after `--`, behind sudo/xargs, and for rg with `-g GLOB`, passes (test)
+- [x] Still blocked: an outside file operand after the pattern, `-f FILE`, `--exclude-from FILE`, an unknown option before the pattern, a sed command with an outside file operand, `bash -c 'cat <outside>'` (test). A sed SCRIPT that reads a file (`1r <outside>`) already passed before this task: registered as G-131, not changed here.
+- [x] Every existing boundary test passes (44 bats files, 573 ok; 24 pytest)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -406,3 +406,16 @@ bin/fw vendor self --check --task T-5091
 
 ### 2026-11-12T10:57:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-12T11:06:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-095b6a62
+- **Timestamp:** 2026-11-12T11:06:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
