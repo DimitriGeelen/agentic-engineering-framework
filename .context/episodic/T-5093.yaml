@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5093: GH #113: consumer CLAUDE.md says fw handover without --commit is a manual commit, but it commits and pushes by default
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-12T09:12:19Z
+# ============================================================================
+
+task_id: T-5093
+task_name: "GH #113: consumer CLAUDE.md says fw handover without --commit is a manual commit, but it commits and pushes by default"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-12T08:51:36Z
+completed: 2026-11-12T09:10:59Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-12T10:10:56+01:00
+last_commit: 2026-11-12T10:10:56+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  consumer CLAUDE.md template says fw handover commits and pushes by default; --no-commit to fill [TODO]s first (GH #113)
+
+# Key outcomes
+outcomes:
+  - '`lib/templates/claude-project.md` no longer calls the plain call a manual commit; it names `--no-commit` for writing without committing (Handover Agent section, Quick Reference, Session End list)'
+  - 'Test: the template''s handover rows agree with `handover.sh` (`AUTO_COMMIT=true` default, `--no-commit` exists) and fail on the old wording'
+  - '`bin/fw vendor self --check --task T-5093` clean (12 template-reading test files green)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/templates/claude-project.md'
+  - '.fabric/components/tests-unit-t5093_template_handover_default.yaml'
+  - '.tasks/active/T-5093-gh-113-consumer-claudemd-says-fw-handove.md'
+  - 'lib/templates/claude-project.md'
+  - 'tests/unit/t5093_template_handover_default.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-12T10:10:56'
+    action: 'T-5093: consumer CLAUDE.md template says fw handover commits and pushes by default; --no-commit to fill [TODO]s first (GH #113)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 19 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github, mikeechovoid]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 19
+  commits: 3
+  files_changed: 14
+  lines_added: 2742
+  lines_removed: 30
+  footprint_refreshed_at: '2026-11-12T09:12:36Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5093-gh-113-consumer-claudemd-says-fw-handove.md
+generated_by: context-agent-hybrid
