@@ -9,12 +9,12 @@ description: >
   slug sed strips the whole name of .gitignore; second dotfile collides; .framework.yaml
   gets slug framework.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [github, mikeechovoid]
-components: []
+components: [agents/fabric/lib/register.sh, tests/unit/t5089_fabric_dotfile_slug.bats]
 related_tasks: []
 origin: {kind: "peer", source: "github#109"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -44,8 +44,8 @@ origin: {kind: "peer", source: "github#109"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T08:51:34Z
-last_update: '2026-11-12T08:56:09Z'
-date_finished:
+last_update: 2026-11-12T09:02:07Z
+date_finished: 2026-11-12T09:02:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -384,3 +384,21 @@ bin/fw vendor self --check --task T-5089
 
 ### 2026-11-12T08:55:57Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-12T09:02:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fedf2502
+- **Timestamp:** 2026-11-12T09:02:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Non-dotfile paths keep their old slug (`lib/x.sh` → `lib-x`, `.context/a/b.yaml` → `context-a-b`), checked against every existing card's location (1,699 locations: 0 non-dotfile changes; 2 dotfile car
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/a/b.yaml in: Non-dotfile paths keep their old slug (`lib/x.sh` → `lib-x`, `.context/a/b.yaml` → `context-a-b`), checked against every existing card's location (1,6`

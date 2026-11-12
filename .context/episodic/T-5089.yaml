@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5089: GH #109: fw fabric register on a root dotfile writes .fabric/components/.yaml (empty slug)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-12T09:04:24Z
+# ============================================================================
+
+task_id: T-5089
+task_name: "GH #109: fw fabric register on a root dotfile writes .fabric/components/.yaml (empty slug)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-12T08:51:34Z
+completed: 2026-11-12T09:02:07Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-12T10:00:38+01:00
+last_commit: 2026-11-12T10:02:02+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw fabric register gives dotfiles a dot- slug (GH #109); old-name cards recognised. evolution note
+
+# Key outcomes
+outcomes:
+  - '`.gitignore` → `dot-gitignore.yaml`, `.dockerignore` → `dot-dockerignore.yaml` (either order), `.framework.yaml` → `dot-framework.yaml`, `sub/.env` → `sub-dot-env.yaml`; no `.yaml` card'
+  - 'Non-dotfile paths keep their old slug (`lib/x.sh` → `lib-x`, `.context/a/b.yaml` → `context-a-b`), checked against every existing card''s location (1,699 locations: 0 non-dotfile changes; 2 dotfile cards are recognised under their old names)'
+  - 'Regression test fails on the old script; existing fabric tests green; `bin/fw vendor self --check --task T-5089` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/fabric/lib/register.sh'
+  - '.fabric/components/tests-unit-t5089_fabric_dotfile_slug.yaml'
+  - '.tasks/active/T-5089-gh-109-fw-fabric-register-on-a-root-dotf.md'
+  - 'agents/fabric/lib/register.sh'
+  - 'tests/unit/t5089_fabric_dotfile_slug.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-12T10:00:38'
+    action: 'T-5089: fw fabric register gives dotfiles a dot- slug (GH #109); old-name cards recognised'
+  - time: '2026-11-12T10:02:02'
+    action: 'T-5089: evolution note'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github, mikeechovoid]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 10
+  commits: 3
+  files_changed: 8
+  lines_added: 340
+  lines_removed: 29
+  footprint_refreshed_at: '2026-11-12T09:05:13Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5089-gh-109-fw-fabric-register-on-a-root-dotf.md
+generated_by: context-agent-hybrid
