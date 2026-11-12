@@ -51,3 +51,17 @@ def test_stage_posted_rules(tmp_path, monkeypatch):
     assert issues._stage_posted(98, "fixed-on-bleeding-edge", None)       # no task: issue-wide
     assert issues._stage_posted(98, "fixed-on-bleeding-edge", [])
     assert issues._stage_posted(99, "fixed-on-bleeding-edge", ["T-4355"]) is None
+
+
+def test_marker_fallback_on_the_issue_is_per_task(env):
+    # the ledger lost the row; the maintainer's own marked comment on GitHub names T-4355
+    e, stub, ledger = env
+    body = "<!-- aef-intake:stage=in-progress -->\n**[AEF intake] In progress**\n\nTracked as **T-4355**."
+    (stub / "view.json").write_text(json.dumps(
+        {"author": {"login": "reporter"}, "comments": [{"author": {"login": "maint"}, "body": body}]}))
+    r = run(e, "comment", "98", "--stage", "in-progress", "--task", "T-4355")
+    assert r.returncode == 0 and "already marked on the issue" in r.stdout
+    assert _posted(stub) == 0
+    r = run(e, "comment", "98", "--stage", "in-progress", "--task", "T-43550")
+    assert r.returncode == 0 and "already" not in r.stdout
+    assert _posted(stub) == 1
