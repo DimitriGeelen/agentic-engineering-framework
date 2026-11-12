@@ -1,0 +1,21 @@
+id: tests/web/test_t5086_review_full_page_state.py
+name: test_t5086_review_full_page_state
+type: script
+subsystem: tests
+location: tests/web/test_t5086_review_full_page_state.py
+tags: []
+
+purpose: "T-5086: a fresh load of /review/<id> showed no state note until the 5-second poll, because only the fragment route computed the task state. Both routes now share one helper. Temp git repo only; no real task file is touched."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-12
+created_by: unknown

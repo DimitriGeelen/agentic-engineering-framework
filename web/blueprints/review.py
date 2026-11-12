@@ -206,7 +206,7 @@ def review(task_id):
         task_id=task_id,
         task_name=fm.get("name", ""),
         task_status=fm.get("status", ""),
-        status_label=_status_label(task_file, fm.get("status", "")),
+        **_task_state(task_file, fm, total_count, all_checked),  # T-5086
         task_owner=fm.get("owner", ""),
         workflow_type=fm.get("workflow_type", ""),
         human_acs=human_acs,
@@ -279,6 +279,28 @@ def _status_label(task_file, status):
     return status
 
 
+def _task_state(task_file, fm, total_count, all_checked):
+    """T-5086: where the task stands, for BOTH the full page and the reloaded check list.
+    The two routes used to build their own context; only the list computed these, so a fresh
+    page load showed no note until the 5-second poll.
+
+    - task_completed: only a task file in completed/ is closed (T-5084; T-2081 keyed on the
+      status, which a task waiting for review in active/ already has).
+    - with_operator: waiting for review in active/ with a Human check open (T-5084).
+    - handed_back: every Human check ticked, the agent owns it, still in active/ (T-5081/T-5083).
+    """
+    status = str(fm.get("status") or "").strip().lower()
+    in_active = task_file.parent.name == "active"
+    return {
+        "task_completed": task_file.parent.name == "completed",
+        "with_operator": (in_active and status == "work-completed"
+                          and total_count > 0 and not all_checked),
+        "handed_back": (all_checked and in_active
+                        and str(fm.get("owner") or "").strip() == "agent"),
+        "status_label": _status_label(task_file, fm.get("status", "")),
+    }
+
+
 @bp.route("/review/<task_id>/acs")
 def review_acs_fragment(task_id):
     """htmx polling endpoint — returns just the AC list fragment."""
@@ -320,28 +342,13 @@ def review_acs_fragment(task_id):
     # GET /review/T-2079/acs (T-2079 in completed/ with status: work-completed)
     # returned the Complete button. This guard short-circuits the branch so the
     # poll renders a "✓ Task completed" panel instead.
-    status = (fm.get("status") or "").strip().lower()
-    # T-5084: a task waiting for review is already work-completed while still in active/;
-    # only a task file in completed/ is closed. (T-2081's guard keyed on status alone and
-    # showed "Task completed" for every partial-complete task.)
-    task_completed = task_file.parent.name == "completed"
-    with_operator = (task_file.parent.name == "active" and status == "work-completed"
-                     and total_count > 0 and not all_checked)
-    # T-5081: the review page swaps nothing from the tick response (hx-swap="none") and
-    # reloads this fragment instead, so the hand-back is shown from task state: every Human
-    # check ticked, the agent owns it, and it is still open (in active/).
-    handed_back = (all_checked and str(fm.get("owner") or "").strip() == "agent"
-                   and task_file.parent.name == "active")
-
     return render_template(
         "_review_acs.html",
-        handed_back=handed_back,
-        with_operator=with_operator,
+        **_task_state(task_file, fm, total_count, all_checked),
         # T-5085: the reloaded list also refreshes the header's status and owner (hx-swap-oob),
         # which otherwise stay as they were at page load and contradict the note.
         as_fragment=True,
         task_owner=fm.get("owner", ""),
-        status_label=_status_label(task_file, fm.get("status", "")),
         task_id=task_id,
         workflow_type=fm.get("workflow_type", ""),
         human_acs=human_acs,
@@ -352,5 +359,4 @@ def review_acs_fragment(task_id):
         rec_rationale_text=rec["rationale"],
         decision_recorded=decision_recorded,
         decision_value=decision_state,
-        task_completed=task_completed,
     )
