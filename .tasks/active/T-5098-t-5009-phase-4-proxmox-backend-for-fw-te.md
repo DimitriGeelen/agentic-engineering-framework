@@ -6,13 +6,14 @@ description: >
   Operator 2026-11-12: run pilot code-PR tests in a no-NIC VM on the proxmox node
   (design: docs/reports/T-5009-isolated-test-host-design.md)
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
 components: []
-related_tasks: []
+related_tasks: [T-5009, T-5099, T-5100, T-5006]
+arc_id: github-contributions
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -40,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T16:07:48Z
-last_update: '2026-11-12T16:16:01Z'
+last_update: 2026-11-12T17:25:20Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,20 +87,23 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 2026-11-12 the operator signed off Mehdi's pilot plan with code PRs waiting for the isolated test host (T-5009), chose a no-NIC VM on the 'proxmox' node until a standalone MacBook host exists, and, after review round 3 (codex, opencode), chose design A: read-only ISO in, framed serial out (`docs/reports/T-5009-isolated-test-host-design.md` section 8b).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `lib/testhost.py` has a working controller and a stub backend, but `ProxmoxBackend` refuses (phase 4 was waiting for the node), and results come back only from an output disk, which design A no longer has.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** `fw testhost run --backend proxmox` drives a real run through the Proxmox API with a pool-limited token: clone the template, attach a read-only ISO (bundle + released run scripts), start, read the serial console, take the result from a framed block on it, destroy the VM and the ISO on every exit path.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** The backend and the framed result path exist and are tested against a fake Proxmox API; the live run waits only for the operator's pool, token and template (T-5099).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `guest-run.sh` ends every run with one framed result block on stdout (begin marker with sha256 and length, gzip + base64 lines, end marker) carrying result.json and the capped checks log; the plain log stays text (test)
+- [ ] The controller takes the block out of the serial log, checks length and sha256, decompresses with a hard size cap (a compression bomb is refused), and treats a missing, truncated or bad block as infra-error (tests)
+- [ ] The stub backend still passes its existing tests; a stub run with no output disk gets its result from the serial block alone (test)
+- [ ] `ProxmoxBackend` (own module): clone from the template into the pool, refuse a clone that has any network device, upload the ISO and attach it read-only, start, stream the serial console through termproxy, stop, destroy the VM and delete the ISO on every exit path; list_pool reports leftovers (tests against a fake API)
+- [ ] The token is read from a file under `.context/secrets/` (never from `.framework.yaml`), TLS is verified against a configured CA file, and nothing guest-produced is ever written outside the run dir (tests / code read)
+- [ ] All existing testhost tests pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -382,3 +386,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5098-t-5009-phase-4-proxmox-backend-for-fw-te.md
 - **Context:** Initial task creation
+
+### 2026-11-12T17:15:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

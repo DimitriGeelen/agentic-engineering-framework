@@ -11,6 +11,15 @@
 #   result.json  {version:1, status: passed|failed, phases:[{name, rc, seconds}], started, finished}
 #   checks.log   the checks' output, capped at TESTHOST_GUEST_LOG_CAP bytes (default 1 MiB)
 # The controller treats both as hostile data and decides the run's state itself.
+#
+# T-5098 (design A, T-5009 section 8b): the run ALSO ends with one framed result block on
+# stdout (the serial console), so a backend with no output disk gets the result from it:
+#   ==TESTHOST-RESULT-BEGIN v1 nonce=N sha256=H bytes=B==
+#   <base64 of gzip(JSON {"result": <result.json text>, "checks_log": <checks.log text>})>
+#   ==TESTHOST-RESULT-END nonce=N==
+# N comes from INPUT-DIR/nonce, read by this script (root in the VM) before the checks run.
+# The VM's boot service copies the CD into a root-only INPUT-DIR, so the PR's code, running as
+# `testhost`, cannot read N and cannot forge a block the controller accepts.
 set -euo pipefail
 
 in_dir="${1:?usage: guest-run.sh INPUT-DIR OUTPUT-DIR}"
@@ -26,17 +35,22 @@ if [ ! -f "$bundle" ]; then
     exit 3
 fi
 
+nonce=""
+if [ -f "$in_dir/nonce" ]; then
+    nonce="$(tr -cd '0-9a-f' < "$in_dir/nonce" | head -c 64)"
+fi
+
 work="$(mktemp -d "${TMPDIR:-/tmp}/testhost-work.XXXXXX")"
 raw_log="$(mktemp "${TMPDIR:-/tmp}/testhost-log.XXXXXX")"
+cp "$bundle" "$work/pr.bundle"          # the PR's user never needs to reach INPUT-DIR
 runas=()
 if [ "$(id -u)" -eq 0 ] && id testhost >/dev/null 2>&1; then
-    chown testhost "$work" "$raw_log"
-    chmod 0644 "$bundle" 2>/dev/null || true
+    chown testhost "$work" "$work/pr.bundle" "$raw_log"
     runas=(runuser -u testhost --)
 fi
 
 echo "== testhost guest: clone =="
-"${runas[@]}" git -c core.hooksPath=/dev/null clone -q --no-checkout "$bundle" "$work/src"
+"${runas[@]}" git -c core.hooksPath=/dev/null clone -q --no-checkout "$work/pr.bundle" "$work/src"
 "${runas[@]}" git -C "$work/src" -c core.hooksPath=/dev/null checkout -q -B pr origin/head
 
 echo "== testhost guest: checks =="
@@ -62,4 +76,19 @@ PY
 mv "$out_dir/result.json.tmp" "$out_dir/result.json"
 rm -rf "$work" "$raw_log"
 echo "== testhost guest: done rc=$rc =="
+if [ -n "$nonce" ]; then
+    python3 - "$out_dir/result.json" "$out_dir/checks.log" "$nonce" <<'PY'
+import base64, gzip, hashlib, json, sys
+res, log, nonce = sys.argv[1], sys.argv[2], sys.argv[3]
+doc = {"result": open(res, encoding="utf-8", errors="replace").read(),
+       "checks_log": open(log, encoding="utf-8", errors="replace").read()}
+blob = base64.b64encode(gzip.compress(json.dumps(doc).encode("utf-8"), mtime=0)).decode("ascii")
+sha = hashlib.sha256(blob.encode("ascii")).hexdigest()
+out = [f"==TESTHOST-RESULT-BEGIN v1 nonce={nonce} sha256={sha} bytes={len(blob)}=="]
+out += [blob[i:i + 76] for i in range(0, len(blob), 76)]
+out.append(f"==TESTHOST-RESULT-END nonce={nonce}==")
+sys.stdout.write("\n".join(out) + "\n")
+sys.stdout.flush()
+PY
+fi
 exit 0

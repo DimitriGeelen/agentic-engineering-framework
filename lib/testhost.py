@@ -44,9 +44,21 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 DEFAULTS = {"TESTHOST_BACKEND": "stub", "TESTHOST_TIMEOUT": "1800",
-            "TESTHOST_SERIAL_CAP_BYTES": "5242880"}
+            "TESTHOST_SERIAL_CAP_BYTES": "5242880",
+            # T-5098: the Proxmox backend's keys; empty = not configured (it refuses).
+            "TESTHOST_PVE_URL": "", "TESTHOST_PVE_NODE": "", "TESTHOST_PVE_POOL": "",
+            "TESTHOST_PVE_TEMPLATE": "", "TESTHOST_PVE_ISO_STORAGE": "", "TESTHOST_PVE_CA": "",
+            "TESTHOST_PVE_TOKEN_FILE": ""}
 RESULT_MAX_BYTES = 64 * 1024
 CHECKS_LOG_MAX_BYTES = 1024 * 1024
+# T-5098 (design A): the framed result block on the serial line. Base64 is capped before
+# decoding; the decompressed JSON is capped again (a compression bomb stops at the cap).
+FRAME_MAX_B64 = 4 * 1024 * 1024
+FRAME_MAX_JSON = RESULT_MAX_BYTES + CHECKS_LOG_MAX_BYTES + 64 * 1024
+_FRAME_BEGIN = re.compile(r"==TESTHOST-RESULT-BEGIN v1 nonce=([0-9a-f]{32,64}) "
+                          r"sha256=([0-9a-f]{64}) bytes=(\d{1,8})==")
+_FRAME_END = re.compile(r"==TESTHOST-RESULT-END nonce=([0-9a-f]{32,64})==")
+_B64_LINE = re.compile(r"[A-Za-z0-9+/=]{1,76}")
 MAX_PHASES = 16
 LINE_MAX = 64 * 1024
 STATES = ("passed", "failed", "timeout", "infra-error")
@@ -171,8 +183,11 @@ def make_input(head: str, base_ref: str, dest: Path) -> dict:
 # ── backends ─────────────────────────────────────────────────────────────────
 
 class Backend:
-    """Hypervisor interface. A vm_id is opaque to the controller."""
+    """Hypervisor interface. A vm_id is opaque to the controller.
+    result_channel: "disk" (read_output gives a reader dir) or "serial" (the result comes
+    from the framed block on the serial line; T-5098, design A)."""
     name = "abstract"
+    result_channel = "disk"
 
     def clone(self) -> str: raise NotImplementedError
     def attach_input(self, vm_id: str, src_dir: Path) -> None: raise NotImplementedError
@@ -186,12 +201,11 @@ class Backend:
     def list_pool(self) -> list: raise NotImplementedError
 
 
-class ProxmoxBackend(Backend):
-    name = "proxmox"
-
-    def __init__(self, *_a, **_k):
-        raise TesthostError("backend 'proxmox' is not configured: phase 4, the operator chooses "
-                            "the node first (T-5009 Q-3). Use --backend stub.")
+def ProxmoxBackend(*a, **k):   # noqa: N802 — a factory under the backend's name
+    """T-5098: the Proxmox API backend lives in lib/testhost_proxmox.py."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import testhost_proxmox
+    return testhost_proxmox.ProxmoxBackend(config=config, error=TesthostError, *a, **k)
 
 
 class StubBackend(Backend):
@@ -199,7 +213,8 @@ class StubBackend(Backend):
     guest command as a child process in its own session; its stdout is the serial stream."""
     name = "stub"
 
-    def __init__(self, pool=None, guest=None):
+    def __init__(self, pool=None, guest=None, result_channel=None):
+        self.result_channel = result_channel or os.environ.get("TESTHOST_STUB_CHANNEL") or "disk"
         default_pool = Path(tempfile.gettempdir()) / f"fw-testhost-stub-{os.getuid()}"
         self.pool = Path(pool or os.environ.get("TESTHOST_STUB_POOL") or default_pool)
         self.pool.mkdir(parents=True, exist_ok=True)
@@ -222,7 +237,7 @@ class StubBackend(Backend):
         shutil.copytree(src_dir, self._dir(vm_id) / "in")
 
     def attach_output(self, vm_id):
-        (self._dir(vm_id) / "out").mkdir()
+        (self._dir(vm_id) / "out").mkdir()   # serial channel: the guest still needs a scratch dir
 
     def start(self, vm_id):
         d = self._dir(vm_id)
@@ -312,12 +327,52 @@ class Collector:
     """Reads the hostile serial stream, writes a capped, sanitised log, and keeps draining
     after the cap so the guest never blocks on a full pipe."""
 
-    def __init__(self, stream, log_path: Path, cap: int):
-        self.stream, self.log_path, self.cap = stream, log_path, cap
+    def __init__(self, stream, log_path: Path, cap: int, nonce: str = ""):
+        self.stream, self.log_path, self.cap, self.nonce = stream, log_path, cap, nonce
         self.raw_bytes = 0
         self.written = 0
         self.truncated = False
+        # T-5098: framed result block. Only a block carrying this run's nonce is kept; the last
+        # complete one wins. frame_error names why no block was taken, for the run's reason.
+        self.frame = None            # (sha256, bytes, base64 text)
+        self.frame_error = "no result block on the serial line"
+        self._cur = None             # [sha, nbytes, [lines], size]
         self.thread = threading.Thread(target=self._run, daemon=True)
+
+    def _frame_line(self, fh, line: str) -> bool:
+        """True when the line belongs to the framed block (and is kept out of the log)."""
+        if not self.nonce:
+            return False
+        if self._cur is not None:
+            m = _FRAME_END.fullmatch(line)
+            if m:
+                sha, nbytes, lines, _size = self._cur
+                self._cur = None
+                if m.group(1) != self.nonce:
+                    self.frame_error = "result block end does not carry this run's nonce"
+                else:
+                    self.frame = (sha, nbytes, "".join(lines))
+                    self.frame_error = ""
+                self._emit(fh, "[testhost: result block received]\n")
+                return True
+            if _B64_LINE.fullmatch(line):
+                self._cur[2].append(line)
+                self._cur[3] += len(line)
+                if self._cur[3] > FRAME_MAX_B64:
+                    self._cur = None
+                    self.frame_error = f"result block larger than {FRAME_MAX_B64} bytes"
+                return True
+            self._cur = None             # anything else inside the block breaks it
+            self.frame_error = "result block interrupted by other output"
+            return False
+        m = _FRAME_BEGIN.fullmatch(line)
+        if m:
+            if m.group(1) != self.nonce:
+                self.frame_error = "result block does not carry this run's nonce (ignored)"
+                return False
+            self._cur = [m.group(2), int(m.group(3)), [], 0]
+            return True
+        return False
 
     def start(self):
         self.thread.start()
@@ -356,9 +411,16 @@ class Collector:
                         line, buf = buf.split(b"\n", 1)
                     else:
                         line, buf = buf[:LINE_MAX], buf[LINE_MAX:]
-                    self._emit(fh, sanitize_line(line) + "\n")
+                    clean = sanitize_line(line.rstrip(b"\r"))
+                    if not self._frame_line(fh, clean):
+                        self._emit(fh, clean + "\n")
             if buf:
-                self._emit(fh, sanitize_line(buf) + "\n")
+                clean = sanitize_line(buf.rstrip(b"\r"))
+                if not self._frame_line(fh, clean):
+                    self._emit(fh, clean + "\n")
+            if self._cur is not None:
+                self._cur = None
+                self.frame_error = "result block truncated (no end marker)"
 
 
 # ── result validation ────────────────────────────────────────────────────────
@@ -414,6 +476,40 @@ def validate_result(reader: Path):
                        "started": doc["started"], "finished": doc["finished"]}
 
 
+def decode_frame(frame) -> Path:
+    """T-5098: (sha256, bytes, base64) from the Collector -> a fresh reader dir holding
+    result.json and checks.log, for validate_result / copy_checks_log. Raises TesthostError on
+    any mismatch; the caller turns that into infra-error."""
+    import base64, gzip, hashlib, zlib
+    sha, nbytes, text = frame
+    if len(text) != nbytes:
+        raise TesthostError(f"result block has {len(text)} bytes, its header says {nbytes}")
+    if hashlib.sha256(text.encode("ascii")).hexdigest() != sha:
+        raise TesthostError("result block sha256 does not match")
+    try:
+        packed = base64.b64decode(text, validate=True)
+    except ValueError:
+        raise TesthostError("result block is not valid base64")
+    d = zlib.decompressobj(wbits=31)
+    try:
+        raw = d.decompress(packed, FRAME_MAX_JSON)
+    except zlib.error:
+        raise TesthostError("result block is not valid gzip")
+    if d.unconsumed_tail or len(raw) >= FRAME_MAX_JSON:
+        raise TesthostError(f"result block expands beyond {FRAME_MAX_JSON} bytes; refused")
+    try:
+        doc = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError):
+        raise TesthostError("result block is not valid JSON")
+    if (not isinstance(doc, dict) or set(doc) != {"result", "checks_log"}
+            or not isinstance(doc["result"], str) or not isinstance(doc["checks_log"], str)):
+        raise TesthostError("result block does not match the schema")
+    reader = Path(tempfile.mkdtemp(prefix="fw-testhost-reader-"))
+    (reader / "result.json").write_bytes(doc["result"].encode("utf-8")[:RESULT_MAX_BYTES + 1])
+    (reader / "checks.log").write_bytes(doc["checks_log"].encode("utf-8")[:CHECKS_LOG_MAX_BYTES])
+    return reader
+
+
 def copy_checks_log(reader: Path, dest: Path):
     f = reader / "checks.log"
     try:
@@ -450,15 +546,17 @@ def run(pr=None, commit=None, base="origin/bleeding-edge", timeout=None, backend
     input_dir = Path(tempfile.mkdtemp(prefix="fw-testhost-input-"))
     started, t0 = _now(), time.monotonic()
     state, reason, result, collector, vm_id, boot_s = None, "", None, None, None, None
+    nonce = secrets.token_hex(16)
     try:
         meta = make_input(head, base, input_dir)
+        (input_dir / "nonce").write_text(nonce + "\n")
         backend = backend or get_backend(backend_name or config("TESTHOST_BACKEND"))
         vm_id = backend.clone()
         backend.attach_input(vm_id, input_dir)
         backend.attach_output(vm_id)
         backend.start(vm_id)
         boot_s = round(time.monotonic() - t0, 3)
-        collector = Collector(backend.serial(vm_id), run_dir / "serial.log", cap)
+        collector = Collector(backend.serial(vm_id), run_dir / "serial.log", cap, nonce=nonce)
         collector.start()
         if on_started:
             on_started(backend, vm_id)
@@ -471,7 +569,12 @@ def run(pr=None, commit=None, base="origin/bleeding-edge", timeout=None, backend
             time.sleep(0.2)
         collector.join(timeout=5)
         if state is None:
-            reader = backend.read_output(vm_id)
+            if getattr(backend, "result_channel", "disk") == "serial":
+                if collector.frame is None:
+                    raise TesthostError(collector.frame_error)
+                reader = decode_frame(collector.frame)
+            else:
+                reader = backend.read_output(vm_id)
             try:
                 state, reason, result = validate_result(reader)
                 copy_checks_log(reader, run_dir / "checks.log")

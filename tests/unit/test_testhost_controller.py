@@ -211,7 +211,8 @@ def test_leftover_vm_in_pool_is_infra_error(env):
 
 
 def test_proxmox_backend_refuses_until_configured(env):
-    with pytest.raises(testhost.TesthostError, match="phase 4.*Q-3"):
+    # T-5098: phase 4 exists now; with no TESTHOST_PVE_* configuration it still refuses.
+    with pytest.raises(testhost.TesthostError, match="not configured: missing TESTHOST_PVE_URL"):
         testhost.get_backend("proxmox")
 
 

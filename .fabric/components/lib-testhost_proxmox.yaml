@@ -1,0 +1,21 @@
+id: lib/testhost_proxmox.py
+name: testhost_proxmox
+type: script
+subsystem: framework-core
+location: lib/testhost_proxmox.py
+tags: []
+
+purpose: "Proxmox API backend for `fw testhost` (T-5098; design: docs/reports/T-5009-isolated-test-host- design.md, section 8b, \"design A\")."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-12
+created_by: unknown
