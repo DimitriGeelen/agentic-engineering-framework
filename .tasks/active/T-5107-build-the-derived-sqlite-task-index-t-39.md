@@ -1,8 +1,14 @@
 ---
 id: T-5107
-name: "Build the derived SQLite task index (T-3934 GO 2026-10-08, never filed) + a threshold that advises switching it on"
+name: "Build the derived SQLite task index (T-3934 GO 2026-10-08, never filed) + a
+  threshold that advises switching it on"
 description: >
-  T-3934 inception: operator GO 2026-10-08 on A (derived, gitignored, rebuildable SQLite index for tasks, file fallback, slowest Watchtower pages first). No build task was ever filed. 1409 (msg 4e2d23f9) needs it (3,961 active tasks, 206 arcs, pages 6-8 s) and their operator proposes a trigger: the framework advises switching on when tasks/arcs, files under Watchtower prefixes, page time or index build time pass a bound.
+  T-3934 inception: operator GO 2026-10-08 on A (derived, gitignored, rebuildable
+  SQLite index for tasks, file fallback, slowest Watchtower pages first). No build
+  task was ever filed. 1409 (msg 4e2d23f9) needs it (3,961 active tasks, 206 arcs,
+  pages 6-8 s) and their operator proposes a trigger: the framework advises switching
+  on when tasks/arcs, files under Watchtower prefixes, page time or index build time
+  pass a bound.
 
 status: captured
 workflow_type: build
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T22:42:07Z
-last_update: 2026-11-12T22:42:07Z
-date_finished: null
+last_update: '2026-11-12T22:45:30Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-12T22:45:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5107: Build the derived SQLite task index (T-3934 GO 2026-10-08, never filed) + a threshold that advises switching it on

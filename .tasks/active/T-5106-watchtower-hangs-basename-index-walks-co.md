@@ -1,8 +1,13 @@
 ---
 id: T-5106
-name: "Watchtower hangs: basename index walks .context/working/ without bounds (1409: 2.58M files)"
+name: "Watchtower hangs: basename index walks .context/working/ without bounds (1409:
+  2.58M files)"
 description: >
-  1409 msg 4e2d23f9 (2026-11-12): after a restart Watchtower did not answer / in 90 s at ~70% CPU for 13 min; py-spy shows web/shared.py _build_basename_index os.walk over VIEWABLE_DIR_PREFIXES, which include .context/working/ (2.58M files there); all request threads wait on _INDEX_LOCK. Bug: an unbounded working dir freezes every page.
+  1409 msg 4e2d23f9 (2026-11-12): after a restart Watchtower did not answer / in 90
+  s at ~70% CPU for 13 min; py-spy shows web/shared.py _build_basename_index os.walk
+  over VIEWABLE_DIR_PREFIXES, which include .context/working/ (2.58M files there);
+  all request threads wait on _INDEX_LOCK. Bug: an unbounded working dir freezes every
+  page.
 
 status: captured
 workflow_type: build
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T22:42:06Z
-last_update: 2026-11-12T22:42:33Z
-date_finished: null
+last_update: '2026-11-12T22:45:30Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-12T22:45:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5106: Watchtower hangs: basename index walks .context/working/ without bounds (1409: 2.58M files)
