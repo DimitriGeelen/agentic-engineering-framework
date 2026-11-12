@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5096: fw issues comment refuses a stage already posted for a different task on the same issue
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-12T10:22:46Z
+# ============================================================================
+
+task_id: T-5096
+task_name: "fw issues comment refuses a stage already posted for a different task on the same issue"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-12T10:11:26Z
+completed: 2026-11-12T10:22:12Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-12T11:14:00+01:00
+last_commit: 2026-11-12T11:19:32+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  per-fix issue stages (in-progress, fixed-on-bleeding-edge) post once per task, so a follow-up fix can be announced. vendor sync. the on-issue marker fallback is per task too (a marked comment naming only other tasks does not count; one naming none still does)
+
+# Key outcomes
+outcomes:
+  - 'A per-fix stage posts for task T-B when it was posted for T-A only (test, in-progress stage; fixed-on-bleeding-edge uses the same check after its GitHub commit check)'
+  - 'The same command for T-A again still says "already posted" (test); without `--task` the old issue-wide check holds'
+  - '`fw issues lifecycle` uses the same per-task check (`_stage_posted`, tested directly; proven live by T-5095 posting on #98)'
+  - 'Other stages (accepted, available-for-testing, released, closed) keep the issue-wide check'
+  - 'The fallback that reads markers back from GitHub is per task as well; a marked comment naming no task still suppresses (test, and t4108 security test unchanged)'
+  - 'The fixed stage for T-5095 is posted on #98 (comment 6820976959)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'the on-issue marker fallback is per task too (a marked comment naming only other tasks does not count; one naming none still does)'
+    source: git-mined
+  - description: 'per-fix issue stages (in-progress, fixed-on-bleeding-edge) post once per task, so a follow-up fix can be announced'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/issues.py'
+  - '.tasks/active/T-5096-fw-issues-comment-refuses-a-stage-alread.md'
+  - 'lib/issues.py'
+  - 'tests/unit/test_t5096_stage_per_task.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-12T11:14:00'
+    action: 'T-5096: per-fix issue stages (in-progress, fixed-on-bleeding-edge) post once per task, so a follow-up fix can be announced'
+  - time: '2026-11-12T11:14:09'
+    action: 'T-5096: vendor sync'
+  - time: '2026-11-12T11:19:25'
+    action: 'T-5096: the on-issue marker fallback is per task too (a marked comment naming only other tasks does not count; one naming none still does)'
+  - time: '2026-11-12T11:19:32'
+    action: 'T-5096: vendor sync'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 10
+  commits: 5
+  files_changed: 7
+  lines_added: 627
+  lines_removed: 24
+  footprint_refreshed_at: '2026-11-12T10:22:58Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5096-fw-issues-comment-refuses-a-stage-alread.md
+generated_by: context-agent-hybrid
