@@ -1931,3 +1931,13 @@ Asked one item at a time, with the agent's recommendation; the operator's answer
   R-7 is testable now.
 - **14.11 (10.35 scan bound):** answered above: within 5 minutes, alert after 15 minutes without a run.
 - **14.12 (6.0.b priorities):** **accepted as proposed** (P1 needed for the pilot, P2 before opening wider, P3 later); the planner (step 8) flags any P1 not needed for the pilot, and the operator may move items later.
+- **14.13 (10.26 provisional bounds):** **confirmed**: one screen = at most 40 lines of at most 100 characters; a rewrite contains no run of 8 or more consecutive words of the report.
+- **14.14 (other open questions):** settled already: **10.3** and **10.4** (Mehdi's answers accepted 2026-11-11:
+  documentation-only PRs may skip the issue for form-only changes; branch names are guidance), **10.16** (a second
+  fix on the same issue can now be announced: T-5096, 2026-11-12), **10.27** (revocation within one hour, 14.6).
+  **Passed on as open** to the next roles: 10.1, 10.6, 10.10 to 10.15, 10.17 to 10.25, 10.28, 10.30, 10.34; each
+  role answers what the design settles and brings the operator only real choices, one at a time. 10.29, 10.33,
+  10.36, 10.37 stay with the architect and threat modeler, as listed.
+
+**Result:** section 14 is signed off by the operator on 2026-11-12, with one item reopened (14.3, to the threat
+modeler as a prevention requirement). Step 1 (T-5021) is complete; step 2 (threat modeler, T-5022) may start.
