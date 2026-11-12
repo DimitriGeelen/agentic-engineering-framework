@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-11-02T12:50:24Z
-last_update: 2026-11-12T19:02:07Z
+last_update: 2026-11-12T19:05:18Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -112,9 +112,9 @@ Research artifact: `docs/reports/T-5016-focus-anchor.md`.
   disposition: answered
   rationale: operator 2026-11-12, "Anchor on top, others follow it": nothing removed; the anchor is the one place for the goal and open asks; the handover's first section and Suggested First Action derive from it; arc and task focus are checked against it (serves the goal); the T-4774 arc-drift warning folds into that one check. Mechanism map in docs/reports/T-5016-focus-anchor.md
 - **IW-5: Shape: one goal, or a short ranked list; with a parked list and a never list?**
-  confidence: 0
-  disposition: deferred
-  rationale: dialogue
+  confidence: 3
+  disposition: answered
+  rationale: operator 2026-11-12, "Up to three ranked goals + the rest": goals[1..3] in priority order (operator's words, date) with a check question; asks[] (date, verbatim words, agent's restatement, where said, status open/done/dropped, serving task); parked[] (operator's reason); never[]; history[]; counts and states only as references to a dated measurement
 
 ## Exploration Plan
 
@@ -176,17 +176,18 @@ Research artifact: `docs/reports/T-5016-focus-anchor.md`.
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO
 
 **Rationale:**
 
-Pickup from 010-termlink (msg af269072, 2026-11-02, their operator): incorporate 1409-sprind's focus protocol so the operator no longer has to stop agents drifting from their core arc. The protocol text has not arrived yet (010 asked 1409 and will forward it); there is no evidence to judge until it is read against AEF's focus, arc and horizon mechanisms.
+Build an operator-owned anchor in AEF, in the shape the operator chose in five answers (IW-1 to IW-5) and on 1409's proven design (their T-1954, 28 versions in daily use), with their three failure lessons built in from the start. The problem is real and measured on this very topic: the anchor request itself sat captured for a month in two duplicate inceptions, invisible in the operator's pending list, until the operator asked whether it had been lost. 1409 reports the anchor stopped drift into parked work; its weaknesses (stale content, a warning everyone ignores, equality instead of "serves the goal") are design choices this build avoids. Scope is bounded: one file, show/check verbs, session-start and handover integration, one question to the operator on a mismatch; no gate.
 
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- Operator answers, 2026-11-12 (dialogue log in `docs/reports/T-5016-focus-anchor.md`): one anchor against drift AND lost asks; agent records asks verbatim, operator owns goals and closes asks; no blocking, ask once and show it where the operator looks; anchor on top, handover and focus follow it; up to three ranked goals, plus asks, parked, never, history.
+- 1409's design and lessons, from 1409 directly (msg bf0d0af4): schema, `show`/`check`, SessionStart and Stop hooks; worked against drift; failed on stale counts written as text, on a shared-focus warning firing constantly, and on equality checks against legitimate side tasks.
+- Lost-ask evidence: T-4111 (2026-10-12) and T-5016 (2026-11-02) both captured with placeholder DEFER and absent from `fw operator pending`; 1409 reports the same loss of operator asks across sessions.
+- Build slices (after GO): (1) the anchor file, schema and `fw anchor show|check`, with history; (2) session-start and handover integration (anchor first; Suggested First Action derived; old asks and an unconfirmed anchor on top; `fw operator pending` lists open asks); (3) "serves the goal" link on tasks and the one-question flow on a mismatch, per session (with T-5103); (4) the agent records asks verbatim when the operator gives them. T-4111 closes as a duplicate of this inception.
 
 ## Decisions
 

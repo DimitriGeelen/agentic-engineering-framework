@@ -97,3 +97,16 @@ None records the operator's goal in the operator's own words.
   open asks; the handover's first section and Suggested First Action derive from it; arc focus and task focus are
   checked against it ("serves the goal"); the T-4774 arc-drift warning becomes part of that one check.
 - (An answer meant for another agent arrived in between and was set aside at the operator's word; not recorded.)
+
+### 2026-11-12 — IW-5 shape
+- Operator: **up to three ranked goals, plus the rest.** goals[1..3] in priority order (operator's words, date) with
+  a check question; asks[] (date, verbatim words, the agent's restatement, where said, status open/done/dropped,
+  serving task); parked[] (operator's reason); never[]; history[]. Counts and states only as references to a dated
+  measurement (1409 lesson a).
+
+## Recommendation (agent)
+
+**GO.** Five operator answers fix the shape; 1409's design is the base and its three failures are designed out.
+Build slices: (1) anchor file + `fw anchor show|check` + history; (2) session start and handover lead with it, open
+asks in `fw operator pending`; (3) per-task "serves goal/ask" link and one question on a mismatch, per session
+(with T-5103); (4) the agent records asks verbatim as they are given. T-4111 closes as a duplicate.
