@@ -1910,3 +1910,14 @@ Asked one item at a time, with the agent's recommendation; the operator's answer
   installs in between receive them.
 - **14.5 (11.R.6 false stamp):** **confirmed**: closed for state changes (only a sidecar-confirmed verdict changes
   state); a false stamp can remain in the public record, labelled unconfirmed.
+- **14.6 (11.R.7 classic token not scoped to the repo):** **accepted, with a revocation rule**: peer tokens carry only
+  the issues/comments right; a daily check of the secondary account's activity on other repositories; a token is
+  revoked within one hour of suspected misuse or of a peer leaving the trusted list. **This also answers 10.27**
+  (revocation limit: one hour).
+- **14.7 (11.R.8 operator's login on the AEF host):** **accepted until the organisation move** (T-5030): the host stays
+  private, no PR code ever runs on it (the isolated test host does that), and the review check moves to a separate
+  identity when the architect decides 10.33.
+- **14.8 (11.R.9 self-confirmed false verdict):** **accepted, needing two peers**: a fix counts as field-confirmed for a
+  release only with WORKS (with evidence) from two different peers, or one peer plus the operator's own check; one
+  peer's confirmed WORKS alone may close the issue but does not count for the release. (Note for the planner: this
+  tightens the standing release ruling T-4146 for outside-PR fixes only, unless the operator extends it.)
