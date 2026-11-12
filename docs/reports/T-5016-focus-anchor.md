@@ -40,3 +40,16 @@ None records the operator's goal in the operator's own words.
   that somewhere on a road map still? When this got implemented, I got a feeling this got lost."
 - Agent found T-4111 and T-5016, both captured and unscheduled; proposed folding them into one inception.
 - Operator: "yes, start the focus anchor inception".
+
+### 2026-11-12 — IW-1 purpose
+- Asked: prevent drift within a session (a), lost asks across sessions (b), or both?
+- Operator: **both, one anchor.** One operator-owned file: the current goal in the operator's words (against drift)
+  plus the operator's open asks and parked items (against loss); shown at every session start and in the handover.
+
+### 2026-11-12 — IW-2 who writes
+- Operator: **agent records, operator owns.** The agent adds the operator's asks verbatim, with date and where they
+  were said, the moment they are said; the goal changes only on the operator's explicit words; every change is shown
+  and kept in history; the agent never removes anything; an ask closes only when the operator says done or dropped.
+- Operator, same exchange: "ask 1409 for the design of the focus anchor ... they did extensive work". So far AEF
+  had only 010's relayed summary. Asked 1409 directly for the design itself, its history and what failed in use;
+  IW-3 to IW-5 wait for that answer so AEF builds on their work.

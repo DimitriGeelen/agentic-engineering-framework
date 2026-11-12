@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-11-02T12:50:24Z
-last_update: '2026-11-12T18:15:39Z'
+last_update: 2026-11-12T18:25:11Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,13 +96,13 @@ Research artifact: `docs/reports/T-5016-focus-anchor.md`.
 -->
 
 - **IW-1: Which failure should the anchor prevent: agents drifting into side work within a session, or operator goals getting lost across sessions (as this one did), or both?**
-  confidence: 0
-  disposition: deferred
-  rationale: first dialogue question, 2026-11-12
+  confidence: 3
+  disposition: answered
+  rationale: operator 2026-11-12, "Both, one anchor": one operator-owned file holds the current goal (against drift) and the operator's open asks and parked items (against loss); shown at every session start and in the handover
 - **IW-2: Who may set or change the anchor: the operator only (sovereignty field), or the agent with the operator's confirmation?**
-  confidence: 1
-  disposition: deferred
-  rationale: 1409's design says operator only
+  confidence: 3
+  disposition: answered
+  rationale: operator 2026-11-12, "Agent records, you own": the agent adds the operator's asks verbatim (date, where said) when they are said; the goal changes only on the operator's explicit words; every change shown and kept in history; nothing removed by the agent, an ask closes only when the operator says done or dropped
 - **IW-3: What happens on a mismatch (focused task outside the anchor, proposal that does not serve it): warn, block, or ask the operator?**
   confidence: 0
   disposition: deferred
