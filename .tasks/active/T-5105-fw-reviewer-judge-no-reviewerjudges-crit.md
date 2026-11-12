@@ -7,10 +7,10 @@ description: >
   REVIEWER_JUDGES, and a panel run dispatched 1 seat that never registered (0 ledger
   rows). Reproduce first.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T19:37:50Z
-last_update: '2026-11-12T19:46:21Z'
+last_update: 2026-11-12T23:51:35Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,16 +91,19 @@ bvp_scores_proposed:
 
 **Problem / hypothesis:** (1) unknown; reproduce with that exact criterion text against `lib/delegation.py`. (2) Likely the rung-5 panel: CLAUDE.md says no rung-5 panel can be assembled yet (only some worker kinds launch), so the judge may register the run and then stop silently instead of refusing with a reason. A run registered with no seats is a silent failure either way.
 
-**Goal:** <what we are trying to achieve>
+**Reproduced here, 2026-11-13 (point 2):** `fw reviewer judge T-5106` dispatched one seat; `fw termlink dispatch` timed out after 120 s and left no ledger row, the same symptom. `fw termlink status` takes over 6 m 40 s. Trace: `_all_wdirs` in `agents/termlink/termlink.sh` de-duplicates worker dirs by appending every name to one string `seen` and `case`-matching the whole string for each dir (quadratic; ~6,800 dirs under `/tmp/tl-dispatch` and `.context/dispatch`, ~270 KB string), plus two `basename` subprocesses per dir (~13,600 forks). A bare scan of the same dirs takes 0.17 s. Every verb that lists workers (dispatch's worker-cap check, status, cleanup) pays it.
 
-**Expected outcome:** <what will be different when this is done>
+**Goal:** listing worker dirs is linear and fork-free, so a dispatch starts in seconds however many old worker dirs exist; and the classification question (point 1) is answered.
+
+**Expected outcome:** `_all_wdirs` uses an associative array and parameter expansion; `fw termlink status` and a judge dispatch finish in seconds here; T-5106's review seat registers.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `_all_wdirs` de-duplicates with an associative array and no subprocess per dir; output (order, shadowing of a name in an earlier root) unchanged (test)
+- [ ] With ~7,000 worker dirs, `_all_wdirs` finishes in under 2 s (test with a generated tree)
+- [ ] `fw termlink status` finishes here in under 60 s (measured), and `fw reviewer judge T-5106` registers its seat
+- [ ] Point 1 (055's taste criterion classed no REVIEWER_JUDGES) is reproduced with their exact text and either fixed here or filed as its own task
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -383,3 +386,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5105-fw-reviewer-judge-no-reviewerjudges-crit.md
 - **Context:** Initial task creation
+
+### 2026-11-12T23:33:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
