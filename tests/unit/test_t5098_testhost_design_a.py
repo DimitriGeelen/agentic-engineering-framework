@@ -179,7 +179,7 @@ class FakeApi:
                 raise testhost.TesthostError(f"HTTP 500 VM {m.group(1)} does not exist")
             return dict(vm["cfg"]) if m.group(2) == "config" else {"status": vm["status"]}
         if path.startswith("/pools/"):
-            return {"members": [{"type": "qemu", "vmid": v} for v in [self.template, *self.vms]]}
+            return {"members": [{"type": "qemu", "vmid": v} for v in self.vms]}
         if path.endswith("/content"):
             return [{"volid": v} for v in self.isos]
         raise AssertionError(path)
@@ -231,7 +231,7 @@ def cfg(tmp_path, **over):
     values = {"TESTHOST_PVE_URL": "https://pve.invalid:8006", "TESTHOST_PVE_NODE": "pve",
               "TESTHOST_PVE_POOL": "aef-pr-test", "TESTHOST_PVE_TEMPLATE": "9000",
               "TESTHOST_PVE_ISO_STORAGE": "isos", "TESTHOST_PVE_CA": str(ca),
-              "TESTHOST_PVE_TOKEN_FILE": ""}
+              "TESTHOST_PVE_TOKEN_FILE": "", "TESTHOST_PVE_VMID_RANGE": "200-205"}
     values.update(over)
     return lambda k: values.get(k, "")
 
@@ -314,8 +314,7 @@ def test_full_run_design_a_with_the_real_guest_script(env, tmp_path):
     holder = {}
 
     def opener(vmid, stop):
-        out = tmp_path / f"scratch-{vmid}"
-        out.mkdir()
+        out = Path(tempfile.mkdtemp(prefix=f"scratch-{vmid}-", dir=tmp_path))  # VMIDs are reused
         p = subprocess.Popen(["bash", str(holder["staged"]["dir"] / "guest-run.sh"),
                               str(holder["staged"]["dir"]), str(out)], cwd=str(tmp_path),
                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -333,3 +332,22 @@ def test_full_run_design_a_with_the_real_guest_script(env, tmp_path):
     sha2 = change(env, "bad", "false")
     row2 = testhost.run(commit=sha2, base="main", backend=b, timeout=300)
     assert row2["state"] == "failed", row2["reason"]
+
+
+def test_clones_stay_inside_the_vmid_block(tmp_path):
+    api = FakeApi()
+    b, _ = backend(tmp_path, api)
+    ids = [b.clone() for _ in range(6)]
+    assert ids == ["200", "201", "202", "203", "204", "205"]
+    with pytest.raises(testhost.TesthostError, match="no free VMID"):
+        b.clone()
+    with pytest.raises(testhost.TesthostError, match="outside 200-205"):
+        b.destroy("106")
+
+
+def test_the_vmid_block_is_validated(tmp_path):
+    for bad in ("", "abc", "9509-9501", "100-300"):
+        with pytest.raises(testhost.TesthostError, match="VMID_RANGE"):
+            backend(tmp_path, FakeApi(), TESTHOST_PVE_VMID_RANGE=bad)
+    with pytest.raises(testhost.TesthostError, match="outside TESTHOST_PVE_VMID_RANGE"):
+        backend(tmp_path, FakeApi(), TESTHOST_PVE_VMID_RANGE="8990-9010")

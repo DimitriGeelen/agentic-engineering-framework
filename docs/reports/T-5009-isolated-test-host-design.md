@@ -208,6 +208,24 @@ VMID, ISO storage, disk storage, CA file path), the node's CA certificate in `.c
 and the token in `.context/secrets/testhost-pve-token` (0600). The token secret is created on the node and written
 straight into that file by the runme; it is never printed, logged or sent over the sidecar.
 
+**4. ring20's review, 2026-11-12 (node on PVE 9.2.3; adopted):**
+
+- Privileges are enough for every step. **Changed:** ISO uploads go to a **dedicated directory storage
+  `aef-pr-iso`** (content `iso`, on the node's local disk) and `AEFPRIso` is granted only there; on `local` the
+  token could have uploaded and deleted every ISO and container template on the node.
+- Clone disks on `local-usb` (lvm-thin; linked clones need the template on the same storage). Not the NAS shares.
+- **VMID block:** template `9500`, clones `9501-9509`. The controller takes clone IDs only from
+  `TESTHOST_PVE_VMID_RANGE` and refuses any other ID (T-5099, tested).
+- **Template build: ring20, as its own task under its operator's approval, never with a NIC:** Debian 12 genericcloud
+  qcow2 (sha512 against Debian's SHA512SUMS), packages and the boot files added offline with `virt-customize` on the
+  host, disk imported to `local-usb`, `serial0 socket`, `vga serial0`, no net, no agent, `qm template 9500`. No
+  cloud-init, no snippets. Monthly rebuild is the same runme.
+- **No HA** for test VMs (the node's HA LRM has been dead since 2025-09). Firewall irrelevant without a NIC. RAM: an
+  8 GB run leaves about 4 GB for the node's other guests; one run at a time is right.
+- **Token:** created on the node by a runme from ring20-manager (which reaches the node as root over ssh), stored in
+  Infisical following the estate pattern, printed only as a fingerprint; this host's 0600 file is written from the
+  Infisical copy, never printed. Which of the two this host reads is the operator's choice.
+
 ## 9 Dialogue log
 
 - 2026-11-03: operator chose "design first" for T-5009 (options were: design first / name a host now / park).

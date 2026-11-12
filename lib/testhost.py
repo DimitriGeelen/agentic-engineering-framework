@@ -48,7 +48,8 @@ DEFAULTS = {"TESTHOST_BACKEND": "stub", "TESTHOST_TIMEOUT": "1800",
             # T-5098: the Proxmox backend's keys; empty = not configured (it refuses).
             "TESTHOST_PVE_URL": "", "TESTHOST_PVE_NODE": "", "TESTHOST_PVE_POOL": "",
             "TESTHOST_PVE_TEMPLATE": "", "TESTHOST_PVE_ISO_STORAGE": "", "TESTHOST_PVE_CA": "",
-            "TESTHOST_PVE_TOKEN_FILE": "", "TESTHOST_PVE_DISK_STORAGE": ""}
+            "TESTHOST_PVE_TOKEN_FILE": "", "TESTHOST_PVE_DISK_STORAGE": "",
+            "TESTHOST_PVE_VMID_RANGE": ""}
 RESULT_MAX_BYTES = 64 * 1024
 CHECKS_LOG_MAX_BYTES = 1024 * 1024
 # T-5098 (design A): the framed result block on the serial line. Base64 is capped before
