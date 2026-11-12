@@ -298,3 +298,4 @@
 {"issue": 111, "stage": "available-for-testing", "tasks": ["T-5091"], "version": "v1.8.16-be.48", "comment": "https://github.com/DimitriGeelen/agentic-engineering-framework/issues/111#issuecomment-6823443076", "ts": "2026-11-12T12:20:20Z"}
 {"issue": 112, "stage": "available-for-testing", "tasks": ["T-5092"], "version": "v1.8.16-be.48", "comment": "https://github.com/DimitriGeelen/agentic-engineering-framework/issues/112#issuecomment-6823444985", "ts": "2026-11-12T12:20:25Z"}
 {"issue": 113, "stage": "available-for-testing", "tasks": ["T-5093"], "version": "v1.8.16-be.48", "comment": "https://github.com/DimitriGeelen/agentic-engineering-framework/issues/113#issuecomment-6823447111", "ts": "2026-11-12T12:20:31Z"}
+{"issue": 106, "stage": "released", "tasks": ["T-4234"], "version": "v1.8.15", "due": "2026-11-26", "comment": "https://github.com/DimitriGeelen/agentic-engineering-framework/issues/106#issuecomment-6824113761", "ts": "2026-11-12T12:51:54Z"}
