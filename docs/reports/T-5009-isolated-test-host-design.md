@@ -108,12 +108,13 @@ PR waits for this anyway, and a linked-clone VM starts in seconds.
 - **Q-3 Which hypervisor node, and does it host anything sensitive?** Operator's knowledge; recommend a node with no
   production services, or the least sensitive one. **2026-11-03: deferred** (operator: "proceed as suggested") —
   AEF builds the controller against a stub hypervisor first (phase 3); the node is chosen before phase 4.
-  **Answered 2026-11-12 (interim): node1**, the rented VPS ring20 runs, off the Ring20 estate, network isolation in
-  place since 2026-11-10. It is used until a dedicated host works (proxmox3, retired, did not come up today).
-  **Exception to Q-1, recorded:** node1 gives containers, not VMs, and other projects' jobs share it; how a slot is
-  separated from them is asked of ring20 before the first run, and the R-53 probe PR is run there first. Rejected:
-  the 'proxmox' node (CI registry push credentials on CT 400, 4 CPU threads) and this AEF host (the operator's
-  GitHub login, every project, the review signing key and skill secrets; ruled out by R-53).
+  **Answered 2026-11-12 (interim, final): a no-NIC VM on the 'proxmox' node** until proxmox3 works (proxmox3 did
+  not come up today). 2 vCPU (the node has 4 threads), 8 GB, 40 GB, 60 min, one run at a time, destroyed after each
+  run; Q-2 B (disk in/out, live serial log) unchanged. **Accepted residual risk:** a QEMU/KVM escape on that node
+  could reach CT 400 (CI registry push credentials) and CT 401 (garage-1 object data). Rejected: node1 (a job is a
+  sandboxed process on a kernel shared with node1's Claude token, hub secrets and other projects' jobs; no serial
+  or disk channel; ~10 GB work space; ring20: "the weakest option for untrusted PR code") and this AEF host (the
+  operator's GitHub login, every project, the review signing key and skill secrets; ruled out by R-53).
 - **Q-4 Limits per run?** Recommend 2 vCPU, 4 GB RAM, 20 GB disk, 30 minutes wall clock, one run at a time.
   **Answered 2026-11-12: 4 vCPU, 8 GB RAM, 40 GB disk, 60 minutes wall clock, one run at a time.**
 - **Q-5 Template refresh?** Recommend monthly with the stable release, plus on demand when a PR names a missing
@@ -162,3 +163,8 @@ with this amendment: "Network: none" stands, and the out-channel is disk + seria
   proposed 'proxmox' with caveats (4 CPU threads; CT 400 holds CI registry push credentials; USB disk), proxmox3 as
   the cleanest but retired. Operator: proxmox3 "doesn't work now directly"; suggested this host or node1 "for this
   run, until we have something better". Agent advised strongly against this host (R-53). Operator: **node1**.
+- 2026-11-12, Q-3 reopened: ring20 answered how node1 isolates a job (process sandbox on a shared kernel, with
+  node1's Claude token, hub secrets and other projects' jobs on the same kernel; 40 GB does not fit) and called it
+  the weakest option for untrusted code. Operator recalled Q-2 B (no NIC, serial log), which needs a VM. Operator:
+  **no-NIC VM on 'proxmox'**, accepting the CT 400 / CT 401 escape risk; "or ask around" for a better place, asked
+  of ring20 the same day.
