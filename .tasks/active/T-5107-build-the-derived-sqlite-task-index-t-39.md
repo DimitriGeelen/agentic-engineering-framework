@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T22:42:07Z
-last_update: '2026-11-12T22:46:12Z'
+last_update: 2026-11-12T22:48:37Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,7 +90,7 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Inception T-3934 got the operator's GO on 2026-10-08 (option A: a derived, gitignored, rebuildable SQLite index for tasks, file fallback, slowest Watchtower pages first); no build task was filed, found 2026-11-12. 1409 (msgs 4e2d23f9, 9319924b) needs it: 3,961 active tasks, 206 arcs; their /arbeiter and /landkreis API pages took 6-8 s before the T-5106 index hang and up to 110 s under load. 1409 offers to be the pilot. Their operator proposes a trigger: the framework advises switching on when tasks/arcs, files under the Watchtower prefixes, page time or index build time pass a bound.
 
 **Problem / hypothesis:** <what we think is wrong and why>
 
