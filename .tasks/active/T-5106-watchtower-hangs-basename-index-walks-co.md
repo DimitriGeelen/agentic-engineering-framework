@@ -9,7 +9,7 @@ description: >
   all request threads wait on _INDEX_LOCK. Bug: an unbounded working dir freezes every
   page.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T22:42:06Z
-last_update: '2026-11-12T22:46:12Z'
+last_update: 2026-11-12T23:18:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,20 +89,30 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 1409-sprind (msg 4e2d23f9, 2026-11-12 23:25): after a restart their Watchtower did not answer `/` in 90 s, ~70% CPU for 13 minutes. py-spy: `web/shared.py` `_build_basename_index` was in `os.walk` over `VIEWABLE_DIR_PREFIXES`, which include `.context/working/`, holding 2.58 million files there (worker areas, scratch); every request thread waited on `_INDEX_LOCK`.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** two walks have no bound. `_build_basename_index` walks every viewable prefix to any depth, `.context/working/` included; `_exists_anywhere` (the "is this link dead" evidence) walks the whole project tree. Both scale with whatever a project keeps in its working directory, and both hold a lock that every page needs.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** an oversized or unbounded working directory can never freeze Watchtower.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `.context/working/` contributes only its top-level files to either walk; each walk has a file-count and time budget; on hitting it the walk stops, logs once and fails open (unresolved names stay plain text, nothing is marked dead on partial evidence).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `_build_basename_index` indexes only the top-level files of `.context/working/`, not its subfolders (test)
+- [ ] `_exists_anywhere` skips `.context/working/` subfolders too (test)
+- [ ] Both walks stop at a file-count budget or a time budget, mark the result truncated and log one warning; a truncated tree walk answers "exists" for an unknown name, so no link is marked dead on partial evidence (tests)
+- [ ] The existing basename-index tests (T-3736) and the link-resolution tests pass
+- [ ] Watchtower restarted and current
+
+### Human
+- [ ] [REVIEW] File links in rendered pages still resolve after the change
+  **Steps:**
+  1. Open http://192.168.10.107:3000/tasks/T-5106
+  2. Check that the reference to `web/shared.py` in the task text is a clickable link that opens the file
+  **Expected:** the link opens the file viewer; no reference is shown as a dead link
+  **If not:** note which reference stopped resolving
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,6 +298,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 python3 -m pytest tests/unit/test_t5106_bounded_index_walks.py tests/unit/test_t3736_basename_index_single_build.py -q > /tmp/.t5106v 2>&1 && grep -q passed /tmp/.t5106v
+bin/fw watchtower current
+bin/fw vendor self --check --task T-5106
 
 ## RCA
 
@@ -305,6 +318,13 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** 1409's Watchtower did not answer `/` for over 90 s after a restart, at ~70% CPU for 13 minutes; every request thread waited on `_INDEX_LOCK` (py-spy).
+
+**Root cause:** the basename index and the tree-name walk (link-resolution evidence) ran `os.walk` without any bound, over `.context/working/` (1409: 2.58 million files in worker areas and scratch) and, for the tree walk, over the whole project. Both run under locks every rendered page needs.
+
+**Why structurally allowed:** the index was sized for "~14.5K files, ~0.14s" (its own docstring), measured on AEF, whose working directory is small. Nothing bounded the walk or measured its time, and `.context/working/` was added to the viewable prefixes for its top-level state files without considering what consumers keep below it.
+
+**Prevention:** `tests/unit/test_t5106_bounded_index_walks.py` pins the top-level-only rule for `.context/working/`, both budgets, the single warning and the fail-open answer. A truncated walk logs once, so a project that outgrows the budget becomes visible instead of slow. T-5107 (derived SQLite index) is the structural answer for very large projects.
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -385,3 +405,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5106-watchtower-hangs-basename-index-walks-co.md
 - **Context:** Initial task creation
+
+### 2026-11-12T22:49:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
