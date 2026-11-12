@@ -5788,3 +5788,20 @@ concerns:
   blast_radius: every consumer whose budget gate reaches the auto-handover (T-3989), i.e. every long session; disk exhaustion takes down the host
   detection_gap: no size cap or rotation on any .context/working log, no free-disk check before writing, and no audit/doctor check for runaway files under .context/working
   what_remains: T-5061 (localise the loop; separate capture from background log; cap the file; doctor/audit check for oversized .context/working files). Close when no .context/working file can grow without bound and doctor names one that does.
+- id: G-131
+  type: gap
+  title: The project-boundary read check does not see files a sed script reads (`sed '1r /outside' f`)
+  description: 'Found while fixing GitHub #111 (T-5091), not caused by it. Pattern 4b (T-3768, lib/shell_write_scan.py
+    _read_words) judges a word as a path only when, after quote removal, it starts with `/`, `~`, or has a `..` part. A sed
+    script is one word that starts with an address or command (`1r /x`, `$r /x`, `R /x`, `w /x` with -n), so the file it
+    names is never judged. Verified on bleeding-edge 2026-11-12: `sed -n ''1r <outside>'' docs/a.md` passes the hook. The
+    write side (Pattern 5) may see `w` targets separately; not checked here. Same family as the documented Tier 0 /
+    boundary limit for interpreters (awk getline, python -c), but sed is not named in that list.'
+  severity: medium
+  status: open
+  detected_in: T-5091
+  observed: '2026-11-12'
+  reported_by: agent (while testing the T-5091 boundary change)
+  blast_radius: any session where an agent reads an outside file through a sed script; read side only
+  detection_gap: _read_words looks at word shape only; sed script commands that open files (r, R, w, W, e) are not parsed
+  what_remains: Parse sed scripts for r/R/w/W file arguments in the read scan (or name sed in the documented "not seen" list). Close when `sed '1r <outside>' f` is refused or the limit is documented where the gate's scope is stated.

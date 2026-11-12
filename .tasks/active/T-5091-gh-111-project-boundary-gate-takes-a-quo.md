@@ -9,7 +9,7 @@ description: >
   _tok_iter splits on | ; & etc. without regard to quoting, so a quoted regex alternation
   yields a fake /home/ argument.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ origin: {kind: "peer", source: "github#111"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T08:51:35Z
-last_update: '2026-11-12T09:01:23Z'
+last_update: 2026-11-12T11:05:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,20 +90,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Mehdi filed GitHub #111 (seen on 1.8.14, reproduced on 1.8.15). `grep -rE '/home/|192\.168\.' docs/`, a read-only search inside the project, is blocked: "Outside-path argument /home/|192\.168\. (not in read-side allowlist)". Reproduced here on bleeding-edge on 2026-11-12.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The issue names `_tok_iter` (Pattern 4). On bleeding-edge that pass sees the quote-blanked text and does not fire. The block comes from Pattern 4b (T-3768, `lib/shell_write_scan.py` `_read_words`): it reads the quoted pattern as one word, sees it start with `/home/`, and judges it as a path. A grep pattern is text; grep never opens it.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** The pattern argument of grep, egrep, fgrep and rg is not judged as a path. Every other word is judged as before, and nothing that can make the command read a file becomes exempt.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Mehdi's command passes. An outside path given as a file operand, `-f FILE`, `--exclude-from FILE`, an unknown option before the pattern, sed scripts and `bash -c` bodies still block. Mehdi suggested a full shlex split; it was not used, because it would hide `bash -c 'cat /outside'` (one word that does not start with `/`), which today's split catches.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `grep -rE '/home/|192\.168\.' docs/` passes the boundary hook (test)
+- [ ] The pattern given with `-e`, after `--`, behind sudo/xargs, and for rg with `-g GLOB`, passes (test)
+- [ ] Still blocked: an outside file operand after the pattern, `-f FILE`, `--exclude-from FILE`, an unknown option before the pattern, a sed script naming an outside path, `bash -c 'cat <outside>'` (test)
+- [ ] Every existing boundary test passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,6 +290,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t5091_boundary_grep_pattern.bats tests/unit/t3768_boundary_quoted_read_paths.bats tests/unit/t4344_boundary_read_free_text_opts.bats tests/unit/t4284_boundary_free_text_args.bats > /tmp/.t5091v 2>&1 && ! grep -q "^not ok" /tmp/.t5091v
+test "$(grep -c '# skip' /tmp/.t5091v)" -eq 0
+bin/fw vendor self --check --task T-5091
 
 ## RCA
 
@@ -305,6 +309,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `grep -rE '/home/|192\.168\.' docs/`, a read-only search inside the project, was refused as "Outside-path argument /home/|192\.168\." (GitHub #111, Mehdi).
+
+**Root cause:** Pattern 4b (T-3768) judges every word that starts with `/` after quote removal. It knew that some option values are text (T-4284, T-4344) but not that a search command's pattern operand is text too.
+
+**Why structurally allowed:** T-3768 was written to catch quoted paths, and its tests used `cat`-style commands, where every operand is a file. No test covered a command whose operand is a pattern that looks like a path.
+
+**Prevention:** `tests/unit/t5091_boundary_grep_pattern.bats` pins the passing pattern positions and, in the same file, the cases that must stay refused: an outside file operand, `-f`, `--exclude-from`, an unknown option, `bash -c`.
 
 ## Evolution
 
@@ -329,6 +341,11 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-12 — the block came from Pattern 4b, and shlex was the wrong fix
+- **What changed:** the issue pointed at `_tok_iter` (Pattern 4). On bleeding-edge that pass sees quote-blanked text and does not fire; the block comes from Pattern 4b (T-3768), which reads the quoted pattern as one word starting with `/home/`. Mehdi's suggested shlex split would have hidden `bash -c 'cat <outside>'`, so the fix instead says which word a grep-family command reads as its pattern, under a strict option grammar that fails closed.
+- **Plan impact:** the fix lives in `lib/shell_write_scan.py` (`_search_pattern_indexes`, used by `_read_words`), beside the T-4284/T-4344 free-text options, not in the hook.
+- **Triggered:** G-131 (a sed script that reads a file, `sed '1r <outside>' f`, already passed the hook; found while testing, not caused by this change).
 
 ## Recommendation
 
@@ -386,3 +403,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5091-gh-111-project-boundary-gate-takes-a-quo.md
 - **Context:** Initial task creation
+
+### 2026-11-12T10:57:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
