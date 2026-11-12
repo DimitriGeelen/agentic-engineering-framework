@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-02T14:02:18Z
-last_update: 2026-11-12T22:24:32Z
+last_update: 2026-11-12T22:32:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -386,7 +386,14 @@ cost_estimate_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-## Decisions
+**Recommendation:** GO
+
+**Rationale:** Every item of the sign-off list (section 14) now has the operator's answer, given one at a time on 2026-11-12 and recorded in section 15 of `docs/reports/T-5006-requirements.md`. One item is reopened rather than accepted (14.3: prevention, not only detection, for the session credential), and that goes forward as a requirement to the threat modeler, so it does not hold step 1. Ticking the box lets step 2 (T-5022, threat model) start, which is what T-5006's go/no-go waits for.
+
+**Evidence:**
+- Section 15 of the requirements: 10.35 (scan within 5 minutes, alert after 15), 14.1 accepted as bounded, 14.2 accepted, 14.3 reopened to T-5022, 14.4 and 14.5 confirmed, 14.6 accepted with a one-hour revocation rule (answers 10.27), 14.7 accepted until the organisation move, 14.8 accepted with two peers needed for a release, 14.9 the operator's release question, 14.10 other accounts labelled "waiting" (pilot exit as accepted 2026-11-11), 14.12 priorities accepted, 14.13 bounds confirmed, 14.14 the rest passed on.
+- Two independent review rounds on the step-1 output (sections 11 and 13).
+- Still asked of the operator by this box: skim section 6 (65 requirements) for anything that does not match the intent.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
