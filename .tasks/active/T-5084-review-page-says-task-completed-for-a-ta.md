@@ -111,8 +111,9 @@ cost_estimate_proposed:
 ### Human
 - [ ] [REVIEW] The review page says plainly where the task is after an untick
   **Steps:**
-  1. Look at `.context/visual/T-5084/untick@1440.png` (and the 1024/1920 shots)
-  **Expected:** after unticking, the page says the task is with the operator, and does not claim it is completed.
+  1. Open http://192.168.10.107:3000/review/T-5084 — this task itself is waiting for review with its check open, the same state as after an untick
+  2. Compare with `.context/visual/T-5084/untick@1440.png` (and the 1024/1920 shots), taken right after an untick on a demo task
+  **Expected:** with a check open, the page says the task is with the operator, and does not claim it is completed.
   **If not:** say what is unclear; the agent changes the wording in `web/templates/_review_acs.html`.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.

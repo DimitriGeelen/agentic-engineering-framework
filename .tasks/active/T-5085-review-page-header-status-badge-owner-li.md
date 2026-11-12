@@ -111,8 +111,9 @@ cost_estimate_proposed:
 ### Human
 - [ ] [REVIEW] The review page header and the note under the checks agree after a tick and after an untick
   **Steps:**
-  1. Look at `.context/visual/T-5085/last-tick@1440.png` and `untick@1440.png` (and 1024/1920)
-  **Expected:** after the last tick the header shows Owner: agent with the hand-back note; after unticking it shows Owner: human with "the task is with you"; the badge reads "awaiting review", not a completed state.
+  1. Open http://192.168.10.107:3000/review/T-5085 — this task itself is waiting for review with its check open
+  2. Look at `.context/visual/T-5085/last-tick@1440.png` and `untick@1440.png` (and 1024/1920), taken on a demo task
+  **Expected:** the header line that says who has the task matches the note under the checks in each state (agent after the last tick, the operator after an untick or while a check is open), and the badge reads "awaiting review", not a completed state.
   **If not:** say what still disagrees.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
