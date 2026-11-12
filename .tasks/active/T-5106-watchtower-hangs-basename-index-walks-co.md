@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T22:42:06Z
-last_update: 2026-11-12T23:19:07Z
+last_update: 2026-11-12T23:47:01Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -302,6 +302,14 @@ timeout 600 python3 -m pytest tests/unit/test_t5106_bounded_index_walks.py tests
 bin/fw watchtower current
 bin/fw vendor self --check --task T-5106
 
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| task-page | file link `web/shared.py` in description, criteria and steps | ok | ok | ok | links point to /file/web/shared.py; no reference rendered as dead |
+
+Captures: `.context/visual/T-5106/task-page@{1024,1440,1920}.png` (`fw ux shots T-5106 task-page=<watchtower>/tasks/T-5106`, 2026-11-13).
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -377,6 +385,14 @@ bin/fw vendor self --check --task T-5106
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+
+**Rationale:** Both unbounded walks are bounded and fail open, so an oversized `.context/working/` can no longer freeze Watchtower (1409's 13-minute hang). Links on rendered pages still resolve: the restarted Watchtower serves the task page in 0.3 s with `web/shared.py` linked everywhere it is named and nothing marked dead.
+
+**Evidence:**
+- `tests/unit/test_t5106_bounded_index_walks.py` (5 tests) and the T-3736 tests pass; 692/693 unit and 215/220 web tests that read `web/shared.py` pass, the 6 failures predating this change (T-5109, T-5110).
+- Captures at 1024/1440/1920 in `.context/visual/T-5106/`; the reviewer's own side note (V-20261112-85ab4938) saw the link resolve with HTTP 200 and no dead links.
 
 ## Decisions
 
