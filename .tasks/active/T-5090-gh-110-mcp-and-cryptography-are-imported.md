@@ -9,7 +9,7 @@ description: >
   imports mcp; web/secrets_store.py imports cryptography; neither is in a requirements
   file or install step.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ origin: {kind: "peer", source: "github#110"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T08:51:34Z
-last_update: '2026-11-12T09:01:23Z'
+last_update: 2026-11-12T10:47:36Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,20 +90,20 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Mehdi filed GitHub #110 (seen on 1.8.14, 1.8.15 and in a container). Shipped code imports two packages that no requirements file names. `agents/mcp/framework_mcp_server.py:37-39` needs `mcp`; without it the `fw` MCP server dies with ModuleNotFoundError and Claude Code shows "connection closed" at every session start. `web/secrets_store.py:19` needs `cryptography`; without it `/settings/` answers 500. `web/requirements.txt` lists neither.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The packages were installed by hand on the development host (mcp 1.26.0 and cryptography 41.0.7 here), so nothing here ever failed. The import was added without a declaration, and nothing checks that imports match the requirements file.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** An environment built from the requirements file has both packages, and a missing `mcp` says what to install instead of a bare traceback.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `web/requirements.txt` declares `mcp` and `cryptography` with a note on what needs each. The MCP server, started without `mcp`, prints one line naming the package and the install command, then exits non-zero. Installing packages stays the operator's job; this task only declares them.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `web/requirements.txt` names `mcp` and `cryptography`, each with a comment saying which code needs it (test)
+- [ ] With `mcp` hidden, `framework_mcp_server.py` exits non-zero with a message naming `mcp` and `pip install`, and no traceback (test)
+- [ ] With `mcp` present, the server module still imports (test)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -386,3 +386,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5090-gh-110-mcp-and-cryptography-are-imported.md
 - **Context:** Initial task creation
+
+### 2026-11-12T10:43:03Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

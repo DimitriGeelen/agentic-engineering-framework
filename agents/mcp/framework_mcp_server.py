@@ -34,9 +34,18 @@ from manifest import (  # noqa: E402
     tool_set_path,
 )
 
-from mcp.server.lowlevel import Server  # noqa: E402
-from mcp.server.stdio import stdio_server  # noqa: E402
-from mcp.types import TextContent, Tool  # noqa: E402
+try:
+    from mcp.server.lowlevel import Server  # noqa: E402
+    from mcp.server.stdio import stdio_server  # noqa: E402
+    from mcp.types import TextContent, Tool  # noqa: E402
+except ImportError as _e:  # T-5090 (GitHub #110): say what to install, not a bare traceback
+    if __name__ != "__main__":
+        raise
+    sys.stderr.write(
+        f"framework-mcp: the Python package 'mcp' is missing ({_e}). Install it into the "
+        f"Python that runs this server ({sys.executable}): {sys.executable} -m pip install 'mcp>=1.0' "
+        "(it is listed in web/requirements.txt)\n")
+    sys.exit(3)
 
 SERVER_NAME = "framework-mcp"
 SERVER_VERSION = "0.1.0"
