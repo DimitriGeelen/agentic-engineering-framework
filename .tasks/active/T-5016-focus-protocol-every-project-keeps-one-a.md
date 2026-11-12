@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-11-02T12:50:24Z
-last_update: 2026-11-12T18:30:49Z
+last_update: 2026-11-12T19:02:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -104,13 +104,13 @@ Research artifact: `docs/reports/T-5016-focus-anchor.md`.
   disposition: answered
   rationale: operator 2026-11-12, "Agent records, you own": the agent adds the operator's asks verbatim (date, where said) when they are said; the goal changes only on the operator's explicit words; every change shown and kept in history; nothing removed by the agent, an ask closes only when the operator says done or dropped
 - **IW-3: What happens on a mismatch (focused task outside the anchor, proposal that does not serve it): warn, block, or ask the operator?**
-  confidence: 0
-  disposition: deferred
-  rationale: 1409 reports warnings go stale
+  confidence: 3
+  disposition: answered
+  rationale: operator 2026-11-12, "Ask you once, show it where you look": no blocking; each task records which anchor goal or ask it serves; a task that serves none gets one question to the operator (continue, park, change the anchor), answer recorded; old open asks and an unconfirmed anchor appear first at session start, in the handover and in the pending list. Informed by 1409's lessons (stale warnings; say which session; relation not equality)
 - **IW-4: How does it relate to what AEF already has (task focus, arc focus, horizons, handover Suggested First Action, the roadmap docs), so we add one thing rather than a fifth overlapping one?**
-  confidence: 1
-  disposition: deferred
-  rationale: to map in the research artifact
+  confidence: 3
+  disposition: answered
+  rationale: operator 2026-11-12, "Anchor on top, others follow it": nothing removed; the anchor is the one place for the goal and open asks; the handover's first section and Suggested First Action derive from it; arc and task focus are checked against it (serves the goal); the T-4774 arc-drift warning folds into that one check. Mechanism map in docs/reports/T-5016-focus-anchor.md
 - **IW-5: Shape: one goal, or a short ranked list; with a parked list and a never list?**
   confidence: 0
   disposition: deferred

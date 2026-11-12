@@ -83,3 +83,17 @@ None records the operator's goal in the operator's own words.
 ### 2026-11-12 — 1409's design received
 - Operator had asked: "ask 1409 for the design of the focus anchor ... they did extensive work". Received the same
   hour; their three failure lessons feed IW-3 (mismatch handling) and IW-5 (shape).
+
+### 2026-11-12 — IW-3 mismatch
+- Asked: on drift (a task serving no anchor goal or ask, or an open ask untouched), ask once and show it, block, or
+  warn only? Framed with 1409's lessons (warnings go stale; say which session; relation, not equality).
+- Operator: **ask once, show it where the operator looks.** No blocking. Each task records which anchor goal or ask
+  it serves; a task that serves none gets one question (continue, park, or change the anchor) and the answer is
+  recorded; open asks older than N hours and an anchor not confirmed for N days come first at session start, in the
+  handover and in `fw operator pending`.
+
+### 2026-11-12 — IW-4 fit with existing mechanisms
+- Operator: **anchor on top, the others follow it.** Nothing is removed. The anchor is the one place for the goal and
+  open asks; the handover's first section and Suggested First Action derive from it; arc focus and task focus are
+  checked against it ("serves the goal"); the T-4774 arc-drift warning becomes part of that one check.
+- (An answer meant for another agent arrived in between and was set aside at the operator's word; not recorded.)
