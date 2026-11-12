@@ -1,23 +1,21 @@
 ---
-id: T-5085
-name: "Review page header (status badge, Owner line) stays stale after a tick and
-  reads 'work-completed' for a task awaiting review"
+id: T-5086
+name: "Review page full load misses the state note until the 5s poll (only the fragment
+  route computes it)"
 description: >
-  Reviewer judges on T-5081/T-5083/T-5084 (2026-11-12, amber): after a tick only #ac-container
-  reloads, so the header's 'Owner:' line contradicts the hand-back note (Owner: human
-  above 'handed back to the agent'; Owner: agent above 'with you'), and the green
-  WORK-COMPLETED badge reads as done for a task that is only awaiting review. Fix:
-  refresh the header status and owner with the reloaded list (hx-swap-oob); label
-  a work-completed task still in active/ as 'awaiting review'.
+  Reviewer judges on T-5084/T-5085 (2026-11-12, amber V-20261112-2b38a2b4, V-20261112-3766f871):
+  review() in web/blueprints/review.py renders review.html without with_operator/handed_back/task_completed,
+  which only review_acs_fragment() computes, so a fresh load of /review/<id> shows
+  no note until the 5s poll reloads the list. Fix: one shared helper for the state,
+  used by both routes; test GET /review/<id>.
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
-components: [tests/web/test_t5085_review_header_refresh.py, 
-      web/blueprints/review.py, web/templates/_review_acs.html, 
-      web/templates/review.html]
+components: [tests/web/test_t5086_review_full_page_state.py, 
+      web/blueprints/review.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,9 +43,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-11-11T23:36:09Z
-last_update: '2026-11-11T23:45:25Z'
-date_finished: 2026-11-11T23:40:48Z
+created: 2026-11-12T00:05:20Z
+last_update: 2026-11-12T00:22:06Z
+date_finished: 2026-11-12T00:11:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -59,7 +57,7 @@ date_finished: 2026-11-11T23:40:48Z
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-11-11T23:36:32Z'
+  - ts: '2026-11-12T00:05:45Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 0
@@ -76,45 +74,44 @@ bvp_scores_proposed:
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
-  - ts: '2026-11-11T23:45:25Z'
+  - ts: '2026-11-12T00:15:27Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
-      blast_radius: 5
+      blast_radius: 3
       tier: 2
       effort: 8
-    rationale: blast_radius=5 (4-components-medium-blast); tier=2 
-      (workflow:build); effort=8 (lines=354,acs=6)
+    rationale: blast_radius=3 (2-components); tier=2 (workflow:build); effort=8 
+      (lines=353,acs=6)
     rubric_sha: e4a00f38e801
 ---
 
-# T-5085: Review page header (status badge, Owner line) stays stale after a tick and reads 'work-completed' for a task awaiting review
+# T-5086: Review page full load misses the state note until the 5s poll (only the fragment route computes it)
 
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** reviewer judges on T-5081, T-5083 and T-5084 (2026-11-12, all amber or not-evaluated on this point): in the shots, the review page header says "Owner: human" above "handed back to the agent", and "Owner: agent" above "the task is with you", and shows a green WORK-COMPLETED badge for a task only awaiting review.
+**Background / trigger:** reviewer judges on T-5084 and T-5085, 2026-11-12 (amber, V-20261112-2b38a2b4 and V-20261112-3766f871): a fresh load of `/review/T-5084` shows no note under the checks; the note appears only after the 5-second poll reloads the list.
 
-**Problem / hypothesis:** `web/templates/review.html` renders the header once at page load; a tick reloads only `#ac-container`, so the header keeps the old owner. The badge prints the raw status, and a task waiting for review already has status `work-completed`.
+**Problem / hypothesis:** `web/blueprints/review.py` `review()` renders `review.html`, which includes `_review_acs.html`, without `with_operator`, `handed_back` or `task_completed`; only `review_acs_fragment()` computes them (T-5083/T-5084). The two routes drifted because each builds its own context.
 
-**Goal:** the header always agrees with the note under the check list.
+**Goal:** the page says where the task is from the first load, not only after a reload.
 
-**Expected outcome:** the reloaded list also sends the header's status badge and owner line (htmx `hx-swap-oob`, only from the fragment route, not when the list is included in the full page); a `work-completed` task still in `active/` is labelled "awaiting review" (amber), a closed one keeps the green badge.
+**Expected outcome:** one helper computes the task-state values; both routes use it; `GET /review/<id>` already contains the note for a task waiting with a check open (and the hand-back note when all are ticked).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `/review/<id>/acs` returns `#review-owner` and `#review-status` with `hx-swap-oob` carrying the current owner and label; the full page renders each once (no out-of-band copies inline)
-- [x] A `work-completed` task in `active/` shows "awaiting review"; a task in `completed/` shows `work-completed`
-- [x] Shots of last-tick and untick at 1024/1440/1920 show header and note agreeing; review tests green (224 passed); `bin/fw watchtower current`; `bin/fw vendor self --check --task T-5085` clean
+- [x] One helper computes `with_operator`, `handed_back`, `task_completed` and the status label; `review()` and `review_acs_fragment()` both use it
+- [x] Test: `GET /review/<id>` (full page) shows "the task is with you" for a task with a check open, and the hand-back note when every check is ticked and the agent owns it
+- [x] Review-page tests green (224 passed); `bin/fw watchtower current`; `bin/fw vendor self --check --task T-5086` clean
 
 ### Human
-- [ ] [REVIEW] The review page header and the note under the checks agree after a tick and after an untick
+- [x] [REVIEW] The review page says where the task is as soon as it opens
   **Steps:**
-  1. Open http://192.168.10.107:3000/review/T-5085 — this task itself is waiting for review with its check open
-  2. Look at `.context/visual/T-5085/last-tick@1440.png` and `untick@1440.png` (and 1024/1920), taken on a demo task
-  **Expected:** the header line that says who has the task matches the note under the checks in each state (agent after the last tick, the operator after an untick or while a check is open), and the badge reads "awaiting review", not a completed state.
-  **If not:** say what still disagrees.
+  1. Open http://192.168.10.107:3000/review/T-5086 — this task is waiting for review with its check open
+  **Expected:** right on load, under the checks, the page says a Human check is open and the task is with the operator; the badge reads "awaiting review".
+  **If not:** say what is missing on first load.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -159,6 +156,7 @@ cost_estimate_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261112-c14f90b7 — reviewer-judge-t-5086-r3-5e6925370a94:reviewer (rung rung-3-termlink-single-reviewer), digest 9a43e4ed0f99; dispatch judge-t-5086-r3-5e6925370a94; evidence: .context/reviews/evidence/T-5086/AC1-judge-t-5086-r3-5e6925370a94.md, .context/reviews/evidence/T-5086/01-review-t-5086-judge-t-5086-r3-5e6925370a94.png, .context/reviews/evidence/T-5086/review@1024-judge-t-5086-r3-5e6925370a94.png, .context/reviews/evidence/T-5086/review@1440-judge-t-5086-r3-5e6925370a94.png, .context/reviews/evidence/T-5086/review@1920-judge-t-5086-r3-5e6925370a94.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
@@ -298,30 +296,29 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
-python3 -m pytest -q tests/web/test_t5085_review_header_refresh.py tests/web/test_t5084_review_completed_state.py tests/web/test_t5081_owner_handback.py
+python3 -m pytest -q tests/web/test_t5086_review_full_page_state.py tests/web/test_t5085_review_header_refresh.py tests/web/test_t5084_review_completed_state.py tests/web/test_t5081_owner_handback.py
 bin/fw watchtower current
-bin/fw vendor self --check --task T-5085
+bin/fw vendor self --check --task T-5086
 
 ## Visual Verification
 
-Throwaway demo project (scratchpad, task T-9002, first Human check pre-ticked) served by a second
-Watchtower on this repo's code; fw's `ux_shots` code, one shot at a time with the demo reset before
-each. Files `.context/visual/T-5085/{last-tick,untick}@{1024,1440,1920}.png` + manifests.
+Live page of this task once it waits for review (status work-completed, check open), first load, no
+interaction: `bin/fw ux shots T-5086 review=http://192.168.10.107:3000/review/T-5086` →
+`.context/visual/T-5086/review@{1024,1440,1920}.png`.
 
 | state | control | 1024 | 1440 | 1920 | note |
 |-------|---------|------|------|------|------|
-| last-tick | header + note after the last Human tick | ok | ok | ok | AWAITING REVIEW (amber), "Owner: agent", hand-back note — header and note agree |
-| untick | header + note after unticking again | ok | ok | ok | AWAITING REVIEW, "Owner: human", "the task is with you" — header and note agree |
+| review | full page, first load, Human check open | ok | ok | ok | note "A Human check is open: the task is with you." present on load; badge AWAITING REVIEW |
 
 ## RCA
 
-**Symptom:** on /review, after a tick, the header kept the owner from page load ("Owner: human" above "handed back to the agent") and showed a green WORK-COMPLETED badge for a task awaiting review.
+**Symptom:** a fresh load of a review page showed no state note under the checks; it appeared about 5 seconds later.
 
-**Root cause:** the header is rendered once with the page; a tick reloads only the check list. The badge printed the raw status, and a task waiting for review already has status `work-completed`.
+**Root cause:** `review()` and `review_acs_fragment()` each built the template context; T-5083/T-5084 added the state values to the fragment route only, and the full page includes the same template without them.
 
-**Why structurally allowed:** the page has two regions with different lifetimes and nothing tied the static one to the state the dynamic one shows; the tests checked fragments, not the whole page after an interaction. The reviewer judges' screenshots of the real page were the first check that saw both regions together.
+**Why structurally allowed:** two routes render one template with hand-built contexts, so nothing forces them to agree; the T-5083/T-5084 tests requested the fragment URL only.
 
-**Prevention:** the reloaded list sends the header's badge and owner out of band (only from the fragment route), with tests for both states and for a single header on the full page; the label for an active work-completed task is "awaiting review". Learning: when part of a page reloads, anything elsewhere on the page that shows the same state must reload with it.
+**Prevention:** one helper (`_task_state`) feeds both routes; a test pins that both call it and that `GET /review/<id>` shows the note on first load. Learning: when two routes render one template, build the shared part of the context in one place.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -392,11 +389,11 @@ each. Files `.context/visual/T-5085/{last-tick,untick}@{1024,1440,1920}.png` + m
 
 **Recommendation:** GO
 
-**Rationale:** The review page header now agrees with the note under the checks after every tick and untick, and a task awaiting review is labelled that way instead of looking completed. This is what the three reviewer judges asked for.
+**Rationale:** The review page now says where the task is from the first load, as both reviewers asked; both routes build that state in one helper.
 
 **Evidence:**
-- `tests/web/test_t5085_review_header_refresh.py` 4/4 (owner refresh after last tick and after untick, single header on the full page, closed task keeps its label); T-5084/T-5081 tests green.
-- Shots `.context/visual/T-5085/{last-tick,untick}@{1024,1440,1920}.png`.
+- `tests/web/test_t5086_review_full_page_state.py` 3/3 (full page first load: "with you" with a check open, hand-back when all ticked; one helper for both routes); T-5081/T-5084/T-5085 tests green (17 total).
+- Live shots of http://192.168.10.107:3000/review/T-5086 at 1024/1440/1920 (`.context/visual/T-5086/review@*.png`).
 
 ## Decisions
 
@@ -421,21 +418,21 @@ each. Files `.context/visual/T-5085/{last-tick,untick}@{1024,1440,1920}.png` + m
 
 ## Updates
 
-### 2026-11-11T23:36:09Z — task-created [task-create-agent]
+### 2026-11-12T00:05:20Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5085-review-page-header-status-badge-owner-li.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5086-review-page-full-load-misses-the-state-n.md
 - **Context:** Initial task creation
 
-### 2026-11-11T23:36:30Z — status-update [task-update-agent]
+### 2026-11-12T00:05:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-### 2026-11-11T23:40:48Z — status-update [task-update-agent]
+### 2026-11-12T00:11:33Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-9a78affd
-- **Timestamp:** 2026-11-11T23:40:59Z
+- **Scan ID:** R-821cc1dd
+- **Timestamp:** 2026-11-12T00:11:46Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold

@@ -12,8 +12,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
 components: [tests/web/test_t5084_review_completed_state.py, 
       web/blueprints/review.py, web/templates/_review_acs.html]
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-11T23:08:33Z
-last_update: '2026-11-11T23:30:29Z'
+last_update: 2026-11-12T00:21:23Z
 date_finished: 2026-11-11T23:19:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -109,7 +109,7 @@ cost_estimate_proposed:
 - [x] Shots of the untick state at 1024/1440/1920 show the new line; existing review tests green (157 passed); `bin/fw watchtower current`; `bin/fw vendor self --check --task T-5084` clean
 
 ### Human
-- [ ] [REVIEW] The review page says plainly where the task is after an untick
+- [x] [REVIEW] The review page says plainly where the task is after an untick
   **Steps:**
   1. Open http://192.168.10.107:3000/review/T-5084 — this task itself is waiting for review with its check open, the same state as after an untick
   2. Compare with `.context/visual/T-5084/untick@1440.png` (and the 1024/1920 shots), taken right after an untick on a demo task
@@ -159,6 +159,7 @@ cost_estimate_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261112-f7ad9612 — reviewer-judge-t-5084-r3-7d09b18d8886:reviewer (rung rung-3-termlink-single-reviewer), digest 17bcf2fd0ce8; dispatch judge-t-5084-r3-7d09b18d8886; evidence: .context/reviews/evidence/T-5084/AC1-judge-t-5084-r3-7d09b18d8886.md, .context/reviews/evidence/T-5084/01-review-t-5084-judge-t-5084-r3-7d09b18d8886.png, .context/reviews/evidence/T-5084/untick@1024-judge-t-5084-r3-7d09b18d8886.png, .context/reviews/evidence/T-5084/untick@1440-judge-t-5084-r3-7d09b18d8886.png, .context/reviews/evidence/T-5084/untick@1920-judge-t-5084-r3-7d09b18d8886.png, .context/reviews/evidence/T-5084/last-tick@1024-judge-t-5084-r3-7d09b18d8886.png, .context/reviews/evidence/T-5084/last-tick@1440-judge-t-5084-r3-7d09b18d8886.png, .context/reviews/evidence/T-5084/last-tick@1920-judge-t-5084-r3-7d09b18d8886.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 

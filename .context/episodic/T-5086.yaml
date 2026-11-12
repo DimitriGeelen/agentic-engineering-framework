@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5086: Review page full load misses the state note until the 5s poll (only the fragment route computes it)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-12T00:22:24Z
+# ============================================================================
+
+task_id: T-5086
+task_name: "Review page full load misses the state note until the 5s poll (only the fragment route computes it)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-12T00:05:20Z
+completed: 2026-11-12T00:15:27Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-12T01:10:34+01:00
+last_commit: 2026-11-12T01:16:55+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  review page shows the task-state note on first load (one helper for both routes). partial-complete — full URL in recommendation; live shots. reviewer verdict
+
+# Key outcomes
+outcomes:
+  - 'One helper computes `with_operator`, `handed_back`, `task_completed` and the status label; `review()` and `review_acs_fragment()` both use it'
+  - 'Test: `GET /review/<id>` (full page) shows "the task is with you" for a task with a check open, and the hand-back note when every check is ticked and the agent owns it'
+  - 'Review-page tests green (224 passed); `bin/fw watchtower current`; `bin/fw vendor self --check --task T-5086` clean'
+  - '[REVIEW] The review page says where the task is as soon as it opens'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/review.py'
+  - '.context/reviews/evidence/T-5086/01-review-t-5086-judge-t-5086-r3-5e6925370a94.png'
+  - '.context/reviews/evidence/T-5086/AC1-judge-t-5086-r3-5e6925370a94.md'
+  - '.context/reviews/evidence/T-5086/review@1024-judge-t-5086-r3-5e6925370a94.png'
+  - '.context/reviews/evidence/T-5086/review@1440-judge-t-5086-r3-5e6925370a94.png'
+  - '.context/reviews/evidence/T-5086/review@1920-judge-t-5086-r3-5e6925370a94.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.fabric/components/tests-web-test_t5086_review_full_page_state.yaml'
+  - '.tasks/active/T-5086-review-page-full-load-misses-the-state-n.md'
+  - 'tests/web/test_t5086_review_full_page_state.py'
+  - 'web/blueprints/review.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-12T01:10:34'
+    action: 'T-5086: review page shows the task-state note on first load (one helper for both routes)'
+  - time: '2026-11-12T01:12:37'
+    action: 'T-5086: partial-complete — full URL in recommendation; live shots'
+  - time: '2026-11-12T01:16:55'
+    action: 'T-5086: reviewer verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 10
+  commits: 4
+  files_changed: 22
+  lines_added: 987
+  lines_removed: 54
+  footprint_refreshed_at: '2026-11-12T00:22:36Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5086-review-page-full-load-misses-the-state-n.md
+generated_by: context-agent-hybrid

@@ -53705,3 +53705,75 @@ scan_id: R-0f739ce2
 task_id: T-5081
 payload:
   task_file: .tasks/active/T-5081-task-stays-owner-human-after-its-last-hu.md
+---
+kind: scan_emitted
+timestamp: '2026-11-11T22:51:47Z'
+scan_id: R-7f1f65f4
+task_id: T-5083
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-11T22:51:47Z'
+scan_id: R-7f1f65f4
+task_id: T-5083
+payload:
+  task_file: .tasks/active/T-5083-review-page-drops-the-hand-back-note-rev.md
+---
+kind: scan_emitted
+timestamp: '2026-11-11T23:20:01Z'
+scan_id: R-4eb2bb8a
+task_id: T-5084
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-11T23:20:01Z'
+scan_id: R-4eb2bb8a
+task_id: T-5084
+payload:
+  task_file: .tasks/active/T-5084-review-page-says-task-completed-for-a-ta.md
+---
+kind: scan_emitted
+timestamp: '2026-11-11T23:40:59Z'
+scan_id: R-9a78affd
+task_id: T-5085
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-11T23:40:59Z'
+scan_id: R-9a78affd
+task_id: T-5085
+payload:
+  task_file: .tasks/active/T-5085-review-page-header-status-badge-owner-li.md
+---
+kind: scan_emitted
+timestamp: '2026-11-12T00:11:46Z'
+scan_id: R-821cc1dd
+task_id: T-5086
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-12T00:11:46Z'
+scan_id: R-821cc1dd
+task_id: T-5086
+payload:
+  task_file: .tasks/active/T-5086-review-page-full-load-misses-the-state-n.md
