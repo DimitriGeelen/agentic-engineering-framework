@@ -9,12 +9,12 @@ description: >
   no note until the 5s poll reloads the list. Fix: one shared helper for the state,
   used by both routes; test GET /review/<id>.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/web/test_t5086_review_full_page_state.py, web/blueprints/review.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T00:05:20Z
-last_update: '2026-11-12T00:05:45Z'
-date_finished:
+last_update: 2026-11-12T00:11:33Z
+date_finished: 2026-11-12T00:11:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -381,7 +381,7 @@ interaction: `bin/fw ux shots T-5086 review=http://192.168.10.107:3000/review/T-
 
 **Evidence:**
 - `tests/web/test_t5086_review_full_page_state.py` 3/3 (full page first load: "with you" with a check open, hand-back when all ticked; one helper for both routes); T-5081/T-5084/T-5085 tests green (17 total).
-- Live shots of `/review/T-5086` at 1024/1440/1920.
+- Live shots of http://192.168.10.107:3000/review/T-5086 at 1024/1440/1920 (`.context/visual/T-5086/review@*.png`).
 
 ## Decisions
 
@@ -413,3 +413,16 @@ interaction: `bin/fw ux shots T-5086 review=http://192.168.10.107:3000/review/T-
 
 ### 2026-11-12T00:05:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-12T00:11:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-821cc1dd
+- **Timestamp:** 2026-11-12T00:11:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
