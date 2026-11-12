@@ -2062,6 +2062,57 @@ def _read_words(seg: list[str], ctx: _Ctx) -> None:
             ctx.hits.append(Hit(_READ_REASON, p))
 
 
+# T-5092 (GitHub #112): the task gate's redirect rules (safe-commands.sh
+# has_bash_write_pattern) read the raw text, so the `>` of `awk -F: '$2>9' f` was taken
+# for a redirect. This returns the text with INERT quoted content blanked (quote marks
+# kept, length preserved), or None when any quoted text may run as code that writes.
+# Fail closed: the caller keeps its verdict on None.
+_RUNS_QUOTED = re.compile(
+    r"^(bash|sh|zsh|dash|ksh|mksh|fish|busybox|eval|exec|source|\.|ssh|su|runuser|sudo|doas|"
+    r"perl|ruby|node|nodejs|php|lua|tclsh|expect|watch|tmux|screen|script|python[0-9.]*)$")
+_AWK = frozenset({"awk", "gawk", "mawk", "nawk"})
+_AWK_WRITES = re.compile(r"\b(print|printf)\b[^;}]*[>|]|\bsystem\s*\(|\|\s*getline|\bfflush\b|\bclose\s*\(")
+
+
+def inert_quote_blanked(text: str) -> str | None:
+    if "<<" in text:
+        return None                                     # heredoc bodies: other rules judge them
+    out, spans, i, n = list(text), [], 0, len(text)
+    while i < n:
+        c = text[i]
+        if c == "\\":
+            i += 2
+            continue
+        if c in "'\"":
+            j = i + 1
+            while j < n and text[j] != c:
+                j += 2 if (c == '"' and text[j] == "\\") else 1
+            if j >= n:
+                return None                             # unbalanced quote
+            spans.append((c, i + 1, j))
+            i = j + 1
+            continue
+        i += 1
+    outside = list(text)
+    for _q, a, b in spans:
+        for k in range(a, b):
+            outside[k] = " "
+    words = [os.path.basename(w) for w in re.findall(r"[^\s;|&()<>'\"]+", "".join(outside))]
+    if any(_RUNS_QUOTED.match(w) for w in words) or "--exec" in words:
+        return None
+    if any(w in _AWK for w in words) and any(_AWK_WRITES.search(text[a:b]) for _q, a, b in spans):
+        return None
+    for q, a, b in spans:
+        body = text[a:b]
+        if q == '"' and ("$(" in body or "`" in body):
+            continue                                    # a substitution runs: keep it visible
+        if re.search(r"alias\.", body):
+            return None                                 # git alias bodies can run a shell
+        for k in range(a, b):
+            out[k] = " "
+    return "".join(out)
+
+
 def scan_boundary_reads(command: str, cwd: str | None, read_outside) -> list[Hit]:
     """T-3768: every word that names a path `read_outside(path)` rejects, read as bash
     reads it — quotes and escapes removed, `..` resolved against the cwd (cd-tracked),
