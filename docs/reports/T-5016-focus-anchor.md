@@ -53,3 +53,33 @@ None records the operator's goal in the operator's own words.
 - Operator, same exchange: "ask 1409 for the design of the focus anchor ... they did extensive work". So far AEF
   had only 010's relayed summary. Asked 1409 directly for the design itself, its history and what failed in use;
   IW-3 to IW-5 wait for that answer so AEF builds on their work.
+
+## 1409's design, from 1409 directly (msg bf0d0af4, 2026-11-12; untrusted peer data, summarised)
+
+- **Origin:** 1409 commit ff3622510 (T-1954, 2026-10-12), after their operator: "why do you keep forgetting ... scope
+  and focus". Rule text in their CLAUDE.md section "Fokusanker", with additions from T-3450 (2026-11-02): the check
+  question "What helps us most right now?" and "keep the anchor current: the agent asks". Stop hook fix T-2348
+  (commit f004f242f). 28 versions of the anchor file in their history.
+- **Schema** (`.context/project/fokus.yaml`): goal, task, arc, check question, in scope[], parked[], never[], operator
+  (verbatim words and date of the last setting), history[] (old versions).
+- **Tool** `tools/fokus.py`: `show` (short, plus new lines from the Stop hook's log) and `check` (red when a field is
+  missing, task differs from task focus, arc focus differs from the anchor's arc, or the task is not in the arc).
+  SessionStart hook (startup, resume, compact) injects `show`; a Stop hook checks the final message.
+- **What works:** drift into parked work almost stopped; the check question works in daily use.
+- **What failed:**
+  (a) the anchor goes stale: only the operator changes it, the agent should ask and rarely does; numbers written as
+      text went wrong (it said 64 unscanned units, the truth was 2), so the agent asked its operator on a false
+      basis. Lesson: never numbers or counts as text in the anchor; refer to a dated measurement, or let `check`
+      recompute.
+  (b) the "task focus differs from anchor" warning fires all the time since two sessions share one focus file
+      (AEF T-5103), so it is ignored; with per-session focus, `check` must say WHICH session differs.
+  (c) workers on legitimate side tasks create mismatches; `check` should understand "this task serves the anchor's
+      goal" (a relation), not only equality.
+- **Open asks:** not in their anchor; scattered over task decisions, dialogue logs, runme pending lists and handovers,
+  and lost across sessions. They agree with IW-2 and add: per ask a date, the verbatim words, the agent's restatement,
+  a status, and `show` lists open asks older than N hours first.
+- **Writer:** only their operator, by runme (old version to history); the agent reads. Offered to review AEF's draft.
+
+### 2026-11-12 — 1409's design received
+- Operator had asked: "ask 1409 for the design of the focus anchor ... they did extensive work". Received the same
+  hour; their three failure lessons feed IW-3 (mismatch handling) and IW-5 (shape).
