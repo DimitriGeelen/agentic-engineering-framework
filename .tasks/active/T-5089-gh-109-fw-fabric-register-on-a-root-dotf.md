@@ -320,6 +320,11 @@ bin/fw vendor self --check --task T-5089
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-11-12 — renaming risk, and cards already filed under the old name
+- **What changed:** a sweep of all 1,699 card locations showed the new rule changes no non-dotfile slug, but our own repo has two dotfile cards (`.context/working/.budget-status`, `.budget-gate-counter`) filed under the old names.
+- **Plan impact:** re-registering such a file would have written a second card beside the old one; register now recognises a card under the old name that points at the same file.
+- **Triggered:** nothing new; existing old-name cards are left as they are (renaming them is not needed for correctness).
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
