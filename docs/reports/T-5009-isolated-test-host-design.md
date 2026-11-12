@@ -145,6 +145,29 @@ results prove necessary, after the threat modeler signs it off.
 sanitised collector with no hypervisor token; output disks read in a disposable reader VM. Sections 3 and 4 are read
 with this amendment: "Network: none" stands, and the out-channel is disk + serial.
 
+## 8b Q-2 revised 2026-11-12: A — read-only ISO in, framed serial out
+
+Building B on Proxmox with only a pool-limited API token needs an output disk read inside a second reader VM.
+The operator asked whether we were over-protecting at the cost of a workable host; review round 3 (codex,
+opencode: `T-5009-review-r3-*.md`, brief `T-5009-review-r3-brief.md`) answered that the isolation is right and
+the plumbing over-built. **Operator, 2026-11-12: A as the reviewers revised it.** This replaces the disk parts of
+section 3 step 2-5 and of 8a B:
+
+- **In:** the controller builds an ISO (git bundle of the PR + `guest-run.sh` and `pr-checks.sh` from the
+  framework's released copy), uploads it to the node's ISO storage, attaches it read-only, deletes it after.
+- **Out:** the serial console only, read through the Proxmox API (termproxy websocket). Live log as text; at the
+  end one framed block (begin marker, gzip + base64, sha256, end marker) carrying `result.json` and the capped
+  checks log, a few MB at most; truncation or a bad checksum is detected and reported, never guessed. A total byte
+  cap and a rate limit apply to the whole stream. The run ends with a short summary (failed tests, last lines).
+- **No output disk, no reader VM, no node-side helper**, nothing guest-produced mounted anywhere.
+- **Token:** the pool, plus upload on the ISO storage and allocation on the VM-disk storage; verified before the
+  first run that it can touch nothing else (T-5099).
+- **Must not be skipped, even for the trusted pilot:** VM, no NIC, controller-enforced timeout and destroy on
+  every exit path, bounded parsing, safe log rendering; one deliberate timeout run and one output-flood run before
+  the first real PR. No trusted-contributor fast lane.
+- **Weakest wall, accepted by the operator:** co-tenancy with CT 400 / CT 401 on the node; the standalone MacBook
+  host (T-5100) is the fix.
+
 ## 9 Dialogue log
 
 - 2026-11-03: operator chose "design first" for T-5009 (options were: design first / name a host now / park).
