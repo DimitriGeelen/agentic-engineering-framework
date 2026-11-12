@@ -182,6 +182,24 @@ def _ledger_has(issue: int, stage: str) -> dict | None:
     return None
 
 
+# T-5096: stages that report on one fix. Each fix (task) posts them once, so a follow-up fix on
+# an issue can be announced; every other stage stays once per issue.
+PER_TASK_STAGES = ("in-progress", "fixed-on-bleeding-edge")
+
+
+def _stage_posted(issue: int, stage: str, tasks) -> dict | None:
+    """The ledger row that already posted this stage, or None. For a per-task stage named with
+    tasks, only a row naming one of those tasks counts."""
+    tasks = [t for t in (tasks or []) if t]
+    if stage not in PER_TASK_STAGES or not tasks:
+        return _ledger_has(issue, stage)
+    for r in _read_rows(_issues_dir() / "intake.jsonl"):
+        if (r.get("issue") == issue and stage in str(r.get("stage", "")).split("+")
+                and set(tasks) & set(r.get("tasks") or [])):
+            return r
+    return None
+
+
 def _next_intake_id() -> str:
     ids = [int(m.group(1)) for r in _read_rows(_issues_dir() / "intake.jsonl")
            if (m := re.match(r"INTAKE-(\d+)$", str(r.get("intake", ""))))]
@@ -476,7 +494,7 @@ def cmd_comment(a) -> int:
                               f"{a.approved_by_operator!r} must be an operator approval record "
                               f"for #{a.issue} {st} (`fw issues approve` run by the operator)")
 
-    prior = _ledger_has(a.issue, st)
+    prior = _stage_posted(a.issue, st, a.task)
     if prior:
         print(f"#{a.issue} stage {st} already posted ({prior.get('comment', 'no url')}) — not posting again")
         return 0
@@ -1904,7 +1922,7 @@ def cmd_lifecycle(a) -> int:
             print(f"WARN: GitHub #{n} area label not refined ({str(e)[:160]}); re-run "
                   f"`fw issues labels {n} --task {a.task_id}`", file=sys.stderr)
     try:
-        if _ledger_has(n, stage):
+        if _stage_posted(n, stage, [a.task_id]):
             return 0
         ns = argparse.Namespace(issue=n, stage=stage, task=[a.task_id], commit=None, test_cmd=None,
                                 version=None, text=None, approved_by_operator=None, dry_run=False)
