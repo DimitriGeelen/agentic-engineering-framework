@@ -87,3 +87,8 @@ Cards held locally: `_common` and `requirements-collector` only (`docs/reports/T
 ### 2026-11-02 — operator opens the inception
 - The operator asked for this proposal to become an arc with several tasks, run as a full inception with the usual roles.
 - In the same message the operator raised a second, related question: moving cross-project pickup requests from the sidecar to GitHub. That is a separate question, so it gets its own inception in the same arc.
+
+### 2026-11-12 — pilot plan signed off, separately from the T-5006 decision
+- Operator: "Yeah, let's focus on everything we can enable Medi to start putting in pull requests, please."
+- Asked whether Mehdi's pilot may start before the role chain (T-5021..T-5028) is finished, the operator chose "PR 1 now, code after T-5009": the pilot plan (`T-5006-draft-plan-for-mehdi.md`) is signed off; Mehdi may open PR 1 (documents only) now; a pull request with code waits until the isolated test hosts (T-5009) exist. This is not the go/no-go of T-5006, which still comes at the end of the role chain, and the chain keeps running for phase 2 (peer reports through GitHub).
+- Found the same day: #106, the planned PR 2 example, was already fixed by T-4234 (2026-10-21, in v1.8.15; its regression test t4234_upgrade_dryrun_preview.bats passes). Mehdi filed it on 1.8.11. PR 2 needs another small, low-risk example, chosen with Mehdi.

@@ -5,7 +5,7 @@ date: 2026-11-02
 
 Outside contributors will send pull requests on GitHub against `bleeding-edge`; the maintainer alone merges, after tests and an independent review. This draft answers Mehdi's proposal of 2026-11-02 and is shared for review before the maintainer signs it off.
 
-**Short answer to your question** ("Does this fit how you want to work? Anything you would change before I open PR 1?"): yes, it fits, with the changes listed under "Your proposal, point by point". Please wait with PR 1 until the maintainer has signed this plan off; PR 1 then carries the corrections listed under "Your first two pull requests".
+**Short answer to your question** ("Does this fit how you want to work? Anything you would change before I open PR 1?"): yes, it fits, with the changes listed under "Your proposal, point by point". **Signed off by the maintainer on 2026-11-12:** you may open PR 1 (documents only) now; it carries the corrections listed under "Your first two pull requests". A pull request with code waits until the isolated test hosts (T-5009) exist.
 
 ## How a contribution flows
 
@@ -108,7 +108,7 @@ Your start order stands.
     - `CONTRIBUTING.md` rewritten from this plan. The repository has no `main` branch: it says `master` for releases and `bleeding-edge` for everything else; fork, branch from `bleeding-edge`, open the PR against it.
     - The pull request template with the checklist above.
     - `bleeding-edge` added to the branches in `test.yml`.
-2. **PR 2, a small fix to run the whole circuit once:** for example #106 (the empty `fw upgrade` preview), checked on the latest pre-release first, as you proposed.
+2. **PR 2, a small fix to run the whole circuit once,** after the isolated test hosts (T-5009) exist. #106 (the empty `fw upgrade` preview) turned out to be fixed already, by T-4234 in v1.8.15, so a different small, low-risk issue is chosen together; checked on the latest pre-release first, as you proposed.
 3. **After the pilot: the CI check from our 28 October conversation.** On every pull request, re-verify the linked task, its acceptance criteria, the human ticks and its Verification commands. Today the framework's task checks cover part of this; the full check becomes its own step once the circuit has worked end to end.
 
 ## Where this work is tracked

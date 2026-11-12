@@ -11,7 +11,7 @@ written next to it.
 
 | Phase | Status | Target |
 |---|---|---|
-| 0 Mehdi can start | Nearly done: branch rules outstanding | 2026-11-04 |
+| 0 Mehdi can start | Plan signed off 2026-11-12: PR 1 (documents) now, code PRs after T-5009; branch rules runme ready for the operator | 2026-11-12 |
 | 1 GitHub becomes the source | Switched; release proof and audit alarm outstanding | 2026-11-06 |
 | 2 All agents track issues in GitHub | Waiting: step-1 sign-off, then role-chain steps 2-8 | 2026-11-27 |
 | 3 Quality floor for code PRs | Partly started (T-5008 shipped in part) | 2026-11-14 |
@@ -26,14 +26,15 @@ written next to it.
 | 0.3 | Nothing merged on GitHub can be lost | AEF | T-5044 | Done 2026-11-03 (by the switch, phase 1) | — |
 | 0.4 | Contributor documents (CONTRIBUTING, PR template, SECURITY) | AEF | T-5047 | Done 2026-11-03 | — |
 | 0.5 | Pinned tracking issue for Mehdi | AEF | #114 | Done 2026-11-03 | — |
-| 0.6 | Mehdi reviews the documents; comments in #114 or a PR | Mehdi | — | Waiting for Mehdi | 2026-11-07 |
+| 0.6 | Mehdi reviews the documents; comments in #114 or a PR | Mehdi | — | Done 2026-11-11 (four answers, accepted); template lines added (T-5097) | — |
+| 0.7 | Operator signs off the pilot plan: PR 1 now, code PRs after T-5009 | Operator | T-5006 | Done 2026-11-12 (not the T-5006 go/no-go) | — |
 
 ## Phase 1 — GitHub becomes the source
 
 | # | Step | Who | Task | Status | Target |
 |---|---|---|---|---|---|
 | 1.1 | `origin` = GitHub, OneDev a mirror; OneDev's force-push job off | AEF | T-5044 | Done 2026-11-03 | — |
-| 1.2 | Branch rules on GitHub: no force push or deletion on `bleeding-edge` and `master` | Operator | T-5044 | Open | 2026-11-04 |
+| 1.2 | Branch rules on GitHub: no force push or deletion on `bleeding-edge` and `master` | Operator | T-5044 | Runme ready 2026-11-12 (`.context/runme/branch-rules-github`) | 2026-11-12 |
 | 1.3 | Release train, mirror and `fw issues` follow the new origin | AEF | T-5044 | Done 2026-11-03: `v1.8.16-be.28` on GitHub and OneDev, same commit | — |
 | 1.4 | Audit alarm for outside commits that did not arrive through an operator-merged PR | AEF | T-5049 | Done 2026-11-03 (fw audit, fw doctor, operator pending; author-based, forgery residual noted) | 2026-11-06 |
 
@@ -61,7 +62,7 @@ written next to it.
 
 | # | Step | Who | Task | Status | Target |
 |---|---|---|---|---|---|
-| 4.1 | PR 2 (#106) runs the whole circuit | Mehdi + AEF + operator | — | Waits for 3.1 | 2026-11-17 |
+| 4.1 | PR 2 runs the whole circuit (#106 was already fixed by T-4234 in v1.8.15; another small issue is chosen with Mehdi) | Mehdi + AEF + operator | — | Waits for 3.1 | 2026-11-17 |
 | 4.2 | CI re-verification check (task, criteria, ticks, Verification) on every PR | AEF | new | After 4.1 | 2026-12-01 |
 | 4.3 | Contributors beyond Mehdi | Operator | — | After the pilot holds | December 2026 |
 | 4.4 | Organisation move, on its own merits | Operator | T-5030 | Deferred | — |
