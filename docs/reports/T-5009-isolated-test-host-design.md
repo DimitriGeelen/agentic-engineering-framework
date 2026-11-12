@@ -168,3 +168,8 @@ with this amendment: "Network: none" stands, and the out-channel is disk + seria
   the weakest option for untrusted code. Operator recalled Q-2 B (no NIC, serial log), which needs a VM. Operator:
   **no-NIC VM on 'proxmox'**, accepting the CT 400 / CT 401 escape risk; "or ask around" for a better place, asked
   of ring20 the same day.
+- 2026-11-12, asked around: ring20 found no live Proxmox node free of sensitive guests; the operator's laptop is
+  out; proxmox3 is hard down since the 2026-09-17 power event (needs hands on the machine, then a fresh standalone
+  install, not rejoining the cluster). Better targets it named: (a) one of the operator's Intel MacBooks (ring20
+  T-2638) as a standalone KVM host outside the cluster; (b) CT 400 moved off the 'proxmox' node. Operator: **start
+  on 'proxmox' now, set up a MacBook as the dedicated test host in parallel, switch when it passes the same probe.**
