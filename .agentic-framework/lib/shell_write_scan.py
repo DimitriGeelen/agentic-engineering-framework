@@ -1940,6 +1940,82 @@ def _free_text_value(w: str, opts: frozenset) -> tuple[bool, str | None]:
     return False, None
 
 
+# T-5091 (GitHub #111): the PATTERN of a grep-family search is text, never a path operand:
+# `grep -rE '/home/|192\.168\.' docs/` reads docs/ only. Strict grammar, fail closed: the
+# pattern is found only when every option before it is one this table knows. Patterns from
+# a file (-f, --file), an option that is unknown or whose value could be a file
+# (`--exclude-from FILE`, `--ignore-file PATH`) mean nothing is exempt. sed and awk are NOT
+# here: their scripts can read files (`r /x`, getline).
+_GREP_FLAGS = {
+    "grep": ("rRinlLcvwxEFGPoqshHbaIzZU", frozenset({
+        "--recursive", "--dereference-recursive", "--ignore-case", "--no-ignore-case",
+        "--line-number", "--files-with-matches", "--files-without-match", "--count",
+        "--invert-match", "--word-regexp", "--line-regexp", "--extended-regexp",
+        "--fixed-strings", "--basic-regexp", "--perl-regexp", "--only-matching", "--quiet",
+        "--silent", "--no-messages", "--no-filename", "--with-filename", "--null", "--text",
+        "--byte-offset", "--null-data", "--binary"}), frozenset("mABC"),
+        ("--include=", "--exclude=", "--exclude-dir=", "--color=", "--colour=", "--max-count=",
+         "--context=", "--after-context=", "--before-context=")),
+    "rg": ("inlcvwxFSsuHNoUPL.", frozenset({
+        "--ignore-case", "--smart-case", "--case-sensitive", "--line-number", "--no-line-number",
+        "--files-with-matches", "--files-without-match", "--count", "--invert-match",
+        "--word-regexp", "--line-regexp", "--fixed-strings", "--hidden", "--no-ignore",
+        "--only-matching", "--multiline", "--pcre2", "--follow", "--with-filename",
+        "--no-filename", "--no-heading", "--heading", "--vimgrep", "--json"}), frozenset("mABCgtTjM"),
+        ("--glob=", "--iglob=", "--type=", "--type-not=", "--color=", "--max-count=",
+         "--context=", "--after-context=", "--before-context=")),
+}
+_GREP_FLAGS["egrep"] = _GREP_FLAGS["fgrep"] = _GREP_FLAGS["grep"]
+
+
+def _search_pattern_indexes(argv: list[str]) -> set:
+    """Indexes into argv of the words a grep/egrep/fgrep/rg reads as its PATTERN (not as a
+    path). Empty when argv is not such a command or anything in it is not understood."""
+    if not argv or os.path.basename(argv[0]) not in _GREP_FLAGS:
+        return set()
+    letters, longs, valued, attached = _GREP_FLAGS[os.path.basename(argv[0])]
+    out, explicit, i, n = set(), False, 1, len(argv)
+    while i < n:
+        w = argv[i]
+        if w == "--":
+            if not explicit and i + 1 < n:
+                out.add(i + 1)
+            return out
+        if w in ("-e", "--regexp"):
+            if i + 1 >= n:
+                return set()
+            out.add(i + 1)
+            explicit = True
+            i += 2
+            continue
+        if w.startswith("--regexp="):
+            out.add(i)
+            explicit = True
+        elif w in ("-f", "--file") or w.startswith("--file="):
+            return set()                        # patterns read from a file: no exemption at all
+        elif w.startswith("--"):
+            if w not in longs and not w.startswith(attached):
+                return set()
+        elif w.startswith("-") and len(w) > 1:
+            body = w[1:]
+            for k, c in enumerate(body):
+                if c in letters:
+                    continue
+                if c in valued:                 # -A3 attached, or -A 3 next word
+                    if k + 1 == len(body):
+                        if i + 1 >= n:
+                            return set()
+                        i += 1
+                    break
+                return set()                    # -e/-f in a cluster, or unknown: fail closed
+        else:
+            if not explicit:
+                out.add(i)
+            return out
+        i += 1
+    return out
+
+
 def _read_words(seg: list[str], ctx: _Ctx) -> None:
     """T-3768: judge every path-shaped word of one segment, AFTER quote removal.
 
@@ -1954,10 +2030,14 @@ def _read_words(seg: list[str], ctx: _Ctx) -> None:
         return
     argv, _ = _unwrap(list(seg))
     free_text = _free_text_opts(argv)
+    off = len(seg) - len(argv)
+    pattern = {off + k for k in _search_pattern_indexes(argv)} if seg[off:] == argv else set()
     skip_next = False
-    for w in seg:
+    for idx, w in enumerate(seg):
         if skip_next:
             skip_next = False
+            continue
+        if idx in pattern:          # T-5091: a search pattern is text, not a path
             continue
         if free_text:
             is_free_text, _value = _free_text_value(w, free_text)
