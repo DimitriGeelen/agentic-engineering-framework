@@ -76,12 +76,35 @@ def _one_line(text) -> str:
     return s[:_HOLDER_CAP]
 
 
-def _run(verb: str, session_id, runner, timeout: float, project: str | None):
+#: T-5054 (TermLink B-25, CR-O3): what a claim may say about the hook that makes it.
+ORIGINS = ("human", "automated", "unknown")
+KINDS = ("prompt", "session-start", "tool")
+_BASIS = re.compile(r"^[a-z][a-z-]{0,31}$")
+
+
+def origin_args(origin=None, basis=None, kind=None, interactive=None) -> list[str]:
+    """The B-25 flags of `termlink main claim`. Empty when no origin and no kind is
+    given: the claim is then exactly today's (origin `absent`, counted as built until
+    the operator switches the harness to origin reporting, 04 17.10.a)."""
+    args: list[str] = []
+    if origin is not None:
+        args += ["--origin", origin if origin in ORIGINS else "unknown"]
+        if basis and _BASIS.match(str(basis)) and origin in ("human", "automated"):
+            args += ["--basis", str(basis)]
+    if kind is not None:
+        args += ["--kind", kind if kind in KINDS else "prompt"]
+    if interactive:
+        args += ["--interactive"]
+    return args
+
+
+def _run(verb: str, session_id, runner, timeout: float, project: str | None, extra=()):
     """(rc, stdout, stderr) of `termlink main <verb> --session <sid>`, or the
     answer string UNSUPPORTED / UNKNOWN when it could not run at all."""
     argv = [termlink_bin(), "main", verb, "--session", str(session_id)]
     if project:
         argv += ["--project", str(project)]
+    argv += list(extra)
     try:
         proc = runner(argv, capture_output=True, text=True, timeout=timeout)
     except FileNotFoundError:
@@ -156,17 +179,23 @@ def _recently_claimed(session_id, now: float) -> bool:
 
 
 def claim(session_id, force: bool = False, runner=subprocess.run, timeout: float = 5,
-          project: str | None = None, now: float | None = None) -> str:
+          project: str | None = None, now: float | None = None, origin=None, basis=None,
+          kind=None, interactive=None) -> str:
     """Take the vacant main lease or renew the one this session holds.
     Returns claimed / refused / skipped (rate limit) / unsupported / unknown.
-    Never raises. The rate-limit stamp is written only on success."""
+    Never raises. The rate-limit stamp is written only on success.
+
+    T-5054: with the adapter on, `origin`/`basis` are the RECEIVER-CHECKED values
+    (17.5.e), never the hook's own guess, and `kind`/`interactive` say which hook
+    claims; the hub decides what they are worth (r3 parity cases)."""
     try:
         if not session_id:
             return UNKNOWN
         now = time.time() if now is None else now
         if not force and _recently_claimed(session_id, now):
             return SKIPPED
-        res = _run("claim", session_id, runner, timeout, project)
+        res = _run("claim", session_id, runner, timeout, project,
+                   origin_args(origin, basis, kind, interactive))
         if isinstance(res, str):
             return res
         rc, out, err = res
@@ -238,6 +267,9 @@ def main(argv=None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     if len(argv) == 2 and argv[0] == "claim":
         claim(argv[1], force=True)
+    elif len(argv) >= 2 and argv[0] == "claim" and argv[2:] in (["--kind", "session-start"],
+                                                                 ["--kind", "session-start", "--interactive"]):
+        claim(argv[1], force=True, kind="session-start", interactive="--interactive" in argv)
     return 0
 
 
