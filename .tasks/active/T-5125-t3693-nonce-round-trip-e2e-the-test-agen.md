@@ -8,10 +8,10 @@ description: >
   trip never completes. How test agents may message peers (permission mode / allow
   rule in the test project's settings) is a permission policy choice.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-13T22:30:28Z
-last_update: '2026-11-13T22:45:54Z'
+last_update: 2026-11-13T23:23:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,8 +100,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] the t3693 test agents can send the one reply the test needs, by a mechanism the operator has approved. Tried 2026-11-14: launching them with `--permission-mode default` was itself refused by auto mode ("Undermining Oversight") when I ran the test, so I reverted it. Nothing outside the test's scratch projects changes
+- [ ] `t3693::test_e2e_two_real_agents_nonce_round_trip` passes on this host: the uppercased nonce reaches A's receiver and A's context
+- [ ] the other t3693 tests and t3684 (which launches through the same helper) still pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -384,3 +385,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5125-t3693-nonce-round-trip-e2e-the-test-agen.md
 - **Context:** Initial task creation
+
+### 2026-11-13T23:23:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
