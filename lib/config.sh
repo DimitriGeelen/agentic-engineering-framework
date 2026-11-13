@@ -370,6 +370,15 @@ FW_CONFIG_REGISTRY=(
     "TESTHOST_BACKEND|stub|Hypervisor backend for fw testhost: stub (a temp dir and a child process, for tests) or proxmox (phase 4, refuses until the operator chooses the node). T-5009."
     "TESTHOST_TIMEOUT|1800|Wall-clock seconds a fw testhost run may take before the controller stops the VM and records state timeout. T-5009."
     "TESTHOST_SERIAL_CAP_BYTES|5242880|Bytes of sanitised serial-console log fw testhost keeps per run; past the cap a visible truncation line is written and the rest is drained and dropped. T-5009."
+    "TESTHOST_PVE_URL||Proxmox API base URL for the proxmox backend, e.g. https://<node>:8006; must be a name or address the node's certificate lists (T-5099)"
+    "TESTHOST_PVE_NODE||Proxmox node name used in API paths (/nodes/<node>/...) (T-5099)"
+    "TESTHOST_PVE_POOL||Proxmox resource pool the test VMs live in; the token's VM rights are on this pool only (T-5099)"
+    "TESTHOST_PVE_TEMPLATE||VMID of the test template VM (not in the pool; the token may only clone it) (T-5099)"
+    "TESTHOST_PVE_ISO_STORAGE||Proxmox directory storage the run's input ISO is uploaded to (T-5099)"
+    "TESTHOST_PVE_DISK_STORAGE||Proxmox storage for linked-clone disks (must hold the template's disk) (T-5099)"
+    "TESTHOST_PVE_CA||Path to the Proxmox CA certificate used to verify the API's TLS (T-5099)"
+    "TESTHOST_PVE_TOKEN_FILE||Path to the 0600 file holding the pool-limited API token line user@realm!id=secret; empty = .context/secrets/testhost-pve-token (T-5099)"
+    "TESTHOST_PVE_VMID_RANGE||LOW-HIGH VMID block the controller may clone into, at most 100 ids, e.g. 9501-9509; any other id is refused (T-5099)"
     # T-3080. ONE window for BOTH Tier 0 approval legs. Before this the CLI leg
     # (check-tier0.sh, `fw tier0 approve` grant) carried a bare 300 literal and
     # the Watchtower leg defaulted to 3600 via TIER0_WATCHTOWER_TTL — so the path
