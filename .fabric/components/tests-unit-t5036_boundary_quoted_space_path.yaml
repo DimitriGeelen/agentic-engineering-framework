@@ -1,0 +1,21 @@
+id: tests/unit/t5036_boundary_quoted_space_path.bats
+name: t5036_boundary_quoted_space_path
+type: script
+subsystem: tests
+location: tests/unit/t5036_boundary_quoted_space_path.bats
+tags: []
+
+purpose: "T-5036 (050 msg 86069e19): a quoted path containing a space is ONE path to the boundary hook."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-13
+created_by: unknown
