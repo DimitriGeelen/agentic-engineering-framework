@@ -60,3 +60,6 @@ blocks() { run hook "$1"; [ "$status" -eq 2 ] || { echo "status=$status $output"
     rm -rf "$P/policy"
     blocks "cp -r /tmp/prepared $P/policy"
 }
+
+@test "install creates the grant file: refused" { blocks "install -m 644 /tmp/g.yaml $GF"; }
+@test "ln -s creates the grant file: refused"   { blocks "ln -s /tmp/g.yaml $GF"; }

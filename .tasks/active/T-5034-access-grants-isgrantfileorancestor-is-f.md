@@ -89,10 +89,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] with no grant file, a typed write that targets `policy/access-grants.yaml` (redirect, tee, cp, mv, install, ln) is refused by check-project-boundary.sh
-- [ ] with no grant file and no `policy/` folder, creating `policy/` by a typed move or copy is refused (it could carry a prepared grant file)
-- [ ] with no grant file and an existing `policy/`, the T-4988 control still holds: `mv policy policy.old` is allowed, and other files under `policy/` are writable as before
-- [ ] with a grant file, behaviour is unchanged; all t4988/t4989 and boundary tests still pass
+- [x] with no grant file, a typed write that targets `policy/access-grants.yaml` (redirect, tee, cp, mv, install, ln) is refused by check-project-boundary.sh
+- [x] with no grant file and no `policy/` folder, creating `policy/` by a typed move or copy is refused (it could carry a prepared grant file)
+- [x] with no grant file and an existing `policy/`, the T-4988 control still holds: `mv policy policy.old` is allowed, and other files under `policy/` are writable as before
+- [x] with a grant file, behaviour is unchanged; all t4988/t4989 and boundary tests still pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,8 +278,20 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t5034_grant_file_bootstrap.bats > /tmp/.t5034.out 2>&1 && ! grep -q "^not ok" /tmp/.t5034.out
+test "$(grep -c '# skip' /tmp/.t5034.out)" -eq 0
+timeout 300 bats tests/unit/t4988_access_grants_boundary.bats tests/unit/t4989_access_grants_create_level.bats > /tmp/.t5034b.out 2>&1 && ! grep -q "^not ok" /tmp/.t5034b.out
+bin/fw vendor self --check --task T-5034
 
 ## RCA
+
+**Symptom:** reported by ring20-dashboard's security review (a14cb4c1, MEDIUM). In a project with no grant file, a typed command could create `policy/access-grants.yaml`, so the agent could write its own first grants.
+
+**Root cause:** `is_grant_file_or_ancestor` began with `if ... not _grant_file_exists(root): return False`. The guard was designed to protect an existing file ("Projects without a grant file are not affected"), so it never considered the file's creation.
+
+**Why structurally allowed:** the T-4988 tests were written from the owning side. Every guard test had a grant file present, and the only no-file test is a control that the folder stays ordinary. Nothing asked "can the agent make the first one?"
+
+**Prevention:** `tests/unit/t5034_grant_file_bootstrap.bats` has 13 tests. The 8 refusal tests fail on the old code (run with the fix stashed) and pass on the new; the 3 controls pass on both. Committing a grant file under agent control is the remaining path, covered by T-5031.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
