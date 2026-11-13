@@ -7,12 +7,12 @@ description: >
   the later finalisation keeps the old date, so its closure commit outside 60 min
   of that date is refused. Found under T-5112.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/check-active-task.sh, agents/task-create/update-task.sh, tests/unit/t5118_finalised_closure_commit.bats]
 related_tasks: [T-5112]
 origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "73f57250"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -42,8 +42,8 @@ origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "73f57250"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-13T14:40:41Z
-last_update: 2026-11-13T15:32:53Z
-date_finished:
+last_update: 2026-11-13T16:50:48Z
+date_finished: 2026-11-13T16:50:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -100,10 +100,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A regression test reproduces 055's case: a completed task whose `date_finished` is a day old and that was finalised just now has its plain closure commit, with focus on another task, refused by the drift gate before the fix
-- [ ] Finalising a partial-complete task (the same-status re-run that moves it to completed/) writes `date_finalised: <now>` into its frontmatter; `date_finished` is left unchanged
-- [ ] The T-4182 window measures from the later of `date_finished` and `date_finalised`, so that closure commit passes; a completed task with both dates old, and a non-commit command, still block
-- [ ] Every existing test that reads update-task.sh or check-active-task.sh still passes
+- [x] A regression test reproduces 055's case: a completed task whose `date_finished` is a day old and that was finalised just now has its plain closure commit, with focus on another task, refused by the drift gate before the fix
+- [x] Finalising a partial-complete task (the same-status re-run that moves it to completed/) writes `date_finalised: <now>` into its frontmatter; `date_finished` is left unchanged
+- [x] The T-4182 window measures from the later of `date_finished` and `date_finalised`, so that closure commit passes; a completed task with both dates old, and a non-commit command, still block
+- [x] Every existing test that reads update-task.sh or check-active-task.sh still passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -400,3 +400,16 @@ bin/fw vendor self --check --task T-5118
 ### 2026-11-13T15:32:53Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-13T16:50:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3b97bef5
+- **Timestamp:** 2026-11-13T16:51:28Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

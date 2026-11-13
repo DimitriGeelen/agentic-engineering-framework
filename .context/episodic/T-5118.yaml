@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5118: Finalising a partial-complete task leaves date_finished at the partial-complete date, so the T-4182 closure-commit window misses it (055 T-645)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-13T16:52:06Z
+# ============================================================================
+
+task_id: T-5118
+task_name: "Finalising a partial-complete task leaves date_finished at the partial-complete date, so the T-4182 closure-commit window misses it (055 T-645)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-13T14:40:41Z
+completed: 2026-11-13T16:50:48Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-13T16:46:14+01:00
+last_commit: 2026-11-13T17:35:50+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  finalising a partial-complete task records date_finalised; the closure-commit window counts from the later date. vendor update-task and check-active-task. place the date_finalised write after the move's reconcile/orphan check (keeps T-3744 and T-3235 constraints). vendor update-task
+
+# Key outcomes
+outcomes:
+  - 'A regression test reproduces 055''s case: a completed task whose `date_finished` is a day old and that was finalised just now has its plain closure commit, with focus on another task, refused by the drift gate before the fix'
+  - 'Finalising a partial-complete task (the same-status re-run that moves it to completed/) writes `date_finalised: <now>` into its frontmatter; `date_finished` is left unchanged'
+  - 'The T-4182 window measures from the later of `date_finished` and `date_finalised`, so that closure commit passes; a completed task with both dates old, and a non-commit command, still block'
+  - 'Every existing test that reads update-task.sh or check-active-task.sh still passes'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.fabric/components/tests-unit-t5118_finalised_closure_commit.yaml'
+  - '.tasks/active/T-5118-finalising-a-partial-complete-task-leave.md'
+  - '.tasks/active/T-5120-retention-for-finished-termlink-dispatch.md'
+  - '.tasks/active/T-5121-fw-reviewer-judge-the-120-s-dispatch-tim.md'
+  - 'agents/context/check-active-task.sh'
+  - 'agents/task-create/update-task.sh'
+  - 'tests/unit/t5118_finalised_closure_commit.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-13T16:46:14'
+    action: 'T-5118: finalising a partial-complete task records date_finalised; the closure-commit window counts from the later date'
+  - time: '2026-11-13T16:46:27'
+    action: 'T-5118: vendor update-task and check-active-task'
+  - time: '2026-11-13T17:35:41'
+    action: 'T-5118: place the date_finalised write after the move''s reconcile/orphan check (keeps T-3744 and T-3235 constraints)'
+  - time: '2026-11-13T17:35:50'
+    action: 'T-5118: vendor update-task'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 130 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 130
+  commits: 5
+  files_changed: 12
+  lines_added: 371
+  lines_removed: 58
+  footprint_refreshed_at: '2026-11-13T16:52:27Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5118-finalising-a-partial-complete-task-leave.md
+generated_by: context-agent-hybrid
