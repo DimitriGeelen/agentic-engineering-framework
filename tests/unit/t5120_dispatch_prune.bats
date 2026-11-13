@@ -68,10 +68,30 @@ prune() {  # args...
     grep -q "kept: 1 younger" <<<"$output"
 }
 
-@test "an old dir with an uncollected result is kept" {
-    mk "$D/w-unread" "$P" 30 uncollected
+@test "an uncollected result older than the collected cut but younger than its own cut is kept" {
+    mk "$D/w-unread" "$P" 20 uncollected
     prune --older-than 7
     [ -d "$D/w-unread" ]; grep -q "1 uncollected" <<<"$output"
+}
+
+@test "an uncollected result older than TERMLINK_DISPATCH_UNCOLLECTED_DAYS (30) is removed and logged as such" {
+    mk "$D/w-stale" "$P" 40 uncollected
+    mk "$D/w-read" "$P" 40
+    prune --older-than 7
+    [ "$status" -eq 0 ]; [ ! -e "$D/w-stale" ]; [ ! -e "$D/w-read" ]
+    python3 -c 'import json,sys; r=json.loads(open(sys.argv[1]).read().splitlines()[-1]); assert r["removed"]==["w-read"], r; assert r["removed_uncollected"]==["w-stale"], r; assert r["uncollected_older_than_days"]==30' "$D/retention.jsonl"
+}
+
+@test "TERMLINK_DISPATCH_UNCOLLECTED_DAYS=0 never removes an uncollected result" {
+    mk "$D/w-stale" "$P" 400 uncollected
+    run env PATH="$STUB:$PATH" FW_DISPATCH_DIR="$D" PROJECT_ROOT="$P" FW_TERMLINK_DISPATCH_UNCOLLECTED_DAYS=0 bash "$TL" prune --older-than 7 < /dev/null
+    [ "$status" -eq 0 ]; [ -d "$D/w-stale" ]
+}
+
+@test "an uncollected cut below the collected cut is raised to it" {
+    mk "$D/w-unread" "$P" 10 uncollected
+    prune --older-than 14 --uncollected-older-than 3
+    [ -d "$D/w-unread" ]
 }
 
 @test "an old dir with no exit_code is kept" {

@@ -991,22 +991,35 @@ _retention_days() {
     if [[ "$d" =~ ^[0-9]+$ ]] && [ "$d" -le 365 ]; then echo "$d"; else echo 7; fi
 }
 
+# T-5120 (operator ruling 2026-11-13, option "after 30 days"): only `fw termlink result` marks a
+# result collected, and most readers (wait, the review judge) never call it, so "uncollected" is
+# the normal state of a read result. An uncollected result goes after this many days instead.
+# 0 = never remove an uncollected result.
+_uncollected_days() {
+    local d
+    d=$(fw_config "TERMLINK_DISPATCH_UNCOLLECTED_DAYS" 30 2>/dev/null || echo 30)
+    if [[ "$d" =~ ^[0-9]+$ ]] && [ "$d" -le 3650 ]; then echo "$d"; else echo 30; fi
+}
+
 cmd_prune() {
-    local days="" dry_run=false quiet=false
+    local days="" udays="" dry_run=false quiet=false
     while [ $# -gt 0 ]; do
         case "$1" in
             -h|--help)
                 cat <<'USAGE'
-Usage: fw termlink prune [--older-than DAYS] [--dry-run|-n]
+Usage: fw termlink prune [--older-than DAYS] [--uncollected-older-than UDAYS] [--dry-run|-n]
 
 Remove this project's FINISHED dispatch worker dirs whose exit_code is older than DAYS
-(default: TERMLINK_DISPATCH_RETENTION_DAYS, 7). Kept, always: running or unfinalised workers,
-uncollected results, other projects' dirs, and /tmp dirs with no meta.json. Signals nothing.
-Removals are logged to <dispatch root>/retention.jsonl. `fw termlink dispatch` runs this in
-the background at most once an hour; TERMLINK_DISPATCH_RETENTION_DAYS=0 turns that off.
+(default: TERMLINK_DISPATCH_RETENTION_DAYS, 7). A dir whose result was never collected
+(`fw termlink result`) waits UDAYS instead (TERMLINK_DISPATCH_UNCOLLECTED_DAYS, 30; 0 = never).
+Kept, always: running or unfinalised workers, other projects' dirs, and /tmp dirs with no
+meta.json. Signals nothing. Removals are logged to <dispatch root>/retention.jsonl.
+`fw termlink dispatch` runs this in the background at most once an hour;
+TERMLINK_DISPATCH_RETENTION_DAYS=0 turns that off.
 USAGE
                 return 0 ;;
             --older-than) days="${2:-}"; shift ;;
+            --uncollected-older-than) udays="${2:-}"; shift ;;
             -n|--dry-run) dry_run=true ;;
             -q|--quiet) quiet=true ;;
             *) echo "fw termlink prune: unknown option '$1' (try --help)" >&2; return 2 ;;
@@ -1018,12 +1031,22 @@ USAGE
         echo "fw termlink prune: --older-than needs a whole number of days, at least 1" >&2
         return 2
     fi
+    [ -n "$udays" ] || udays=$(_uncollected_days)
+    if ! [[ "$udays" =~ ^[0-9]+$ ]]; then
+        echo "fw termlink prune: --uncollected-older-than needs a whole number of days (0 = never)" >&2
+        return 2
+    fi
+    [ "$udays" -eq 0 ] || [ "$udays" -ge "$days" ] || udays="$days"   # never sooner than collected ones
 
-    local real_project ref procs
+    local real_project ref uref="" procs
     real_project=$(readlink -f "${PROJECT_ROOT:-$(pwd)}" 2>/dev/null || echo "${PROJECT_ROOT:-$(pwd)}")
-    # One reference file at the cut, so the age test is the builtin -ot (no fork per dir).
+    # One reference file per cut, so the age test is the builtin -ot (no fork per dir).
     ref=$(mktemp "${TMPDIR:-/tmp}/fw-prune-ref.XXXXXX") || return 1
     touch -d "@$(( $(date +%s) - days * 86400 ))" "$ref"
+    if [ "$udays" -gt 0 ]; then
+        uref=$(mktemp "${TMPDIR:-/tmp}/fw-prune-uref.XXXXXX") || { rm -f "$ref"; return 1; }
+        touch -d "@$(( $(date +%s) - udays * 86400 ))" "$uref"
+    fi
     procs=$(ps -eo args= 2>/dev/null || true)
 
     # Speed (measured 59 s over 7,453 foreign dirs in the shared /tmp root): one grep finds the
@@ -1040,7 +1063,7 @@ USAGE
                     -e "\"project\": \"$real_project\"" -e "\"project\": \"${PROJECT_ROOT:-$(pwd)}\"" {} + 2>/dev/null)
     done
 
-    local -a removed=()
+    local -a removed=() removed_unc=()
     local young=0 running=0 uncollected=0 other=0 unfinished=0 w n
     local _wds; mapfile -t _wds < <(_all_wdirs)
     for w in ${_wds[@]+"${_wds[@]}"}; do
@@ -1054,7 +1077,11 @@ USAGE
         case "$procs" in *"$w/run.sh"*) running=$((running + 1)); continue ;; esac
         if ! _worker_done "$w"; then unfinished=$((unfinished + 1)); continue; fi
         if [ ! -f "$w/collected" ] && { [ -s "$w/result.md" ] || [ -s "$w/result.jsonl" ]; }; then
-            uncollected=$((uncollected + 1)); continue
+            if [ -z "$uref" ] || ! [ "$w/exit_code" -ot "$uref" ]; then
+                uncollected=$((uncollected + 1)); continue
+            fi
+            if [ "$dry_run" = true ] || rm -rf -- "$w"; then removed_unc+=("$n"); fi
+            continue
         fi
         if [ "$dry_run" = true ]; then
             removed+=("$n")
@@ -1062,22 +1089,27 @@ USAGE
             removed+=("$n")
         fi
     done
-    rm -f "$ref"
+    rm -f "$ref" ${uref:+"$uref"}
 
     local verb="Removed"; [ "$dry_run" = true ] && verb="Would remove"
+    local ulabel="never"; [ "$udays" -gt 0 ] && ulabel="${udays}d"
     [ "$quiet" = true ] || {
         local x; for x in ${removed[@]+"${removed[@]}"}; do echo "  $x"; done
-        echo "$verb ${#removed[@]} finished worker dir(s) older than ${days}d; kept: $young younger, $uncollected uncollected, $unfinished unfinished, $running running; $other other project(s)' dir(s) not touched."
+        for x in ${removed_unc[@]+"${removed_unc[@]}"}; do echo "  $x (uncollected)"; done
+        echo "$verb ${#removed[@]} finished worker dir(s) older than ${days}d and ${#removed_unc[@]} with an uncollected result older than $ulabel; kept: $young younger, $uncollected uncollected, $unfinished unfinished, $running running; $other other project(s)' dir(s) not touched."
     }
-    if [ "$dry_run" != true ] && [ "${#removed[@]}" -gt 0 ]; then
+    if [ "$dry_run" != true ] && [ $(( ${#removed[@]} + ${#removed_unc[@]} )) -gt 0 ]; then
         mkdir -p "$DISPATCH_DIR" 2>/dev/null || true
+        # argv: days udays young uncollected unfinished running other n_removed removed... removed_unc...
         python3 -c 'import json,sys,datetime
+a=sys.argv; k=int(a[8]); rest=a[9:]
 print(json.dumps({"ts": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-  "older_than_days": int(sys.argv[1]), "removed": sys.argv[7:],
-  "kept": {"younger": int(sys.argv[2]), "uncollected": int(sys.argv[3]),
-           "unfinished": int(sys.argv[4]), "running": int(sys.argv[5])},
-  "other_projects": int(sys.argv[6])}))' "$days" "$young" "$uncollected" "$unfinished" "$running" "$other" \
-            ${removed[@]+"${removed[@]}"} >> "$DISPATCH_DIR/retention.jsonl" 2>/dev/null || true
+  "older_than_days": int(a[1]), "uncollected_older_than_days": int(a[2]),
+  "removed": rest[:k], "removed_uncollected": rest[k:],
+  "kept": {"younger": int(a[3]), "uncollected": int(a[4]), "unfinished": int(a[5]), "running": int(a[6])},
+  "other_projects": int(a[7])}))' "$days" "$udays" "$young" "$uncollected" "$unfinished" "$running" "$other" \
+            "${#removed[@]}" ${removed[@]+"${removed[@]}"} ${removed_unc[@]+"${removed_unc[@]}"} \
+            >> "$DISPATCH_DIR/retention.jsonl" 2>/dev/null || true
     fi
     return 0
 }

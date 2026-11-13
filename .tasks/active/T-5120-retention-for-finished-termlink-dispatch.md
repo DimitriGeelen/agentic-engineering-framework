@@ -101,12 +101,19 @@ bvp_scores_proposed:
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [ ] `fw termlink prune [--older-than DAYS] [--dry-run]` removes this project's finished worker dirs (exit_code present and finalised) whose exit_code is older than DAYS, across the project root and the legacy /tmp root
-- [ ] prune never removes a dir that is running or unfinalised, holds an uncollected result, belongs to another project, or sits in the shared /tmp root with no meta.json, and it never signals a process or stops an endpoint
+- [ ] a dir whose result was never collected waits `TERMLINK_DISPATCH_UNCOLLECTED_DAYS` instead (default 30, 0 = never, never sooner than the collected cut; operator ruling 2026-11-13)
+- [ ] prune never removes a dir that is running or unfinalised, belongs to another project, or sits in the shared /tmp root with no meta.json, and it never signals a process or stops an endpoint
 - [ ] `fw termlink dispatch` runs the prune in the background at most once an hour when `TERMLINK_DISPATCH_RETENTION_DAYS` > 0 (default 7, range 0–365, 0 = off); a prune failure never delays or fails the dispatch
 - [ ] every prune that removes something appends one JSON line (time, age, removed names, kept counts) to `retention.jsonl` in the dispatch root (gitignored, beside the dirs)
 - [ ] tests cover each keep rule, the age cut, dry-run, the hourly throttle and the off switch, in a sandbox `FW_DISPATCH_DIR`
 
 ### Human
+- [ ] [REVIEW] The two new retention settings read clearly on Watchtower's config page
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find `TERMLINK_DISPATCH_RETENTION_DAYS` and `TERMLINK_DISPATCH_UNCOLLECTED_DAYS` (just above `TERMLINK_WORKER_TIMEOUT`)
+  **Expected:** defaults 7 and 30, and each description says what is kept and for how long, what 0 does, and the valid range
+  **If not:** note what is unclear; each text is one line in `web/blueprints/config.py`
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -290,6 +297,13 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t5120_dispatch_prune.bats > /tmp/.t5120.out 2>&1 && ! grep -q "^not ok" /tmp/.t5120.out
+test "$(grep -c '# skip' /tmp/.t5120.out)" -eq 0
+timeout 120 bats tests/lint/config-registry-parity.bats > /tmp/.t5120p.out 2>&1 && ! grep -q "^not ok" /tmp/.t5120p.out
+bash -n agents/termlink/termlink.sh
+bin/fw termlink prune --help > /tmp/.t5120h.out 2>&1 && grep -q "uncollected-older-than" /tmp/.t5120h.out
+bin/fw vendor self --check --task T-5120
+bin/fw watchtower current
 
 ## RCA
 
@@ -361,6 +375,16 @@ bvp_scores_proposed:
 -->
 
 ## Decisions
+
+### 2026-11-13 — uncollected results
+- **Chose:** remove an uncollected result after `TERMLINK_DISPATCH_UNCOLLECTED_DAYS` (30), operator's answer "Yes, after 30 days".
+- **Why:** only `fw termlink result` marks a result collected; wait and the review judge never do, so all 185 of this project's finished dirs older than 7 days were "uncollected" and a keep-forever rule made retention a no-op (dry run: 0 removable).
+- **Rejected:** same 7 days (a never-opened result goes after a week); never (frees nothing until every reader marks results).
+
+### 2026-11-13 — prune is separate from cleanup
+- **Chose:** a new `fw termlink prune` that only deletes, beside the existing `cleanup`.
+- **Why:** cleanup also SIGTERMs orphans and stops endpoints and needs consent; an unattended background job must never signal processes.
+- **Rejected:** `cleanup --older-than --yes` from dispatch (would kill processes unattended).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
