@@ -178,7 +178,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 -S ${CLAUDE_PROJECT_DIR}/lib/sidecar/adapter2.py pre-tool"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook sidecar-adapter2 pre-tool"
           }
         ]
       }
@@ -256,7 +256,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 -S ${CLAUDE_PROJECT_DIR}/lib/sidecar/adapter2.py post-tool"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook sidecar-adapter2 post-tool"
           }
         ]
       }
@@ -298,7 +298,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 -S ${CLAUDE_PROJECT_DIR}/lib/sidecar/adapter2.py session-end"
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook sidecar-adapter2 session-end"
           }
         ]
       }
