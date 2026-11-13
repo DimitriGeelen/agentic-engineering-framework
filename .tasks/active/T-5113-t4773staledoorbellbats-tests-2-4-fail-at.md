@@ -102,9 +102,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] the cause of tests 2-4 failing is confirmed (real `termlink main am-i` reached), or the actual cause is named here if it differs
-- [ ] t4773's setup points `FW_TERMLINK_BIN` at a stub that answers the `termlink main` verbs, so the result does not depend on the installed termlink
-- [ ] every test in `tests/unit/t4773_stale_doorbell.bats` passes, none skipped; no production file changes
+- [x] the cause of tests 2-4 failing is confirmed (real `termlink main am-i` reached), or the actual cause is named here if it differs
+- [x] t4773's setup points `FW_TERMLINK_BIN` at a stub that answers the `termlink main` verbs, so the result does not depend on the installed termlink
+- [x] every test in `tests/unit/t4773_stale_doorbell.bats` passes, none skipped; no production file changes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,8 +290,19 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 120 bats tests/unit/t4773_stale_doorbell.bats > /tmp/.t5113.out 2>&1 && ! grep -q "^not ok" /tmp/.t5113.out
+test "$(grep -c '# skip' /tmp/.t5113.out)" -eq 0
+test -z "$(git log --format=%h --grep='^T-5113' -- lib agents bin web)"
 
 ## RCA
+
+**Symptom:** `t4773_stale_doorbell.bats` tests 2-4 failed with `AssertionError: []`: the prompt hook surfaced nothing.
+
+**Root cause:** confirmed by experiment. With `FW_TERMLINK_BIN` pointing at a stub that answers "main", all 7 pass. With a stub where the verb is missing (the old delivery rule), all 7 pass too. With the real termlink, tests 2-4 fail. The prompt hook asks the T-5014 main-only gate. The real termlink has `main am-i`, the throwaway test project has no main, so the hook withholds the mail these tests expect to see.
+
+**Why structurally allowed:** same as T-5124. When T-5014 landed, the host termlink lacked the verb, so every sidecar test took the old path. Tests that reach the gate without pinning its answer went red only when the binary was upgraded.
+
+**Prevention:** the test pins the answer in `setup`. A sweep of all 82 test files that use the sidecar modules (`tests/unit`, `tests/lint`) is green, so no other unit test has this dependency. The integration ones are fixed under T-5124.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
