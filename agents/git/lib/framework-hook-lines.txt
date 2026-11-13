@@ -70,6 +70,7 @@ FOUND=1
 FRAMEWORK_ROOT="$PROJECT_ROOT"
 FRAMEWORK_ROOT="$PROJECT_ROOT/.agentic-framework"
 FW_PATH=$(grep "^framework_path:" "$PROJECT_ROOT/.framework.yaml" 2>/dev/null | sed 's/framework_path:[[:space:]]*//')
+GRANT_GUARD="$FRAMEWORK_ROOT/agents/git/lib/grant-file-guard.sh"
 HANDOVER_TIME=$(stat -c %Y "$LATEST" 2>/dev/null || stat -f %m "$LATEST" 2>/dev/null || echo 0)
 HAS_DECISION=false
 HAS_DECISION=true
@@ -272,6 +273,7 @@ audit_exit=$?
 audit_exit=${PIPESTATUS[0]}
 awk '
 bash "$CORPUS_GUARD" scan-staged || exit 1
+bash "$GRANT_GUARD" || exit 1
 bin/*)                                      return 0 ;;
 bin/*.pyc)                                  return 1 ;;
 break
@@ -458,6 +460,8 @@ echo "0" > "$COUNTER_FILE"
 echo "0" > "$EDIT_COUNTER"
 echo "=== Pre-Push Audit Check ==="
 echo "A '! cmd' that is not the last statement of its test cannot fail it" >&2
+echo "ACCESS GRANTS: grant-file guard missing ($GRANT_GUARD) and this agent commit changes policy/access-grants.yaml — refused (T-5031)." >&2
+echo "ACCESS GRANTS: grant-file guard missing ($GRANT_GUARD) and this agent merge changes policy/access-grants.yaml — refused (T-5031)." >&2
 echo "After user confirms, reset the counter:"
 echo "Audit lock held — waiting up to ${_t3297_wait}s for it to free (FW_PREPUSH_LOCK_WAIT=$_t3297_wait, 0 disables)..."
 echo "Audit lock held — waiting up to ${_t3297_wait}s for it to free (FW_PREPUSH_LOCK_WAIT=$_t3297_wait, 0 disables)..." >&2
@@ -598,6 +602,7 @@ echo "would inherit the divergence silently." >&2
 elif [ "$HAS_DECISION" = false ]; then
 elif [ "$UNREG_COUNT" -gt 0 ]; then
 elif [ "$_r_sha" = "$_zero" ] || [ "$_l_sha" = "$_r_sha" ]; then
+elif [ "${CLAUDECODE:-}" = "1" ] && git diff --cached --no-renames --name-only -- policy/access-grants.yaml 2>/dev/null | grep -q .; then
 elif [ "${_r_ref#refs/tags/}" != "$_r_ref" ]; then
 elif [ $audit_exit -eq 1 ]; then
 elif [ $audit_exit -eq 2 ]; then
@@ -701,6 +706,7 @@ if [ -f "$FRAMEWORK_ROOT/lib/config.sh" ]; then
 if [ -f "$FRAMEWORK_ROOT/lib/paths.sh" ]; then
 if [ -f "$FRAMEWORK_ROOT/lib/prepush-lock-wait.sh" ]; then
 if [ -f "$FRAMEWORK_ROOT/lib/tasks.sh" ]; then
+if [ -f "$GRANT_GUARD" ]; then
 if [ -f "$LARGE_FILE_SCANNER" ]; then
 if [ -f "$LATEST" ]; then
 if [ -f "$MASTER_GUARD" ]; then
