@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5034: Access grants: is_grant_file_or_ancestor is False while the grant file does not exist, so the first write of the grant file is unguarded (self-grant bootstrap)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-13T23:50:13Z
+# ============================================================================
+
+task_id: T-5034
+task_name: "Access grants: is_grant_file_or_ancestor is False while the grant file does not exist, so the first write of the grant file is unguarded (self-grant bootstrap)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-02T19:46:48Z
+completed: 2026-11-13T23:48:44Z
+duration_days: 11
+updates_count: 3
+first_commit: 2026-11-14T00:39:29+01:00
+last_commit: 2026-11-14T00:48:41+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  SECURITY — the grant file is guarded from typed writes even before it exists (self-grant bootstrap); a missing policy/ is guarded too, an existing one stays ordinary. install/ln cases, RCA, verification, criteria ticked; vendor access_grants. t4988 control keeps policy/ (git rm of its only file removed the folder, so its mv moved nothing; a missing policy/ is now guarded)
+
+# Key outcomes
+outcomes:
+  - 'with no grant file, a typed write that targets `policy/access-grants.yaml` (redirect, tee, cp, mv, install, ln) is refused by check-project-boundary.sh'
+  - 'with no grant file and no `policy/` folder, creating `policy/` by a typed move or copy is refused (it could carry a prepared grant file)'
+  - 'with no grant file and an existing `policy/`, the T-4988 control still holds: `mv policy policy.old` is allowed, and other files under `policy/` are writable as before'
+  - 'with a grant file, behaviour is unchanged; all t4988/t4989 and boundary tests still pass'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/access_grants.py'
+  - '.fabric/components/tests-unit-t5034_grant_file_bootstrap.yaml'
+  - '.tasks/active/T-5034-access-grants-isgrantfileorancestor-is-f.md'
+  - 'lib/access_grants.py'
+  - 'tests/unit/t4988_access_grants_boundary.bats'
+  - 'tests/unit/t5034_grant_file_bootstrap.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-14T00:39:29'
+    action: 'T-5034: SECURITY — the grant file is guarded from typed writes even before it exists (self-grant bootstrap); a missing policy/ is guarded too, an existing one stays ordinary'
+  - time: '2026-11-14T00:42:33'
+    action: 'T-5034: install/ln cases, RCA, verification, criteria ticked; vendor access_grants'
+  - time: '2026-11-14T00:48:41'
+    action: 'T-5034: t4988 control keeps policy/ (git rm of its only file removed the folder, so its mv moved nothing; a missing policy/ is now guarded)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 16081 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [access-grants, security]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 16081
+  commits: 4
+  files_changed: 9
+  lines_added: 640
+  lines_removed: 15
+  footprint_refreshed_at: '2026-11-13T23:50:36Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5034-access-grants-isgrantfileorancestor-is-f.md
+generated_by: context-agent-hybrid

@@ -54299,3 +54299,21 @@ scan_id: R-06e8c492
 task_id: T-5113
 payload:
   task_file: .tasks/active/T-5113-t4773staledoorbellbats-tests-2-4-fail-at.md
+---
+kind: scan_emitted
+timestamp: '2026-11-13T23:49:43Z'
+scan_id: R-83943608
+task_id: T-5034
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-13T23:49:43Z'
+scan_id: R-83943608
+task_id: T-5034
+payload:
+  task_file: .tasks/active/T-5034-access-grants-isgrantfileorancestor-is-f.md
