@@ -100,7 +100,8 @@ cost_estimate_proposed:
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [ ] the t3693/t3684 e2e helpers point `FW_TERMLINK_BIN` at a test stub that answers only the `termlink main` verbs, making each test session the main of its own throwaway project; every other termlink call (register, inject, list, hub) still goes to the real binary
-- [ ] `t3693::test_real_termlink_inject_reaches_the_tagged_session`, `t3693::test_e2e_two_real_agents_nonce_round_trip` and `t3684::test_6_two_sessions_one_project_idle_gets_it_busy_pty_gets_nothing` pass on this host, whose termlink has `main am-i`
+- [ ] `t3693::test_real_termlink_inject_reaches_the_tagged_session` and `t3684::test_6_two_sessions_one_project_idle_gets_it_busy_pty_gets_nothing` pass on this host, whose termlink has `main am-i` (whole t3684 file: 8/8)
+- [ ] `t3693::test_e2e_two_real_agents_nonce_round_trip` gets past main-only delivery: B's receiver logs INJECT_ATTEMPT/INJECT_TYPING and B's agent sees the doorbell. Its remaining failure, B's reply blocked by Claude Code auto mode ("Unsanctioned Communication"), is a different cause, filed as its own task
 - [ ] no production file changes; the rest of both files is no worse than before (same pass/skip set)
 
 ### Human
