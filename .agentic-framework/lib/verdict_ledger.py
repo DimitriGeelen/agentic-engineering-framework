@@ -3094,13 +3094,15 @@ def _stale_fault(ctx: _Ctx, row: dict) -> tuple[str, str] | None:
     if rc != 0 or rc2 != 0:
         return "stale-review", f"git cannot say what changed since reviewed revision {rev[:9]} — refusing"
     changed = set(diff.splitlines())
-    ref = re.compile(rf"(?<![A-Za-z0-9-]){re.escape(ctx.task_id)}(?![0-9])")
     for rec in out.split("\x1e"):
         if "\x1d" not in rec:
             continue
         head, files = rec.split("\x1d", 1)
         sha, _, msg = head.partition("\x1f")
-        if not ref.search(msg):
+        # T-5116: the task's work is a commit whose SUBJECT opens with its id (the component
+        # count's rule, `_owns`), not any commit that mentions it: 055's green on T-645 went
+        # stale because a T-704 commit named T-645 in its body.
+        if not _owns(msg.lstrip().split("\n", 1)[0], ctx.task_id):
             continue
         work = [f for f in files.splitlines() if f.strip() and f in changed
                 and not f.startswith(_NOT_WORK + artifacts)]
