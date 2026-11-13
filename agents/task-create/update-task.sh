@@ -244,6 +244,13 @@ apply_reviewer_verdicts() {
     if echo "$applied" | grep -q '"verdict_id"'; then
         echo -e "${GREEN}Reviewer verdict applied: $applied${NC}"
     fi
+    # T-5117: a verdict that exists but does not count is named, never silent — 055's
+    # partial-complete re-run printed "Update Complete" with the green quietly judged stale.
+    local _na
+    _na=$(printf '%s\n' "$applied" | grep '^NOT APPLIED:' || true)
+    if [ -n "$_na" ]; then
+        echo -e "${YELLOW}${_na}${NC}"
+    fi
 }
 
 # Human Sovereignty Gate (R-033/T-198)

@@ -7,10 +7,10 @@ description: >
   the green stale; the re-run printed Update Complete. The reason must be shown. Found
   under T-5112.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-5112]
@@ -42,7 +42,7 @@ origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "73f57250"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-13T14:40:40Z
-last_update: '2026-11-13T15:01:05Z'
+last_update: 2026-11-13T15:26:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,8 +100,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A regression test reproduces 055's case: a green verdict that `satisfying_verdict` rejects (stale) leaves `apply`'s result with no trace of why, before the fix
+- [ ] After the fix, `apply` lists each such criterion under a new `not_applied` key (`ac`, `why`), the `apply` CLI prints one `NOT APPLIED:` line per entry on stderr, and its exit code is unchanged (a not-applied green does not refuse the close)
+- [ ] A criterion with no verdict at all is NOT reported (no noise), and `refused` keeps its meaning (provenance mismatch, exit 1)
+- [ ] The partial-complete close re-run in update-task.sh prints the `NOT APPLIED:` line, and every existing test that reads verdict_ledger.py or update-task.sh still passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,6 +289,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 python3 -m pytest -q -p no:cacheprovider tests/unit/t5117_not_applied_test.py tests/unit/t4779_stale_review_release_test.py > /tmp/.t5117.out 2>&1 && grep -q passed /tmp/.t5117.out
+timeout 300 bats tests/unit/t5117_close_prints_not_applied.bats > /tmp/.t5117b.out 2>&1 && ! grep -q "^not ok" /tmp/.t5117b.out
+test "$(grep -c '# skip' /tmp/.t5117b.out)" -eq 0
+bin/fw vendor self --check --task T-5117
 
 ## RCA
 
@@ -303,6 +309,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** 055's partial-complete T-645 had a green verdict, but the close re-run printed "Update Complete" and left the box open with no reason. `fw reviewer verdict apply` returned ticked, refused and skipped all empty.
+
+**Root cause:** in `lib/verdict_ledger.py` `apply()`, step 2 called `satisfying_verdict` and discarded its reason (`r, _ = …`). A green rejected as stale, invalid, red or not-evaluated therefore left no trace in the result, and `update-task.sh` printed only on "applied" or "withdrawn".
+
+**Why structurally allowed:** the loud path was built only for a tick being *withdrawn* (T-4779, 832's release report). A green that never got ticked was the other half of the same question ("why is my box still open?"), and no test asked it: the tests checked what `apply` ticked, never what it explained.
+
+**Prevention:** the result has a `not_applied` key; the CLI prints one `NOT APPLIED:` line per entry; the close prints those lines. `t5117_not_applied_test.py` pins the stale case, the CLI line and exit code, and two quiet controls (no verdict at all, and a valid green). `t5117_close_prints_not_applied.bats` pins the shell side.
 
 ## Evolution
 
@@ -384,3 +397,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5117-fw-reviewer-verdict-apply-and-the-partia.md
 - **Context:** Initial task creation
+
+### 2026-11-13T15:26:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
