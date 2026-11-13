@@ -43,6 +43,7 @@ import signal
 import string
 import subprocess
 import sys
+import tempfile
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -70,11 +71,36 @@ def _log(msg: str) -> None:
     print(f"[t3693-e2e {time.strftime('%H:%M:%S')}] {msg}", flush=True)
 
 
+def _main_stub() -> str:
+    """T-5124: a termlink for `lib/sidecar/main_session.py` only (FW_TERMLINK_BIN is read
+    nowhere else). It answers the `termlink main` verbs — every session is the main of its
+    own throwaway test project — and hands every other call to the real binary. Without it,
+    a host whose termlink has `main am-i` turns the T-5014 main-only gate on, the test
+    project has no main, and the mail these tests inject waits forever."""
+    real = shutil.which("termlink") or "termlink"
+    d = Path(tempfile.mkdtemp(prefix="t3693-main-stub-"))
+    stub = d / "termlink"
+    stub.write_text(
+        "#!/bin/sh\n"
+        "# T-5124 test stub: only the main verbs; everything else is the real termlink.\n"
+        'if [ "$1" = "main" ]; then\n'
+        '    [ "$2" = "am-i" ] && echo "main of this test project (T-5124 stub)"\n'
+        "    exit 0\n"
+        "fi\n"
+        f'exec "{real}" "$@"\n')
+    stub.chmod(0o755)
+    return str(stub)
+
+
+MAIN_STUB = _main_stub()
+
+
 def _clean_env(**extra) -> dict:
     keep = ("HOME", "PATH", "USER", "LOGNAME", "SHELL", "LANG", "LC_ALL",
             "TERMLINK_RUNTIME_DIR", "XDG_STATE_HOME")
     env = {k: os.environ[k] for k in keep if k in os.environ}
     env["TERM"] = "xterm-256color"
+    env["FW_TERMLINK_BIN"] = MAIN_STUB   # T-5124
     env.update(extra)
     return env
 
