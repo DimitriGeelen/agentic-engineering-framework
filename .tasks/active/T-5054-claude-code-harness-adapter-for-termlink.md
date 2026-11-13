@@ -15,10 +15,10 @@ description: >
   Standing rule from 010's operator: nothing working is switched off until its replacement
   is field-proven, with explicit documented operator approval.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: human
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-03T15:34:51Z
-last_update: '2026-11-03T15:45:53Z'
+last_update: 2026-11-13T07:03:42Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,20 +95,24 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 010-termlink request P-44 (msg 76a84e54, 2026-11-13; their B-29, arc-011 build plan approved G-0 2026-11-12). TermLink's doorbell (their B-16, built, off until their operator's W2 go) needs every harness adapter on `termlink.adapter/2`. Per 010's operator rulings OD-7/OD-9 the Claude Code adapter is AEF's. Operator, 2026-11-13: "yes to T-5054".
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** AEF's adapter (`lib/sidecar/adapter.py`, `lib/sidecar/hooks.py`) only writes local readiness records (T-3561, T-3745) and the T-5014 main-session lease. It sends TermLink none of the adapter/2 reports, so the doorbell cannot tell when a Claude Code session is idle, who typed the last prompt, or in what order events happened.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the Stop and UserPromptSubmit hooks send adapter/2 reports: READY, turn events (prompt_submit, turn stop), prompt origin (human / automated / unknown), `(boot_id, mono_ns)` on every report with `mono_ns` as a decimal string, `harness_pid`, evidence and complete. Spec: TermLink 04 v0.4 section 17, 06 AL-1, CR-6.24.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** AEF's adapter passes TermLink's two parity fixtures (`r3-prompt-origin.json`, `p2-report-ordering.json`), the run is reported to 010 on framework:pickup, and nothing that works today is switched off (010's operator's standing rule): older sidecars still get the old fields, and the local readiness records stay.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] 010's spec text (04 section 17, 06 AL-1, CR-6.24, hook_requests) and both fixture files are in this repo with the TermLink commit they came from recorded (received from 010, not read from their repo)
+- [ ] Stop and UserPromptSubmit hooks emit adapter/2 reports with every field the spec requires; `mono_ns` is a decimal string and nothing orders on `at_ms`
+- [ ] Prompt origin: a prompt the hook can prove came from a peer injection or automation is never classed `human`; when it cannot tell, `unknown`
+- [ ] A parity test feeds both fixtures' cases through our adapter's reports and every step's expect/ord/turn_stopped and each case's `after` match; a mutant ordering on `at_ms` fails it
+- [ ] Older sidecar: a report the receiver refuses is retried without the new fields; the T-3745 session records and T-5014 lease behave exactly as before (their existing tests pass unchanged)
+- [ ] Run reported to 010 on framework:pickup with the be-tag that carries it
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -391,3 +395,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5054-claude-code-harness-adapter-for-termlink.md
 - **Context:** Initial task creation
+
+### 2026-11-13T07:03:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now
