@@ -590,7 +590,10 @@ def run(pr=None, commit=None, base="origin/bleeding-edge", timeout=None, backend
             try:
                 backend.destroy(vm_id)
             except Exception as e:  # noqa: BLE001
-                state, reason = "infra-error", f"destroy failed: {str(e)[:200]}"
+                # T-5115: add the destroy failure to the record; never replace the reason the
+                # run had already reached (the first real run hid its own failure this way).
+                state = "infra-error"
+                reason = (reason + "; " if reason else "") + f"destroy failed: {str(e)[:200]}"
         if collector is not None:
             collector.join(timeout=5)
         shutil.rmtree(input_dir, ignore_errors=True)

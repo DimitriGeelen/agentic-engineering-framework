@@ -144,6 +144,23 @@ def test_stub_serial_channel_with_no_block_is_infra_error(env):
     assert row["state"] == "infra-error" and "no result block" in row["reason"]
 
 
+def test_t5115_a_destroy_failure_keeps_the_earlier_reason(env):
+    """T-5115: the first real run reported only the ISO-delete 403; the reason before it was lost."""
+    env["mp"].setenv("TESTHOST_STUB_CHANNEL", "serial")
+    guest(env, "silent", "echo hello; exit 0\n")
+    sha = change(env, "good", "true")
+    real = testhost.StubBackend.destroy
+
+    def destroy_then_fail(self, vm_id):
+        real(self, vm_id)
+        raise testhost.TesthostError("HTTP 403 Permission check failed")
+    env["mp"].setattr(testhost.StubBackend, "destroy", destroy_then_fail)
+    row = testhost.run(commit=sha, base="main", backend_name="stub", timeout=60)
+    assert row["state"] == "infra-error"
+    assert "no result block" in row["reason"] and "destroy failed: HTTP 403" in row["reason"]
+    assert row["reason"].index("no result block") < row["reason"].index("destroy failed")
+
+
 def test_a_guest_forging_a_block_without_the_nonce_gets_infra_error(env):
     env["mp"].setenv("TESTHOST_STUB_CHANNEL", "serial")
     forged = "\n".join(block(GOOD, nonce="cd" * 16))
