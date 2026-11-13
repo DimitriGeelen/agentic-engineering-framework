@@ -47,6 +47,7 @@ SETTINGS = [
     ("KEYLOCK_TIMEOUT", "300", "Per-key lock stale cleanup timeout in seconds"),
     ("TERMLINK_WORKER_TIMEOUT", "3600", "TermLink worker kill-watchdog in seconds (T-5068)"),
     ("UNIT_SUITE_FLAKE_RETRY_MAX", "5", "Files with a NEW unit-suite red (not in the ratchet baseline) re-run once per nightly run; a pass on the retry grades WARN suspected flaky at pre-push instead of FAIL, logged to flakes.jsonl. More NEW-red files than this = none retried. 0 = never retry (T-4875)"),
+    ("TERMLINK_ADAPTER2", "0", "1 = this agent's Claude Code hooks send TermLink adapter/2 reports to the sidecar socket named by TERMLINK_SIDECAR_SOCKET (T-5054, 010 P-44). 0 (default) sends nothing. Never set it on an agent whose settings already run TermLink's own termlink-sidecar hook entries; switching an agent over is an operator act (TermLink 04 17.9)"),
     ("TERMLINK_MAX_WORKERS", "5", "Concurrent fw termlink dispatch workers per project (T-3910). Raise situationally, on the operator's say-so: FW_TERMLINK_MAX_WORKERS=N for one run, fw config set TERMLINK_MAX_WORKERS N to keep it"),
     ("MESSAGING_TOOLKIT", "0", "Install/update the cross-host messaging toolkit (9 slash commands + 12 scripts, TermLink) on fw upgrade. Opt-in; derived once from existing files (T-4042). 1=install, 0=skip"),
     ("HANDOVER_DEDUP_COOLDOWN", "300", "Seconds between duplicate handover detection"),
