@@ -99,10 +99,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `judge_cli._unavailable_reason` reads the seat's folder from whichever dispatch root holds it (`dispatch_tokens.worker_dir`), so a harness seat under the /tmp root (T-4675 exception: codex, opencode, antigravity) is no longer reported "no completion"
-- [ ] a seat whose provider refused for balance or quota (e.g. z.ai HTTP 429 code 1113 "Insufficient balance") is labelled `provider refused: balance or quota (code N)`, and one refused for authentication `provider refused: authentication`, ahead of the generic "rate limit" label
-- [ ] a plain 429 / rate limit and the existing reasons (usage limit, auto-denied, no-verdict, provider error, bare exit) are unchanged; the reason stays short (no raw log)
-- [ ] tests cover the /tmp-root lookup, both refusal kinds with and without a code, and the unchanged rate-limit control
+- [x] `judge_cli._unavailable_reason` reads the seat's folder from whichever dispatch root holds it (`dispatch_tokens.worker_dir`), so a harness seat under the /tmp root (T-4675 exception: codex, opencode, antigravity) is no longer reported "no completion"
+- [x] a seat whose provider refused for balance or quota (e.g. z.ai HTTP 429 code 1113 "Insufficient balance") is labelled `provider refused: balance or quota (code N)`, and one refused for authentication `provider refused: authentication`, ahead of the generic "rate limit" label
+- [x] a plain 429 / rate limit and the existing reasons (usage limit, auto-denied, no-verdict, provider error, bare exit) are unchanged; the reason stays short (no raw log)
+- [x] tests cover the /tmp-root lookup, both refusal kinds with and without a code, and the unchanged rate-limit control
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
