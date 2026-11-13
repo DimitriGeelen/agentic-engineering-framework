@@ -1,0 +1,21 @@
+id: tests/unit/t5119_provider_refusal_test.py
+name: t5119_provider_refusal_test
+type: script
+subsystem: tests
+location: tests/unit/t5119_provider_refusal_test.py
+tags: []
+
+purpose: "T-5119 (055 T-645) — a review seat refused by its provider is named as a provider refusal, and a harness seat under the /tmp root is found at all (it used to read \"no completion\")."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-13
+created_by: unknown

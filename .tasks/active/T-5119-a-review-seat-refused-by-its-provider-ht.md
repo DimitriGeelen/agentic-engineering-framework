@@ -6,10 +6,10 @@ description: >
   opencode seat refused by api.z.ai (429, code 1113) shows as no completion; the label
   should name a provider refusal. Found under T-5112.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: [T-5112]
@@ -41,7 +41,7 @@ origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "73f57250"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-13T14:40:43Z
-last_update: '2026-11-13T15:01:06Z'
+last_update: 2026-11-13T20:31:43Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,8 +99,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `judge_cli._unavailable_reason` reads the seat's folder from whichever dispatch root holds it (`dispatch_tokens.worker_dir`), so a harness seat under the /tmp root (T-4675 exception: codex, opencode, antigravity) is no longer reported "no completion"
+- [ ] a seat whose provider refused for balance or quota (e.g. z.ai HTTP 429 code 1113 "Insufficient balance") is labelled `provider refused: balance or quota (code N)`, and one refused for authentication `provider refused: authentication`, ahead of the generic "rate limit" label
+- [ ] a plain 429 / rate limit and the existing reasons (usage limit, auto-denied, no-verdict, provider error, bare exit) are unchanged; the reason stays short (no raw log)
+- [ ] tests cover the /tmp-root lookup, both refusal kinds with and without a code, and the unchanged rate-limit control
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -286,8 +288,18 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 python3 -m pytest -q tests/unit/t5119_provider_refusal_test.py tests/unit/t3852_unavailable_seat_test.py tests/unit/t4457_opencode_seat_test.py tests/unit/t4456_antigravity_seat_test.py > /tmp/.t5119.out 2>&1 && grep -q passed /tmp/.t5119.out
+bin/fw vendor self --check --task T-5119
 
 ## RCA
+
+**Symptom:** 055's opencode review seat was refused by z.ai (HTTP 429, code 1113, "Insufficient balance"), and `fw reviewer judge` reported it as "no completion".
+
+**Root cause:** two gaps. (1) `_unavailable_reason` looked for the seat's folder only in `dispatch_tokens.dispatch_dir()`, the first root. Since T-4675, harness seats (codex, opencode, antigravity) keep the /tmp root, so their folder was never found and every one of them fell through to "no completion", whatever happened. (2) Even when found, a 429 would read "rate limit": nothing told a refused account (balance, quota, key) apart from throttling.
+
+**Why structurally allowed:** every unavailable-seat test pins `FW_DISPATCH_DIR`, which collapses the roots to one. So the two-root lookup that real harness seats go through was never exercised. T-4675 changed where the folders live without a test that reads a harness seat back from the second root.
+
+**Prevention:** `t5119_provider_refusal_test.py::test_a_harness_seat_in_the_tmp_root_is_found` runs with no pinned dir and the seat in the second root. It fails on the old lookup. `dispatch_dir()` has no other reader of an existing worker folder (grep over lib/, agents/, web/, bin/).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -383,3 +395,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5119-a-review-seat-refused-by-its-provider-ht.md
 - **Context:** Initial task creation
+
+### 2026-11-13T20:31:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
