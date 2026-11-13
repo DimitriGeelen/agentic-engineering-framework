@@ -407,3 +407,50 @@ def test_agent_id_comes_from_the_socket_env_is_only_a_cross_check(monkeypatch):
     assert a2.agent_id_for("/run/x/agent-b.send.sock") == "agent-b" and logged == ["agent_id"]
     monkeypatch.delenv("TERMLINK_AGENT_ID")
     assert a2.agent_id_for("/run/x/not-a-socket") is None
+
+
+# ── slice 3: socket from config, the never-beside-W1 guard ──────────────────────
+
+@pytest.fixture
+def proj(tmp_path, monkeypatch):
+    root = tmp_path / "p"
+    (root / ".claude").mkdir(parents=True)
+    (root / ".framework.yaml").write_text("project_name: p\n")
+    monkeypatch.setenv("CLAUDE_PROJECT_DIR", str(root))
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    for v in ("FW_TERMLINK_ADAPTER2", "TERMLINK_SIDECAR_SOCKET", "FW_TERMLINK_SIDECAR_SOCKET"):
+        monkeypatch.delenv(v, raising=False)
+    return root
+
+
+def test_switch_and_socket_come_from_framework_yaml(proj):
+    (proj / ".framework.yaml").write_text(
+        "project_name: p\nTERMLINK_ADAPTER2: '1'\nTERMLINK_SIDECAR_SOCKET: /run/t/aef.send.sock  # trial\n")
+    assert a2.socket_path() == "/run/t/aef.send.sock" and a2.enabled()
+
+
+def test_env_socket_wins_over_config(proj, monkeypatch):
+    (proj / ".framework.yaml").write_text("TERMLINK_SIDECAR_SOCKET: /cfg/a.send.sock\n")
+    monkeypatch.setenv("TERMLINK_SIDECAR_SOCKET", "/env/b.send.sock")
+    assert a2.socket_path() == "/env/b.send.sock"
+
+
+@pytest.mark.parametrize("where", ["project", "local", "home"])
+def test_w1_hooks_anywhere_keep_the_adapter_off(proj, tmp_path, monkeypatch, where):
+    monkeypatch.setattr(a2, "_log_error", lambda w: None)
+    (proj / ".framework.yaml").write_text("TERMLINK_ADAPTER2: 1\nTERMLINK_SIDECAR_SOCKET: /run/t/aef.send.sock\n")
+    assert a2.enabled()
+    f = {"project": proj / ".claude" / "settings.json", "local": proj / ".claude" / "settings.local.json",
+         "home": tmp_path / "home" / ".claude" / "settings.json"}[where]
+    f.parent.mkdir(parents=True, exist_ok=True)
+    f.write_text(json.dumps({"hooks": {"Stop": [{"hooks": [{"type": "command",
+                                                            "command": "termlink sidecar hook stop"}]}]}}))
+    assert a2.w1_hook_files() == [str(f)] and not a2.enabled()
+
+
+def test_off_path_imports_no_yaml():
+    import subprocess
+    import sys
+    p = subprocess.run([sys.executable, "-c", "import sys; import lib.sidecar.adapter2 as a; a.enabled(); "
+                        "print('yaml' in sys.modules)"], cwd=ROOT, capture_output=True, text=True)
+    assert p.stdout.strip() == "False", p.stderr

@@ -400,6 +400,16 @@ bin/fw watchtower current
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-11-13 — trial agent
+- **Chose:** this AEF session (framework repo on the controller host), named by the operator ("use this AEF session for the trial").
+- **Why:** AEF's own agent carries the risk of a first field run; no peer project's sessions change.
+- **Rejected:** a peer agent first (their delivery would depend on an unproven adapter).
+
+### 2026-11-13 — where the reports are sent from
+- **Chose:** prompt / stop / session-start reports from AEF's existing hooks (`lib/sidecar/hooks.py`), so the lease claim gets the receiver's `origin_checked` in the same process; pre-tool / post-tool / session-end from `python3 -S lib/sidecar/adapter2.py <hook>` (off path about 50 ms, no YAML import).
+- **Why:** one source of the claim's origin; the per-tool-call hooks stay light.
+- **Rejected:** a separate hook for every event (two processes per prompt, and the claim could not see the receiver's check).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
