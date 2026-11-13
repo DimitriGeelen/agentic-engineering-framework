@@ -93,6 +93,12 @@ bvp_scores_proposed:
 
 **Expected outcome:** a green verdict on a partial-complete task closes it with no bypass flag and no operator step; any other edit on such a task stays blocked.
 
+**Further findings from 055 (msgs 73f57250, a56f7da3, 2026-11-13), same close path — check each; split any that is its own bug:**
+1. Run by the operator (no hook), `fw task update T-645 --status work-completed` printed "Update Complete" but did NOT apply the green verdict: the status was already work-completed, so no transition and no finalisation ran. Silent no-op.
+2. `fw reviewer verdict apply T-645` then ticked nothing and said nothing (ticked/refused/skipped all empty): satisfying_verdict judged the green STALE ("work changed after reviewed revision … commit 09f600b65"). That commit belonged to their T-704; its MESSAGE mentioned T-645, so a mention counted as T-645's work. Two defects: apply should report why in `refused`; producer/work detection should key on the task-id prefix of the subject, not any mention (compare CLAUDE.md: components count only from commits whose subject opens with the id).
+3. The 60-minute closure-commit allowance does not cover a partial-complete task whose date_finished is from the day before, so committing the operator's close needed a commit under another task id.
+4. (separate, minor) A review seat refused by its provider (opencode: api.z.ai HTTP 429 "Insufficient balance", code 1113) is labelled "no completion"; a clearer label would name a provider refusal.
+
 ## Acceptance Criteria
 
 ### Agent
