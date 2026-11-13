@@ -88,13 +88,13 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 010-termlink, msg 341c592f (2026-11-13), their T-3777. `/tmp/tl-dispatch` on .107 holds 7,371 worker dirs: 7,324 finished, 6,124 older than a day, about 2,380 without `meta.json`, 1,121 from 1409-sprind. That's about 1.6 GB on the shared RAM disk. The scan that made this slow is already linear (T-5105, be.49: 0.4 s over the same dirs), but the dirs keep growing.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** nothing ever removes a finished worker dir. `fw termlink cleanup` deals with orphaned processes, not finished dirs. The RAM disk fills, and every scan and listing still grows with the total. Some dirs are evidence the review ledger relies on (review dispatch registry, completions, signed results), so a plain age cut could break verdict provenance.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** age-based retention for finished worker dirs, run by the dispatcher itself. It keeps any dir the review ledger or an uncollected result still needs, and touches only this project's own dirs.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** finished dirs older than a configured age are removed automatically. Running, uncollected and ledger-referenced dirs stay. Removal is logged. The first large purge of the existing backlog goes to the operator as a runme, because it is an irreversible delete.
 
 ## Acceptance Criteria
 

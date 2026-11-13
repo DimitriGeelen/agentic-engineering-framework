@@ -88,13 +88,13 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 010-termlink, msg 341c592f (2026-11-13), their T-3777. On .107 every `fw termlink dispatch` took 60-80 s before "Worker spawned", and `fw reviewer judge` ended reviews with "no seat was dispatched". The slowness itself was the pre-be.49 scan (fixed by T-5105), but it exposed a fixed limit.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `lib/reviewer/judge_cli.py` (~line 904) runs the dispatch with a hard-coded `timeout=120`. When dispatching is slow for any reason (a busy host, a large dispatch dir, a cold start), the review fails outright, and the only fix is a code change.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** make the judge's dispatch timeout a config key, registered in both registries (`lib/config.sh` and `web/blueprints/config.py`), defaulting to today's 120 s.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `fw config set REVIEWER_JUDGE_DISPATCH_TIMEOUT <s>` (name to be confirmed at build) changes the limit with no code edit. The default behaviour is unchanged, and a timeout names the key in its message.
 
 ## Acceptance Criteria
 
