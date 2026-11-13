@@ -148,12 +148,13 @@ def _is_doorbell(prompt: str) -> bool:
         inject = None
     if inject is not None and inject.parse_doorbell(prompt):
         return True
-    return any(str(prompt or "").lstrip().startswith(p) for p in TERMLINK_DOORBELL_PREFIXES)
+    return bool(TERMLINK_DOORBELL_RE.match(str(prompt or "").lstrip()))
 
 
-#: TermLink doorbell / watchdog line prefixes. Empty until 010 names the fixed prefix;
-#: until then their lines fall to TermLink's own 17.5.e check (it never needs our ids).
-TERMLINK_DOORBELL_PREFIXES: tuple[str, ...] = ()
+#: TermLink's SI-1 line, typed by both its doorbell and its watchdog (010, 2026-11-13; B-16,
+#: termlink-session handler.rs:651): 'sidecar: <N> peer messages waiting, ids <32-hex>[ ...]. ...'.
+#: The text cannot tell the two apart, and TermLink's meter accepts basis "doorbell" for both.
+TERMLINK_DOORBELL_RE = re.compile(r"^sidecar: \d+ peer messages? waiting, ids [0-9a-f]{32}")
 
 _GENERATED_KINDS = {"task-notification", "peer"}
 _GENERATED_TURNS = {"task_notification", "scheduled"}
@@ -377,13 +378,19 @@ def enabled() -> bool:
 
 
 def agent_id_for(sock_path: str) -> str | None:
-    """The sidecar's agent: ``TERMLINK_AGENT_ID``, else the socket name
-    ``<agent>.send.sock``."""
-    env = os.environ.get("TERMLINK_AGENT_ID")
-    if env:
-        return env
+    """The sidecar's agent, from the socket name ``<agent>.send.sock``: the sidecar compares
+    ``agent_id`` with exactly that name (010, meter.rs:657). ``TERMLINK_AGENT_ID`` is only a
+    cross-check; a mismatch is logged, never sent instead."""
     m = _AGENT_SOCK_RE.match(os.path.basename(sock_path or ""))
-    return m.group(1) if m else None
+    agent = m.group(1) if m else None
+    env = os.environ.get("TERMLINK_AGENT_ID")
+    if agent and env and env != agent:
+        try:
+            raise ValueError(f"TERMLINK_AGENT_ID {env!r} differs from the socket's agent {agent!r}; "
+                             "using the socket's")
+        except ValueError:
+            _log_error("agent_id")
+    return agent
 
 
 def _log_error(where: str) -> None:

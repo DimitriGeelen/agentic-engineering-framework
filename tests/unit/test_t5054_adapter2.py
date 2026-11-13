@@ -388,3 +388,22 @@ def test_our_lines_survive_a_backward_wall_clock_step():
     bad = Oracle(by_at_ms=True)
     [bad.step(r) for r in lines]
     assert not (bad.ready[1] == "READY" and bad.turn_stopped)
+
+
+# ── 010's answers, 2026-11-13 ───────────────────────────────────────────────────
+
+def test_termlink_si1_line_is_automated_doorbell():
+    ids = "0123456789abcdef0123456789abcdef fedcba9876543210fedcba9876543210"
+    line = f"sidecar: 2 peer messages waiting, ids {ids}. The prompt hook shows them as untrusted data."
+    assert a2.classify_origin({"prompt": line}, True) == ("automated", "doorbell")
+    assert a2.classify_origin({"prompt": "please quote: sidecar: 2 peer messages waiting, ids x"}, True) == \
+        ("human", "inferred")                                   # only a line that STARTS with it
+
+
+def test_agent_id_comes_from_the_socket_env_is_only_a_cross_check(monkeypatch):
+    logged = []
+    monkeypatch.setattr(a2, "_log_error", lambda where: logged.append(where))
+    monkeypatch.setenv("TERMLINK_AGENT_ID", "someone-else")
+    assert a2.agent_id_for("/run/x/agent-b.send.sock") == "agent-b" and logged == ["agent_id"]
+    monkeypatch.delenv("TERMLINK_AGENT_ID")
+    assert a2.agent_id_for("/run/x/not-a-socket") is None
