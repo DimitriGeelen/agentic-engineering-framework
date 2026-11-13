@@ -2348,8 +2348,8 @@ if [ -n "$NEW_STATUS" ]; then
                 # task that sat partial-complete for a day was otherwise outside the
                 # T-4182 closure-commit window the moment it was finalised (055 T-645).
                 # Replaces an existing line, else inserts before the closing '---'.
-                _t5118_tmp="$TASK_FILE.t5118.$$"
-                if awk -v ts="$TIMESTAMP" '
+                # T-5122: mktemp, never a $$-only name (invariant T-5067).
+                if _t5118_tmp=$(mktemp "$TASK_FILE.t5118.XXXXXX") && awk -v ts="$TIMESTAMP" '
                     BEGIN { n = 0; done = 0 }
                     /^---[[:space:]]*$/ { n++; if (n == 2 && !done) { print "date_finalised: " ts; done = 1 } }
                     n == 1 && /^date_finalised:/ { if (!done) { print "date_finalised: " ts; done = 1 }; next }
