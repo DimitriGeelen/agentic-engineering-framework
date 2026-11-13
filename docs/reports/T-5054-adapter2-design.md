@@ -56,6 +56,21 @@ Origin rules (17.5): doorbell prefix in prompt text → `automated/doorbell`; no
 dispatched worker) → `automated/non-interactive`; transcript mark generated → `automated/harness-mark`; interactive
 with no mark → `human/inferred`; cannot read → `unknown`.
 
+## Field trial (this AEF session, operator's runme `meter-trial`, 2026-11-13 10:14Z)
+
+Meter-only sidecar `aef-meter` per 010's recipe (`T-5054-sidecar-meter-only.md`): status delivery off,
+doorbell switch off, receiving drained, no messages. First results:
+
+- Reports arrive and apply: last_prompt `human/inferred`, ordered on `(boot_id, mono_ns)`; ready `BUSY` seq 4;
+  a direct ready report answers `{"ok":true}`; every counter 0 (no unparseable, no reorder, no origin override).
+- 17.5.d settled: the UserPromptSubmit hook INPUT has `cwd, hook_event_name, permission_mode, prompt, prompt_id,
+  scratchpad_dir, session_id, session_title, transcript_path` — no origin marks; the transcript is the only source.
+- S1 (PTY input check) unbound: binding comes from `harness_pid` in `session_start` (this session predates the
+  trial), and TermLink's binding runs only in the doorbell tick, which a meter-only sidecar skips — their T-3772.
+  Until it ships, `origin_checked` is our own origin, downgrade only (safe).
+- Lease `origin: absent` is expected until the operator runs `termlink main origin-reporting --harness claude-code`.
+- The meter ticks every 30 s by design.
+
 ## Slices
 
 Status 2026-11-13: slices 1 and 2 built (switch off by default). Slice 2 detail: the reports are sent
