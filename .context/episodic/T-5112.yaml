@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5112: Green reviewer verdict cannot close a partial-complete task: task gate blocks fw task update --status work-completed (055 T-645)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-13T14:49:30Z
+# ============================================================================
+
+task_id: T-5112
+task_name: "Green reviewer verdict cannot close a partial-complete task: task gate blocks fw task update --status work-completed (055 T-645)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-13T07:09:52Z
+completed: 2026-11-13T14:48:18Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-13T08:10:10+01:00
+last_commit: 2026-11-13T15:47:48+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  captured — green verdict cannot close a partial-complete task (055 report). 055's further findings on the partial-complete close path (silent update, silent apply on stale verdict, mention counted as work, closure allowance, provider-refusal label). task gate lets a partial-complete task's own close command through, so a green verdict can close it. vendor the gate change; fabric card for the new test
+
+# Key outcomes
+outcomes:
+  - 'The block is reproduced on AEF with a fixture (focus on a partial-complete task; `fw task update <id> --status work-completed` refused by check-active-task), and a regression test fails before the fix'
+  - 'With focus on a partial-complete task, the gate lets through exactly `fw task update <that id> --status work-completed` (bare, or after `cd PATH &&`), with no bypass flag; update-task.sh''s own gates still decide the close'
+  - 'Scope holds: any other `fw task update` change, any shell write (redirect, `touch`), a Write/Edit to a source file, and the same command naming a DIFFERENT task all stay blocked'
+  - '055''s further findings 1-4 are each checked on AEF; each one that reproduces is filed as its own task with the evidence, and 055 is told the outcome'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.fabric/components/tests-unit-t5112_partial_complete_close.yaml'
+  - '.tasks/active/T-5112-green-reviewer-verdict-cannot-close-a-pa.md'
+  - '.tasks/active/T-5116-verdict-staleness-counts-a-commit-that-o.md'
+  - '.tasks/active/T-5117-fw-reviewer-verdict-apply-and-the-partia.md'
+  - '.tasks/active/T-5118-finalising-a-partial-complete-task-leave.md'
+  - '.tasks/active/T-5119-a-review-seat-refused-by-its-provider-ht.md'
+  - 'agents/context/check-active-task.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - 'tests/unit/t3174_partial_complete_edit_matrix.bats'
+  - 'tests/unit/t5112_partial_complete_close.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-13T08:10:10'
+    action: 'T-5112: captured — green verdict cannot close a partial-complete task (055 report)'
+  - time: '2026-11-13T08:29:16'
+    action: 'T-5112: 055''s further findings on the partial-complete close path (silent update, silent apply on stale verdict, mention counted as work, closure allowance, provider-refusal label)'
+  - time: '2026-11-13T15:47:25'
+    action: 'T-5112: task gate lets a partial-complete task''s own close command through, so a green verdict can close it'
+  - time: '2026-11-13T15:47:48'
+    action: 'T-5112: vendor the gate change; fabric card for the new test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 458 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 458
+  commits: 5
+  files_changed: 15
+  lines_added: 2301
+  lines_removed: 13
+  footprint_refreshed_at: '2026-11-13T14:49:44Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5112-green-reviewer-verdict-cannot-close-a-pa.md
+generated_by: context-agent-hybrid

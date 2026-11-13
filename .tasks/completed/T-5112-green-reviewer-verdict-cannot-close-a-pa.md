@@ -5,12 +5,12 @@ name: "Green reviewer verdict cannot close a partial-complete task: task gate bl
 description: >
   055 report d4651ae1 (2026-11-13), see Context.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/check-active-task.sh, agents/context/lib/safe-commands.sh, tests/unit/t3174_partial_complete_edit_matrix.bats, tests/unit/t5112_partial_complete_close.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -39,8 +39,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-13T07:09:52Z
-last_update: '2026-11-13T14:33:40Z'
-date_finished:
+last_update: 2026-11-13T14:48:18Z
+date_finished: 2026-11-13T14:48:18Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -122,7 +122,7 @@ bvp_scores_proposed:
 - [x] The block is reproduced on AEF with a fixture (focus on a partial-complete task; `fw task update <id> --status work-completed` refused by check-active-task), and a regression test fails before the fix
 - [x] With focus on a partial-complete task, the gate lets through exactly `fw task update <that id> --status work-completed` (bare, or after `cd PATH &&`), with no bypass flag; update-task.sh's own gates still decide the close
 - [x] Scope holds: any other `fw task update` change, any shell write (redirect, `touch`), a Write/Edit to a source file, and the same command naming a DIFFERENT task all stay blocked
-- [ ] 055's further findings 1-4 are each checked on AEF; each one that reproduces is filed as its own task with the evidence, and 055 is told the outcome
+- [x] 055's further findings 1-4 are each checked on AEF; each one that reproduces is filed as its own task with the evidence, and 055 is told the outcome
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -420,3 +420,16 @@ bin/fw vendor self --check --task T-5112
 ### 2026-11-13T14:33:35Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-13T14:48:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-723e326f
+- **Timestamp:** 2026-11-13T14:48:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

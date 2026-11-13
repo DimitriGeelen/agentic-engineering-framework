@@ -54101,3 +54101,21 @@ scan_id: R-51370156
 task_id: T-5115
 payload:
   task_file: .tasks/active/T-5115-testhost-controller-a-destroy-failure-ov.md
+---
+kind: scan_emitted
+timestamp: '2026-11-13T14:48:59Z'
+scan_id: R-723e326f
+task_id: T-5112
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-13T14:48:59Z'
+scan_id: R-723e326f
+task_id: T-5112
+payload:
+  task_file: .tasks/active/T-5112-green-reviewer-verdict-cannot-close-a-pa.md
