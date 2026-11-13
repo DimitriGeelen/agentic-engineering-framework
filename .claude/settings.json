@@ -172,6 +172,15 @@
             "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-rail-mcp-label"
           }
         ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -S ${CLAUDE_PROJECT_DIR}/lib/sidecar/adapter2.py pre-tool"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -241,6 +250,15 @@
             "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook audit-task-tools"
           }
         ]
+      },
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -S ${CLAUDE_PROJECT_DIR}/lib/sidecar/adapter2.py post-tool"
+          }
+        ]
       }
     ],
     "Stop": [
@@ -270,6 +288,17 @@
           {
             "type": "command",
             "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook sidecar-receiver-adapter"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -S ${CLAUDE_PROJECT_DIR}/lib/sidecar/adapter2.py session-end"
           }
         ]
       }
