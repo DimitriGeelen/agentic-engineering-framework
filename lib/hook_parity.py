@@ -47,6 +47,10 @@ import sys
 # as opt-in by its agent doc (agents/context/<name>.AGENT.md, "How to enable").
 OPT_IN_HOOKS = frozenset({
     'check-visual-verification',   # agents/context/check-visual-verification.AGENT.md
+    # T-5054: TermLink adapter/2 reports (pre-tool, post-tool, session-end). Switched on per
+    # agent by the operator (TERMLINK_ADAPTER2=1 + a meter sidecar), never by the template:
+    # docs/reports/T-5054-adapter2-design.md, scope point 3.
+    'sidecar-adapter2',
 })
 
 
@@ -82,7 +86,8 @@ def extract_hooks(path, strict=False):
                         # upgrade reported a missing hook it could not supply.
                         if '/agents/context/' in cmd and name.endswith('.sh'):
                             name = name[:-3]
-                    if name in OPT_IN_HOOKS:
+                    # T-5054: an opt-in hook may take an argument (`fw hook sidecar-adapter2 pre-tool`).
+                    if name.split(' ', 1)[0] in OPT_IN_HOOKS:
                         continue
                     hooks.add((event, name))
     except (json.JSONDecodeError, FileNotFoundError, AttributeError, TypeError):
