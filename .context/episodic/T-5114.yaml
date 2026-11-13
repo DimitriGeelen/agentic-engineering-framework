@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5114: testhost guest: root's tee cannot write the raw log chowned to testhost in /tmp (fs.protected_regular) — every real run loses its phases
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-13T13:17:34Z
+# ============================================================================
+
+task_id: T-5114
+task_name: "testhost guest: root's tee cannot write the raw log chowned to testhost in /tmp (fs.protected_regular) — every real run loses its phases"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-13T08:10:16Z
+completed: 2026-11-13T13:15:49Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-13T09:13:17+01:00
+last_commit: 2026-11-13T09:13:17+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  guest-run keeps the raw log root-owned (fs.protected_regular blocked root's tee; first real run lost every phase)
+
+# Key outcomes
+outcomes:
+  - 'guest-run.sh no longer chowns `raw_log` (nor any file root''s tee writes); a test pins it — `tests/unit/t5114_guest_raw_log_owner.bats` (fails on the old script)'
+  - 'A test reproduces the failure mode: as root, tee into a mktemp file chowned to another user fails under protected_regular, and into one root owns succeeds (skipped where not root) — test 3, run here with protected_regular=2'
+  - 'The next real Proxmox run shows phases in checks.log and result.json — run 20261113T131034Z-commit-da9942919-8478: passed; result.json lists lint rc=0 (140 s) and changed rc=0; checks.log 11,817 bytes; guest done rc=0'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5114-testhost-guest-roots-tee-cannot-write-th.md'
+  - 'agents/testhost/guest-run.sh'
+  - 'tests/unit/t5114_guest_raw_log_owner.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-13T09:13:17'
+    action: 'T-5114: guest-run keeps the raw log root-owned (fs.protected_regular blocked root''s tee; first real run lost every phase)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 305 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 305
+  commits: 2
+  files_changed: 6
+  lines_added: 542
+  lines_removed: 6
+  footprint_refreshed_at: '2026-11-13T13:18:11Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5114-testhost-guest-roots-tee-cannot-write-th.md
+generated_by: context-agent-hybrid
