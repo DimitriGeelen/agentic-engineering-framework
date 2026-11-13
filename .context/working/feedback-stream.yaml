@@ -54119,3 +54119,21 @@ scan_id: R-723e326f
 task_id: T-5112
 payload:
   task_file: .tasks/active/T-5112-green-reviewer-verdict-cannot-close-a-pa.md
+---
+kind: scan_emitted
+timestamp: '2026-11-13T15:09:31Z'
+scan_id: R-345c8aaf
+task_id: T-5116
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-13T15:09:31Z'
+scan_id: R-345c8aaf
+task_id: T-5116
+payload:
+  task_file: .tasks/active/T-5116-verdict-staleness-counts-a-commit-that-o.md

@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5116: Verdict staleness counts a commit that only mentions the task id as the task's work (055 T-645)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-13T15:10:25Z
+# ============================================================================
+
+task_id: T-5116
+task_name: "Verdict staleness counts a commit that only mentions the task id as the task's work (055 T-645)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-13T14:40:39Z
+completed: 2026-11-13T15:07:25Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-13T16:06:47+01:00
+last_commit: 2026-11-13T16:07:06+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  verdict staleness counts only the task's own commits (subject opens with the id), not any mention. vendor verdict_ledger
+
+# Key outcomes
+outcomes:
+  - 'A regression test reproduces 055''s case: after the reviewed revision, a commit whose subject belongs to ANOTHER task but whose message mentions this task, touching source, makes the green stale before the fix and not after'
+  - 'Negative controls stay red: a commit whose subject opens with this task id (alone, or in a list such as `T-1, T-2:`) and changes source after the reviewed revision still makes the verdict stale'
+  - '`_stale_fault` uses the same owner rule as the component count (`task_commits.owns` on the subject), and every existing staleness test still passes'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.fabric/components/tests-unit-t5116_stale_mention_test.yaml'
+  - '.tasks/active/T-5116-verdict-staleness-counts-a-commit-that-o.md'
+  - '.tasks/active/T-5120-retention-for-finished-termlink-dispatch.md'
+  - '.tasks/active/T-5121-fw-reviewer-judge-the-120-s-dispatch-tim.md'
+  - 'lib/verdict_ledger.py'
+  - 'tests/unit/t5116_stale_mention_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-13T16:06:47'
+    action: 'T-5116: verdict staleness counts only the task''s own commits (subject opens with the id), not any mention'
+  - time: '2026-11-13T16:07:06'
+    action: 'T-5116: vendor verdict_ledger'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 26
+  commits: 3
+  files_changed: 10
+  lines_added: 954
+  lines_removed: 17
+  footprint_refreshed_at: '2026-11-13T15:10:33Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5116-verdict-staleness-counts-a-commit-that-o.md
+generated_by: context-agent-hybrid
