@@ -287,6 +287,7 @@ FW_CONFIG_REGISTRY=(
     "CALL_CRITICAL|80|Tool-call count threshold for critical level (fallback)"
     "BASH_TIMEOUT|300000|Default Bash tool timeout in milliseconds"
     "KEYLOCK_TIMEOUT|300|Per-key lock stale cleanup timeout in seconds"
+    "TERMLINK_DISPATCH_RETENTION_DAYS|7|Days a finished, collected dispatch worker dir is kept before fw termlink dispatch prunes it in the background, at most hourly (T-5120, 010 T-3777). 0 turns the automatic prune off; 0-365, an invalid value means 7. Running, unfinalised and uncollected workers are never pruned."
     "TERMLINK_WORKER_TIMEOUT|3600|TermLink worker kill-watchdog in seconds (T-5068: 3600 fits 97.5% of measured runs; raise per dispatch with --timeout)"
     "UNIT_SUITE_FLAKE_RETRY_MAX|5|Files with a NEW unit-suite red (not in the ratchet baseline) re-run once per nightly run; a pass on the retry grades WARN suspected flaky at pre-push instead of FAIL, logged to flakes.jsonl. More NEW-red files than this = none retried. 0 = never retry (T-4875)"
     "TERMLINK_SIDECAR_SOCKET||Path to the TermLink sidecar's send socket (<agent>.send.sock) for the adapter/2 hooks when TERMLINK_SIDECAR_SOCKET is not in the hook's environment (T-5054). Empty = environment only"

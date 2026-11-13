@@ -1026,11 +1026,28 @@ USAGE
     touch -d "@$(( $(date +%s) - days * 86400 ))" "$ref"
     procs=$(ps -eo args= 2>/dev/null || true)
 
+    # Speed (measured 59 s over 7,453 foreign dirs in the shared /tmp root): one grep finds the
+    # foreign-root dirs whose meta.json names this project; every other foreign-root dir is
+    # skipped without a fork. Candidates still go through the exact _worker_in_project.
+    local -A maybe_ours=()
+    local r m
+    for r in "${DISPATCH_ROOTS[@]}"; do
+        [ "$r" = "$DISPATCH_DIR" ] && continue
+        [ -d "$r" ] || continue
+        while IFS= read -r m; do
+            [ -n "$m" ] && maybe_ours["${m%/meta.json}"]=1
+        done < <(find "$r" -mindepth 2 -maxdepth 2 -name meta.json -exec grep -lF \
+                    -e "\"project\": \"$real_project\"" -e "\"project\": \"${PROJECT_ROOT:-$(pwd)}\"" {} + 2>/dev/null)
+    done
+
     local -a removed=()
     local young=0 running=0 uncollected=0 other=0 unfinished=0 w n
     local _wds; mapfile -t _wds < <(_all_wdirs)
     for w in ${_wds[@]+"${_wds[@]}"}; do
         w="${w%/}"; n="${w##*/}"
+        if [ "${w%/*}" != "$DISPATCH_DIR" ] && [ -z "${maybe_ours[$w]+x}" ]; then
+            other=$((other + 1)); continue
+        fi
         if ! _worker_in_project "$w" "$real_project"; then other=$((other + 1)); continue; fi
         if [ ! -f "$w/exit_code" ]; then unfinished=$((unfinished + 1)); continue; fi
         if ! [ "$w/exit_code" -ot "$ref" ]; then young=$((young + 1)); continue; fi

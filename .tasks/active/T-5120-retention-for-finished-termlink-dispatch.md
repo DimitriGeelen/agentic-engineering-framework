@@ -7,10 +7,10 @@ description: >
   1,121 from 1409. Need age-based retention run by the dispatcher, keeping what the
   review ledger needs as evidence.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-5105]
@@ -42,7 +42,7 @@ origin: {kind: "peer", source: "010-termlink", ref: "341c592f"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-13T14:58:48Z
-last_update: '2026-11-13T15:16:05Z'
+last_update: 2026-11-13T19:30:15Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,8 +100,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw termlink prune [--older-than DAYS] [--dry-run]` removes this project's finished worker dirs (exit_code present and finalised) whose exit_code is older than DAYS, across the project root and the legacy /tmp root
+- [ ] prune never removes a dir that is running or unfinalised, holds an uncollected result, belongs to another project, or sits in the shared /tmp root with no meta.json, and it never signals a process or stops an endpoint
+- [ ] `fw termlink dispatch` runs the prune in the background at most once an hour when `TERMLINK_DISPATCH_RETENTION_DAYS` > 0 (default 7, range 0–365, 0 = off); a prune failure never delays or fails the dispatch
+- [ ] every prune that removes something appends one JSON line (time, age, removed names, kept counts) to `retention.jsonl` in the dispatch root (gitignored, beside the dirs)
+- [ ] tests cover each keep rule, the age cut, dry-run, the hourly throttle and the off switch, in a sandbox `FW_DISPATCH_DIR`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -384,3 +387,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5120-retention-for-finished-termlink-dispatch.md
 - **Context:** Initial task creation
+
+### 2026-11-13T19:30:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
