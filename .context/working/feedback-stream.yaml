@@ -54227,3 +54227,39 @@ scan_id: R-538fe7b9
 task_id: T-5123
 payload:
   task_file: .tasks/active/T-5123-fw-termlink-check-crashes-with-unbound-h.md
+---
+kind: scan_emitted
+timestamp: '2026-11-13T20:00:27Z'
+scan_id: R-4b7b2ce7
+task_id: T-5120
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-13T20:00:27Z'
+scan_id: R-4b7b2ce7
+task_id: T-5120
+payload:
+  task_file: .tasks/active/T-5120-retention-for-finished-termlink-dispatch.md
+---
+kind: scan_emitted
+timestamp: '2026-11-13T21:24:36Z'
+scan_id: R-2f7c674b
+task_id: T-5119
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-13T21:24:36Z'
+scan_id: R-2f7c674b
+task_id: T-5119
+payload:
+  task_file: .tasks/active/T-5119-a-review-seat-refused-by-its-provider-ht.md
