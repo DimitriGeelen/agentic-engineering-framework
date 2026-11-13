@@ -7,12 +7,12 @@ description: >
   1,121 from 1409. Need age-based retention run by the dispatcher, keeping what the
   review ledger needs as evidence.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/termlink/termlink.sh, lib/config.sh, tests/unit/t5120_dispatch_prune.bats, web/blueprints/config.py]
 related_tasks: [T-5105]
 origin: {kind: "peer", source: "010-termlink", ref: "341c592f"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -42,8 +42,8 @@ origin: {kind: "peer", source: "010-termlink", ref: "341c592f"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-13T14:58:48Z
-last_update: 2026-11-13T19:30:15Z
-date_finished:
+last_update: 2026-11-13T20:00:03Z
+date_finished: 2026-11-13T20:00:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -424,3 +424,16 @@ bin/fw watchtower current
 ### 2026-11-13T19:30:15Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-13T20:00:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4b7b2ce7
+- **Timestamp:** 2026-11-13T20:00:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
