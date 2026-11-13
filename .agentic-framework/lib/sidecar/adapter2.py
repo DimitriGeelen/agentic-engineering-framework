@@ -336,7 +336,7 @@ def hook_reports(hook: str, hook_input: dict) -> dict | None:
     replies: list[dict | None] = []
     interactive = None
     try:
-        sock = os.environ["TERMLINK_SIDECAR_SOCKET"]
+        sock = socket_path()
         agent = agent_id_for(sock)
         if not agent:
             raise ValueError("cannot tell the sidecar's agent id (set TERMLINK_AGENT_ID)")
@@ -362,19 +362,60 @@ def _project_root() -> Path:
     return Path(os.environ.get("CLAUDE_PROJECT_DIR") or Path(__file__).resolve().parents[2])
 
 
-def enabled() -> bool:
-    val = os.environ.get("FW_TERMLINK_ADAPTER2")
-    if not val:
+def _config(key: str) -> str:
+    """env FW_<KEY> > .framework.yaml > ''. A regex read, no YAML import: this runs on every
+    tool call, so the off path must cost almost nothing (same reader as lib/testhost.py)."""
+    val = os.environ.get("FW_" + key)
+    if val:
+        return val
+    try:
+        text = (_project_root() / ".framework.yaml").read_text(encoding="utf-8")
+    except OSError:
+        return ""
+    m = re.search(rf"^\s*{key}:\s*['\"]?([^'\"#\n]+?)['\"]?\s*(#.*)?$", text, re.M)
+    return m.group(1).strip() if m else ""
+
+
+def socket_path() -> str:
+    """The sidecar's send socket: ``TERMLINK_SIDECAR_SOCKET`` in the hook's environment (what
+    TermLink sets), else the ``TERMLINK_SIDECAR_SOCKET`` config key (T-5054 slice 3: the operator
+    sets it once instead of changing the session's environment)."""
+    return os.environ.get("TERMLINK_SIDECAR_SOCKET") or _config("TERMLINK_SIDECAR_SOCKET")
+
+
+#: TermLink's own Claude Code hooks (W1). The adapter never runs beside them (010, 04 17.9).
+_W1_HOOK = re.compile(r"termlink[- ]sidecar\s+hook\b")
+
+
+def w1_hook_files() -> list[str]:
+    """Settings files that run TermLink's own sidecar hooks for this session."""
+    home = Path(os.environ.get("HOME") or "~").expanduser()
+    root = _project_root()
+    found = []
+    for f in (root / ".claude" / "settings.json", root / ".claude" / "settings.local.json",
+              home / ".claude" / "settings.json"):
         try:
-            import yaml
-            data = yaml.safe_load((_project_root() / ".framework.yaml").read_text()) or {}
-            for scope in (data, data.get("config") or {}):
-                if isinstance(scope, dict) and scope.get("TERMLINK_ADAPTER2") not in (None, ""):
-                    val = str(scope["TERMLINK_ADAPTER2"])
-                    break
-        except Exception:
-            val = ""
-    return val == "1" and bool(os.environ.get("TERMLINK_SIDECAR_SOCKET"))
+            if _W1_HOOK.search(f.read_text(encoding="utf-8", errors="ignore")):
+                found.append(str(f))
+        except OSError:
+            continue
+    return found
+
+
+def enabled() -> bool:
+    """On only when the switch is 1, a socket is known, and no settings file runs TermLink's
+    own sidecar hooks (never both on one session; a W1 hit is logged and keeps it off)."""
+    if _config("TERMLINK_ADAPTER2") != "1" or not socket_path():
+        return False
+    w1 = w1_hook_files()
+    if w1:
+        try:
+            raise RuntimeError("TERMLINK_ADAPTER2=1 but TermLink's own sidecar hooks run here ("
+                               + ", ".join(w1) + "); the adapter stays off")
+        except RuntimeError:
+            _log_error("w1-guard")
+        return False
+    return True
 
 
 def agent_id_for(sock_path: str) -> str | None:
@@ -418,7 +459,7 @@ def _log_hook_keys(hook: str, hook_input: dict) -> None:
 def run(hook: str, hook_input: dict) -> list[dict | None]:
     if not enabled():
         return []
-    sock = os.environ["TERMLINK_SIDECAR_SOCKET"]
+    sock = socket_path()
     agent = agent_id_for(sock)
     if not agent:
         raise ValueError("cannot tell the sidecar's agent id (set TERMLINK_AGENT_ID)")
