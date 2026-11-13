@@ -7,10 +7,10 @@ description: >
   main-only gate refuses (main of the test project is vacant). Seen 2026-11-09 under
   T-5067, never filed.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: [T-5113, T-5014, T-5067]
@@ -41,8 +41,8 @@ related_tasks: [T-5113, T-5014, T-5067]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-13T21:21:22Z
-last_update: '2026-11-13T21:30:40Z'
-date_finished:
+last_update: 2026-11-13T22:32:03Z
+date_finished: 2026-11-13T22:32:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -400,3 +400,16 @@ test -z "$(git log --format=%h --grep='^T-5124' -- lib agents bin web)"
 ### 2026-11-13T21:27:44Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-13T22:32:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e62ab444
+- **Timestamp:** 2026-11-13T22:33:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

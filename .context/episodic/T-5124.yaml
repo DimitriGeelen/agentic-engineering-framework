@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5124: Sidecar e2e tests t3693/t3684 fail since termlink has main am-i: test projects have no main session
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-13T22:33:52Z
+# ============================================================================
+
+task_id: T-5124
+task_name: "Sidecar e2e tests t3693/t3684 fail since termlink has main am-i: test projects have no main session"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-13T21:21:22Z
+completed: 2026-11-13T22:32:03Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-13T22:28:14+01:00
+last_commit: 2026-11-13T23:31:59+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — sidecar e2e tests assume legacy delivery; termlink main am-i makes main-only live here (same class as T-5113). e2e helpers point FW_TERMLINK_BIN at a main-verbs-only stub, so the T-5014 main-only gate sees each test session as its project's main; real termlink for everything else. criteria split — inject + t3684 green; nonce round trip passes delivery, reply blocked by auto mode (filed T-5125). RCA, verification, criteria ticked
+
+# Key outcomes
+outcomes:
+  - 'the t3693/t3684 e2e helpers point `FW_TERMLINK_BIN` at a test stub that answers only the `termlink main` verbs, making each test session the main of its own throwaway project; every other termlink call (register, inject, list, hub) still goes to the real binary'
+  - '`t3693::test_real_termlink_inject_reaches_the_tagged_session` and `t3684::test_6_two_sessions_one_project_idle_gets_it_busy_pty_gets_nothing` pass on this host, whose termlink has `main am-i` (whole t3684 file: 8/8)'
+  - '`t3693::test_e2e_two_real_agents_nonce_round_trip` gets past main-only delivery: B''s receiver logs INJECT_ATTEMPT/INJECT_TYPING and B''s agent sees the doorbell. Its remaining failure, B''s reply blocked by Claude Code auto mode ("Unsanctioned Communication"), is a different cause, filed as its own task'
+  - 'no production file changes; the rest of both files is no worse than before (same pass/skip set)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5124-sidecar-e2e-tests-t3693t3684-fail-since-.md'
+  - '.tasks/active/T-5125-t3693-nonce-round-trip-e2e-the-test-agen.md'
+  - 'tests/integration/t3693_sidecar_e2e_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-13T22:28:14'
+    action: 'T-5124: capture — sidecar e2e tests assume legacy delivery; termlink main am-i makes main-only live here (same class as T-5113)'
+  - time: '2026-11-13T22:47:47'
+    action: 'T-5124: e2e helpers point FW_TERMLINK_BIN at a main-verbs-only stub, so the T-5014 main-only gate sees each test session as its project''s main; real termlink for everything else'
+  - time: '2026-11-13T23:30:59'
+    action: 'T-5124: criteria split — inject + t3684 green; nonce round trip passes delivery, reply blocked by auto mode (filed T-5125)'
+  - time: '2026-11-13T23:31:59'
+    action: 'T-5124: RCA, verification, criteria ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 70 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 70
+  commits: 5
+  files_changed: 6
+  lines_added: 902
+  lines_removed: 11
+  footprint_refreshed_at: '2026-11-13T22:34:13Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5124-sidecar-e2e-tests-t3693t3684-fail-since-.md
+generated_by: context-agent-hybrid

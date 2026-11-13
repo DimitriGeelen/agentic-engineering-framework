@@ -54263,3 +54263,21 @@ scan_id: R-2f7c674b
 task_id: T-5119
 payload:
   task_file: .tasks/active/T-5119-a-review-seat-refused-by-its-provider-ht.md
+---
+kind: scan_emitted
+timestamp: '2026-11-13T22:33:24Z'
+scan_id: R-e62ab444
+task_id: T-5124
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-13T22:33:24Z'
+scan_id: R-e62ab444
+task_id: T-5124
+payload:
+  task_file: .tasks/active/T-5124-sidecar-e2e-tests-t3693t3684-fail-since-.md
