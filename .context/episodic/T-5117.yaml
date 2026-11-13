@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5117: fw reviewer verdict apply and the partial-complete re-run say nothing when a green verdict is refused (055 T-645)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-13T15:43:59Z
+# ============================================================================
+
+task_id: T-5117
+task_name: "fw reviewer verdict apply and the partial-complete re-run say nothing when a green verdict is refused (055 T-645)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-13T14:40:40Z
+completed: 2026-11-13T15:43:30Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-13T16:32:39+01:00
+last_commit: 2026-11-13T16:32:47+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a green verdict that exists but does not count is named (not_applied + NOT APPLIED line), never silent. vendor verdict_ledger and update-task
+
+# Key outcomes
+outcomes:
+  - 'A regression test reproduces 055''s case: a green verdict that `satisfying_verdict` rejects (stale) leaves `apply`''s result with no trace of why, before the fix'
+  - 'After the fix, `apply` lists each such criterion under a new `not_applied` key (`ac`, `why`), the `apply` CLI prints one `NOT APPLIED:` line per entry on stderr, and its exit code is unchanged (a not-applied green does not refuse the close)'
+  - 'A criterion with no verdict at all is NOT reported (no noise), and `refused` keeps its meaning (provenance mismatch, exit 1)'
+  - 'The partial-complete close re-run in update-task.sh prints the `NOT APPLIED:` line, and every existing test that reads verdict_ledger.py or update-task.sh still passes'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.fabric/components/tests-unit-t5117_close_prints_not_applied.yaml'
+  - '.fabric/components/tests-unit-t5117_not_applied_test.yaml'
+  - '.tasks/active/T-5117-fw-reviewer-verdict-apply-and-the-partia.md'
+  - 'agents/task-create/update-task.sh'
+  - 'lib/verdict_ledger.py'
+  - 'tests/unit/t5117_close_prints_not_applied.bats'
+  - 'tests/unit/t5117_not_applied_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-13T16:32:39'
+    action: 'T-5117: a green verdict that exists but does not count is named (not_applied + NOT APPLIED line), never silent'
+  - time: '2026-11-13T16:32:47'
+    action: 'T-5117: vendor verdict_ledger and update-task'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 62 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 62
+  commits: 3
+  files_changed: 12
+  lines_added: 353
+  lines_removed: 22
+  footprint_refreshed_at: '2026-11-13T15:44:14Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5117-fw-reviewer-verdict-apply-and-the-partia.md
+generated_by: context-agent-hybrid
