@@ -665,6 +665,19 @@ if [ -f "$STALE_INDEX_GUARD" ] && command -v python3 >/dev/null 2>&1; then
     PROJECT_ROOT="$PROJECT_ROOT" python3 "$STALE_INDEX_GUARD" || exit 1
 fi
 
+# FW-HOOK-BLOCK: t5031-grant-file-guard
+# T-5031: a commit under agent control (CLAUDECODE=1) may not change
+# policy/access-grants.yaml — the file is read from HEAD, so the commit is what makes a
+# grant count. The operator commits it from their own shell. Fails closed when the guard
+# is missing in a project that HAS a grant file.
+GRANT_GUARD="$FRAMEWORK_ROOT/agents/git/lib/grant-file-guard.sh"
+if [ -f "$GRANT_GUARD" ]; then
+    bash "$GRANT_GUARD" || exit 1
+elif [ "${CLAUDECODE:-}" = "1" ] && git diff --cached --no-renames --name-only -- policy/access-grants.yaml 2>/dev/null | grep -q .; then
+    echo "ACCESS GRANTS: grant-file guard missing ($GRANT_GUARD) and this agent commit changes policy/access-grants.yaml — refused (T-5031)." >&2
+    exit 1
+fi
+
 SCANNER="$FRAMEWORK_ROOT/agents/git/lib/secret-scan.sh"
 # T-2061: gate on -f not -x. We invoke via `bash "$SCANNER"` below, so the
 # exec bit is irrelevant — gating on -x silently disabled the scanner when
@@ -932,6 +945,17 @@ elif [ -f "$PROJECT_ROOT/.framework.yaml" ] || [ -d "$PROJECT_ROOT/.tasks" ]; th
     echo "  $PARKED_GUARD" >&2
     echo "Merges of deliberately-parked branches are unguarded in this repo." >&2
     echo "Fix: cd $PROJECT_ROOT && bin/fw upgrade   (framework repo: bin/fw vendor self)" >&2
+fi
+
+# FW-HOOK-BLOCK: t5031-grant-file-guard (merge leg)
+# T-5031: a clean merge commit fires pre-merge-commit INSTEAD of pre-commit, so the
+# grant-file guard runs here too.
+GRANT_GUARD="$FRAMEWORK_ROOT/agents/git/lib/grant-file-guard.sh"
+if [ -f "$GRANT_GUARD" ]; then
+    bash "$GRANT_GUARD" || exit 1
+elif [ "${CLAUDECODE:-}" = "1" ] && git diff --cached --no-renames --name-only -- policy/access-grants.yaml 2>/dev/null | grep -q .; then
+    echo "ACCESS GRANTS: grant-file guard missing ($GRANT_GUARD) and this agent merge changes policy/access-grants.yaml — refused (T-5031)." >&2
+    exit 1
 fi
 
 exit 0
