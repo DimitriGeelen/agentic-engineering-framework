@@ -2323,6 +2323,21 @@ if [ -n "$NEW_STATUS" ]; then
                 # script invariant — a caller timeout (Watchtower decide, 30 s)
                 # killed the script between here and there three times.
                 _sed_i "s/^horizon:.*/horizon: null/" "$TASK_FILE"
+                # T-5118: record WHEN the task was finalised. date_finished keeps the
+                # first transition's time (the agent-side finish metrics read); a
+                # task that sat partial-complete for a day was otherwise outside the
+                # T-4182 closure-commit window the moment it was finalised (055 T-645).
+                # Replaces an existing line, else inserts before the closing '---'.
+                _t5118_tmp="$TASK_FILE.t5118.$$"
+                if awk -v ts="$TIMESTAMP" '
+                    BEGIN { n = 0; done = 0 }
+                    /^---[[:space:]]*$/ { n++; if (n == 2 && !done) { print "date_finalised: " ts; done = 1 } }
+                    n == 1 && /^date_finalised:/ { if (!done) { print "date_finalised: " ts; done = 1 }; next }
+                    { print }
+                ' "$TASK_FILE" > "$_t5118_tmp"; then
+                    cat "$_t5118_tmp" > "$TASK_FILE"
+                fi
+                rm -f "$_t5118_tmp"
                 # T-2864: reconcile the INDEX, not just the disk. The `|| mv`
                 # fallback above leaves the source tracked in the index while
                 # removing it from disk — so the `[ -e ]` check below passes

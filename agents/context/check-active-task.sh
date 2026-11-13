@@ -1038,10 +1038,20 @@ if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && [ -n "$CURRENT_TASK" ]; th
        && is_commit_checkpoint_command "$BASH_CMD"; then
         _t4182_file=$(find_task_file "$TARGET_TASK" completed)
         if [ -n "$_t4182_file" ]; then
-            _t4182_fin=$({ grep -m1 '^date_finished:' "$_t4182_file" 2>/dev/null || true; } \
-                | sed "s/^date_finished:[[:space:]]*//; s/[\"']//g; s/[[:space:]]*$//")
+            # T-5118: the later of date_finished and date_finalised. A partial-complete
+            # task is finalised (moved to completed/) long after its first transition
+            # set date_finished; its closure commit belongs to the finalisation.
             _t4182_epoch=""
-            [ -n "$_t4182_fin" ] && _t4182_epoch=$(date -u -d "$_t4182_fin" +%s 2>/dev/null || true)
+            for _t4182_key in date_finished date_finalised; do
+                _t4182_fin=$({ grep -m1 "^${_t4182_key}:" "$_t4182_file" 2>/dev/null || true; } \
+                    | sed "s/^${_t4182_key}:[[:space:]]*//; s/[\"']//g; s/[[:space:]]*$//")
+                [ -n "$_t4182_fin" ] || continue
+                _t4182_e=$(date -u -d "$_t4182_fin" +%s 2>/dev/null || true)
+                [ -n "$_t4182_e" ] || continue
+                if [ -z "$_t4182_epoch" ] || [ "$_t4182_e" -gt "$_t4182_epoch" ]; then
+                    _t4182_epoch="$_t4182_e"
+                fi
+            done
             if [ -n "$_t4182_epoch" ]; then
                 _t4182_age=$(( $(date -u +%s) - _t4182_epoch ))
                 if [ "$_t4182_age" -ge -300 ] && [ "$_t4182_age" -le "$_t4182_grace_secs" ]; then

@@ -1,0 +1,21 @@
+id: tests/unit/t5118_finalised_closure_commit.bats
+name: t5118_finalised_closure_commit
+type: script
+subsystem: tests
+location: tests/unit/t5118_finalised_closure_commit.bats
+tags: []
+
+purpose: "T-5118 (055 T-645, msg a56f7da3) — the closure commit of a task that sat partial-complete."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-13
+created_by: unknown

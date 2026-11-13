@@ -7,10 +7,10 @@ description: >
   the later finalisation keeps the old date, so its closure commit outside 60 min
   of that date is refused. Found under T-5112.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-5112]
@@ -42,7 +42,7 @@ origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "73f57250"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-13T14:40:41Z
-last_update: '2026-11-13T15:01:05Z'
+last_update: 2026-11-13T15:32:53Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,8 +100,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A regression test reproduces 055's case: a completed task whose `date_finished` is a day old and that was finalised just now has its plain closure commit, with focus on another task, refused by the drift gate before the fix
+- [ ] Finalising a partial-complete task (the same-status re-run that moves it to completed/) writes `date_finalised: <now>` into its frontmatter; `date_finished` is left unchanged
+- [ ] The T-4182 window measures from the later of `date_finished` and `date_finalised`, so that closure commit passes; a completed task with both dates old, and a non-commit command, still block
+- [ ] Every existing test that reads update-task.sh or check-active-task.sh still passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,6 +289,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t5118_finalised_closure_commit.bats tests/unit/t4182_closure_commit_drift.bats tests/unit/t4653_partial_complete_reverify.bats > /tmp/.t5118.out 2>&1 && ! grep -q "^not ok" /tmp/.t5118.out
+test "$(grep -c '# skip' /tmp/.t5118.out)" -eq 0
+bin/fw vendor self --check --task T-5118
 
 ## RCA
 
@@ -303,6 +308,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** after 055's operator finalised their partial-complete T-645 (it had gone partial-complete the day before), the closure commit was refused by the focus-drift gate. The only way through was a commit under another task id.
+
+**Root cause:** `update-task.sh` writes `date_finished` only on the first transition into work-completed. The later finalisation (same status, file moved to completed/) wrote no time at all. The T-4182 closure-commit exemption in `check-active-task.sh` measures its 60-minute window from `date_finished`, so for a task that waited more than an hour for its human check, the window had already closed when it was finalised.
+
+**Why structurally allowed:** T-4182 was built and tested for the normal close, where the first transition and the move to completed/ happen together. Partial-complete splits them. The T-4182 tests only ever created completed tasks whose single date was the close, and no record of the finalisation time existed for the gate to read.
+
+**Prevention:** finalisation writes `date_finalised:`, and the window measures from the later date. `tests/unit/t5118_finalised_closure_commit.bats` pins the 055 case, three controls that must still block, and the finalisation write itself (an inserted field stays inside the frontmatter; an existing one is replaced, not duplicated).
 
 ## Evolution
 
@@ -384,3 +396,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5118-finalising-a-partial-complete-task-leave.md
 - **Context:** Initial task creation
+
+### 2026-11-13T15:32:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
