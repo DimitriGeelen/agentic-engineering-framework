@@ -1,13 +1,16 @@
 ---
 id: T-5116
-name: "Verdict staleness counts a commit that only mentions the task id as the task's work (055 T-645)"
+name: "Verdict staleness counts a commit that only mentions the task id as the task's
+  work (055 T-645)"
 description: >
-  verdict_ledger._stale_fault greps the whole commit message for the task id; a commit for another task whose body mentions it makes a valid green stale. Components already key on the subject prefix (_owns). Found under T-5112.
+  verdict_ledger._stale_fault greps the whole commit message for the task id; a commit
+  for another task whose body mentions it makes a valid green stale. Components already
+  key on the subject prefix (_owns). Found under T-5112.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-5112]
@@ -39,8 +42,8 @@ origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "73f57250"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-13T14:40:39Z
-last_update: 2026-11-13T14:40:39Z
-date_finished: null
+last_update: '2026-11-13T14:59:29Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +54,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-13T14:59:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5116: Verdict staleness counts a commit that only mentions the task id as the task's work (055 T-645)
@@ -70,8 +90,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A regression test reproduces 055's case: after the reviewed revision, a commit whose subject belongs to ANOTHER task but whose message mentions this task, touching source, makes the green stale before the fix and not after
+- [x] Negative controls stay red: a commit whose subject opens with this task id (alone, or in a list such as `T-1, T-2:`) and changes source after the reviewed revision still makes the verdict stale
+- [x] `_stale_fault` uses the same owner rule as the component count (`task_commits.owns` on the subject), and every existing staleness test still passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,6 +278,8 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 python3 -m pytest -q tests/unit/t5116_stale_mention_test.py tests/unit/t4779_stale_review_release_test.py tests/unit/t3580_round3_test.py > /tmp/.t5116.out 2>&1 && grep -q passed /tmp/.t5116.out
+bin/fw vendor self --check --task T-5116
 
 ## RCA
 
@@ -273,6 +296,13 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** 055's green reviewer verdict on their T-645 was refused as stale ("work changed after reviewed revision … commit 09f600b65"). That commit was their T-704's; its message only mentioned T-645.
+
+**Root cause:** `_stale_fault` in `lib/verdict_ledger.py` picked the task's commits with `git log --grep=<id>`, then matched the id anywhere in the full message. Any commit that named the task (a follow-up, a cross-reference) and touched source counted as the task's work.
+
+**Why structurally allowed:** the same module has two answers to "which commits are this task's". The component count was tightened to the subject-prefix rule (`task_commits.owns`, Claude R8-2), and the staleness check kept the older any-mention rule. Its tests (T-3580 round 3, T-4779) only ever wrote commits whose subject opens with the id, so they could not see the difference.
+
+**Prevention:** `tests/unit/t5116_stale_mention_test.py` pins both directions: a mention in the body or in another task's subject does not make the verdict stale, while an own-subject commit or an id-list subject still does. Both callers now use one rule, `_owns`.
 
 ## Evolution
 
@@ -354,3 +384,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5116-verdict-staleness-counts-a-commit-that-o.md
 - **Context:** Initial task creation
+
+### 2026-11-13T14:59:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

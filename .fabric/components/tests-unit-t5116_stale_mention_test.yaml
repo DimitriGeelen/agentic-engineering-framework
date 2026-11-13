@@ -1,0 +1,21 @@
+id: tests/unit/t5116_stale_mention_test.py
+name: t5116_stale_mention_test
+type: script
+subsystem: tests
+location: tests/unit/t5116_stale_mention_test.py
+tags: []
+
+purpose: "T-5116 — a commit that only MENTIONS a task must not make its green verdict stale."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-13
+created_by: unknown
