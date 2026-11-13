@@ -54191,3 +54191,39 @@ scan_id: R-ce72870b
 task_id: T-5122
 payload:
   task_file: .tasks/active/T-5122-t-5118s-finalisation-temp-file-is-keyed-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-13T17:34:29Z'
+scan_id: R-dba52409
+task_id: T-5121
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-13T17:34:29Z'
+scan_id: R-dba52409
+task_id: T-5121
+payload:
+  task_file: .tasks/active/T-5121-fw-reviewer-judge-the-120-s-dispatch-tim.md
+---
+kind: scan_emitted
+timestamp: '2026-11-13T19:40:59Z'
+scan_id: R-538fe7b9
+task_id: T-5123
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-13T19:40:59Z'
+scan_id: R-538fe7b9
+task_id: T-5123
+payload:
+  task_file: .tasks/active/T-5123-fw-termlink-check-crashes-with-unbound-h.md

@@ -379,7 +379,13 @@ is_macos() { [[ "$(uname -s)" == "Darwin" ]]; }
 _check_hub_store_parity() {
     local project_root="${PROJECT_ROOT:-$(pwd)}"
     local mcp="$project_root/.mcp.json"
-    local hub_pid hub_dir cfg_dir
+    # Initialised, not merely declared: this function runs under `set -u`, and
+    # hub_dir/cfg_dir are only assigned inside conditionals that do not fire when
+    # no hub process is found or its environ is unreadable. A bare `local x` leaves
+    # x UNSET, so the first `[ -n "$hub_dir" ]` below aborted the whole check —
+    # exactly when there is no reachable hub, which is when this command is run to
+    # find out why (T-5123).
+    local hub_pid="" hub_dir="" cfg_dir=""
     hub_pid=$(pgrep -f "termlink hub start" 2>/dev/null | head -1)
     if [ -n "$hub_pid" ] && [ -r "/proc/$hub_pid/environ" ]; then
         hub_dir=$(tr '\0' '\n' < "/proc/$hub_pid/environ" 2>/dev/null | sed -n 's/^TERMLINK_RUNTIME_DIR=//p' | head -1)
@@ -971,6 +977,110 @@ USAGE
     echo "$summary."
 }
 
+# T-5120 (010 T-3777): retention for FINISHED worker dirs. cleanup needs consent and also
+# signals processes; prune is the narrow, unattended part: it only deletes dirs that are
+# provably done, read and old. A dir is removed only when ALL hold:
+#   - it is this project's (_worker_in_project; a legacy /tmp dir needs meta.json for that)
+#   - exit_code exists, older than the age cut, and _worker_done (review: finalised)
+#   - no run.sh of it is in the process table
+#   - it has no uncollected result (result.md / result.jsonl without `collected`)
+# It never signals a process, stops an endpoint or runs `termlink clean`.
+_retention_days() {
+    local d
+    d=$(fw_config "TERMLINK_DISPATCH_RETENTION_DAYS" 7 2>/dev/null || echo 7)
+    if [[ "$d" =~ ^[0-9]+$ ]] && [ "$d" -le 365 ]; then echo "$d"; else echo 7; fi
+}
+
+cmd_prune() {
+    local days="" dry_run=false quiet=false
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            -h|--help)
+                cat <<'USAGE'
+Usage: fw termlink prune [--older-than DAYS] [--dry-run|-n]
+
+Remove this project's FINISHED dispatch worker dirs whose exit_code is older than DAYS
+(default: TERMLINK_DISPATCH_RETENTION_DAYS, 7). Kept, always: running or unfinalised workers,
+uncollected results, other projects' dirs, and /tmp dirs with no meta.json. Signals nothing.
+Removals are logged to <dispatch root>/retention.jsonl. `fw termlink dispatch` runs this in
+the background at most once an hour; TERMLINK_DISPATCH_RETENTION_DAYS=0 turns that off.
+USAGE
+                return 0 ;;
+            --older-than) days="${2:-}"; shift ;;
+            -n|--dry-run) dry_run=true ;;
+            -q|--quiet) quiet=true ;;
+            *) echo "fw termlink prune: unknown option '$1' (try --help)" >&2; return 2 ;;
+        esac
+        shift
+    done
+    [ -n "$days" ] || days=$(_retention_days)
+    if ! [[ "$days" =~ ^[0-9]+$ ]] || [ "$days" -lt 1 ]; then
+        echo "fw termlink prune: --older-than needs a whole number of days, at least 1" >&2
+        return 2
+    fi
+
+    local real_project ref procs
+    real_project=$(readlink -f "${PROJECT_ROOT:-$(pwd)}" 2>/dev/null || echo "${PROJECT_ROOT:-$(pwd)}")
+    # One reference file at the cut, so the age test is the builtin -ot (no fork per dir).
+    ref=$(mktemp "${TMPDIR:-/tmp}/fw-prune-ref.XXXXXX") || return 1
+    touch -d "@$(( $(date +%s) - days * 86400 ))" "$ref"
+    procs=$(ps -eo args= 2>/dev/null || true)
+
+    local -a removed=()
+    local young=0 running=0 uncollected=0 other=0 unfinished=0 w n
+    local _wds; mapfile -t _wds < <(_all_wdirs)
+    for w in ${_wds[@]+"${_wds[@]}"}; do
+        w="${w%/}"; n="${w##*/}"
+        if ! _worker_in_project "$w" "$real_project"; then other=$((other + 1)); continue; fi
+        if [ ! -f "$w/exit_code" ]; then unfinished=$((unfinished + 1)); continue; fi
+        if ! [ "$w/exit_code" -ot "$ref" ]; then young=$((young + 1)); continue; fi
+        case "$procs" in *"$w/run.sh"*) running=$((running + 1)); continue ;; esac
+        if ! _worker_done "$w"; then unfinished=$((unfinished + 1)); continue; fi
+        if [ ! -f "$w/collected" ] && { [ -s "$w/result.md" ] || [ -s "$w/result.jsonl" ]; }; then
+            uncollected=$((uncollected + 1)); continue
+        fi
+        if [ "$dry_run" = true ]; then
+            removed+=("$n")
+        elif rm -rf -- "$w"; then
+            removed+=("$n")
+        fi
+    done
+    rm -f "$ref"
+
+    local verb="Removed"; [ "$dry_run" = true ] && verb="Would remove"
+    [ "$quiet" = true ] || {
+        local x; for x in ${removed[@]+"${removed[@]}"}; do echo "  $x"; done
+        echo "$verb ${#removed[@]} finished worker dir(s) older than ${days}d; kept: $young younger, $uncollected uncollected, $unfinished unfinished, $running running; $other other project(s)' dir(s) not touched."
+    }
+    if [ "$dry_run" != true ] && [ "${#removed[@]}" -gt 0 ]; then
+        mkdir -p "$DISPATCH_DIR" 2>/dev/null || true
+        python3 -c 'import json,sys,datetime
+print(json.dumps({"ts": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+  "older_than_days": int(sys.argv[1]), "removed": sys.argv[7:],
+  "kept": {"younger": int(sys.argv[2]), "uncollected": int(sys.argv[3]),
+           "unfinished": int(sys.argv[4]), "running": int(sys.argv[5])},
+  "other_projects": int(sys.argv[6])}))' "$days" "$young" "$uncollected" "$unfinished" "$running" "$other" \
+            ${removed[@]+"${removed[@]}"} >> "$DISPATCH_DIR/retention.jsonl" 2>/dev/null || true
+    fi
+    return 0
+}
+
+# T-5120: called by cmd_dispatch. At most once an hour (stamp in the dispatch root), detached,
+# all output dropped; whatever happens here, the dispatch carries on.
+_retention_kick() {
+    local days stamp
+    days=$(_retention_days)
+    [ "$days" -gt 0 ] 2>/dev/null || return 0
+    mkdir -p "$DISPATCH_DIR" 2>/dev/null || return 0
+    stamp="$DISPATCH_DIR/.retention-stamp"
+    if [ -f "$stamp" ] && [ -n "$(find "$stamp" -mmin -60 2>/dev/null)" ]; then
+        return 0
+    fi
+    touch "$stamp" 2>/dev/null || return 0
+    ( cmd_prune --older-than "$days" --quiet </dev/null >/dev/null 2>&1 & ) 2>/dev/null || true
+    return 0
+}
+
 # T-3580 round 3: the worker kinds `dispatch --worker-kind` accepts, printed by
 # `fw termlink worker-kinds` so a caller (fw reviewer judge) learns what can actually be
 # dispatched instead of hardcoding it. Must match the case statement in cmd_dispatch
@@ -1297,6 +1407,7 @@ cmd_dispatch() {
 
     project_dir="${project_dir:-$(pwd)}"
     _enforce_worker_cap "$project_dir" "$name"
+    _retention_kick   # T-5120: background, at most hourly, never fails the dispatch
     # T-4675: the worker dir lives under the project. Exception: a harness review seat runs as
     # another user, who must read its export and cannot traverse the root-owned project, so it
     # keeps the /tmp root (scratch for a run the ledger re-verifies, not a result store).
@@ -2428,6 +2539,7 @@ cmd_help() {
     echo -e "  ${GREEN}status${NC}                       List active TermLink sessions"
     echo -e "  ${GREEN}vanished${NC} [--minutes N]        List workers killed without exit_code (exit 1 if any)"
     echo -e "  ${GREEN}cleanup${NC}                      Deregister sessions, close terminal windows"
+    echo -e "  ${GREEN}prune${NC} [--older-than D]       Remove finished, read worker dirs older than D days (T-5120)"
     echo -e "  ${GREEN}dispatch${NC} --name N --prompt P  Spawn claude -p worker in real terminal
                                      [--project DIR] [--model M] [--timeout S]
                                      [--permission-mode acceptEdits]   (T-2282: MCP workers need this)
@@ -2500,6 +2612,7 @@ if [ "${BASH_SOURCE[0]}" = "$0" ]; then
         status)   cmd_status "$@" ;;
         vanished) cmd_vanished "$@" ;;
         cleanup)  cmd_cleanup "$@" ;;
+        prune)    cmd_prune "$@" ;;
         worker-kinds) cmd_worker_kinds "$@" ;;
         dispatch) cmd_dispatch "$@" ;;
         wait)     cmd_wait "$@" ;;

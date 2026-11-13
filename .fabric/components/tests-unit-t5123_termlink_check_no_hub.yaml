@@ -1,0 +1,21 @@
+id: tests/unit/t5123_termlink_check_no_hub.bats
+name: t5123_termlink_check_no_hub
+type: script
+subsystem: tests
+location: tests/unit/t5123_termlink_check_no_hub.bats
+tags: []
+
+purpose: "T-5123 — `fw termlink check` completes when no hub is reachable."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-13
+created_by: unknown
