@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5122: T-5118's finalisation temp file is keyed on the PID alone (invariant T-5067 red; push blocked)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-13T17:30:53Z
+# ============================================================================
+
+task_id: T-5122
+task_name: "T-5118's finalisation temp file is keyed on the PID alone (invariant T-5067 red; push blocked)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-13T17:00:05Z
+completed: 2026-11-13T17:29:06Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-13T18:02:23+01:00
+last_commit: 2026-11-13T18:02:29+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  finalisation temp file via mktemp, not a $$-only name (invariant T-5067 was red; push blocked). vendor update-task
+
+# Key outcomes
+outcomes:
+  - 'The T-5118 finalisation write uses `mktemp` (no `$$`-only name), and the T-5067 invariant passes'
+  - 'The T-5118, T-3744, T-3235 and T-4653 tests still pass, and the push to origin succeeds'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.tasks/active/T-5122-t-5118s-finalisation-temp-file-is-keyed-.md'
+  - 'agents/task-create/update-task.sh'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-13T18:02:23'
+    action: 'T-5122: finalisation temp file via mktemp, not a $$-only name (invariant T-5067 was red; push blocked)'
+  - time: '2026-11-13T18:02:29'
+    action: 'T-5122: vendor update-task'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 29 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 29
+  commits: 3
+  files_changed: 6
+  lines_added: 489
+  lines_removed: 10
+  footprint_refreshed_at: '2026-11-13T17:31:02Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5122-t-5118s-finalisation-temp-file-is-keyed-.md
+generated_by: context-agent-hybrid
