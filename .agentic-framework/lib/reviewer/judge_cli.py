@@ -889,6 +889,33 @@ def _await_worker(fw: Path, did: str, root: Path, timeout: int) -> int:
     return r.returncode
 
 
+DISPATCH_TIMEOUT_KEY = "REVIEWER_JUDGE_DISPATCH_TIMEOUT"
+DISPATCH_TIMEOUT_DEFAULT = 120
+_DISPATCH_TIMEOUT_RANGE = (30, 3600)
+
+
+def _dispatch_spawn_timeout(root: Path) -> int:
+    """T-5121: seconds to wait for `fw termlink dispatch` to report 'Worker spawned'.
+    env FW_<KEY> > .framework.yaml > the registry default (120, lib/config.sh). Read without a
+    subprocess: it runs right before the dispatch, whose subprocess.run the judge tests intercept.
+    Anything that is not an integer in range means the default: a wrong value must not turn
+    into a 0 s or 1 h wait."""
+    raw = os.environ.get("FW_" + DISPATCH_TIMEOUT_KEY, "")
+    if not raw:
+        try:
+            text = (Path(root) / ".framework.yaml").read_text(encoding="utf-8")
+        except OSError:
+            text = ""
+        m = re.search(rf"^\s*{DISPATCH_TIMEOUT_KEY}:\s*['\"]?([^'\"#\n]+?)['\"]?\s*(#.*)?$", text, re.M)
+        raw = m.group(1) if m else ""
+    try:
+        v = int(str(raw).strip())
+    except ValueError:
+        return DISPATCH_TIMEOUT_DEFAULT
+    lo, hi = _DISPATCH_TIMEOUT_RANGE
+    return v if lo <= v <= hi else DISPATCH_TIMEOUT_DEFAULT
+
+
 def _dispatch_real(*, task_id: str, brief: str, root: Path, name: str, vendor: str,
                    timeout: int = HARNESS_SEAT_TIMEOUT, revision: str = "", run_id: str = "",
                    seat: str = "") -> str:
@@ -898,10 +925,16 @@ def _dispatch_real(*, task_id: str, brief: str, root: Path, name: str, vendor: s
     pf = root / ".context/working" / f"judge-brief-{name}.md"
     pf.parent.mkdir(parents=True, exist_ok=True)
     pf.write_text(brief)
-    r = subprocess.run(_dispatch_argv(fw, task_id=task_id, name=name, prompt_file=pf, root=root,
-                                      vendor=vendor, timeout=timeout, revision=revision,
-                                      run_id=run_id, seat=seat),
-                       cwd=root, capture_output=True, text=True, timeout=120)
+    spawn_s = _dispatch_spawn_timeout(root)
+    try:
+        r = subprocess.run(_dispatch_argv(fw, task_id=task_id, name=name, prompt_file=pf, root=root,
+                                          vendor=vendor, timeout=timeout, revision=revision,
+                                          run_id=run_id, seat=seat),
+                           cwd=root, capture_output=True, text=True, timeout=spawn_s)
+    except subprocess.TimeoutExpired as e:
+        raise RuntimeError(f"dispatch did not report 'Worker spawned' within {spawn_s} s — raise "
+                           f"{DISPATCH_TIMEOUT_KEY} (fw config set {DISPATCH_TIMEOUT_KEY} <s>) if "
+                           f"dispatching is slow on this host") from e
     m = re.search(r"Worker spawned:\s*(\S+)", r.stdout)
     if r.returncode != 0 or not m:
         raise RuntimeError(f"dispatch failed (exit {r.returncode}): {(r.stderr or r.stdout)[-300:]}")
