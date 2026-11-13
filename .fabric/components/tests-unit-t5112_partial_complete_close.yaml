@@ -1,0 +1,21 @@
+id: tests/unit/t5112_partial_complete_close.bats
+name: t5112_partial_complete_close
+type: script
+subsystem: tests
+location: tests/unit/t5112_partial_complete_close.bats
+tags: []
+
+purpose: "T-5112: a partial-complete task (status work-completed, still in active/, an open ### Human box) is closed by re-running `fw task update <id> --status work-completed` — that is how a green reviewer verdict gets applied."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-13
+created_by: unknown

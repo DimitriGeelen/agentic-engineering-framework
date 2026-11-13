@@ -868,6 +868,17 @@ if [ -z "$CURRENT_TASK" ] && [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ]; th
         echo "NOTE: no active task — allowing safe-listed '$(printf '%s' "$BASH_CMD" | head -c 60)' (T-2878). Drift not checked: focus is null." >&2
         exit 0
     fi
+    # T-5112: with focus null, the close of a task that is ITSELF partial-complete
+    # (status work-completed, file still in active/). Attribution is the named
+    # task; nothing else is focused to drift from.
+    if [ -n "$DRIFT_TARGET" ] && type is_task_close_command_for &>/dev/null && \
+       is_task_close_command_for "$BASH_CMD" "$DRIFT_TARGET"; then
+        _pc_file=$(find_task_file "$DRIFT_TARGET" active 2>/dev/null || true)
+        if [ -n "$_pc_file" ] && grep -qE '^status:[[:space:]]*work-completed[[:space:]]*$' "$_pc_file" 2>/dev/null; then
+            echo "NOTE: no active task — allowing the close of partial-complete $DRIFT_TARGET (T-5112); update-task.sh's gates decide." >&2
+            exit 0
+        fi
+    fi
 fi
 
 # --- Workflow-management task class (T-3537) ---------------------------------
@@ -1219,6 +1230,18 @@ case "$TASK_STATUS" in
            type is_commit_checkpoint_command &>/dev/null && \
            is_commit_checkpoint_command "$BASH_CMD"; then
             echo "NOTE: $CURRENT_TASK is work-completed (partial-complete) — allowing 'git commit' to checkpoint its own verified work (T-3179). commit-msg hook still enforces T-XXX; drift gate already passed." >&2
+            exit 0
+        fi
+
+        # T-5112: the close itself. Re-running `fw task update <id> --status
+        # work-completed` is how a green reviewer verdict is applied to a
+        # partial-complete task; refusing it left the operator as the only
+        # closer. Exactly that command for THIS task (see
+        # is_task_close_command_for) — update-task.sh's own gates decide.
+        if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && \
+           type is_task_close_command_for &>/dev/null && \
+           is_task_close_command_for "$BASH_CMD" "$CURRENT_TASK"; then
+            echo "NOTE: $CURRENT_TASK is partial-complete — allowing its close command (T-5112); update-task.sh's gates decide." >&2
             exit 0
         fi
 

@@ -2787,6 +2787,82 @@ is_task_metadata_update_command() {
     [ "$found" -eq 1 ]
 }
 
+# ─────────────────────────────────────────────────────────────────────────────
+# T-5112: is this command EXACTLY the close of task $2 — `fw task update $2
+# --status work-completed`, nothing else on the clause?
+#
+# A partial-complete task (status work-completed, still in active/, an open
+# ### Human box) is closed by re-running that command: update-task.sh re-reads
+# the reviewer-verdict ledger, ticks a criterion that has a valid green verdict,
+# and finalises. The task gate classed the command as an edit under a completed
+# task and refused it, so a green verdict could only ever be applied by the
+# operator (055 T-645, 2026-11-13) — defeating the T-3579/T-4916 path for the
+# tasks that need it most.
+#
+# NARROW BY CONSTRUCTION, like the metadata clause above: argv must be
+# `fw task update`, the ONE named id, and `--status|-s work-completed`. No
+# --skip-*, --force, --reason, --add-tag, no second id, no `=` forms, no quoted
+# value (stripped quotes leave a valueless flag and the clause is refused).
+# update-task.sh's own gates (P-010, P-011, the verdict ledger, the operator-
+# only flags) still decide whether the close succeeds; this only stops the
+# task gate from refusing to let them decide.
+_fw_is_close_clause_for() {
+    local seg tok want="$2" task_seen=0 status_seen=0
+    seg="$(_fw_strip_quoted "$1")" || return 1
+    seg="${seg#"${seg%%[![:space:]]*}"}"
+    # shellcheck disable=SC2086  # deliberate word-splitting: tokenising argv
+    set -- $seg
+    [ $# -eq 6 ] || return 1
+    [ "${1##*/}" = "fw" ] || return 1
+    [ "$2" = "task" ] && [ "$3" = "update" ] || return 1
+    shift 3
+    while [ $# -gt 0 ]; do
+        tok="$1"; shift
+        case "$tok" in
+            T-[0-9]*)
+                [ "$tok" = "$want" ] || return 1
+                [ "$task_seen" -eq 1 ] && return 1
+                task_seen=1 ;;
+            --status|-s)
+                [ "${1:-}" = "work-completed" ] || return 1
+                [ "$status_seen" -eq 1 ] && return 1
+                status_seen=1; shift ;;
+            *) return 1 ;;
+        esac
+    done
+    [ "$task_seen" -eq 1 ] && [ "$status_seen" -eq 1 ]
+}
+
+# TRUE only for a command whose one close clause names $2 and every other
+# clause is independently admissible via the shared allowlist (a `cd …`).
+is_task_close_command_for() {
+    local cmd="$1" want="$2" seg found=0
+    local -a segs=()
+    [[ "$want" =~ ^T-[0-9]+$ ]] || return 1
+    case "$cmd" in *'$('*|*'`'*) return 1 ;; esac
+    local cmd_view
+    cmd_view="$(_fw_strip_quoted "$cmd")" || return 1
+    has_bash_write_pattern "$cmd_view" && return 1
+    local _FW_GIT_CWD _op _si=-1
+    _FW_GIT_CWD="$(_fw_initial_git_cwd)"
+    local -a ops=()
+    while IFS= read -r -d '' seg && IFS= read -r -d '' _op; do
+        segs+=("$seg"); ops+=("$_op")
+    done < <(_fw_chain_split "$cmd" ops)
+    for seg in "${segs[@]}"; do
+        _si=$((_si+1))
+        [[ "$seg" =~ ^[[:space:]]*$ ]] && continue
+        if _fw_is_close_clause_for "$seg" "$want"; then
+            [ "$found" -eq 1 ] && return 1
+            found=1
+            continue
+        fi
+        _fw_single_command_is_safe "$seg" || return 1
+        _fw_advance_cwd "$seg" "${ops[$_si]}"
+    done
+    [ "$found" -eq 1 ]
+}
+
 # TRUE only for a command that IS a commit checkpoint: at least one clause is a
 # real `git commit`, and every other clause is independently admissible.
 is_commit_checkpoint_command() {
