@@ -1,0 +1,116 @@
+{
+  "schema": "termlink.parity/1",
+  "report": "P-2 report ordering on (boot_id, mono_ns) (04 17.2.a; 06 AL-1 CR-6.24, FCW-3, AL-4; E-156; T-3693 P-2; for AEF B-29, P-44)",
+  "about": "How the sidecar meter orders an adapter's termlink.adapter/2 reports. Order key: the report's (boot_id, mono_ns) when both are present and valid, else the receiver's own receive stamp; never at_ms (wall clock, display and audit only). boot_id: 1..64 of [A-Za-z0-9-]. mono_ns: a host-monotonic clock in ns that counts through suspend (Linux CLOCK_BOOTTIME), sent as a decimal string (an integer is accepted, but passes 2^53 after ~104 days of uptime). Within one boot_id the higher mono_ns is later; a report from another boot_id (or a switch between adapter order and receive stamp) is later than every earlier one. An older ready is dropped (ready-reordered), an equal-order ready does not replace BUSY (tie keeps BUSY), an older prompt_submit is dropped (prompt-reordered), and a turn_stop (or ready READY) ends the last prompt's turn only when ordered after it. Run against every adapter (TermLink: crates/termlink-sidecar/tests/p2_parity.rs; AEF: B-29, P-44). Each case starts from a fresh meter whose agent is 'agent_id' below. 'rx_advance_ms' moves the receiver's monotonic clock before the step (default 0: same receive tick). Step 'expect' is applied | dropped:<reason>. Step 'ord' is the order the meter recorded for the step's ready (or prompt): {boot, ns} or receive-stamp. Step or case 'turn_stopped' says whether the last prompt's turn has ended. Case 'after' is the session as the meter holds it after the last step. 'payload' is the exact JSON line an adapter writes.",
+  "agent_id": "agent-b",
+  "negative_controls": [
+    "an adapter or receiver that orders by at_ms fails every case in this file (each case's at_ms runs against its order on purpose); the headline one is backward-wall-clock-step-does-not-freeze-ready",
+    "an adapter that sends mono_ns as a JSON integer above 2^53 loses precision in strict JSON readers; case mono-ns-as-decimal-string-above-2-pow-53 pins the string form",
+    "a receiver that takes a half or malformed pair as valid fails case invalid-or-half-pairs-use-the-receive-stamp"
+  ],
+  "cases": [
+    {
+      "name": "ready-ordered-on-mono-ns-not-at-ms",
+      "steps": [
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 500, "state": "BUSY", "boot_id": "b1", "mono_ns": "100"}, "expect": "applied", "ord": {"boot": "b1", "ns": "100"}},
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 900, "state": "READY", "boot_id": "b1", "mono_ns": "99"}, "expect": "dropped:ready-reordered"},
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 900, "state": "READY", "boot_id": "b1", "mono_ns": "100"}, "expect": "dropped:tie keeps BUSY"},
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 1, "state": "READY", "boot_id": "b1", "mono_ns": "101"}, "expect": "applied", "ord": {"boot": "b1", "ns": "101"}}
+      ],
+      "after": {"ready_state": "READY", "ready_reordered": 1}
+    },
+    {
+      "name": "new-boot-is-later-than-every-report-of-the-previous-boot",
+      "steps": [
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 1000, "state": "READY", "boot_id": "b1", "mono_ns": "9000000"}, "expect": "applied"},
+        {"rx_advance_ms": 1000, "payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 2000, "state": "BUSY", "boot_id": "b2", "mono_ns": "5"}, "expect": "applied", "ord": {"boot": "b2", "ns": "5"}},
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 3000, "state": "READY", "boot_id": "b2", "mono_ns": "4"}, "expect": "dropped:ready-reordered"}
+      ],
+      "after": {"ready_state": "BUSY", "ready_reordered": 1}
+    },
+    {
+      "name": "backward-wall-clock-step-does-not-freeze-ready",
+      "steps": [
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 1700000000000, "state": "READY", "boot_id": "3f0c-boot", "mono_ns": "7000000000000"}, "expect": "applied"},
+        {"rx_advance_ms": 1000, "payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 1699999401000, "state": "BUSY", "boot_id": "3f0c-boot", "mono_ns": "7001000000000"}, "expect": "applied"},
+        {"rx_advance_ms": 1000, "payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 1699999402000, "state": "READY", "boot_id": "3f0c-boot", "mono_ns": "7002000000000"}, "expect": "applied"},
+        {"rx_advance_ms": 1000, "payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 1699999403000, "state": "BUSY", "boot_id": "3f0c-boot", "mono_ns": "7003000000000"}, "expect": "applied"},
+        {"rx_advance_ms": 1000, "payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "prompt_submit", "at_ms": 1699999409000, "origin": "human", "basis": "inferred", "boot_id": "3f0c-boot", "mono_ns": "7003000000001"}, "expect": "applied", "ord": {"boot": "3f0c-boot", "ns": "7003000000001"}},
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "turn_stop", "at_ms": 1699999408000, "boot_id": "3f0c-boot", "mono_ns": "7003000000002"}, "expect": "applied", "turn_stopped": true},
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 1699999408001, "state": "READY", "boot_id": "3f0c-boot", "mono_ns": "7003000000003"}, "expect": "applied", "ord": {"boot": "3f0c-boot", "ns": "7003000000003"}}
+      ],
+      "after": {"ready_state": "READY", "ready_reordered": 0, "turn_stopped": true}
+    },
+    {
+      "name": "mono-ns-as-decimal-string-above-2-pow-53",
+      "steps": [
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 1, "state": "BUSY", "boot_id": "3f0c-boot", "mono_ns": "1152921504606846981"}, "expect": "applied", "ord": {"boot": "3f0c-boot", "ns": "1152921504606846981"}},
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 2, "state": "READY", "boot_id": "3f0c-boot", "mono_ns": "1152921504606846980"}, "expect": "dropped:ready-reordered"},
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 3, "state": "READY", "boot_id": "3f0c-boot", "mono_ns": "1152921504606846982"}, "expect": "applied"}
+      ],
+      "after": {"ready_state": "READY", "ready_reordered": 1}
+    },
+    {
+      "name": "mono-ns-as-integer-is-accepted",
+      "steps": [
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 10, "state": "BUSY", "boot_id": "b1", "mono_ns": 200}, "expect": "applied", "ord": {"boot": "b1", "ns": "200"}},
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 20, "state": "READY", "boot_id": "b1", "mono_ns": "199"}, "expect": "dropped:ready-reordered"}
+      ],
+      "after": {"ready_state": "BUSY", "ready_reordered": 1}
+    },
+    {
+      "name": "reports-without-the-fields-use-the-receive-stamp",
+      "steps": [
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 5000, "state": "BUSY"}, "expect": "applied", "ord": "receive-stamp"},
+        {"rx_advance_ms": 10, "payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 10, "state": "READY"}, "expect": "applied", "ord": "receive-stamp"},
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 9, "state": "BUSY"}, "expect": "applied"},
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 99999, "state": "READY"}, "expect": "dropped:tie keeps BUSY"}
+      ],
+      "after": {"ready_state": "BUSY", "ready_reordered": 0}
+    },
+    {
+      "name": "invalid-or-half-pairs-use-the-receive-stamp",
+      "steps": [
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 1, "state": "READY", "boot_id": "b1", "mono_ns": "1000"}, "expect": "applied", "ord": {"boot": "b1", "ns": "1000"}},
+        {"rx_advance_ms": 10, "payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 1, "state": "BUSY", "boot_id": "b1"}, "expect": "applied", "ord": "receive-stamp"},
+        {"rx_advance_ms": 10, "payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 1, "state": "READY", "mono_ns": "5"}, "expect": "applied", "ord": "receive-stamp"},
+        {"rx_advance_ms": 10, "payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 1, "state": "BUSY", "boot_id": "b:1", "mono_ns": "5"}, "expect": "applied", "ord": "receive-stamp"},
+        {"rx_advance_ms": 10, "payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 1, "state": "READY", "boot_id": "", "mono_ns": "5"}, "expect": "applied", "ord": "receive-stamp"},
+        {"rx_advance_ms": 10, "payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 1, "state": "BUSY", "boot_id": "b1", "mono_ns": "12x"}, "expect": "applied", "ord": "receive-stamp"},
+        {"rx_advance_ms": 10, "payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 1, "state": "READY", "boot_id": "b1", "mono_ns": -1}, "expect": "applied", "ord": "receive-stamp"},
+        {"rx_advance_ms": 10, "payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "ready", "at_ms": 1, "state": "BUSY", "boot_id": "b1", "mono_ns": "123456789012345678901"}, "expect": "applied", "ord": "receive-stamp"}
+      ],
+      "after": {"ready_state": "BUSY", "ready_reordered": 0}
+    },
+    {
+      "name": "older-prompt-is-dropped",
+      "steps": [
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "prompt_submit", "at_ms": 1, "origin": "automated", "basis": "doorbell", "boot_id": "b1", "mono_ns": "50"}, "expect": "applied", "ord": {"boot": "b1", "ns": "50"}},
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "prompt_submit", "at_ms": 2, "origin": "human", "basis": "inferred", "boot_id": "b1", "mono_ns": "49"}, "expect": "dropped:prompt-reordered"}
+      ],
+      "after": {"last_prompt_origin": "automated", "prompt_reordered": 1}
+    },
+    {
+      "name": "turn-stop-ordered-before-the-prompt-does-not-end-it",
+      "steps": [
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "prompt_submit", "at_ms": 5000, "origin": "human", "basis": "inferred", "boot_id": "b1", "mono_ns": "1000"}, "expect": "applied"},
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "turn_stop", "at_ms": 9000, "boot_id": "b1", "mono_ns": "999"}, "expect": "applied", "turn_stopped": false},
+        {"payload": {"schema": "termlink.adapter/2", "harness": "claude-code", "agent_id": "agent-b", "session_id": "sess-p2", "event": "turn_stop", "at_ms": 1, "boot_id": "b1", "mono_ns": "1001"}, "expect": "applied", "turn_stopped": true}
+      ],
+      "after": {"turn_stopped": true}
+    }
+  ],
+  "hook_requests": {
+    "about": "TermLink's own built hooks (and any adapter that also uses the sidecar ops 'ready'/'pull') send this host's boot_id and mono_ns (decimal string) on every request. A sidecar started before P-2 answers 'old_sidecar_answer' to the order fields; the hook then sends the same request once more without 'retry_drops', and that call is ordered by the receive stamp.",
+    "events": [
+      {"hook": "session-start", "op": "ready"},
+      {"hook": "post-tool-use", "op": "pull"},
+      {"hook": "stop", "op": "ready"},
+      {"hook": "session-end", "op": "ready"}
+    ],
+    "order_fields": ["boot_id", "mono_ns"],
+    "mono_ns_form": "decimal-string",
+    "old_sidecar_answer": {"ok": false, "code": "unknown-field", "error": "field \"boot_id\" is not accepted by ready"},
+    "retry_drops": ["boot_id", "mono_ns"]
+  }
+}
