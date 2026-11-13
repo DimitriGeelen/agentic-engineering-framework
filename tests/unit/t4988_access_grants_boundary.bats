@@ -72,6 +72,11 @@ blocks() { run hook "$1" "$2"; [ "$status" -eq 2 ]; }
 }
 
 @test "control: without a grant file, policy/ is ordinary" {
+    # T-5034: keep policy/ itself. `git rm` of its only file removed the folder, so the mv
+    # below moved nothing; a MISSING policy/ is now guarded (it could be created with a
+    # prepared grant file inside, see t5034_grant_file_bootstrap.bats).
+    printf 'x: 1\n' > "$P/policy/other.yaml"
+    git -C "$P" add policy/other.yaml
     git -C "$P" rm -q policy/access-grants.yaml
     git -C "$P" -c user.name=t -c user.email=t@t commit -q -m "drop grants"
     allows Bash "mv $P/policy $P/policy.old"

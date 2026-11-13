@@ -303,6 +303,8 @@ bin/fw vendor self --check --task T-5034
 
 **Prevention:** `tests/unit/t5034_grant_file_bootstrap.bats` has 13 tests. The 8 refusal tests fail on the old code (run with the fix stashed) and pass on the new; the 3 controls pass on both. Committing a grant file under agent control is the remaining path, covered by T-5031.
 
+**Note on t4988's control test:** "without a grant file, policy/ is ordinary" ran `git rm` on the only file in `policy/`, which removes the folder, so its `mv policy policy.old` named a missing folder. A missing `policy/` is now guarded, so I gave the fixture a second file to keep the folder, matching the test's intent. Unexplained: my background sweep over all 32 access-grant and boundary files reported t4988 green with the fix in place, but it fails deterministically when re-run. The hook imports from the source `lib/`, not the vendored copy. Recorded rather than guessed; the close-gate line caught it.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
