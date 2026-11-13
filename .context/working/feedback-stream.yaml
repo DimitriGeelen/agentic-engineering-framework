@@ -54083,3 +54083,21 @@ scan_id: R-99416704
 task_id: T-5114
 payload:
   task_file: .tasks/active/T-5114-testhost-guest-roots-tee-cannot-write-th.md
+---
+kind: scan_emitted
+timestamp: '2026-11-13T13:19:59Z'
+scan_id: R-51370156
+task_id: T-5115
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-13T13:19:59Z'
+scan_id: R-51370156
+task_id: T-5115
+payload:
+  task_file: .tasks/active/T-5115-testhost-controller-a-destroy-failure-ov.md
