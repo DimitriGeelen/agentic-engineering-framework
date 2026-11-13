@@ -1,0 +1,21 @@
+id: tests/unit/t5121_judge_dispatch_timeout_test.py
+name: t5121_judge_dispatch_timeout_test
+type: script
+subsystem: tests
+location: tests/unit/t5121_judge_dispatch_timeout_test.py
+tags: []
+
+purpose: "T-5121 — fw reviewer judge's wait for 'Worker spawned' is a config key, not a hard 120 s."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-13
+created_by: unknown

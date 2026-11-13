@@ -7,10 +7,10 @@ description: >
   dispatch ends the review with 'no seat was dispatched'. Make it configurable (registry
   key, both registries).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-5105]
@@ -42,7 +42,7 @@ origin: {kind: "peer", source: "010-termlink", ref: "341c592f"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-13T14:58:49Z
-last_update: '2026-11-13T15:16:05Z'
+last_update: '2026-11-13T17:13:41Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -81,6 +81,22 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-13T17:13:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 2
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=2 (body:default-change); 
+      D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5121: fw reviewer judge: the 120 s dispatch timeout in judge_cli.py is hard-coded; make it a config key (010 T-3777)
@@ -100,8 +116,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `REVIEWER_JUDGE_DISPATCH_TIMEOUT` (default 120 s) is registered in `lib/config.sh` and `web/blueprints/config.py`, and the config-registry parity lint passes
+- [ ] `judge_cli._dispatch_real` takes its spawn timeout from that key (env `FW_REVIEWER_JUDGE_DISPATCH_TIMEOUT` > `.framework.yaml` > default); an invalid or out-of-range value falls back to 120; tests pin the default, an override and the fallback
+- [ ] When the dispatch does not report "Worker spawned" in time, the error says so and names the key, instead of a bare TimeoutExpired; every existing test that reads judge_cli.py still passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -384,3 +401,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5121-fw-reviewer-judge-the-120-s-dispatch-tim.md
 - **Context:** Initial task creation
+
+### 2026-11-13T17:13:39Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
