@@ -329,7 +329,9 @@ class ProxmoxBackend:
                                    "VM.Config.Options", "VM.PowerMgmt", "VM.Console",
                                    "VM.Audit", "Pool.Audit"},
             f"/vms/{self.template}": {"VM.Clone", "VM.Audit"},
-            f"/storage/{self.iso_storage}": {"Datastore.AllocateTemplate", "Datastore.Audit"},
+            # T-5099: Datastore.Allocate deletes the run's ISO (first real run: 403 without it).
+            f"/storage/{self.iso_storage}": {"Datastore.Allocate", "Datastore.AllocateTemplate",
+                                             "Datastore.Audit"},
             f"/storage/{disk_storage}": {"Datastore.AllocateSpace"},
         }
 

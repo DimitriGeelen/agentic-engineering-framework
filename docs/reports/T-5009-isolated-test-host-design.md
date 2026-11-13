@@ -181,7 +181,7 @@ from the node's own conventions.
 | User | `aef-testhost@pve`, no password, no other groups or ACLs |
 | Role `AEFPRTest` | `VM.Allocate VM.Config.CDROM VM.Config.Disk VM.Config.Options VM.PowerMgmt VM.Console VM.Audit Pool.Audit` |
 | Role `AEFPRTemplate` | `VM.Clone VM.Audit` |
-| Role `AEFPRIso` | `Datastore.AllocateTemplate Datastore.Audit` |
+| Role `AEFPRIso` | `Datastore.Allocate Datastore.AllocateTemplate Datastore.Audit` (Allocate added 2026-11-13: deleting the run's ISO needs it; first real run got HTTP 403. Safe because `aef-pr-iso` holds only AEF's ISOs) |
 | Role `AEFPRDisk` | `Datastore.AllocateSpace` |
 | ACLs (user, propagate) | `/pool/aef-pr-test` AEFPRTest; `/vms/<template-vmid>` AEFPRTemplate; `/storage/<iso-storage>` AEFPRIso; `/storage/<disk-storage>` AEFPRDisk. Nothing on `/`, `/nodes`, `/access`, `/sdn`, other VMs or storages |
 | Token | `aef-testhost@pve!prtest`, privilege separation **off** (inherits exactly the ACLs above), expiry: the operator's choice, recorded |

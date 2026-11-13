@@ -18,7 +18,7 @@ GOOD = {
                                           "VM.Config.Options", "VM.PowerMgmt", "VM.Console",
                                           "VM.Audit", "Pool.Audit")},
     "/vms/9000": {"VM.Clone": 1, "VM.Audit": 1},
-    "/storage/isos": {"Datastore.AllocateTemplate": 1, "Datastore.Audit": 1},
+    "/storage/isos": {"Datastore.Allocate": 1, "Datastore.AllocateTemplate": 1, "Datastore.Audit": 1},
     "/storage/vmdisks": {"Datastore.AllocateSpace": 1},
 }
 
