@@ -46,7 +46,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
     __package__ = "lib.sidecar"
 
-from . import adapter, circuit, direct, identity, inject, lifecycle, main_session, receiver  # noqa: E402
+from . import adapter, adapter2, circuit, direct, identity, inject, lifecycle, main_session, receiver  # noqa: E402
 
 BODY_CAP = 4000
 # T-3840: Claude Code keeps a hook's additionalContext inline only up to ~10,000
@@ -93,6 +93,10 @@ def stop(hook_input: dict) -> int:
     # reads. The project-wide file is a display summary only.
     me = adapter.set_session_ready(hook_input, True)
     adapter.set_ready_for_input(True)
+    # T-5054: with the adapter/2 switch on, Stop reports turn_stop + READY and never
+    # renews the lease (CR-O3: only a human prompt renews). Off: T-5014 as before.
+    if adapter2.hook_reports("stop", hook_input) is not None:
+        return 0
     # T-5014: a long turn keeps the main lease (rate-limited renewal).
     if main_session.may_claim(me):
         main_session.claim(me["session_id"])
@@ -108,13 +112,21 @@ def session_start(hook_input: dict, spawn: bool = True) -> str | None:
     if not _active():
         return None
     me = adapter.session_identity(hook_input)
+    # T-5054: adapter/2 on → report session_start, and the claim says it is one.
+    a2 = adapter2.hook_reports("session-start", hook_input)
     if not main_session.may_claim(me):
         return None
+    kind_args: list[str] = []
+    if a2 is not None:
+        kind_args = ["--kind", "session-start"] + (["--interactive"] if a2.get("interactive") else [])
     if not spawn:
-        return main_session.claim(me["session_id"], force=True)
+        if a2 is None:
+            return main_session.claim(me["session_id"], force=True)
+        return main_session.claim(me["session_id"], force=True, kind="session-start",
+                                  interactive=bool(a2.get("interactive")))
     subprocess.Popen(
         [sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "main_session.py"),
-         "claim", me["session_id"]],
+         "claim", me["session_id"], *kind_args],
         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         env=dict(os.environ, PROJECT_ROOT=str(receiver._root())),
         start_new_session=True)
@@ -290,6 +302,11 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
     # FIRST, before anything that can fail or take time: the agent is busy now.
     me = adapter.set_session_ready(hook_input, False)
     adapter.clear_ready_for_input()
+    # T-5054: adapter/2 on → BUSY + prompt_submit go to TermLink for every session
+    # (headless ones report automated/non-interactive), and the claim below carries the
+    # RECEIVER-CHECKED origin (17.5.e). Off → None, and the claim is exactly T-5014's.
+    a2 = adapter2.hook_reports("prompt", hook_input)
+    origin_kw = {} if a2 is None else {k: a2[k] for k in ("origin", "basis", "kind")}
     now = time.time()
     # T-3745: surface ONLY what the injector claimed for THIS session. Mail
     # typed into the fleet agent's PTY must not be taken by the operator's
@@ -319,14 +336,14 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
     # line saying mail waits. Unknown → nothing, plus one line. termlink without
     # the verb → today's delivery, said once per session. am-i is asked only when
     # mail waits.
-    claimed = (main_session.claim(my_sid) if main_session.may_claim(me)
+    claimed = (main_session.claim(my_sid, **origin_kw) if main_session.may_claim(me)
                else main_session.INELIGIBLE)
     notice = None
     if waiting:
         answer, _holder, vacant = main_session.ask(my_sid)
         if answer == main_session.NOT_MAIN and vacant and claimed == main_session.SKIPPED:
             # Claimed under a minute ago, yet vacant now (released or lost): try once more.
-            if main_session.claim(my_sid, force=True) == main_session.CLAIMED:
+            if main_session.claim(my_sid, force=True, **origin_kw) == main_session.CLAIMED:
                 answer, _holder, vacant = main_session.ask(my_sid)
         if answer in (main_session.NOT_MAIN, main_session.UNKNOWN):
             _record_withheld(waiting, my_sid, answer, _holder)

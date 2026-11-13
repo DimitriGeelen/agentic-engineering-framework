@@ -58,6 +58,13 @@ with no mark → `human/inferred`; cannot read → `unknown`.
 
 ## Slices
 
+Status 2026-11-13: slices 1 and 2 built (switch off by default). Slice 2 detail: the reports are sent
+from inside AEF's existing prompt/stop/session-start hooks (`lib/sidecar/hooks.py`), because the lease
+claim needs the receiver's `origin_checked` in the same process. With the switch on, Stop sends
+`turn_stop` + `ready READY` and no longer renews the lease (CR-O3); the prompt claim carries
+`--origin/--basis/--kind prompt` from the receiver's check (`unknown` when it cannot be reached);
+SessionStart claims `--kind session-start [--interactive]`. Off: every claim is T-5014's, unchanged.
+
 1. **Emitter** (`lib/sidecar/adapter2.py`): builds the reports above, clocks, origin rules; writes to the socket with
    a short timeout; fails open (prints nothing, one line to `hook-errors.log`). Off unless enabled per agent.
    Test: for every fixture step, the emitter's line for the matching hook input equals the fixture payload (clock

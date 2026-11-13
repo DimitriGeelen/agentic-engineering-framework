@@ -304,13 +304,55 @@ def checked_origin(reports: list[dict], replies: list[dict | None]) -> str:
     """The origin the lease claim may use (17.5.e): the receiver's ``origin_checked``,
     or ``unknown`` when the receiver could not be reached or did not apply the prompt;
     never the hook's own ``human``."""
+    return checked_pair(reports, replies)[0]
+
+
+def checked_pair(reports: list[dict], replies: list[dict | None]) -> tuple[str, str | None]:
+    """(origin_checked, basis_checked) for the claim; ("unknown", None) when unchecked."""
     for r, reply in zip(reports, replies):
         if r.get("event") == "prompt_submit":
             if reply and reply.get("ok") is True and not reply.get("dropped"):
                 o = reply.get("origin_checked")
-                return o if o in VALID_ORIGIN else "unknown"
-            return "unknown"
-    return "unknown"
+                if o in VALID_ORIGIN:
+                    return o, (reply.get("basis_checked") if o != "unknown" else None)
+            return "unknown", None
+    return "unknown", None
+
+
+def hook_reports(hook: str, hook_input: dict) -> dict | None:
+    """Slice 2 entry for lib/sidecar/hooks.py: send this hook's reports and return what
+    the lease claim needs, or None when the adapter is off (then every claim stays
+    exactly as before). Never raises; an unreachable sidecar gives origin unknown.
+
+      prompt        → {"claim": True,  "origin", "basis", "kind": "prompt"}
+      stop          → {"claim": False}   (CR-O3: only a human prompt renews the lease)
+      session-start → {"claim": True, "kind": "session-start", "interactive"}
+      others        → {"claim": False}
+    """
+    if not enabled():
+        return None
+    reps: list[dict] = []
+    replies: list[dict | None] = []
+    interactive = None
+    try:
+        sock = os.environ["TERMLINK_SIDECAR_SOCKET"]
+        agent = agent_id_for(sock)
+        if not agent:
+            raise ValueError("cannot tell the sidecar's agent id (set TERMLINK_AGENT_ID)")
+        _log_hook_keys(hook, hook_input)
+        pid = _harness_pid()
+        interactive = _interactive(pid)
+        reps = reports_for(hook, hook_input, agent_id=agent, clock=Clock(), harness_pid=pid,
+                           interactive=interactive)
+        replies = send(reps, sock)
+    except Exception:
+        _log_error(f"hook_reports {hook}")
+    if hook == "prompt":
+        origin, basis = checked_pair(reps, replies)
+        return {"claim": True, "origin": origin, "basis": basis, "kind": "prompt"}
+    if hook == "session-start":
+        return {"claim": True, "kind": "session-start", "interactive": interactive is True}
+    return {"claim": False}
 
 
 # ── enablement, errors, entry point ─────────────────────────────────────────────
