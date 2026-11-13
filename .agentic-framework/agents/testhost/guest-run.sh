@@ -46,7 +46,10 @@ cp "$bundle" "$work/pr.bundle"          # the PR's user never needs to reach INP
 cp "$here/pr-checks.sh" "$work/pr-checks.sh"   # T-5099: INPUT-DIR is root-only in the VM
 runas=()
 if [ "$(id -u)" -eq 0 ] && id testhost >/dev/null 2>&1; then
-    chown testhost "$work" "$work/pr.bundle" "$work/pr-checks.sh" "$raw_log"
+    # T-5114: NOT "$raw_log". Root's tee writes it, and under fs.protected_regular (Debian's
+    # systemd default) root may not open another user's file in sticky /tmp: tee would write
+    # nothing, exit 1, and every phase would be lost. testhost never touches the raw log.
+    chown testhost "$work" "$work/pr.bundle" "$work/pr-checks.sh"
     runas=(runuser -u testhost --)
 fi
 
