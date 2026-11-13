@@ -376,8 +376,6 @@ bin/fw watchtower current
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-## Recommendation
-
 **Recommendation:** GO
 **Rationale:** Finished dispatch folders are now pruned automatically. `fw termlink dispatch` starts `fw termlink prune` in the background at most once an hour. It deletes only this project's finished folders: read results after 7 days, never-read results after 30 (your ruling). It keeps running, unfinalised and other projects' folders, and it never signals a process. The only thing left for you is the wording of the two new rows on the /config page.
 **Evidence:**
