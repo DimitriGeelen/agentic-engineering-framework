@@ -329,7 +329,8 @@ class TestEnvironmentIsData:
         r = subprocess.run(["bash", str(TERMLINK), "dispatch", "--task", TID, "--name", "judge-x",
                             "--task-type", "review", "--prompt", "brief", "--project", str(proj)],
                            capture_output=True, text=True, env=env, cwd=proj, timeout=120)
-        [w] = list(dd.iterdir())
+        # T-5120: the dispatch root also holds the prune's .retention-stamp; workers are the dirs.
+        [w] = [p for p in dd.iterdir() if p.is_dir()]
         assert not (w / "env.sh").exists(), r.stderr
         data = json.loads((w / "env.json").read_text())
         assert data["FW_SIDECAR_AGENT_ID"] == w.name and data["FW_REVIEW_WORKER"] == "1"
