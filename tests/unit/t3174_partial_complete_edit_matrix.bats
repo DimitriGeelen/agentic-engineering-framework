@@ -167,15 +167,16 @@ _run_hook_write() {
 
 @test "T-3570: command-string prefix is honoured on a Bash write (the advertised route)" {
     _focus_on T-1100
-    run _run_hook_bash "FW_ALLOW_PARTIAL_COMPLETE_EDIT=1 bin/fw task update T-1100 --status work-completed"
+    run _run_hook_bash "FW_ALLOW_PARTIAL_COMPLETE_EDIT=1 bin/fw task update T-1100 --add-tag x"
     [ "$status" -eq 0 ]
     [[ "$output" =~ "FW_ALLOW_PARTIAL_COMPLETE_EDIT" ]]
     grep -q "flag: 'FW_ALLOW_PARTIAL_COMPLETE_EDIT'" "$TEST_TEMP_DIR/.context/working/.gate-bypass-log.yaml"
 }
 
 @test "T-3570 control: the same Bash write WITHOUT the prefix stays blocked" {
+    # T-5112: not the close command — that one is now allowed on its own (see t5112_partial_complete_close.bats).
     _focus_on T-1100
-    run _run_hook_bash "bin/fw task update T-1100 --status work-completed"
+    run _run_hook_bash "bin/fw task update T-1100 --add-tag x"
     [ "$status" -eq 2 ]
 }
 

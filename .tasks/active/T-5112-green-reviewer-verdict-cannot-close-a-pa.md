@@ -5,10 +5,10 @@ name: "Green reviewer verdict cannot close a partial-complete task: task gate bl
 description: >
   055 report d4651ae1 (2026-11-13), see Context.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -39,7 +39,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-13T07:09:52Z
-last_update: '2026-11-13T07:16:09Z'
+last_update: '2026-11-13T14:33:40Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -78,6 +78,22 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-13T14:33:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5112: Green reviewer verdict cannot close a partial-complete task: task gate blocks fw task update --status work-completed (055 T-645)
@@ -103,8 +119,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The block is reproduced on AEF with a fixture (focus on a partial-complete task; `fw task update <id> --status work-completed` refused by check-active-task), and a regression test fails before the fix
+- [x] With focus on a partial-complete task, the gate lets through exactly `fw task update <that id> --status work-completed` (bare, or after `cd PATH &&`), with no bypass flag; update-task.sh's own gates still decide the close
+- [x] Scope holds: any other `fw task update` change, any shell write (redirect, `touch`), a Write/Edit to a source file, and the same command naming a DIFFERENT task all stay blocked
+- [ ] 055's further findings 1-4 are each checked on AEF; each one that reproduces is filed as its own task with the evidence, and 055 is told the outcome
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,6 +308,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t5112_partial_complete_close.bats > /tmp/.t5112.out 2>&1 && ! grep -q "^not ok" /tmp/.t5112.out
+test "$(grep -c '# skip' /tmp/.t5112.out)" -eq 0
+timeout 600 bats tests/unit/t3179_partial_complete_commit.bats tests/unit/t3174_partial_complete_edit_matrix.bats > /tmp/.t5112b.out 2>&1 && ! grep -q "^not ok" /tmp/.t5112b.out
+bin/fw vendor self --check --task T-5112
 
 ## RCA
 
@@ -306,6 +328,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** a partial-complete task with a green reviewer verdict could not be closed by the agent. `fw task update <id> --status work-completed` was refused by check-active-task ("has status 'work-completed'"), with focus on the task or null. Only the operator, or a Tier-2 bypass, could close it.
+
+**Root cause:** the work-completed branch of `agents/context/check-active-task.sh` admits only `git commit` (T-3179) and the T-3174 bypass. The close re-run is not on the safe list, so it reaches that branch and counts as an edit under a completed task. With null focus it is "No active task". Yet the same re-run is the only command that applies a green verdict to a partial-complete task (T-4465).
+
+**Why structurally allowed:** T-3579, T-4465 and T-4916 built the green-verdict close path in update-task.sh and tested it by invoking update-task.sh directly, never through the PreToolUse gate an agent's Bash call passes. T-3179 and T-3174 tested the gate for commits and edits, not for the close. Each half was green on its own, and nothing tested where they meet.
+
+**Prevention:** `tests/unit/t5112_partial_complete_close.bats` drives the real hook with the close command, focused and with null focus, plus seven scope legs that must stay blocked. The allowance is one predicate (`is_task_close_command_for`), consumed at the two branches that can see a partial-complete task.
 
 ## Evolution
 
@@ -387,3 +416,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5112-green-reviewer-verdict-cannot-close-a-pa.md
 - **Context:** Initial task creation
+
+### 2026-11-13T14:33:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
