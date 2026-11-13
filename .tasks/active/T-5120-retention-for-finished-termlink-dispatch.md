@@ -377,7 +377,7 @@ bin/fw watchtower current
 -->
 
 **Recommendation:** GO
-**Rationale:** Finished dispatch folders are now pruned automatically. `fw termlink dispatch` starts `fw termlink prune` in the background at most once an hour. It deletes only this project's finished folders: read results after 7 days, never-read results after 30 (your ruling). It keeps running, unfinalised and other projects' folders, and it never signals a process. The only thing left for you is the wording of the two new rows on the /config page.
+**Rationale:** Finished dispatch folders are now pruned automatically. `fw termlink dispatch` starts `fw termlink prune` in the background at most once an hour. It deletes only this project's finished folders: read results after 7 days, never-read results after 30 (your ruling). It keeps running, unfinalised and other projects' folders, and it never signals a process. The only thing left for you is the wording of the two new rows on http://192.168.10.107:3000/config.
 **Evidence:**
 - `tests/unit/t5120_dispatch_prune.bats`: 18 tests, all pass, none skipped. They cover each keep rule, both age cuts, dry run, the hourly throttle, the off switch and the fallback for a bad value.
 - A dry run on the real folders took about 5 s (59 s before the one-grep ownership filter). It found 0 to remove today: this project's 185 unread results are 7–30 days old, so they start going in about 9 days.
