@@ -973,21 +973,29 @@ def _unavailable_reason(dispatch_id: str) -> str:
     """Why a dispatched seat left no ledger row, read from its worker dir (T-3852): the exit
     status and, when the worker's own stream or stderr names one, a usage or rate limit. Short by
     design — a reason for the operator's message, never a raw log. '' is never returned."""
-    w = dispatch_tokens.dispatch_dir() / dispatch_id
+    # T-5119: worker_dir, not dispatch_dir — a harness seat (codex, opencode, antigravity) keeps
+    # the /tmp root (T-4675 exception), so looking only in the project root found nothing and
+    # every such seat read "no completion" whatever had happened to it.
+    w = dispatch_tokens.worker_dir(dispatch_id)
     try:
         code = (w / "exit_code").read_text().strip()
     except OSError:
         code = ""
-    text = ""
+    raw = ""
     # result.md: antigravity prints its whole output (and its refusal) to stdout.
     for name in ("result.jsonl", "stderr.log", "result.md"):
         try:
-            text += (w / name).read_text(errors="replace").lower()
+            raw += (w / name).read_text(errors="replace")
         except OSError:
             pass
+    text = raw.lower()
+    # T-5119 (055 T-645): a provider that refuses the account (balance, quota, auth) is not a
+    # rate limit — the fix is a top-up or a key, not a retry. Checked before "429".
+    refused = _provider_refusal(text, raw)
     # T-4456: a headless harness that needed a tool permission it cannot prompt for exits 0 with
     # no verdict; say that, not a bare "exit 0".
-    limit = ("usage limit" if "usage limit" in text else
+    limit = (refused if refused else
+             "usage limit" if "usage limit" in text else
              "rate limit" if ("rate limit" in text or "429" in text) else
              "tool permission auto-denied (headless)" if "auto-denied" in text else "")
     # T-4844: the runtime names a seat that exited 0 and left no verdict (completion seat_state,
@@ -1004,6 +1012,35 @@ def _unavailable_reason(dispatch_id: str) -> str:
         err = _stream_error(w / "result.jsonl")
         return f"exit {code}: {err}" if err else f"exit {code}"
     return "no completion"
+
+
+# Specific provider phrases only: result.md can hold a reviewer's whole printed review, so a
+# generic word ("billing", "unauthorized") would mislabel a seat that reviewed such a feature.
+_REFUSAL_BALANCE = ("insufficient balance", "insufficient_quota", "insufficient quota",
+                    "exceeded your current quota", "credit balance is too low",
+                    "no resource package", "please recharge")
+_REFUSAL_AUTH = ("invalid api key", "invalid_api_key", "incorrect api key provided",
+                 "authentication_error", "invalid x-api-key")
+# Also matches the escaped form a harness nests the provider body in: \"code\":\"1113\".
+_PROVIDER_CODE = re.compile(r'\\?"code\\?"\s*:\s*\\?"?(\d{3,6})')
+
+
+def _provider_refusal(text: str, raw: str) -> str:
+    """T-5119: 'provider refused: <kind>[ (code N)]' when the seat's own output says the
+    provider refused the account; '' otherwise. `text` is `raw` lower-cased. The code is taken
+    only from the line that carries the refusal, never from elsewhere in the stream."""
+    kind = ("balance or quota" if any(m in text for m in _REFUSAL_BALANCE) else
+            "authentication" if any(m in text for m in _REFUSAL_AUTH) else "")
+    if not kind:
+        return ""
+    markers = _REFUSAL_BALANCE if kind == "balance or quota" else _REFUSAL_AUTH
+    for line in raw.splitlines():
+        low = line.lower()
+        if any(m in low for m in markers):
+            m = _PROVIDER_CODE.search(line)
+            if m:
+                return f"provider refused: {kind} (code {m.group(1)})"
+    return f"provider refused: {kind}"
 
 
 def _no_verdict(w: Path) -> bool:
