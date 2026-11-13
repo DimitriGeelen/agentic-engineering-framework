@@ -306,6 +306,14 @@ bin/fw vendor self --check --task T-5115
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** the first real run reported only "destroy failed: iso … HTTP 403"; its own earlier failure (the guest result had no phases, T-5114) was invisible without reading the serial log.
+
+**Root cause:** in `lib/testhost.py` `run()`, the `finally` block assigned `state, reason = …` on a destroy exception, overwriting whatever the run had reached.
+
+**Why it was not caught:** no test combined a run failure with a destroy failure; every stub destroy succeeded.
+
+**Prevention:** the destroy failure is appended to the reason; `test_t5115_a_destroy_failure_keeps_the_earlier_reason` runs a failing guest plus a failing destroy and requires both reasons in order (fails on the old code).
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how

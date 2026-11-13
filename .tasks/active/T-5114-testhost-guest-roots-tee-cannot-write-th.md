@@ -103,7 +103,7 @@ cost_estimate_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] guest-run.sh no longer chowns `raw_log` (nor any file root's tee writes); a test pins it — `tests/unit/t5114_guest_raw_log_owner.bats` (fails on the old script)
 - [x] A test reproduces the failure mode: as root, tee into a mktemp file chowned to another user fails under protected_regular, and into one root owns succeeds (skipped where not root) — test 3, run here with protected_regular=2
-- [ ] The next real Proxmox run shows phases in checks.log and result.json
+- [x] The next real Proxmox run shows phases in checks.log and result.json — run 20261113T131034Z-commit-da9942919-8478: passed; result.json lists lint rc=0 (140 s) and changed rc=0; checks.log 11,817 bytes; guest done rc=0
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -308,6 +308,14 @@ bin/fw vendor self --check --task T-5114
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** the first real Proxmox run lost every phase (guest done rc=1, empty checks.log) although lint and changed both ended rc=0.
+
+**Root cause:** `guest-run.sh` chowned the mktemp raw log in `/tmp` to `testhost`, but root's `tee` writes it. Debian's `fs.protected_regular` (systemd default) refuses root an O_CREAT open of another user's file in a sticky world-writable directory, so tee wrote only to stdout and exited 1 under pipefail.
+
+**Why it was not caught:** the stub backend never runs the guest as a second user, so the chown was a no-op in every test; the first run on the real template was the first time the path executed as designed. Design A was reviewed for isolation, not for file ownership across the two users inside the VM.
+
+**Prevention:** the raw log stays root-owned (comment at the chown names the reason); `tests/unit/t5114_guest_raw_log_owner.bats` pins it and reproduces the kernel refusal where it can; a real-host run is now part of the T-5099 build check (passed: 20261113T131034Z). Learning recorded below.
 
 ## Evolution
 
