@@ -10,10 +10,10 @@ description: >
   am-i'; the bats test does not set FW_TERMLINK_BIN, so the real termlink answers
   not-main/unknown and mail is withheld. Fix the test's stub, not the gate.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-13T07:26:39Z
-last_update: '2026-11-13T07:31:12Z'
+last_update: 2026-11-13T22:34:15Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,20 +90,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** I found this while running every test that reads `lib/sidecar/hooks.py` for T-5054 slice 2 (2026-11-13). `tests/unit/t4773_stale_doorbell.bats` tests 2-4 fail at HEAD as well, so the failure is not from that change.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** the same class as T-5124. The test's prompt hook asks the T-5014 main-only gate, which runs the real `termlink main am-i` because the test does not stub it. This host's termlink has the verb, the throwaway project has no main, so the prompt hook surfaces nothing (or a one-line not-main note), and the assertions about the stale-doorbell line fail.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** t4773 tests what it was written for (the stale-doorbell line after compact/restore), independent of what the installed termlink supports.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the test pins the main-session answer with a stub via `FW_TERMLINK_BIN`, and all its tests pass here. No production change.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] the cause of tests 2-4 failing is confirmed (real `termlink main am-i` reached), or the actual cause is named here if it differs
+- [ ] t4773's setup points `FW_TERMLINK_BIN` at a stub that answers the `termlink main` verbs, so the result does not depend on the installed termlink
+- [ ] every test in `tests/unit/t4773_stale_doorbell.bats` passes, none skipped; no production file changes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -386,3 +387,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5113-t4773staledoorbellbats-tests-2-4-fail-at.md
 - **Context:** Initial task creation
+
+### 2026-11-13T22:34:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

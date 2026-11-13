@@ -16,6 +16,12 @@ setup() {
     export PROJECT_ROOT="$ROOT" FW_SIDECAR_REGISTRY_DIR="$BATS_TEST_TMPDIR/registry"
     export FW_SIDECAR_HUB_ID=cacc73ea32b121dd FW_ROOT
     unset FW_SIDECAR_AGENT_ID FW_REVIEW_WORKER
+    # T-5113: the prompt hook asks the T-5014 main-only gate (termlink main am-i). On a host
+    # whose termlink has that verb the throwaway project has no main and the hook surfaces
+    # nothing, so tests 2-4 failed. Pin the answer: this session is the main.
+    printf '#!/bin/sh\n[ "$2" = am-i ] && echo "main (t4773 stub)"\nexit 0\n' > "$BATS_TEST_TMPDIR/termlink-main"
+    chmod +x "$BATS_TEST_TMPDIR/termlink-main"
+    export FW_TERMLINK_BIN="$BATS_TEST_TMPDIR/termlink-main"
 }
 
 # Run python with the fixture helpers in scope; the test body comes on stdin.
