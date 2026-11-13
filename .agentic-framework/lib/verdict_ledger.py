@@ -3147,6 +3147,9 @@ def _note_torn(root: Path, task_id: str, lines: list[str]) -> None:
             seen.add(sha)
 
 
+_NO_VERDICT = "no verdict for the current criterion text"
+
+
 def satisfying_verdict(ctx: _Ctx, crit) -> tuple[dict | None, str]:
     """(green row, '') that satisfies `crit`, else (None, why).
 
@@ -3189,7 +3192,7 @@ def satisfying_verdict(ctx: _Ctx, crit) -> tuple[dict | None, str]:
             return None, f"uncommitted: row {row['id']} for this criterion is not in the accepted history"
         mine.append(row)
     if not mine:
-        return None, "no verdict for the current criterion text"
+        return None, _NO_VERDICT
     # T-3986: a not-evaluated row is no verdict, so the LATEST EVALUATED row decides. Every row
     # from that one to the end is still validated first: an invalid trailing not-evaluated row
     # is `unknown` like any invalid latest row, and cannot be skipped to reach an older green.
@@ -3759,8 +3762,8 @@ def apply(task_id: str, root: Path | None = None) -> dict:
     Reads the ledger, writes only the task file and the applied ledger. Idempotent.
     """
     root = root or _root()
-    result = {"task": task_id, "ticked": [], "withdrawn": [], "refused": [], "recited": [], "owner_before": "",
-              "owner_after": "", "skipped": ""}
+    result = {"task": task_id, "ticked": [], "withdrawn": [], "refused": [], "recited": [], "not_applied": [],
+              "owner_before": "", "owner_after": "", "skipped": ""}
     ctx = _task_ctx(root, task_id)
     if ctx is None:
         result["skipped"] = "task not active"
@@ -3803,9 +3806,13 @@ def apply(task_id: str, root: Path | None = None) -> dict:
     for c in human_criteria(new_text):
         if c.ticked or ctx.classify(c).delegation_class != REVIEWER_JUDGES:
             continue
-        r, _ = satisfying_verdict(ctx, c)
+        r, why = satisfying_verdict(ctx, c)
         if r:
             hits.append((c, r, green_degraded_of(ctx, c, r)))
+        elif why and not why.startswith(_NO_VERDICT):
+            # T-5117: a verdict exists for this criterion but does not count (stale, invalid,
+            # red, not evaluated). Say why; silence left 055 with an open box and no reason.
+            result["not_applied"].append({"ac": c.index, "why": why})
     for c, r, deg in sorted(hits, key=lambda h: -h[0].start):
         lines[c.start] = re.sub(r"\[ \]", "[x]", lines[c.start], count=1)
         lines.insert(c.end, _cite(r, root, deg))
@@ -4372,6 +4379,9 @@ def _cli(argv: list[str] | None = None) -> int:
         for w in res.get("withdrawn") or []:
             print(f"WITHDRAWN: {args.task_id} AC{w['ac']} verdict {w['verdict_id']} — tick removed, "
                   f"owner: human — {w['why']}", file=sys.stderr)
+        # T-5117: a verdict that exists but does not count is named, never silent.
+        for n in res.get("not_applied") or []:
+            print(f"NOT APPLIED: {args.task_id} AC{n['ac']} — {n['why']}", file=sys.stderr)
         if res.get("refused"):
             print("REFUSED: reviewer-derived tick(s) no longer match the applied log — restore the "
                   "annotation, or an operator runs `fw reviewer verdict release`", file=sys.stderr)
