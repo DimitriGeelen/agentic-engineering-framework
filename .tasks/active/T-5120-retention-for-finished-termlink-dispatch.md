@@ -92,6 +92,8 @@ bvp_scores_proposed:
 
 **Problem / hypothesis:** nothing ever removes a finished worker dir. `fw termlink cleanup` deals with orphaned processes, not finished dirs. The RAM disk fills, and every scan and listing still grows with the total. Some dirs are evidence the review ledger relies on (review dispatch registry, completions, signed results), so a plain age cut could break verdict provenance.
 
+**Ownership constraint, measured 2026-11-13 (S-2026-1113-1845), not in the original report:** of the 7,468 dirs under `/tmp/tl-dispatch`, **7,461 are owned by `root`** and 7 by `dimitri-mint-dev`. The dirs are created by the fleet's TermLink sessions, which run as root; `/tmp/tl-dispatch` itself is `drwxrwxr-x dimitri-mint-dev`, so the parent is writable by the user but the entries are not. A prune running as the session user can therefore remove almost nothing — AC 1 would pass on a sandbox `FW_DISPATCH_DIR` and do nothing on the real backlog. Two consequences for the design: (a) the keep rules need a *cannot-remove* outcome distinct from *kept on purpose*, and it belongs in `retention.jsonl` so a no-op purge is legible rather than looking clean; (b) the operator runme for the first large purge has to run as root, which makes it a root-level irreversible delete — state that plainly when handing it over.
+
 **Goal:** age-based retention for finished worker dirs, run by the dispatcher itself. It keeps any dir the review ledger or an uncollected result still needs, and touches only this project's own dirs.
 
 **Expected outcome:** finished dirs older than a configured age are removed automatically. Running, uncollected and ledger-referenced dirs stay. Removal is logged. The first large purge of the existing backlog goes to the operator as a runme, because it is an irreversible delete.
@@ -100,12 +102,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw termlink prune [--older-than DAYS] [--dry-run]` removes this project's finished worker dirs (exit_code present and finalised) whose exit_code is older than DAYS, across the project root and the legacy /tmp root
-- [ ] a dir whose result was never collected waits `TERMLINK_DISPATCH_UNCOLLECTED_DAYS` instead (default 30, 0 = never, never sooner than the collected cut; operator ruling 2026-11-13)
-- [ ] prune never removes a dir that is running or unfinalised, belongs to another project, or sits in the shared /tmp root with no meta.json, and it never signals a process or stops an endpoint
-- [ ] `fw termlink dispatch` runs the prune in the background at most once an hour when `TERMLINK_DISPATCH_RETENTION_DAYS` > 0 (default 7, range 0–365, 0 = off); a prune failure never delays or fails the dispatch
-- [ ] every prune that removes something appends one JSON line (time, age, removed names, kept counts) to `retention.jsonl` in the dispatch root (gitignored, beside the dirs)
-- [ ] tests cover each keep rule, the age cut, dry-run, the hourly throttle and the off switch, in a sandbox `FW_DISPATCH_DIR`
+- [x] `fw termlink prune [--older-than DAYS] [--dry-run]` removes this project's finished worker dirs (exit_code present and finalised) whose exit_code is older than DAYS, across the project root and the legacy /tmp root
+- [x] a dir whose result was never collected waits `TERMLINK_DISPATCH_UNCOLLECTED_DAYS` instead (default 30, 0 = never, never sooner than the collected cut; operator ruling 2026-11-13)
+- [x] prune never removes a dir that is running or unfinalised, belongs to another project, or sits in the shared /tmp root with no meta.json, and it never signals a process or stops an endpoint
+- [x] `fw termlink dispatch` runs the prune in the background at most once an hour when `TERMLINK_DISPATCH_RETENTION_DAYS` > 0 (default 7, range 0–365, 0 = off); a prune failure never delays or fails the dispatch
+- [x] every prune that removes something appends one JSON line (time, age, removed names, kept counts) to `retention.jsonl` in the dispatch root (gitignored, beside the dirs)
+- [x] tests cover each keep rule, the age cut, dry-run, the hourly throttle and the off switch, in a sandbox `FW_DISPATCH_DIR`
 
 ### Human
 - [ ] [REVIEW] The two new retention settings read clearly on Watchtower's config page
@@ -373,6 +375,15 @@ bin/fw watchtower current
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** Finished dispatch folders are now pruned automatically. `fw termlink dispatch` starts `fw termlink prune` in the background at most once an hour. It deletes only this project's finished folders: read results after 7 days, never-read results after 30 (your ruling). It keeps running, unfinalised and other projects' folders, and it never signals a process. The only thing left for you is the wording of the two new rows on the /config page.
+**Evidence:**
+- `tests/unit/t5120_dispatch_prune.bats`: 18 tests, all pass, none skipped. They cover each keep rule, both age cuts, dry run, the hourly throttle, the off switch and the fallback for a bad value.
+- A dry run on the real folders took about 5 s (59 s before the one-grep ownership filter). It found 0 to remove today: this project's 185 unread results are 7–30 days old, so they start going in about 9 days.
+- The 7,453 other folders in `/tmp/tl-dispatch` belong to other projects (mostly 010's). Each project's own prune will clear its folders once it has this release. Folders with no `meta.json` are never touched automatically.
 
 ## Decisions
 
