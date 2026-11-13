@@ -168,15 +168,23 @@ def is_grant_file_or_ancestor(path: str, root: str) -> bool:
     """True when `path` is the grant file, or a directory between it and the project root
     (`policy/`): writing, moving or removing either replaces the file (review finding 7).
     The project root itself is not included: a command that merely NAMES the root must not
-    read as a write to the grant file. Projects without a grant file are not affected."""
-    if not path.startswith("/") or not _grant_file_exists(root):
+    read as a write to the grant file.
+
+    T-5034: with NO grant file yet, the file itself is still guarded — otherwise the agent's
+    first typed write would create its own grants (self-grant bootstrap). A directory above it
+    is guarded then only while it does not exist: creating `policy/` by a move or copy could
+    carry a prepared grant file in, while moving or using an existing `policy/` cannot."""
+    if not path.startswith("/"):
         return False
+    exists = _grant_file_exists(root)
     gf = _norm(os.path.join(root, GRANT_FILE))
     roots = {_norm(root), _norm(os.path.realpath(root))}
     for c in {_norm(path), _norm(os.path.realpath(path))}:
         if c in roots or not any(_under(c, r) for r in roots):
             continue
-        if c == gf or gf.startswith(c.rstrip("/") + "/"):
+        if c == gf:
+            return True
+        if gf.startswith(c.rstrip("/") + "/") and (exists or not os.path.lexists(c)):
             return True
     return False
 

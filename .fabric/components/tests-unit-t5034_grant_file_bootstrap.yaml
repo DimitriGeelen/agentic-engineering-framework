@@ -1,0 +1,21 @@
+id: tests/unit/t5034_grant_file_bootstrap.bats
+name: t5034_grant_file_bootstrap
+type: script
+subsystem: tests
+location: tests/unit/t5034_grant_file_bootstrap.bats
+tags: []
+
+purpose: "T-5034 (ring20-dashboard a14cb4c1, MEDIUM): with NO grant file yet, the agent must not be able to create policy/access-grants.yaml by a typed command (self-grant bootstrap)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-13
+created_by: unknown
