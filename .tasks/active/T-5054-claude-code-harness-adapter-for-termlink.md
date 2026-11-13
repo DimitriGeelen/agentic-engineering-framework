@@ -123,11 +123,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] 010's spec text (04 section 17, 06 AL-1, CR-6.24, hook_requests) and both fixture files are in this repo with the TermLink commit they came from recorded (received from 010, not read from their repo)
-- [ ] Stop and UserPromptSubmit hooks emit adapter/2 reports with every field the spec requires; `mono_ns` is a decimal string and nothing orders on `at_ms`
-- [ ] Prompt origin: a prompt the hook can prove came from a peer injection or automation is never classed `human`; when it cannot tell, `unknown`
+- [x] 010's spec text (04 section 17, 06 AL-1, CR-6.24, hook_requests) and both fixture files are in this repo with the TermLink commit they came from recorded (received from 010, not read from their repo) — `docs/reports/T-5054-adapter2-spec-pack.md`, `tests/fixtures/termlink-parity/` (8b5e51fd0, sha256 verified)
+- [x] Stop and UserPromptSubmit hooks emit adapter/2 reports with every field the spec requires; `mono_ns` is a decimal string and nothing orders on `at_ms` — `lib/sidecar/adapter2.py` (slice 1); every well-formed p2 payload's fields match; integer-`mono_ns` mutant fails 27 tests
+- [x] Prompt origin: a prompt the hook can prove came from a peer injection or automation is never classed `human`; when it cannot tell, `unknown` — doorbell / non-interactive / transcript harness-mark → automated; human only `inferred`
 - [ ] A parity test feeds both fixtures' cases through our adapter's reports and every step's expect/ord/turn_stopped and each case's `after` match; a mutant ordering on `at_ms` fails it
-- [ ] Older sidecar: a report the receiver refuses is retried without the new fields; the T-3745 session records and T-5014 lease behave exactly as before (their existing tests pass unchanged)
+- [x] Older sidecar: a report the receiver refuses is retried without the new fields; the T-3745 session records and T-5014 lease behave exactly as before (their existing tests pass unchanged) — retry tested; t3561/t3745/t5014 tests green, untouched
 - [ ] Run reported to 010 on framework:pickup with the be-tag that carries it
 
 ### Human
@@ -314,6 +314,11 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_t5054_adapter2.py
+python3 -m pytest -q tests/unit/t3561_adapter.py tests/unit/test_sidecar_session_ready_t3745.py tests/unit/test_t5014_main_only_delivery.py
+bats tests/lint/config-registry-parity.bats
+bin/fw vendor self --check --task T-5054
+bin/fw watchtower current
 
 ## RCA
 

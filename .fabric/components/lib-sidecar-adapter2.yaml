@@ -1,0 +1,21 @@
+id: lib/sidecar/adapter2.py
+name: adapter2
+type: script
+subsystem: framework-core
+location: lib/sidecar/adapter2.py
+tags: []
+
+purpose: "T-5054 slice 1 — Claude Code adapter for TermLink's ``termlink.adapter/2`` contract (010 P-44)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-13
+created_by: unknown
