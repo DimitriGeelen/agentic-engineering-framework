@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-02T19:46:46Z
-last_update: '2026-11-03T20:00:54Z'
+last_update: 2026-11-13T23:52:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -117,7 +117,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Under agent control, every typed git route that would change `policy/access-grants.yaml` in the index or HEAD (add, commit with the path or -a, checkout/restore of the path, apply, am, cherry-pick, merge touching it) is refused with a message naming the operator's path; a test per route
+- [ ] Under agent control (CLAUDECODE=1), a commit that changes `policy/access-grants.yaml` is refused by the installed pre-commit and pre-merge-commit hooks, whatever staged it (add, commit -a, checkout/restore of the path, apply, a merge), with a message naming the operator's path. A test per route runs on the real installed hooks (`tests/unit/t5031_grant_file_commit_guard.bats`, 9 tests; the 7 refusal tests fail without the fix). Not covered, because git runs no pre-commit for them: cherry-pick, rebase, am, and `--no-verify`. Those fall to the provenance check in the next criterion.
+- [ ] This repo's installed hooks carry the guard (operator runme: `fw git install-hooks`, since hook rewiring is the operator's)
 - [ ] The grants audit no longer accepts the `Grants-Change: operator` trailer alone as proof; the proof is one an agent cannot produce (to be designed: operator runme record or a signature), with a test that an agent-made commit carrying the trailer is reported
 - [ ] The operator's documented path to change grants still works end to end (test)
 
