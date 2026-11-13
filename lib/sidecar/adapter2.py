@@ -58,6 +58,8 @@ _AGENT_SOCK_RE = re.compile(r"^(.+)\.send\.sock$")
 VALID_ORIGIN = {"human": {"pty-input", "inferred"},
                 "automated": {"doorbell", "non-interactive", "harness-mark", "pty-input"},
                 "unknown": {None}}
+#: How "no basis" is written on the wire with origin unknown (010 msg 0d44a3d3).
+UNKNOWN_BASIS_WIRE = "absent"
 
 # Order fields a pre-P-2 sidecar refuses; the report is sent once more without them
 # and the receiver orders it by its own receive stamp (p2 fixture, hook_requests).
@@ -249,6 +251,11 @@ def reports_for(hook: str, hook_input: dict, *, agent_id: str, clock: Clock,
                        interactive=bool(interactive), transcript_path=hook_input.get("transcript_path"))]
     if hook == "prompt":
         origin, basis = classify_origin(hook_input, interactive)
+        if origin == "unknown":
+            # 010 (msg 0d44a3d3, 2026-11-13): TermLink's meter reads a MISSING basis as "" and
+            # accepts only the literal "absent" with origin unknown, so an omitted field
+            # counted as inconsistent. Say it explicitly on the wire; the claim still omits it.
+            basis = UNKNOWN_BASIS_WIRE
         return [report("ready", **kw, state="BUSY"),
                 report("prompt_submit", **kw, origin=origin, basis=basis)]
     if hook == "pre-tool":

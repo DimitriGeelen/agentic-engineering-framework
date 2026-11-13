@@ -57,6 +57,12 @@ def proj(tmp_path, monkeypatch):
     (root / ".context").mkdir(parents=True)
     (root / ".framework.yaml").write_text("project_name: t5014\n")
     monkeypatch.setenv("PROJECT_ROOT", str(root))
+    # T-5054: the adapter reads CLAUDE_PROJECT_DIR; without this it reads the developer's own
+    # .framework.yaml, and a host running the adapter trial turned every T-5014 claim into one
+    # with --origin flags.
+    monkeypatch.setenv("CLAUDE_PROJECT_DIR", str(root))
+    monkeypatch.delenv("FW_TERMLINK_ADAPTER2", raising=False)
+    monkeypatch.delenv("TERMLINK_SIDECAR_SOCKET", raising=False)
     monkeypatch.setenv("FW_SIDECAR_REGISTRY_DIR", str(tmp_path / "registry"))
     monkeypatch.delenv("FW_REVIEW_WORKER", raising=False)
     # the suite may itself run inside a dispatched worker: clear its markers

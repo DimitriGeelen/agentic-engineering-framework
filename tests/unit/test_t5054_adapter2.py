@@ -17,6 +17,18 @@ import pytest
 
 from lib.sidecar import adapter2 as a2
 
+
+@pytest.fixture(autouse=True)
+def _isolated_config(tmp_path, monkeypatch):
+    """Never read the developer's own .framework.yaml: on a host running the adapter trial it
+    sets TERMLINK_ADAPTER2 and TERMLINK_SIDECAR_SOCKET, which made the switch-off legs pass or
+    fail by host. A test that needs a project root sets CLAUDE_PROJECT_DIR itself."""
+    empty = tmp_path / "isolated-project"
+    empty.mkdir()
+    monkeypatch.setenv("CLAUDE_PROJECT_DIR", str(empty))
+    for k in ("FW_TERMLINK_ADAPTER2", "TERMLINK_SIDECAR_SOCKET", "FW_TERMLINK_SIDECAR_SOCKET"):
+        monkeypatch.delenv(k, raising=False)
+
 ROOT = Path(__file__).resolve().parents[2]
 P2 = json.loads((ROOT / "tests/fixtures/termlink-parity/p2-report-ordering.json").read_text())
 SID = "sess-p2"
@@ -199,7 +211,8 @@ def test_every_origin_result_is_a_pair_the_receiver_accepts(tmp_path):
             assert b in a2.VALID_ORIGIN[o]
     rs = a2.reports_for("prompt", {"session_id": SID, "prompt": "y"}, agent_id=AGENT, clock=clock(),
                         interactive=None)
-    assert "basis" not in rs[1] and rs[1]["origin"] == "unknown"
+    # 010 msg 0d44a3d3: their meter reads a missing basis as "" (inconsistent); send "absent".
+    assert rs[1]["basis"] == "absent" and rs[1]["origin"] == "unknown"
 
 
 # ── transport ───────────────────────────────────────────────────────────────────
