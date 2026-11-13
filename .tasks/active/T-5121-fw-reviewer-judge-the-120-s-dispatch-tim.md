@@ -7,12 +7,12 @@ description: >
   dispatch ends the review with 'no seat was dispatched'. Make it configurable (registry
   key, both registries).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [lib/config.sh, tests/unit/t5121_judge_dispatch_timeout_test.py, web/blueprints/config.py]
 related_tasks: [T-5105]
 origin: {kind: "peer", source: "010-termlink", ref: "341c592f"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -42,8 +42,8 @@ origin: {kind: "peer", source: "010-termlink", ref: "341c592f"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-13T14:58:49Z
-last_update: '2026-11-13T17:13:41Z'
-date_finished:
+last_update: 2026-11-13T17:32:28Z
+date_finished: 2026-11-13T17:32:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -116,11 +116,17 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `REVIEWER_JUDGE_DISPATCH_TIMEOUT` (default 120 s) is registered in `lib/config.sh` and `web/blueprints/config.py`, and the config-registry parity lint passes
-- [ ] `judge_cli._dispatch_real` takes its spawn timeout from that key (env `FW_REVIEWER_JUDGE_DISPATCH_TIMEOUT` > `.framework.yaml` > default); an invalid or out-of-range value falls back to 120; tests pin the default, an override and the fallback
-- [ ] When the dispatch does not report "Worker spawned" in time, the error says so and names the key, instead of a bare TimeoutExpired; every existing test that reads judge_cli.py still passes
+- [x] `REVIEWER_JUDGE_DISPATCH_TIMEOUT` (default 120 s) is registered in `lib/config.sh` and `web/blueprints/config.py`, and the config-registry parity lint passes
+- [x] `judge_cli._dispatch_real` takes its spawn timeout from that key (env `FW_REVIEWER_JUDGE_DISPATCH_TIMEOUT` > `.framework.yaml` > default); an invalid or out-of-range value falls back to 120; tests pin the default, an override and the fallback
+- [x] When the dispatch does not report "Worker spawned" in time, the error says so and names the key, instead of a bare TimeoutExpired; every existing test that reads judge_cli.py still passes
 
 ### Human
+- [ ] [REVIEW] The new setting reads clearly on Watchtower's config page
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find `REVIEWER_JUDGE_DISPATCH_TIMEOUT` (next to `REVIEWER_JUDGE_WEEKLY_SPEND_CEILING`)
+  **Expected:** the row shows default 120 and a description you can act on: what it waits for, the 30-3600 range, and that an invalid value means 120
+  **If not:** note what is unclear; the text is in `web/blueprints/config.py` (one line)
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -304,6 +310,11 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 python3 -m pytest -q -p no:cacheprovider tests/unit/t5121_judge_dispatch_timeout_test.py tests/unit/t3580_round2_test.py > /tmp/.t5121.out 2>&1 && grep -q passed /tmp/.t5121.out
+timeout 600 bats tests/lint/config-registry-parity.bats > /tmp/.t5121b.out 2>&1 && ! grep -q "^not ok" /tmp/.t5121b.out
+curl -sf "$(bin/fw watchtower url)/config" -o /tmp/.t5121.html && grep -q REVIEWER_JUDGE_DISPATCH_TIMEOUT /tmp/.t5121.html
+bin/fw watchtower current
+bin/fw vendor self --check --task T-5121
 
 ## RCA
 
@@ -346,6 +357,13 @@ bvp_scores_proposed:
 -->
 
 ## Recommendation
+
+**Recommendation:** GO
+**Rationale:** The judge's wait for a dispatch to start is now the config key `REVIEWER_JUDGE_DISPATCH_TIMEOUT` (default 120 s, as before; 30-3600; an invalid value means 120). A timeout now gives a clear error that names the key, instead of a bare TimeoutExpired. The one open check is whether the new row reads clearly on the config page.
+**Evidence:**
+- `tests/unit/t5121_judge_dispatch_timeout_test.py`: 11 passed (default, project override, env override, 6 invalid values, the timeout message, both registries)
+- Every test that reads judge_cli.py or the config registries passes (130 in the judge suites after the fix); config-registry parity lint 3/3; `fw test invariants` green
+- The live page http://192.168.10.107:3000/config lists the key; Watchtower restarted and current
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
@@ -405,3 +423,21 @@ bvp_scores_proposed:
 ### 2026-11-13T17:13:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-13T17:32:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-dba52409
+- **Timestamp:** 2026-11-13T17:34:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `REVIEWER_JUDGE_DISPATCH_TIMEOUT` (default 120 s) is registered in `lib/config.sh` and `web/blueprints/config.py`, and the config-registry parity lint passes
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/config.sh in: `REVIEWER_JUDGE_DISPATCH_TIMEOUT` (default 120 s) is registered in `lib/config.sh` and `web/blueprints/config.py`, and the config-registry parity lint`
