@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-14T19:49:31Z
-last_update: 2026-11-14T21:53:48Z
+last_update: 2026-11-14T22:03:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -107,8 +107,9 @@ cost_estimate_proposed:
 - [x] `/search` returns in under 10 s on the first visit after a restart, with the tag cloud unchanged (a regression test proves the parse gives the same tags)
       — cold in a fresh process 3.0 s (was 58 s profiled, 19.6 s live); live right after restart 5.5 s during the warm-up, 0.15 s after; all 4,180 files give identical tags in C and pure Python; `tests/unit/test_t5136_tag_cloud_c_loader.py` 3/3; bare `/search` is in `WARM_PATHS`.
       Not fixed here: a request that lands while the startup warm-up is still running pays the cold cost (the first list view took 39 s at 20:04Z). That is how the warm-up works today (it does not block serving unless `warm_before_serve`).
-- [ ] `tests/playwright/test_response_times.py` and `tests/playwright/test_task_panel.py` pass; every test that reads a changed file passes; Watchtower restarted and `bin/fw watchtower current` passes
-      — status 2026-11-14 21:17: `test_task_panel` 5/5 (was failing); `/search` and the list routes pass in `test_response_times`. 339 related unit/web tests pass; Watchtower restarted (pid 3425312), `current` passes. **Still red:** `/fabric` (12.1 s, then 16.5 s) and `/metrics` (16.1 s, then 32.7 s) in the fresh test server, with host load 55–77 from other projects' pytest-xdist runs. On the live server the same routes take 2.8 s and 4.8 s cold, then 0.13 s and 1.7 s. Neither route is in this change. Re-run when the host is quieter before ticking.
+- [x] `tests/playwright/test_response_times.py` and `tests/playwright/test_task_panel.py` pass; every test that reads a changed file passes; Watchtower restarted and `bin/fw watchtower current` passes
+      — 2026-11-14 23:03, after the `/fabric` fix and with host load down to about 30: `test_response_times` **27/27 pass**; `test_task_panel` 5/5. Tests reading `cockpit.py` (442) and the fabric loader (52) pass; Watchtower restarted (pid 4038300), `current` passes.
+      — earlier status 2026-11-14 21:17: `test_task_panel` 5/5 (was failing); `/search` and the list routes pass in `test_response_times`. 339 related unit/web tests pass; Watchtower restarted (pid 3425312), `current` passes. **Still red:** `/fabric` (12.1 s, then 16.5 s) and `/metrics` (16.1 s, then 32.7 s) in the fresh test server, with host load 55–77 from other projects' pytest-xdist runs. On the live server the same routes take 2.8 s and 4.8 s cold, then 0.13 s and 1.7 s. Neither route is in this change. Re-run when the host is quieter before ticking.
 
 ### Human
 - [ ] [REVIEW] The task list opens quickly and the pager is usable
@@ -371,6 +372,18 @@ Cold `/tasks?view=list` in a fresh process is also slow (28.6 s profiled: 19.2 s
 -->
 
 ## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Four Watchtower pages were slow for two kinds of reason, and both are fixed. The task list sent all 5,120 rows as one 18.9 MB page; it is now paged at 200. Search, the landing page and the fabric page parsed thousands of YAML files with the slow pure-Python parser on their first build; they now use the C parser, which gives identical results. The browser timing and task-panel tests now pass. What is left is your look at the list pager and the page speed.
+
+**Evidence:**
+- Task list: page 1 is 864 KB instead of 18.9 MB and shows "Showing 1–200 of 5119"; every task is reachable through the pager (`tests/web/test_t5136_task_list_pager.py`, 5/5)
+- Cold times in a fresh process: `/search` 58 s profiled → 3.0 s; landing page `/` 30 s profiled → 7.4 s; fabric cards 3.4 s → 0.6 s; identical parse results across all task, episodic and card files
+- `tests/playwright/test_response_times.py` 27/27 and `tests/playwright/test_task_panel.py` 5/5 (2026-11-14 23:03)
+- Shipped to 1409 in v1.8.16-be.50 (except the fabric change, which is after the tag)
+
+Review page: http://192.168.10.107:3000/review/T-5136
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
