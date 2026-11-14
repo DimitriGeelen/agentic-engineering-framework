@@ -100,9 +100,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] a second manual audit run on the same date keeps the first run's record (moved to `<date>-<HHMM>.yaml`), and `<date>.yaml` holds the new run; a third run keeps both earlier ones (counter on a name clash)
-- [ ] cron runs (`OUTPUT_DIR`, datetime names) are unchanged; the trend window skips every record of today as before
-- [ ] tests cover the move, the clash counter and that nothing is overwritten; audit tests still pass; vendored copy synced
+- [x] a second manual audit run on the same date keeps the first run's record (moved to `<date>-<HHMM>.yaml`), and `<date>.yaml` holds the new run; a third run keeps both earlier ones (counter on a name clash)
+- [x] cron runs (`OUTPUT_DIR`, datetime names) are unchanged; the trend window skips every record of today as before (its `<date>-*` branch truncates to the date and skips today)
+- [x] tests cover the move, the clash counter and that nothing is overwritten (`tests/unit/t5131_audit_record_no_overwrite.bats` 4/4); the 181-file audit.sh sweep and the 5 output/trend files re-run after this edit are green; vendored copy synced (f9228fee5)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,8 +288,19 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t5131_audit_record_no_overwrite.bats > /tmp/.t5131.out 2>&1 && ! grep -q "^not ok" /tmp/.t5131.out
+test "$(grep -c '# skip' /tmp/.t5131.out)" -eq 0
+bin/fw vendor self --check --task T-5131
 
 ## RCA
+
+**Symptom:** at 832, a same-day re-run of the audit overwrote the only full-coverage record before it was committed.
+
+**Root cause:** a manual audit always wrote `.context/audits/<date>.yaml`, so every later run of any scope on that date replaced it. Only cron runs used time-stamped names.
+
+**Why structurally allowed:** the date-named file was treated as "today's audit", a single slot, though several runs a day are normal (manual, section runs, re-runs after a fix).
+
+**Prevention:** an earlier same-day record is moved aside under its own time (with a counter on a clash), so no run's record is lost and `<date>.yaml` stays the newest for readers. Tests pin the move, the counter and the cron path.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
