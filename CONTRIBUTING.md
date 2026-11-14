@@ -13,8 +13,8 @@ Thanks for your interest in contributing. This guide will help you get started.
 ### Setup
 
 ```bash
-# Clone the repo
-git clone https://github.com/DimitriGeelen/agentic-engineering-framework.git
+# Clone the repo on the development branch (contributors: clone your fork, see "Pull Request Process")
+git clone --branch bleeding-edge https://github.com/DimitriGeelen/agentic-engineering-framework.git
 cd agentic-engineering-framework
 
 # Check everything works
@@ -92,7 +92,7 @@ Check your change against the latest pre-release before you open a pull request.
 
 ### Pull Request Process
 
-1. **Issue first.** Open or pick an issue and agree the approach in it before writing code. The maintainer's intake turns each issue into a framework task (for example #104 became T-4935); that task must exist on `bleeding-edge` before you open the pull request.
+1. **Issue first.** Open or pick an issue and agree the approach in it before writing code. The maintainer's intake turns each issue into a framework task (for example #104 became T-4935); that task must exist on `bleeding-edge` before you open the pull request. A documentation-only pull request may skip the issue for form only (a typo, a broken link, layout); one that rewords a rule or describes a behaviour differently needs an issue like any other change.
 2. **Fork and branch** from `bleeding-edge`. Suggested branch names: `fix/<issue>-<keyword>` or `feat/<issue>-<keyword>`.
 3. **One pull request per issue**, opened against `bleeding-edge`, with "Fixes #N" in the description.
 4. **Fill in the pull request template:** the approach and the class of defect it closes, a test that fails before the change and passes after it, the commands you ran with their output, `fw audit` and the tests you touched, a `fw doctor` summary, and what you did not test.
@@ -106,7 +106,7 @@ Check your change against the latest pre-release before you open a pull request.
 Every commit names the intake task and the issue, and carries a sign-off:
 
 ```
-T-4935 (#104): Fix the empty upgrade preview
+T-4234 (#106): Fix the empty upgrade preview
 
 Signed-off-by: Your Name <you@example.com>
 ```
