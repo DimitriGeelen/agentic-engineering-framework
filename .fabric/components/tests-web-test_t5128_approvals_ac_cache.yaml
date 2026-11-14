@@ -1,0 +1,21 @@
+id: tests/web/test_t5128_approvals_ac_cache.py
+name: test_t5128_approvals_ac_cache
+type: script
+subsystem: tests
+location: tests/web/test_t5128_approvals_ac_cache.py
+tags: []
+
+purpose: "T-5128: the approvals page's per-task display parse of the acceptance criteria is cached per task file (mtime, the same key as its body cache), so a repeat request re-parses nothing that did not change — and returns exactly what an…"
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-14
+created_by: unknown

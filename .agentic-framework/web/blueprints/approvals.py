@@ -102,6 +102,8 @@ EXPIRY_SECONDS = 3600  # 1 hour
 # (a few MB) in the long-running Flask process — amortises across requests.
 # Same shape as T-1954 _FM_CACHE in web/blueprints/bvp.py.
 _BODY_CACHE: dict[str, tuple[int, str]] = {}
+# T-5128: per-file display parse of the acceptance criteria (keyed by mtime like _BODY_CACHE)
+_AC_DISPLAY_CACHE: dict[str, tuple[int, list]] = {}
 
 
 def _parse_body_from_path(p: Path) -> str:
@@ -255,7 +257,26 @@ def _active_task_fms() -> dict:
 
 def _queue_groups() -> dict:
     """decisions / ready / waiting ids from the one grouping `fw review-queue` also
-    uses (T-4096), fed from this request's cached task bodies."""
+    uses (T-4096), fed from this request's cached task bodies.
+
+    T-5128: memoised for the request (flask.g) — the page asked twice, ~0.3 s each."""
+    try:
+        from flask import g, has_app_context
+        if has_app_context() and getattr(g, "_t5128_queue_groups", None) is not None:
+            return g._t5128_queue_groups
+    except Exception:
+        g = None
+    groups = _compute_queue_groups()
+    try:
+        from flask import has_app_context
+        if g is not None and has_app_context():
+            g._t5128_queue_groups = groups
+    except Exception:
+        pass
+    return groups
+
+
+def _compute_queue_groups() -> dict:
     entries = []
     for fm in sorted(_task_meta(), key=lambda m: task_id_sort_key(m.get("_path", ""))):
         if fm.get("_location") == "active" and fm.get("_path"):
@@ -468,7 +489,10 @@ def _load_pending_human_acs():
         # at an intervening `## ` heading and so can see zero Human criteria on a
         # task that has an unticked one (T-2200/T-2202). Admission, sort priority
         # and batch readiness use the web.shared predicates instead.
-        all_acs = _parse_acceptance_criteria(body)
+        # T-5128: the display parse depends only on the task file, so it is cached per file
+        # (mtime_ns) — ~1.5 s of every request here, more at 1409's 6,000 tasks. Read-only below.
+        all_acs = mtime_cached_get(Path(path), lambda p: _parse_acceptance_criteria(body),
+                                   _AC_DISPLAY_CACHE, default=[])
         human_acs = [ac for ac in all_acs if ac.get("section") == "human"]
 
         # Calculate age from date_finished or last_update
