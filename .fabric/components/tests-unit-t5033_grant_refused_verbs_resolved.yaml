@@ -1,0 +1,21 @@
+id: tests/unit/t5033_grant_refused_verbs_resolved.bats
+name: t5033_grant_refused_verbs_resolved
+type: script
+subsystem: tests
+location: tests/unit/t5033_grant_refused_verbs_resolved.bats
+tags: []
+
+purpose: "T-5033 (ring20-dashboard a14cb4c1): the refusal of metadata changes and archive extraction on create-granted paths (T-4989) judges what the command ACTS ON, not whether the grant's text appears in it: a glob, the command's own variables, a…"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-14
+created_by: unknown

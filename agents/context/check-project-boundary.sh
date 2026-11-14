@@ -227,7 +227,15 @@ except Exception:
     # exactly the parser differential this task removes, so the filter names
     # characters instead; what it skips cannot spell a path outside the cwd.
 # T-4921: here-string, not a pipe — under pipefail a pipe into grep -q can read a match as no match (T-4920).
-    if ! grep -qE '(cd\s+/|/opt/|/home/|/root/|/var/|/etc/|/usr/|>+\s*/|tee\s.*/|>\|\s*/|(^|[^[:alnum:]_.-])(cp|mv|install|ln|rsync|dd|sed|perl|truncate|chmod|chown|chgrp|touch|mkdir)\s.*/|\.agentic-framework/bin/fw)' <<<"$COMMAND" \
+    # T-5033: a session cwd OUTSIDE the project (e.g. inside an access grant) makes a bare
+    # relative word an outside path — `chmod 777 x` names no slash — so never skip then.
+    _bd_cwd_outside=0
+    case "$CMD_CWD" in
+        ""|"$PROJECT_ROOT"|"$PROJECT_ROOT"/*) ;;
+        *) _bd_cwd_outside=1 ;;
+    esac
+    if [ "$_bd_cwd_outside" = 0 ] \
+       && ! grep -qE '(cd\s+/|/opt/|/home/|/root/|/var/|/etc/|/usr/|>+\s*/|tee\s.*/|>\|\s*/|(^|[^[:alnum:]_.-])(cp|mv|install|ln|rsync|dd|sed|perl|truncate|chmod|chown|chgrp|touch|mkdir)\s.*/|\.agentic-framework/bin/fw)' <<<"$COMMAND" \
        && ! grep -qE '[/~{$`\\"'"'"']|\.\.|(^|[^[:alnum:]_.-])(cd|pushd)([^[:alnum:]_.-]|$)' <<<"$COMMAND"; then
         exit 0
     fi
@@ -923,18 +931,88 @@ def _write_verb_targets(cmd):
 # members the typed text never names (`../` included). Refused when the command names a grant.
 _GRANT_REFUSED_VERBS = {'chmod', 'chown', 'chgrp', 'touch', 'setfacl', 'chattr',
                         'tar', 'bsdtar', 'unzip', '7z', '7za', 'cpio', 'pax'}
-if _GRANT_CREATE:
-    _raw_for_grants = _BOUNDARY_CMD_RAW
-    if any(g in _raw_for_grants for g in _GRANT_CREATE):
-        for _seg in re.split(r'[;&|\n()]', command):
-            _toks = _seg.split()
-            _verb = next((t.rsplit('/', 1)[-1] for t in _toks
-                          if not re.match(r'^[A-Za-z_][A-Za-z0-9_]*=', t)
-                          and t.rsplit('/', 1)[-1] not in _WRAPPERS), '')
-            if _verb in _GRANT_REFUSED_VERBS:
-                print(f'BLOCKED|{_verb} on a granted path is refused (T-4989: no metadata changes, '
-                      f'no archive extraction under an access grant)')
-                sys.exit(0)
+# T-5033 (ring20-dashboard a14cb4c1): the refusal used to run only when a grant path appeared
+# LITERALLY in the text, so `chmod 777 /srv/share/cr*`, `D=/srv/sh; chmod 777 ${D}are/x` or a
+# relative operand from a cwd in the grant skipped it. Now each operand of a refused verb is
+# judged after (1) the command's own NAME=value assignments are substituted and (2) relative
+# words are resolved against the session cwd. Whatever stays unresolved — a glob, an unknown
+# $VAR, a substitution — is judged by its literal prefix: refused when a grant path could
+# start with it (fail closed). Archive tools are refused when the cwd itself is in a grant,
+# since they write members their operands never name.
+# Create-level grants only, as before: a read grant is not writable at all (the write rules
+# refuse there), and `tar c` FROM a read grant is a read.
+_GRANT_ALL = list(_GRANT_CREATE)
+
+
+def _t5033_under_grant(p):
+    p = os.path.normpath(p)
+    return any(p == g or p.startswith(g.rstrip('/') + '/') for g in _GRANT_ALL)
+
+
+def _t5033_could_reach_grant(prefix):
+    """True when some grant path starts with `prefix` or lies under it (the operand's literal
+    head before a glob / variable / substitution)."""
+    if not prefix:
+        return False
+    return any(g.startswith(prefix) or prefix.startswith(g.rstrip('/') + '/') or prefix == g
+               for g in _GRANT_ALL)
+
+
+def _t5033_reason():
+    if not _GRANT_ALL:
+        return ''
+    cwd = os.environ.get('_BOUNDARY_CWD', '') or project_root
+    cwd_in_grant = _t5033_under_grant(cwd)
+    assigns = {}
+    for seg in re.split(r'[;&|\n()]', _BOUNDARY_CMD_RAW):
+        words = seg.split()
+        # NAME=value words at the head of a segment (or after `export`) are this command's own
+        while words and words[0] == 'export':
+            words = words[1:]
+        while words and re.match(r'^[A-Za-z_][A-Za-z0-9_]*=', words[0]):
+            k, v = words[0].split('=', 1)
+            assigns[k] = v.strip('\'"')
+            words = words[1:]
+        while words and words[0].rsplit('/', 1)[-1] in _WRAPPERS:
+            words = words[1:]
+        if not words:
+            continue
+        verb = words[0].rsplit('/', 1)[-1]
+        if verb not in _GRANT_REFUSED_VERBS:
+            continue
+        if cwd_in_grant:
+            return f'{verb} with the working directory inside a granted path'
+        for w in words[1:]:
+            if w.startswith('-'):
+                continue
+            w = w.strip('\'"')
+            for _ in range(3):   # nested ${A}${B}
+                w2 = re.sub(r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}|\$([A-Za-z_][A-Za-z0-9_]*)',
+                            lambda m: assigns.get(m.group(1) or m.group(2), m.group(0)), w)
+                if w2 == w:
+                    break
+                w = w2
+            m = re.search(r'[*?\[$`]', w)
+            head = w[:m.start()] if m else w
+            if head.startswith('~'):
+                head = os.path.expanduser(head)
+            if head and not head.startswith('/'):
+                head = os.path.join(cwd, head)
+            if not m:
+                if _t5033_under_grant(head):
+                    return f'{verb} on a granted path'
+            elif _t5033_could_reach_grant(os.path.normpath(head) + ('/' if head.endswith('/') else '')
+                                          if head else ''):
+                return f'{verb} on an operand that can expand into a granted path ({w})'
+    return ''
+
+
+if _GRANT_ALL:
+    _t5033 = _t5033_reason()
+    if _t5033:
+        print(f'BLOCKED|{_t5033} is refused (T-4989/T-5033: no metadata changes, '
+              f'no archive extraction under an access grant)')
+        sys.exit(0)
 
 
 # T-5032 (ring20-dashboard a14cb4c1, HIGH): no typed command creates or carries a LINK into a
