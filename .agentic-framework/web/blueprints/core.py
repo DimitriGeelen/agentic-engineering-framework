@@ -384,8 +384,42 @@ def _get_approval_qr():
     return result
 
 
+# T-5126 (1409 msg c905c099): the tile parses EVERY session transcript of the project. Warm,
+# that is incremental and fast; cold (a fresh Watchtower) it is a full read — 34 s here for
+# 754 files, minutes at 1409 (2,557 files, 3.9 GB) — and `/` waited for it. Now the first
+# request starts the parse in a background thread and renders without the tile (the template
+# already omits it when there is no data); once the parse has finished, the tile is back.
+import threading as _threading
+
+_token_warm = {"thread": None, "done": False}
+_token_warm_lock = _threading.Lock()
+
+
+def _warm_token_usage():
+    try:
+        from web.blueprints.costs import _load_all_sessions
+        _load_all_sessions()
+    except Exception:
+        pass
+    finally:
+        _token_warm["done"] = True
+
+
+def _token_usage_ready() -> bool:
+    if _token_warm["done"]:
+        return True
+    with _token_warm_lock:
+        if _token_warm["thread"] is None:
+            t = _threading.Thread(target=_warm_token_usage, name="token-usage-warm", daemon=True)
+            _token_warm["thread"] = t
+            t.start()
+    return False
+
+
 def _get_token_usage():
     """Get token usage summary for landing page widget (T-803)."""
+    if not _token_usage_ready():   # T-5126: never make `/` wait for a cold transcript parse
+        return None
     try:
         from web.blueprints.costs import _load_all_sessions, _fmt_tokens
         sessions = _load_all_sessions()
