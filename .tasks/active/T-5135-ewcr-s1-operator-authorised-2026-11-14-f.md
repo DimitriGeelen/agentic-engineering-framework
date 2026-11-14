@@ -104,7 +104,7 @@ cost_estimate_proposed:
 - DeepSeek: `docs/reports/T-032-deepseek-review-response.md`, sha256 `4dae4098b2602b2794525292e1aa3053e0c486b23a67d9c3292ce80dc3a4d8a9`
 - Mistral: `docs/reports/T-032-mistral-review-response.md`, sha256 `0eecb8af7be56ba045581167ef66b73fd9d2aa17fcd241f84defc0e7d17bfb0e`
 
-Criterion 1 is for these two; the verification checks them too once they arrive.
+Criterion 1 is for these two. **Update, same evening (832 msg 17d229fa):** no transfer was needed — both review documents, and the dossier and roadmap too, have been in this repo since 2026-09-24 (T-3389, `docs/research/executable-workflow/`, with PROVENANCE.md). The duplicate copies fetched this evening were removed. Drive-7 §4 missed them because its search looked under `docs/reports/`.
 
 A disposition table per finding (DeepSeek, Mistral) goes into `docs/reports/EWCR/`, and 832 gets the read-back it asked for. Waiting on 832's operator to release the files (msg c02072ea).
 
@@ -112,7 +112,7 @@ A disposition table per finding (DeepSeek, Mistral) goes into `docs/reports/EWCR
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] both 0503 documents are received as raw bytes (not via the 3001 viewer) and stored under `docs/reports/EWCR/inputs/`, each with its sha256 and size matching 832's published values (recorded in Context); a mismatch is refused and reported to 832, not used
+- [x] both 0503 review documents are available as raw bytes, each with its sha256 matching 832's published values (recorded in Context): already in this repo since 2026-09-24 (T-3389, `docs/research/executable-workflow/reviews/`, PROVENANCE.md), re-hashed 2026-11-14
 - [ ] a disposition table per review (DeepSeek, Mistral) lists every finding with a disposition (accepted / out of scope / already handled / rejected, with a reason and, where accepted, the owning task), in `docs/reports/EWCR/`
 - [ ] the read-back 832 asked for is sent on the 832-ewcr-progress conversation, naming both tables, and S1 in the drive-7 handback is marked decided (operator ruling 2026-11-14)
 
@@ -300,10 +300,8 @@ A disposition table per finding (DeepSeek, Mistral) goes into `docs/reports/EWCR
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
-cd docs/reports/EWCR/inputs && sha256sum -c SHA256SUMS
-grep -q '^c9070637b09493a24abc99982ae966a3b3ae8cd4a358a44fdceb59bdceb6ac2d  architecture-c9070637.md$' docs/reports/EWCR/inputs/SHA256SUMS
-grep -q '^5be23719b976e37a6461b4b1f6f309985b5ba033ef0b801769edd2627fbae5b8  roadmap-5be23719.md$' docs/reports/EWCR/inputs/SHA256SUMS
-test "$(wc -c < docs/reports/EWCR/inputs/architecture-c9070637.md)" -eq 62863 && test "$(wc -c < docs/reports/EWCR/inputs/roadmap-5be23719.md)" -eq 21135
+test "$(sha256sum < docs/research/executable-workflow/reviews/T-032-deepseek-review-response.md | cut -d' ' -f1)" = 4dae4098b2602b2794525292e1aa3053e0c486b23a67d9c3292ce80dc3a4d8a9
+test "$(sha256sum < docs/research/executable-workflow/reviews/T-032-mistral-review-response.md | cut -d' ' -f1)" = 0eecb8af7be56ba045581167ef66b73fd9d2aa17fcd241f84defc0e7d17bfb0e
 
 ## RCA
 
