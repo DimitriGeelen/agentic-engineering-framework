@@ -305,6 +305,14 @@ stands, it stands and is not re-litigated.
 
 ### S1 — restated in its new shape (priority 1, still gates the arc)
 
+> **DECIDED 2026-11-14 (added after this handback; the text below is left as written).**
+> Operator ruling: *"Authorise both"*. Leg (a): no fetch was needed. Both review documents
+> had been in this repo since 2026-09-24 (T-3389, `docs/research/executable-workflow/reviews/`),
+> and §4's search missed them because it looked only under `docs/reports/`. Leg (b): every
+> DeepSeek and Mistral finding now has a disposition in
+> `docs/reports/EWCR/T-5135-deepseek-mistral-dispositions.md` (8 findings: 5 accepted,
+> 2 already handled, 1 deferred to Arc 6, 0 excluded). Task: T-5135.
+
 *Blocks:* the Arc-0 exit gate, therefore Arc 1, therefore everything downstream.
 
 The question is no longer *"can the artefacts be obtained?"* It is:

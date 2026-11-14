@@ -113,7 +113,8 @@ A disposition table per finding (DeepSeek, Mistral) goes into `docs/reports/EWCR
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] both 0503 review documents are available as raw bytes, each with its sha256 matching 832's published values (recorded in Context): already in this repo since 2026-09-24 (T-3389, `docs/research/executable-workflow/reviews/`, PROVENANCE.md), re-hashed 2026-11-14
-- [ ] a disposition table per review (DeepSeek, Mistral) lists every finding with a disposition (accepted / out of scope / already handled / rejected, with a reason and, where accepted, the owning task), in `docs/reports/EWCR/`
+- [x] a disposition table per review (DeepSeek, Mistral) lists every finding with a disposition (accepted / out of scope / already handled / rejected, with a reason and, where accepted, the owning task), in `docs/reports/EWCR/`
+      — `docs/reports/EWCR/T-5135-deepseek-mistral-dispositions.md`: 8 rows (DS-1..3, MS-1..5), 5 accepted / 2 already handled / 1 deferred / 0 rejected. Owners are roadmap arc candidates, because no AEF task exists for Arc 1–6 yet (filed when Arc 1 opens); each accepted row names its required refusal test.
 - [ ] the read-back 832 asked for is sent on the 832-ewcr-progress conversation, naming both tables, and S1 in the drive-7 handback is marked decided (operator ruling 2026-11-14)
 
 ### Human
@@ -302,6 +303,10 @@ A disposition table per finding (DeepSeek, Mistral) goes into `docs/reports/EWCR
 -->
 test "$(sha256sum < docs/research/executable-workflow/reviews/T-032-deepseek-review-response.md | cut -d' ' -f1)" = 4dae4098b2602b2794525292e1aa3053e0c486b23a67d9c3292ce80dc3a4d8a9
 test "$(sha256sum < docs/research/executable-workflow/reviews/T-032-mistral-review-response.md | cut -d' ' -f1)" = 0eecb8af7be56ba045581167ef66b73fd9d2aa17fcd241f84defc0e7d17bfb0e
+test "$(grep -cE '^\| (DS-[1-3]|MS-[1-5]) \|' docs/reports/EWCR/T-5135-deepseek-mistral-dispositions.md)" -eq 8
+! grep -E '^\| (DS|MS)-[0-9] \|' docs/reports/EWCR/T-5135-deepseek-mistral-dispositions.md | grep -vqE '\*\*(accepted|already handled|out of scope|rejected)\*\*'
+grep -q 'DECIDED 2026-11-14' docs/reports/EWCR/drive-7-procasfit-handback.md
+python3 tools/ewcr-contracts-check.py
 
 ## RCA
 
