@@ -126,7 +126,7 @@ cost_estimate_proposed:
 - [x] The seat brief and the seat's command guard refuse `pkill`, `killall` and `kill $(pgrep …)`, with a test. The brief says so (judge_cli). The opencode seat config denies the patterns in its `bash` permission, and opencode's own resolver confirms "deny". The Claude review worker's committed settings deny the same; the ledger pin now accepts exactly the old and the new settings. Codex has no per-command rule, so the PID namespace is its guard. `tests/unit/t5008_seat_signal_guard_test.py`, 4 tests
 - [x] Dedicated seat user: split out to **T-5127** (2026-11-14). It is a separate deliverable that needs a per-host user and sudoers line (operator host changes), so this task closes on the namespace and the guards
 - [x] Review findings fixed: the watchdog records timeout before signalling (race); isolation is recorded only after the namespaced launch actually started (`_fw_seat_pidns_record` reads the launched process, waiting for it to become `unshare`); t4776, t4840 and t5008 tests green
-- [ ] ring20-dashboard is answered with what shipped, and the report is recorded under T-4940
+- [x] ring20-dashboard is answered with what shipped (msg bf2c760e, 2026-11-14), and the report is recorded under T-4940 (`docs/reports/field-test-v1.8.16-results.md`: be.26 PARTLY entry, and a Fix-status row noting it failed on be.15, is fixed on bleeding-edge, and needs a retest)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -312,8 +312,20 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t5008_seat_process_isolation.bats > /tmp/.t5008a.out 2>&1 && ! grep -q "^not ok" /tmp/.t5008a.out
+timeout 600 python3 -m pytest -q tests/unit/t5008_seat_process_isolation_test.py tests/unit/t5008_seat_signal_guard_test.py tests/unit/t3580_round9_test.py > /tmp/.t5008b.out 2>&1 && grep -q passed /tmp/.t5008b.out
+timeout 600 bats tests/unit/t4776_watchdog_sigkill.bats tests/unit/t4840_watchdog_writes_timeout_record.bats > /tmp/.t5008c.out 2>&1 && ! grep -q "^not ok" /tmp/.t5008c.out
+bin/fw vendor self --check --task T-5008
 
 ## RCA
+
+**Symptom:** ring20-dashboard (b2be4058, 2026-11-01). An opencode review seat stopped its own test server by matching its command line, and so stopped ring20-dashboard's production service, which had the same command line. A watchdog then ran an unsupervised server for 12 h.
+
+**Root cause:** seat isolation was file isolation only (export, PROJECT_ROOT, tamper fingerprint). A seat runs as the operator's user on the operator's host, so a by-name signal reaches every process that user owns.
+
+**Why structurally allowed:** the seat threat model covered what a reviewer writes, not what it signals. No test ran a process-affecting command from a seat.
+
+**Prevention:** PID namespace per harness seat (a decoy test shows a same-named process outside survives); kill-by-name refused in the brief, the opencode seat permission and the Claude worker settings (test, with opencode's own resolver); the watchdog records the timeout before signalling. Residual named: same-user resources such as systemctl --user and sockets (T-5127). Learning recorded for the settings-pin regression this task caused and fixed (fe00d59f4).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
