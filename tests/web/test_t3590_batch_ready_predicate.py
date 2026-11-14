@@ -113,7 +113,8 @@ def test_approvals_makes_no_decision_with_the_display_parser():
     src = open("web/blueprints/approvals.py").read()
     uses = [ln.strip() for ln in src.splitlines()
             if "_parse_acceptance_criteria(" in ln and not ln.strip().startswith("#")]
-    assert uses == ["all_acs = _parse_acceptance_criteria(body)"]
+    # T-5128: still exactly one use, still the display list — now through the per-file cache
+    assert uses == ["all_acs = mtime_cached_get(Path(path), lambda p: _parse_acceptance_criteria(body),"]
     assert 'ac["checked"]' not in src
 
 
