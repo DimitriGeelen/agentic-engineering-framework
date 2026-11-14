@@ -9,12 +9,12 @@ description: >
   control, or require an operator signature the agent cannot produce; today the Grants-Change:
   operator trailer is text an agent can also write. Feature: T-4988/T-4989 (be.20).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [access-grants, security]
-components: []
+components: [agents/context/check-project-boundary.sh, agents/git/lib/grant-file-guard.sh, agents/git/lib/hooks.sh, lib/access_grants.py, tests/unit/t5031_grant_file_commit_guard.bats, tests/unit/t5031_signed_grants.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-02T19:46:46Z
-last_update: 2026-11-13T23:52:24Z
-date_finished:
+last_update: 2026-11-14T00:09:26Z
+date_finished: 2026-11-14T00:09:26Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -430,3 +430,26 @@ bin/fw vendor self --check --task T-5031
 
 ### 2026-11-02T19:47:17Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-14T00:09:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a25e9be7
+- **Timestamp:** 2026-11-14T00:10:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Under agent control (CLAUDECODE=1), a commit that changes `policy/access-grants.yaml` is refused by the installed pre-commit and pre-merge-commit hooks, whatever staged it (add, commit -a, checkout/re
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/access-grants.yaml in: Under agent control (CLAUDECODE=1), a commit that changes `policy/access-grants.yaml` is refused by the installed pre-commit and pre-merge-commit hook`
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `timeout 300 bats tests/unit/t5031_grant_file_commit_guard.bats tests/unit/t5031_signed_grants.bats > /tmp/.t5031.out 2>&1 && ! grep -q "^not ok" /tmp/.t5031.out`

@@ -54335,3 +54335,21 @@ scan_id: R-9a80c53f
 task_id: T-5036
 payload:
   task_file: .tasks/active/T-5036-boundary-hook-splits-a-quoted-path-conta.md
+---
+kind: scan_emitted
+timestamp: '2026-11-14T00:10:26Z'
+scan_id: R-a25e9be7
+task_id: T-5031
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-14T00:10:26Z'
+scan_id: R-a25e9be7
+task_id: T-5031
+payload:
+  task_file: .tasks/active/T-5031-access-grants-an-agent-can-grant-itself-.md
