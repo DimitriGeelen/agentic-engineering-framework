@@ -171,6 +171,62 @@ def test_dashboard_tile_does_not_build_the_page(monkeypatch):
     monkeypatch.setattr(ap, "approval_summary", lambda: {
         "total_count": 5, "tier0_count": 1, "go_count": 2, "ac_task_count": 2})
     monkeypatch.setitem(core._qr_cache, "data", None)
+    # T-5126: the synchronous builder (the dashboard serves it stale-while-revalidate)
     with app.test_request_context("/"):
-        summary, _qr, _url = core._get_approval_qr()
+        summary, _qr, _url = core._build_approval_qr()
     assert summary is not None and summary["total"] == 5 and summary["go"] == 2
+
+
+def _swr_reset(monkeypatch, core):
+    monkeypatch.setitem(core._qr_cache, "data", None)
+    monkeypatch.setitem(core._qr_cache, "ts", 0)
+    monkeypatch.setitem(core._qr_refresh, "thread", None)
+
+
+def test_t5126_cold_dashboard_does_not_wait_for_the_summary(monkeypatch):
+    import threading
+    import time
+    import web.blueprints.core as core
+    _swr_reset(monkeypatch, core)
+    release = threading.Event()
+
+    def slow():
+        release.wait(10)
+        return {"total_count": 3, "tier0_count": 0, "go_count": 1, "ac_task_count": 2}
+
+    monkeypatch.setattr(ap, "approval_summary", slow)
+    with app.test_request_context("/", base_url="http://localhost:3123"):
+        t0 = time.monotonic()
+        assert core._get_approval_qr() == (None, None, None)
+        assert time.monotonic() - t0 < 1.0
+    release.set()
+    core._qr_refresh["thread"].join(10)
+    with app.test_request_context("/", base_url="http://localhost:3123"):
+        summary, _qr, url = core._get_approval_qr()
+    assert summary["total"] == 3
+    assert url is None or url.endswith(":3123/approvals"), url   # port carried into the thread
+
+
+def test_t5126_an_expired_entry_is_served_stale_and_refreshed_once(monkeypatch):
+    import threading
+    import web.blueprints.core as core
+    _swr_reset(monkeypatch, core)
+    stale = ({"total": 1, "tier0": 0, "go": 0, "acs": 1}, None, None)
+    monkeypatch.setitem(core._qr_cache, "data", stale)
+    monkeypatch.setitem(core._qr_cache, "ts", -10_000)   # long expired
+    release, calls = threading.Event(), []
+
+    def slow():
+        calls.append(1)
+        release.wait(10)
+        return {"total_count": 4, "tier0_count": 0, "go_count": 0, "ac_task_count": 4}
+
+    monkeypatch.setattr(ap, "approval_summary", slow)
+    with app.test_request_context("/"):
+        assert core._get_approval_qr() is stale
+        assert core._get_approval_qr() is stale      # a second request while refreshing
+    release.set()
+    core._qr_refresh["thread"].join(10)
+    assert len(calls) == 1                            # one refresh, not one per request
+    with app.test_request_context("/"):
+        assert core._get_approval_qr()[0]["total"] == 4

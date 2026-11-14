@@ -106,6 +106,7 @@ cost_estimate_proposed:
 - [ ] the register results (`register_violations` and the other callers) are identical with and without the cache on this repo's docs
 - [ ] the repeat-request time of the three pages drops measurably here (before/after numbers in the task); any other full scan that dominates is fixed or filed as its own task
 - [ ] (1409 msg c905c099) `/` never waits for a cold parse of all session transcripts: the first request starts it in a background thread and renders without the token tile, and the tile returns once the parse has finished (tests: a slow fake parse does not delay the first call; a failing parse still ends the warm-up)
+- [ ] the dashboard's approvals box is served stale-while-revalidate: an expired entry is returned as it is and refreshed in one background thread, a cold start shows no box until the first build, and the QR keeps the request's port (tests in `tests/web/test_t3600_approval_summary.py`)
 - [ ] Watchtower restarted, `bin/fw watchtower current` passes, and 1409 is told what changed and which be-tag carries it
 
 ### Human
