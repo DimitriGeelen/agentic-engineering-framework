@@ -170,7 +170,7 @@ class TestRealRuntimeLaunch:
         assert argv[i + 1] == "user", argv
         j = argv.index("--settings")
         assert argv[j + 1] == f"{w}/settings.json"
-        assert json.loads(Path(argv[j + 1]).read_text()) == {"crossSessionInbound": "refuse"}
+        assert json.loads(Path(argv[j + 1]).read_text()) == vl.WORKER_SETTINGS_WANT   # T-5008: + deny rules
         assert "--strict-mcp-config" in argv and "--mcp-config" not in argv
         assert len(vl._completions_for(rtrepo, did)) == 1, (w / "stderr.log").read_text()
 
