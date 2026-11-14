@@ -54389,3 +54389,21 @@ scan_id: R-43178a96
 task_id: T-5033
 payload:
   task_file: .tasks/active/T-5033-access-grants-the-refused-verbs-check-ru.md
+---
+kind: scan_emitted
+timestamp: '2026-11-14T10:28:40Z'
+scan_id: R-e6a6d79a
+task_id: T-5008
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-14T10:28:40Z'
+scan_id: R-e6a6d79a
+task_id: T-5008
+payload:
+  task_file: .tasks/active/T-5008-review-seats-can-signal-processes-they-d.md

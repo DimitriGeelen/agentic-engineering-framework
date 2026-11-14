@@ -1,0 +1,129 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5008: Review seats can signal processes they did not start (an opencode seat killed ring20-dashboard's production service)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-14T10:28:53Z
+# ============================================================================
+
+task_id: T-5008
+task_name: "Review seats can signal processes they did not start (an opencode seat killed ring20-dashboard's production service)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-02T08:33:17Z
+completed: 2026-11-14T10:27:31Z
+duration_days: 12
+updates_count: 3
+first_commit: 2026-11-02T09:34:53+01:00
+last_commit: 2026-11-14T11:27:30+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  register G-128 (review seat killed a consumer's production service; seats lack process isolation); context and criteria. localised — harness seats launch without process isolation; unshare --pid works here; plan with fallback line. harness review seats launch in their own PID namespace; brief forbids signalling processes the seat did not start. seat process isolation test (decoy survives pkill, loud fallback, watchdog ends namespaced seat, brief); vendor sync. t3582 pin follows the namespaced antigravity launch (sudo form unchanged); tick met Agent criteria. codex review (red) — PID namespace confirmed live (PID 1 is the seat's sandbox) but host service control (systemctl, sockets) and the unguarded fallback remain; watchdog race and metadata timing to fix. criteria for the dedicated seat user (config key + documented host setup) and the review's race and metadata findings. seats refuse signalling by name — opencode seat config bash deny (pkill/killall/kill $(pgrep…)), verified by opencode's own resolver; Claude review-worker settings deny the same; 4 tests. vendor verdict_ledger. FIX — the review-worker settings pin accepts the T-5008 deny rules (registration refused every claude review since 259725ce2); watchdog records the timeout before signalling; seat isolation recorded from the launched process, not the probe. round-9 launch test reads the pinned settings constant. vendor verdict_ledger and termlink.sh. field record row (fails on be.15, fixed on bleeding-edge, retest owed); criteria 3-5 ticked, criterion 4 split to T-5127. verification, RCA, last criterion ticked (102-file sweep, 166 invariants)
+
+# Key outcomes
+outcomes:
+  - 'Harness seats (codex, opencode, antigravity) launch inside a PID namespace when the host allows it (`unshare --pid --fork --mount-proc` or equivalent), and say plainly in the run log when it does not'
+  - 'A test starts a decoy process outside the seat with the same command line, runs a seat command `pkill -f <that line>`, and shows the decoy still alive'
+  - 'The seat brief and the seat''s command guard refuse `pkill`, `killall` and `kill $(pgrep …)`, with a test. The brief says so (judge_cli). The opencode seat config denies the patterns in its `bash` permission, and opencode''s own resolver confirms "deny". The Claude review worker''s committed settings deny the same; the ledger pin now accepts exactly the old and the new settings. Codex has no per-command rule, so the PID namespace is its guard. `tests/unit/t5008_seat_signal_guard_test.py`, 4 tests'
+  - 'Dedicated seat user: split out to **T-5127** (2026-11-14). It is a separate deliverable that needs a per-host user and sudoers line (operator host changes), so this task closes on the namespace and the guards'
+  - 'Review findings fixed: the watchdog records timeout before signalling (race); isolation is recorded only after the namespaced launch actually started (`_fw_seat_pidns_record` reads the launched process, waiting for it to become `unshare`); t4776, t4840 and t5008 tests green'
+  - 'ring20-dashboard is answered with what shipped (msg bf2c760e, 2026-11-14), and the report is recorded under T-4940 (`docs/reports/field-test-v1.8.16-results.md`: be.26 PARTLY entry, and a Fix-status row noting it failed on be.15, is fixed on bleeding-edge, and needs a retest)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'field record row (fails on be.15, fixed on bleeding-edge, retest owed); criteria 3-5 ticked, criterion 4 split to T-5127'
+    source: git-mined
+  - description: 'FIX — the review-worker settings pin accepts the T-5008 deny rules (registration refused every claude review since 259725ce2); watchdog records the timeout before signalling; seat isolation recorded from the launched process, not the probe'
+    source: git-mined
+  - description: 'codex review (red) — PID namespace confirmed live (PID 1 is the seat''s sandbox) but host service control (systemctl, sockets) and the unguarded fallback remain; watchdog race and metadata timing to fix'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.context/costs/reviews.jsonl'
+  - '.context/project/concerns.yaml'
+  - '.fabric/components/tests-unit-t5008_seat_signal_guard_test.yaml'
+  - '.tasks/active/T-5008-review-seats-can-signal-processes-they-d.md'
+  - 'agents/termlink/termlink.sh'
+  - 'docs/reports/T-5008-review-codex.md'
+  - 'docs/reports/field-test-v1.8.16-results.md'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/verdict_ledger.py'
+  - 'policy/review-worker-settings.json'
+  - 'tests/unit/t3580_round9_test.py'
+  - 'tests/unit/t3582_harness_kinds_test.py'
+  - 'tests/unit/t5008_seat_process_isolation.bats'
+  - 'tests/unit/t5008_seat_process_isolation_test.py'
+  - 'tests/unit/t5008_seat_signal_guard_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-02T09:34:53'
+    action: 'T-5008: register G-128 (review seat killed a consumer''s production service; seats lack process isolation); context and criteria'
+  - time: '2026-11-02T15:21:23'
+    action: 'T-5008: localised — harness seats launch without process isolation; unshare --pid works here; plan with fallback line'
+  - time: '2026-11-02T15:24:06'
+    action: 'T-5008: harness review seats launch in their own PID namespace; brief forbids signalling processes the seat did not start'
+  - time: '2026-11-02T15:25:01'
+    action: 'T-5008: seat process isolation test (decoy survives pkill, loud fallback, watchdog ends namespaced seat, brief); vendor sync'
+  - time: '2026-11-02T15:33:43'
+    action: 'T-5008: t3582 pin follows the namespaced antigravity launch (sudo form unchanged); tick met Agent criteria'
+  - time: '2026-11-02T17:08:28'
+    action: 'T-5008: codex review (red) — PID namespace confirmed live (PID 1 is the seat''s sandbox) but host service control (systemctl, sockets) and the unguarded fallback remain; watchdog race and metadata timing to fix'
+  - time: '2026-11-02T17:59:34'
+    action: 'T-5008: criteria for the dedicated seat user (config key + documented host setup) and the review''s race and metadata findings'
+  - time: '2026-11-14T11:06:02'
+    action: 'T-5008: seats refuse signalling by name — opencode seat config bash deny (pkill/killall/kill $(pgrep…)), verified by opencode''s own resolver; Claude review-worker settings deny the same; 4 tests'
+  - time: '2026-11-14T11:08:01'
+    action: 'T-5008: vendor verdict_ledger'
+  - time: '2026-11-14T11:12:33'
+    action: 'T-5008: FIX — the review-worker settings pin accepts the T-5008 deny rules (registration refused every claude review since 259725ce2); watchdog records the timeout before signalling; seat isolation recorded from the launched process, not the probe'
+  - time: '2026-11-14T11:13:39'
+    action: 'T-5008: round-9 launch test reads the pinned settings constant'
+  - time: '2026-11-14T11:13:56'
+    action: 'T-5008: vendor verdict_ledger and termlink.sh'
+  - time: '2026-11-14T11:20:28'
+    action: 'T-5008: field record row (fails on be.15, fixed on bleeding-edge, retest owed); criteria 3-5 ticked, criterion 4 split to T-5127'
+  - time: '2026-11-14T11:27:30'
+    action: 'T-5008: verification, RCA, last criterion ticked (102-file sweep, 166 invariants)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 14 commit(s), 17394 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 17394
+  commits: 15
+  files_changed: 21
+  lines_added: 1156
+  lines_removed: 55
+  footprint_refreshed_at: '2026-11-14T10:29:08Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5008-review-seats-can-signal-processes-they-d.md
+generated_by: context-agent-hybrid
