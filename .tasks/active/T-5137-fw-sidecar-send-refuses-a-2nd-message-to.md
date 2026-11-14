@@ -95,9 +95,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] a topic with a fetch inside `READ_WINDOW_MS` counts as reader evidence even when the fetch is older than the last write; the send then succeeds and says the message will queue unread
-- [ ] a topic never fetched, or last fetched outside the window, is still refused as before (T-4418 cases unchanged)
-- [ ] a regression test reproduces 010's case (fetch, then our post, then a second send) and fails without the fix; every test that reads `addressing.py` passes
+- [x] a topic with a fetch inside `READ_WINDOW_MS` counts as reader evidence even when the fetch is older than the last write; the send then succeeds and says the message will queue unread
+      — narrowed on purpose: a fetch older than the last write counts only within `ACTIVE_READER_WINDOW_MS` (1 day), not the 7-day `READ_WINDOW_MS`. T-4418 pinned that a reader that was quiet for days is no evidence (`test_fetch_older_than_last_write_or_window_is_not_evidence`, a fetch 2 days ago), and that test still passes unchanged. 1409's design session fetches every few minutes.
+- [x] a topic never fetched, or last fetched outside the window, is still refused as before (T-4418 cases unchanged)
+      — all 18 T-4418 tests pass unchanged; new control `test_reader_quiet_for_more_than_a_day_is_still_no_evidence`.
+- [x] a regression test reproduces 010's case (fetch, then our post, then a second send) and fails without the fix; every test that reads `addressing.py` passes
+      — `test_recent_reader_that_has_not_caught_up_is_evidence` and `test_second_send_to_a_prompt_driven_reader_goes_with_a_note` fail with the fix stashed and pass with it; 580 Python and 43 bats tests that read `addressing.py`/`sidecar_cli.py` pass.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -283,8 +286,17 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_sidecar_orphan_circuit_t4418.py
+grep -q 'ACTIVE_READER_WINDOW_MS = 86_400_000' lib/sidecar/addressing.py
+bin/fw vendor self --check --task T-5137
 
 ## RCA
+
+**Cause:** `topic_is_read` was written for T-4418 to answer "has a reader caught up with this topic" (fetch after last write, within 7 days). `explicit_circuit_evidence` used it as the only hub-side answer to a different question, "does anything read this topic". For a reader that only fetches when its operator types, the two answers differ for every message after the first: our own post moves the last write past the last fetch.
+
+**Fix:** a second, separate test, `topic_has_active_reader`: any fetch within one day counts as a reader. It is checked only after `topic_is_read` fails, and it marks the evidence `queued_unread`. The send then goes through and prints a note that the message waits unread. Never-fetched circuits and readers quiet for over a day are refused as before.
+
+**Why it went unnoticed:** the T-4418 tests pinned a reader that went quiet days ago, but none modelled a live reader behind on the latest post. 010 found it by needing `--force` twice in one evening.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).

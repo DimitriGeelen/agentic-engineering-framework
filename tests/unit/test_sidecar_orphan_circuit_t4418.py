@@ -273,3 +273,35 @@ def test_doctor_and_audit_call_the_fact_source():
     for path in ("bin/fw", "agents/audit/audit.sh"):
         text = (FW_ROOT / path).read_text()
         assert "fw_sidecar_orphan_inbox_facts" in text and "T-4418" in text, path
+
+
+# ── T-5137 (010 T-3790): a prompt-driven reader that has not caught up ───────────
+
+def _prompt_driven(fetch_age_ms):
+    # 1409's design session: it fetches on each operator prompt, so after our own post
+    # the last fetch is older than the last write, yet a reader plainly exists.
+    return _row(f"inbox:{THEIRS}/1409-sprind/design", count=53,
+                write=NOW - 60_000, fetch=NOW - fetch_age_ms, unread=NOW - 60_000)
+
+
+def test_recent_reader_that_has_not_caught_up_is_evidence(env):
+    ev = env.explicit_circuit_evidence(f"{THEIRS}/1409-sprind/design", "h",
+                                       runner=_runner([_prompt_driven(10 * 60_000)]), now_ms=NOW)
+    assert ev["known"] and "queues unread" in ev["known"]
+    assert ev.get("queued_unread") is True
+
+
+def test_reader_quiet_for_more_than_a_day_is_still_no_evidence(env):
+    ev = env.explicit_circuit_evidence(f"{THEIRS}/1409-sprind/design", "h",
+                                       runner=_runner([_prompt_driven(2 * DAY)]), now_ms=NOW)
+    assert ev["known"] is None
+
+
+def test_second_send_to_a_prompt_driven_reader_goes_with_a_note(cli, monkeypatch, capsys):
+    rows = RING20 + [_prompt_driven(10 * 60_000)]
+    monkeypatch.setattr(cli.addressing, "hub_inbox_topics",
+                        lambda hid, hub, runner=None: [r for r in rows if r["name"].startswith(f"inbox:{hid}/")])
+    rc = cli.main(["send", "--to", f"{THEIRS}/1409-sprind/design", "--hub", "h", "--body", "second"])
+    err = capsys.readouterr().err
+    assert rc == 0 and len(cli.posted) == 1
+    assert "REFUSED" not in err and "WARNING" not in err and "queues unread" in err
