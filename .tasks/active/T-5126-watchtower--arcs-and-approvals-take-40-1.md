@@ -105,9 +105,17 @@ cost_estimate_proposed:
 - [ ] `find_register_docs` keeps a per-process cache keyed by path, mtime and size; an unchanged doc is not re-read, while a new, changed or deleted doc is picked up on the next call (tests)
 - [ ] the register results (`register_violations` and the other callers) are identical with and without the cache on this repo's docs
 - [ ] the repeat-request time of the three pages drops measurably here (before/after numbers in the task); any other full scan that dominates is fixed or filed as its own task
+- [ ] (1409 msg c905c099) `/` never waits for a cold parse of all session transcripts: the first request starts it in a background thread and renders without the token tile, and the tile returns once the parse has finished (tests: a slow fake parse does not delay the first call; a failing parse still ends the warm-up)
 - [ ] Watchtower restarted, `bin/fw watchtower current` passes, and 1409 is told what changed and which be-tag carries it
 
 ### Human
+- [ ] [REVIEW] The landing page right after a Watchtower restart: it loads quickly without the token tile, and the tile appears on a later reload
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower restart`
+  2. Open http://192.168.10.107:3000/ straight away
+  3. Wait about a minute, then reload http://192.168.10.107:3000/
+  **Expected:** step 2 shows the cockpit without the token-usage box and nothing looks broken or empty in its place; step 3 shows the box again
+  **If not:** note what you saw at each step; the change is `_get_token_usage` in `web/blueprints/core.py`
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.

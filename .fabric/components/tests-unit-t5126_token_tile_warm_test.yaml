@@ -1,0 +1,21 @@
+id: tests/unit/t5126_token_tile_warm_test.py
+name: t5126_token_tile_warm_test
+type: script
+subsystem: tests
+location: tests/unit/t5126_token_tile_warm_test.py
+tags: []
+
+purpose: "T-5126 (1409 msg c905c099): `/` never waits for a cold parse of every session transcript. The first call starts the parse in the background and returns None (the cockpit template omits the tile); once the parse is done, the tile is back."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-14
+created_by: unknown
