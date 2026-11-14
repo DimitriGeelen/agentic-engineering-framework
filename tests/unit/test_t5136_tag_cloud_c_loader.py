@@ -67,6 +67,28 @@ def test_landing_page_task_parse_uses_the_c_loader(tmp_path, monkeypatch):
     assert yaml.CSafeLoader in seen and yaml.SafeLoader not in seen
 
 
+def test_fabric_cards_load_with_the_c_loader(tmp_path, monkeypatch):
+    """T-5136: the cold /fabric parse of every component card was pure-Python safe_load."""
+    if not getattr(yaml, "__with_libyaml__", False):
+        pytest.skip("libyaml not built into this PyYAML")
+    from web.blueprints import fabric
+    (tmp_path / "c1.yaml").write_text("id: c1\nname: one\ndepends_on: [c2]\n")
+    monkeypatch.setattr(fabric, "COMP_DIR", str(tmp_path))
+    monkeypatch.setitem(fabric._comp_cache, "mtime", 0)
+    monkeypatch.setitem(fabric._comp_cache, "data", [])
+    seen = []
+    real = yaml.load
+
+    def spy(stream, Loader):
+        seen.append(Loader)
+        return real(stream, Loader=Loader)
+
+    monkeypatch.setattr(yaml, "load", spy)
+    cards = fabric._load_components()
+    assert seen == [yaml.CSafeLoader]
+    assert cards == [{"id": "c1", "name": "one", "depends_on": ["c2"], "_card_file": "c1.yaml"}]
+
+
 def test_bad_yaml_still_gives_no_tags(tmp_path):
     f = tmp_path / "T-9998.yaml"
     f.write_text("tags: [unclosed\n")
