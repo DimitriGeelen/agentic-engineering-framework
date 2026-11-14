@@ -724,6 +724,7 @@ def _build_active_filter_chips(active: dict, view: str) -> list[dict]:
 
 # T-3575: cards shown per backlog/archive board column before the "+N more" list link.
 BOARD_COLUMN_CAP = 20
+LIST_PAGE_SIZE = 200  # T-5136: list-view rows per page
 # Only these columns are capped; In Progress / Issues always show every card so the
 # board never hides current work (T-3575 render review).
 BOARD_CAPPED_STATUSES = ("captured", "work-completed")
@@ -844,6 +845,31 @@ def tasks():
     if view not in ("board", "list"):
         view = "board"
 
+    # T-5136: the list view rendered every task with four inline edit forms each — 5,120
+    # rows was 18.9 MB of HTML and 37 s before the browser showed it. Page it; every task
+    # stays reachable through the pager, which keeps the filters and sort.
+    list_total = len(all_tasks)
+    list_pages = max(1, -(-list_total // LIST_PAGE_SIZE))
+    try:
+        list_page = int(request.args.get("page", "1"))
+    except ValueError:
+        list_page = 1
+    list_page = min(max(list_page, 1), list_pages)
+    list_start = (list_page - 1) * LIST_PAGE_SIZE
+    list_tasks = all_tasks[list_start:list_start + LIST_PAGE_SIZE]
+    _pager_args = [(k, v) for k, v in request.args.items(multi=True) if k not in ("page", "view")]
+
+    def _list_page_url(n):
+        return "/tasks?" + urlencode(_pager_args + [("view", "list"), ("page", n)])
+
+    list_pager = {
+        "page": list_page, "pages": list_pages, "total": list_total,
+        "first": list_start + 1 if list_total else 0,
+        "last": list_start + len(list_tasks),
+        "prev_url": _list_page_url(list_page - 1) if list_page > 1 else None,
+        "next_url": _list_page_url(list_page + 1) if list_page < list_pages else None,
+    }
+
     # arc-007 S4c (T-2016): removable chip per active filter.
     active_filter_chips = _build_active_filter_chips({
         "q": search_query, "owner": owner_filter, "horizon": horizon_filter,
@@ -857,6 +883,8 @@ def tasks():
         active_filter_chips=active_filter_chips,
         page_title="Tasks",
         tasks=all_tasks,
+        list_tasks=list_tasks,
+        list_pager=list_pager,
         board_tasks=board_tasks,
         awaiting_tasks=awaiting_tasks,
         board_column_cap=BOARD_COLUMN_CAP,

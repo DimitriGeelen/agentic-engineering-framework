@@ -37,8 +37,11 @@ import time
 # named in 832's doctor report). Order: shared corpus readers first.
 # /search carries a keyword query (T-4458): without one the page never builds the
 # keyword index, and the first real search paid that build (17-89 s, host load).
+# T-5136: the bare /search is warmed too. Only the empty page builds the tag cloud, a
+# parse of every episodic file, so with the query-only warm the first plain visit after a
+# restart paid it (19.6 s live, 2026-11-14).
 WARM_PATHS: tuple[str, ...] = ("/", "/approvals", "/tasks", "/cron", "/timeline",
-                               "/search?q=warmup&mode=keyword")
+                               "/search?q=warmup&mode=keyword", "/search")
 
 WARMUP_STATE: dict = {"state": "idle", "started_at": None, "finished_at": None, "paths": {}}
 

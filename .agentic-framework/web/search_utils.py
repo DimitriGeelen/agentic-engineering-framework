@@ -201,9 +201,13 @@ _TAG_FM_CACHE: dict[str, tuple[int, list[str]]] = {}
 def _parse_tags_from_path(path: Path) -> list[str]:
     """Read one episodic YAML and extract its tag list. Empty list on any failure."""
     import yaml as _yaml
+    # T-5136: libyaml's C loader (same safe subset, the pattern in web/shared.py). The cold
+    # tag cloud parses every episodic file — 4,180 took 21.6 s in pure Python, 2.3 s in C,
+    # identical tags — and that cold pass is the first /search after every restart.
+    loader = getattr(_yaml, "CSafeLoader", _yaml.SafeLoader)
     try:
         with open(path) as fh:
-            data = _yaml.safe_load(fh)
+            data = _yaml.load(fh, Loader=loader)
     except Exception as e:
         logger.warning("Failed to parse episodic file %s: %s", path, e)
         return []
