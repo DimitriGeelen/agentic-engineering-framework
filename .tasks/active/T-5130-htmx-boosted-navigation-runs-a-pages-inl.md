@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-14T11:46:17Z
-last_update: '2026-11-14T12:00:32Z'
+last_update: 2026-11-14T19:42:28Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -105,7 +105,8 @@ cost_estimate_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] `base.html` turns a GET navigation into `#content` that brings a not-yet-loaded external script into a full load of the same URL. POSTs, error responses and swaps whose scripts are already loaded are untouched
 - [x] browser tests: boosted navigation to `/bvp` and `/terminal` produces no `… is not defined` errors (both fail without the fix); navigation to an ordinary page (`/tasks`) stays a swap (no full load). `tests/playwright/test_htmx_nav_page_scripts.py` 3/3 with the fix; 2 fail and the control passes with `base.html` stashed
-- [ ] the Playwright route suites and the base/htmx-related tests still pass; Watchtower restarted, `bin/fw watchtower current` passes
+- [x] the Playwright route suites and the base/htmx-related tests still pass; Watchtower restarted, `bin/fw watchtower current` passes
+      — Watchtower restarted 2026-11-14 (pid 2126904), `current` passes. Full Playwright run: no failure is new. The 14 failing files of the first part fail identically with `base.html` stashed. The 6 failing files of the rest, rerun one at a time with no port clash, are outside the change: 5 never click (`page.goto` only, so `htmx:beforeSwap` never fires), and `test_task_panel::test_panel_opens_after_htmx_board_swap` stays a swap (same-document marker kept, checked live) but the list view takes 36.9 s for 5,120 rows against the test's 5 s wait — a speed problem, not this change.
 
 ### Human
 - [ ] [REVIEW] In-app navigation to the BVP and terminal pages
@@ -351,6 +352,18 @@ grep -q "T-5130 (found under T-5129" web/templates/base.html
 -->
 
 ## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Reaching the BVP or terminal page through the in-app navigation left a blank area ("d3 is not defined" / "io is not defined") until a reload. Navigation that brings a script the page hasn't loaded yet now does a full load, which is what a reload did. Every other navigation still swaps instantly. The browser tests reproduce the fault without the fix and pass with it. The running Watchtower serves the fix. What is left is your look at the pages.
+
+**Evidence:**
+- `tests/playwright/test_htmx_nav_page_scripts.py`: 3/3 pass on a clean run (2026-11-14); with `base.html` stashed the two page tests fail and the control passes
+- Watchtower restarted onto the fix (pid 2126904); `bin/fw watchtower current` passes
+- Full Playwright run: no new failure. The 20 failing files fail with or without the change, or never trigger it (criterion 3 lists them)
+- Found on the way, not part of this task: the task list view (5,120 rows) takes about 37 s and `/search` about 35 s on the live server
+
+Review page: http://192.168.10.107:3000/review/T-5130
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
