@@ -54479,3 +54479,21 @@ scan_id: R-dd12c7d0
 task_id: T-5133
 payload:
   task_file: .tasks/active/T-5133-audit-d5-flags-genuinely-partial-complet.md
+---
+kind: scan_emitted
+timestamp: '2026-11-14T17:56:00Z'
+scan_id: R-70ef0c56
+task_id: T-5131
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-14T17:56:00Z'
+scan_id: R-70ef0c56
+task_id: T-5131
+payload:
+  task_file: .tasks/active/T-5131-fw-audit-overwrites-a-dated-audit-record.md

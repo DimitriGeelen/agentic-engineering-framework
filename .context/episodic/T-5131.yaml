@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5131: fw audit overwrites a dated audit record when the same scope runs twice on one date; each run must keep its own record (832 T-763 / RA-052)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-14T17:56:19Z
+# ============================================================================
+
+task_id: T-5131
+task_name: "fw audit overwrites a dated audit record when the same scope runs twice on one date; each run must keep its own record (832 T-763 / RA-052)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-14T15:22:01Z
+completed: 2026-11-14T17:55:49Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-14T17:53:13+01:00
+last_commit: 2026-11-14T18:55:48+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a manual audit never overwrites a dated record — an earlier same-day <date>.yaml moves aside to <date>-<HHMM>.yaml (counter on clash); <date>.yaml stays the newest (832 T-763 / RA-052); 4 tests. vendor audit.sh (T-5131 + T-5132). criteria ticked, verification, RCA
+
+# Key outcomes
+outcomes:
+  - 'a second manual audit run on the same date keeps the first run''s record (moved to `<date>-<HHMM>.yaml`), and `<date>.yaml` holds the new run; a third run keeps both earlier ones (counter on a name clash)'
+  - 'cron runs (`OUTPUT_DIR`, datetime names) are unchanged; the trend window skips every record of today as before (its `<date>-*` branch truncates to the date and skips today)'
+  - 'tests cover the move, the clash counter and that nothing is overwritten (`tests/unit/t5131_audit_record_no_overwrite.bats` 4/4); the 181-file audit.sh sweep and the 5 output/trend files re-run after this edit are green; vendored copy synced (f9228fee5)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.fabric/components/tests-unit-t5131_audit_record_no_overwrite.yaml'
+  - '.tasks/active/T-5131-fw-audit-overwrites-a-dated-audit-record.md'
+  - 'agents/audit/audit.sh'
+  - 'tests/unit/t5131_audit_record_no_overwrite.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-14T17:53:13'
+    action: 'T-5131: a manual audit never overwrites a dated record — an earlier same-day <date>.yaml moves aside to <date>-<HHMM>.yaml (counter on clash); <date>.yaml stays the newest (832 T-763 / RA-052); 4 tests'
+  - time: '2026-11-14T18:55:27'
+    action: 'T-5131: vendor audit.sh (T-5131 + T-5132)'
+  - time: '2026-11-14T18:55:48'
+    action: 'T-5131: criteria ticked, verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 153 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 153
+  commits: 4
+  files_changed: 8
+  lines_added: 683
+  lines_removed: 8
+  footprint_refreshed_at: '2026-11-14T17:56:51Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5131-fw-audit-overwrites-a-dated-audit-record.md
+generated_by: context-agent-hybrid
