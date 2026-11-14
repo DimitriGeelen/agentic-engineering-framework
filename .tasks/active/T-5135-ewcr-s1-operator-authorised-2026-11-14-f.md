@@ -115,7 +115,8 @@ A disposition table per finding (DeepSeek, Mistral) goes into `docs/reports/EWCR
 - [x] both 0503 review documents are available as raw bytes, each with its sha256 matching 832's published values (recorded in Context): already in this repo since 2026-09-24 (T-3389, `docs/research/executable-workflow/reviews/`, PROVENANCE.md), re-hashed 2026-11-14
 - [x] a disposition table per review (DeepSeek, Mistral) lists every finding with a disposition (accepted / out of scope / already handled / rejected, with a reason and, where accepted, the owning task), in `docs/reports/EWCR/`
       — `docs/reports/EWCR/T-5135-deepseek-mistral-dispositions.md`: 8 rows (DS-1..3, MS-1..5), 5 accepted / 2 already handled / 1 deferred / 0 rejected. Owners are roadmap arc candidates, because no AEF task exists for Arc 1–6 yet (filed when Arc 1 opens); each accepted row names its required refusal test.
-- [ ] the read-back 832 asked for is sent on the 832-ewcr-progress conversation, naming both tables, and S1 in the drive-7 handback is marked decided (operator ruling 2026-11-14)
+- [x] the read-back 832 asked for is sent on the 832-ewcr-progress conversation, naming both tables, and S1 in the drive-7 handback is marked decided (operator ruling 2026-11-14)
+      — sent 2026-11-14 (client_msg_id 0a5581ce); drive-7 §5 S1 carries a dated DECIDED note, original text kept.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
