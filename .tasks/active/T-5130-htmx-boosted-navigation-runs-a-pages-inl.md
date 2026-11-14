@@ -103,11 +103,18 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `base.html` turns a GET navigation into `#content` that brings a not-yet-loaded external script into a full load of the same URL. POSTs, error responses and swaps whose scripts are already loaded are untouched
-- [ ] browser tests: boosted navigation to `/bvp` and `/terminal` produces no `… is not defined` errors (both fail without the fix); navigation to an ordinary page (`/tasks`) stays a swap (no full load)
+- [x] `base.html` turns a GET navigation into `#content` that brings a not-yet-loaded external script into a full load of the same URL. POSTs, error responses and swaps whose scripts are already loaded are untouched
+- [x] browser tests: boosted navigation to `/bvp` and `/terminal` produces no `… is not defined` errors (both fail without the fix); navigation to an ordinary page (`/tasks`) stays a swap (no full load). `tests/playwright/test_htmx_nav_page_scripts.py` 3/3 with the fix; 2 fail and the control passes with `base.html` stashed
 - [ ] the Playwright route suites and the base/htmx-related tests still pass; Watchtower restarted, `bin/fw watchtower current` passes
 
 ### Human
+- [ ] [REVIEW] In-app navigation to the BVP and terminal pages
+  **Steps:**
+  1. Open http://192.168.10.107:3000/fabric and use the top navigation to reach the BVP page (http://192.168.10.107:3000/bvp)
+  2. From there, use the navigation to reach the terminal (http://192.168.10.107:3000/terminal)
+  3. Then click through to an ordinary page such as http://192.168.10.107:3000/tasks
+  **Expected:** the BVP scatter and the terminal appear on the first visit (no blank area). Those two pages do a quick full load; ordinary pages switch instantly as before
+  **If not:** note the page and what you saw; the change is the T-5130 `htmx:beforeSwap` handler in `web/templates/base.html`
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -291,8 +298,19 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bin/fw vendor self --check --task T-5130
+bin/fw watchtower current
+grep -q "T-5130 (found under T-5129" web/templates/base.html
 
 ## RCA
+
+**Symptom:** reached through in-app navigation, `/bvp` (`d3 is not defined`) and `/terminal` (`io is not defined`) showed nothing; a reload worked. The same class as 1409's empty fabric graph (T-5129).
+
+**Root cause:** `base.html` boosts every link, so navigation is an htmx swap. htmx runs swapped inline scripts immediately but loads swapped external scripts asynchronously, so page code that depends on its own library runs first.
+
+**Why structurally allowed:** the Playwright route tests open every page by direct URL (`page.goto`), which is a full load where scripts run in order. No test navigated the way people do, by clicking.
+
+**Prevention:** a generic rule in `base.html` (a navigation that brings a new external script is a full load), plus browser tests that navigate by clicking a boosted link. Any future page that adds its own library is covered without a per-page fix.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
