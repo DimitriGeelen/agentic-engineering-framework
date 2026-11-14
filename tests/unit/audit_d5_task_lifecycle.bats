@@ -134,3 +134,26 @@ TASKEOF
     [ "$status" -eq 0 ]
     [[ "$output" == *"T-9006"* ]]
 }
+
+@test "T-5133 (832 T-724): the template's Human help comment mentioning '### Agent' does not break partial-complete" {
+    make_task T-9007 human "- [x] built it
+- [x] tested it" "<!-- Criteria requiring human verification.
+     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
+       - [ ] [REVIEWER] Block message names both bypass mechanisms
+       Conversion: this AC should be moved to ### Agent and
+       \`bin/fw reviewer T-XXX\` added to ## Verification.
+-->
+- [ ] [REVIEW] looks right"
+    run run_d5
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"T-9007"* ]]
+}
+
+@test "T-5133: control: an unticked Agent AC still flags with the help comment present" {
+    make_task T-9008 human "- [x] built it
+- [ ] not done yet" "<!-- Conversion: this AC should be moved to ### Agent and -->
+- [ ] [REVIEW] looks right"
+    run run_d5
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"T-9008"* ]]
+}

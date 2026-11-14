@@ -8200,11 +8200,15 @@ def is_partial_complete(path, fm):
     except Exception:
         return False
     body = re.sub(r'^---\n.*?\n---', '', content, count=1, flags=re.DOTALL)
+    # T-5133 (832 T-724): strip HTML comments and match headings only at line start. The
+    # template's Human help comment says "... moved to ### Agent and" mid-line, which opened
+    # a second Agent block and counted the Human box as an unticked Agent AC.
+    body = re.sub(r'<!--.*?-->', '', body, flags=re.DOTALL)
     # T-100189: headings may carry suffixes ("### Human (T-1679 split — ...)")
     # and tasks may hold multiple ### Agent sections — findall + merge, else
     # partial-completes with annotated headings re-flag as anomalies (T-1062).
-    agent_blocks = re.findall(r'### Agent[^\n]*\n(.*?)(?=\n### |\n## |\Z)', body, re.DOTALL)
-    human_blocks = re.findall(r'### Human[^\n]*\n(.*?)(?=\n### |\n## |\Z)', body, re.DOTALL)
+    agent_blocks = re.findall(r'^### Agent[^\n]*\n(.*?)(?=\n### |\n## |\Z)', body, re.DOTALL | re.M)
+    human_blocks = re.findall(r'^### Human[^\n]*\n(.*?)(?=\n### |\n## |\Z)', body, re.DOTALL | re.M)
     if not agent_blocks or not human_blocks:
         return False
     agent_text = "\n".join(agent_blocks)
