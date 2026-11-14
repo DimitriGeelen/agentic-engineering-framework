@@ -54317,3 +54317,21 @@ scan_id: R-83943608
 task_id: T-5034
 payload:
   task_file: .tasks/active/T-5034-access-grants-isgrantfileorancestor-is-f.md
+---
+kind: scan_emitted
+timestamp: '2026-11-14T00:07:03Z'
+scan_id: R-9a80c53f
+task_id: T-5036
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-14T00:07:03Z'
+scan_id: R-9a80c53f
+task_id: T-5036
+payload:
+  task_file: .tasks/active/T-5036-boundary-hook-splits-a-quoted-path-conta.md

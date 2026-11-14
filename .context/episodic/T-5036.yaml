@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5036: Boundary hook splits a quoted path containing a space, so a granted folder whose name has a space cannot be reached by typed commands
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-14T00:07:32Z
+# ============================================================================
+
+task_id: T-5036
+task_name: "Boundary hook splits a quoted path containing a space, so a granted folder whose name has a space cannot be reached by typed commands"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-02T19:49:58Z
+completed: 2026-11-14T00:06:35Z
+duration_days: 12
+updates_count: 3
+first_commit: 2026-11-14T00:31:01+01:00
+last_commit: 2026-11-14T01:06:32+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  13 regression tests for quoted paths with spaces under grants (050's exact command included); not reproduced on HEAD or the 11-01 hook — asked 050 for version and live refusal. 050 confirms no longer reproducible; criteria, verification, RCA
+
+# Key outcomes
+outcomes:
+  - 'the refusal is reproduced in a test, or shown no longer to occur (050''s answer below). 2026-11-14: NOT reproduced. 050''s exact command, with their two create grants, is allowed by both the current hook and the 11-01 hook (`git archive 0baa31aab`), and the parent "106 Kuhlhausen" stays refused. Pattern 4 runs on the quote-blanked copy, and Pattern 4b judges quoted words whole. Asked 050 (msg 290cb3c0) for their vendored version, whether it still refuses, and `ls -ld` of the real path. 050 answered (msg 44501cd1, 2026-11-14): on vendored AEF 1.8.15+756.g3b36a63aa, `cp`, `ls` and `mkdir` on quoted paths under ".../106 Kuhlhausen/0200-SonneStall-Entwicklung/..." all go through. The only refusals are two correct ones: a grep regex pattern read as a path (text since T-5091, 2026-11-12), and `ls -ld` on the ungranted parent. Their verdict: close'
+  - 'the boundary hook judges a single- or double-quoted path containing spaces as one path; typed reads and writes on a granted path with a space are allowed'
+  - 'the same commands on a path with a space outside every grant, a write to a read-level grant, and a never_write path are still refused; an unquoted path with a space (two words) is judged as two words, as bash reads it'
+  - 'every existing boundary and access-grant test still passes (no source change; 32-file sweep green under T-5034)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-unit-t5036_boundary_quoted_space_path.yaml'
+  - '.tasks/active/T-5036-boundary-hook-splits-a-quoted-path-conta.md'
+  - 'tests/unit/t5036_boundary_quoted_space_path.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-14T00:31:01'
+    action: 'T-5036: 13 regression tests for quoted paths with spaces under grants (050''s exact command included); not reproduced on HEAD or the 11-01 hook — asked 050 for version and live refusal'
+  - time: '2026-11-14T01:06:32'
+    action: 'T-5036: 050 confirms no longer reproducible; criteria, verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 16096 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [access-grants]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 16096
+  commits: 3
+  files_changed: 6
+  lines_added: 613
+  lines_removed: 9
+  footprint_refreshed_at: '2026-11-14T00:07:46Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5036-boundary-hook-splits-a-quoted-path-conta.md
+generated_by: context-agent-hybrid

@@ -9,12 +9,12 @@ description: >
   argument is split at the space. Fails closed, but makes such a grant unusable. Feature:
   T-4988/T-4989.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [access-grants]
-components: []
+components: [tests/unit/t5036_boundary_quoted_space_path.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-02T19:49:58Z
-last_update: '2026-11-13T23:45:43Z'
-date_finished:
+last_update: 2026-11-14T00:06:35Z
+date_finished: 2026-11-14T00:06:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -400,3 +400,16 @@ test "$(grep -c '# skip' /tmp/.t5036.out)" -eq 0
 
 ### 2026-11-13T23:25:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-14T00:06:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9a80c53f
+- **Timestamp:** 2026-11-14T00:07:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
