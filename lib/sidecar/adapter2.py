@@ -302,10 +302,38 @@ def send(reports: list[dict], sock_path: str, timeout: float = SEND_TIMEOUT_S) -
                 reply = _exchange(sock_path, encode({k: v for k, v in r.items() if k not in ORDER_FIELDS}),
                                   timeout)
             replies.append(reply)
+            _log_reply(r, reply)
         except Exception:
             _log_error(f"send {r.get('event')}")
             replies.append(None)
     return replies
+
+
+_REPLY_LOG_CAP = 512 * 1024
+_REPLY_FIELDS = ("ok", "dropped", "origin_checked", "basis_checked")
+
+
+def _log_reply(report: dict, reply) -> None:
+    """T-5054 (010 msg d6e77987): what the meter answered each report — its origin verdict is
+    in the REPLY (`origin_checked`, `basis_checked`), not in the status JSON. Fields only, never
+    prompt text; one rotation past _REPLY_LOG_CAP keeps the file bounded. Never raises."""
+    try:
+        from datetime import datetime, timezone
+        d = _project_root() / ".context" / "sidecar"
+        p = d / "adapter2-replies.jsonl"
+        if p.exists() and p.stat().st_size > _REPLY_LOG_CAP:
+            p.replace(d / "adapter2-replies.jsonl.1")
+        row = {"ts": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+               "event": report.get("event"), "session": str(report.get("session_id") or "")[:36]}
+        if isinstance(reply, dict):
+            row.update({k: reply[k] for k in _REPLY_FIELDS if k in reply})
+            why = reply.get("ignored") or reply.get("error")
+            if why:
+                row["why"] = str(why)[:160]
+        with open(p, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(row) + "\n")
+    except Exception:
+        pass
 
 
 def checked_origin(reports: list[dict], replies: list[dict | None]) -> str:

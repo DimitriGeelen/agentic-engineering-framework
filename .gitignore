@@ -154,6 +154,9 @@ tests/unit/_bvp_cli_imported*.py
 .context/sidecar/awaiting-ack.jsonl
 .context/sidecar/inbox-state.json
 .context/sidecar/e2e/*-prompt.md
+# T-5054: adapter/2 runtime logs (hook-input key names; the meter's reply fields)
+.context/sidecar/adapter2-hook-keys.jsonl
+.context/sidecar/adapter2-replies.jsonl*
 docs/reports/T-3239-continuous-loop-demo/.livefire-run-copy.sh
 
 # T-3627: rotated Watchtower logs (watchtower_rotate_log) are local evidence, not history
