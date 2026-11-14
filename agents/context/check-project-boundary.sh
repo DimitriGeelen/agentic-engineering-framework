@@ -1174,6 +1174,15 @@ READ_ALLOWED_PREFIXES = (
 _TL_RT = os.path.realpath(os.environ.get('TERMLINK_RUNTIME_DIR', '') or '/')
 READ_ALLOWED_PREFIXES += ('/root/.termlink/',) + ((_HOME + '/.termlink/',) if _HOME else ()) \
     + ((_TL_RT + '/',) if 'termlink' in os.path.basename(_TL_RT) else ())
+# T-5134 (dimitri-mint-dev T-226): CLAUDE_CODE_TMPDIR moves Claude Code's own session
+# scratchpad and task-output files from /tmp/claude-<uid>/ to <dir>/claude-<uid>/. Only
+# that per-account subtree becomes readable, never the directory itself; a relative or
+# empty value, or one that resolves to /, adds nothing.
+_CC_TMP = os.environ.get('CLAUDE_CODE_TMPDIR', '')
+if _CC_TMP.startswith('/'):
+    _CC_TMP = os.path.realpath(_CC_TMP)
+    if _CC_TMP != '/':
+        READ_ALLOWED_PREFIXES += (os.path.join(_CC_TMP, 'claude-%d' % os.getuid()) + '/',)
 # Exact-path allowlist (no trailing slash test).
 READ_ALLOWED_EXACT = {
     project_root,
