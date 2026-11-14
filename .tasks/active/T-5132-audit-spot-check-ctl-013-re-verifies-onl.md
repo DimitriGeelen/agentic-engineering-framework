@@ -101,10 +101,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] CTL-013 records each checked task's id, date and verdict in a ledger under `.context/audits/`, and prints a coverage line (`checked k of N completed`)
-- [ ] a task whose last verdict was WARN is re-checked on later runs even after it leaves the latest-3 window, up to a cap; when it passes, the ledger shows PASS and it leaves the re-check set
-- [ ] an earlier WARN that is not re-checked in a run (cap reached, file gone) is named in the coverage line with its last-checked date and verdict, as a WARN, never silently
-- [ ] the existing CTL-013 tests (`audit_ctl013_skip_nested_audit.bats`) still pass; new tests cover the window, the re-check and the coverage line; vendored copy synced
+- [x] CTL-013 records each checked task's id, date and verdict in a ledger under `.context/audits/` (`ctl013-spotcheck.json`), and prints a coverage line. Live run here: `[PASS] CTL-013 coverage: checked 2 of 4177 completed`
+- [x] a task whose last verdict was WARN is re-checked on later runs even after it leaves the latest-3 window, up to a cap (`CTL013_RECHECK_CAP`, 3); when it passes, the ledger shows PASS and it leaves the re-check set (tests 2-3)
+- [x] an earlier WARN that is not re-checked in a run (cap reached, file gone) is named in the coverage line with its last-checked date and verdict, as a WARN, never silently (test 4)
+- [x] the existing CTL-013 tests (`audit_ctl013_skip_nested_audit.bats`) still pass (the exact-output control now reads the per-task line and the coverage line); `tests/unit/t5132_ctl013_coverage.bats` 4/4; 181-file audit.sh sweep green; vendored copy synced (f9228fee5)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,8 +290,19 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t5132_ctl013_coverage.bats tests/unit/audit_ctl013_skip_nested_audit.bats > /tmp/.t5132.out 2>&1 && ! grep -q "^not ok" /tmp/.t5132.out
+test "$(grep -c '# skip' /tmp/.t5132.out)" -eq 0
+bin/fw vendor self --check --task T-5132
 
 ## RCA
+
+**Symptom:** at 832, a task whose verification re-run failed stopped being reported once unrelated tasks closed, which read as "repaired".
+
+**Root cause:** CTL-013 picked the 3 most recently modified completed tasks with no memory between runs. It could not say what it skipped, and a failure left its view purely through the passage of newer closes.
+
+**Why structurally allowed:** a fixed-size, recency-based sample was taken as a health signal, but it only reported on its sample and never on its coverage.
+
+**Prevention:** a ledger of each check, earlier failures re-checked until they pass (capped), and a coverage line on every run that names any earlier failure it did not re-check. Tests pin the window, the re-check, the recovery and the named gap.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
