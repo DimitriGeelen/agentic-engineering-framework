@@ -54407,3 +54407,75 @@ scan_id: R-e6a6d79a
 task_id: T-5008
 payload:
   task_file: .tasks/active/T-5008-review-seats-can-signal-processes-they-d.md
+---
+kind: scan_emitted
+timestamp: '2026-11-14T10:36:35Z'
+scan_id: R-24ed6ea7
+task_id: T-5126
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-14T10:36:35Z'
+scan_id: R-24ed6ea7
+task_id: T-5126
+payload:
+  task_file: .tasks/active/T-5126-watchtower--arcs-and-approvals-take-40-1.md
+---
+kind: scan_emitted
+timestamp: '2026-11-14T11:16:19Z'
+scan_id: R-49083dd9
+task_id: T-5128
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-14T11:16:19Z'
+scan_id: R-49083dd9
+task_id: T-5128
+payload:
+  task_file: .tasks/active/T-5128-approvals-re-parses-every-active-tasks-a.md
+---
+kind: scan_emitted
+timestamp: '2026-11-14T11:39:10Z'
+scan_id: R-3665dabf
+task_id: T-5129
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-14T11:39:10Z'
+scan_id: R-3665dabf
+task_id: T-5129
+payload:
+  task_file: .tasks/active/T-5129-fabricgraph-shows-no-usable-picture-on-f.md
+---
+kind: scan_emitted
+timestamp: '2026-11-14T16:15:32Z'
+scan_id: R-dd12c7d0
+task_id: T-5133
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-14T16:15:32Z'
+scan_id: R-dd12c7d0
+task_id: T-5133
+payload:
+  task_file: .tasks/active/T-5133-audit-d5-flags-genuinely-partial-complet.md
