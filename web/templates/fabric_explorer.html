@@ -417,7 +417,8 @@
   </div>
 </div>
 
-<script>
+{# T-5129: inert until d3 is loaded — see the loader at the end of this template. #}
+<script type="text/fe-deferred" id="fe-main">
 // ===== DATA (injected from Flask — derived from .fabric/components/*.yaml) =====
 const layers = {{ layers | tojson }};
 
@@ -1524,5 +1525,27 @@ requestAnimationFrame(() => {
   _refreshCanvasDims();
   buildSubsystemGraph();
 });
+</script>
+<script>
+// T-5129 (1409): opened through the fabric page's htmx link, this template is swapped into the
+// page, and htmx loads the d3 <script src> above ASYNCHRONOUSLY while it runs inline scripts at
+// once, so the explorer ran before d3 existed ("d3 is not defined", empty graph; a reload, a
+// full page load, worked). The explorer code is inert above and runs here, as an ordinary
+// global script (its inline onclick handlers need its names global), once d3 is present.
+(function () {
+  function run() {
+    var src = document.getElementById('fe-main');
+    if (!src || src.dataset.ran) return;
+    src.dataset.ran = '1';
+    var s = document.createElement('script');
+    s.textContent = src.textContent;
+    document.body.appendChild(s);
+  }
+  if (window.d3) { run(); return; }
+  var tag = document.createElement('script');
+  tag.src = "{{ url_for('static', filename='d3.v7.min.js') }}";
+  tag.onload = run;
+  document.head.appendChild(tag);
+})();
 </script>
 </div>

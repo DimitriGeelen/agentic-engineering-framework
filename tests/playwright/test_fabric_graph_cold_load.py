@@ -71,3 +71,29 @@ class TestFabricGraphColdLoad:
         # pageerror, so it shouldn't appear here — but guard anyway).
         real_errors = [e for e in errors if "favicon" not in e.lower()]
         assert not real_errors, f"JS errors on cold load: {real_errors}"
+
+
+class TestFabricGraphHtmxOpen:
+    """T-5129 (1409): opened through the fabric page's htmx link, the explorer ran before htmx
+    had loaded d3 ("d3 is not defined", empty graph; only a reload drew it). The explorer code
+    now waits for d3 and runs as a global script, so the htmx open draws like a full load."""
+
+    def _open_via_htmx(self, page: Page):
+        errors = []
+        page.on("pageerror", lambda e: errors.append(str(e)))
+        page.goto(_url("/fabric"))
+        page.wait_for_load_state("domcontentloaded")
+        page.evaluate("() => htmx.ajax('GET', '/fabric/graph', {target: '#content', swap: 'innerHTML'})")
+        page.wait_for_function(
+            "() => document.querySelectorAll('#graph-area svg circle').length > 0", timeout=30000)
+        return errors
+
+    def test_htmx_open_draws_nodes_without_errors(self, page: Page):
+        errors = self._open_via_htmx(page)
+        assert not [e for e in errors if "d3" in e], errors
+
+    def test_inline_handlers_still_find_their_functions(self, page: Page):
+        self._open_via_htmx(page)
+        kinds = page.evaluate(
+            "() => ['expandAllNodes', 'collapseAllNodes', 'closeAllTabs'].map(f => typeof window[f])")
+        assert kinds == ["function", "function", "function"]

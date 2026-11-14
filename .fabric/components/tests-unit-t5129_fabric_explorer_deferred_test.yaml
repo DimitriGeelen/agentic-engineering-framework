@@ -1,0 +1,21 @@
+id: tests/unit/t5129_fabric_explorer_deferred_test.py
+name: t5129_fabric_explorer_deferred_test
+type: script
+subsystem: tests
+location: tests/unit/t5129_fabric_explorer_deferred_test.py
+tags: []
+
+purpose: "T-5129: static guard for the fabric explorer's start-up."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-14
+created_by: unknown
