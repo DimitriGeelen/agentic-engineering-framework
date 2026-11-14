@@ -50,12 +50,30 @@ teardown() {
 @test "session-end.sh is NOT registered — T-1459 decided reference-only" {
     # G-016 was a handover commit storm. Registering this handler re-opens it, and
     # the decision to leave it parked needs something that fails when reversed.
+    # T-5054: the SessionEnd EVENT may carry other handlers — the TermLink adapter2 report
+    # (`fw hook sidecar-adapter2 session-end`) only tells the meter the session ended and
+    # commits nothing. What T-1459 parked is session-end.sh itself: refused by hook name
+    # (`fw hook session-end`) or by path, on any event.
     run python3 -c "
-import json
+import json, re
 d = json.load(open('$SETTINGS'))
-hooks = d.get('hooks', {})
-print('PRESENT' if 'SessionEnd' in hooks else 'ABSENT')"
+cmds = [h.get('command', '') for ev in d.get('hooks', {}).values() for m in ev for h in m.get('hooks', [])]
+bad = [c for c in cmds if 'session-end.sh' in c or re.search(r'\bfw hook session-end(\s|$)', c)]
+print('PRESENT: ' + '; '.join(bad) if bad else 'ABSENT')"
     [ "$output" = "ABSENT" ]
+}
+
+@test "control: the session-end.sh check fires when it IS registered (by name or path)" {
+    for cmd in '/x/bin/fw hook session-end' '/x/agents/context/session-end.sh'; do
+        printf '{"hooks":{"SessionEnd":[{"matcher":"","hooks":[{"type":"command","command":"%s"}]}]}}' "$cmd" > "$TMP/s.json"
+        run python3 -c "
+import json, re
+d = json.load(open('$TMP/s.json'))
+cmds = [h.get('command', '') for ev in d.get('hooks', {}).values() for m in ev for h in m.get('hooks', [])]
+bad = [c for c in cmds if 'session-end.sh' in c or re.search(r'\bfw hook session-end(\s|$)', c)]
+print('PRESENT' if bad else 'ABSENT')"
+        [ "$output" = "PRESENT" ]
+    done
 }
 
 @test "the handler's header names the precondition, not just a task number" {
