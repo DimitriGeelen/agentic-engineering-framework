@@ -379,7 +379,7 @@ Cold `/tasks?view=list` in a fresh process is also slow (28.6 s profiled: 19.2 s
 
 **Evidence:**
 - Task list: page 1 is 864 KB instead of 18.9 MB and shows "Showing 1–200 of 5119"; every task is reachable through the pager (`tests/web/test_t5136_task_list_pager.py`, 5/5)
-- Cold times in a fresh process: `/search` 58 s profiled → 3.0 s; landing page `/` 30 s profiled → 7.4 s; fabric cards 3.4 s → 0.6 s; identical parse results across all task, episodic and card files
+- Cold times in a fresh process: the search page (http://192.168.10.107:3000/search) 58 s profiled → 3.0 s; the landing page (http://192.168.10.107:3000/) 30 s profiled → 7.4 s; fabric cards 3.4 s → 0.6 s; identical parse results across all task, episodic and card files
 - `tests/playwright/test_response_times.py` 27/27 and `tests/playwright/test_task_panel.py` 5/5 (2026-11-14 23:03)
 - Shipped to 1409 in v1.8.16-be.50 (except the fabric change, which is after the tag)
 
