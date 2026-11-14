@@ -25,6 +25,9 @@ COMP_DIR = os.path.join(FABRIC_DIR, "components")
 
 # mtime-based cache for component loading
 _comp_cache = {"mtime": 0, "data": []}
+# T-5136: libyaml's C loader (same safe subset). The cold /fabric parse of every card
+# took 14.4 of 16 s in pure-Python safe_load (1,738 cards, 2026-11-14).
+_CARD_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 
 
 def _load_components():
@@ -39,7 +42,7 @@ def _load_components():
     for path in sorted(glob.glob(os.path.join(COMP_DIR, "*.yaml"))):
         try:
             with open(path) as f:
-                data = yaml.safe_load(f)
+                data = yaml.load(f, Loader=_CARD_LOADER)
             if data:
                 data["_card_file"] = os.path.basename(path)
                 components.append(data)
