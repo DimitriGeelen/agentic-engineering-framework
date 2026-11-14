@@ -1,0 +1,21 @@
+id: tests/unit/t5031_signed_grants.bats
+name: t5031_signed_grants
+type: script
+subsystem: tests
+location: tests/unit/t5031_signed_grants.bats
+tags: []
+
+purpose: "T-5031 (operator ruling 2026-11-14, \"Signed commit\"): once policy/grants-allowed-signers has been committed, a grant counts only from an SSH-signed commit by a listed key."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-14
+created_by: unknown

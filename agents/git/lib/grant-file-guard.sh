@@ -19,11 +19,12 @@
 #
 # Usage (from a hook): bash grant-file-guard.sh   → exit 0 allow, 1 refuse
 GRANT_FILE="policy/access-grants.yaml"
+SIGNERS_FILE="policy/grants-allowed-signers"   # T-5031: who may sign grant changes
 
 [ "${CLAUDECODE:-}" = "1" ] || exit 0
 
 # --no-renames: a rename away from the grant file is a deletion of it, and must show.
-changed=$(git diff --cached --no-renames --name-only -- "$GRANT_FILE" 2>/dev/null) || {
+changed=$(git diff --cached --no-renames --name-only -- "$GRANT_FILE" "$SIGNERS_FILE" 2>/dev/null) || {
     echo "grant-file-guard: cannot read the staged changes — refusing (fail closed, T-5031)" >&2
     exit 1
 }
@@ -31,15 +32,17 @@ changed=$(git diff --cached --no-renames --name-only -- "$GRANT_FILE" 2>/dev/nul
 
 cat >&2 <<'MSG'
 
-  ACCESS GRANTS — this commit changes policy/access-grants.yaml (T-5031).
+  ACCESS GRANTS — this commit changes policy/access-grants.yaml or
+  policy/grants-allowed-signers (T-5031).
 
-  The grant file is the operator's: it decides which outside paths an agent may reach,
-  and a commit is what makes it count. A commit under agent control (CLAUDECODE=1) may
-  not change it.
+  Both are the operator's: they decide which outside paths an agent may reach, and a
+  commit is what makes them count. A commit under agent control (CLAUDECODE=1) may not
+  change them.
 
-  Ask the operator to make the change and commit it themselves with the trailer
-  'Grants-Change: operator' (from their own shell or a runme they start).
-  To drop the file from THIS commit:  git restore --staged policy/access-grants.yaml
+  Ask the operator to make the change and commit it themselves, signed (git commit -S)
+  with the trailer 'Grants-Change: operator', from their own shell.
+  To drop the files from THIS commit:
+    git restore --staged policy/access-grants.yaml policy/grants-allowed-signers
 
 MSG
 exit 1

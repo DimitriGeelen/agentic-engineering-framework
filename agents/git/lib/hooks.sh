@@ -673,7 +673,7 @@ fi
 GRANT_GUARD="$FRAMEWORK_ROOT/agents/git/lib/grant-file-guard.sh"
 if [ -f "$GRANT_GUARD" ]; then
     bash "$GRANT_GUARD" || exit 1
-elif [ "${CLAUDECODE:-}" = "1" ] && git diff --cached --no-renames --name-only -- policy/access-grants.yaml 2>/dev/null | grep -q .; then
+elif [ "${CLAUDECODE:-}" = "1" ] && git diff --cached --no-renames --name-only -- policy/access-grants.yaml policy/grants-allowed-signers 2>/dev/null | grep -q .; then
     echo "ACCESS GRANTS: grant-file guard missing ($GRANT_GUARD) and this agent commit changes policy/access-grants.yaml — refused (T-5031)." >&2
     exit 1
 fi
@@ -953,7 +953,7 @@ fi
 GRANT_GUARD="$FRAMEWORK_ROOT/agents/git/lib/grant-file-guard.sh"
 if [ -f "$GRANT_GUARD" ]; then
     bash "$GRANT_GUARD" || exit 1
-elif [ "${CLAUDECODE:-}" = "1" ] && git diff --cached --no-renames --name-only -- policy/access-grants.yaml 2>/dev/null | grep -q .; then
+elif [ "${CLAUDECODE:-}" = "1" ] && git diff --cached --no-renames --name-only -- policy/access-grants.yaml policy/grants-allowed-signers 2>/dev/null | grep -q .; then
     echo "ACCESS GRANTS: grant-file guard missing ($GRANT_GUARD) and this agent merge changes policy/access-grants.yaml — refused (T-5031)." >&2
     exit 1
 fi

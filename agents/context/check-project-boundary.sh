@@ -106,11 +106,13 @@ except:
     RESOLVED=$(realpath -m "$FILE_PATH" 2>/dev/null || echo "$FILE_PATH")
 
     # T-4988: the operator-owned grant file is never written by the agent.
-    if [ "$RESOLVED" = "$(realpath -m "$PROJECT_ROOT/policy/access-grants.yaml")" ]; then
+    # T-5031: nor the list of keys that may sign grant changes.
+    if [ "$RESOLVED" = "$(realpath -m "$PROJECT_ROOT/policy/access-grants.yaml")" ] \
+        || [ "$RESOLVED" = "$(realpath -m "$PROJECT_ROOT/policy/grants-allowed-signers")" ]; then
         echo "" >&2
-        echo "  ACCESS GRANTS — policy/access-grants.yaml is the operator's file (T-4988)." >&2
-        echo "  The agent never writes it. Ask the operator to change it and commit it with" >&2
-        echo "  the trailer 'Grants-Change: operator'; only the committed version counts." >&2
+        echo "  ACCESS GRANTS — ${RESOLVED#"$PROJECT_ROOT"/} is the operator's file (T-4988, T-5031)." >&2
+        echo "  The agent never writes it. Ask the operator to change it and commit it signed" >&2
+        echo "  (git commit -S) with the trailer 'Grants-Change: operator'." >&2
         exit 2
     fi
 
