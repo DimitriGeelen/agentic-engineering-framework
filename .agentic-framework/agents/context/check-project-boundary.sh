@@ -936,6 +936,116 @@ if _GRANT_CREATE:
                       f'no archive extraction under an access grant)')
                 sys.exit(0)
 
+
+# T-5032 (ring20-dashboard a14cb4c1, HIGH): no typed command creates or carries a LINK into a
+# create grant. A typed write THROUGH a link is already judged at its resolved path (T-4989),
+# but the link itself would let anything that follows it reach outside through a granted-looking
+# path. Quote-aware words from the RAW command; relative paths resolved against the command's
+# cwd (a `cd` into the grant does not hide the target). Refused when a segment's DESTINATION is
+# in a create grant and: the verb is ln/link; cp -s/-l; or cp (link-preserving: -a -d -P -r -R),
+# mv, or rsync (-a/-l without -L/--copy-links/--no-links) carries a source that is or contains
+# a link. Plain copies and dereferencing copies (cp -L, rsync -L) stay allowed.
+_LINK_WALK_CAP = 20000
+
+
+def _t5032_has_link(p):
+    """True when `p` is a symlink, or a directory with one inside (bounded walk; over the cap
+    counts as True — fail closed)."""
+    if os.path.islink(p):
+        return True
+    if not os.path.isdir(p):
+        return False
+    n = 0
+    for _d, dirs, files in os.walk(p, followlinks=False):
+        for name in dirs + files:
+            n += 1
+            if n > _LINK_WALK_CAP or os.path.islink(os.path.join(_d, name)):
+                return True
+    return False
+
+
+def _t5032_in_grant(p):
+    try:
+        sys.path.insert(0, os.environ.get('_BOUNDARY_FW_LIB', ''))
+        import access_grants
+    except Exception:
+        return False
+    cands = {os.path.normpath(p), os.path.join(os.path.realpath(os.path.dirname(p) or '/'),
+                                               os.path.basename(p))}
+    return any(access_grants._under(c, g) for c in cands for g in _GRANT_CREATE)
+
+
+def _t5032_reason():
+    import shlex
+    cwd = os.environ.get('_BOUNDARY_CWD', '') or project_root
+    for seg in re.split(r'[;&|\n()]', _BOUNDARY_CMD_RAW):
+        try:
+            words = shlex.split(seg)
+        except ValueError:
+            continue   # unbalanced quotes: the other passes judge it
+        while words and (re.match(r'^[A-Za-z_][A-Za-z0-9_]*=', words[0])
+                         or words[0].rsplit('/', 1)[-1] in _WRAPPERS):
+            words = words[1:]
+        if not words:
+            continue
+        verb = words[0].rsplit('/', 1)[-1]
+        if verb not in ('ln', 'link', 'cp', 'mv', 'rsync'):
+            continue
+        opts, paths, dest_opt, after_dd, i = [], [], None, False, 1
+        while i < len(words):
+            w = words[i]
+            if not after_dd and w == '--':
+                after_dd = True
+            elif not after_dd and w in ('-t', '--target-directory') and i + 1 < len(words):
+                dest_opt = words[i + 1]
+                i += 1
+            elif not after_dd and w.startswith('--target-directory='):
+                dest_opt = w.split('=', 1)[1]
+            elif not after_dd and w.startswith('-') and w != '-':
+                opts.append(w)
+            else:
+                paths.append(w)
+            i += 1
+        ab = lambda x: os.path.normpath(os.path.join(cwd, os.path.expanduser(x)))
+        if dest_opt is not None:
+            dest, srcs = ab(dest_opt), [ab(x) for x in paths]
+        elif len(paths) >= 2:
+            dest, srcs = ab(paths[-1]), [ab(x) for x in paths[:-1]]
+        elif len(paths) == 1 and verb in ('ln', 'link'):
+            dest, srcs = cwd, [ab(paths[0])]       # `ln -s X` links into the cwd
+        else:
+            continue
+        if not _t5032_in_grant(dest):
+            continue
+        short = ''.join(o[1:] for o in opts if not o.startswith('--'))
+        long_ = {o.split('=', 1)[0] for o in opts if o.startswith('--')}
+        if verb in ('ln', 'link'):
+            return f'{verb} into a granted path'
+        if verb == 'cp':
+            if set(short) & set('sl') or long_ & {'--symbolic-link', '--link'}:
+                return 'cp -s/-l (link creation) into a granted path'
+            preserving = (set(short) & set('adPrR') or long_ & {'--archive', '--no-dereference',
+                                                               '--recursive', '--preserve'})
+            if preserving and 'L' not in short and '--dereference' not in long_ \
+                    and any(_t5032_has_link(s) for s in srcs):
+                return 'cp of a link (copied as a link) into a granted path'
+        if verb == 'mv' and any(_t5032_has_link(s) for s in srcs):
+            return 'mv of a link into a granted path'
+        if verb == 'rsync':
+            keeps = set(short) & set('al') or long_ & {'--archive', '--links'}
+            derefs = 'L' in short or long_ & {'--copy-links', '--no-links', '--no-l'}
+            if keeps and not derefs and any(_t5032_has_link(s) for s in srcs):
+                return 'rsync copying links as links into a granted path (add -L or --no-links)'
+    return ''
+
+
+if _GRANT_CREATE:
+    _t5032 = _t5032_reason()
+    if _t5032:
+        print(f'BLOCKED|{_t5032} is refused (T-5032: no links under an access grant — '
+              f'a link would let anything that follows it reach outside the grant)')
+        sys.exit(0)
+
 for target_file in (list(write_ops.findall(command)) + list(_tee_targets(command))
                     + [t for t in _write_verb_targets(command) if t.startswith('/')]):
     if target_file.startswith(('/tmp/', '/dev/', '/etc/cron.d/')) or _in_claude_zone(target_file):
