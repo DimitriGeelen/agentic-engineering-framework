@@ -1,0 +1,21 @@
+id: tests/unit/t5008_seat_signal_guard_test.py
+name: t5008_seat_signal_guard_test
+type: script
+subsystem: tests
+location: tests/unit/t5008_seat_signal_guard_test.py
+tags: []
+
+purpose: "T-5008 criterion 3 (ring20-dashboard b2be4058): a review seat may not signal processes by name."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-14
+created_by: unknown

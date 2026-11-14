@@ -1,3 +1,13 @@
 {
-  "crossSessionInbound": "refuse"
+  "crossSessionInbound": "refuse",
+  "permissions": {
+    "deny": [
+      "Bash(pkill:*)",
+      "Bash(killall:*)",
+      "Bash(kill $(pgrep:*)",
+      "Bash(kill -9 $(pgrep:*)",
+      "Bash(kill $(pidof:*)",
+      "Bash(kill -9 $(pidof:*)"
+    ]
+  }
 }
