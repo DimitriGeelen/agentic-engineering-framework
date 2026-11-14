@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5135: EWCR S1 (operator authorised 2026-11-14): fetch 832's two 0503 review documents as raw bytes, verify against their published sha256, and author the per-finding disposition tables
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-14T19:30:57Z
+# ============================================================================
+
+task_id: T-5135
+task_name: "EWCR S1 (operator authorised 2026-11-14): fetch 832's two 0503 review documents as raw bytes, verify against their published sha256, and author the per-finding disposition tables"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-14T17:20:32Z
+completed: 2026-11-14T19:29:42Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-14T19:03:58+01:00
+last_commit: 2026-11-14T20:29:39+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context and criteria — the two 0503 documents' sha256 and sizes as 832 confirmed them (c02072ea); waiting on 832's operator to release the files. both 0503 documents received from xfer-832-bpmn as raw bytes (offsets 6-15, 16-20); sha256 and sizes match 832's published values. correction — the received files are the dossier and roadmap; the DeepSeek and Mistral review documents S1 names are still to come (criterion 1 unticked). the review documents were already in the repo (T-3389, docs/research/executable-workflow/reviews); remove this evening's duplicate copies, point criterion 1 and verification at the originals. DeepSeek and Mistral per-finding disposition tables (8 findings: 5 accepted, 2 already handled, 1 deferred to Arc 6, 0 rejected); S1 marked decided in the drive-7 handback. read-back sent to 832; all criteria ticked
+
+# Key outcomes
+outcomes:
+  - 'both 0503 review documents are available as raw bytes, each with its sha256 matching 832''s published values (recorded in Context): already in this repo since 2026-09-24 (T-3389, `docs/research/executable-workflow/reviews/`, PROVENANCE.md), re-hashed 2026-11-14'
+  - 'a disposition table per review (DeepSeek, Mistral) lists every finding with a disposition (accepted / out of scope / already handled / rejected, with a reason and, where accepted, the owning task), in `docs/reports/EWCR/`'
+  - 'the read-back 832 asked for is sent on the 832-ewcr-progress conversation, naming both tables, and S1 in the drive-7 handback is marked decided (operator ruling 2026-11-14)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # 1 decision(s) below are recorded in the register (.context/project/decisions.yaml) for this task but absent from the task file's Decisions section (T-4193).
+  - decision: 'D-968'
+    chose: 'EWCR S1: AEF fetches 832''s two 0503 review documents as input (file transfer or raw bytes only, never the 3001 HTML viewer, G-086; verified against 832''s published sha256) and authors the per-finding disposition tables'
+    rationale: 'Operator answer 2026-11-14: ''Authorise both (Recommended)''. The documents exist and their hashes are published, so an exclusion would be evidence of nothing; unblocks the arc-019 Arc 0 exit gate.'
+    id: 'D-968'
+    source: register
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5135-ewcr-s1-operator-authorised-2026-11-14-f.md'
+  - 'docs/reports/EWCR/T-5135-deepseek-mistral-dispositions.md'
+  - 'docs/reports/EWCR/drive-7-procasfit-handback.md'
+  - 'docs/reports/EWCR/inputs/SHA256SUMS'
+  - 'docs/reports/EWCR/inputs/architecture-c9070637.md'
+  - 'docs/reports/EWCR/inputs/roadmap-5be23719.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-14T19:03:58'
+    action: 'T-5135: context and criteria — the two 0503 documents'' sha256 and sizes as 832 confirmed them (c02072ea); waiting on 832''s operator to release the files'
+  - time: '2026-11-14T20:06:29'
+    action: 'T-5135: both 0503 documents received from xfer-832-bpmn as raw bytes (offsets 6-15, 16-20); sha256 and sizes match 832''s published values'
+  - time: '2026-11-14T20:21:38'
+    action: 'T-5135: correction — the received files are the dossier and roadmap; the DeepSeek and Mistral review documents S1 names are still to come (criterion 1 unticked)'
+  - time: '2026-11-14T20:26:17'
+    action: 'T-5135: the review documents were already in the repo (T-3389, docs/research/executable-workflow/reviews); remove this evening''s duplicate copies, point criterion 1 and verification at the originals'
+  - time: '2026-11-14T20:29:05'
+    action: 'T-5135: DeepSeek and Mistral per-finding disposition tables (8 findings: 5 accepted, 2 already handled, 1 deferred to Arc 6, 0 rejected); S1 marked decided in the drive-7 handback'
+  - time: '2026-11-14T20:29:39'
+    action: 'T-5135: read-back sent to 832; all criteria ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 129 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 129
+  commits: 7
+  files_changed: 9
+  lines_added: 2036
+  lines_removed: 1418
+  footprint_refreshed_at: '2026-11-14T19:31:26Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5135-ewcr-s1-operator-authorised-2026-11-14-f.md
+generated_by: context-agent-hybrid
