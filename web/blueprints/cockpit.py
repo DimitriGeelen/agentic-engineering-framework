@@ -56,6 +56,7 @@ def get_scan_age(scan_data: dict) -> str:
 # re-walks ALL files but only re-reads + re-parses those whose mtime changed
 # (typically 0). Result: cold ~800ms, warm <10ms.
 _HUMAN_VERIFY_CACHE: dict[str, tuple[int, dict | None]] = {}
+_FM_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)  # T-5136
 
 
 def _parse_human_verify_from_path(fn: Path) -> dict | None:
@@ -77,7 +78,10 @@ def _parse_human_verify_from_path(fn: Path) -> dict | None:
     if text.startswith("---"):
         try:
             end = text.index("---", 3)
-            fm = yaml.safe_load(text[3:end]) or {}
+            # T-5136: libyaml's C loader (same safe subset). This parse runs for every
+            # task file on the landing page's first build: 20 of its 30 cold seconds
+            # (939 files, 2026-11-14) went to pure-Python safe_load here.
+            fm = yaml.load(text[3:end], Loader=_FM_LOADER) or {}
             body = text[end + 3:]
         except Exception as e:
             logger.warning("Failed to parse frontmatter in %s: %s", fn, e)

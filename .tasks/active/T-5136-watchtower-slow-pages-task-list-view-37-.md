@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-14T19:49:31Z
-last_update: '2026-11-14T20:15:47Z'
+last_update: 2026-11-14T20:24:39Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -325,6 +325,8 @@ Cold `/tasks?view=list` in a fresh process is also slow (28.6 s profiled: 19.2 s
 1. The list view is paged at 200 rows (`LIST_PAGE_SIZE`), with Previous/Next links that keep every filter and the sort. Page 1 is now 842 KB.
 2. The tag parse uses libyaml's `CSafeLoader`, the pattern already in `web/shared.py`: 2.3 s instead of 21.6 s for all 4,180 files, with identical tags. Cold `/search` is now 3.0 s.
 3. Bare `/search` joins the startup warm-up, so the first visitor no longer pays even that.
+
+**Added after 1409's report (msg 6012caf6, 2026-11-14 ~20:20Z):** 1409's landing page `/` does not answer within 8 s at 4,080 active tasks, while their own API routes do. Our cold `/`, profiled: 30.0 s, of which 20.4 s is `cockpit._parse_human_verify_from_path` parsing task frontmatter with pure-Python `yaml.safe_load` (939 files). Same fix, C loader: cold `/` is now 7.4 s; the parse gives identical entries for all 5,119 task files (481 with open Human criteria). Regression test: `test_landing_page_task_parse_uses_the_c_loader`. 1409's own profile is requested, to confirm that their slowness has the same cause.
 
 **Why it went unnoticed:** `test_response_times` caught `/search`, but only as one of many pre-existing reds. Nothing measured the size of the list page; its server time looked fine.
 

@@ -46,6 +46,27 @@ def test_uses_the_c_loader_when_present(tmp_path, monkeypatch):
     assert seen == [yaml.CSafeLoader]
 
 
+def test_landing_page_task_parse_uses_the_c_loader(tmp_path, monkeypatch):
+    """T-5136: the cockpit's human-verify parse runs for every task file on the landing
+    page's first build (20 of 30 cold seconds in pure Python, 2026-11-14)."""
+    if not getattr(yaml, "__with_libyaml__", False):
+        pytest.skip("libyaml not built into this PyYAML")
+    from web.blueprints import cockpit
+    f = tmp_path / "T-9997-x.md"
+    f.write_text("---\nid: T-9997\nname: x\nstatus: started-work\nowner: human\n---\n"
+                 "## Acceptance Criteria\n### Human\n- [ ] [REVIEW] look at it\n")
+    seen = []
+    real = yaml.load
+
+    def spy(stream, Loader):
+        seen.append(Loader)
+        return real(stream, Loader=Loader)
+
+    monkeypatch.setattr(yaml, "load", spy)
+    cockpit._parse_human_verify_from_path(f)
+    assert yaml.CSafeLoader in seen and yaml.SafeLoader not in seen
+
+
 def test_bad_yaml_still_gives_no_tags(tmp_path):
     f = tmp_path / "T-9998.yaml"
     f.write_text("tags: [unclosed\n")
