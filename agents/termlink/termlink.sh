@@ -1798,6 +1798,11 @@ WATCHDOG_KILL_GRACE="${WATCHDOG_KILL_GRACE:-10}"
 _fw_watchdog() {
     local pid="$1" i=0 c
     sleep "$TIMEOUT"
+    # T-5008 review: record the timeout BEFORE signalling. A worker that exits at once on TERM
+    # let run.sh read "no timed_out marker" first and close the run as an ordinary exit.
+    kill -0 "$pid" 2>/dev/null || return 0
+    : > "$WDIR/timed_out"
+    echo "TIMEOUT" >> "$WDIR/stderr.log"
     # T-5008: a namespaced seat's recorded PID is `unshare`, which ignores TERM; pass the TERM to
     # its own direct child (by PID, never by pattern). The KILL below ends unshare, and
     # --kill-child then ends the whole namespace.
@@ -1805,8 +1810,6 @@ _fw_watchdog() {
         for c in $(cat "/proc/$pid/task/$pid/children" 2>/dev/null); do kill "$c" 2>/dev/null; done
     fi
     kill "$pid" 2>/dev/null || return 0
-    : > "$WDIR/timed_out"
-    echo "TIMEOUT" >> "$WDIR/stderr.log"
     while [ "$i" -lt "$WATCHDOG_KILL_GRACE" ]; do
         sleep 1; i=$((i + 1))
         kill -0 "$pid" 2>/dev/null || return 0
@@ -1838,14 +1841,35 @@ _fw_seat_pidns() {
                 why=""
             fi ;;
     esac
-    local rec
-    if [ -z "$why" ]; then
-        SEAT_PIDNS=("${cmd[@]}")
-        rec="own PID namespace"
-        echo "seat process isolation: own PID namespace (T-5008)" >> "$WDIR/stderr.log"
+    # T-5008 review: only DECIDE here; what is recorded is what actually started
+    # (_fw_seat_pidns_record, after the launch).
+    SEAT_PIDNS_WHY="$why"
+    [ -z "$why" ] && SEAT_PIDNS=("${cmd[@]}")
+    return 0
+}
+
+# T-5008 review: record the seat's process isolation from the LAUNCHED process. The launch is
+# `( … exec unshare … ) &`, so $! is a subshell that becomes `unshare` once exec runs; wait
+# briefly for that. A launch that never became unshare is recorded as not isolated.
+_fw_seat_pidns_record() {
+    local pid="$1" rec comm="" n=0
+    if [ "${#SEAT_PIDNS[@]}" -gt 0 ]; then
+        while [ "$n" -lt 30 ]; do
+            comm=$(cat "/proc/$pid/comm" 2>/dev/null || true)
+            [ "$comm" = "unshare" ] && break
+            [ -z "$comm" ] && break      # already gone: the exit code tells the rest
+            sleep 0.1; n=$((n + 1))
+        done
+        if [ "$comm" = "unshare" ]; then
+            rec="own PID namespace"
+            echo "seat process isolation: own PID namespace (T-5008)" >> "$WDIR/stderr.log"
+        else
+            rec="not available: the launch did not start under unshare (${comm:-process gone})"
+            echo "seat process isolation not available: the launch did not start under unshare (${comm:-process gone})" >> "$WDIR/stderr.log"
+        fi
     else
-        rec="not available: $why"
-        echo "seat process isolation not available: $why" >> "$WDIR/stderr.log"
+        rec="not available: ${SEAT_PIDNS_WHY:-not probed}"
+        echo "seat process isolation not available: ${SEAT_PIDNS_WHY:-not probed}" >> "$WDIR/stderr.log"
     fi
     if command -v jq >/dev/null 2>&1 && [ -f "$WDIR/meta.json" ]; then
         jq --arg r "$rec" '.seat_pid_isolation = $r' "$WDIR/meta.json" > "$WDIR/meta.json.tmp" 2>/dev/null \
@@ -2139,6 +2163,7 @@ elif [ -n "$HARNESS" ]; then
                 ;;
         esac
         HARNESS_PID=$!
+        _fw_seat_pidns_record "$HARNESS_PID"   # T-5008 review: record what actually started
         ( _fw_watchdog "$HARNESS_PID" ) &
         WATCHDOG_PID=$!
         wait "$HARNESS_PID" 2>/dev/null

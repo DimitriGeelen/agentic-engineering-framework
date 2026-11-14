@@ -665,7 +665,16 @@ _LAUNCH_FLAG_FILES = ("tools.txt", "permission_mode.txt", "mcp_config.txt", "str
 #: model. Committed at WORKER_SETTINGS; registration copies the committed file into the worker
 #: directory and signs its hash, start and complete re-check it.
 WORKER_SETTINGS = Path("policy/review-worker-settings.json")
-WORKER_SETTINGS_WANT = {"crossSessionInbound": "refuse"}
+WORKER_SETTINGS_WANT = {"crossSessionInbound": "refuse",
+                        # T-5008: a review worker may not signal processes by name (deny only
+                        # restricts: no env, no hooks, no allow is added)
+                        "permissions": {"deny": [
+                            "Bash(pkill:*)", "Bash(killall:*)", "Bash(kill $(pgrep:*)",
+                            "Bash(kill -9 $(pgrep:*)", "Bash(kill $(pidof:*)",
+                            "Bash(kill -9 $(pidof:*)"]}}
+#: The exact settings a reviewed revision may carry: today's, or the one before T-5008 (a review
+#: of an older revision reads that revision's committed file). Nothing else.
+WORKER_SETTINGS_ACCEPTED = ({"crossSessionInbound": "refuse"}, WORKER_SETTINGS_WANT)
 #: Round 9 (R8-1b): project files claude reads from the working tree it is launched in. A review
 #: worker starts only when none differs from the run's pinned revision, so what it loads is part
 #: of the reviewed revision, never an uncommitted edit.
@@ -697,7 +706,7 @@ def _worker_settings(root: Path, revision: str) -> str:
         data = json.loads(text) if text else None
     except ValueError:
         data = None
-    if data != WORKER_SETTINGS_WANT:
+    if data not in WORKER_SETTINGS_ACCEPTED:
         raise ValueError(f"{WORKER_SETTINGS} ({where or 'not committed'}) is not exactly "
                          f"{json.dumps(WORKER_SETTINGS_WANT)} — a review worker's settings are "
                          f"pinned: inbound refused, no env, no hooks")

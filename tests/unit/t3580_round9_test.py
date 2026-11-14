@@ -108,7 +108,11 @@ class TestProjectConfigIsPinned:
 class TestWorkerSettingsArePinned:
     def test_the_committed_settings_file_refuses_inbound_and_carries_nothing_else(self):
         data = json.loads((_HERE / vl.WORKER_SETTINGS).read_text())
-        assert data == vl.WORKER_SETTINGS_WANT == {"crossSessionInbound": "refuse"}
+        assert data == vl.WORKER_SETTINGS_WANT
+        # T-5008: inbound refused plus DENY rules only — no env, no hooks, no allow
+        assert set(data) == {"crossSessionInbound", "permissions"}
+        assert data["crossSessionInbound"] == "refuse"
+        assert set(data["permissions"]) == {"deny"}
         rc = subprocess.run(["git", "-C", str(_HERE), "ls-files", "--error-unmatch", str(vl.WORKER_SETTINGS)],
                             capture_output=True).returncode
         assert rc == 0, "the worker settings must be committed"
