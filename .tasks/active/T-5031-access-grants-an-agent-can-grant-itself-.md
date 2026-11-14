@@ -117,10 +117,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Under agent control (CLAUDECODE=1), a commit that changes `policy/access-grants.yaml` is refused by the installed pre-commit and pre-merge-commit hooks, whatever staged it (add, commit -a, checkout/restore of the path, apply, a merge), with a message naming the operator's path. A test per route runs on the real installed hooks (`tests/unit/t5031_grant_file_commit_guard.bats`, 9 tests; the 7 refusal tests fail without the fix). Not covered, because git runs no pre-commit for them: cherry-pick, rebase, am, and `--no-verify`. Those fall to the provenance check in the next criterion.
-- [ ] This repo's installed hooks carry the guard (operator runme: `fw git install-hooks`, since hook rewiring is the operator's)
-- [ ] Once `policy/grants-allowed-signers` has been committed, the trailer alone no longer counts: a grant counts only from an SSH-signed commit by a key on that list (operator ruling 2026-11-14, "Signed commit"). The list is a chain: each change is signed by a key from the previous version, and the first by a key it lists itself, shown by doctor as the anchor. Removing the list voids the grants. A grant committed before signing was adopted must be re-committed signed. Tests (`tests/unit/t5031_signed_grants.bats`, 10, real keys and git's verifier) cover: an unsigned grant, one signed by an unlisted key, an agent adding its own key (in one commit or in two), removal, a pre-adoption grant, and never_write still holding
-- [ ] The operator's documented path to change grants still works end to end: legacy trailer grants still count, with a doctor WARN, and signed grants by a listed key count, including after a second key is added (tests 1, 2, 7); the operator setup is in the `lib/access_grants.py` docstring
+- [x] Under agent control (CLAUDECODE=1), a commit that changes `policy/access-grants.yaml` is refused by the installed pre-commit and pre-merge-commit hooks, whatever staged it (add, commit -a, checkout/restore of the path, apply, a merge), with a message naming the operator's path. A test per route runs on the real installed hooks (`tests/unit/t5031_grant_file_commit_guard.bats`, 9 tests; the 7 refusal tests fail without the fix). Not covered, because git runs no pre-commit for them: cherry-pick, rebase, am, and `--no-verify`. Those fall to the provenance check in the next criterion.
+- [x] This repo's installed hooks carry the guard (operator runme: `fw git install-hooks`, since hook rewiring is the operator's). Run 2026-11-14 01:04, exit 0: pre-commit and pre-merge-commit each carry the `t5031-grant-file-guard` block
+- [x] Once `policy/grants-allowed-signers` has been committed, the trailer alone no longer counts: a grant counts only from an SSH-signed commit by a key on that list (operator ruling 2026-11-14, "Signed commit"). The list is a chain: each change is signed by a key from the previous version, and the first by a key it lists itself, shown by doctor as the anchor. Removing the list voids the grants. A grant committed before signing was adopted must be re-committed signed. Tests (`tests/unit/t5031_signed_grants.bats`, 10, real keys and git's verifier) cover: an unsigned grant, one signed by an unlisted key, an agent adding its own key (in one commit or in two), removal, a pre-adoption grant, and never_write still holding
+- [x] The operator's documented path to change grants still works end to end: legacy trailer grants still count, with a doctor WARN, and signed grants by a listed key count, including after a second key is added (tests 1, 2, 7); the operator setup is in the `lib/access_grants.py` docstring
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -306,8 +306,21 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t5031_grant_file_commit_guard.bats tests/unit/t5031_signed_grants.bats > /tmp/.t5031.out 2>&1 && ! grep -q "^not ok" /tmp/.t5031.out
+test "$(grep -c '# skip' /tmp/.t5031.out)" -eq 0
+timeout 300 bats tests/unit/t4988_access_grants_boundary.bats tests/unit/t4989_access_grants_create_level.bats tests/unit/t5034_grant_file_bootstrap.bats > /tmp/.t5031b.out 2>&1 && ! grep -q "^not ok" /tmp/.t5031b.out
+grep -q "t5031-grant-file-guard" .git/hooks/pre-commit
+bin/fw vendor self --check --task T-5031
 
 ## RCA
+
+**Symptom:** ring20-dashboard's security review (a14cb4c1, HIGH): an agent can grant itself outside access by committing `policy/access-grants.yaml`.
+
+**Root cause:** the grant file's only provenance was the `Grants-Change: operator` trailer, which is text any committer can type, and nothing refused an agent commit of the file. The Write tool and typed writes were guarded (T-4988, T-5034), but a commit, the step that makes a grant count, was not.
+
+**Why structurally allowed:** the design treated "read from HEAD only" as the protection, without asking who can make HEAD. Every agent runs as the operator's user, so any local proof except a key the operator keeps behind a passphrase is forgeable.
+
+**Prevention:** (1) the pre-commit and pre-merge-commit guard refuses agent commits of the grant file and of the signers list (9 tests on real installed hooks, installed here by the operator's runme). (2) Signed grants, opt-in per project by committing the signers list: a grant counts only from an SSH-signed commit by a listed key, through a signed chain, and removing the list voids the grants (10 tests with real keys). Uncovered and named: cherry-pick, rebase, am and `--no-verify` before a project adopts signing; after adoption the signature covers them.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
