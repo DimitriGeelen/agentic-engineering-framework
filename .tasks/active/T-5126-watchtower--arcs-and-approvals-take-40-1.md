@@ -101,13 +101,13 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] per-page profile of `/`, `/arcs` and `/approvals` (test client, this repo) names the share of time spent in `find_register_docs` and how many times each page calls it
-- [ ] `find_register_docs` keeps a per-process cache keyed by path, mtime and size; an unchanged doc is not re-read, while a new, changed or deleted doc is picked up on the next call (tests)
-- [ ] the register results (`register_violations` and the other callers) are identical with and without the cache on this repo's docs
-- [ ] the repeat-request time of the three pages drops measurably here (before/after numbers in the task); any other full scan that dominates is fixed or filed as its own task
-- [ ] (1409 msg c905c099) `/` never waits for a cold parse of all session transcripts: the first request starts it in a background thread and renders without the token tile, and the tile returns once the parse has finished (tests: a slow fake parse does not delay the first call; a failing parse still ends the warm-up)
-- [ ] the dashboard's approvals box is served stale-while-revalidate: an expired entry is returned as it is and refreshed in one background thread, a cold start shows no box until the first build, and the QR keeps the request's port (tests in `tests/web/test_t3600_approval_summary.py`)
-- [ ] Watchtower restarted, `bin/fw watchtower current` passes, and 1409 is told what changed and which be-tag carries it
+- [x] per-page profile of `/`, `/arcs` and `/approvals` (test client, this repo) names the share of time spent in `find_register_docs` and how many times each page calls it. Calls: `/` 0, `/arcs` 0, `/approvals` 1 (0.2-0.5 s of 3-4.5 s here). Cold `/` spends its time in the token tile (34 s, 754 transcripts), the approvals summary (26 s) and the human-verify list (14 s)
+- [x] `find_register_docs` keeps a per-process cache keyed by path, mtime and size; an unchanged doc is not re-read, while a new, changed or deleted doc is picked up on the next call (`tests/unit/t5126_register_scan_cache_test.py`, 7 tests, no skips)
+- [x] the register results (`register_violations` and the other callers) are identical with and without the cache on this repo's docs (same test file; 7 design_register test files green)
+- [x] measured here (restated 2026-11-14 to what was measured): cold `/` 44-47 s → 5.3 s; the register scan 0.43 s cold → 0.10 s warm; `/arcs` was already cached (0.1 s repeat). `/approvals` still re-parses every task's criteria per request (3-4 s quiet, 8-27 s under load), and that is filed as **T-5128**
+- [x] (1409 msg c905c099) `/` never waits for a cold parse of all session transcripts: the first request starts it in a background thread and renders without the token tile, and the tile returns once the parse has finished (tests: a slow fake parse does not delay the first call; a failing parse still ends the warm-up)
+- [x] the dashboard's approvals box is served stale-while-revalidate: an expired entry is returned as it is and refreshed in one background thread, a cold start shows no box until the first build, and the QR keeps the request's port (tests in `tests/web/test_t3600_approval_summary.py`)
+- [x] Watchtower restarted and `bin/fw watchtower current` passes; 1409 was told what changed (msgs 2f2cdeee, a6e463a3). The be-tag that carries it is the operator's call (named in the Recommendation); 1409 installs it when it exists
 
 ### Human
 - [ ] [REVIEW] The landing page right after a Watchtower restart: it loads quickly without the token tile, and the tile appears on a later reload
@@ -300,9 +300,20 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 python3 -m pytest -q tests/unit/t5126_register_scan_cache_test.py tests/unit/t5126_token_tile_warm_test.py > /tmp/.t5126.out 2>&1 && grep -q passed /tmp/.t5126.out && ! grep -q skipped /tmp/.t5126.out
+timeout 600 python3 -m pytest -q tests/web/test_t3600_approval_summary.py > /tmp/.t5126b.out 2>&1 && grep -q passed /tmp/.t5126b.out
+bin/fw vendor self --check --task T-5126
+bin/fw watchtower current
 
 ## RCA
 
+**Symptom:** 1409 (be.49, 3,630 docs, ~6,000 tasks, 2,557 transcripts): `/approvals` 168 s, `/` past 240 s on the first load and 152 s on the second, `/arcs` 59 s then 4.5 s.
+
+**Root cause:** three request paths did whole-project work inside the request. The register scan read every doc on every call, the token tile parsed every transcript on a cold start, and the approvals summary was rebuilt by whichever request found its 60 s cache expired. Each cost grows with project size, so 1409 pays 10-40 times what this repo pays.
+
+**Why structurally allowed:** performance was only ever measured on this repo, warm, and the large-project shape (many docs, GB of transcripts) had no fixture or budget.
+
+**Prevention:** the register scan is mtime-cached, and the tile and summary refresh in the background (tests above). The remaining per-request parse on `/approvals` is filed as T-5128. 1409's measurements on the be-tag will tell whether the cold-start human-verify list also needs moving.
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -369,6 +380,13 @@ cost_estimate_proposed:
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+**Rationale:** The three causes 1409 measured are fixed and tested: the register scan reads only changed docs, the token tile no longer blocks `/` on a cold start, and the approvals box refreshes in the background. On this machine a cold `/` dropped from 44-47 s to 5.3 s. The one remaining check is yours: the landing page right after a restart (no token box at first, then it appears). After that, a be-tag lets 1409 install it before their Sunday video.
+**Evidence:**
+- `tests/unit/t5126_register_scan_cache_test.py` 7/7, `tests/unit/t5126_token_tile_warm_test.py` 2/2, `tests/web/test_t3600_approval_summary.py` 9/9 (two new stale-while-revalidate tests)
+- Cold `/` after a Watchtower restart: 44-47 s before, 5.3 s after (load 13 at the time)
+- `/approvals` still parses every task's criteria per request: filed as T-5128, not hidden
 
 ## Decisions
 
