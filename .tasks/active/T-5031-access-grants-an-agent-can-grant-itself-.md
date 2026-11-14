@@ -119,8 +119,8 @@ cost_estimate_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [ ] Under agent control (CLAUDECODE=1), a commit that changes `policy/access-grants.yaml` is refused by the installed pre-commit and pre-merge-commit hooks, whatever staged it (add, commit -a, checkout/restore of the path, apply, a merge), with a message naming the operator's path. A test per route runs on the real installed hooks (`tests/unit/t5031_grant_file_commit_guard.bats`, 9 tests; the 7 refusal tests fail without the fix). Not covered, because git runs no pre-commit for them: cherry-pick, rebase, am, and `--no-verify`. Those fall to the provenance check in the next criterion.
 - [ ] This repo's installed hooks carry the guard (operator runme: `fw git install-hooks`, since hook rewiring is the operator's)
-- [ ] The grants audit no longer accepts the `Grants-Change: operator` trailer alone as proof; the proof is one an agent cannot produce (to be designed: operator runme record or a signature), with a test that an agent-made commit carrying the trailer is reported
-- [ ] The operator's documented path to change grants still works end to end (test)
+- [ ] Once `policy/grants-allowed-signers` has been committed, the trailer alone no longer counts: a grant counts only from an SSH-signed commit by a key on that list (operator ruling 2026-11-14, "Signed commit"). The list is a chain: each change is signed by a key from the previous version, and the first by a key it lists itself, shown by doctor as the anchor. Removing the list voids the grants. A grant committed before signing was adopted must be re-committed signed. Tests (`tests/unit/t5031_signed_grants.bats`, 10, real keys and git's verifier) cover: an unsigned grant, one signed by an unlisted key, an agent adding its own key (in one commit or in two), removal, a pre-adoption grant, and never_write still holding
+- [ ] The operator's documented path to change grants still works end to end: legacy trailer grants still count, with a doctor WARN, and signed grants by a listed key count, including after a second key is added (tests 1, 2, 7); the operator setup is in the `lib/access_grants.py` docstring
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -377,6 +377,17 @@ cost_estimate_proposed:
 -->
 
 ## Decisions
+
+### 2026-11-14 — what proves a grant is the operator's
+- **Chose:** SSH-signed commits, checked against a committed allowed-signers list kept as a signed chain (operator's answer: "Signed commit").
+- **Why:** every agent runs as the operator's user, so any local file, record or trailer can be produced by an agent. The one thing it cannot do silently is sign with a key kept behind a passphrase or `ssh-add -c`.
+- **Rejected:** trailer plus guards, accepting the residual (same-user forgery stays possible); Watchtower-only changes (the proof is again a local file).
+- **Transition:** a project that never committed the signers list keeps the trailer rule, with a doctor WARN, so live grants (050) do not stop overnight. Once the list exists, removing it voids the grants (no downgrade).
+
+### 2026-11-14 — where the git routes are stopped
+- **Chose:** at commit time (pre-commit and pre-merge-commit), under `CLAUDECODE=1`.
+- **Why:** git has no hook at staging, and a grant counts only once committed.
+- **Rejected:** a PreToolUse text match on git verbs (it misses `commit -a` of an operator edit, and scripts). Cherry-pick, rebase, am and `--no-verify` run no pre-commit; after adoption the signature check covers them, because an agent cannot sign.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
