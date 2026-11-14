@@ -5759,13 +5759,20 @@ concerns:
     (ln -s, cp -s, rsync --links, mv of a link) are not refused on granted paths; (4) the refused-verbs check needs the grant
     path as a substring of the typed command. Inactive where no grant file exists; live at 050 (first user of grants).'
   severity: high
-  status: watching
+  status: closed
+  closed: '2026-11-14'
   detected_in: T-5031
   observed: '2026-11-02'
   reported_by: ring20-dashboard (automated security review, passed on)
   blast_radius: every project with policy/access-grants.yaml (050 today)
   detection_gap: the grant tests cover writes through the grant and refusals of listed verbs; none commits the grant file as the agent, creates it from nothing, or makes a link
-  what_remains: T-5031 (agent commit of the grant file), T-5032 (symlinks), T-5033 (cd/variable paths), T-5034 (bootstrap write). Close when an agent cannot widen its own grants by any of the four routes.
+  what_remains: 'All four routes closed, each with tests that fail on the old code. T-5034: the grant file is guarded from
+    typed writes before it exists. T-5031: pre-commit and pre-merge-commit refuse an agent commit (CLAUDECODE=1) of the
+    grant file or signers list, installed here by the operator''s runme; signed grants are available via
+    policy/grants-allowed-signers (operator ruling "Signed commit"). T-5032: no link created or carried into a create
+    grant. T-5033: refused verbs are judged by resolved operands. Residual, named: before a project adopts signing,
+    cherry-pick/rebase/am/--no-verify are not seen by pre-commit, and scripts are fenced by the NAS accounts, not by these
+    text gates; fw doctor WARNs on trailer-only grants.'
 - id: G-130
   type: gap
   title: Auto-handover log file grew without bound (183 GB) and filled a host disk; no size cap, no disk-free check, capture and background log share one file
