@@ -536,8 +536,19 @@ def opencode_seat_config(seat_tmp: str) -> str:
     has `external_directory "*" -> ask`, and headless `opencode run` rejects every ask; this appends
     one allowance for exactly that path (verified: `opencode debug agent plan`)."""
     t = str(seat_tmp).rstrip("/")
-    return json.dumps({"agent": {"plan": {"permission": {"external_directory": {
-        t: "allow", t + "/*": "allow"}}}}}, sort_keys=True, separators=(",", ":"))
+    return json.dumps({"agent": {"plan": {"permission": {
+        "external_directory": {t: "allow", t + "/*": "allow"},
+        # T-5008 (ring20-dashboard b2be4058): a seat's `pkill -f 'uvicorn main:app'` stopped a
+        # live service. The PID namespace makes that harmless; this refuses it outright too
+        # (verified: `opencode debug agent plan` resolves each pattern to action "deny").
+        "bash": SEAT_SIGNAL_DENY_GLOBS,
+    }}}}, sort_keys=True, separators=(",", ":"))
+
+
+#: T-5008: commands a review seat may never run — signalling processes by NAME reaches anything
+#: the operator's user runs. A seat stops its own server by the PID it started it with.
+SEAT_SIGNAL_DENY_GLOBS = {"pkill *": "deny", "killall *": "deny", "kill *$(pgrep*": "deny",
+                          "kill *$(pidof*": "deny", "kill *`pgrep*": "deny"}
 
 
 def brief_digest(text: str) -> str:
