@@ -89,10 +89,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] the quick pre-filter in check-project-boundary.sh sends a command to the analysis whenever the session cwd is outside the project root (a cwd inside a grant included)
-- [ ] a refused verb (chmod, chown, chgrp, touch, setfacl, chattr, tar, bsdtar, unzip, 7z, 7za, cpio, pax) is refused when any operand, resolved against the session cwd, lies in a create grant (as before: a read grant is not writable at all, and `tar c` from it is a read), even when no grant path appears in the text. That covers a glob (`/srv/share/cr*`), the command's own variables (`D=...; chmod 777 ${D}x`) and a relative operand from a cwd in the grant
-- [ ] with the session cwd in a grant, a refused verb whose operand is a variable or substitution is refused (it cannot be resolved; fail closed)
-- [ ] controls: refused verbs in the project, in /tmp and on a non-granted cwd keep today's verdict; plain writes and reads in the grant stay allowed; tests fail on the unfixed hook; boundary/grant sweep green
+- [x] the quick pre-filter in check-project-boundary.sh sends a command to the analysis whenever the session cwd is outside the project root (a cwd inside a grant included)
+- [x] a refused verb (chmod, chown, chgrp, touch, setfacl, chattr, tar, bsdtar, unzip, 7z, 7za, cpio, pax) is refused when any operand, resolved against the session cwd, lies in a create grant (as before: a read grant is not writable at all, and `tar c` from it is a read), even when no grant path appears in the text. That covers a glob (`/srv/share/cr*`), the command's own variables (`D=...; chmod 777 ${D}x`) and a relative operand from a cwd in the grant
+- [x] with the session cwd in a grant, a refused verb whose operand is a variable or substitution is refused (it cannot be resolved; fail closed)
+- [x] controls: refused verbs in the project, in /tmp and on a non-granted cwd keep today's verdict; plain writes and reads in the grant stay allowed; tests fail on the unfixed hook; boundary/grant sweep green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,8 +278,20 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t5033_grant_refused_verbs_resolved.bats > /tmp/.t5033.out 2>&1 && ! grep -q "^not ok" /tmp/.t5033.out
+test "$(grep -c '# skip' /tmp/.t5033.out)" -eq 0
+timeout 300 bats tests/unit/t4988_access_grants_boundary.bats tests/unit/t4989_access_grants_create_level.bats tests/unit/t5032_grant_links.bats > /tmp/.t5033b.out 2>&1 && ! grep -q "^not ok" /tmp/.t5033b.out
+bin/fw vendor self --check --task T-5033
 
 ## RCA
+
+**Symptom:** ring20-dashboard's security review (a14cb4c1, MEDIUM): the refusal of metadata changes and archive extraction on granted paths is skipped when the grant is reached by a cd or a variable.
+
+**Root cause:** the check was a TEXT test, `any(g in raw for g in grants)`. It asked whether the command spells a grant, not whether it acts on one. A glob, the command's own variable, or a relative path from a cwd inside the grant acts on the grant without spelling it. Separately, the quick pre-filter skipped every command without a slash, quote or cd, so a bare relative word from a cwd outside the project was never examined.
+
+**Why structurally allowed:** both shortcuts were performance filters written when the grant was always typed in full. The tests typed it in full too.
+
+**Prevention:** operands are judged after the command's own assignments are substituted and relative paths are resolved against the session cwd. Anything left unresolved (a glob, an unknown variable) is judged by its literal prefix, refused when it could reach a grant. The pre-filter never skips a cwd outside the project. 16 tests: all 9 refusal cases fail on the old hook (two of them only because the message now names T-5033), the controls pass, and the old over-broad refusal of an unrelated `touch` in the project is gone.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
