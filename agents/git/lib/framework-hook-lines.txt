@@ -603,6 +603,7 @@ elif [ "$HAS_DECISION" = false ]; then
 elif [ "$UNREG_COUNT" -gt 0 ]; then
 elif [ "$_r_sha" = "$_zero" ] || [ "$_l_sha" = "$_r_sha" ]; then
 elif [ "${CLAUDECODE:-}" = "1" ] && git diff --cached --no-renames --name-only -- policy/access-grants.yaml 2>/dev/null | grep -q .; then
+elif [ "${CLAUDECODE:-}" = "1" ] && git diff --cached --no-renames --name-only -- policy/access-grants.yaml policy/grants-allowed-signers 2>/dev/null | grep -q .; then
 elif [ "${_r_ref#refs/tags/}" != "$_r_ref" ]; then
 elif [ $audit_exit -eq 1 ]; then
 elif [ $audit_exit -eq 2 ]; then
