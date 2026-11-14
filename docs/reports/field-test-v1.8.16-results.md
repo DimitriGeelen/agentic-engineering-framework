@@ -234,6 +234,7 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | T-4963 direct-route reply settles (be.14) | pending; not exercised at 055 (cases settled by hand first) | — |
 | T-4966 parallel judges (be.15) | **WORKS** (13 judges, 3 at a time; 0 torn lines; audit 0 failures) | ring20-dashboard 9cbbdcdc |
 | T-4944 vision-gated render greens (be.15) | open finding at ring20 (opencode still dispatched on render; T-4978) | ring20-dashboard 9cbbdcdc |
+| T-5008 seats cannot signal processes they did not start | **FAILS on be.15** (field incident b2be4058: a seat's kill-by-name stopped ring20-dashboard's production service); fixed on bleeding-edge 2026-11-14 (PID namespace, kill-by-name refused in brief + opencode/claude seat permissions, watchdog race); be.26 PARTLY (isolation recorded, live seat refused the decoy); retest owed on the next be-tag. Answered (msg bf2c760e). Residual (dedicated seat user) is T-5127 | ring20-dashboard b2be4058, 0bbb23a6, a14cb4c1 |
 
 ## Clean full upgrades (rule b)
 

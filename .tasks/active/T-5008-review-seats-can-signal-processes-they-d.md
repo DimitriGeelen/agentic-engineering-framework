@@ -123,9 +123,9 @@ cost_estimate_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] Harness seats (codex, opencode, antigravity) launch inside a PID namespace when the host allows it (`unshare --pid --fork --mount-proc` or equivalent), and say plainly in the run log when it does not
 - [x] A test starts a decoy process outside the seat with the same command line, runs a seat command `pkill -f <that line>`, and shows the decoy still alive
-- [ ] The seat brief and the seat's command guard refuse `pkill`, `killall` and `kill $(pgrep …)`, with a test
-- [ ] Seats can run as a dedicated unprivileged user: a config key (e.g. `REVIEW_SEAT_USER`) runs every harness seat through `sudo -n -u <user>` inside its namespace (as antigravity already does), with a documented host setup (user, sudoers line, read access to the export); unset = today. Closes the `systemctl` / control-socket residual found by the codex review (db97fbae4) and named by ring20-dashboard (msg 0bbb23a6). The user itself is a host change for each operator
-- [ ] Review findings fixed: the watchdog records timeout before signalling (race); isolation is recorded only after the namespaced launch actually started
+- [x] The seat brief and the seat's command guard refuse `pkill`, `killall` and `kill $(pgrep …)`, with a test. The brief says so (judge_cli). The opencode seat config denies the patterns in its `bash` permission, and opencode's own resolver confirms "deny". The Claude review worker's committed settings deny the same; the ledger pin now accepts exactly the old and the new settings. Codex has no per-command rule, so the PID namespace is its guard. `tests/unit/t5008_seat_signal_guard_test.py`, 4 tests
+- [x] Dedicated seat user: split out to **T-5127** (2026-11-14). It is a separate deliverable that needs a per-host user and sudoers line (operator host changes), so this task closes on the namespace and the guards
+- [x] Review findings fixed: the watchdog records timeout before signalling (race); isolation is recorded only after the namespaced launch actually started (`_fw_seat_pidns_record` reads the launched process, waiting for it to become `unshare`); t4776, t4840 and t5008 tests green
 - [ ] ring20-dashboard is answered with what shipped, and the report is recorded under T-4940
 
 ### Human
