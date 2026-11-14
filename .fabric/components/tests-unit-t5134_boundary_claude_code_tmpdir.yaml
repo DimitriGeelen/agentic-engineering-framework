@@ -1,0 +1,21 @@
+id: tests/unit/t5134_boundary_claude_code_tmpdir.bats
+name: t5134_boundary_claude_code_tmpdir
+type: script
+subsystem: tests
+location: tests/unit/t5134_boundary_claude_code_tmpdir.bats
+tags: []
+
+purpose: "T-5134 (dimitri-mint-dev T-226): with CLAUDE_CODE_TMPDIR set, Claude Code keeps the session scratchpad and task-output files under <dir>/claude-<uid>/."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-14
+created_by: unknown
