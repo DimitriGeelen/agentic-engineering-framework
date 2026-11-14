@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5032: Access grants: under a create grant, a symlink (ln -s, cp -s, rsync --links, mv of a link) can point a granted path outside the grant or at a never_write path
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-14T00:22:34Z
+# ============================================================================
+
+task_id: T-5032
+task_name: "Access grants: under a create grant, a symlink (ln -s, cp -s, rsync --links, mv of a link) can point a granted path outside the grant or at a never_write path"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-02T19:46:47Z
+completed: 2026-11-14T00:21:20Z
+duration_days: 12
+updates_count: 3
+first_commit: 2026-11-14T01:17:37+01:00
+last_commit: 2026-11-14T01:21:16+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  SECURITY — no typed command creates or carries a link into a create grant (ln, cp -s/-l, link-preserving cp/mv/rsync of a link source); dereferencing copies allowed; 24 tests. vendor boundary hook. criteria (2 restated to what was built), verification, RCA
+
+# Key outcomes
+outcomes:
+  - 'on a create-granted target, `ln` (with or without `-s`, including `-t DIR` and the one-argument form from a session cwd in the grant), `cp -s`, `cp -l` and `cp --symbolic-link` are refused by check-project-boundary.sh, with a message naming T-5032'
+  - '`mv`, link-preserving `cp` (`-a/-d/-P/-r/-R`) and `rsync -a/-l` are refused into a granted path when a source is, or contains, a symbolic link (bounded walk, fail closed past 20,000 entries), unless the copy dereferences (`cp -L`, `rsync -L`/`--copy-links`/`--no-links`). Restated 2026-11-14 from "rsync -a refused unless -L": refusing link-free rsync would break ordinary copies for no gain'
+  - 'controls: a plain `cp`, `mv`, `rsync -a` of regular files or link-free folders into the grant, `cp` of a link without `-a` (copies content), `cp -aL`, and link verbs outside any grant keep today''s verdict'
+  - 'the tests fail on the unfixed hook (14 refusal tests fail with the change stashed; the controls pass); the 36-file boundary/grant sweep and 166 invariants are green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-project-boundary.sh'
+  - '.fabric/components/tests-unit-t5032_grant_links.yaml'
+  - '.tasks/active/T-5032-access-grants-under-a-create-grant-a-sym.md'
+  - 'agents/context/check-project-boundary.sh'
+  - 'tests/unit/t5032_grant_links.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-14T01:17:37'
+    action: 'T-5032: SECURITY — no typed command creates or carries a link into a create grant (ln, cp -s/-l, link-preserving cp/mv/rsync of a link source); dereferencing copies allowed; 24 tests'
+  - time: '2026-11-14T01:20:46'
+    action: 'T-5032: vendor boundary hook'
+  - time: '2026-11-14T01:21:16'
+    action: 'T-5032: criteria (2 restated to what was built), verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 16114 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [access-grants, security]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 16114
+  commits: 4
+  files_changed: 8
+  lines_added: 842
+  lines_removed: 9
+  footprint_refreshed_at: '2026-11-14T00:22:44Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5032-access-grants-under-a-create-grant-a-sym.md
+generated_by: context-agent-hybrid
