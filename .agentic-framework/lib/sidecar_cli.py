@@ -156,6 +156,8 @@ def _explicit_circuit_ok(args, target: str, hub) -> bool:
         print(f"send: known circuit: {k} (peer directory) — this send addresses {target}",
               file=sys.stderr)
     if ev["known"]:
+        if ev.get("queued_unread"):  # T-5137: a prompt-driven reader that has not caught up
+            print(f"send: note: {ev['known']}", file=sys.stderr)
         return True
     hid = circuit.parse_circuit(target).get("hub")
     why = (f"no evidence anything reads {circuit.topic_for_circuit(target)} on hub {hid}: not in "

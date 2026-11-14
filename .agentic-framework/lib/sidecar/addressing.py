@@ -508,6 +508,23 @@ def topic_is_read(row: dict, now_ms: float | None = None) -> bool:
     return now_ms - fetch <= READ_WINDOW_MS
 
 
+# T-5137 (010 T-3790): a reader that fetches on each operator prompt has not caught up
+# after our own first post, yet it clearly exists. A fetch this recent counts as "a
+# reader exists" even when it is older than the last write. Kept much shorter than
+# READ_WINDOW_MS so a reader that went quiet days ago is still no evidence (T-4418).
+ACTIVE_READER_WINDOW_MS = 86_400_000
+
+
+def topic_has_active_reader(row: dict, now_ms: float | None = None) -> bool:
+    """Something fetched this topic within ACTIVE_READER_WINDOW_MS, caught up or not."""
+    a = row.get("activity") or {}
+    fetch = _ms(a.get("last_data_fetch_ms")) or _ms(a.get("last_fetch_ms"))
+    if fetch is None:
+        return False
+    now_ms = now_ms if now_ms is not None else datetime.now(timezone.utc).timestamp() * 1000
+    return now_ms - fetch <= ACTIVE_READER_WINDOW_MS
+
+
 def topic_is_unread(row: dict) -> bool:
     """The hub holds posts in this topic that nothing fetched after they were written."""
     a = row.get("activity") or {}
@@ -568,6 +585,12 @@ def explicit_circuit_evidence(cid: str, hub: str | None, *, runner=None,
     row = next((r for r in rows if r.get("name") == topic), None)
     if row is not None and topic_is_read(row, now_ms):
         out["known"] = "the hub reports the topic read (fetched since its last post)"
+        return out
+    if row is not None and topic_has_active_reader(row, now_ms):
+        out["known"] = ("the hub reports a reader on this topic within the last day; it has "
+                        "not fetched since the last post, so this message queues unread until "
+                        "it does")
+        out["queued_unread"] = True
         return out
     prefix = f"{circuit.TOPIC_PREFIX}{hid}/"
     read = sorted(r["name"][len(circuit.TOPIC_PREFIX):] for r in rows
