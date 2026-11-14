@@ -54371,3 +54371,21 @@ scan_id: R-e89f6f41
 task_id: T-5032
 payload:
   task_file: .tasks/active/T-5032-access-grants-under-a-create-grant-a-sym.md
+---
+kind: scan_emitted
+timestamp: '2026-11-14T00:32:28Z'
+scan_id: R-43178a96
+task_id: T-5033
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-14T00:32:28Z'
+scan_id: R-43178a96
+task_id: T-5033
+payload:
+  task_file: .tasks/active/T-5033-access-grants-the-refused-verbs-check-ru.md

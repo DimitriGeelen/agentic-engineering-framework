@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5033: Access grants: the refused-verbs check runs only when a grant path appears as a substring of the raw command; a path reached via cd or a variable skips it
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-14T00:32:54Z
+# ============================================================================
+
+task_id: T-5033
+task_name: "Access grants: the refused-verbs check runs only when a grant path appears as a substring of the raw command; a path reached via cd or a variable skips it"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-02T19:46:47Z
+completed: 2026-11-14T00:30:09Z
+duration_days: 12
+updates_count: 3
+first_commit: 2026-11-14T01:28:02+01:00
+last_commit: 2026-11-14T01:30:04+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  SECURITY — refused verbs (chmod/touch/tar/...) on create grants judged by resolved operands (globs, the command's own variables, cwd) not by grant text; pre-filter never skips a cwd outside the project; 16 tests. vendor boundary hook; verification, RCA, criteria ticked (37-file sweep, 166 invariants)
+
+# Key outcomes
+outcomes:
+  - 'the quick pre-filter in check-project-boundary.sh sends a command to the analysis whenever the session cwd is outside the project root (a cwd inside a grant included)'
+  - 'a refused verb (chmod, chown, chgrp, touch, setfacl, chattr, tar, bsdtar, unzip, 7z, 7za, cpio, pax) is refused when any operand, resolved against the session cwd, lies in a create grant (as before: a read grant is not writable at all, and `tar c` from it is a read), even when no grant path appears in the text. That covers a glob (`/srv/share/cr*`), the command''s own variables (`D=...; chmod 777 ${D}x`) and a relative operand from a cwd in the grant'
+  - 'with the session cwd in a grant, a refused verb whose operand is a variable or substitution is refused (it cannot be resolved; fail closed)'
+  - 'controls: refused verbs in the project, in /tmp and on a non-granted cwd keep today''s verdict; plain writes and reads in the grant stay allowed; tests fail on the unfixed hook; boundary/grant sweep green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-project-boundary.sh'
+  - '.fabric/components/tests-unit-t5033_grant_refused_verbs_resolved.yaml'
+  - '.tasks/active/T-5033-access-grants-the-refused-verbs-check-ru.md'
+  - 'agents/context/check-project-boundary.sh'
+  - 'tests/unit/t5033_grant_refused_verbs_resolved.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-14T01:28:02'
+    action: 'T-5033: SECURITY — refused verbs (chmod/touch/tar/...) on create grants judged by resolved operands (globs, the command''s own variables, cwd) not by grant text; pre-filter never skips a cwd outside the project; 16 tests'
+  - time: '2026-11-14T01:30:04'
+    action: 'T-5033: vendor boundary hook; verification, RCA, criteria ticked (37-file sweep, 166 invariants)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 16123 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [access-grants, security]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 16123
+  commits: 3
+  files_changed: 8
+  lines_added: 791
+  lines_removed: 35
+  footprint_refreshed_at: '2026-11-14T00:33:12Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5033-access-grants-the-refused-verbs-check-ru.md
+generated_by: context-agent-hybrid
