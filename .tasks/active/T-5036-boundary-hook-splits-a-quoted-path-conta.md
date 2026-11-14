@@ -101,10 +101,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] the refusal is reproduced in a test (quoted granted path with a space, `find` / `ls` / `cat` / a write) before the fix. 2026-11-14: NOT reproduced. 050's exact command, with their two create grants, is allowed by both the current hook and the 11-01 hook (`git archive 0baa31aab`), and the parent "106 Kuhlhausen" stays refused. Pattern 4 runs on the quote-blanked copy, and Pattern 4b judges quoted words whole. Asked 050 (msg 290cb3c0) for their vendored version, whether it still refuses, and `ls -ld` of the real path
-- [ ] the boundary hook judges a single- or double-quoted path containing spaces as one path; typed reads and writes on a granted path with a space are allowed
-- [ ] the same commands on a path with a space outside every grant, a write to a read-level grant, and a never_write path are still refused; an unquoted path with a space (two words) is judged as two words, as bash reads it
-- [ ] every existing boundary and access-grant test still passes
+- [x] the refusal is reproduced in a test, or shown no longer to occur (050's answer below). 2026-11-14: NOT reproduced. 050's exact command, with their two create grants, is allowed by both the current hook and the 11-01 hook (`git archive 0baa31aab`), and the parent "106 Kuhlhausen" stays refused. Pattern 4 runs on the quote-blanked copy, and Pattern 4b judges quoted words whole. Asked 050 (msg 290cb3c0) for their vendored version, whether it still refuses, and `ls -ld` of the real path. 050 answered (msg 44501cd1, 2026-11-14): on vendored AEF 1.8.15+756.g3b36a63aa, `cp`, `ls` and `mkdir` on quoted paths under ".../106 Kuhlhausen/0200-SonneStall-Entwicklung/..." all go through. The only refusals are two correct ones: a grep regex pattern read as a path (text since T-5091, 2026-11-12), and `ls -ld` on the ungranted parent. Their verdict: close
+- [x] the boundary hook judges a single- or double-quoted path containing spaces as one path; typed reads and writes on a granted path with a space are allowed
+- [x] the same commands on a path with a space outside every grant, a write to a read-level grant, and a never_write path are still refused; an unquoted path with a space (two words) is judged as two words, as bash reads it
+- [x] every existing boundary and access-grant test still passes (no source change; 32-file sweep green under T-5034)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,8 +290,18 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t5036_boundary_quoted_space_path.bats > /tmp/.t5036.out 2>&1 && ! grep -q "^not ok" /tmp/.t5036.out
+test "$(grep -c '# skip' /tmp/.t5036.out)" -eq 0
 
 ## RCA
+
+**Symptom:** 050 (2026-11-02) reported a quoted granted path with a space refused as "Outside-path argument .../106".
+
+**Root cause:** not found. It does not reproduce with the current hook, with the 11-01 hook, or for 050 on their current vendored version. Pattern 4 scans the quote-blanked copy and Pattern 4b judges quoted words whole, so the naive whitespace split cannot see a quoted path. The refusal most likely came from a framework version between 11-01 and 050's later upgrade, or from a command shape (an unquoted or regex form) that 050 no longer uses.
+
+**Why structurally allowed:** no test covered paths with spaces under a grant, so a split would have gone unnoticed.
+
+**Prevention:** `tests/unit/t5036_boundary_quoted_space_path.bats` has 13 cases: 050's exact command, quoted reads and writes allowed, refusals kept (outside every grant, a read-level write, never_write, the parent folder, another project) and an unquoted path read as two words.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
