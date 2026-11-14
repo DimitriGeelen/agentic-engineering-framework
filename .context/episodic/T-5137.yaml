@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5137: fw sidecar send refuses a 2nd message to a prompt-driven reader: topic_is_read needs a fetch after the last write, so our own first post makes the reader look absent (010 T-3790)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-14T21:11:32Z
+# ============================================================================
+
+task_id: T-5137
+task_name: "fw sidecar send refuses a 2nd message to a prompt-driven reader: topic_is_read needs a fetch after the last write, so our own first post makes the reader look absent (010 T-3790)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-14T21:00:25Z
+completed: 2026-11-14T21:11:07Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-14T22:02:01+01:00
+last_commit: 2026-11-14T22:09:24+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — sidecar send guard treats a prompt-driven reader as absent (010 T-3790); context and criteria. a reader that fetched within a day but has not caught up counts as present; the send goes with a queued-unread note (010 T-3790); regression tests. vendor self
+
+# Key outcomes
+outcomes:
+  - 'a topic with a fetch inside `READ_WINDOW_MS` counts as reader evidence even when the fetch is older than the last write; the send then succeeds and says the message will queue unread'
+  - 'a topic never fetched, or last fetched outside the window, is still refused as before (T-4418 cases unchanged)'
+  - 'a regression test reproduces 010''s case (fetch, then our post, then a second send) and fails without the fix; every test that reads `addressing.py` passes'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/addressing.py'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.tasks/active/T-5137-fw-sidecar-send-refuses-a-2nd-message-to.md'
+  - 'lib/sidecar/addressing.py'
+  - 'lib/sidecar_cli.py'
+  - 'tests/unit/test_sidecar_orphan_circuit_t4418.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-14T22:02:01'
+    action: 'T-5137: capture — sidecar send guard treats a prompt-driven reader as absent (010 T-3790); context and criteria'
+  - time: '2026-11-14T22:09:02'
+    action: 'T-5137: a reader that fetched within a day but has not caught up counts as present; the send goes with a queued-unread note (010 T-3790); regression tests'
+  - time: '2026-11-14T22:09:24'
+    action: 'T-5137: vendor self'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 10
+  commits: 4
+  files_changed: 9
+  lines_added: 623
+  lines_removed: 8
+  footprint_refreshed_at: '2026-11-14T21:11:44Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5137-fw-sidecar-send-refuses-a-2nd-message-to.md
+generated_by: context-agent-hybrid

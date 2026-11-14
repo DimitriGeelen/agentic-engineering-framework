@@ -54533,3 +54533,39 @@ scan_id: R-033b5572
 task_id: T-5135
 payload:
   task_file: .tasks/active/T-5135-ewcr-s1-operator-authorised-2026-11-14-f.md
+---
+kind: scan_emitted
+timestamp: '2026-11-14T19:46:39Z'
+scan_id: R-21b295c6
+task_id: T-5130
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-14T19:46:39Z'
+scan_id: R-21b295c6
+task_id: T-5130
+payload:
+  task_file: .tasks/active/T-5130-htmx-boosted-navigation-runs-a-pages-inl.md
+---
+kind: scan_emitted
+timestamp: '2026-11-14T21:11:17Z'
+scan_id: R-c5533f95
+task_id: T-5137
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-14T21:11:17Z'
+scan_id: R-c5533f95
+task_id: T-5137
+payload:
+  task_file: .tasks/active/T-5137-fw-sidecar-send-refuses-a-2nd-message-to.md
