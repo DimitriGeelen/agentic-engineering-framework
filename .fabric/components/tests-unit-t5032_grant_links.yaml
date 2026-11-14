@@ -1,0 +1,21 @@
+id: tests/unit/t5032_grant_links.bats
+name: t5032_grant_links
+type: script
+subsystem: tests
+location: tests/unit/t5032_grant_links.bats
+tags: []
+
+purpose: "T-5032 (ring20-dashboard a14cb4c1, HIGH): no typed command creates or carries a link into a create grant. Plain and dereferencing copies stay allowed; link verbs outside any grant keep today's verdict."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-14
+created_by: unknown
