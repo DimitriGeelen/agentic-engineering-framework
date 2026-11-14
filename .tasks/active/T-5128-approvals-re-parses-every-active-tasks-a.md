@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-14T10:33:03Z
-last_update: '2026-11-14T10:40:01Z'
+last_update: '2026-11-14T11:15:26Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -73,6 +73,16 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-11-14T11:15:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=333,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5128: /approvals re-parses every active task's acceptance criteria on each request (_load_pending_human_acs 2.6 s, stale_keystones 1 s here; worse at 1409's 6,000 tasks)
@@ -92,12 +102,18 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] a warm-request profile of the approvals page names its top costs, and which of them depend only on the task file
-- [ ] the costs that depend only on the task file are cached per file (mtime and size); a changed task file is re-read on the next request (test)
-- [ ] readiness is either left uncached, or cached with every input it reads in the key (named in the task); the page shows the same cards and readiness before and after (test on this repo)
-- [ ] repeat-request time of the approvals page drops measurably here (before/after numbers in the task); Watchtower restarted, `bin/fw watchtower current` passes
+- [x] a warm-request profile of the approvals page names its top costs, and which of them depend only on the task file. Warm request 3.2 s (test client, load 10). Costs: the criteria display parse, 1.5 s, task-file only; `stale_keystones` 0.85 s (design registers and arcs); queue grouping 0.65 s, computed TWICE per request; close-ready arcs 0.56 s; readiness 0.5 s, which already has its own stamp cache. The 1.47 s of `time.sleep` is eventlet's cooperative yield to other green threads, not work done by the page
+- [x] the costs that depend only on the task file are cached per file: the display parse uses `shared.mtime_cached_get`, with the same mtime key as the page's existing body cache, so a changed file is re-read on the next request exactly when its body is. The queue grouping is computed once per request (flask.g). Restated: keyed by mtime like `_BODY_CACHE`, not mtime plus size, so the two caches stay in step (`tests/web/test_t5128_approvals_ac_cache.py`)
+- [x] readiness left uncached by this task (it already has `_readiness_stamp`). A warm request re-parses nothing and returns exactly the cold result on this repo (test). The display-parser guard (`test_t3590`) still allows exactly one, display-only, use. 88 of 89 approvals-related test files pass; `test_inception_verdict_render.py` also fails without this change (tracked by T-5109)
+- [x] repeat-request time drops here: `_load_pending_human_acs` 2.63 s → 1.18 s and the warm request 3.2 → 2.5 s (test client). Through the running server under load 13-18: 9.5 / 7.2 / 6.3 s warm, against 8-14 s before under similar load. Watchtower restarted, `bin/fw watchtower current` passes
 
 ### Human
+- [ ] [REVIEW] The approvals page shows the same cards as before
+  **Steps:**
+  1. Open http://192.168.10.107:3000/approvals
+  2. Look over the review cards and the decisions section, then reload once
+  **Expected:** the same cards, criteria and readiness labels you are used to, and the second load is no slower than the first
+  **If not:** note the card that differs; the change is in `web/blueprints/approvals.py` (`_AC_DISPLAY_CACHE`, `_queue_groups`)
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -281,9 +297,28 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 python3 -m pytest -q tests/web/test_t5128_approvals_ac_cache.py tests/web/test_t3590_batch_ready_predicate.py tests/web/test_approvals_cache.py > /tmp/.t5128.out 2>&1 && grep -q passed /tmp/.t5128.out
+bin/fw vendor self --check --task T-5128
+bin/fw watchtower current
 
 ## RCA
 
+**Symptom:** the approvals page takes seconds on every request here and minutes at 1409, with no cache of its own.
+
+**Root cause:** for each active task the page re-ran the criteria display parse on every request (T-2102 cached the body, but not the parse made from it), and it computed the queue grouping twice per request.
+
+**Why structurally allowed:** the per-file caches were added one function at a time as profiles found them (T-2102, T-2108). Nothing measures a whole page warm, so the next uncached step only showed up when a large project hit it.
+
+**Prevention:** the parse shares its body cache's key, and a test asserts that a warm request parses nothing. Remaining warm costs (`stale_keystones`, close-ready arcs) are named in criterion 1 for a later pass if 1409's numbers call for it.
+
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** The review cards' criteria parse is cached per task file, and the queue grouping is computed once per request, with no change to what the page shows (a test compares warm and cold results). That halves the cost of building the review cards here (2.6 → 1.2 s), and the saving grows with the number of tasks, which is 1409's case. The one remaining check is yours: the page looks the same.
+**Evidence:**
+- `tests/web/test_t5128_approvals_ac_cache.py`: a warm request makes zero criteria parses and returns exactly the cold cards
+- 88 of 89 approvals-related test files pass; the one red, `test_inception_verdict_render.py`, also fails without this change (T-5109)
+- Warm request via the running server under load 13-18: 9.5 / 7.2 / 6.3 s, against 8-14 s before
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
