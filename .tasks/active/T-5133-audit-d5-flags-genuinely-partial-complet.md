@@ -102,9 +102,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] a test reproduces 832's case (human-owned, Agent all ticked, Human open, the template's Human comment mentioning "### Agent") and fails on the old code
-- [ ] `is_partial_complete` strips HTML comments and anchors both headings to line start (re.M); the fixture is recognised as partial-complete, and headings with suffixes ("### Human (…)") and multiple Agent sections still work (T-100189)
-- [ ] audit tests that cover D5 still pass; vendored copy synced
+- [x] a test reproduces 832's case (human-owned, Agent all ticked, Human open, the template's Human comment mentioning "### Agent") and fails on the old code. `tests/unit/audit_d5_task_lifecycle.bats` test 7, with the comment placed ABOVE the Human criterion as in 832's T-189; fails with audit.sh stashed
+- [x] `is_partial_complete` strips HTML comments and anchors both headings to line start (re.M); the fixture is recognised as partial-complete, and headings with suffixes ("### Human (…)") and multiple Agent sections still work (T-100189): tests 5-6 green, control test 8 (unticked Agent AC still flags) green
+- [x] audit tests that cover D5 still pass (8/8); vendored copy synced (77451c8f4)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,8 +290,19 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/audit_d5_task_lifecycle.bats > /tmp/.t5133.out 2>&1 && ! grep -q "^not ok" /tmp/.t5133.out
+test "$(grep -c '# skip' /tmp/.t5133.out)" -eq 0
+bin/fw vendor self --check --task T-5133
 
 ## RCA
+
+**Symptom:** 832: audit D5 flags genuinely partial-complete tasks (T-189, T-286) as lifecycle anomalies.
+
+**Root cause:** `is_partial_complete` found sections with an unanchored `### Agent` pattern and did not strip HTML comments. The task template's Human help comment says "moved to ### Agent and" mid-line, which opened a second Agent block that swallowed the Human criterion below it.
+
+**Why structurally allowed:** the D5 fixtures were minimal task bodies without the template's comments; real tasks carry them.
+
+**Prevention:** HTML comments are stripped before parsing, headings are anchored, and a fixture carries the template comment in the order 832 hit (it fails on the old code). The AC census elsewhere already strips comments (PL-060); this parser now follows the same rule.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
