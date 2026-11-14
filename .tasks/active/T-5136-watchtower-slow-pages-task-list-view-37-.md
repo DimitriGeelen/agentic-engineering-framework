@@ -92,8 +92,11 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] the cause of each slow route is measured (profile with the hot functions and their share of the time) and written in this task before any fix
       — measured before the fix, written here after it (see `## RCA`): list view = an 18.9 MB page (server 1.9 s warm); search = a cold tag-cloud parse (57 of 58 s in pure-Python `yaml.safe_load` of 4,180 episodics), skipped by the startup warm-up.
-- [ ] the task list view is shown in under 10 s on the live data (the server time was never the problem: 1.9 s warm; the 37 s was the 18.9 MB page), with every task still reachable (a regression test proves both)
-- [ ] `/search` returns in under 10 s on the first visit after a restart, with the tag cloud unchanged (a regression test proves the parse gives the same tags)
+- [x] the task list view is shown in under 10 s on the live data (the server time was never the problem: 1.9 s warm; the 37 s was the 18.9 MB page), with every task still reachable (a regression test proves both)
+      — live after restart (pid 3425312): page 1 is 864 KB, "Showing 1–200 of 5119 (page 1 of 26)", 2.5 s; last page 0.5 s. `tests/web/test_t5136_task_list_pager.py` 5/5 (every task once across pages, filter and sort kept, clamping). `test_t3575` now follows the pager and still reaches every task of the overflowing status.
+- [x] `/search` returns in under 10 s on the first visit after a restart, with the tag cloud unchanged (a regression test proves the parse gives the same tags)
+      — cold in a fresh process 3.0 s (was 58 s profiled, 19.6 s live); live right after restart 5.5 s during the warm-up, 0.15 s after; all 4,180 files give identical tags in C and pure Python; `tests/unit/test_t5136_tag_cloud_c_loader.py` 3/3; bare `/search` is in `WARM_PATHS`.
+      Not fixed here: a request that lands while the startup warm-up is still running pays the cold cost (the first list view took 39 s at 20:04Z). That is how the warm-up works today (it does not block serving unless `warm_before_serve`).
 - [ ] `tests/playwright/test_response_times.py` and `tests/playwright/test_task_panel.py` pass; every test that reads a changed file passes; Watchtower restarted and `bin/fw watchtower current` passes
 
 ### Human
