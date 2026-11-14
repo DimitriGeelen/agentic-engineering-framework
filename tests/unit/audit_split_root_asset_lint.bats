@@ -154,13 +154,15 @@ EOF
     # detects a consumer registry shadowing the framework's (a per-project policy read).
     # +1: T-4988's boundary-hook guard of the project's own policy/access-grants.yaml (the
     # operator-owned grant file is per project; FRAMEWORK_ROOT would be the wrong root).
+    # +1: T-5031's same guard for the project's own policy/grants-allowed-signers (the
+    # per-project list of keys that may sign grant changes; same reason).
     sites=$(grep -rnE --exclude='*.txt' '\$\{?PROJECT_ROOT\}?/(lib|agents|policy|web)/' \
                 "$REPO_ROOT/agents/" "$REPO_ROOT/lib/" "$REPO_ROOT/bin/fw" 2>/dev/null \
             | grep -v ".agentic-framework" \
             | grep -v "FRAMEWORK_ROOT:-" || true)
     count=$(printf '%s\n' "$sites" | grep -c .)
-    if [ "$count" -ne 24 ]; then
-        echo "PROJECT_ROOT framework-asset sites: $count (baseline 24)" >&2
+    if [ "$count" -ne 25 ]; then
+        echo "PROJECT_ROOT framework-asset sites: $count (baseline 25)" >&2
         printf '%s\n' "$sites" >&2
         false
     fi
