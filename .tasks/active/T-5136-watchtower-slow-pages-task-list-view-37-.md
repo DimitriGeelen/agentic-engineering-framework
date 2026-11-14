@@ -108,6 +108,7 @@ cost_estimate_proposed:
       — cold in a fresh process 3.0 s (was 58 s profiled, 19.6 s live); live right after restart 5.5 s during the warm-up, 0.15 s after; all 4,180 files give identical tags in C and pure Python; `tests/unit/test_t5136_tag_cloud_c_loader.py` 3/3; bare `/search` is in `WARM_PATHS`.
       Not fixed here: a request that lands while the startup warm-up is still running pays the cold cost (the first list view took 39 s at 20:04Z). That is how the warm-up works today (it does not block serving unless `warm_before_serve`).
 - [ ] `tests/playwright/test_response_times.py` and `tests/playwright/test_task_panel.py` pass; every test that reads a changed file passes; Watchtower restarted and `bin/fw watchtower current` passes
+      — status 2026-11-14 21:17: `test_task_panel` 5/5 (was failing); `/search` and the list routes pass in `test_response_times`. 339 related unit/web tests pass; Watchtower restarted (pid 3425312), `current` passes. **Still red:** `/fabric` (12.1 s, then 16.5 s) and `/metrics` (16.1 s, then 32.7 s) in the fresh test server, with host load 55–77 from other projects' pytest-xdist runs. On the live server the same routes take 2.8 s and 4.8 s cold, then 0.13 s and 1.7 s. Neither route is in this change. Re-run when the host is quieter before ticking.
 
 ### Human
 - [ ] [REVIEW] The task list opens quickly and the pager is usable
