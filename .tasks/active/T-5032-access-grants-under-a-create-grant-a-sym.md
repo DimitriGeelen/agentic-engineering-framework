@@ -91,10 +91,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] on a create-granted target, `ln` (with or without `-s`), `cp -s`, `cp -l` and `cp --symbolic-link` are refused by check-project-boundary.sh, with a message naming T-5032
-- [ ] `mv`, `cp -a/-P/-d` and `rsync` whose source is an existing symbolic link are refused into a granted path; `rsync -a`/`-l` into a granted path is refused unless `-L`/`--copy-links` or `--no-links` is given
-- [ ] controls: a plain `cp`, `mv`, `rsync` of a regular file into the grant, `cp -L` of a link, and every link verb outside any grant keep today's verdict
-- [ ] the tests fail on the unfixed hook; all boundary and access-grant tests still pass
+- [x] on a create-granted target, `ln` (with or without `-s`, including `-t DIR` and the one-argument form from a session cwd in the grant), `cp -s`, `cp -l` and `cp --symbolic-link` are refused by check-project-boundary.sh, with a message naming T-5032
+- [x] `mv`, link-preserving `cp` (`-a/-d/-P/-r/-R`) and `rsync -a/-l` are refused into a granted path when a source is, or contains, a symbolic link (bounded walk, fail closed past 20,000 entries), unless the copy dereferences (`cp -L`, `rsync -L`/`--copy-links`/`--no-links`). Restated 2026-11-14 from "rsync -a refused unless -L": refusing link-free rsync would break ordinary copies for no gain
+- [x] controls: a plain `cp`, `mv`, `rsync -a` of regular files or link-free folders into the grant, `cp` of a link without `-a` (copies content), `cp -aL`, and link verbs outside any grant keep today's verdict
+- [x] the tests fail on the unfixed hook (14 refusal tests fail with the change stashed; the controls pass); the 36-file boundary/grant sweep and 166 invariants are green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,8 +280,20 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t5032_grant_links.bats > /tmp/.t5032.out 2>&1 && ! grep -q "^not ok" /tmp/.t5032.out
+test "$(grep -c '# skip' /tmp/.t5032.out)" -eq 0
+timeout 300 bats tests/unit/t4988_access_grants_boundary.bats tests/unit/t4989_access_grants_create_level.bats > /tmp/.t5032b.out 2>&1 && ! grep -q "^not ok" /tmp/.t5032b.out
+bin/fw vendor self --check --task T-5032
 
 ## RCA
+
+**Symptom:** ring20-dashboard's security review (a14cb4c1, HIGH): under a create grant, a typed `ln -s`, `cp -s`, `rsync --links` or `mv` of a link can put a link in the granted folder that points outside it.
+
+**Root cause:** the create-grant rule judges a write by its DESTINATION path (resolved), not by what lands there. A link is a write whose content is a pointer elsewhere, and none of the link-making forms were in `_GRANT_REFUSED_VERBS`.
+
+**Why structurally allowed:** T-4989 guarded writes through an existing link (realpath), which made links look covered. But it never considered the creation of the link itself, and no test created one under a grant.
+
+**Prevention:** a dedicated pass over the raw, quote-aware command refuses link creation into a grant and the carrying of a link source (24 tests; 14 fail without the fix). The rule is "no link reaches the grant", not a verb list, so link-preserving modes of copy tools are judged by their sources.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
