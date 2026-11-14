@@ -7166,6 +7166,31 @@ fi
 verify_fail=0
 shopt -s nullglob
 recent_completed=$(find "$TASKS_DIR/completed" -maxdepth 1 -name '*.md' -type f -print0 2>/dev/null | xargs -r -0 ls -t 2>/dev/null | head -3)
+# T-5132 (832 T-764 / RA-053, operator ruling): the spot-check keeps a ledger and reports its
+# own coverage. A task whose last verdict was WARN is re-checked (up to CTL013_RECHECK_CAP) even
+# after newer closes push it out of the latest-3 window, so it cannot read as "repaired" just
+# by leaving the window.
+CTL013_LEDGER="${CONTEXT_DIR:-$PROJECT_ROOT/.context}/audits/ctl013-spotcheck.json"
+CTL013_RECHECK_CAP="${CTL013_RECHECK_CAP:-3}"
+_ctl013_total=$(find "$TASKS_DIR/completed" -maxdepth 1 -name '*.md' -type f 2>/dev/null | wc -l | tr -d ' ')
+_ctl013_results=()
+_ctl013_recheck=$(python3 - "$CTL013_LEDGER" "$CTL013_RECHECK_CAP" <<'CTL013PY' 2>/dev/null || true
+import json, sys
+try:
+    led = json.load(open(sys.argv[1]))
+except Exception:
+    led = {}
+warns = sorted((v.get("last_checked", ""), k) for k, v in led.items() if v.get("verdict") == "WARN")
+for _, k in warns[: int(sys.argv[2])]:
+    print(k)
+CTL013PY
+)
+for _rid in $_ctl013_recheck; do
+    for _rf in "$TASKS_DIR/completed/${_rid}-"*.md; do
+        [ -f "$_rf" ] || continue
+        case " $recent_completed " in *" $_rf "*) ;; *) recent_completed="$recent_completed $_rf" ;; esac
+    done
+done
 for task_file in $recent_completed; do
     [ -f "$task_file" ] || continue
     task_id=$({ grep "^id:" "$task_file" 2>/dev/null || true; } | head -1 | sed 's/id: //' | tr -d ' ')
@@ -7293,14 +7318,53 @@ for task_file in $recent_completed; do
             else
                 pass "CTL-013: $task_id verification re-run: $cmd_pass/$((cmd_pass + cmd_fail)) pass"
             fi
+            _ctl013_results+=("$task_id PASS")
         else
             warn "CTL-013: $task_id verification re-run: $cmd_fail command(s) failing" \
                  "Verification commands that passed at completion now fail" \
                  "Review $task_id — environment may have changed"
             verify_fail=$((verify_fail + 1))
+            _ctl013_results+=("$task_id WARN")
         fi
     fi
 done
+# T-5132: record this run, then report coverage — including every earlier WARN not re-checked.
+_ctl013_cov=$(python3 - "$CTL013_LEDGER" "$_ctl013_total" "${_ctl013_results[@]}" <<'CTL013PY' 2>/dev/null || true
+import json, os, sys, datetime
+path, total, results = sys.argv[1], int(sys.argv[2] or 0), sys.argv[3:]
+try:
+    led = json.load(open(path))
+except Exception:
+    led = {}
+today = datetime.date.today().isoformat()
+checked = []
+for r in results:
+    tid, _, verdict = r.partition(" ")
+    led[tid] = {"last_checked": today, "verdict": verdict}
+    checked.append(tid)
+stale = [f"{k} last checked {v.get('last_checked', '?')}, last verdict WARN"
+         for k, v in sorted(led.items()) if v.get("verdict") == "WARN" and k not in checked]
+try:
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w") as fh:
+        json.dump(led, fh, indent=1, sort_keys=True)
+    os.replace(tmp, path)
+except OSError:
+    pass
+print(("WARN" if stale else "PASS") + "|" + f"checked {len(checked)} of {total} completed"
+      + ("; not re-checked this run: " + "; ".join(stale) if stale else ""))
+CTL013PY
+)
+if [ -n "$_ctl013_cov" ]; then
+    if [ "${_ctl013_cov%%|*}" = "WARN" ]; then
+        warn "CTL-013 coverage: ${_ctl013_cov#*|}" \
+             "An earlier spot-check failure was not re-checked in this run (T-5132)" \
+             "Re-run the task's ## Verification, or raise CTL013_RECHECK_CAP"
+    else
+        pass "CTL-013 coverage: ${_ctl013_cov#*|}"
+    fi
+fi
 shopt -u nullglob
 
 # CTL-013b OE (T-2765): Verification Gate — rotating slice of the HUMAN REVIEW QUEUE.

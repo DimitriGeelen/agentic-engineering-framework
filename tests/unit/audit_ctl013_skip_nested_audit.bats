@@ -87,7 +87,9 @@ ctl013() {
 
 @test "L-391: a non-audit passing command is counted, not skipped (control)" {
     run ctl013 'true'
-    [[ "$output" == "PASS: CTL-013: T-9999 verification re-run: 1/1 pass" ]]
+    # T-5132: the per-task line is followed by the run's coverage line
+    [[ "${lines[0]}" == "PASS: CTL-013: T-9999 verification re-run: 1/1 pass" ]]
+    [[ "${lines[1]}" == "PASS: CTL-013 coverage: checked 1 of 1 completed" ]]
 }
 
 @test "L-391: audit.sh CTL-013 contains the skip block" {
