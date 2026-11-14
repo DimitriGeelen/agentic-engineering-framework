@@ -100,13 +100,19 @@ cost_estimate_proposed:
 - architecture dossier: `c9070637b09493a24abc99982ae966a3b3ae8cd4a358a44fdceb59bdceb6ac2d`, 62,863 bytes
 - delivery roadmap: `5be23719b976e37a6461b4b1f6f309985b5ba033ef0b801769edd2627fbae5b8`, 21,135 bytes
 
+**Correction (2026-11-14, after receipt):** the two hashes above are the EWCR architecture dossier and the delivery roadmap, not the review documents S1 names. Those two arrived byte-exact (offsets 6-20 on xfer-832-bpmn, commit f5a4cd3f5) and are kept as context. The review documents S1 names (drive-7 handback §4, 832's T-047 offset [2]) are still to come:
+- DeepSeek: `docs/reports/T-032-deepseek-review-response.md`, sha256 `4dae4098b2602b2794525292e1aa3053e0c486b23a67d9c3292ce80dc3a4d8a9`
+- Mistral: `docs/reports/T-032-mistral-review-response.md`, sha256 `0eecb8af7be56ba045581167ef66b73fd9d2aa17fcd241f84defc0e7d17bfb0e`
+
+Criterion 1 is for these two; the verification checks them too once they arrive.
+
 A disposition table per finding (DeepSeek, Mistral) goes into `docs/reports/EWCR/`, and 832 gets the read-back it asked for. Waiting on 832's operator to release the files (msg c02072ea).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] both 0503 documents are received as raw bytes (not via the 3001 viewer) and stored under `docs/reports/EWCR/inputs/`, each with its sha256 and size matching 832's published values (recorded in Context); a mismatch is refused and reported to 832, not used
+- [ ] both 0503 documents are received as raw bytes (not via the 3001 viewer) and stored under `docs/reports/EWCR/inputs/`, each with its sha256 and size matching 832's published values (recorded in Context); a mismatch is refused and reported to 832, not used
 - [ ] a disposition table per review (DeepSeek, Mistral) lists every finding with a disposition (accepted / out of scope / already handled / rejected, with a reason and, where accepted, the owning task), in `docs/reports/EWCR/`
 - [ ] the read-back 832 asked for is sent on the 832-ewcr-progress conversation, naming both tables, and S1 in the drive-7 handback is marked decided (operator ruling 2026-11-14)
 
