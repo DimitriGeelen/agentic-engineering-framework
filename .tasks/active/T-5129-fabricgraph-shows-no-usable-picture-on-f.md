@@ -5,12 +5,12 @@ description: >
   1409 msg 0fe0e269 (2026-11-14): /fabric/graph beim ersten Oeffnen kein brauchbares
   Bild, erst nach Neuladen. 1409 films Watchtower on the weekend.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/playwright/test_fabric_graph_cold_load.py, tests/unit/t5129_fabric_explorer_deferred_test.py, web/templates/fabric_explorer.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -39,8 +39,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-14T11:20:33Z
-last_update: '2026-11-14T11:20:43Z'
-date_finished:
+last_update: 2026-11-14T11:38:15Z
+date_finished: 2026-11-14T11:38:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -400,3 +400,21 @@ bin/fw watchtower current
 
 ### 2026-11-14T11:20:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-14T11:38:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3665dabf
+- **Timestamp:** 2026-11-14T11:39:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — the graph draws on the htmx open as on a full load. The explorer code is inert (`type="text/fe-deferred"`) and a loader runs it as a global script once d3 exists, loading d3 itself after a swap; the 2
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/test_fabric_graph_cold_load.py in: the graph draws on the htmx open as on a full load. The explorer code is inert (`type="text/fe-deferred"`) and a loader runs it as a global script onc`
