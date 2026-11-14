@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-14T17:20:32Z
-last_update: '2026-11-14T18:15:25Z'
+last_update: 2026-11-14T19:05:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -106,7 +106,7 @@ A disposition table per finding (DeepSeek, Mistral) goes into `docs/reports/EWCR
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] both 0503 documents are received as raw bytes (not via the 3001 viewer) and stored under `docs/reports/EWCR/inputs/`, each with its sha256 and size matching 832's published values (recorded in Context); a mismatch is refused and reported to 832, not used
+- [x] both 0503 documents are received as raw bytes (not via the 3001 viewer) and stored under `docs/reports/EWCR/inputs/`, each with its sha256 and size matching 832's published values (recorded in Context); a mismatch is refused and reported to 832, not used
 - [ ] a disposition table per review (DeepSeek, Mistral) lists every finding with a disposition (accepted / out of scope / already handled / rejected, with a reason and, where accepted, the owning task), in `docs/reports/EWCR/`
 - [ ] the read-back 832 asked for is sent on the 832-ewcr-progress conversation, naming both tables, and S1 in the drive-7 handback is marked decided (operator ruling 2026-11-14)
 
@@ -294,6 +294,10 @@ A disposition table per finding (DeepSeek, Mistral) goes into `docs/reports/EWCR
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+cd docs/reports/EWCR/inputs && sha256sum -c SHA256SUMS
+grep -q '^c9070637b09493a24abc99982ae966a3b3ae8cd4a358a44fdceb59bdceb6ac2d  architecture-c9070637.md$' docs/reports/EWCR/inputs/SHA256SUMS
+grep -q '^5be23719b976e37a6461b4b1f6f309985b5ba033ef0b801769edd2627fbae5b8  roadmap-5be23719.md$' docs/reports/EWCR/inputs/SHA256SUMS
+test "$(wc -c < docs/reports/EWCR/inputs/architecture-c9070637.md)" -eq 62863 && test "$(wc -c < docs/reports/EWCR/inputs/roadmap-5be23719.md)" -eq 21135
 
 ## RCA
 
