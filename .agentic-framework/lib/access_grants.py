@@ -23,6 +23,14 @@ CLI:
     access_grants.py show ROOT         the grants, one per line, or the reason none apply
     access_grants.py doctor ROOT       one doctor line per finding: OK|WARN <text>
     access_grants.py audit ROOT        WARN lines for commits without the operator trailer
+                                       (and the signature verdict once signing is adopted)
+
+Signed grants (T-5031): once policy/grants-allowed-signers (git allowed_signers format) has
+been committed, a grant counts only from an SSH-signed commit by a listed key; see provenance().
+Operator setup, once: git config gpg.format ssh; git config user.signingkey <your .pub>; put
+"<email> <key type> <public key>" in policy/grants-allowed-signers; commit it, and every later
+grant change, with `git commit -S`. Keep the key behind a passphrase (or `ssh-add -c`) so no
+agent process can sign with it silently.
 """
 from __future__ import annotations
 
@@ -31,12 +39,94 @@ import subprocess
 import sys
 
 GRANT_FILE = "policy/access-grants.yaml"
+# T-5031 (operator ruling 2026-11-14, "Signed commit"): SSH allowed-signers list (git's
+# `gpg.ssh.allowedSignersFile` format). Once it has existed in a project's history, a grant
+# counts only from a commit signed by a key in it — see provenance().
+SIGNERS_FILE = "policy/grants-allowed-signers"
 LEVELS = ("read", "create", "create-project")
 TRAILER = "Grants-Change: operator"
 
 
 def _git(root: str, *args: str) -> subprocess.CompletedProcess:
     return subprocess.run(["git", "-C", root, *args], capture_output=True, text=True, timeout=30)
+
+
+def _blob(root: str, rev: str, path: str) -> str | None:
+    r = _git(root, "show", f"{rev}:{path}")
+    return r.stdout if r.returncode == 0 else None
+
+
+def _signed_by(root: str, commit: str, signers: str) -> tuple[bool, str]:
+    """(True, key fingerprint) when `commit` carries a good SSH signature by a key listed in
+    `signers` (allowed_signers text); (False, why) otherwise. Git's own verifier decides."""
+    import tempfile
+    fd, tmp = tempfile.mkstemp(prefix="fw-grant-signers.")
+    try:
+        with os.fdopen(fd, "w") as fh:
+            fh.write(signers)
+        r = _git(root, "-c", "gpg.format=ssh", "-c", f"gpg.ssh.allowedSignersFile={tmp}",
+                 "log", "-1", "--format=%G?%x1f%GF", commit)
+    finally:
+        os.unlink(tmp)
+    status, _, fpr = r.stdout.strip().partition("\x1f")
+    if r.returncode == 0 and status == "G":
+        return True, fpr
+    why = {"N": "not signed", "U": "signed by a key not in the allowed-signers list",
+           "B": "bad signature", "E": "signature could not be checked"}.get(status, f"status {status!r}")
+    return False, why
+
+
+def provenance(root: str) -> dict:
+    """T-5031: is the committed grant file the operator's?
+
+    mode "legacy": SIGNERS_FILE was never committed here; grants count as before (trailer
+                   only) and doctor WARNs.
+    mode "signed": grants count only when
+      1. every commit that changed SIGNERS_FILE is signed by a key from its PREVIOUS version
+         (the first one by a key it lists itself — the anchor, shown by doctor for the
+         operator to confirm), and the file still exists at HEAD;
+      2. the commit that last changed GRANT_FILE is signed by a key from SIGNERS_FILE as it
+         stood BEFORE that commit (or as introduced by it, when both arrive together).
+    A commit cannot add its own key and then count, and removing the list voids the grants.
+    Returns {"mode", "ok", "why", "anchor"}."""
+    try:
+        sc = _git(root, "log", "--reverse", "--format=%H", "--", SIGNERS_FILE)
+    except (OSError, subprocess.SubprocessError):
+        return {"mode": "signed", "ok": False, "why": "git log unavailable", "anchor": ""}
+    chain = [c for c in sc.stdout.split() if c]
+    if not chain:
+        return {"mode": "legacy", "ok": True, "why": "", "anchor": ""}
+    if _blob(root, "HEAD", SIGNERS_FILE) is None:
+        return {"mode": "signed", "ok": False, "anchor": "",
+                "why": f"{SIGNERS_FILE} was removed — grants need a signed list"}
+    prev, anchor = None, ""
+    for c in chain:
+        text = _blob(root, c, SIGNERS_FILE)
+        if text is None:
+            return {"mode": "signed", "ok": False, "anchor": anchor,
+                    "why": f"{SIGNERS_FILE} removed at {c[:10]}"}
+        ok, info = _signed_by(root, c, prev if prev is not None else text)
+        if not ok:
+            return {"mode": "signed", "ok": False, "anchor": anchor,
+                    "why": f"signers change {c[:10]} {info} (previous list)"}
+        if prev is None:
+            anchor = info
+        prev = text
+    g = _git(root, "log", "-1", "--format=%H", "--", GRANT_FILE).stdout.strip()
+    if not g:
+        return {"mode": "signed", "ok": True, "why": "", "anchor": anchor}
+    trust = _blob(root, f"{g}^", SIGNERS_FILE)
+    if trust is None:
+        trust = _blob(root, g, SIGNERS_FILE)
+    if trust is None:
+        return {"mode": "signed", "ok": False, "anchor": anchor,
+                "why": f"{GRANT_FILE} last changed at {g[:10]}, before signing was adopted — "
+                       "the operator re-commits it signed"}
+    ok, info = _signed_by(root, g, trust)
+    if not ok:
+        return {"mode": "signed", "ok": False, "anchor": anchor,
+                "why": f"grant change {g[:10]} {info}"}
+    return {"mode": "signed", "ok": True, "why": "", "anchor": anchor}
 
 
 def _committed_text(root: str) -> str | None:
@@ -122,6 +212,11 @@ def load(root: str) -> dict:
     if errors:
         # fail closed: an invalid file grants nothing, but its never_write roots still hold
         return {"present": True, "grants": [], "never_write": never, "errors": errors}
+    prov = provenance(root)   # T-5031
+    if not prov["ok"]:
+        # not the operator's: grants nothing, never_write still holds (fail closed)
+        return {"present": True, "grants": [], "never_write": never,
+                "errors": [f"unsigned or unverified: {prov['why']}"]}
     return {"present": True, "grants": grants, "never_write": never, "errors": []}
 
 
@@ -178,11 +273,12 @@ def is_grant_file_or_ancestor(path: str, root: str) -> bool:
         return False
     exists = _grant_file_exists(root)
     gf = _norm(os.path.join(root, GRANT_FILE))
+    sf = _norm(os.path.join(root, SIGNERS_FILE))   # T-5031: the signers list, same protection
     roots = {_norm(root), _norm(os.path.realpath(root))}
     for c in {_norm(path), _norm(os.path.realpath(path))}:
         if c in roots or not any(_under(c, r) for r in roots):
             continue
-        if c == gf:
+        if c in (gf, sf):
             return True
         if gf.startswith(c.rstrip("/") + "/") and (exists or not os.path.lexists(c)):
             return True
@@ -194,6 +290,13 @@ def doctor(root: str) -> list[str]:
     if not st["present"]:
         return ["OK no access grants (policy/access-grants.yaml not committed)"]
     out = [f"WARN access grants: {e} — the file grants nothing" for e in st["errors"]]
+    prov = provenance(root)   # T-5031
+    if prov["mode"] == "legacy":
+        out.append(f"WARN access grants are protected by the '{TRAILER}' trailer only, which an "
+                   f"agent can also type — commit {SIGNERS_FILE} and sign grant commits (T-5031)")
+    elif prov["ok"]:
+        out.append(f"OK access grants signed; signers list anchored on key {prov['anchor']} — "
+                   "confirm that fingerprint is yours")
     for g in st["grants"]:
         line = f"{g['level']} {g['path']} via {g['via']}"
         if not os.path.ismount(g["via"]):
@@ -221,6 +324,9 @@ def audit(root: str) -> list[str]:
         trailer = parts[2].strip() if len(parts) > 2 else ""
         if trailer != "operator":
             out.append(f"WARN {sha[:10]} changed {GRANT_FILE} without '{TRAILER}': {subject[:80]}")
+    prov = provenance(root)   # T-5031
+    if prov["mode"] == "signed" and not prov["ok"]:
+        out.append(f"WARN access grants not counted: {prov['why']}")
     return out
 
 
