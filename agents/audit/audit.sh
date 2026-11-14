@@ -9441,6 +9441,19 @@ if [ -n "$OUTPUT_DIR" ]; then
     AUDIT_FILE="$EFFECTIVE_OUTPUT_DIR/$AUDIT_DATETIME.yaml"
 else
     AUDIT_FILE="$EFFECTIVE_OUTPUT_DIR/$AUDIT_DATE.yaml"
+    # T-5131 (832 T-763 / RA-052, operator ruling): a dated record is never overwritten. An
+    # earlier same-day record moves aside to <date>-<HHMM of its own mtime>.yaml (counter on a
+    # clash), so <date>.yaml stays the newest and every run's record survives.
+    if [ -e "$AUDIT_FILE" ]; then
+        _t5131_hm=$(date -r "$AUDIT_FILE" +%H%M 2>/dev/null || echo 0000)
+        _t5131_dst="$EFFECTIVE_OUTPUT_DIR/$AUDIT_DATE-$_t5131_hm.yaml"
+        _t5131_n=2
+        while [ -e "$_t5131_dst" ]; do
+            _t5131_dst="$EFFECTIVE_OUTPUT_DIR/$AUDIT_DATE-$_t5131_hm-$_t5131_n.yaml"
+            _t5131_n=$((_t5131_n + 1))
+        done
+        mv -n "$AUDIT_FILE" "$_t5131_dst" 2>/dev/null || true
+    fi
 fi
 
 # Build YAML content

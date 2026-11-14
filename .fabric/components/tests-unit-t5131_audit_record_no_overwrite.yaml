@@ -1,0 +1,21 @@
+id: tests/unit/t5131_audit_record_no_overwrite.bats
+name: t5131_audit_record_no_overwrite
+type: script
+subsystem: tests
+location: tests/unit/t5131_audit_record_no_overwrite.bats
+tags: []
+
+purpose: "T-5131 (832 T-763 / RA-052, operator ruling): a dated audit record is never overwritten."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-14
+created_by: unknown
