@@ -1,0 +1,21 @@
+id: tests/playwright/test_htmx_nav_page_scripts.py
+name: test_htmx_nav_page_scripts
+type: script
+subsystem: tests-playwright
+location: tests/playwright/test_htmx_nav_page_scripts.py
+tags: []
+
+purpose: "T-5130 (found under T-5129, 1409): base.html boosts every link, and htmx runs a swapped page's inline scripts before that page's own <script src> libraries have loaded."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-14
+created_by: unknown
