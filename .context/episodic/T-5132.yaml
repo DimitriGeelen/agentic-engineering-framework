@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5132: Audit spot-check CTL-013 re-verifies only the latest 3 completed tasks by mtime and does not report its coverage, so a failing task silently leaves the window (832 T-764 / RA-053)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-14T17:58:08Z
+# ============================================================================
+
+task_id: T-5132
+task_name: "Audit spot-check CTL-013 re-verifies only the latest 3 completed tasks by mtime and does not report its coverage, so a failing task silently leaves the window (832 T-764 / RA-053)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-14T15:22:03Z
+completed: 2026-11-14T17:57:36Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-11-14T17:45:33+01:00
+last_commit: 2026-11-14T18:57:34+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  CTL-013 spot-check keeps a ledger, re-checks earlier failures after they leave the latest-3 window (cap 3) and reports its coverage, naming any failure not re-checked (832 T-764 / RA-053); 4 tests. criteria ticked, verification, RCA
+
+# Key outcomes
+outcomes:
+  - 'CTL-013 records each checked task''s id, date and verdict in a ledger under `.context/audits/` (`ctl013-spotcheck.json`), and prints a coverage line. Live run here: `[PASS] CTL-013 coverage: checked 2 of 4177 completed`'
+  - 'a task whose last verdict was WARN is re-checked on later runs even after it leaves the latest-3 window, up to a cap (`CTL013_RECHECK_CAP`, 3); when it passes, the ledger shows PASS and it leaves the re-check set (tests 2-3)'
+  - 'an earlier WARN that is not re-checked in a run (cap reached, file gone) is named in the coverage line with its last-checked date and verdict, as a WARN, never silently (test 4)'
+  - 'the existing CTL-013 tests (`audit_ctl013_skip_nested_audit.bats`) still pass (the exact-output control now reads the per-task line and the coverage line); `tests/unit/t5132_ctl013_coverage.bats` 4/4; 181-file audit.sh sweep green; vendored copy synced (f9228fee5)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-unit-t5132_ctl013_coverage.yaml'
+  - '.tasks/active/T-5132-audit-spot-check-ctl-013-re-verifies-onl.md'
+  - 'agents/audit/audit.sh'
+  - 'tests/unit/audit_ctl013_skip_nested_audit.bats'
+  - 'tests/unit/t5132_ctl013_coverage.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-14T17:45:33'
+    action: 'T-5132: CTL-013 spot-check keeps a ledger, re-checks earlier failures after they leave the latest-3 window (cap 3) and reports its coverage, naming any failure not re-checked (832 T-764 / RA-053); 4 tests'
+  - time: '2026-11-14T18:57:34'
+    action: 'T-5132: criteria ticked, verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 155 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 155
+  commits: 3
+  files_changed: 8
+  lines_added: 685
+  lines_removed: 10
+  footprint_refreshed_at: '2026-11-14T17:58:12Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5132-audit-spot-check-ctl-013-re-verifies-onl.md
+generated_by: context-agent-hybrid
