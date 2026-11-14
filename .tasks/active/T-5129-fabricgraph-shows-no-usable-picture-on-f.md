@@ -87,11 +87,18 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] the cause is confirmed (which start-up step fails on the htmx swap), or the actual cause is named if it differs
-- [ ] the graph draws on the htmx open as on a full load (fix in the template or link), with a test that the start-up path does not depend on a page-load event, or that the link does a full load
-- [ ] Watchtower restarted, `bin/fw watchtower current` passes, and 1409 is told
+- [x] the cause is confirmed (headless Chromium, 2026-11-14). The htmx open fails with `pageerror: d3 is not defined` and draws nothing; a direct load draws the graph (443 elements, `typeof d3` = object). The cause differs from the hypothesis: it is script ORDER, not a page-load event. htmx runs the swapped-in inline script at once while it loads the d3 `<script src>` asynchronously
+- [x] the graph draws on the htmx open as on a full load. The explorer code is inert (`type="text/fe-deferred"`) and a loader runs it as a global script once d3 exists, loading d3 itself after a swap; the 23 inline handlers keep their global functions. Tests: `tests/playwright/test_fabric_graph_cold_load.py::TestFabricGraphHtmxOpen` (2; both FAIL with the template change stashed) plus the 4 T-1770 cold-load tests, and the static guard `tests/unit/t5129_fabric_explorer_deferred_test.py`
+- [x] Watchtower restarted, `bin/fw watchtower current` passes, and 1409 is told
 
 ### Human
+- [ ] [REVIEW] The fabric explorer draws when opened from the fabric page
+  **Steps:**
+  1. Open http://192.168.10.107:3000/fabric
+  2. Click "Open Fabric Explorer →" (do not reload)
+  3. Click "Expand all" (or any toolbar button) in the explorer
+  **Expected:** the graph appears on the first open, the toolbar buttons work, and it looks the same as after a reload
+  **If not:** note what you saw; the change is the loader at the end of `web/templates/fabric_explorer.html`
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -275,9 +282,27 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 python3 -m pytest -q tests/unit/t5129_fabric_explorer_deferred_test.py > /tmp/.t5129.out 2>&1 && grep -q passed /tmp/.t5129.out
+bin/fw vendor self --check --task T-5129
+bin/fw watchtower current
 
 ## RCA
 
+**Symptom:** 1409: `/fabric/graph` shows no usable picture on first open, only after a reload.
+
+**Root cause:** the fabric page opens the explorer through htmx, which swaps the template into the page. htmx runs the inline explorer script at once but loads its d3 `<script src>` asynchronously, so the explorer ran with d3 undefined and stopped at the first d3 call.
+
+**Why structurally allowed:** the T-1770 cold-load tests open `/fabric/graph` by direct URL, a full load where scripts run in order. No test opened it the way users do, through the link.
+
+**Prevention:** browser tests now open it through htmx (both fail without the fix), and a static guard pins the deferred start-up. Other htmx-swapped pages with a `<script src>` plus dependent inline code could have the same issue; bvp.html also loads d3 this way, so it is worth a look when next touched.
+
+## Recommendation
+
+**Recommendation:** GO
+**Rationale:** The cause is reproduced and fixed in a real browser: "d3 is not defined" on the htmx open is gone, the graph draws on the first open, and the toolbar's inline handlers still work. The one remaining check is yours: open the explorer from the fabric page without reloading.
+**Evidence:**
+- Headless Chromium: htmx open went from 0 drawn elements and `d3 is not defined` to 393 drawn elements and no errors; `expandAllNodes()` works (1,313 elements)
+- `TestFabricGraphHtmxOpen` 2/2 (both fail with the change stashed); T-1770 cold-load tests 4/4; static guard 2/2
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
