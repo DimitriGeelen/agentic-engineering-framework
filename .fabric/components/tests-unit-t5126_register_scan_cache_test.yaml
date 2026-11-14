@@ -1,0 +1,21 @@
+id: tests/unit/t5126_register_scan_cache_test.py
+name: t5126_register_scan_cache_test
+type: script
+subsystem: tests
+location: tests/unit/t5126_register_scan_cache_test.py
+tags: []
+
+purpose: "T-5126 (1409 msg 0fe0e269): find_register_docs remembers, per doc and keyed by (mtime_ns, size), whether it holds a register, so a long-lived Watchtower no longer re-reads every docs/**/*.md on each request."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-14
+created_by: unknown

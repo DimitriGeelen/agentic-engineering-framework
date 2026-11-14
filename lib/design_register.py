@@ -263,6 +263,31 @@ def resolve_arc(root: Path, arc_id: str) -> dict:
     return {}
 
 
+# T-5126 (1409 msg 0fe0e269): docs/**/*.md was read and regex-scanned on EVERY call — 168 s
+# for /approvals on 1409's 3,630 docs. Watchtower is one long-lived process, so remember per
+# doc whether it holds a register, keyed by (mtime_ns, size): an unchanged doc is only
+# stat()ed; a new or changed one is read; a deleted one drops out with the next scan.
+_REGISTER_SCAN_CACHE: dict = {}
+
+
+def _doc_has_register(p: Path) -> bool:
+    try:
+        st = p.stat()
+    except OSError:
+        return False
+    key = (st.st_mtime_ns, st.st_size)
+    hit = _REGISTER_SCAN_CACHE.get(p)
+    if hit is not None and hit[0] == key:
+        return hit[1]
+    try:
+        text = p.read_text(errors="replace")
+    except OSError:
+        return False
+    has = bool(re.search(r"^register:", text, re.M) and parse_register(p))
+    _REGISTER_SCAN_CACHE[p] = (key, has)
+    return has
+
+
 def find_register_docs(root: Path) -> list:
     docs = set()
     for p in _arc_files(root):
@@ -270,11 +295,7 @@ def find_register_docs(root: Path) -> list:
     ddir = root / "docs"
     if ddir.is_dir():
         for p in ddir.rglob("*.md"):
-            try:
-                text = p.read_text(errors="replace")
-            except OSError:
-                continue
-            if re.search(r"^register:", text, re.M) and parse_register(p):
+            if _doc_has_register(p):
                 docs.add(p)
     return sorted(docs)
 
