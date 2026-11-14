@@ -8,12 +8,12 @@ description: >
   s limit. 1409 raised Watchtower slowness before their Sunday video. Profile both
   routes, then fix; one bug per route if causes differ.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/unit/test_t5136_tag_cloud_c_loader.py, tests/web/test_t3575_tasks_page_perf.py, tests/web/test_t5136_task_list_pager.py, web/blueprints/cockpit.py, web/blueprints/fabric.py, web/blueprints/tasks.py, web/search_utils.py, web/templates/tasks.html, web/warmup.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-14T19:49:31Z
-last_update: 2026-11-14T22:03:24Z
-date_finished:
+last_update: 2026-11-14T22:08:43Z
+date_finished: 2026-11-14T22:08:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -443,3 +443,28 @@ Review page: http://192.168.10.107:3000/review/T-5136
 ### 2026-11-14T19:50:03Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-14T22:08:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4fe34a5d
+- **Timestamp:** 2026-11-14T22:09:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — `tests/playwright/test_response_times.py` and `tests/playwright/test_task_panel.py` pass; every test that reads a changed file passes; Watchtower restarted and `bin/fw watchtower current` passes
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/test_response_times.py in: `tests/playwright/test_response_times.py` and `tests/playwright/test_task_panel.py` pass; every test that reads a changed file passes; Watchtower rest`
+- **AC#1 (Human)** — [REVIEW] The task list opens quickly and the pager is usable
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='shows "Showing 1–200 of …"' in Expected: the list appears within a few seconds and shows "Showing 1–200 of …"; paging keeps the filter and sort; the search page with its tag cloud o`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 140
+     - evidence: `curl -s "$(bin/fw watchtower url)/tasks?view=list" | grep -q 'Showing 1–200 of'`
