@@ -361,7 +361,7 @@ grep -q "T-5130 (found under T-5129" web/templates/base.html
 - `tests/playwright/test_htmx_nav_page_scripts.py`: 3/3 pass on a clean run (2026-11-14); with `base.html` stashed the two page tests fail and the control passes
 - Watchtower restarted onto the fix (pid 2126904); `bin/fw watchtower current` passes
 - Full Playwright run: no new failure. The 20 failing files fail with or without the change, or never trigger it (criterion 3 lists them)
-- Found on the way, not part of this task: the task list view (5,120 rows) takes about 37 s and `/search` about 35 s on the live server
+- Found on the way, not part of this task: the task list view (5,120 rows) takes about 37 s and http://192.168.10.107:3000/search about 35 s on the live server
 
 Review page: http://192.168.10.107:3000/review/T-5130
 
