@@ -386,7 +386,7 @@ bin/fw watchtower current
 **Evidence:**
 - `tests/unit/t5126_register_scan_cache_test.py` 7/7, `tests/unit/t5126_token_tile_warm_test.py` 2/2, `tests/web/test_t3600_approval_summary.py` 9/9 (two new stale-while-revalidate tests)
 - Cold `/` after a Watchtower restart: 44-47 s before, 5.3 s after (load 13 at the time)
-- `/approvals` still parses every task's criteria per request: filed as T-5128, not hidden
+- The approvals page still parses every task's criteria per request: filed as T-5128, not hidden
 
 ## Decisions
 
