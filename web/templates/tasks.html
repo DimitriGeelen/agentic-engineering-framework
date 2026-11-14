@@ -750,7 +750,7 @@ document.addEventListener('htmx:afterRequest', function(event) {
         </tr>
     </thead>
     <tbody>
-        {% for task in tasks %}
+        {% for task in list_tasks %}
         <tr>
             {# S4e (T-2018): bulk multi-select checkbox #}
             <td><input type="checkbox" class="wt-bulk-select" data-bulk-select="{{ task.id }}"
@@ -783,4 +783,12 @@ document.addEventListener('htmx:afterRequest', function(event) {
         {% endfor %}
     </tbody>
 </table>
+{# T-5136: the list is paged; the pager keeps the filters and sort #}
+{% if list_pager and list_pager.pages > 1 %}
+<nav class="wt-list-pager" aria-label="Task list pages" style="display:flex;gap:1rem;align-items:center;margin-top:.75rem;">
+    {% if list_pager.prev_url %}<a href="{{ list_pager.prev_url }}" hx-get="{{ list_pager.prev_url }}" hx-target="#content" hx-push-url="true" rel="prev">&larr; Previous</a>{% endif %}
+    <span>Showing {{ list_pager.first }}–{{ list_pager.last }} of {{ list_pager.total }} (page {{ list_pager.page }} of {{ list_pager.pages }})</span>
+    {% if list_pager.next_url %}<a href="{{ list_pager.next_url }}" hx-get="{{ list_pager.next_url }}" hx-target="#content" hx-push-url="true" rel="next">Next &rarr;</a>{% endif %}
+</nav>
+{% endif %}
 {% endif %}

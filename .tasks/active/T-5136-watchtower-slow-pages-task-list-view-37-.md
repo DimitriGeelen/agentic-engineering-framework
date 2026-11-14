@@ -1,13 +1,17 @@
 ---
 id: T-5136
-name: "Watchtower slow pages: task list view ~37 s (5,120 rows) and search ~35 s on the live server"
+name: "Watchtower slow pages: task list view ~37 s (5,120 rows) and search ~35 s on
+  the live server"
 description: >
-  Measured 2026-11-14 while closing T-5130: the task list view becomes visible after 36.9 s and the search page responds in 35.3 s (limit 10 s); fabric sits at the 10 s limit. 1409 raised Watchtower slowness before their Sunday video. Profile both routes, then fix; one bug per route if causes differ.
+  Measured 2026-11-14 while closing T-5130: the task list view becomes visible after
+  36.9 s and the search page responds in 35.3 s (limit 10 s); fabric sits at the 10
+  s limit. 1409 raised Watchtower slowness before their Sunday video. Profile both
+  routes, then fix; one bug per route if causes differ.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-14T19:49:31Z
-last_update: 2026-11-14T19:49:31Z
-date_finished: null
+last_update: '2026-11-14T19:50:11Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-14T19:50:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5136: Watchtower slow pages: task list view ~37 s (5,120 rows) and search ~35 s on the live server
@@ -57,22 +78,33 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** While closing T-5130 (2026-11-14) the Playwright run measured the live Watchtower: the task list view (`/tasks?view=list`, 5,120 rows) became visible after 36.9 s, and `/search` answered in 35.3 s against the 10 s limit in `tests/playwright/test_response_times.py`. `/fabric` sat at 10.0 s. 1409 asked for Watchtower to be fast before their Sunday video; T-5126/T-5128/T-5129 fixed other pages.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Not yet localised. Likely candidates: the list view renders every task with no paging, and search runs a cold query (embeddings or a full scan) per request. Profile first; one cause per route.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** both pages answer well inside the 10 s limit on the live server, without hiding tasks or changing search results.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the list view and search open in a few seconds; `test_response_times` and `test_task_panel` pass on the live data.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] the cause of each slow route is measured (profile with the hot functions and their share of the time) and written in this task before any fix
+      — measured before the fix, written here after it (see `## RCA`): list view = an 18.9 MB page (server 1.9 s warm); search = a cold tag-cloud parse (57 of 58 s in pure-Python `yaml.safe_load` of 4,180 episodics), skipped by the startup warm-up.
+- [ ] the task list view is shown in under 10 s on the live data (the server time was never the problem: 1.9 s warm; the 37 s was the 18.9 MB page), with every task still reachable (a regression test proves both)
+- [ ] `/search` returns in under 10 s on the first visit after a restart, with the tag cloud unchanged (a regression test proves the parse gives the same tags)
+- [ ] `tests/playwright/test_response_times.py` and `tests/playwright/test_task_panel.py` pass; every test that reads a changed file passes; Watchtower restarted and `bin/fw watchtower current` passes
 
 ### Human
+- [ ] [REVIEW] The task list opens quickly and the pager is usable
+  **Steps:**
+  1. Open http://192.168.10.107:3000/tasks?view=list
+  2. Scroll to the bottom of the table and use "Next →" and "← Previous"
+  3. Pick a status filter or "Sort by Name", then page again
+  4. Open http://192.168.10.107:3000/search
+  **Expected:** the list appears within a few seconds and shows "Showing 1–200 of …"; paging keeps the filter and sort; the search page with its tag cloud opens within a few seconds
+  **If not:** note the page and the time; the changes are in `web/blueprints/tasks.py` (pager), `web/templates/tasks.html`, `web/search_utils.py` and `web/warmup.py`
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -256,8 +288,31 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/web/test_t5136_task_list_pager.py tests/unit/test_t5136_tag_cloud_c_loader.py tests/unit/test_t4363_startup_warmup.py tests/unit/test_t4458_search_degrade.py tests/web/test_t3575_tasks_page_perf.py
+python3 -c "import sys; sys.path.insert(0,'.'); from web import warmup; assert '/search' in warmup.WARM_PATHS"
+test "$(curl -s -o /dev/null -w '%{size_download}' "$(bin/fw watchtower url)/tasks?view=list")" -lt 3000000
+curl -s "$(bin/fw watchtower url)/tasks?view=list" | grep -q 'Showing 1–200 of'
+test "$(curl -s -o /dev/null -w '%{time_total}' "$(bin/fw watchtower url)/search" | cut -d. -f1)" -lt 10
+bin/fw vendor self --check --task T-5136
+bin/fw watchtower current
 
 ## RCA
+
+**Measured 2026-11-14 on the live Watchtower and with the Flask test client (cProfile):**
+
+| Route | Live time | Where the time went | Cause |
+|---|---|---|---|
+| `/tasks?view=list` | server 1.9 s (warm), browser 36.9 s | the page: 18.9 MB for 5,120 rows, median 3.6 KB per row | every row carries four inline edit forms (status, horizon, type, owner) with a CSRF token each, about 20,000 forms in total for the browser and htmx to set up |
+| `/search` (no query) | 19.6 s on the first visit after a restart, 0.05 s after | 57.8 of 58.4 s in `aggregate_tags` → `_parse_tags_from_path` → pure-Python `yaml.safe_load`, 4,180 episodic files | the empty page builds the tag cloud; the startup warm-up (T-4363/T-4458) only warms `/search?q=warmup`, which skips the tag cloud |
+
+Cold `/tasks?view=list` in a fresh process is also slow (28.6 s profiled: 19.2 s in `board_awaiting_reason` → verdict-ledger git calls, 5.2 s loading task metadata). The live server does not pay that, because the startup warm-up already warms `/tasks`. Not changed here.
+
+**Fix:**
+1. The list view is paged at 200 rows (`LIST_PAGE_SIZE`), with Previous/Next links that keep every filter and the sort. Page 1 is now 842 KB.
+2. The tag parse uses libyaml's `CSafeLoader`, the pattern already in `web/shared.py`: 2.3 s instead of 21.6 s for all 4,180 files, with identical tags. Cold `/search` is now 3.0 s.
+3. Bare `/search` joins the startup warm-up, so the first visitor no longer pays even that.
+
+**Why it went unnoticed:** `test_response_times` caught `/search`, but only as one of many pre-existing reds. Nothing measured the size of the list page; its server time looked fine.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -353,3 +408,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5136-watchtower-slow-pages-task-list-view-37-.md
 - **Context:** Initial task creation
+
+### 2026-11-14T19:50:03Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

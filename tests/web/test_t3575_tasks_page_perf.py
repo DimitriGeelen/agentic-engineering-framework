@@ -85,8 +85,14 @@ def test_board_columns_capped_but_list_filter_reaches_everything():
     if counts[status] > BOARD_COLUMN_CAP:
         assert "more &rarr;" in html  # overflow link present
         # the filter the overflow link targets still lists every task of that status
-        lst = c.get(f"/tasks?view=list&status={status}").get_data(as_text=True)
-        assert lst.count('data-bulk-select="T-') >= counts[status]
+        # T-5136: the list is paged, so follow the pager; together the pages list them all
+        seen, url = set(), f"/tasks?view=list&status={status}"
+        while url:
+            lst = c.get(url).get_data(as_text=True)
+            seen |= set(re.findall(r'data-bulk-select="(T-\d+)"', lst))
+            m = re.search(r'href="([^"]+)"[^>]*rel="next"', lst)
+            url = m.group(1).replace("&amp;", "&") if m else None
+        assert len(seen) >= counts[status]
 
 
 def _column_counts(html):
