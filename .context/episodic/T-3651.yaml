@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3651: fw termlink cleanup: --help still executes it, no --dry-run, no consent, and finished workers' uncollected results are deleted (055 OBS-049 remainder)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T08:01:15Z
+# ============================================================================
+
+task_id: T-3651
+task_name: "fw termlink cleanup: --help still executes it, no --dry-run, no consent, and finished workers' uncollected results are deleted (055 OBS-049 remainder)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T13:26:50Z
+completed: 2026-11-15T08:00:43Z
+duration_days: 45
+updates_count: 3
+first_commit: 2026-10-01T23:39:36+02:00
+last_commit: 2026-10-01T23:40:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  termlink cleanup parses args, --dry-run, consent gate, SIGTERM only after consent. vendor sync (termlink cleanup)
+
+# Key outcomes
+outcomes:
+  - '`fw termlink cleanup --help|-h` prints usage, exits 0, touches nothing; an unknown flag exits 2 and touches nothing'
+  - '`--dry-run|-n` prints the plan (dirs to remove, PIDs to signal, uncollected results) and changes nothing'
+  - 'Removal of a finished worker with uncollected result.md/result.jsonl needs consent (`--yes` or tty prompt); non-tty without `--yes` exits 3 and leaves it on disk. "Collected" = `fw termlink result` wrote a `collected` marker in the worker dir.'
+  - 'Orphan SIGTERM happens only after the consent gate (never during the scan)'
+  - 'T-3595/T-3580 protections kept: active and unfinalised review workers are never removed'
+  - 'Callers of `fw termlink cleanup` audited (no script/cron/handover caller exists; only docs in CLAUDE.md and agents/termlink/AGENT.md, updated to `--dry-run` then `--yes`)'
+  - 'tests/unit/t3651_termlink_cleanup_guards.bats passes on a fixture DISPATCH_DIR'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/AGENT.md'
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.tasks/active/T-3651-fw-termlink-cleanup---help-still-execute.md'
+  - 'CLAUDE.md'
+  - 'agents/termlink/AGENT.md'
+  - 'agents/termlink/termlink.sh'
+  - 'tests/unit/t3651_termlink_cleanup_guards.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T23:39:36'
+    action: 'T-3651: termlink cleanup parses args, --dry-run, consent gate, SIGTERM only after consent'
+  - time: '2026-10-01T23:40:17'
+    action: 'T-3651: vendor sync (termlink cleanup)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 64473 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, 055, upstream]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 64473
+  commits: 3
+  files_changed: 10
+  lines_added: 438
+  lines_removed: 35
+  footprint_refreshed_at: '2026-11-15T08:01:21Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3651-fw-termlink-cleanup---help-still-execute.md
+generated_by: context-agent-hybrid

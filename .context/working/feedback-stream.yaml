@@ -54713,3 +54713,21 @@ scan_id: R-393cef5e
 task_id: T-3621
 payload:
   task_file: .tasks/active/T-3621-pre-push-unit-suite-gate-as-a-ratchet-bl.md
+---
+kind: scan_emitted
+timestamp: '2026-11-15T08:00:56Z'
+scan_id: R-68872324
+task_id: T-3651
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-15T08:00:56Z'
+scan_id: R-68872324
+task_id: T-3651
+payload:
+  task_file: .tasks/active/T-3651-fw-termlink-cleanup---help-still-execute.md
