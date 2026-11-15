@@ -1,0 +1,21 @@
+id: tests/playwright/test_t5145_task_filter_selects.py
+name: test_t5145_task_filter_selects
+type: script
+subsystem: tests-playwright
+location: tests/playwright/test_t5145_task_filter_selects.py
+tags: []
+
+purpose: "T-5145: picking a filter from the task-list selects filters the whole list."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-15
+created_by: unknown

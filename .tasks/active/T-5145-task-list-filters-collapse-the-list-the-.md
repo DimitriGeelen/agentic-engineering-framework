@@ -92,11 +92,21 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] every filter control is marked `data-task-filter`, and every filter `hx-include` names only `[data-task-filter]`; no filter control's include matches a row select or the new-task form
-- [ ] a browser regression test picks "work-completed" from the status select and "Sort by Name" from the sort select, and the list stays a full paged list (more than 200 matching tasks, pager shown, URL carries status and sort); it fails without the fix
-- [ ] the T-5136 pager tests and every test that reads `tasks.html` pass; Watchtower restarted and `bin/fw watchtower current` passes
+- [x] every filter control is marked `data-task-filter`, and every filter `hx-include` names only `[data-task-filter]`; no filter control's include matches a row select or the new-task form
+      — 9 controls marked, 8 includes rewritten (4 in the shared filter bar, `all_filters` for the 4 toolbar selects); no `hx-include="[name=` left in `tasks.html`. `test_no_filter_include_matches_a_row_select` checks it in the browser.
+- [x] a browser regression test picks "work-completed" from the status select and "Sort by Name" from the sort select, and the list stays a full paged list (more than 200 matching tasks, pager shown, URL carries status and sort); it fails without the fix
+      — `tests/playwright/test_t5145_task_filter_selects.py` 2/2. With `tasks.html` stashed, the select test fails: no pager, so the list had collapsed. It picks the toolbar select by `hx-get`, not by the new marker, so it reproduces the bug unfixed.
+- [x] the T-5136 pager tests and every test that reads `tasks.html` pass; Watchtower restarted and `bin/fw watchtower current` passes
+      — 43 unit/web tests (incl. `test_t5136_task_list_pager`, `test_t3575_tasks_page_perf`); browser `test_task_panel` 5/5, `test_htmx_nav_page_scripts` 3/3. Watchtower pid 2913688, `current` passes.
 
 ### Human
+- [ ] [REVIEW] Filtering the task list from the selects keeps the whole list
+  **Steps:**
+  1. Open http://192.168.10.107:3000/tasks?view=list
+  2. Pick "work-completed" in the status select, then "Sort by Name" in the sort select
+  3. Scroll to the pager and press Next
+  **Expected:** thousands of completed tasks, paged 200 at a time and sorted by name; Next keeps both choices
+  **If not:** note the count shown; the change is the `data-task-filter` marks and `[data-task-filter]` includes in `web/templates/tasks.html`
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -280,8 +290,30 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+! grep -q 'hx-include="\[name=' web/templates/tasks.html
+grep -q 'all_filters = "\[data-task-filter\]"' web/templates/tasks.html
+python3 -m pytest -q -p no:cacheprovider tests/web/test_t5136_task_list_pager.py tests/web/test_t3575_tasks_page_perf.py
+bin/fw vendor self --check --task T-5145
+bin/fw watchtower current
+
+## Visual Verification
+
+Shots: `.context/visual/T-5145/{list-filtered,list}@{1024,1440,1920}.png` (`fw ux shots T-5145 list-filtered=…/tasks?view=list&status=work-completed&sort=name list=…/tasks?view=list`, 2026-11-15, Watchtower pid 2913688, current).
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| list-filtered | status/sort selects, table, pager | ok | ok | ok | full-page capture: a full 200-row page, not a handful |
+| list | filter bar, table, pager | ok | ok | ok | unchanged layout; only attributes added |
+
+The behaviour itself (pick from the selects, list stays whole and paged) is checked in a browser by `tests/playwright/test_t5145_task_filter_selects.py`, which fails without the fix.
 
 ## RCA
+
+**Cause:** each filter control sent its siblings with `hx-include="[name='status'],[name='type'],…"`. That is a page-wide CSS selector, and the same names are used by every row's inline edit selects (status, horizon, type, owner) and the new-task form. htmx included them all, so the first row's status and type rode along as filters.
+
+**Why it went unnoticed:** the URL form of a filter works, and the T-5136 pager tests and my own walk used URLs. Only picking from the selects showed it. The independent reviewer did that.
+
+**Fix:** filter controls carry `data-task-filter`, and every filter include names only `[data-task-filter]`.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -322,6 +354,17 @@ bvp_scores_proposed:
 -->
 
 ## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Picking a filter from the task-list selects collapsed the list to a few tasks, because each filter control also picked up every row's edit selects. The filters now send only the filter controls. A browser test reproduces the bug and passes with the fix, and the task-page tests stay green. What is left is your look at the filters.
+
+**Evidence:**
+- `tests/playwright/test_t5145_task_filter_selects.py` 2/2; the select test fails without the fix (no pager: the list collapsed)
+- 43 unit/web tests that read the task page pass; browser task-panel 5/5 and navigation 3/3
+- Screenshots in `.context/visual/T-5145/` (see `## Visual Verification`)
+
+Review page: http://192.168.10.107:3000/review/T-5145
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
