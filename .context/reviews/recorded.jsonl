@@ -117,3 +117,4 @@
 {"ac":1,"outcome":"green","task":"T-5130","ts":"2026-11-15T15:56:50Z","verdict_id":"V-20261115-98eec4bd"}
 {"ac":1,"outcome":"green","task":"T-5136","ts":"2026-11-15T16:05:08Z","verdict_id":"V-20261115-190e237e"}
 {"ac":1,"outcome":"amber","task":"T-5136","ts":"2026-11-15T16:06:05Z","verdict_id":"V-20261115-ba025343"}
+{"ac":1,"outcome":"not-evaluated","task":"T-3786","ts":"2026-11-15T16:10:41Z","verdict_id":"V-20261115-44ec8995"}
