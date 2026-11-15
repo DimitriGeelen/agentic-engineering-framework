@@ -15,7 +15,8 @@ workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: [tests/playwright/test_t5145_task_filter_selects.py, web/templates/tasks.html]
+components: [tests/playwright/test_t5145_task_filter_selects.py, 
+      web/templates/tasks.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T15:11:54Z
-last_update: 2026-11-15T15:24:45Z
+last_update: '2026-11-15T15:30:35Z'
 date_finished: 2026-11-15T15:24:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -72,6 +73,16 @@ bvp_scores_proposed:
     rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-11-15T15:30:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (2-components); tier=2 (workflow:build); effort=8 
+      (lines=367,acs=6)
     rubric_sha: e4a00f38e801
 ---
 
