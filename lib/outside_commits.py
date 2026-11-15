@@ -120,6 +120,27 @@ def pr_merged_by(repo: str, n: int, cache: dict) -> tuple[str | None, str]:
     return res
 
 
+def prs_containing(repo: str, sha: str) -> tuple[list[int] | None, str]:
+    """T-5155: (merged PR numbers that contain ``sha``, "") from GitHub, or (None, reason).
+    Used only when no commit subject names a PR: a merge titled anything but
+    "Merge pull request #N" otherwise left a properly merged PR's commit unattributed."""
+    if not repo:
+        return None, "no github.com remote to ask"
+    gh = os.environ.get("FW_GH_BIN", "gh")
+    try:
+        p = subprocess.run([gh, "api", f"repos/{repo}/commits/{sha}/pulls", "--jq",
+                            '[.[] | select(.merged_at != null) | .number] | map(tostring) | join(" ")'],
+                           capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.SubprocessError) as e:
+        return None, f"gh unavailable: {e}"
+    if p.returncode != 0:
+        return None, f"gh api failed: {(p.stderr or p.stdout).strip()[:120]}"
+    try:
+        return [int(x) for x in p.stdout.split()], ""
+    except ValueError:
+        return None, f"unexpected gh answer: {p.stdout.strip()[:80]}"
+
+
 def check(branch: str = "bleeding-edge") -> dict:
     """The full verdict. Raises CheckError when the check cannot run."""
     pol_path = policy_path()
@@ -161,7 +182,26 @@ def check(branch: str = "bleeding-edge") -> dict:
         a = {"sha": c["sha"], "short": c["sha"][:9], "author": f"{c['name']} <{c['email']}>",
              "subject": c["subject"], "pr": pr}
         if pr is None:
-            a.update(level="FAIL", reason="pushed directly, not through a PR")
+            # T-5155: no subject names a PR; ask GitHub which merged PRs contain the commit.
+            nums, why = prs_containing(repo, c["sha"])
+            if nums is None:
+                a.update(level="FAIL", reason=f"pushed directly, not through a PR "
+                                              f"(GitHub could not be asked: {why})")
+                alarms.append(a)
+                continue
+            mergers = {n: pr_merged_by(repo, n, cache)[0] for n in nums}
+            ok = [n for n, who in mergers.items() if who == login]
+            if ok:
+                continue
+            if not nums:
+                a.update(level="FAIL", reason="pushed directly, not through a PR")
+            else:
+                pr = nums[0]
+                a["pr"] = pr
+                who = mergers[pr]
+                a.update(level="WARN" if who is None else "FAIL",
+                         reason=(f"PR #{pr} unverified" if who is None
+                                 else f"PR #{pr} merged by {who or 'nobody'}, not the operator"))
         else:
             who, why = pr_merged_by(repo, pr, cache)
             if who is None:

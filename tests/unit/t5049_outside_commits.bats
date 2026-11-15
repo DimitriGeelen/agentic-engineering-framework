@@ -37,6 +37,8 @@ EOF
 #!/bin/bash
 echo "$*" >> "$TEST_TEMP_DIR/gh.calls"
 [ -n "$STUB_GH_FAIL" ] && { echo "gh: not authenticated" >&2; exit 4; }
+# T-5155: "which merged PRs contain this commit" answers its own list (default: none)
+case "$2" in */commits/*/pulls) echo "${STUB_COMMIT_PRS:-}"; exit 0 ;; esac
 echo "$STUB_MERGED_BY"
 EOF
     chmod +x "$TEST_TEMP_DIR/gh"
@@ -145,4 +147,32 @@ _commit() {  # name email subject [file]
     [[ "$output" == *"Outside commits"* ]]
     [[ "$output" == *"$sha"* ]]
     [[ "$output" == *"eve@outside.invalid"* ]]
+}
+
+# ── T-5155: a PR merged with a custom merge subject is found through GitHub ─────────────────
+
+@test "T-5155: outside commit in a PR merged by the operator under a custom subject: exit 0" {
+    export STUB_COMMIT_PRS=115
+    _commit "Eve Outside" eve@outside.invalid "T-5006 (#114): docs fix"
+    run python3 "$CHECK" audit
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"1 operator-merged"* ]]
+    grep -q "commits/.*/pulls" "$TEST_TEMP_DIR/gh.calls"
+    grep -q "repos/owner/repo/pulls/115" "$TEST_TEMP_DIR/gh.calls"
+}
+
+@test "T-5155: the PR that contains it was merged by someone else: exit 2 naming the PR" {
+    export STUB_COMMIT_PRS=115 STUB_MERGED_BY=someone
+    _commit "Eve Outside" eve@outside.invalid "T-5006 (#114): docs fix"
+    run python3 "$CHECK" audit
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"PR #115 merged by someone, not the operator"* ]]
+}
+
+@test "T-5155: GitHub cannot be asked: still FAIL, with the reason" {
+    export STUB_GH_FAIL=1
+    _commit "Eve Outside" eve@outside.invalid "T-0003: direct push"
+    run python3 "$CHECK" audit
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"pushed directly, not through a PR (GitHub could not be asked"* ]]
 }
