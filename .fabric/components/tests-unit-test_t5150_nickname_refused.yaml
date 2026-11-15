@@ -1,0 +1,21 @@
+id: tests/unit/test_t5150_nickname_refused.py
+name: test_t5150_nickname_refused
+type: script
+subsystem: tests
+location: tests/unit/test_t5150_nickname_refused.py
+tags: []
+
+purpose: "T-5150 (010 T-3798): a bare `--to` that is a nickname of a known peer is refused, naming the peer, before the hub's \"inbox was fetched\" evidence is consulted."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-15
+created_by: unknown

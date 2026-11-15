@@ -91,9 +91,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] a bare name that is not itself a peer but matches a known peer's name (`010-termlink` for `termlink`: the name after the numeric prefix, or a whole hyphen-separated part) is refused with the candidates named, before `_project_inbox_read` is consulted
-- [ ] the general "not resolvable" refusal also names close peer candidates when there are any
-- [ ] tests: the nickname case is refused with the candidate and posts nothing; a real peer, a numbered project id and a sub-agent resolve as before; every test that reads `addressing.py` passes
+- [x] a bare name that is not itself a peer but matches a known peer's name (`010-termlink` for `termlink`: the name after the numeric prefix, or a whole hyphen-separated part) is refused with the candidates named, before `_project_inbox_read` is consulted
+      — `nickname_candidates()` in `lib/sidecar/addressing.py`, checked in `resolve()` before `circuit.is_project_id` too. Found on the way: `is_project_id` counts a sibling checkout directory as a project, and 010's checkout here is `/opt/termlink`, so `--to termlink` became `inbox:<hub>/termlink`. Live on this host: `termlink` → refused, "did you mean 010-termlink?"; `sprind` → "did you mean 1409-sprind?"; `010-termlink` and `1409-sprind` resolve as before. A numbered `NNN-name` id, our own id and an explicit `--level` keep their meaning.
+- [x] the general "not resolvable" refusal also names close peer candidates when there are any
+      — `_close_peers_hint()` (difflib, cutoff 0.6): `ring20-dashbord` → "Closest peers: ring20-dashboard".
+- [x] tests: the nickname case is refused with the candidate and posts nothing; a real peer, a numbered project id and a sub-agent resolve as before; every test that reads `addressing.py` passes
+      — `tests/unit/test_t5150_nickname_refused.py` 7/7 (incl. the sibling-checkout case and "the weak evidence is not even asked"). The refusal raises inside `resolve()`, before anything is posted. 587 Python and 43 bats tests reading `addressing.py`/`sidecar_cli.py` pass; `fw test invariants` 0 failures.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -279,8 +282,16 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_t5150_nickname_refused.py tests/unit/test_sidecar_orphan_circuit_t4418.py
+bin/fw vendor self --check --task T-5150
 
 ## RCA
+
+**Cause:** a bare `--to <name>` reached `inbox:<hub>/<name>` by two weak routes. First, `circuit.is_project_id` counts a sibling directory that holds a `.framework.yaml` as a project. 010's checkout on this host is `/opt/termlink`, while its project id is `010-termlink`, so `--to termlink` was taken as a project. Second, T-4529 accepts any name whose inbox the hub reports as recently fetched, and a peek counts (T-5149). Older senders posted with no check at all. 54 consults went to a topic nobody reads.
+
+**Fix:** before either route, a bare name that is a nickname of a known peer (the part after its number, or a whole hyphen-separated part) is refused, naming the peer. The general refusal also lists close peers.
+
+**Not covered here:** reading what already sits in such an inbox is T-5148 (project-declared aliases), and the detector that should have flagged it is T-5149.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
