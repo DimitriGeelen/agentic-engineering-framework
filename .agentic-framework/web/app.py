@@ -260,7 +260,9 @@ def create_app() -> Flask:
     # render arguments over context-processor values.
     @app.context_processor
     def _site_nav_context():
-        return {"nav_groups": NAV_GROUPS, "nav_items": NAV_ITEMS}
+        from web.shared import NAV_FULL_LOAD_ENDPOINTS  # T-5146
+        return {"nav_groups": NAV_GROUPS, "nav_items": NAV_ITEMS,
+                "nav_full_load": NAV_FULL_LOAD_ENDPOINTS}
 
     # -------------------------------------------------------------------
     # Register blueprints (centralized in __init__.py — T-431/A2)
