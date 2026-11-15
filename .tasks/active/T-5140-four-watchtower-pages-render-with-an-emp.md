@@ -11,12 +11,12 @@ description: >
   by T-5130, which turned in-app navigation to /bvp into a full load (before, the
   htmx swap kept the previous page's nav).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/web/test_t5140_site_nav_on_every_page.py, web/app.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T13:52:54Z
-last_update: '2026-11-15T13:53:03Z'
-date_finished:
+last_update: 2026-11-15T14:12:48Z
+date_finished: 2026-11-15T14:12:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -425,3 +425,21 @@ Review page: http://192.168.10.107:3000/review/T-5140
 
 ### 2026-11-15T13:53:00Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-15T14:12:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-41f75523
+- **Timestamp:** 2026-11-15T14:13:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — every test that reads `web/app.py` passes; Watchtower restarted and `bin/fw watchtower current` passes
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/app.py in: every test that reads `web/app.py` passes; Watchtower restarted and `bin/fw watchtower current` passes`
