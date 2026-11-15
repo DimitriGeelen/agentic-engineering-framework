@@ -170,6 +170,12 @@ cost_estimate_proposed:
       — `tests/unit/test_t3786_index_never_built_by_readers.py` 6/6; 85 tests that read the discovery/search code pass.
 
 ### Human
+- [ ] [REVIEW] Search and ask still work, and never rebuild the index from the page
+  **Steps:**
+  1. Open http://192.168.10.107:3000/search and search for "vector index"
+  2. On the same page switch to the ask mode and ask "what is T-3786 about?"
+  **Expected:** results and an answer appear as before. If the index were unavailable, the page would say "rebuild with: fw index reindex" and start nothing
+  **If not:** note what the page showed; the code is `web/blueprints/discovery.py` (ask stream) and `web/embeddings.py` `_get_db`
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -383,6 +389,17 @@ bin/fw watchtower current
 -->
 
 ## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** The bug that wiped our 2.5 GB vector index (a reader rebuilding it in place after a transient error) has been fixed since 4593863c4: readers raise `IndexUnavailable` with the remedy, only `fw index reindex` builds, and the build swaps atomically. Today's change removes the last dead copy of a page-view build and adds a guard test so it cannot come back. What is left is your look that search and ask still work.
+
+**Evidence:**
+- `tests/unit/test_t3786_index_never_built_by_readers.py` 6/6 (unopenable, empty and missing index raise and are left untouched; a failed build leaves the old index byte-identical; a good build swaps; no builder call under `web/blueprints/`)
+- 85 tests that read the search and discovery code pass
+- Watchtower restarted onto the change (pid 3922299); `bin/fw watchtower current` passes
+
+Review page: http://192.168.10.107:3000/review/T-3786
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
