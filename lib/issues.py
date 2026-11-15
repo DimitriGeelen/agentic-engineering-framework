@@ -936,7 +936,9 @@ _AFFIRM_RE = re.compile(
     r"(it\s+)?works\s+(now|for\s+me)|(is|are)\s+(now\s+)?(fixed|working)|looks\s+fixed|can\s+confirm|"
     r"now\s+works|works\s+as\s+expected|works\s+as\s+described|(that|this)\s+solves\s+it)\b", re.I)
 # T-5094: a sentence that is only "Confirmed" (optionally "thank you"/"thanks") is a verdict too.
-_BARE_CONFIRM_RE = re.compile(r"^confirmed(\s*[,.!:-]?\s*(thank\s+you|thanks)\w*)?\s*[.!]?$", re.I)
+_BARE_CONFIRM_RE = re.compile(r"^confirmed(\s*[,.!:-]?\s*(thank\s+you|thanks)\w*)?"
+                              # T-5159 (#98): "Confirmed, thank you; that covers everything we asked for"
+                              r"(\s*;\s*that\s+covers\s+(everything|all)\b[^.!?]*)?\s*[.!]?$", re.I)
 # strong negatives count anywhere in the reply; weak counter-signals only in its first paragraph, so
 # "the gate still bites" or "separate, still open" further down does not veto a confirmation.
 _STRONG_NEG_RE = re.compile(
@@ -944,6 +946,14 @@ _STRONG_NEG_RE = re.compile(
     r"(doesn'?t|does\s+not|did\s+not|didn'?t)\s+(work|fix)|not\s+working|regress\w*|re-?open\w*|"
     r"is\s+broken|remains\s+broken|broken\s+again|fails|failing)\b", re.I)
 _WEAK_NEG_RE = re.compile(r"\b(still|however|except|unfortunately)\b|\bbut\b[^.!?]*\bnot\b", re.I)
+# T-5159: a control case ("`cat /home/x` is still blocked", "a misspelled name is still reported")
+# proves the fix is safe; its "still" is not doubt. Removed before the weak counter-signal check.
+_CONTROL_STILL_RE = re.compile(
+    r"\bstill\s+(blocked|refused|denied|rejected|caught|reported|flagged|works|passes|green)\b", re.I)
+
+
+def _doubts(para: str) -> bool:
+    return bool(_WEAK_NEG_RE.search(_CONTROL_STILL_RE.sub("", para or "")))
 _CAVEAT_RE = re.compile(r"\b(only|have\s+not|haven'?t|did\s+not|didn'?t|cannot|can'?t|could\s+not|couldn'?t|"
                         r"not\s+(run|clicked|tested|tried))\b", re.I)
 # T-4668: the issue author explicitly OKs closing. Standing operator ruling: that is a routine close.
@@ -997,12 +1007,12 @@ def classify_reply(text: str, author: str = "", issue_author: str = "") -> str:
     if _STRONG_NEG_RE.search(text):
         return "not-fixed"
     sents = _sentences(text)
-    if sents and _affirms(sents[0]) and not _WEAK_NEG_RE.search(first_para):
+    if sents and _affirms(sents[0]) and not _doubts(first_para):
         return "confirmed"
     # T-5094: submitters often put the test details first and the verdict last. Any sentence of
     # the LAST paragraph may carry it, judged against that paragraph's own counter-signals.
     last_para = re.split(r"\n\s*\n", text.strip())[-1] if text.strip() else ""
-    if any(_affirms(s) for s in _sentences(last_para)) and not _WEAK_NEG_RE.search(last_para):
+    if any(_affirms(s) for s in _sentences(last_para)) and not _doubts(last_para):
         return "confirmed"
     if _close_ok_sentence(text) and not _KEEP_OPEN_RE.search(text):
         return "close-ok"
