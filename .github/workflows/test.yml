@@ -62,7 +62,22 @@ jobs:
           python-version: '3.x'
 
       - name: Install Python dependencies
-        run: pip install pyyaml
+        # T-5153: the bats suite drives the web app, the EWCR contract checker and the
+        # playwright helpers; with pyyaml alone 21 cases failed on "No module named 'flask'",
+        # 5 on ruamel, and the contract checker on jsonschema.
+        run: |
+          pip install pyyaml pytest jsonschema playwright beautifulsoup4
+          if [ -f web/requirements.txt ]; then
+            pip install -r web/requirements.txt
+          fi
+
+      - name: Git identity and framework hooks
+        # T-5153: tests copy .git/hooks/pre-push (22 cases failed on "cannot stat") and some
+        # need a commit identity.
+        run: |
+          git config --global user.email "ci@aef.local"
+          git config --global user.name "AEF CI"
+          bin/fw git install-hooks || echo "install-hooks failed (non-fatal; tests that need hooks will say so)"
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
