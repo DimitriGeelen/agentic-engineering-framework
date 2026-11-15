@@ -12,12 +12,12 @@ description: >
   then apply the existing merged_by == operator rule; if GitHub cannot be asked, fail
   as before.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/outside_commits.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T17:46:05Z
-last_update: '2026-11-15T17:46:11Z'
-date_finished:
+last_update: 2026-11-15T17:48:34Z
+date_finished: 2026-11-15T17:48:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -393,3 +393,16 @@ bin/fw vendor self --check --task T-5155
 
 ### 2026-11-15T17:46:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-15T17:48:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2a67e5f2
+- **Timestamp:** 2026-11-15T17:48:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

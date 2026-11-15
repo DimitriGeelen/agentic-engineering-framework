@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5155: Outside-commit alarm misses a PR merged with a custom merge subject: it finds PRs only from commit subjects, so PR #115's commit reads as 'pushed directly
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T17:48:57Z
+# ============================================================================
+
+task_id: T-5155
+task_name: "Outside-commit alarm misses a PR merged with a custom merge subject: it finds PRs only from commit subjects, so PR #115's commit reads as 'pushed directly"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-15T17:46:05Z
+completed: 2026-11-15T17:48:34Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-15T18:47:27+01:00
+last_commit: 2026-11-15T18:48:32+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  outside-commit alarm asks GitHub which merged PRs contain a commit when no subject names one; same merged-by-operator rule; FAIL kept when GitHub cannot be asked; tests. vendor self. criteria ticked, RCA, verification
+
+# Key outcomes
+outcomes:
+  - 'when no subject names a PR, the check asks GitHub for the merged pull requests that contain the commit (`repos/<repo>/commits/<sha>/pulls`) and then applies the unchanged `merged_by == operator_github_login` rule'
+  - 'a commit no merged PR contains still FAILs as "pushed directly"; if GitHub cannot be asked, the commit still FAILs, with the reason named; a PR merged by someone else still FAILs'
+  - '`tests/unit/t5049_outside_commits.bats` has cases for each (gh stubbed) and passes; `python3 lib/outside_commits.py audit` reports 3c0e57e88 as operator-merged; vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/outside_commits.py'
+  - '.tasks/active/T-5155-outside-commit-alarm-misses-a-pr-merged-.md'
+  - 'lib/outside_commits.py'
+  - 'tests/unit/t5049_outside_commits.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-15T18:47:27'
+    action: 'T-5155: outside-commit alarm asks GitHub which merged PRs contain a commit when no subject names one; same merged-by-operator rule; FAIL kept when GitHub cannot be asked; tests'
+  - time: '2026-11-15T18:47:33'
+    action: 'T-5155: vendor self'
+  - time: '2026-11-15T18:48:32'
+    action: 'T-5155: criteria ticked, RCA, verification'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 4
+  files_changed: 7
+  lines_added: 631
+  lines_removed: 10
+  footprint_refreshed_at: '2026-11-15T17:49:06Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5155-outside-commit-alarm-misses-a-pr-merged-.md
+generated_by: context-agent-hybrid
