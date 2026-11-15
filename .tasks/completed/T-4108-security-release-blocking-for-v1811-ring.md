@@ -17,12 +17,12 @@ description: >
   (3) markers trusted only from the authenticated maintainer login (gh api user),
   never third parties. Each with a regression test that fails on the old code.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [security, bug, release-blocker]
-components: []
+components: [agents/context/check-active-task.sh, agents/context/lib/safe-commands.sh]
 related_tasks: [T-3814, T-4077]
 origin: {kind: "peer", source: "ring20-dashboard"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -52,8 +52,8 @@ origin: {kind: "peer", source: "ring20-dashboard"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T12:53:56Z
-last_update: '2026-10-31T13:15:30Z'
-date_finished:
+last_update: 2026-11-15T09:05:52Z
+date_finished: 2026-11-15T09:05:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -422,3 +422,16 @@ bin/fw vendor self --check
 
 ### 2026-10-12 — round 2 [T-4108 r2 worker]
 - Relative launchers are resolved against the payload `cwd`, and any directory change earlier in the same command refuses them. Pre-fix: t3814 tests 7, 8, 9 and 12 failed against HEAD safe-commands.sh plus check-active-task.sh. Tests 10 and 11 are positive controls. All 12 pass post-fix.
+
+### 2026-11-15T09:05:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-84fc3fe9
+- **Timestamp:** 2026-11-15T09:07:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

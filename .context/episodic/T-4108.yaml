@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4108: SECURITY (release-blocking for v1.8.11, ring20-dashboard review): (1) commit-checkpoint allowance admits ANY absolute */bin/fw git commit (T-3814) — a planted /tmp/x/bin/fw passes the wrap-up gates incl. critical budget; (2) fw issues approve honours --i-am-human under CLAUDECODE=1 and accepts its own 'human-override' rows, and _is_agent() is bypassed by env -u CLAUDECODE (T-4077); (3) issue stage markers trusted from any commenter except the author (T-4077 idempotence)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T09:07:35Z
+# ============================================================================
+
+task_id: T-4108
+task_name: "SECURITY (release-blocking for v1.8.11, ring20-dashboard review): (1) commit-checkpoint allowance admits ANY absolute */bin/fw git commit (T-3814) — a planted /tmp/x/bin/fw passes the wrap-up gates incl. critical budget; (2) fw issues approve honours --i-am-human under CLAUDECODE=1 and accepts its own 'human-override' rows, and _is_agent() is bypassed by env -u CLAUDECODE (T-4077); (3) issue stage markers trusted from any commenter except the author (T-4077 idempotence)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-12T12:53:56Z
+completed: 2026-11-15T09:05:52Z
+duration_days: 34
+updates_count: 4
+first_commit: 2026-10-12T14:55:26+02:00
+last_commit: 2026-10-12T20:32:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope three security findings from ring20-dashboard's review of ed683536a (release-blocking for v1.8.11). security — absolute fw launcher must resolve to this project's own fw; fw issues approvals need an operator (ancestry-aware agent detection, no --i-am-human/human-override); stage markers trusted only from the authenticated login. round 2 — relative fw launchers resolve against the payload cwd; any earlier cd/pushd/popd in the same command refuses them; no payload cwd refuses them
+
+# Key outcomes
+outcomes:
+  - '(1) `_fw_is_git_commit_clause` (agents/context/lib/safe-commands.sh) admits an absolute launcher only when its realpath equals the project''s own `bin/fw` or `.agentic-framework/bin/fw` (FRAMEWORK_ROOT / PROJECT_ROOT); `/tmp/x/bin/fw git commit` is refused. `tests/unit/t3814_fw_git_commit_checkpoint.bats` gains that case (fails on the old code) and stays green otherwise; t3221 stays green.'
+  - '(2) `lib/issues.py`: decision-stage approvals cannot be self-recorded by an agent — `--i-am-human` is refused under agent control (CLAUDECODE=1 or AI_AGENT set), and `_approval_ok` does not accept rows the agent path can write (no ''human-override''); an approval row needs operator provenance (written from an operator runme / terminal without agent env). Test: agent env + --i-am-human → refused; an existing ''human-override'' row → not accepted; operator path → accepted. Fails on the old code.'
+  - '(3) `lib/issues.py` idempotence read-back trusts a stage marker only in comments by the authenticated maintainer login (`gh api user`), never other accounts; test with a stubbed third-party comment carrying a marker → stage still posted. Fails on the old code.'
+  - 'All issue tests (t4077, t4078, t4088) and the hook suites stay green; `bin/fw test lint` and `bin/fw audit --section structure` clean for these files; vendored copies synced.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'security — absolute fw launcher must resolve to this project''s own fw; fw issues approvals need an operator (ancestry-aware agent detection, no --i-am-human/human-override); stage markers trusted only from the authenticated login'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.agentic-framework/lib/issues.py'
+  - '.tasks/active/T-4108-security-release-blocking-for-v1811-ring.md'
+  - 'agents/context/check-active-task.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - 'lib/issues.py'
+  - 'tests/unit/t3814_fw_git_commit_checkpoint.bats'
+  - 'tests/unit/t4077_issues_comment_test.py'
+  - 'tests/unit/t4078_issues_sync_test.py'
+  - 'tests/unit/t4088_issues_close_test.py'
+  - 'tests/unit/t4108_issues_security_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-12T14:55:26'
+    action: 'T-4108: scope three security findings from ring20-dashboard''s review of ed683536a (release-blocking for v1.8.11)'
+  - time: '2026-10-12T15:05:46'
+    action: 'T-4108: security — absolute fw launcher must resolve to this project''s own fw; fw issues approvals need an operator (ancestry-aware agent detection, no --i-am-human/human-override); stage markers trusted only from the authenticated login'
+  - time: '2026-10-12T20:32:51'
+    action: 'T-4108: round 2 — relative fw launchers resolve against the payload cwd; any earlier cd/pushd/popd in the same command refuses them; no payload cwd refuses them'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 48731 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [security, bug, release-blocker]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 48731
+  commits: 4
+  files_changed: 15
+  lines_added: 1051
+  lines_removed: 64
+  footprint_refreshed_at: '2026-11-15T09:07:45Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4108-security-release-blocking-for-v1811-ring.md
+generated_by: context-agent-hybrid
