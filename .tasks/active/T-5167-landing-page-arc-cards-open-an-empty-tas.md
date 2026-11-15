@@ -390,9 +390,9 @@ Screenshots: `.context/visual/T-5167/{list-by-id,list-by-slug,landing}@{1024,144
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 **Recommendation:** GO
-**Rationale:** The list filter now resolves an arc named by id or by slug to both names, so the landing cards' `/tasks?arc=arc-NNN` links list the arc's tasks. The change is two lines in the blueprint plus one read-only helper; the page layout is unchanged.
+**Rationale:** The list filter now resolves an arc named by id or by slug to both names, so the landing cards' links (which name the arc by id) list the arc's tasks. The change is two lines in the blueprint plus one read-only helper; the page layout is unchanged.
 **Evidence:**
-- Live after restart: `/tasks?view=list&arc=arc-005` and `?arc=arc-grooming` both list the same 52 tasks; `?arc=no-such-arc` lists 0.
+- Live after restart: http://192.168.10.107:3000/tasks?view=list&arc=arc-005 and http://192.168.10.107:3000/tasks?view=list&arc=arc-grooming both list the same 52 tasks; an unknown arc name lists 0.
 - `tests/unit/test_t5167_arc_filter_both_names.py` 5/5; every test that reads the changed files: 333 pytest, 94 bats, all pass; invariants green.
 - Screenshots at 1024/1440/1920: `.context/visual/T-5167/`.
 
