@@ -21,7 +21,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-13T13:43:13Z
-last_update: 2026-10-17T12:32:39Z
+last_update: 2026-11-15T10:15:33Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -66,29 +66,14 @@ bvp_scores_proposed:
 
 <!-- What problem are we exploring? For whom? Why now? -->
 
-Follow-up to T-4147, which raised the fixed CONTEXT_WINDOW registry default from 300,000 to 800,000 and deferred the model-based derivation of the window to this inception.
+Origin: T-4147 raised the fixed CONTEXT_WINDOW registry default from 300,000 to 800,000 and named this inception as the place for the model-based derivation of the window. (This task receives that work; it does not hand any on.)
 
 ## Assumptions
 
 <!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
 
-## Open Questions
-
-<!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
-     --status work-completed. Disposition gate (agents/task-create/update-task.sh
-     check_disposition_gate) refuses on under-disposed inceptions.
-
-     Per-question shape:
-
-       - **IW-1: <question text>**
-         confidence: 0-3      (your confidence in your current answer; 0=guess, 3=verified)
-         disposition: answered | deferred | dissolved
-         rationale: <one-line evidence — file:line, decision id, dialogue ref>
-
-     Never bare yes/no — the gate refuses bare checkboxes. See 050-Inceptions.md
-     §Disposition Gate. Bypass: --skip-disposition-gate "rationale" (direct) or
-     FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
--->
+<!-- 2026-11-15: the empty template `## Open Questions` section was removed (no
+     question was ever filed; the inception was decided GO on 2026-10-17). -->
 
 ## Exploration Plan
 
