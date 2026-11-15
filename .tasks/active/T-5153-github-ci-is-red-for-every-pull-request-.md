@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T17:31:11Z
-last_update: '2026-11-15T18:15:37Z'
+last_update: 2026-11-15T18:56:23Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -392,3 +392,10 @@ cost_estimate_proposed:
 
 ### 2026-11-15T18:01:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-15 — triage of CI run 43750262482 (ad6fe30fa) [agent]
+- Required checks: PR checks and E2E (Tier A) green.
+- pytest-unit: 6567 passed, 11 failed. All 11 pass locally (37 cases). Causes: depth-1 checkout (t3955 template hashes walk git history; testhost needs HEAD~1), no bats on the job (testhost lint phase rc 127), no git identity; t4844 was a real stale test, fixed under T-5158. Fixed in the workflow: fetch-depth 0 for pytest-unit and bats, bats + git identity for pytest-unit.
+- Still open: test_t4986_driver_set_surfaces::test_readiness_values_members_under_their_own_set says "BVP policy unavailable (load_policy exited 2)" on CI only; the message assumes a missing file but policy/value-drivers.yaml is tracked, so the real exit-2 reason is unknown. Needs the next run's log.
+- Playwright: 895 passed, 40 failed (contrast, arc cards, mobile overflow, palette routing…); not yet triaged; many read live corpus state (arc members) a CI checkout does not have.
+- bats job still running at the time of writing.

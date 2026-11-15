@@ -55,6 +55,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # T-5153: some cases read git history (same as pytest-unit)
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -118,6 +120,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # T-5153: tests read git history (template hashes over every committed version,
+          # testhost runs against HEAD~1); a depth-1 clone made 5 of them fail on CI only.
+          fetch-depth: 0
+
+      - name: Git identity and bats
+        # T-5153: testhost tests commit in fixture repos and run a bats lint phase
+        # (rc 127 = bats not found on CI).
+        run: |
+          git config --global user.email "ci@aef.local"
+          git config --global user.name "AEF CI"
+          git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats
+          sudo /tmp/bats/install.sh /usr/local
 
       - name: Set up Python
         uses: actions/setup-python@v5
