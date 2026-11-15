@@ -10,12 +10,12 @@ description: >
   arc-010, ...). Fix: resolve the arc (id or slug) once and pass both forms. Render
   surface: needs a [REVIEW] criterion.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [watchtower, arcs, bug]
-components: []
+components: [lib/arc_membership.py, web/blueprints/tasks.py]
 related_tasks: [T-5160]
 origin: {kind: "agent"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -45,8 +45,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T23:09:55Z
-last_update: 2026-11-15T23:27:14Z
-date_finished:
+last_update: 2026-11-15T23:42:06Z
+date_finished: 2026-11-15T23:42:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -427,3 +427,21 @@ Screenshots: `.context/visual/T-5167/{list-by-id,list-by-slug,landing}@{1024,144
 ### 2026-11-15T23:27:14Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-15T23:42:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-64d8fc80
+- **Timestamp:** 2026-11-15T23:43:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `lib/arc_membership.py` has one function that maps an arc id or slug to both (from `.context/arcs/*.yaml`), returning the input unchanged when no arc matches
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/arc_membership.py in: `lib/arc_membership.py` has one function that maps an arc id or slug to both (from `.context/arcs/*.yaml`), returning the input unchanged when no arc `
