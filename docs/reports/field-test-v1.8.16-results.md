@@ -235,6 +235,9 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | T-4966 parallel judges (be.15) | **WORKS** (13 judges, 3 at a time; 0 torn lines; audit 0 failures) | ring20-dashboard 9cbbdcdc |
 | T-4944 vision-gated render greens (be.15) | open finding at ring20 (opencode still dispatched on render; T-4978) | ring20-dashboard 9cbbdcdc |
 | T-5008 seats cannot signal processes they did not start | **FAILS on be.15** (field incident b2be4058: a seat's kill-by-name stopped ring20-dashboard's production service); fixed on bleeding-edge 2026-11-14 (PID namespace, kill-by-name refused in brief + opencode/claude seat permissions, watchdog race); be.26 PARTLY (isolation recorded, live seat refused the decoy); retest owed on the next be-tag. Answered (msg bf2c760e). Residual (dedicated seat user) is T-5127 | ring20-dashboard b2be4058, 0bbb23a6, a14cb4c1 |
+| T-5134 boundary reads follow `CLAUDE_CODE_TMPDIR` (be.51) | **WORKS** (reads under `/var/tmp/claude/claude-0/<project>/<session>/tasks/` allowed; upgrade dry run and real run rc 0, `fw doctor` 0 FAIL, Watchtower reachable after restart) | dimitri-mint-dev 86b06c58 (2026-11-15) |
+| T-5137 send guard counts a recent, not-caught-up reader (be.51) | pending; 010 re-vendor awaits their operator (msg 7610152e) | — |
+| T-5126/T-5128/T-5129/T-5130/T-5136 Watchtower speed (be.50/be.51) | pending; 1409 upgrades after their release candidate, will report cold/warm times against 365 s / 19.5 s / 158 s | 1409 f11dadb0, 5e833071 |
 
 ## Clean full upgrades (rule b)
 
