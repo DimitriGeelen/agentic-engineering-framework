@@ -1,0 +1,108 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5145: Task list filters collapse the list: the toolbar's hx-include matches every row's status/type/owner/horizon select, so the first row's values become filters
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T16:47:26Z
+# ============================================================================
+
+task_id: T-5145
+task_name: "Task list filters collapse the list: the toolbar's hx-include matches every row's status/type/owner/horizon select, so the first row's values become filters"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-15T15:11:54Z
+completed: 2026-11-15T15:30:35Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-15T16:22:46+01:00
+last_commit: 2026-11-15T17:26:14+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  task filters include only the marked filter controls — row edit selects and the new-task form no longer ride along as filters; browser regression test. vendor self. criteria, visual verification, RCA, recommendation GO. partial-complete — review handed over. reviewer verdict
+
+# Key outcomes
+outcomes:
+  - 'every filter control is marked `data-task-filter`, and every filter `hx-include` names only `[data-task-filter]`; no filter control''s include matches a row select or the new-task form'
+  - 'a browser regression test picks "work-completed" from the status select and "Sort by Name" from the sort select, and the list stays a full paged list (more than 200 matching tasks, pager shown, URL carries status and sort); it fails without the fix'
+  - 'the T-5136 pager tests and every test that reads `tasks.html` pass; Watchtower restarted and `bin/fw watchtower current` passes'
+  - '[REVIEW] Filtering the task list from the selects keeps the whole list'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/templates/tasks.html'
+  - '.context/reviews/evidence/T-5145/01-tasks-view-list-judge-t-5145-r3-b3e1ad6c57f0.png'
+  - '.context/reviews/evidence/T-5145/02-tasks-judge-t-5145-r3-b3e1ad6c57f0.png'
+  - '.context/reviews/evidence/T-5145/AC1-judge-t-5145-r3-b3e1ad6c57f0.md'
+  - '.context/reviews/evidence/T-5145/list-filtered@1024-judge-t-5145-r3-b3e1ad6c57f0.png'
+  - '.context/reviews/evidence/T-5145/list-filtered@1440-judge-t-5145-r3-b3e1ad6c57f0.png'
+  - '.context/reviews/evidence/T-5145/list-filtered@1920-judge-t-5145-r3-b3e1ad6c57f0.png'
+  - '.context/reviews/evidence/T-5145/list@1024-judge-t-5145-r3-b3e1ad6c57f0.png'
+  - '.context/reviews/evidence/T-5145/list@1440-judge-t-5145-r3-b3e1ad6c57f0.png'
+  - '.context/reviews/evidence/T-5145/list@1920-judge-t-5145-r3-b3e1ad6c57f0.png'
+  - '.context/reviews/evidence/T-5145/walk-p2-top-judge-t-5145-r3-b3e1ad6c57f0.png'
+  - '.context/reviews/evidence/T-5145/walk-pager-p1-judge-t-5145-r3-b3e1ad6c57f0.png'
+  - '.context/reviews/evidence/T-5145/walk-pager-p2-judge-t-5145-r3-b3e1ad6c57f0.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.fabric/components/tests-playwright-test_t5145_task_filter_selects.yaml'
+  - '.tasks/active/T-5145-task-list-filters-collapse-the-list-the-.md'
+  - 'tests/playwright/test_t5145_task_filter_selects.py'
+  - 'web/templates/tasks.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-15T16:22:46'
+    action: 'T-5145: task filters include only the marked filter controls — row edit selects and the new-task form no longer ride along as filters; browser regression test'
+  - time: '2026-11-15T16:22:52'
+    action: 'T-5145: vendor self'
+  - time: '2026-11-15T16:24:44'
+    action: 'T-5145: criteria, visual verification, RCA, recommendation GO'
+  - time: '2026-11-15T16:25:41'
+    action: 'T-5145: partial-complete — review handed over'
+  - time: '2026-11-15T17:26:14'
+    action: 'T-5145: reviewer verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 18 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 18
+  commits: 6
+  files_changed: 24
+  lines_added: 752
+  lines_removed: 40
+  footprint_refreshed_at: '2026-11-15T16:52:35Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5145-task-list-filters-collapse-the-list-the-.md
+generated_by: context-agent-hybrid

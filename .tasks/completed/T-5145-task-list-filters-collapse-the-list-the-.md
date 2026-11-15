@@ -12,8 +12,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
 components: [tests/playwright/test_t5145_task_filter_selects.py, 
       web/templates/tasks.html]
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T15:11:54Z
-last_update: '2026-11-15T15:30:35Z'
+last_update: 2026-11-15T16:44:55Z
 date_finished: 2026-11-15T15:24:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -84,6 +84,7 @@ cost_estimate_proposed:
     rationale: blast_radius=3 (2-components); tier=2 (workflow:build); effort=8 
       (lines=367,acs=6)
     rubric_sha: e4a00f38e801
+date_finalised: 2026-11-15T16:44:55Z
 ---
 
 # T-5145: Task list filters collapse the list: the toolbar's hx-include matches every row's status/type/owner/horizon select, so the first row's values become filters
@@ -111,7 +112,7 @@ cost_estimate_proposed:
       — 43 unit/web tests (incl. `test_t5136_task_list_pager`, `test_t3575_tasks_page_perf`); browser `test_task_panel` 5/5, `test_htmx_nav_page_scripts` 3/3. Watchtower pid 2913688, `current` passes.
 
 ### Human
-- [ ] [REVIEW] Filtering the task list from the selects keeps the whole list
+- [x] [REVIEW] Filtering the task list from the selects keeps the whole list
   **Steps:**
   1. Open http://192.168.10.107:3000/tasks?view=list
   2. Pick "work-completed" in the status select, then "Sort by Name" in the sort select
@@ -162,6 +163,7 @@ cost_estimate_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261115-509539f5 — reviewer-judge-t-5145-r3-b3e1ad6c57f0:reviewer (rung rung-3-termlink-single-reviewer), digest 33fc80ef5813; dispatch judge-t-5145-r3-b3e1ad6c57f0; evidence: .context/reviews/evidence/T-5145/AC1-judge-t-5145-r3-b3e1ad6c57f0.md, .context/reviews/evidence/T-5145/01-tasks-view-list-judge-t-5145-r3-b3e1ad6c57f0.png, .context/reviews/evidence/T-5145/02-tasks-judge-t-5145-r3-b3e1ad6c57f0.png, .context/reviews/evidence/T-5145/list-filtered@1024-judge-t-5145-r3-b3e1ad6c57f0.png, .context/reviews/evidence/T-5145/list-filtered@1440-judge-t-5145-r3-b3e1ad6c57f0.png, .context/reviews/evidence/T-5145/list-filtered@1920-judge-t-5145-r3-b3e1ad6c57f0.png, .context/reviews/evidence/T-5145/list@1024-judge-t-5145-r3-b3e1ad6c57f0.png, .context/reviews/evidence/T-5145/list@1440-judge-t-5145-r3-b3e1ad6c57f0.png, .context/reviews/evidence/T-5145/list@1920-judge-t-5145-r3-b3e1ad6c57f0.png, .context/reviews/evidence/T-5145/walk-p2-top-judge-t-5145-r3-b3e1ad6c57f0.png, .context/reviews/evidence/T-5145/walk-pager-p1-judge-t-5145-r3-b3e1ad6c57f0.png, .context/reviews/evidence/T-5145/walk-pager-p2-judge-t-5145-r3-b3e1ad6c57f0.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
