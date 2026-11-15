@@ -615,7 +615,7 @@ def _gather_evidence(root: Path, task_id: str, task_data: dict, criteria: list[d
     # criterion) that answers a bare GET with 4xx needs a query or a body (/ask, /ask/stream,
     # /search/load-conversation): it is not a page on its own. Requiring a screenshot of it made
     # every seat return not-evaluated on T-3786. Pages the criterion names stay required.
-    named = {p for c in render for p in _criterion_pages(root, c["body"])}
+    named = {p for c in render for p in _criterion_pages(root, c.get("body") or "")}
     ev["not_pages"] = _bare_get_refusals(_watchtower_url(root), [p for p in ev["pages"] if p not in named])
     ev["pages"] = [p for p in ev["pages"] if p not in ev["not_pages"]]
     ev["visual"] = _gather_visual(root, task_id, task_data)
@@ -755,6 +755,11 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
             ]
         if ev["pages"]:
             lines.append("Pages: " + ", ".join(f"`{p}`" for p in ev["pages"]))
+        if ev.get("not_pages"):
+            # T-5151: say what was left out and why, so a missing screenshot is not a surprise.
+            lines.append("Not captured, not a page on its own (a changed blueprint's GET route that "
+                         "answers a bare request with an error; the criterion does not name it): "
+                         + ", ".join(f"`{p}` ({why})" for p, why in sorted(ev["not_pages"].items())))
         vis = ev.get("visual") or {}
         if vis:
             # T-4214: the T-4202 evidence — every checklist state at every width, and the checklist.

@@ -19,6 +19,8 @@ def test_every_required_page_is_captured(tmp_path, monkeypatch):
     (tmp_path / ".context/working/watchtower.url").write_text("http://127.0.0.1:3000\n")
     monkeypatch.setattr(judge_cli, "_pages_for", lambda *a, **k: list(PAGES))
     monkeypatch.setattr(judge_cli, "_gather_visual", lambda *a, **k: {})
+    # T-5151: the bare-GET probe would ask whatever listens on :3000; not this test's subject.
+    monkeypatch.setattr(judge_cli, "_bare_get_refusals", lambda *a, **k: {})
     asked = []
 
     def capture(url, pages, out):
@@ -46,6 +48,8 @@ def test_a_page_the_capturer_missed_is_still_reported_not_ok(tmp_path, monkeypat
     (tmp_path / ".context/working/watchtower.url").write_text("http://127.0.0.1:3000\n")
     monkeypatch.setattr(judge_cli, "_pages_for", lambda *a, **k: list(PAGES))
     monkeypatch.setattr(judge_cli, "_gather_visual", lambda *a, **k: {})
+    # T-5151: the bare-GET probe would ask whatever listens on :3000; not this test's subject.
+    monkeypatch.setattr(judge_cli, "_bare_get_refusals", lambda *a, **k: {})
 
     def capture(url, pages, out):
         out.mkdir(parents=True, exist_ok=True)

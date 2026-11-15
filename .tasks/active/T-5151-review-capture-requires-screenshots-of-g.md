@@ -104,10 +104,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] a route derived only from a changed blueprint (not named in any render criterion) that answers a bare GET with 4xx is removed from the required pages and recorded with its status; 2xx, 3xx, 5xx and unreachable routes stay required
-- [ ] pages a render criterion names stay required whatever they answer
-- [ ] the brief lists the removed routes ("not a page on its own") with their status
-- [ ] tests (HTTP stubbed) for each case; every test that reads `judge_cli.py` passes
+- [x] a route derived only from a changed blueprint (not named in any render criterion) that answers a bare GET with 4xx is removed from the required pages and recorded with its status; 2xx, 3xx, 5xx and unreachable routes stay required
+- [x] pages a render criterion names stay required whatever they answer
+- [x] the brief lists the removed routes ("not a page on its own") with their status
+- [x] tests (HTTP stubbed) for each case; every test that reads `judge_cli.py` passes (2026-11-15: 44 files, 776 passed after the fix below; the one other red, t4844 opencode seat config, fails on the base too and is filed separately; bats 17 ok)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -293,8 +293,18 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_t5151_bare_get_not_pages.py > /tmp/.t5151.out 2>&1 && grep -q passed /tmp/.t5151.out
+bin/fw vendor self --check --task T-5151
 
 ## RCA
+
+**Symptom:** every reviewer seat on T-3786 returned not-evaluated: the capture step required screenshots of `/ask`, `/ask/stream` and `/search/load-conversation`, which answer a bare GET with 404 because they need a query or a body.
+
+**Root cause:** `judge_cli._pages_for` adds every GET route of a changed blueprint to the required pages, on the assumption that a GET route is a page. Endpoints that only answer with parameters break that assumption, and nothing checked what a route actually answers before requiring a screenshot of it.
+
+**Why structurally allowed:** earlier render tasks changed blueprints whose GET routes were all real pages, so the assumption never failed until a blueprint with API-style GET routes (discovery/search) was reviewed.
+
+**Prevention:** derived routes are now probed with a bare GET first; those answering 4xx are recorded in `not_pages` with their status and named in the brief, while criterion-named pages stay required whatever they answer. `tests/unit/test_t5151_bare_get_not_pages.py` pins each case (4xx dropped; 2xx/3xx/5xx/unreachable kept; named kept; brief line present or absent).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
