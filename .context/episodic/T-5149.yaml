@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5149: Orphan-inbox detector is blinded by peeks: addressing.orphan_inboxes() judges by the hub's unread_since_ms, which any fetch clears; and it runs only in fw audit (010 T-3798 point 2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T20:31:58Z
+# ============================================================================
+
+task_id: T-5149
+task_name: "Orphan-inbox detector is blinded by peeks: addressing.orphan_inboxes() judges by the hub's unread_since_ms, which any fetch clears; and it runs only in fw audit (010 T-3798 point 2)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-15T16:20:24Z
+completed: 2026-11-15T20:31:16Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-15T20:55:32+01:00
+last_commit: 2026-11-15T20:55:32+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  orphan-inbox detector judges peer nicknames even when a sibling directory has that name, and judges unread by this project's acknowledgement, not the peek-cleared hub flag; fw sidecar orphan-inboxes --ack TOPIC; 4 new tests (25/25). Wider sidecar run pending; not closed. T-5156 filed for e2e test residue on the live hub
+
+# Key outcomes
+outcomes:
+  - 'a name that is a nickname of a known peer is judged as a possible orphan even when `circuit.is_project_id()` accepts it (sibling directory); numbered `NNN-name` projects, peers, our own topics and our own project keep their treatment'
+  - '"unread" for a non-own topic is judged by an acknowledgement this project records (`.context/sidecar/orphan-acks.json`, offset per topic), not by the hub''s `unread_since_ms`; a peek does not hide it'
+  - '`fw sidecar orphan-inboxes --ack <topic>` records the topic''s current latest offset; afterwards it is reported again only when newer posts arrive'
+  - 'tests for each (hub stubbed); every test that reads `addressing.py` or `sidecar_cli.py` passes (2026-11-15: 773 pytest passed, 356 bats with no `not ok`)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5149-orphan-inbox-detector-is-blinded-by-peek.md'
+  - '.tasks/active/T-5156-sidecar-end-to-end-tests-leave-their-top.md'
+  - 'lib/sidecar/addressing.py'
+  - 'lib/sidecar_cli.py'
+  - 'tests/unit/test_sidecar_orphan_circuit_t4418.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-15T20:55:32'
+    action: 'T-5149: orphan-inbox detector judges peer nicknames even when a sibling directory has that name, and judges unread by this project''s acknowledgement, not the peek-cleared hub flag; fw sidecar orphan-inboxes --ack TOPIC; 4 new tests (25/25). Wider sidecar run pending; not closed. T-5156 filed for e2e test residue on the live hub'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 250 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 250
+  commits: 2
+  files_changed: 8
+  lines_added: 982
+  lines_removed: 12
+  footprint_refreshed_at: '2026-11-15T20:32:27Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5149-orphan-inbox-detector-is-blinded-by-peek.md
+generated_by: context-agent-hybrid

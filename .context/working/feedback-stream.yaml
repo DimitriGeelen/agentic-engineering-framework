@@ -55405,3 +55405,21 @@ scan_id: R-4d759955
 task_id: T-5157
 payload:
   task_file: .tasks/active/T-5157-fw-sidecar-inbox---mark-read-topic-start.md
+---
+kind: scan_emitted
+timestamp: '2026-11-15T20:31:33Z'
+scan_id: R-35f39249
+task_id: T-5149
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-15T20:31:33Z'
+scan_id: R-35f39249
+task_id: T-5149
+payload:
+  task_file: .tasks/active/T-5149-orphan-inbox-detector-is-blinded-by-peek.md

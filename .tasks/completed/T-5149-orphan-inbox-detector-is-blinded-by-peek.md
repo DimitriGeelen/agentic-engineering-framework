@@ -11,12 +11,12 @@ description: >
   as T-4530 does for the own-project topic; consider running it at prompt time, not
   only in fw audit.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/sidecar/addressing.py, lib/sidecar_cli.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T16:20:24Z
-last_update: '2026-11-15T20:00:43Z'
-date_finished:
+last_update: 2026-11-15T20:31:16Z
+date_finished: 2026-11-15T20:31:16Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -105,10 +105,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] a name that is a nickname of a known peer is judged as a possible orphan even when `circuit.is_project_id()` accepts it (sibling directory); numbered `NNN-name` projects, peers, our own topics and our own project keep their treatment
-- [ ] "unread" for a non-own topic is judged by an acknowledgement this project records (`.context/sidecar/orphan-acks.json`, offset per topic), not by the hub's `unread_since_ms`; a peek does not hide it
-- [ ] `fw sidecar orphan-inboxes --ack <topic>` records the topic's current latest offset; afterwards it is reported again only when newer posts arrive
-- [ ] tests for each (hub stubbed); every test that reads `addressing.py` or `sidecar_cli.py` passes
+- [x] a name that is a nickname of a known peer is judged as a possible orphan even when `circuit.is_project_id()` accepts it (sibling directory); numbered `NNN-name` projects, peers, our own topics and our own project keep their treatment
+- [x] "unread" for a non-own topic is judged by an acknowledgement this project records (`.context/sidecar/orphan-acks.json`, offset per topic), not by the hub's `unread_since_ms`; a peek does not hide it
+- [x] `fw sidecar orphan-inboxes --ack <topic>` records the topic's current latest offset; afterwards it is reported again only when newer posts arrive
+- [x] tests for each (hub stubbed); every test that reads `addressing.py` or `sidecar_cli.py` passes (2026-11-15: 773 pytest passed, 356 bats with no `not ok`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -294,8 +294,19 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_sidecar_orphan_circuit_t4418.py > /tmp/.t5149.out 2>&1 && grep -q passed /tmp/.t5149.out
+bin/fw sidecar orphan-inboxes --help > /tmp/.t5149h.out 2>&1 && grep -q -- "--ack" /tmp/.t5149h.out
+bin/fw vendor self --check --task T-5149
 
 ## RCA
+
+**Symptom:** 54 consults sat in `inbox:cacc73ea32b121dd/termlink` while `fw sidecar orphan-inboxes` said "No orphan inboxes" (010 msg 09376cac).
+
+**Root cause:** two separate gaps in `orphan_inboxes()`. (1) It skipped every name `circuit.is_project_id()` accepts, and that function counts any sibling directory as a project; `/opt/termlink` exists, so `termlink` was never judged. (2) For the topics it did judge, "unread" came from the hub's `unread_since_ms`, which any fetch clears, including the read-only peek 010's session start runs.
+
+**Why structurally allowed:** the T-4418 tests stubbed the hub with fixed `unread_since_ms` values and used names with no sibling directory, so neither the peek path nor a sibling-named nickname was ever exercised. The detector judged state another reader could change, with no record of its own.
+
+**Prevention:** 4 new tests in `tests/unit/test_sidecar_orphan_circuit_t4418.py` pin both cases (sibling-named nickname judged; a peek-cleared flag still reported until acknowledged). Unread is now judged against this project's own acknowledgement ledger (`.context/sidecar/orphan-acks.json`), which no other reader writes. T-5150 closes the matching send-side gap (nickname sends refused).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -394,3 +405,21 @@ cost_estimate_proposed:
 
 ### 2026-11-15T19:50:08Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-15T20:31:16Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-35f39249
+- **Timestamp:** 2026-11-15T20:31:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — "unread" for a non-own topic is judged by an acknowledgement this project records (`.context/sidecar/orphan-acks.json`, offset per topic), not by the hub's `unread_since_ms`; a peek does not hide it
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/sidecar/orphan-acks.json in: "unread" for a non-own topic is judged by an acknowledgement this project records (`.context/sidecar/orphan-acks.json`, offset per topic), not by the `
