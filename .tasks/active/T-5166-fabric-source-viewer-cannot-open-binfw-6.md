@@ -1,8 +1,13 @@
 ---
 id: T-5166
-name: "Fabric source viewer cannot open bin/fw: 639,645 bytes against the 500,000-byte limit (/api/fabric/source answers 413)"
+name: "Fabric source viewer cannot open bin/fw: 639,645 bytes against the 500,000-byte
+  limit (/api/fabric/source answers 413)"
 description: >
-  Found in T-5164: web/blueprints/fabric.py refuses files over 500,000 bytes, and bin/fw (the framework's main entry point and its most-viewed component) has grown past that, so its fabric component page cannot show the source. Decide: raise the limit, stream or page large files, or show the first N KB with a note. Render surface (web/blueprints): needs a [REVIEW] criterion.
+  Found in T-5164: web/blueprints/fabric.py refuses files over 500,000 bytes, and
+  bin/fw (the framework's main entry point and its most-viewed component) has grown
+  past that, so its fabric component page cannot show the source. Decide: raise the
+  limit, stream or page large files, or show the first N KB with a note. Render surface
+  (web/blueprints): needs a [REVIEW] criterion.
 
 status: captured
 workflow_type: build
@@ -39,8 +44,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T22:40:51Z
-last_update: 2026-11-15T22:40:51Z
-date_finished: null
+last_update: '2026-11-15T22:45:25Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +56,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-15T22:45:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5166: Fabric source viewer cannot open bin/fw: 639,645 bytes against the 500,000-byte limit (/api/fabric/source answers 413)
