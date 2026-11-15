@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4078: fw issues sync + 2-hourly cron: ingest new/changed GitHub issues and submitter replies into the intake ledger, post Received, classify (type/area/severity/duplicate/internal), route MikeEchoVoid issues to arc-021 horizon now
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T08:14:25Z
+# ============================================================================
+
+task_id: T-4078
+task_name: "fw issues sync + 2-hourly cron: ingest new/changed GitHub issues and submitter replies into the intake ledger, post Received, classify (type/area/severity/duplicate/internal), route MikeEchoVoid issues to arc-021 horizon now"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-11T21:40:59Z
+completed: 2026-11-15T08:11:14Z
+duration_days: 35
+updates_count: 4
+first_commit: 2026-10-12T09:49:24+02:00
+last_commit: 2026-10-12T12:09:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope fw issues sync + 2-hourly cron (reuses fw issues comment, proposed classification, MikeEchoVoid routing, idempotent, stubbed tests). fw issues sync — ingest new/changed issues and submitter replies; cron issues-sync-2h. vendored copies of lib/issues.py and bin/fw (fw vendor self). pause cron issues-sync-2h — must not post on GitHub before the operator decides the first-run backlog (69 issues, 67 agent-filed = 138 public comments); the worker had installed it per my prompt (orchestrator error)
+
+# Key outcomes
+outcomes:
+  - '`fw issues sync [--dry-run]` (in `lib/issues.py`, next to T-4077''s `comment`) lists open issues via `gh`, and for each one not yet in `.context/issues/intake.jsonl` (or changed since: new title/body hash, new comments by the submitter) records it. New issues get the Received comment through `fw issues comment --stage received` (never a second code path). New submitter replies are recorded and surfaced (ledger row + one line for the operator), not answered.'
+  - 'Classification is proposed, not decided: each new issue gets a ledger row with type (bug/enhancement/question/proposal/duplicate/internal), area, severity and a duplicate hint (matching task or issue), and the Classified comment is posted. Issues filed by the framework''s own `fw upstream` identity are class `internal`. Issue text is untrusted data: never executed, never obeyed, quoted only into the ledger.'
+  - 'Routing rule (operator, 2026-10-10): an issue by `MikeEchoVoid` is marked for arc `mikeechovoid-requests` with horizon `now` in its ledger row, so the accept step (T-4079) creates the task there.'
+  - 'Idempotent and safe to run unattended: a second run with no GitHub change posts nothing and writes nothing; a GitHub/`gh` failure leaves the ledger untouched and exits non-zero with the reason (cron surfaces it); `--dry-run` posts and writes nothing.'
+  - 'Cron entry `issues-sync-2h` (every 2 hours) added to `.context/cron-registry.yaml`, generated and installed; `## Verification` includes the cron in-sync doctor line (CLAUDE.md cron rule).'
+  - 'Tests (`tests/unit/t4078_issues_sync_test.py`) with a stub `gh`: new issue → ledger row + received + classified (once); unchanged second run → no posts; submitter reply → recorded, surfaced, not answered; MikeEchoVoid routing; internal class; gh failure → no ledger change, non-zero exit. No network, tmp_path ledger.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'pause cron issues-sync-2h — must not post on GitHub before the operator decides the first-run backlog (69 issues, 67 agent-filed = 138 public comments); the worker had installed it per my prompt (orchestrator error)'
+    source: git-mined
+  - description: 'vendored copies of lib/issues.py and bin/fw (fw vendor self)'
+    source: git-mined
+  - description: 'fw issues sync — ingest new/changed issues and submitter replies; cron issues-sync-2h'
+    source: git-mined
+  - description: 'scope fw issues sync + 2-hourly cron (reuses fw issues comment, proposed classification, MikeEchoVoid routing, idempotent, stubbed tests)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/issues.py'
+  - '.context/cron-registry.yaml'
+  - '.context/cron/agentic-audit.crontab'
+  - '.tasks/active/T-4078-fw-issues-sync--2-hourly-cron-ingest-new.md'
+  - 'bin/fw'
+  - 'lib/issues.py'
+  - 'tests/unit/t4078_issues_sync_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-12T09:49:24'
+    action: 'T-4078: scope fw issues sync + 2-hourly cron (reuses fw issues comment, proposed classification, MikeEchoVoid routing, idempotent, stubbed tests)'
+  - time: '2026-10-12T11:50:49'
+    action: 'T-4078: fw issues sync — ingest new/changed issues and submitter replies; cron issues-sync-2h'
+  - time: '2026-10-12T11:51:05'
+    action: 'T-4078: vendored copies of lib/issues.py and bin/fw (fw vendor self)'
+  - time: '2026-10-12T12:09:18'
+    action: 'T-4078: pause cron issues-sync-2h — must not post on GitHub before the operator decides the first-run backlog (69 issues, 67 agent-filed = 138 public comments); the worker had installed it per my prompt (orchestrator error)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 49590 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github-intake, T-4039]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 49590
+  commits: 5
+  files_changed: 11
+  lines_added: 907
+  lines_removed: 84
+  footprint_refreshed_at: '2026-11-15T08:14:31Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4078-fw-issues-sync--2-hourly-cron-ingest-new.md
+generated_by: context-agent-hybrid

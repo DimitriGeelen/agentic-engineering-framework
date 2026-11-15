@@ -9,12 +9,12 @@ description: >
   -> arc mikeechovoid-requests. Cron registry -> generate -> install chain (CLAUDE.md
   cron rules). Issue text is untrusted data: classify, never execute.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [github-intake, T-4039]
-components: []
+components: [bin/fw]
 related_tasks: [T-4039]
 origin: {kind: "operator", source: "T-4039-GO"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -44,8 +44,8 @@ origin: {kind: "operator", source: "T-4039-GO"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T21:40:59Z
-last_update: '2026-10-31T13:15:28Z'
-date_finished:
+last_update: 2026-11-15T08:11:14Z
+date_finished: 2026-11-15T08:11:14Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -409,3 +409,23 @@ bin/fw vendor self --check
 - **Bats (cron/issues-related files):** 171+ ok. Three failures, none in files this change touches: greenfield 27 and 30 (host-state WARNs; the greenfield registry is seeded from lib/cron-seed.sh, not from this registry), and T-1942 test 235 (fixture doctor FAILs: no vector index in the fixture, and the fixture registry lacks index-reindex-hourly, T-3783). The upgrade_fresh_machine_simulation.bats file did not finish inside the run cap.
 - **Dry-run against the real repo (read-only):** 69 new issues (67 agent-filed internal, #13 and #14 external), 2 submitter replies on #14, 0 edited. Nothing posted or written.
 - **Open for operator:** a real first run would post Received + Classified on 69 issues (138 public comments), 67 of them agent-filed. Decide whether internal backlog is baselined without comments before the first real cron run.
+
+### 2026-11-15T08:11:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b5989bfc
+- **Timestamp:** 2026-11-15T08:14:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `fw issues sync [--dry-run]` (in `lib/issues.py`, next to T-4077's `comment`) lists open issues via `gh`, and for each one not yet in `.context/issues/intake.jsonl` (or changed since: new title/body h
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/issues/intake.jsonl in: `fw issues sync [--dry-run]` (in `lib/issues.py`, next to T-4077's `comment`) lists open issues via `gh`, and for each one not yet in `.context/issues`
+- **AC#5 (Agent)** — Cron entry `issues-sync-2h` (every 2 hours) added to `.context/cron-registry.yaml`, generated and installed; `## Verification` includes the cron in-sync doctor line (CLAUDE.md cron rule).
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/cron-registry.yaml in: Cron entry `issues-sync-2h` (every 2 hours) added to `.context/cron-registry.yaml`, generated and installed; `## Verification` includes the cron in-sy`
