@@ -12,8 +12,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
 components: [tests/web/test_t5146_nav_full_load.py, web/app.py, web/shared.py, 
       web/templates/base.html]
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T15:11:54Z
-last_update: '2026-11-15T16:00:38Z'
+last_update: 2026-11-15T16:47:36Z
 date_finished: 2026-11-15T15:46:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -84,6 +84,7 @@ cost_estimate_proposed:
     rationale: blast_radius=5 (4-components-medium-blast); tier=2 
       (workflow:build); effort=8 (lines=367,acs=6)
     rubric_sha: e4a00f38e801
+date_finalised: 2026-11-15T16:47:36Z
 ---
 
 # T-5146: In-app navigation to /bvp fetches the page twice (5.2-5.7 s against 2.8 s direct): the T-5130 handler lets htmx fetch, then loads the URL again
@@ -111,7 +112,7 @@ cost_estimate_proposed:
       — warm, 2026-11-15, host load 58: menu → /bvp **1 request**, 4.3 s to a drawn scatter, against 3.1 s for the bare server fetch; reviewer measured 5.2–5.7 s with two fetches. /terminal 1 request, 0.5 s; /tasks still a swap, 0.9 s. `test_htmx_nav_page_scripts.py` 3/3; 121 tests reading the nav code and 7 bats pass. Data: `.context/visual/T-5146/fetches.json`.
 
 ### Human
-- [ ] [REVIEW] Opening BVP, Fabric Graph and Terminal from the menu feels like one quick load
+- [x] [REVIEW] Opening BVP, Fabric Graph and Terminal from the menu feels like one quick load
   **Steps:**
   1. Open http://192.168.10.107:3000/fabric
   2. From the Work, Architecture or Knowledge menu, open BVP, then Terminal, then Fabric Graph (http://192.168.10.107:3000/fabric/graph)
@@ -162,6 +163,7 @@ cost_estimate_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261115-75b2e2eb — reviewer-judge-t-5146-r3-02aa42a200b5:reviewer (rung rung-3-termlink-single-reviewer), digest bdeabbd4a4ba; dispatch judge-t-5146-r3-02aa42a200b5; evidence: .context/reviews/evidence/T-5146/AC1-judge-t-5146-r3-02aa42a200b5.md, .context/reviews/evidence/T-5146/01-fabric-judge-t-5146-r3-02aa42a200b5.png, .context/reviews/evidence/T-5146/02-fabric-graph-judge-t-5146-r3-02aa42a200b5.png, .context/reviews/evidence/T-5146/03-docs-generated-judge-t-5146-r3-02aa42a200b5.png, .context/reviews/evidence/T-5146/04-settings-judge-t-5146-r3-02aa42a200b5.png, .context/reviews/evidence/T-5146/05-settings-models-judge-t-5146-r3-02aa42a200b5.png, .context/reviews/evidence/T-5146/06-settings-appearance-judge-t-5146-r3-02aa42a200b5.png, .context/reviews/evidence/T-5146/live-bvp-judge-t-5146-r3-02aa42a200b5.png, .context/reviews/evidence/T-5146/live-fabric-graph-judge-t-5146-r3-02aa42a200b5.png, .context/reviews/evidence/T-5146/live-tasks-judge-t-5146-r3-02aa42a200b5.png, .context/reviews/evidence/T-5146/live-terminal-judge-t-5146-r3-02aa42a200b5.png, .context/reviews/evidence/T-5146/visual-bvp-1024-judge-t-5146-r3-02aa42a200b5.png, .context/reviews/evidence/T-5146/visual-bvp-1440-judge-t-5146-r3-02aa42a200b5.png, .context/reviews/evidence/T-5146/visual-bvp-1920-judge-t-5146-r3-02aa42a200b5.png, .context/reviews/evidence/T-5146/visual-fabric-graph-1024-judge-t-5146-r3-02aa42a200b5.png, .context/reviews/evidence/T-5146/visual-fabric-graph-1440-judge-t-5146-r3-02aa42a200b5.png, .context/reviews/evidence/T-5146/visual-fabric-graph-1920-judge-t-5146-r3-02aa42a200b5.png, .context/reviews/evidence/T-5146/visual-terminal-1024-judge-t-5146-r3-02aa42a200b5.png, .context/reviews/evidence/T-5146/visual-terminal-1440-judge-t-5146-r3-02aa42a200b5.png, .context/reviews/evidence/T-5146/visual-terminal-1920-judge-t-5146-r3-02aa42a200b5.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
