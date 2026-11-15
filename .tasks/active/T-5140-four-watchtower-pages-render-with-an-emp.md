@@ -94,11 +94,21 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `nav_groups` and `nav_items` reach every template through a Flask context processor; an explicit value passed by a view still wins
-- [ ] a full GET of `/bvp`, `/reviewer/audit`, `/reviewer/overrides` and `/escalation-drift` contains all four nav groups (regression test, fails without the fix)
-- [ ] every test that reads `web/app.py` passes; Watchtower restarted and `bin/fw watchtower current` passes
+- [x] `nav_groups` and `nav_items` reach every template through a Flask context processor; an explicit value passed by a view still wins
+      — `web/app.py` `_site_nav_context`; `test_a_view_can_still_pass_its_own_nav`.
+- [x] a full GET of `/bvp`, `/reviewer/audit`, `/reviewer/overrides` and `/escalation-drift` contains all four nav groups (regression test, fails without the fix)
+      — `tests/web/test_t5140_site_nav_on_every_page.py` 6/6; with `web/app.py` stashed the four page cases fail and both controls pass. Live after restart: each page shows 4 groups, as `/fabric` does.
+- [x] every test that reads `web/app.py` passes; Watchtower restarted and `bin/fw watchtower current` passes
+      — `tests/web` plus 60 unit files importing the app: 1,019 pass, 6 fail. The same 6 fail with the change stashed: `test_bpmn_frozen_v1_pin` (1) and `test_inception_verdict_render` (5, tracked by T-5109). Watchtower pid 1728346, `current` passes.
 
 ### Human
+- [ ] [REVIEW] The four pages show the full site menu and you can move on from them
+  **Steps:**
+  1. Open http://192.168.10.107:3000/bvp in a fresh tab (a full load, not by clicking)
+  2. Open the Work, Knowledge, Architecture and Govern menus and click any entry
+  3. Repeat step 1 for http://192.168.10.107:3000/reviewer/audit, http://192.168.10.107:3000/reviewer/overrides and http://192.168.10.107:3000/escalation-drift
+  **Expected:** all four menus are present on every page and lead to their pages, the same as on http://192.168.10.107:3000/fabric
+  **If not:** note the page; the change is the context processor in `web/app.py` (`_site_nav_context`)
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -282,8 +292,30 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/web/test_t5140_site_nav_on_every_page.py
+bin/fw vendor self --check --task T-5140
+bin/fw watchtower current
+
+## Visual Verification
+
+Shots: `.context/visual/T-5140/{bvp,reviewer-audit,reviewer-overrides,escalation-drift}@{1024,1440,1920}.png` (`fw ux shots T-5140 bvp=… reviewer-audit=… reviewer-overrides=… escalation-drift=…`, 2026-11-15, after the Watchtower restart onto the fix). Read before commit: `reviewer-audit@1024`, `escalation-drift@1920`, and the T-5130 click-through shot `click-1-bvp.png` (1440).
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| bvp | site nav: Work, Knowledge, Architecture, Govern | ok | ok | ok | before the fix: the bar with none of the four groups |
+| reviewer-audit | site nav, Govern marked active | ok | ok | ok | at 1024 the theme toggle wraps onto a second nav line; that is the nav's existing layout at this width, not this change |
+| reviewer-overrides | site nav | ok | ok | ok | |
+| escalation-drift | site nav, Govern marked active | ok | ok | ok | page body unchanged |
+
+Residual, not changed here: `render_page` also supplies the status strip (focus, session, audit) and the breadcrumb, which these four pages still do not show, because they are computed per request. Converting the four templates to `render_page` fragments would add them; that is a larger template change.
 
 ## RCA
+
+**Cause:** `base.html` draws the site nav from `nav_groups`, which only `web.shared.render_page` puts in the template context. Four views render a `base.html` template with Flask's `render_template`, so their nav loop had nothing to draw: `bvp.bvp_scatter`, `reviewer.reviewer_audit`, `reviewer.reviewer_overrides` and `escalation.escalation_drift`.
+
+**Why it went unnoticed:** inside the app these pages were reached by an htmx swap of `#content`, which kept the previous page's nav on screen. Only a direct full load showed the empty bar. T-5130 made in-app navigation to `/bvp` a full load, which exposed it. It was found while capturing the click-through the independent reviewer asked for on T-5130.
+
+**Fix:** a context processor supplies `nav_groups` and `nav_items` to every template; a view's own value still wins. The regression test fails on the four pages without it.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -324,6 +356,17 @@ bvp_scores_proposed:
 -->
 
 ## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Four Watchtower pages drew an empty site menu on a full load, so a user who landed on them could not move on. After T-5130 this happened on every in-app visit to the BVP page. The menu now reaches every page through one context processor. The regression test reproduces the bug and passes with the fix, and the pages show all four menus live. What is left is your look.
+
+**Evidence:**
+- `tests/web/test_t5140_site_nav_on_every_page.py` 6/6; the four page cases fail with the fix stashed
+- Live after restart: /bvp, /reviewer/audit, /reviewer/overrides and /escalation-drift each show 4 menu groups, like /fabric
+- Screenshots at 1024/1440/1920 in `.context/visual/T-5140/` (see `## Visual Verification`)
+
+Review page: http://192.168.10.107:3000/review/T-5140
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
