@@ -27,6 +27,7 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | be.13 | c5bb76f89 | T-4957 (Workflow Designer 0.34.0 pinned) |
 | be.15 | 0522186b9 | T-4944 (codex may record a render green, citing only screenshots it named; vision:false kinds skip render reviews); T-4966 (ledger and register appends serialized with verdict commits: no torn committed line under parallel judges); T-4968 (stale web readiness fixtures) |
 | be.14 | b82af92fe | T-4953 (read-only gate query + pipe: refused, no approval card); T-4960 (judge captures very tall pages); T-4958 (`fw ux shots` crop step); T-4962 (retry ladder releases `e2e-` self-test messages); T-4963 (direct-route reply settles a hub consult) |
+| be.52 | 3e064047d | T-5148 (inbox aliases), T-5149 (orphan detector judges nicknames, unread by our own ack), T-5150 (bare-name sends refused with the close peer named), T-5157 (`fw sidecar inbox --mark-read`), T-5151, T-5155, T-5158, T-4626..T-4630, T-4108 (be.16..be.51 not listed in this table; see their tags) |
 
 ## Upgrade reports
 
@@ -237,6 +238,10 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | T-5008 seats cannot signal processes they did not start | **FAILS on be.15** (field incident b2be4058: a seat's kill-by-name stopped ring20-dashboard's production service); fixed on bleeding-edge 2026-11-14 (PID namespace, kill-by-name refused in brief + opencode/claude seat permissions, watchdog race); be.26 PARTLY (isolation recorded, live seat refused the decoy); retest owed on the next be-tag. Answered (msg bf2c760e). Residual (dedicated seat user) is T-5127 | ring20-dashboard b2be4058, 0bbb23a6, a14cb4c1 |
 | T-5134 boundary reads follow `CLAUDE_CODE_TMPDIR` (be.51) | **WORKS** (reads under `/var/tmp/claude/claude-0/<project>/<session>/tasks/` allowed; upgrade dry run and real run rc 0, `fw doctor` 0 FAIL, Watchtower reachable after restart) | dimitri-mint-dev 86b06c58 (2026-11-15) |
 | T-5137 send guard counts a recent, not-caught-up reader (be.51) | pending; 010 re-vendor awaits their operator (msg 7610152e) | — |
+| T-5157 `fw sidecar inbox --mark-read` (be.52) | **WORKS** (`--mark-read termlink` → cursor 0 → 56; none of the 54 handled consults resurfaced after the alias was set) | 010-termlink 290aad95 (2026-11-15) |
+| T-5148 inbox aliases (be.52) | **WORKS** (`SIDECAR_INBOX_ALIASES termlink` adds the topic to read_topics(); a sentinel consult at offset 56 surfaced, and only that one) | 010-termlink 290aad95 (2026-11-15) |
+| T-5150 bare-name sends refused (be.52) | **WORKS** (`--to 1409` refused with "did you mean 1409-sprind?", nothing posted; `--to termlnk` refused, nothing posted, but no close peer named: T-5170) | 010-termlink 290aad95 (2026-11-15) |
+| T-5149 orphan-inbox detector (be.52) | **WORKS** (lists 4 real orphans; `…/termlink` no longer listed once it is an alias) | 010-termlink 290aad95 (2026-11-15) |
 | T-5126/T-5128/T-5129/T-5130/T-5136 Watchtower speed (be.50/be.51) | pending; 1409 upgrades after their release candidate, will report cold/warm times against 365 s / 19.5 s / 158 s | 1409 f11dadb0, 5e833071 |
 
 ## Clean full upgrades (rule b)
