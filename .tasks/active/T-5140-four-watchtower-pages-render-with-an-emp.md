@@ -363,7 +363,7 @@ Residual, not changed here: `render_page` also supplies the status strip (focus,
 
 **Evidence:**
 - `tests/web/test_t5140_site_nav_on_every_page.py` 6/6; the four page cases fail with the fix stashed
-- Live after restart: /bvp, /reviewer/audit, /reviewer/overrides and /escalation-drift each show 4 menu groups, like /fabric
+- Live after restart, each page shows 4 menu groups like http://192.168.10.107:3000/fabric: http://192.168.10.107:3000/bvp, http://192.168.10.107:3000/reviewer/audit, http://192.168.10.107:3000/reviewer/overrides and http://192.168.10.107:3000/escalation-drift
 - Screenshots at 1024/1440/1920 in `.context/visual/T-5140/` (see `## Visual Verification`)
 
 Review page: http://192.168.10.107:3000/review/T-5140
