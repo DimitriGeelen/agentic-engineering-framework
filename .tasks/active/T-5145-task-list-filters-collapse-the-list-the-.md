@@ -10,12 +10,12 @@ description: >
   values ride along as filters. Predates T-5136. Fix: include only the filter controls;
   browser regression test that picks from the selects.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/playwright/test_t5145_task_filter_selects.py, web/templates/tasks.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T15:11:54Z
-last_update: '2026-11-15T15:11:59Z'
-date_finished:
+last_update: 2026-11-15T15:24:45Z
+date_finished: 2026-11-15T15:24:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -423,3 +423,21 @@ Review page: http://192.168.10.107:3000/review/T-5145
 
 ### 2026-11-15T15:11:57Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-15T15:24:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-090713c1
+- **Timestamp:** 2026-11-15T15:25:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Human)** — [REVIEW] Filtering the task list from the selects keeps the whole list
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='200' in Expected: thousands of completed tasks, paged 200 at a time and sorted by name; Next keeps both choices`
