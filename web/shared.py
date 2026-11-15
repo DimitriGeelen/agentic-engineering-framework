@@ -1888,11 +1888,47 @@ def _compute_readiness(task_id: str, body: str, root: Path, path: Path | None,
     return (WAITING_ON_AGENT if reasons else READY), tuple(reasons)
 
 
+# T-5147: background refresh of readiness entries the board served stale. A write to any
+# review ledger moves _readiness_stamp and so invalidates every awaiting task at once; the
+# board's next request recomputed them all inline (9-22 s, independent reviewer on T-5136).
+_READINESS_REFRESH_PENDING: dict[str, str] = {}   # task-file path -> task id
+_READINESS_REFRESH_LOCK = threading.Lock()
+_READINESS_REFRESH_THREAD: dict = {"t": None}
+
+
+def _readiness_refresh_worker() -> None:
+    while True:
+        with _READINESS_REFRESH_LOCK:
+            if not _READINESS_REFRESH_PENDING:
+                _READINESS_REFRESH_THREAD["t"] = None
+                return
+            path, task_id = _READINESS_REFRESH_PENDING.popitem()
+        try:
+            review_readiness(task_id, "", "", path)   # exact path: recomputes and stores
+        except Exception:  # a failed refresh leaves the stale entry; the next exact call recomputes
+            logger.warning("readiness refresh failed for %s", task_id, exc_info=True)
+
+
+def _schedule_readiness_refresh(task_id: str, path: Path) -> None:
+    with _READINESS_REFRESH_LOCK:
+        _READINESS_REFRESH_PENDING[str(path)] = task_id
+        if _READINESS_REFRESH_THREAD["t"] is None:
+            t = threading.Thread(target=_readiness_refresh_worker,
+                                 name="readiness-refresh", daemon=True)
+            _READINESS_REFRESH_THREAD["t"] = t
+            t.start()
+
+
 def review_readiness(task_id: str, status: str, body: str,
-                     path: Path | str | None = None) -> tuple[str, list[str]]:
+                     path: Path | str | None = None,
+                     allow_stale: bool = False) -> tuple[str, list[str]]:
     """``(state, reasons)`` for a task awaiting the operator; state is ``READY`` or
     ``WAITING_ON_AGENT``. Reasons are empty iff ready. Cached per task-file mtime and
-    the ledger stamp when ``path`` is given. Fails toward waiting, never silently ready."""
+    the ledger stamp when ``path`` is given. Fails toward waiting, never silently ready.
+
+    ``allow_stale`` (T-5147, board only): when only the ledger stamp moved since the cached
+    entry, a cached WAITING is returned as is and refreshed in the background. A cached
+    READY is never served stale, so stale data can only under-report readiness."""
     root = Path(PROJECT_ROOT)
     p = Path(path) if path else None
     stamp = _readiness_stamp(root)
@@ -1911,6 +1947,9 @@ def review_readiness(task_id: str, status: str, body: str,
         # depends on the task file alone, so a commit elsewhere does not invalidate it.
         if hit and hit[0] == mtime and (hit[1] is None or hit[1] == tstamp):
             return hit[2][0], list(hit[2][1])
+        if allow_stale and hit and hit[0] == mtime and hit[2][0] != READY:
+            _schedule_readiness_refresh(task_id, p)
+            return hit[2][0], list(hit[2][1])
     used: list = []
     state, reasons = _compute_readiness(task_id, body, root, p, stamp, used)
     if p is not None:
@@ -1921,12 +1960,14 @@ def review_readiness(task_id: str, status: str, body: str,
 _OPEN_HUMAN_CACHE: dict[str, tuple[int, int]] = {}
 
 
-def task_review_state(path: Path | str) -> tuple[str | None, list[str], int]:
+def task_review_state(path: Path | str,
+                      allow_stale: bool = False) -> tuple[str | None, list[str], int]:
     """``(state, reasons, open_human)`` for one task file (T-4045 board column).
 
     ``state`` is None when the task has no unchecked Human criterion (it is not
     awaiting anyone); otherwise ``review_readiness``'s verdict. Both the open-Human
-    count and the readiness are cached per file mtime."""
+    count and the readiness are cached per file mtime. ``allow_stale``: see
+    ``review_readiness`` (T-5147; the board only)."""
     p = Path(path)
 
     def _count(q: Path) -> int:
@@ -1939,7 +1980,7 @@ def task_review_state(path: Path | str) -> tuple[str | None, list[str], int]:
     if open_human == 0:
         return None, [], 0
     state, reasons = review_readiness(p.name.split("-", 2)[0] + "-" + p.name.split("-", 2)[1],
-                                      "", "", p)
+                                      "", "", p, allow_stale=allow_stale)
     return state, reasons, open_human
 
 
@@ -1973,7 +2014,9 @@ def board_awaiting_reason(meta: dict) -> str | None:
     path = meta.get("_path")
     active = meta.get("_location") == "active" and bool(path)
     meta["_review_state"], meta["_wait_reasons"], meta["_open_human"] = (
-        task_review_state(path) if active else (None, [], 0))
+        # T-5147: the board may show the last known WAITING while a ledger write is
+        # re-verified in the background; it never shows a stale READY.
+        task_review_state(path, allow_stale=True) if active else (None, [], 0))
     if meta["_review_state"] == READY:
         return AWAIT_REVIEWER_READY
     if (active and str(meta.get("status") or "") == "work-completed"
