@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-03T15:34:51Z
-last_update: '2026-11-14T07:30:48Z'
+last_update: 2026-11-15T06:44:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -145,7 +145,8 @@ bvp_scores_proposed:
 - [x] Prompt origin: a prompt the hook can prove came from a peer injection or automation is never classed `human`; when it cannot tell, `unknown` — doorbell / non-interactive / transcript harness-mark → automated; human only `inferred`
 - [x] A parity test feeds both fixtures' cases through our adapter's reports and every step's expect/ord/turn_stopped and each case's `after` match; a mutant ordering on `at_ms` fails it — p2: `tests/unit/test_t5054_adapter2.py` (fields of every well-formed payload; an oracle from the fixture's `about` matches all 9 cases, its at_ms twin fails the headline case; our own lines survive a backward wall-clock step). r3: `tests/unit/test_t5054_lease_origin.py` covers all 13 cases from the claiming side (the hub's verdict is TermLink's): prompt claims carry the receiver-checked origin/basis, tool and Stop never claim, session-start claims `--kind session-start [--interactive]`; mutants "Stop renews" and "claim uses the hook's own origin" fail 1 and 10 tests
 - [x] Older sidecar: a report the receiver refuses is retried without the new fields; the T-3745 session records and T-5014 lease behave exactly as before (their existing tests pass unchanged) — retry tested; t3561/t3745/t5014 tests green, untouched
-- [ ] Run reported to 010 on framework:pickup with the be-tag that carries it
+- [x] Run reported to 010 on framework:pickup with the be-tag that carries it
+      — posted 2026-11-15 at framework:pickup offset 360: ships in v1.8.16-be.50 (every T-5054 commit, 7b61f98ba..0840913d6); parity fixtures, T-3787 binding and T-3789 transcript-persistence results included.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
