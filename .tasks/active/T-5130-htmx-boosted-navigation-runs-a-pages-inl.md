@@ -319,9 +319,10 @@ Shots: `.context/visual/T-5130/{bvp,terminal,tasks}@{1024,1440,1920}.png` (`fw u
 
 | state | control | 1024 | 1440 | 1920 | note |
 |-------|---------|------|------|------|------|
-| bvp | scatter and weight sliders, site nav | ok | ok | ok | |
+| bvp | scatter and weight sliders, site nav | ok | ok | ok | retaken 2026-11-15 after T-5140: the full menu shows |
 | terminal | terminal pane, Connected | ok | ok | ok | |
-| tasks | board | ok | ok | ok | |
+| tasks | board | ok | ok | ok | full-page capture; cards below the first screen look blank because the board uses `content-visibility: auto` (tasks.html:161), so the browser skips drawing off-screen cards; see tasks-viewport |
+| tasks-viewport | board cards in the viewport | ok | ok | ok | viewport-sized capture: cards drawn with title, status and BVP; card selects are cramped at 1024, the board's existing layout |
 
 **In-app click-through: the criterion's own path** (Playwright, 1440 px). Each step clicks the top-nav link, opening its dropdown first as a user does. A marker set on `window` before each click tells a full load (marker gone) from an htmx swap (marker kept). Shots: `.context/visual/T-5130/click-{0-fabric,1-bvp,2-terminal,3-tasks}.png`; console log per step in `.context/visual/T-5130/clickthrough.json`.
 
