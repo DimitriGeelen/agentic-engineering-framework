@@ -57,7 +57,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T07:57:08Z
-last_update: '2026-10-31T13:15:34Z'
+last_update: 2026-11-15T09:11:49Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -137,7 +137,13 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Background / trigger:** Inception T-4435 (GO recorded by the operator 2026-10-20) gave AEF the dispatch-side pieces of a shared worker contract with TermLink and ring20: the run.sh supervisor-writer, dispatcher recording, worker instruction, local-evidence reconciler and session-to-dispatch binding. The condition was that the first deliverable is a jointly agreed transition table plus a shared conformance suite, with no implementation before that. Design: `docs/reports/T-4435-shared-worker-contract.md`.
+
+**Problem / hypothesis:** three projects record worker state independently, so they disagree about when a worker is dispatched, running, done or lost. A written transition table that all three sign is the precondition for any of them to change code.
+
+**Goal:** draft `docs/specs/shared-worker-contract-transitions.md` (states, transitions, who writes each, evidence rules) and get it agreed by TermLink, ring20 and AEF.
+
+**Expected outcome:** an agreed spec version all three cite. That is v0.3.3 (TermLink agrees to v0.3.x; ring20 signs v0.3.1 with notes; v0.3.2 and v0.3.3 are editorial). Implementation follows in later slices.
 
 ## Acceptance Criteria
 
@@ -232,7 +238,8 @@ grep -q "This section is the \*\*hub's\*\* evidence" docs/specs/shared-worker-co
 test "$(grep -oE 'ring20 v0.3 check N[1-6]' docs/specs/shared-worker-contract-transitions.md | sort -u | wc -l)" -eq 6
 grep -q 'single-writer lease' docs/specs/shared-worker-contract-transitions.md
 grep -q 'channel-bound evidence per §3.2' docs/specs/shared-worker-contract-transitions.md
-grep -q 'DRAFT v0.3.3' docs/specs/shared-worker-contract-transitions.md
+# 2026-11-15: T-4800 moved the draft line to v0.3.4 (proposed, not adopted); v0.3.3 stays the agreed text.
+grep -q 'v0.3.3 is the agreed text' docs/specs/shared-worker-contract-transitions.md
 grep -q '^## Changelog v0.3.2 → v0.3.3' docs/specs/shared-worker-contract-transitions.md
 grep -q 'termlink v0.3 agree' docs/specs/shared-worker-contract-transitions.md
 grep -q 'TermLink AGREES to v0.3' docs/specs/shared-worker-contract-transitions.md
