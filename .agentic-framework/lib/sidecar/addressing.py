@@ -380,6 +380,25 @@ def _require_remote_inbox(name: str, hub: str, hub_id: str, runner) -> None:
         f"{listed}. Use --to {hub_id}/<project>; nothing posted")
 
 
+def nickname_candidates(name: str) -> list[str]:
+    """T-5150: peer-directory names that ``name`` is a nickname of: the part after a numeric
+    project prefix (``termlink`` → ``010-termlink``) or a whole hyphen-separated part
+    (``ring20`` → ``ring20-dashboard``). Case-insensitive; never ``name`` itself."""
+    n = (name or "").strip().lower()
+    if not n:
+        return []
+    out = []
+    for peer_name in sorted(load_peers()["peers"]):
+        p = peer_name.lower()
+        if p == n:
+            continue
+        parts = p.split("-")
+        after_number = p.split("-", 1)[1] if parts[0].isdigit() and "-" in p else None
+        if n == after_number or n in parts:
+            out.append(peer_name)
+    return out
+
+
 def resolve(to: str, *, hub: str | None = None, level: str = "auto",
             runner=subprocess.run, hubs_file: Path | None = None) -> dict:
     """Where a `--to` goes: {circuit, topic, hub (None = local), how}.
@@ -437,6 +456,19 @@ def resolve(to: str, *, hub: str | None = None, level: str = "auto",
             return out(known["circuit"],
                        hub_arg_for(known["hub_id"], runner=runner, hubs_file=hubs_file),
                        f"peer directory (hub {known['hub_id']})")
+    # T-5150 (010 T-3798): a nickname of a known peer (`termlink` for 010-termlink) is
+    # refused, naming the peer. It must run before is_project_id: that treats a sibling
+    # checkout DIRECTORY as a project, and 010's checkout is /opt/termlink, so `--to
+    # termlink` became inbox:<hub>/termlink, which nobody reads (54 consults sat there).
+    # The hub's "inbox was fetched" evidence below is weak too (a peek counts, T-5149).
+    # A numbered NNN-name id, our own id, or an explicit --level keeps its meaning.
+    if (level == "auto" and name != circuit.project_id()
+            and not circuit._PROJECT_ID_RE.match(name)):
+        nick = nickname_candidates(name)
+        if nick:
+            raise AddressError(
+                f"recipient {name!r} is not a project or peer; did you mean "
+                + " or ".join(nick) + f"? Send --to {nick[0]} (peer directory: {peers_path()})")
     if level == "project" or (level == "auto" and circuit.is_project_id(name)):
         return out(f"{own}/{name}", hub_arg, "project address on this hub")
     if level == "agent":
@@ -455,7 +487,18 @@ def resolve(to: str, *, hub: str | None = None, level: str = "auto",
         f"the peer directory ({peers_path()}), and not a sub-agent of this agent "
         f"(no inbox:{own}/{circuit.project_id()}/{name} on this hub). Address it as "
         f"--to <hubid>/{name}, or --hub <profile> for a peer on another hub, or "
-        f"--level agent if it IS your sub-agent")
+        f"--level agent if it IS your sub-agent" + _close_peers_hint(name))
+
+
+def _close_peers_hint(name: str) -> str:
+    """T-5150: name the closest peers in the general refusal, when there are any."""
+    import difflib
+    close = difflib.get_close_matches(name.lower(), [p.lower() for p in load_peers()["peers"]],
+                                      n=3, cutoff=0.6)
+    if not close:
+        return ""
+    by_lower = {p.lower(): p for p in load_peers()["peers"]}
+    return ". Closest peers: " + ", ".join(by_lower[c] for c in close)
 
 
 # ── T-4418: is anything reading an explicit circuit? ─────────────────────────
