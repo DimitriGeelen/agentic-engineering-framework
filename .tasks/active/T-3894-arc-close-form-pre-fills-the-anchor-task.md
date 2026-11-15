@@ -312,6 +312,12 @@ bin/fw watchtower current
 
 ## RCA
 
+**Cause:** T-3841 and T-3843 added pre-fill of the arc-close decision and demo from "the arc's recommendation", and that recommendation was looked up close_task first, then anchor. Nothing distinguished the two sources. The anchor's recommendation, which judges whether to START an arc, was offered as the verdict on whether it is DONE.
+
+**Fix (56a2dd448):** the decision and demo are pre-filled only when `source == close_task`. An anchor recommendation is shown in the card with a notice saying it is about starting the arc and pointing to `close_task:`. Tests in `tests/web/test_t3841_arc_close_decision_prefill.py` cover both sources.
+
+**Why it went unnoticed:** most arcs had no close-out task, so the anchor was the only recommendation the form ever saw, and its text read like a verdict.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
