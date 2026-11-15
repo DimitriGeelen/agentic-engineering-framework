@@ -253,6 +253,15 @@ def create_app() -> Flask:
     from web.blueprints.arcs import arc_display
     app.jinja_env.globals["arc_display"] = arc_display
 
+    # T-5140: the site nav reaches every template, not only render_page's. Four
+    # pages render a base.html template through render_template (/bvp,
+    # /reviewer/audit, /reviewer/overrides, /escalation-drift) and drew an empty
+    # nav on a full load. A view's own value still wins: Flask merges explicit
+    # render arguments over context-processor values.
+    @app.context_processor
+    def _site_nav_context():
+        return {"nav_groups": NAV_GROUPS, "nav_items": NAV_ITEMS}
+
     # -------------------------------------------------------------------
     # Register blueprints (centralized in __init__.py — T-431/A2)
     # -------------------------------------------------------------------
