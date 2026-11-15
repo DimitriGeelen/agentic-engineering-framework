@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5160: Playwright arc tests pinned to arc-grooming, closed since (19 reds)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T23:16:16Z
+# ============================================================================
+
+task_id: T-5160
+task_name: "Playwright arc tests pinned to arc-grooming, closed since (19 reds)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-15T22:29:09Z
+completed: 2026-11-15T23:10:19Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-11-15T23:29:55+01:00
+last_commit: 2026-11-16T00:10:16+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context, criteria and verification before dispatch. Playwright arc tests pick the arc by state at run time (arc_corpus.pick_arc); 21 reds to 2, 7 skips name the missing state. last two stale selectors (nav group by summary title; review content scoped to main#content, not the palette input); fabric card for arc_corpus.py; T-5167 (landing arc cards open an empty list) and T-5168 (panel tests need a fixture arc) filed
+
+# Key outcomes
+outcomes:
+  - 'no test in the seven files names `arc-grooming` (or any other specific arc id) as the arc under test; arcs are chosen by state at run time through one shared helper'
+  - 'the 19 previously failing tests pass locally; any skip names the missing state (2026-11-16: seven files, 34 passed, 7 skipped "no arc … with a CLOSE/KEEP-OPEN recommendation"; the skips'' coverage gap is T-5168; page bug found on the way: T-5167)'
+  - 'no product code changed (tests/playwright only), unless a test exposed a real page bug, which is then filed as its own task instead of fixed here'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'last two stale selectors (nav group by summary title; review content scoped to main#content, not the palette input); fabric card for arc_corpus.py; T-5167 (landing arc cards open an empty list) and T-5168 (panel tests need a fixture arc) filed'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-playwright-arc_corpus.yaml'
+  - '.tasks/active/T-5160-playwright-arc-tests-pinned-to-arc-groom.md'
+  - '.tasks/active/T-5167-landing-page-arc-cards-open-an-empty-tas.md'
+  - '.tasks/active/T-5168-arc-close-recommendation-panel-tests-ski.md'
+  - 'tests/playwright/arc_corpus.py'
+  - 'tests/playwright/test_approvals_arc_closure_section.py'
+  - 'tests/playwright/test_arc_badge.py'
+  - 'tests/playwright/test_arc_close.py'
+  - 'tests/playwright/test_arc_close_recommendation_panel.py'
+  - 'tests/playwright/test_arc_review_route.py'
+  - 'tests/playwright/test_arcs_kanban.py'
+  - 'tests/playwright/test_landing_arc_cards.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-15T23:29:55'
+    action: 'T-5160: context, criteria and verification before dispatch'
+  - time: '2026-11-15T23:55:57'
+    action: 'T-5160: Playwright arc tests pick the arc by state at run time (arc_corpus.pick_arc); 21 reds to 2, 7 skips name the missing state'
+  - time: '2026-11-16T00:10:16'
+    action: 'T-5160: last two stale selectors (nav group by summary title; review content scoped to main#content, not the palette input); fabric card for arc_corpus.py; T-5167 (landing arc cards open an empty list) and T-5168 (panel tests need a fixture arc) filed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 41 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [playwright, ci]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 41
+  commits: 4
+  files_changed: 15
+  lines_added: 1312
+  lines_removed: 117
+  footprint_refreshed_at: '2026-11-15T23:17:14Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5160-playwright-arc-tests-pinned-to-arc-groom.md
+generated_by: context-agent-hybrid
