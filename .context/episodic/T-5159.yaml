@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5159: fw issues reply classifier: a control-case sentence ('X is still blocked/reported') vetoes a clear 'Confirmed, thank you' (#98, #111, #112)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T21:25:01Z
+# ============================================================================
+
+task_id: T-5159
+task_name: "fw issues reply classifier: a control-case sentence ('X is still blocked/reported') vetoes a clear 'Confirmed, thank you' (#98, #111, #112)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-15T21:18:59Z
+completed: 2026-11-15T21:23:53Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-15T22:23:49+01:00
+last_commit: 2026-11-15T22:23:49+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  reply classifier no longer reads a control case ('X is still blocked/reported') as doubt, and accepts 'Confirmed, thank you; that covers everything'; the three real replies (#98, #111, #112) pinned; 9 tests
+
+# Key outcomes
+outcomes:
+  - 'the three real replies (#98, #111, #112, verbatim) classify as `confirmed`; a test pins each'
+  - '"still fails / still broken" stays not-fixed, "except", "however" and a bare "still" (e.g. "still slow") still veto a confirmation'
+  - 'all classifier tests (t4660, t4668, t5094) pass (17 files, 209 passed; t4341 bats 8 ok)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/issues.py'
+  - '.tasks/active/T-5159-fw-issues-reply-classifier-a-control-cas.md'
+  - 'lib/issues.py'
+  - 'tests/unit/test_t5159_control_case_still.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-15T22:23:49'
+    action: 'T-5159: reply classifier no longer reads a control case (''X is still blocked/reported'') as doubt, and accepts ''Confirmed, thank you; that covers everything''; the three real replies (#98, #111, #112) pinned; 9 tests'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 7
+  lines_added: 551
+  lines_removed: 10
+  footprint_refreshed_at: '2026-11-15T21:25:34Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5159-fw-issues-reply-classifier-a-control-cas.md
+generated_by: context-agent-hybrid
