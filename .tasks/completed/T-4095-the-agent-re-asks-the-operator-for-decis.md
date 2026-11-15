@@ -21,12 +21,12 @@ description: >
   no decide link; (3) CLAUDE.md rule: every operator-facing pending list is the verbatim
   output of fw operator pending.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, operator-experience, governance]
-components: []
+components: [bin/fw, lib/inception.sh, lib/review.sh]
 related_tasks: [T-4023, T-2182]
 origin: {kind: "operator"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -56,8 +56,8 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T11:46:14Z
-last_update: '2026-10-31T13:15:29Z'
-date_finished:
+last_update: 2026-11-15T08:14:49Z
+date_finished: 2026-11-15T08:14:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -422,3 +422,16 @@ bin/fw vendor self --check
 - **Decision-source:** a Decision counts when the file has `**Decision**: GO|NO-GO|DEFER` OR a `T-N: inception decision <V>` commit is reachable from HEAD (covers G-114-reverted files). `inception.sh` sets `FW_REVIEW_POST_DECISION=1` for its own post-decision `emit_review` so the confirmation view and review marker keep working (the existing post_move bats failed without this).
 - **Pre-fix failure:** with HEAD `lib/review.sh`, `test_review_emit_prints_no_decide_link_for_decided` fails (decide link emitted for the decided inception); the other two tests exercise the new module.
 - **Live:** `bin/fw operator pending` lists T-2899, T-3501, T-3670, T-3682, T-4012 (undecided inceptions) + ready Human checks; T-4023 absent (0 matches). `bin/fw task review T-4023` → `T-4023: already decided: GO on 2026-10-12T11:11:33Z (via Watchtower)`; review-batch shows the same in the Link column.
+
+### 2026-11-15T08:14:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-74a8595f
+- **Timestamp:** 2026-11-15T08:15:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

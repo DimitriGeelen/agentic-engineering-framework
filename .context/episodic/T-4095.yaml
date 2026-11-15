@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4095: The agent re-asks the operator for decisions already recorded (T-4023 GO at 13:12, still listed as 'waiting on you' after 13:37): pending-for-operator lists are built from agent memory, and fw task review emits a decide link for an already-decided inception
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T08:15:53Z
+# ============================================================================
+
+task_id: T-4095
+task_name: "The agent re-asks the operator for decisions already recorded (T-4023 GO at 13:12, still listed as 'waiting on you' after 13:37): pending-for-operator lists are built from agent memory, and fw task review emits a decide link for an already-decided inception"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-12T11:46:14Z
+completed: 2026-11-15T08:14:49Z
+duration_days: 34
+updates_count: 3
+first_commit: 2026-10-12T13:47:24+02:00
+last_commit: 2026-10-12T14:05:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RCA + scope — operator re-asked for recorded decisions (memory-built pending lists; review emits decide links for decided inceptions). fw operator pending (live pending-for-operator list); fw task review/review-batch print 'already decided' for decided inceptions; CLAUDE.md rule. vendored operator_pending.py, review.sh, inception.sh, bin/fw
+
+# Key outcomes
+outcomes:
+  - '`fw operator pending [--json]` (new `lib/operator_pending.py` + bin/fw route + help line) lists, from LIVE state only: active inceptions with no `**Decision**` (with recommendation + `/inception/<id>` link); partial-complete tasks with unticked Human criteria that the T-4053 readiness predicate calls ready (with `/review/<id>`); runmes not yet run (`fw runme pending`); paid review proposals awaiting approval; and nothing else. An inception that has a Decision (in the file, or a "(via Watchtower)" decision commit for it at HEAD) never appears. Output is a short markdown list grouped by kind, suitable to paste verbatim.'
+  - '`fw task review T-XXX` and `fw task review-batch` on an inception that already has a Decision print `already decided: <GO|NO-GO|DEFER> on <date> (<source>)` and emit no decide link (exit 0); undecided inceptions unchanged.'
+  - 'Tests (`tests/unit/t4095_operator_pending_test.py` or bats) with fixture tasks: decided inception absent from the list and refused by review; undecided present; ready partial-complete present, waiting-on-agent absent; a pending runme present. The "decided inception still emits a decide link" case fails on the pre-fix code.'
+  - 'CLAUDE.md §Presenting Work for Human Review gains the rule: any list of things waiting for the operator is the verbatim output of `fw operator pending` (never composed from memory), with this task''s RCA as origin.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/inception.sh'
+  - '.agentic-framework/lib/operator_pending.py'
+  - '.agentic-framework/lib/review.sh'
+  - '.tasks/active/T-4095-the-agent-re-asks-the-operator-for-decis.md'
+  - 'CLAUDE.md'
+  - 'bin/fw'
+  - 'lib/inception.sh'
+  - 'lib/operator_pending.py'
+  - 'lib/review.sh'
+  - 'tests/unit/t4095_operator_pending_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-12T13:47:24'
+    action: 'T-4095: RCA + scope — operator re-asked for recorded decisions (memory-built pending lists; review emits decide links for decided inceptions)'
+  - time: '2026-10-12T14:05:33'
+    action: 'T-4095: fw operator pending (live pending-for-operator list); fw task review/review-batch print ''already decided'' for decided inceptions; CLAUDE.md rule'
+  - time: '2026-10-12T14:05:53'
+    action: 'T-4095: vendored operator_pending.py, review.sh, inception.sh, bin/fw'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 48748 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, operator-experience, governance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 48748
+  commits: 4
+  files_changed: 14
+  lines_added: 1182
+  lines_removed: 16
+  footprint_refreshed_at: '2026-11-15T08:16:00Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4095-the-agent-re-asks-the-operator-for-decis.md
+generated_by: context-agent-hybrid
