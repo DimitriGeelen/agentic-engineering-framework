@@ -55549,3 +55549,39 @@ scan_id: R-8ee6e03f
 task_id: T-5160
 payload:
   task_file: .tasks/active/T-5160-playwright-arc-tests-pinned-to-arc-groom.md
+---
+kind: scan_emitted
+timestamp: '2026-11-15T23:43:06Z'
+scan_id: R-64d8fc80
+task_id: T-5167
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-15T23:43:06Z'
+scan_id: R-64d8fc80
+task_id: T-5167
+payload:
+  task_file: .tasks/active/T-5167-landing-page-arc-cards-open-an-empty-tas.md
+---
+kind: scan_emitted
+timestamp: '2026-11-15T23:54:21Z'
+scan_id: R-c287d8ea
+task_id: T-5169
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-15T23:54:21Z'
+scan_id: R-c287d8ea
+task_id: T-5169
+payload:
+  task_file: .tasks/active/T-5169-field-record-010-termlink-verdicts-on-be.md
