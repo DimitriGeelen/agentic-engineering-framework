@@ -1,0 +1,137 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3582: Rung-5 review panel is three Claude workers with vendor labels - make codex and opencode real panel seats (termlink dispatch only spawns Claude)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T07:58:12Z
+# ============================================================================
+
+task_id: T-3582
+task_name: "Rung-5 review panel is three Claude workers with vendor labels - make codex and opencode real panel seats (termlink dispatch only spawns Claude)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-30T09:20:47Z
+completed: 2026-11-15T07:50:40Z
+duration_days: 46
+updates_count: 4
+first_commit: 2026-10-01T10:47:12+02:00
+last_commit: 2026-10-01T15:31:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  operator ruling 2026-10-01 — keep the rung rule; make codex, Z.ai (opencode) and Antigravity real panel worker kinds; real ACs; horizon now. build prompt — codex/opencode/antigravity worker kinds, R9-1 run.sh fix, docs/harnesses.md for the 055 fleet cockpit. codex, opencode and antigravity as review worker kinds; T-3580 R9-1 in run.sh. run.sh ends 0 when its start was not refused (the R9-1 refusal test made the last statement the script's status). T-3580 round5/6 unlaunchable-kind probes use future kinds (codex/opencode are real now). vendor self — termlink.sh, review_cost, verdict_ledger, judge_cli, review-backends.yaml. live proof — rung-5 panel claude+codex+opencode all green and validated on a fixture task; antigravity single seat green (sudo form, non-interactive). docs/harnesses.md — Claude Code, Codex, opencode/Z.ai, Antigravity, Gemini CLI (verified vs unverified, no secrets); the maintained source for the 055 fleet cockpit. Agent ACs ticked with proof; Decisions (R9-1 per-kind check + harness export, runtime-recorded harness verdicts, agy absolute binary); Verification block
+
+# Key outcomes
+outcomes:
+  - '`codex` and `opencode` (Z.ai) are launchable dispatcher worker kinds: `fw termlink worker-kinds --vendors` lists them with vendors openai and zai. A review dispatch with each produces a runtime-signed start and completion and a parsed verdict file. Test: a stub binary per kind. Live proof: one real review per kind on a fixture task, cost logged.'
+  - '`antigravity` is a launchable worker kind that runs `agy` as user dimitri-mint-dev through the operator-approved sudo form, or the task records with evidence why it cannot be made non-interactive and it stays a spare.'
+  - 'Every new kind satisfies T-3580''s launch pinning: a committed kind and binary path, a pinned model, no caller env, no caller flags, and its own settings isolation. The verdict ledger counts it as its own vendor only when launched this way. Test: a forged vendor label is refused.'
+  - 'A rung-5 panel of Claude, Codex and Z.ai can be assembled and recorded end to end on a fixture task (three seats, three vendors). Test plus one live run.'
+  - 'policy/review-backends.yaml maps each kind to its vendor; codex and opencode stay internal-class. `bin/fw vendor self --check` is clean for this task''s files.'
+  - '**T-3580 R9-1, fixed here because it is the same file (run.sh):**'
+  - '**Harness reference doc for the fleet (055-agentic-fleet-cockpit, framework:pickup 256):** `docs/harnesses.md` covers Claude Code, Codex, Z.ai/opencode, Antigravity and Gemini CLI. For each it gives:'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'live proof — rung-5 panel claude+codex+opencode all green and validated on a fixture task; antigravity single seat green (sudo form, non-interactive)'
+    source: git-mined
+  - description: 'build prompt — codex/opencode/antigravity worker kinds, R9-1 run.sh fix, docs/harnesses.md for the 055 fleet cockpit'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-01 — R9-1: narrow the dirty-tree check per kind, and export only for harness kinds'
+    chose: '`_project_config_fault` now covers only what each kind''s pinned launch reads (`verdict_ledger.WORKTREE_CONFIG`). That is nothing for claude, which runs `--setting-sources user --strict-mcp-config`. A marker-file probe on 2026-10-01 showed the user-only launch saw no project CLAUDE.md, agents or commands; the default launch saw all three. It is also nothing for ollama-loop and for the harness kinds, which run in a `git archive` export of the pinned revision. An unknown kind keeps the full round-9 check (fail closed).'
+    rationale: 'claude must run in the live checkout: it records and commits its own verdict row. So exporting for all kinds alike would have broken the claude path. For the harness kinds the export is the simplest isolation that holds across all three CLIs. It also lets the antigravity user read the tree.'
+    alternatives_rejected: ['a `git archive` export for every kind (breaks claude''s own record/commit). Keeping the round-9 check (blocks ordinary reviews in the shared checkout for a file the launch cannot read).']
+  - decision: '2026-10-01 — harness verdicts are recorded by the runtime, not the worker'
+    chose: 'codex, opencode and antigravity run read-only and PRINT their verdicts. run.sh then calls `verdict_ledger.py record-for-worker`, authenticated like `complete`. It records each printed verdict under the worker''s identity, with an evidence report that carries the output and its sha256, and commits it before the completion is signed.'
+    rationale: 'none of the three can run `fw reviewer verdict record` and `git commit` from a read-only sandbox. Giving them a writable sandbox or `--auto` would let a reviewer write the repo.'
+    alternatives_rejected: ['a writable codex sandbox (`workspace-write`) or `opencode --auto`, which let the reviewer modify files.']
+  - decision: '2026-10-01 — antigravity launched with the absolute binary'
+    chose: '`sudo -n -u dimitri-mint-dev -H <registry binary> -p … --mode plan --sandbox`.'
+    rationale: 'the approved form with bare `agy` fails (`sudo: agy: command not found`), because sudo''s secure_path does not include ~/.local/bin. Same user, same flags, same binary.'
+  - decision: '[date] — [topic]'
+    chose: '[what was decided]'
+    rationale: '[rationale]'
+    alternatives_rejected: ['[alternatives and why not] -->']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/lib/review_cost.py'
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.agentic-framework/policy/review-backends.yaml'
+  - '.tasks/active/T-3582-rung-5-review-panel-is-three-claude-work.md'
+  - 'agents/termlink/termlink.sh'
+  - 'docs/harnesses.md'
+  - 'docs/reports/T-3582-build-prompt.md'
+  - 'docs/reports/T-3582-live-runs.md'
+  - 'lib/review_cost.py'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/verdict_ledger.py'
+  - 'policy/review-backends.yaml'
+  - 'tests/manual/t3582_live_review.py'
+  - 'tests/unit/_review_runtime.py'
+  - 'tests/unit/t3580_judge_cli_test.py'
+  - 'tests/unit/t3580_round2_test.py'
+  - 'tests/unit/t3580_round5_test.py'
+  - 'tests/unit/t3580_round6_test.py'
+  - 'tests/unit/t3580_round7_test.py'
+  - 'tests/unit/t3580_round9_test.py'
+  - 'tests/unit/t3582_harness_kinds_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T10:47:12'
+    action: 'T-3582: operator ruling 2026-10-01 — keep the rung rule; make codex, Z.ai (opencode) and Antigravity real panel worker kinds; real ACs; horizon now'
+  - time: '2026-10-01T14:36:32'
+    action: 'T-3582: build prompt — codex/opencode/antigravity worker kinds, R9-1 run.sh fix, docs/harnesses.md for the 055 fleet cockpit'
+  - time: '2026-10-01T15:09:56'
+    action: 'T-3582: codex, opencode and antigravity as review worker kinds; T-3580 R9-1 in run.sh'
+  - time: '2026-10-01T15:11:15'
+    action: 'T-3582: run.sh ends 0 when its start was not refused (the R9-1 refusal test made the last statement the script''s status)'
+  - time: '2026-10-01T15:17:31'
+    action: 'T-3582: T-3580 round5/6 unlaunchable-kind probes use future kinds (codex/opencode are real now)'
+  - time: '2026-10-01T15:19:06'
+    action: 'T-3582: vendor self — termlink.sh, review_cost, verdict_ledger, judge_cli, review-backends.yaml'
+  - time: '2026-10-01T15:24:49'
+    action: 'T-3582: live proof — rung-5 panel claude+codex+opencode all green and validated on a fixture task; antigravity single seat green (sudo form, non-interactive)'
+  - time: '2026-10-01T15:26:12'
+    action: 'T-3582: docs/harnesses.md — Claude Code, Codex, opencode/Z.ai, Antigravity, Gemini CLI (verified vs unverified, no secrets); the maintained source for the 055 fleet cockpit'
+  - time: '2026-10-01T15:31:25'
+    action: 'T-3582: Agent ACs ticked with proof; Decisions (R9-1 per-kind check + harness export, runtime-recorded harness verdicts, agy absolute binary); Verification block'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 9 commit(s), 66149 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 66149
+  commits: 10
+  files_changed: 26
+  lines_added: 2188
+  lines_removed: 143
+  footprint_refreshed_at: '2026-11-15T07:58:17Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3582-rung-5-review-panel-is-three-claude-work.md
+generated_by: context-agent-hybrid
