@@ -13,7 +13,7 @@ import markdown2
 import yaml
 from flask import Blueprint, abort, request, render_template
 
-from lib.arc_membership import task_dict_in_arc
+from lib.arc_membership import arc_identities, task_dict_in_arc
 from web.shared import (
     FRAMEWORK_ROOT, PROJECT_ROOT, render_page, parse_frontmatter,
     get_all_task_metadata, get_episodic_tags, task_id_sort_key,
@@ -782,7 +782,10 @@ def tasks():
         # Membership check unions canonical `arc_id:` frontmatter (T-1849) with
         # legacy `arc:<slug>` tag (pre-T-1850 migration). Future storage-format
         # changes update one place instead of three blueprints.
-        all_tasks = [t for t in all_tasks if task_dict_in_arc(t, arc_filter)]
+        # T-5167: the URL may name the arc by id (arc-005, as the landing cards link) or by
+        # slug (arc-grooming); tasks record either. Match both forms.
+        _arc_slug, _arc_num = arc_identities(PROJECT_ROOT, arc_filter)
+        all_tasks = [t for t in all_tasks if task_dict_in_arc(t, _arc_slug, _arc_num)]
     if owner_filter:
         all_tasks = [t for t in all_tasks if t.get("owner") == owner_filter]
     # T-2160 (arc-009 horizon-axis-hardening, Slice 1): horizon='past' is a

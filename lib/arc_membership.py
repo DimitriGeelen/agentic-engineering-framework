@@ -251,6 +251,34 @@ def scan_tasks_by_arc_id(project_root: Path | str) -> dict[str, list[str]]:
     return by_arc
 
 
+def arc_identities(project_root: Path | str, name: str) -> tuple[str, str | None]:
+    """T-5167: (slug, numeric id) for an arc named either way, read from .context/arcs/*.yaml.
+
+    Arcs carry two names (T-1848: ``id: arc-005``, ``slug: arc-grooming``) and tasks record
+    either in ``arc_id:``. A /tasks?arc= link in one form must still find tasks recorded in the
+    other. When no arc file matches, returns ``(name, None)`` so the caller filters by the
+    literal and an unknown name lists nothing rather than everything."""
+    name = (name or "").strip()
+    if not name:
+        return name, None
+    arcs_dir = Path(project_root) / ".context" / "arcs"
+    if not arcs_dir.is_dir():
+        return name, None
+    want = name.lower()
+    for p in sorted(arcs_dir.glob("*.yaml")):
+        try:   # arc files are plain YAML; `id:` and `slug:` are top-level keys near the top
+            with open(p, encoding="utf-8", errors="replace") as fh:
+                head = fh.read(8192)
+        except OSError:
+            continue
+        ids = dict(re.findall(r"(?m)^(id|slug):\s*['\"]?([A-Za-z0-9_.-]+)['\"]?\s*$", head))
+        slug = ids.get("slug") or p.stem
+        numeric = ids.get("id")
+        if want in {slug.lower(), (numeric or "").lower(), p.stem.lower()}:
+            return slug, numeric
+    return name, None
+
+
 def task_dict_in_arc(
     task: dict,
     arc_slug: str,

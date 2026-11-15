@@ -10,10 +10,10 @@ description: >
   arc-010, ...). Fix: resolve the arc (id or slug) once and pass both forms. Render
   surface: needs a [REVIEW] criterion.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [watchtower, arcs, bug]
 components: []
 related_tasks: [T-5160]
@@ -45,7 +45,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T23:09:55Z
-last_update: '2026-11-15T23:16:16Z'
+last_update: 2026-11-15T23:27:14Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,20 +91,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Found by the T-5160 worker reading the code, confirmed live on 2026-11-16: the landing page's arc cards link to `/tasks?arc=arc-NNN` (e.g. `/tasks?arc=arc-020`). `/tasks?view=list&arc=arc-005` lists no tasks, while `/tasks?view=list&arc=arc-grooming` (the same arc, by slug) lists its members; 36 tasks carry `arc_id: arc-grooming`.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `web/blueprints/tasks.py` filters with `task_dict_in_arc(t, arc_filter)` and never passes `arc_numeric_id`, so only the literal string given in the URL matches. Arcs have two names (T-1848: `id: arc-005`, `slug: arc-grooming`), tasks use either in `arc_id:`, and legacy tags use `arc:<slug>`. A link in one form misses tasks recorded in the other.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the filter resolves whatever form the URL gives to the arc's id and slug, and matches tasks recorded under either.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** clicking an arc card on the landing page opens the arc's tasks; `?arc=arc-005` and `?arc=arc-grooming` list the same tasks.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/arc_membership.py` has one function that maps an arc id or slug to both (from `.context/arcs/*.yaml`), returning the input unchanged when no arc matches
+- [x] `/tasks?arc=<id>` and `/tasks?arc=<slug>` return the same task set; tasks recorded by id, by slug, and by legacy `arc:<slug>` tag all match (unit tests with a fixture project; live 52 = 52; every test reading the changed files: 333 pytest, 94 bats, all pass)
+- [x] an unknown arc name still filters by the literal (no tasks), not by everything (live: `?arc=no-such-arc` → 0 tasks)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -136,6 +137,13 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] An arc card on the landing page opens that arc's tasks
+  **Steps:**
+  1. Open http://192.168.10.107:3000/ and find the arc cards.
+  2. Click the card of an arc that has tasks (its card shows a non-zero count).
+  3. Compare with http://192.168.10.107:3000/tasks?view=list&arc=arc-grooming and http://192.168.10.107:3000/tasks?view=list&arc=arc-005 (the same arc by slug and by id).
+  **Expected:** the card opens a task list showing that arc's tasks, and the two comparison links list the same tasks.
+  **If not:** note which arc card opened an empty or wrong list, and its link.
 
 <!--
   Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
@@ -290,8 +298,30 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_t5167_arc_filter_both_names.py > /tmp/.t5167.out 2>&1 && grep -q passed /tmp/.t5167.out && ! grep -q failed /tmp/.t5167.out
+U="$(bin/fw watchtower url)"; a=$(curl -sf "$U/tasks?view=list&arc=arc-005" | grep -oE 'href="/tasks/T-[0-9]+"' | sort -u | wc -l); b=$(curl -sf "$U/tasks?view=list&arc=arc-grooming" | grep -oE 'href="/tasks/T-[0-9]+"' | sort -u | wc -l); test "$a" -gt 0 && test "$a" -eq "$b"
+bin/fw vendor self --check --task T-5167
+bin/fw watchtower current
+
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| list-by-id | arc filter by id (arc-005) | ok | ok | ok | 52 tasks, each badged arc-005 · arc-grooming |
+| list-by-slug | arc filter by slug (arc-grooming) | ok | ok | ok | same 52 tasks |
+| landing | arc cards | ok | ok | ok | card links unchanged (/tasks?arc=arc-NNN), now non-empty |
+
+Screenshots: `.context/visual/T-5167/{list-by-id,list-by-slug,landing}@{1024,1440,1920}.png` (`fw ux shots`, 2026-11-16).
 
 ## RCA
+
+**Symptom:** a landing-page arc card opened an empty task list.
+
+**Root cause:** the cards link the arc's numeric id (`/tasks?arc=arc-005`) while most tasks record the slug (`arc_id: arc-grooming`); the list filter called `task_dict_in_arc` without the second name, so only the literal URL value matched. The helper already accepted both forms; the blueprint never resolved the other one.
+
+**Why structurally allowed:** the arc-badge test checked the filter only by slug (`?arc=arc-grooming`), and the landing-card test counted cards, not what their links open. No test followed a card's link.
+
+**Prevention:** `arc_identities()` resolves either name once, and `test_t5167_arc_filter_both_names.py` pins that id and slug list the same tasks (by id, by slug, by legacy tag) and that an unknown name lists nothing. The live check in Verification compares both URLs.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -387,3 +417,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5167-landing-page-arc-cards-open-an-empty-tas.md
 - **Context:** Initial task creation
+
+### 2026-11-15T23:27:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
