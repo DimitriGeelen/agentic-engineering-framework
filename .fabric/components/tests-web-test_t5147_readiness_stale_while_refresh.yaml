@@ -1,0 +1,21 @@
+id: tests/web/test_t5147_readiness_stale_while_refresh.py
+name: test_t5147_readiness_stale_while_refresh
+type: script
+subsystem: tests
+location: tests/web/test_t5147_readiness_stale_while_refresh.py
+tags: []
+
+purpose: "T-5147: after a review-ledger write the board serves the last known WAITING and refreshes it in the background; it never serves a stale READY, and exact callers always recompute."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-15
+created_by: unknown

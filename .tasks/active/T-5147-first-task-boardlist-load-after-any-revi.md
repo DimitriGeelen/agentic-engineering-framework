@@ -93,12 +93,23 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] on the board path, a cached readiness whose ledger stamp moved is served as before while one background worker recomputes it; a cached READY is never served stale (recomputed in the request), so stale data can only under-report readiness
-- [ ] other callers of `review_readiness` / `task_review_state` (approvals, review, CLI) still get an exact, current answer
-- [ ] tests: after a ledger write, a board-path call returns the previous WAITING state without recomputing, and the background refresh then stores the new state; a stale READY is recomputed in the call; a non-board call recomputes; every test that reads `web/shared.py` passes
-- [ ] measured: the first `/tasks?view=list` load after a ledger write is no slower than a load without one (was 9-22 s); Watchtower restarted and `bin/fw watchtower current` passes
+- [x] on the board path, a cached readiness whose ledger stamp moved is served as before while one background worker recomputes it; a cached READY is never served stale (recomputed in the request), so stale data can only under-report readiness
+      — `web/shared.py` `review_readiness(allow_stale=…)`, `_schedule_readiness_refresh`, one daemon worker `readiness-refresh`; the stale branch requires the cached state is not READY and the task file is unchanged.
+- [x] other callers of `review_readiness` / `task_review_state` (approvals, review, CLI) still get an exact, current answer
+      — `allow_stale` defaults to False; only `board_awaiting_reason` (board and arc overview) passes True. `lib/operator_pending.py` and approvals are unchanged.
+- [x] tests: after a ledger write, a board-path call returns the previous WAITING state without recomputing, and the background refresh then stores the new state; a stale READY is recomputed in the call; a non-board call recomputes; every test that reads `web/shared.py` passes
+      — `tests/web/test_t5147_readiness_stale_while_refresh.py` 5/5. `tests/web` plus unit tests importing `web.shared`: 1,164 pass, 7 fail. Six are the known pre-existing failures (`test_bpmn_frozen_v1_pin`, and `test_inception_verdict_render` ×5, which T-5109 tracks). `test_operator_facing_stderr::test_blueprint_alias_is_the_shared_implementation` failed in the long run but passes alone, with and without this change, so it is a run-order effect.
+- [x] measured: the first `/tasks?view=list` load after a ledger write is no slower than a load without one (was 9-22 s); Watchtower restarted and `bin/fw watchtower current` passes
+      — Watchtower pid 237655, `current` passes. Baseline 0.30 / 0.52 s; right after a ledger write (`touch` of a ledger file, which is exactly what moves the stamp) 0.36 s, then 0.45 s; 20 s later 0.54 s; board view after a write 0.41 s.
 
 ### Human
+- [ ] [REVIEW] The board stays fast after a review is recorded, and its Awaiting review column catches up
+  **Steps:**
+  1. Open http://192.168.10.107:3000/tasks and note the Awaiting review column
+  2. Right after any review verdict is recorded (for example after the next `fw reviewer judge` run), reload the page
+  3. Reload again about 20 seconds later
+  **Expected:** both reloads are as quick as usual; a task whose verdict just turned green appears as ready by the second reload at the latest, and no task shows as ready that is not
+  **If not:** note the timing and the task; the change is `review_readiness(allow_stale=…)` in `web/shared.py`
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -282,8 +293,25 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/web/test_t5147_readiness_stale_while_refresh.py tests/web/test_t4053_review_readiness.py tests/web/test_t4133_readiness_perf.py
+bin/fw vendor self --check --task T-5147
+bin/fw watchtower current
+
+## Visual Verification
+
+Shots: `.context/visual/T-5147/board@{1024,1440,1920}.png` (viewport-sized; the board's off-screen cards use `content-visibility: auto`, so a full-page capture would show them blank), 2026-11-15, Watchtower pid 237655, current. No markup or style changed; the shots confirm the board renders with its Awaiting review column after the change.
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| board | columns incl. Awaiting review, cards | ok | ok | ok | |
 
 ## RCA
+
+**Cause:** each task's review readiness is cached against `_readiness_stamp`, which includes the mtime of every `.context/reviews/*.jsonl` ledger. Any review dispatch or recorded verdict moves the stamp, invalidating every awaiting task at once. The next board request recomputed all of them inline: one verdict-ledger check per task, 9–22 s.
+
+**Fix:** the board path (`board_awaiting_reason`) asks for `allow_stale`. When only the ledger stamp moved and the cached state is not READY, it gets the cached state and the task is queued for one background worker. A cached READY, or a changed task file, is always recomputed in the request, so stale data can only under-report readiness. Approvals, `fw task review` and the CLI keep exact answers.
+
+**Why it went unnoticed:** response-time tests ran against a quiet ledger. Only a session that dispatches reviews, as this one did all afternoon, writes the ledger between page loads. The independent reviewer timed it.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -324,6 +352,17 @@ bvp_scores_proposed:
 -->
 
 ## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Every recorded review verdict made the next task-board or list load take 9–22 s, because readiness was re-verified for every task inside that request. The board now shows the last known "waiting" state and re-verifies in the background, and it never shows a stale "ready". The first load after a ledger write now takes 0.36 s. What is left is your look.
+
+**Evidence:**
+- Measured: baseline 0.30–0.52 s; first list load after a ledger write 0.36 s (was 9.2 and 22.5 s for the independent reviewer); board 0.41 s
+- `tests/web/test_t5147_readiness_stale_while_refresh.py` 5/5; 1,164 related tests pass, and the 7 failures are pre-existing or run-order (see criterion 3)
+- Screenshots in `.context/visual/T-5147/`
+
+Review page: http://192.168.10.107:3000/review/T-5147
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
