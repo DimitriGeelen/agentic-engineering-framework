@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3797: t3662 'allocation skips a foreign holder' flakes under suite load: watchtower.sh start gives Flask a fixed 5s health window
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T08:03:27Z
+# ============================================================================
+
+task_id: T-3797
+task_name: "t3662 'allocation skips a foreign holder' flakes under suite load: watchtower.sh start gives Flask a fixed 5s health window"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T09:20:53Z
+completed: 2026-11-15T08:02:13Z
+duration_days: 42
+updates_count: 3
+first_commit: 2026-10-21T09:12:53+02:00
+last_commit: 2026-10-21T09:12:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  does not reproduce at HEAD — T-4460 (286fddab8) replaced the fixed 5 s health window with WATCHTOWER_START_TIMEOUT (60 s); t3662 5/5 green at load 68 and 185; ACs, RCA, Verification recorded
+
+# Key outcomes
+outcomes:
+  - 'Reproduction check at HEAD: `bin/watchtower.sh start` no longer has a fixed 5 s health window (deadline is configurable, default ≥ 30 s); evidence and fixing commit recorded under ## RCA'
+  - '`tests/unit/t3662_watchtower_port_allocation.bats` passes at HEAD with no skips'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'does not reproduce at HEAD — T-4460 (286fddab8) replaced the fixed 5 s health window with WATCHTOWER_START_TIMEOUT (60 s); t3662 5/5 green at load 68 and 185; ACs, RCA, Verification recorded'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3797-t3662-allocation-skips-a-foreign-holder-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T09:12:53'
+    action: 'T-3797: does not reproduce at HEAD — T-4460 (286fddab8) replaced the fixed 5 s health window with WATCHTOWER_START_TIMEOUT (60 s); t3662 5/5 green at load 68 and 185; ACs, RCA, Verification recorded'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 60401 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 60401
+  commits: 2
+  files_changed: 4
+  lines_added: 137
+  lines_removed: 8
+  footprint_refreshed_at: '2026-11-15T08:03:34Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3797-t3662-allocation-skips-a-foreign-holder-.md
+generated_by: context-agent-hybrid
