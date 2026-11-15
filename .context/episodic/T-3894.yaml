@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3894: Arc close form pre-fills the ANCHOR task's recommendation as the closing decision: on continuous-run it proposes 'GO — Spike walk S1-S6 completed 2026-06-13…' (the June decision to START building) as the verdict that the arc is DONE — pre-fill only from the close-out task; for an anchor-only recommendation leave the decision empty and label the card 'anchor recommendation (<date>), not a close-out assessment
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T10:21:59Z
+# ============================================================================
+
+task_id: T-3894
+task_name: "Arc close form pre-fills the ANCHOR task's recommendation as the closing decision: on continuous-run it proposes 'GO — Spike walk S1-S6 completed 2026-06-13…' (the June decision to START building) as the verdict that the arc is DONE — pre-fill only from the close-out task; for an anchor-only recommendation leave the decision empty and label the card 'anchor recommendation (<date>), not a close-out assessment"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T18:39:46Z
+completed: 2026-11-15T10:21:38Z
+duration_days: 41
+updates_count: 3
+first_commit: 2026-10-05T20:44:05+02:00
+last_commit: 2026-11-15T11:21:37+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the arc close form pre-fills decision and demo only from the close-out task — an anchor's 'start' recommendation is shown with a notice, never offered as the closing verdict. agent ACs ticked, recommendation. context; verification runs the arc-close prefill tests and the Watchtower currency check. verification runs the arc-close prefill tests and the Watchtower currency check. RCA
+
+# Key outcomes
+outcomes:
+  - 'The decision text and the demo field are pre-filled ONLY when the recommendation comes from the arc''s close-out task (`source == close_task`). From the anchor, both stay empty.'
+  - 'When the card shows an anchor recommendation, it says plainly that this is the anchor''s recommendation about starting the arc, not a close-out assessment, and points to setting `close_task:`.'
+  - 'Tests: a close-task recommendation pre-fills the decision and the demo; an anchor-only recommendation pre-fills neither and shows the notice. The existing arc-close web tests stay green (adjusted only where they encoded anchor pre-fill). Watchtower restarted; `bin/fw watchtower current` passes.'
+  - '[REVIEW] On an arc whose only recommendation is the anchor''s, the close page no longer proposes a closing verdict and makes clear why'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/arcs.py'
+  - '.agentic-framework/web/templates/arc_close.html'
+  - '.context/arcs/continuous-run.yaml'
+  - '.tasks/active/T-3894-arc-close-form-pre-fills-the-anchor-task.md'
+  - '.tasks/active/T-3895-continuous-run-arc-does-the-loop-actuall.md'
+  - 'tests/web/test_t3841_arc_close_decision_prefill.py'
+  - 'web/blueprints/arcs.py'
+  - 'web/templates/arc_close.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T20:44:05'
+    action: 'T-3894: the arc close form pre-fills decision and demo only from the close-out task — an anchor''s ''start'' recommendation is shown with a notice, never offered as the closing verdict'
+  - time: '2026-10-05T20:44:35'
+    action: 'T-3894: agent ACs ticked, recommendation'
+  - time: '2026-11-15T11:20:36'
+    action: 'T-3894: context; verification runs the arc-close prefill tests and the Watchtower currency check'
+  - time: '2026-11-15T11:21:08'
+    action: 'T-3894: verification runs the arc-close prefill tests and the Watchtower currency check'
+  - time: '2026-11-15T11:21:37'
+    action: 'T-3894: RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 58541 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, watchtower, arc, ux]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 58541
+  commits: 6
+  files_changed: 11
+  lines_added: 726
+  lines_removed: 12
+  footprint_refreshed_at: '2026-11-15T10:22:12Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3894-arc-close-form-pre-fills-the-anchor-task.md
+generated_by: context-agent-hybrid
