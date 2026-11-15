@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3602: Nightly unit suite blind since 2026-09-08: every run hits 7200s timeout and the audit discards its recorded failures
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T07:31:23Z
+# ============================================================================
+
+task_id: T-3602
+task_name: "Nightly unit suite blind since 2026-09-08: every run hits 7200s timeout and the audit discards its recorded failures"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-30T20:38:06Z
+completed: 2026-11-15T07:28:33Z
+duration_days: 46
+updates_count: 3
+first_commit: 2026-09-30T22:40:17+02:00
+last_commit: 2026-10-01T00:51:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file OBS-587 structural fix — nightly unit suite times out every night and the audit discards recorded failures; fix prompt. audit FAILs on reds a partial unit-suite run recorded; runner goes per-file parallel with per-file timeouts and durations. a unit-suite run killed from outside still writes a report naming what it did not reach. live run recorded (2180s, complete, 939/941 files); de-duplicate ran-count in FAIL evidence; vendor sync; Decisions + ACs 2-4. scope vendor-parity verification to this task's files
+
+# Key outcomes
+outcomes:
+  - 'A partial (timed-out) run reports every failure it did record as FAIL in `fw audit`. Only the tests that never ran are "not determined", and the report names how many ran versus how many were expected. Test: a fixture report with a timeout plus 2 recorded not-ok lines makes the audit FAIL and name both.'
+  - 'The nightly run completes within its budget on this host. Use measurement, not a guess: find where the time goes (per-file durations from the last report), then shard or parallelise the run, and/or give pathological files their own timeout and name them as timed-out. Record before and after wall time in Decisions.'
+  - 'One run of the fixed nightly on the live repo finishes, and its FAIL count matches the red set in OBS-587, allowing for drift from files changed since then.'
+  - 'Cron chain: if the registry or generator changed, `fw cron generate` and `fw cron install` run, and doctor is in sync. Vendored copies are synced; `bin/fw vendor self --check` is clean for this task''s files.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'file OBS-587 structural fix — nightly unit suite times out every night and the audit discards recorded failures; fix prompt'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-01 — how to make the nightly fit its budget'
+    chose: 'every test file is its own job in a parallel pool (`xargs -P`, default nproc/2 capped at 12 = 12 here), each with its own `timeout` (default 900s). Files go longest-first using the previous report''s `file_durations`. The two-leg reserve split (T-3359) is kept. - **Why (measured):** serial bats time on the live run adds up to **16,646s** (sum of per-file durations, host load 33–77 on 24 cores). The old single `bats tests/unit` process had a 5,400s cap and reached 3,599 of 6,118 bats tests (59%). Sharding by hand would not close a 3× gap, and a per-file cap alone leaves serial time far over budget. Distribution: 484 files <10s, 159 <60s, 34 <180s, 16 ≥180s. The top two (`audit.bats`, `t2332_bvp_propose_queue.bats`) hit the 900s cap and are named as timed out. pytest: 1,486s serial, and its slowest file is `test_orchestrator_status_terminal_events.py` at 307s.'
+    alternatives_rejected: ['raising FW_UNIT_SUITE_TIMEOUT (OBS-392 already rejected it; 16.6ks serial doesn''t fit a nightly), and a serial per-file runner (fixes attribution, not duration). - **Wall time:** before = >7,200s budget, never completed (23/23 nightlies bats_rc=124; last run killed after the bats leg''s 5,400s cap, total 5,797s with 59% of bats reached). After = **2,180s**, complete: 939 of 941 files, 9,775 tests, 2 files named as per-file timeouts. That is 30% of the 7,200s budget, measured under heavy contention from concurrent workers.']
+  - decision: '2026-10-01 — a recorded failure from a partial run is a verdict'
+    chose: 'FAIL on every recorded failure, whether or not the run completed. WARN "COULD NOT DETERMINE" only when nothing was recorded red and part of the corpus did not run. The line names "N of M file(s) ran" and the per-file timeouts.'
+    rationale: 'measured, `timeout 3 bats --tap` on a file whose second test sleeps prints `ok 1` and nothing for the killed test. A timeout kill leaves no `not ok` line, so OBS-392''s "casualty list" premise did not hold. The one exception is a runner that kills bats processes one by one, which makes bats'' formatter print `not ok` for the in-flight test. The signal trap therefore stops the pool through each `timeout` wrapper instead, and a pinned test asserts this.'
+    alternatives_rejected: ['re-running every red file in isolation to confirm it. Measured: 19 of 20 sampled new bats reds are also red alone. Re-running the pytest leg with the same 12-way parallel shape reproduces only the 2 known reds, so parallelism did not produce false reds.']
+  - decision: '2026-10-01 — two latent blind spots closed on the way'
+  - decision: '2026-10-01 — live run vs OBS-587'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/audit/unit-suite.sh'
+  - '.tasks/active/T-3602-nightly-unit-suite-blind-since-2026-09-0.md'
+  - 'agents/audit/audit.sh'
+  - 'agents/audit/unit-suite.sh'
+  - 'docs/reports/T-3602-fix-prompt.md'
+  - 'tests/unit/t3302_unit_suite_schedule.bats'
+  - 'tests/unit/t3602_unit_suite_partial_run.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-30T22:40:17'
+    action: 'T-3602: file OBS-587 structural fix — nightly unit suite times out every night and the audit discards recorded failures; fix prompt'
+  - time: '2026-09-30T22:53:12'
+    action: 'T-3602: audit FAILs on reds a partial unit-suite run recorded; runner goes per-file parallel with per-file timeouts and durations'
+  - time: '2026-09-30T23:38:01'
+    action: 'T-3602: a unit-suite run killed from outside still writes a report naming what it did not reach'
+  - time: '2026-10-01T00:51:04'
+    action: 'T-3602: live run recorded (2180s, complete, 939/941 files); de-duplicate ran-count in FAIL evidence; vendor sync; Decisions + ACs 2-4'
+  - time: '2026-10-01T00:51:30'
+    action: 'T-3602: scope vendor-parity verification to this task''s files'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 65450 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, tests, audit, OBS-587]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 65450
+  commits: 6
+  files_changed: 11
+  lines_added: 1501
+  lines_removed: 233
+  footprint_refreshed_at: '2026-11-15T07:31:38Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3602-nightly-unit-suite-blind-since-2026-09-0.md
+generated_by: context-agent-hybrid
