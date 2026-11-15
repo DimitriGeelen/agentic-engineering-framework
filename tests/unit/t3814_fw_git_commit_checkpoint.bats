@@ -23,6 +23,13 @@ _mkroot() {
     mkdir -p "$t/.context/working" "$t/.tasks/active" "$t/.tasks/completed"
     cp -r "$ROOT/agents" "$ROOT/lib" "$t/" 2>/dev/null
     printf 'current_task: null\n' > "$t/.context/working/focus.yaml"
+    # T-5138: the project's own tracked bin/fw shim (T-4203 rule), so a relative
+    # `bin/fw` is tested from THIS root. Using the live checkout as the payload cwd
+    # re-anchored the hook to it (T-2463) and read its real focus: the cases then
+    # passed or failed with whatever task the repo happened to have in focus.
+    mkdir -p "$t/bin"
+    printf '#!/bin/sh\nexec true\n' > "$t/bin/fw"
+    chmod +x "$t/bin/fw"
     printf '%s' "$t"
 }
 
@@ -59,10 +66,11 @@ print(json.dumps(p))' "$cmd" "$cwd")"
              '.agentic-framework/bin/fw git commit -m "TT-9: x"' \
              "$ROOT/bin/fw git commit -m \"TT-9: x\"" \
              "$r/.agentic-framework/bin/fw git commit -m \"TT-9: x\""; do
-        # T-4108 r2: a relative launcher resolves against the payload cwd. The
-        # hook pins FRAMEWORK_ROOT to this checkout, so `[./]bin/fw` is own from
-        # $ROOT and `.agentic-framework/bin/fw` is own from the project root.
-        case "$c" in bin/fw*|./bin/fw*) cwd="$ROOT" ;; *) cwd="$r" ;; esac
+        # T-4108 r2: a relative launcher resolves against the payload cwd. From the
+        # project root, `[./]bin/fw` is the project's own shim (T-4203) and
+        # `.agentic-framework/bin/fw` its vendored launcher. T-5138: the cwd is the
+        # test's own root, never the live checkout (whose focus the hook would read).
+        cwd="$r"
         v="$(_verdict "$r" "$c" "$cwd")"
         [ "$v" = "ADMITTED" ] || { echo "refused: $c" >&2; false; }
     done
@@ -84,7 +92,7 @@ print(json.dumps(p))' "$cmd" "$cwd")"
     c='bin/fw git commit -m "TT-9: x
 
 Co-Authored-By: Claude <noreply@anthropic.com>"'
-    [ "$(_verdict "$r" "$c" "$ROOT")" = "ADMITTED" ]
+    [ "$(_verdict "$r" "$c" "$r")" = "ADMITTED" ]
 }
 
 @test "every existing refusal still applies to the fw spellings" {
@@ -176,10 +184,10 @@ _plant() {
 
 @test "T-4108r2: relative own launcher with payload cwd = its own root is admitted" {
     r="$(_mkroot)"
-    [ "$(_verdict "$r" 'bin/fw git commit -m "TT-9: x"' "$ROOT")" = "ADMITTED" ]
-    [ "$(_verdict "$r" './bin/fw git commit -m "TT-9: x"' "$ROOT")" = "ADMITTED" ]
+    [ "$(_verdict "$r" 'bin/fw git commit -m "TT-9: x"' "$r")" = "ADMITTED" ]
+    [ "$(_verdict "$r" './bin/fw git commit -m "TT-9: x"' "$r")" = "ADMITTED" ]
     [ "$(_verdict "$r" '.agentic-framework/bin/fw git commit -m "TT-9: x"' "$r")" = "ADMITTED" ]
-    [ "$(_verdict "$r" 'git status && bin/fw git commit -m "TT-9: x"' "$ROOT")" = "ADMITTED" ]
+    [ "$(_verdict "$r" 'git status && bin/fw git commit -m "TT-9: x"' "$r")" = "ADMITTED" ]
 }
 
 @test "T-4108r2: no payload cwd refuses a relative launcher (bare fw unchanged)" {
