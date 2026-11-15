@@ -9,12 +9,12 @@ description: >
   upstream clone's do_vendor after fetch (update.sh:188 comment already names bin/fw's
   list canonical).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/update.sh, tests/unit/t2657_update_uses_upstream_vendor.bats]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -27,8 +27,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-07-28T10:22:07Z
-last_update: '2026-10-22T07:45:16Z'
-date_finished:
+last_update: 2026-11-15T07:33:18Z
+date_finished: 2026-11-15T07:33:18Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -283,3 +283,16 @@ differs from the running one, so a regression to the in-process call fails a tes
 
 ### 2026-10-20T22:00:31Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-15T07:33:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-dc7f723a
+- **Timestamp:** 2026-11-15T07:41:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
