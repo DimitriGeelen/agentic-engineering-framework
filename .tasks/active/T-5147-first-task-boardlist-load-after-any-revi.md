@@ -106,6 +106,7 @@ cost_estimate_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] on the board path, a cached readiness whose ledger stamp moved is served as before while one background worker recomputes it; a cached READY is never served stale (recomputed in the request), so stale data can only under-report readiness
       — `web/shared.py` `review_readiness(allow_stale=…)`, `_schedule_readiness_refresh`, one daemon worker `readiness-refresh`; the stale branch requires the cached state is not READY and the task file is unchanged.
+      — added after the independent reviewer's amber (V-20261115-75d7be55: the catch-up of 390 queued tasks took 99.6 s under load, with no priority for the task whose verdict changed): tasks named in the newest 64 KB of the review ledgers go to a first queue (`_recent_ledger_task_ids`, `_READINESS_REFRESH_FIRST`), so a just-recorded verdict's task is refreshed before the rest. Tests 7/7 (`test_a_task_named_in_the_newest_ledger_rows_is_refreshed_first`, `test_recent_ledger_ids_read_only_the_tail`). Commit 83bba819a, Watchtower pid 3235377.
 - [x] other callers of `review_readiness` / `task_review_state` (approvals, review, CLI) still get an exact, current answer
       — `allow_stale` defaults to False; only `board_awaiting_reason` (board and arc overview) passes True. `lib/operator_pending.py` and approvals are unchanged.
 - [x] tests: after a ledger write, a board-path call returns the previous WAITING state without recomputing, and the background refresh then stores the new state; a stale READY is recomputed in the call; a non-board call recomputes; every test that reads `web/shared.py` passes
@@ -314,7 +315,7 @@ Shots: `.context/visual/T-5147/board@{1024,1440,1920}.png` (viewport-sized; the 
 
 | state | control | 1024 | 1440 | 1920 | note |
 |-------|---------|------|------|------|------|
-| board | columns incl. Awaiting review, cards | ok | ok | ok | |
+| board | columns incl. Awaiting review, cards | clipped | ok | ok | at 1024 (and 1280) the card's "reviewer: ready" / "agent done" label is cut off (independent reviewer on T-5147); predates this change, which alters no markup or style |
 
 ## RCA
 
