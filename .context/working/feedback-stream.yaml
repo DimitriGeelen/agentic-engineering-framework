@@ -54965,3 +54965,21 @@ scan_id: R-d9edaf6c
 task_id: T-4613
 payload:
   task_file: .tasks/active/T-4613-testcockpitactivity-cloud-render-of-cock.md
+---
+kind: scan_emitted
+timestamp: '2026-11-15T08:29:56Z'
+scan_id: R-cd78ab3a
+task_id: T-4614
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-15T08:29:56Z'
+scan_id: R-cd78ab3a
+task_id: T-4614
+payload:
+  task_file: .tasks/active/T-4614-fw-pickup-send-without-termlink-saves-lo.md
