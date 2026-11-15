@@ -5,10 +5,10 @@ description: >
   test_command_palette::test_search_fallthrough_routes_to_discovery: lands on /search,
   expected /search?q=zzqqxx. Found in T-5153 triage; fails locally too.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [playwright, ci]
 components: []
 related_tasks: [T-5153]
@@ -40,7 +40,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T22:29:11Z
-last_update: '2026-11-15T22:30:49Z'
+last_update: 2026-11-15T22:33:28Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,20 +86,20 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5153 triage (2026-11-15): `tests/playwright/test_command_palette.py::test_search_fallthrough_routes_to_discovery` fails on CI and locally with `assert '/search' == '/search?q=zzqqxx'`.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** not a product bug. T-4061 (commit e337c41e5, 2026-10-11) moved the palette's search fall-through to a POST form body on purpose, so the query never lands in the URL or the access log (`web/static/command-palette.js` row `{url: "/search", post: {q, mode}}`). The test still asserts the old GET `?q=` URL. The title of this task describes the symptom as first read.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the test pins the T-4061 behaviour: the row targets `/search`, Enter sends a POST whose body carries the query, and the resulting URL does not contain it.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the palette test file is green, and a regression back to `?q=` in the URL would turn it red.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] the fall-through test asserts `data-url == "/search"`, a POST to /search whose body has `q=<query>`, and no query text in the final URL
+- [x] `tests/playwright/test_command_palette.py` passes; no product code changed (7 passed)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -285,8 +285,17 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 python3 -m pytest -q -p no:cacheprovider tests/playwright/test_command_palette.py > /tmp/.t5163.out 2>&1 && grep -q passed /tmp/.t5163.out && ! grep -q failed /tmp/.t5163.out
 
 ## RCA
+
+**Symptom:** the palette fall-through test asserted `/search?q=zzqqxx` and got `/search`.
+
+**Root cause:** T-4061 changed the palette to POST the query (privacy: no query text in URLs or logs) and updated the unit tests (`t4061_query_text_not_kept_test.py`) but not this Playwright test.
+
+**Why structurally allowed:** the Playwright suite runs only in the informational CI job and on demand; nothing required it green when T-4061 closed, so a red here went unnoticed for five weeks (T-5153).
+
+**Prevention:** the test now pins the POST behaviour and the absence of the query in the URL. The wider gap (Playwright reds not gating anything) is T-5153's subject.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -382,3 +391,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5163-command-palette-search-fall-through-drop.md
 - **Context:** Initial task creation
+
+### 2026-11-15T22:33:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

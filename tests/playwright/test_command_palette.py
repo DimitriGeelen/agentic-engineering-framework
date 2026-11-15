@@ -101,9 +101,15 @@ class TestCommandPalette:
         page.locator(INPUT).fill("zzqqxx")
         search_row = page.locator(f"{RESULTS} li[data-kind='search']")
         expect(search_row).to_have_count(1)
-        assert search_row.get_attribute("data-url") == "/search?q=zzqqxx"
-        page.keyboard.press("Enter")
-        page.wait_for_url("**/search?q=zzqqxx", timeout=60000)
+        # T-4061: the query goes in a POST body so it never lands in the URL or the access log;
+        # T-5163: this test still asserted the old GET ?q= form.
+        assert search_row.get_attribute("data-url") == "/search"
+        with page.expect_request(lambda r: r.url.endswith("/search") and r.method == "POST",
+                                 timeout=60000) as req:
+            page.keyboard.press("Enter")
+        assert "q=zzqqxx" in (req.value.post_data or "")
+        page.wait_for_url("**/search", timeout=60000)
+        assert "zzqqxx" not in page.url
 
     def test_capture_review_artefact(self, page: Page):
         """Screenshot the open palette for the human [REVIEW]."""
