@@ -94,9 +94,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] when no subject names a PR, the check asks GitHub for the merged pull requests that contain the commit (`repos/<repo>/commits/<sha>/pulls`) and then applies the unchanged `merged_by == operator_github_login` rule
-- [ ] a commit no merged PR contains still FAILs as "pushed directly"; if GitHub cannot be asked, the commit still FAILs, with the reason named; a PR merged by someone else still FAILs
-- [ ] `tests/unit/t5049_outside_commits.bats` has cases for each (gh stubbed) and passes; `python3 lib/outside_commits.py audit` reports 3c0e57e88 as operator-merged; vendored copy in sync
+- [x] when no subject names a PR, the check asks GitHub for the merged pull requests that contain the commit (`repos/<repo>/commits/<sha>/pulls`) and then applies the unchanged `merged_by == operator_github_login` rule
+      — `prs_containing()` in `lib/outside_commits.py`, used only when neither the "(#N)" subject nor a "Merge pull request #N" merge attributes the commit.
+- [x] a commit no merged PR contains still FAILs as "pushed directly"; if GitHub cannot be asked, the commit still FAILs, with the reason named; a PR merged by someone else still FAILs
+      — the existing "pushed directly" case passes unchanged (GitHub answers no PR); new cases cover "merged by someone else" and "GitHub could not be asked". Before T-5155 an unattributed commit never consulted GitHub, so failing closed there keeps its old verdict.
+- [x] `tests/unit/t5049_outside_commits.bats` has cases for each (gh stubbed) and passes; `python3 lib/outside_commits.py audit` reports 3c0e57e88 as operator-merged; vendored copy in sync
+      — 13/13 (10 existing, 3 new). Live: "1 outside commit(s) since baseline b240a7043: 0 FAIL, 0 unverified, 1 operator-merged". Vendored (0e110e1eb); `fw test invariants` 0 failures.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -282,8 +285,16 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t5049_outside_commits.bats
+bin/fw vendor self --check --task T-5155
 
 ## RCA
+
+**Cause:** `lib/outside_commits.py` (T-5049) found the pull request behind an outside commit only from commit subjects. That was enough while every merge used GitHub's default "Merge pull request #N" title. The first merge done by the agent (PR #115, operator-delegated) used a custom subject, so Mehdi's commit read as a direct push, and the pre-push audit refused every push.
+
+**Fix:** when no subject names a PR, the check asks GitHub which merged pull requests contain the commit, then applies the unchanged rule (merged by `operator_github_login`). A commit no merged PR contains, a PR merged by someone else, and a GitHub that cannot be asked all still FAIL.
+
+**Also, for merges from now on:** a PR merge keeps GitHub's default title ("Merge pull request #N"), so the cheap subject path still finds it without a GitHub call.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
