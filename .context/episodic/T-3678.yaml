@@ -1,0 +1,140 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3678: Triage AEF's own sidecar consult backlog: ~40 peer proposals/defect reports (832, ring20-dashboard 21 v1.7.0 defects, 1409-sprind, 010-termlink, 055) surfaced but never actioned
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T10:25:44Z
+# ============================================================================
+
+task_id: T-3678
+task_name: "Triage AEF's own sidecar consult backlog: ~40 peer proposals/defect reports (832, ring20-dashboard 21 v1.7.0 defects, 1409-sprind, 010-termlink, 055) surfaced but never actioned"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T21:35:15Z
+completed: 2026-11-15T10:25:27Z
+duration_days: 45
+updates_count: 3
+first_commit: 2026-10-02T01:11:33+02:00
+last_commit: 2026-11-15T11:25:25+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  consult triage report — 124 messages classified, 7 new-defect tasks ranked. consult triage redo — all 54 decoded rows classified, 13 verified new defects ranked. triage 19 rescued peer messages (1409-sprind via 010 stray-hub rescue) — 8 new tasks T-3823..T-3830, 10 covered/withdrawn, 1 FYI; report with drafted replies. context; verification checks the triage report's sections
+
+# Key outcomes
+outcomes:
+  - 'Triage report docs/reports/T-3678-consult-triage.md classifies every peeked consult (class + evidence)'
+  - 'Report ends with a ranked table of proposed new tasks and a list of conversations needing a reply'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-2278-t-2277-build-port-scoped-sessioncookiena.md'
+  - '.tasks/active/T-2281-t-2275-build-auto-linker-prongs-ab-candi.md'
+  - '.tasks/active/T-3028-t-3025-go-handover-digest-plus-reference.md'
+  - '.tasks/active/T-3090-handover-auto-commit-sweeps-the-whole-in.md'
+  - '.tasks/active/T-3302-structural-nothing-runs-testsunit-on-a-s.md'
+  - '.tasks/active/T-3556-three-handoverpushtimeout-tests-pin-impl.md'
+  - '.tasks/active/T-3580-t-3557-slice-3-fw-reviewer-judge---dispa.md'
+  - '.tasks/active/T-3588-watchtower-approvals-surface-for-paid-re.md'
+  - '.tasks/active/T-3589-roll-check-paid-backend-hook-out-to-cons.md'
+  - '.tasks/active/T-3593-t-3576-build-a-tier-0-approvals-keyed-to.md'
+  - '.tasks/active/T-3596-session-re-rooting-a-session-whose-cwd-e.md'
+  - '.tasks/active/T-3597-triage-ring20-dashboards-20-v170-defect-.md'
+  - '.tasks/active/T-3608-review-dispatch-registration-fails-in-co.md'
+  - '.tasks/active/T-3611-approvals-arc-readiness-crashes-when-pol.md'
+  - '.tasks/active/T-3612-libgovdsandboxpy-emitprofile-writes-the-.md'
+  - '.tasks/active/T-3614-split-root-shell-ratchet-8-undisposition.md'
+  - '.tasks/active/T-3615-stop-hook-wired-as-claudeprojectdiragent.md'
+  - '.tasks/active/T-3616-check-worktree-governance-write-hook-not.md'
+  - '.tasks/active/T-3618-t-3557-iw-2-route-inception-gono-go-and-.md'
+  - '.tasks/active/T-3622-every-fw-termlink-dispatch-leaves-a-live.md'
+  - '.tasks/active/T-3631-cross-agent-delivery-one-acknowledged-ch.md'
+  - '.tasks/active/T-3632-binfw-reintroduced-heredoc-in-command-su.md'
+  - '.tasks/active/T-3637-t-3535-build-c-audit-rails--arc-supporti.md'
+  - '.tasks/active/T-3638-t-3535-build-d-watchtower-objectives-pag.md'
+  - '.tasks/active/T-3653-fwpickupbats-test-10-asserts-quoted-yaml.md'
+  - '.tasks/active/T-3656-fw-note-promote-inbox-lookup-matches-obs.md'
+  - '.tasks/active/T-3658-fw-sidecar-inbox-blocked-by-g-020-gate-d.md'
+  - '.tasks/active/T-3659-p-01-zero-to-running-aef-one-command-ins.md'
+  - '.tasks/active/T-3668-fw-sidecar-inbox-is-blocked-by-the-task-.md'
+  - '.tasks/active/T-3669-render-surface-gate-p-013-and-onboarding.md'
+  - '.tasks/active/T-3670-core-module-language-move-established-se.md'
+  - '.tasks/active/T-3672-agent-asks-the-operator-for-facts-the-fr.md'
+  - '.tasks/active/T-3678-triage-aefs-own-sidecar-consult-backlog-.md'
+  - '.tasks/active/T-3823-handoversh-never-commits-the-discard-man.md'
+  - '.tasks/active/T-3824-g-020-block-offers-remedies-that-mutate-.md'
+  - '.tasks/active/T-3825-should-the-task-gate-govern-writeedit-to.md'
+  - '.tasks/active/T-3826-default-fwsessionscopedfocus1-when-terml.md'
+  - '.tasks/active/T-3827-check-paid-backend-resolves-the-task-fro.md'
+  - '.tasks/active/T-3828-project-start-extension-point-claude-fw-.md'
+  - '.tasks/active/T-3829-optional-dialogue-log-artefact-for-decis.md'
+  - '.tasks/active/T-3830-four-value-review-verdict-with-mandatory.md'
+  - '.tasks/completed/T-3535-per-project-goals-and-objectives-a-proje.md'
+  - '.tasks/completed/T-3557-human-review-is-for-risk-only---everythi.md'
+  - '.tasks/completed/T-3576-tier-0-approval-keyed-to-the-exact-comma.md'
+  - '.tasks/completed/T-3592-pre-push-audit-blocked-t-3586-left-two-i.md'
+  - '.tasks/completed/T-3599-claudemd-budget-figures-900k-to-975k-ope.md'
+  - '.tasks/completed/T-3617-sidecar-inbox-hook-not-mirrored-into-con.md'
+  - '.tasks/completed/T-3654-judge-brief-commits-the-verdict-with-no-.md'
+  - '.tasks/completed/T-3655-all-judge-seats-commit-as-revieweraefloc.md'
+  - '.tasks/completed/T-3673-consumer-projects-never-get-the-sidecar-.md'
+  - '.tasks/completed/T-3674-t-3671-test-has-a-dead-negation--echo--g.md'
+  - '.tasks/completed/T-3675-standing-directive-operator-command-hand.md'
+  - '.tasks/completed/T-3676-cron-registry-add-if-missing-merge-t-367.md'
+  - '.tasks/completed/T-3677-vendor-git-visibility-check-counts-runti.md'
+  - '.tasks/completed/T-3679-fw-help-omits-the-new-runme-command-help.md'
+  - '.tasks/completed/T-3680-cron-seed-prints-added-before-its-parse-.md'
+  - 'docs/reports/T-3678-consult-triage.md'
+  - 'docs/reports/T-3678-peer-backlog-triage-2026-10-04.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-02T01:11:33'
+    action: 'T-3678: consult triage report — 124 messages classified, 7 new-defect tasks ranked'
+  - time: '2026-10-02T01:20:45'
+    action: 'T-3678: consult triage redo — all 54 decoded rows classified, 13 verified new defects ranked'
+  - time: '2026-10-04T16:39:46'
+    action: 'T-3678: triage 19 rescued peer messages (1409-sprind via 010 stray-hub rescue) — 8 new tasks T-3823..T-3830, 10 covered/withdrawn, 1 FYI; report with drafted replies'
+  - time: '2026-11-15T11:25:25'
+    action: 'T-3678: context; verification checks the triage report''s sections'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 64130 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [sidecar, cross-agent, triage]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 64130
+  commits: 5
+  files_changed: 61
+  lines_added: 8090
+  lines_removed: 440
+  footprint_refreshed_at: '2026-11-15T10:25:56Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3678-triage-aefs-own-sidecar-consult-backlog-.md
+generated_by: context-agent-hybrid

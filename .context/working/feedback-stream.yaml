@@ -55207,3 +55207,21 @@ scan_id: R-385ed9fd
 task_id: T-3894
 payload:
   task_file: .tasks/active/T-3894-arc-close-form-pre-fills-the-anchor-task.md
+---
+kind: scan_emitted
+timestamp: '2026-11-15T10:25:28Z'
+scan_id: R-0df18ee4
+task_id: T-3678
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-15T10:25:28Z'
+scan_id: R-0df18ee4
+task_id: T-3678
+payload:
+  task_file: .tasks/active/T-3678-triage-aefs-own-sidecar-consult-backlog-.md
