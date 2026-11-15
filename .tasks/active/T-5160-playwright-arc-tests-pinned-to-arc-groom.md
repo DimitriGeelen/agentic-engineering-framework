@@ -58,20 +58,21 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5153 triage (2026-11-15): 19 Playwright tests fail on GitHub CI (run 43750262482) and locally. They live in tests/playwright/test_arc_close.py, test_arc_close_recommendation_panel.py, test_arc_review_route.py, test_approvals_arc_closure_section.py, test_landing_arc_cards.py, test_arcs_kanban.py and test_arc_badge.py.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** the tests hard-code `arc-grooming` as an in-progress arc with 30+ member tasks; `.context/arcs/arc-grooming.yaml` is now `status: closed`. test_arc_badge's list-view case also assumes every task is on one page; since T-5136 the list shows 200 rows a page, newest first, and those carry no arc. Tests pinned to mutable corpus state (the T-3326 anti-pattern). test_arcs_kanban's nav-group count may be a separate change; check it.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** each test picks the arc it needs by state at run time (e.g. the first in-progress arc with members, the first closed arc), read from `.context/arcs/*.yaml` in the repo under test, and skips with a clear reason only when no arc in that state exists; the list-view badge case asks for a filter that guarantees arc rows (e.g. `?arc=<id>`).
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the 19 tests pass against this repo again, and stay green when an arc closes.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] no test in the seven files names `arc-grooming` (or any other specific arc id) as the arc under test; arcs are chosen by state at run time through one shared helper
+- [ ] the 19 previously failing tests pass locally; any skip names the missing state
+- [ ] no product code changed (tests/playwright only), unless a test exposed a real page bug, which is then filed as its own task instead of fixed here
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,6 +258,8 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+! grep -n "arc-grooming" tests/playwright/test_arc_close.py tests/playwright/test_arc_close_recommendation_panel.py tests/playwright/test_arc_review_route.py tests/playwright/test_approvals_arc_closure_section.py tests/playwright/test_landing_arc_cards.py tests/playwright/test_arcs_kanban.py tests/playwright/test_arc_badge.py
+timeout 1200 python3 -m pytest -q -p no:cacheprovider tests/playwright/test_arc_close.py tests/playwright/test_arc_close_recommendation_panel.py tests/playwright/test_arc_review_route.py tests/playwright/test_approvals_arc_closure_section.py tests/playwright/test_landing_arc_cards.py tests/playwright/test_arcs_kanban.py tests/playwright/test_arc_badge.py > /tmp/.t5160.out 2>&1 && grep -q passed /tmp/.t5160.out
 
 ## RCA
 
