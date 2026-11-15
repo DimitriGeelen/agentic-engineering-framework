@@ -54893,3 +54893,21 @@ scan_id: R-37087f7b
 task_id: T-4258
 payload:
   task_file: .tasks/active/T-4258-initinstall-neither-start-nor-mention-th.md
+---
+kind: scan_emitted
+timestamp: '2026-11-15T08:25:45Z'
+scan_id: R-e7a511fc
+task_id: T-4292
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-15T08:25:45Z'
+scan_id: R-e7a511fc
+task_id: T-4292
+payload:
+  task_file: .tasks/active/T-4292-fw-sidecar-receiver-stop-cmdreceiverstop.md
