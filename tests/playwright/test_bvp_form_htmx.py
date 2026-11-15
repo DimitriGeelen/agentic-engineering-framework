@@ -105,6 +105,26 @@ def test_add_form_submit_keeps_user_on_bvp(page, base_url):
         """
     )
 
+    # T-5165: answer the add in the browser instead of letting it reach the server. A real add
+    # wrote a probe driver into the served project's policy/value-drivers.yaml whenever it was
+    # under the cap of 9, and was refused (no #da-result span) once the project reached the cap.
+    # This test is about where the browser ends up, not about the add itself.
+    posts = []
+
+    def _fake_add(route):
+        posts.append(route.request.method)
+        route.fulfill(status=200, content_type="text/html",
+                      body='<span>✓ added (stubbed by the test)</span>')
+    page.route("**/api/bvp/driver/add*", _fake_add)
+
+    # At the cap of 9 the form shows a required "drop" select (add-one-drop-one, M1) and the
+    # browser will not submit while it is empty. The add is stubbed, so nothing is dropped.
+    drop = page.locator("#da-drop")
+    if drop.count() and drop.is_visible():
+        values = [v for v in drop.locator("option").evaluate_all("os => os.map(o => o.value)") if v]
+        if values:
+            drop.select_option(values[0])
+
     page.fill("#da-name", "t2079probe")
     page.fill(
         "#da-rationale",
@@ -121,14 +141,5 @@ def test_add_form_submit_keeps_user_on_bvp(page, base_url):
         "htmx hx-post should keep navigation client-side."
     )
 
-    # Clean up: remove the driver we just added so re-runs work.
-    csrf = page.locator('meta[name="csrf-token"]').get_attribute("content")
-    page.request.post(
-        f"{base_url}/api/bvp/driver/remove",
-        headers={
-            "HX-Request": "true",
-            "HX-Prompt": "T-2079 Playwright cleanup - removing the probe driver added by the navigation guard test.",
-            "X-CSRF-Token": csrf,
-        },
-        params={"driver": "t2079probe"},
-    )
+    # The form posted through htmx (to the stub); nothing reached the server, so no clean-up.
+    assert posts == ["POST"], posts

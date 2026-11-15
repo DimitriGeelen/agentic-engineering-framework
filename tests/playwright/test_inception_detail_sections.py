@@ -123,6 +123,14 @@ def negative_inception():
         pass
 
 
+def _has_header(html: str, sec: str) -> bool:
+    """T-5165: match a section header by its leading text. T-4046 (GitHub #93) put a task-page
+    link inside the Acceptance Criteria header, so the exact `<header>X</header>` string no
+    longer occurs; an exact-string absence check would then pass vacuously."""
+    import re
+    return re.search(r"<header>\s*" + re.escape(sec) + r"(\s*</header>|\s*<)", html) is not None
+
+
 def test_inception_detail_renders_all_five_sections_when_present(page, positive_inception):
     """All 5 new section headers + their sentinel content surface on a populated body."""
     from tests.playwright.conftest import TEST_URL
@@ -131,7 +139,7 @@ def test_inception_detail_renders_all_five_sections_when_present(page, positive_
 
     for sec in SECTIONS:
         # Header rendered (case-sensitive — matches template literal)
-        assert f"<header>{sec}</header>" in body_html, (
+        assert _has_header(body_html, sec), (
             f"section '{sec}' header missing from /inception/{positive_inception} — "
             "blueprint or template change is incomplete"
         )
@@ -159,6 +167,6 @@ def test_inception_detail_omits_sections_when_absent(page, negative_inception):
     assert "<header>Problem Statement</header>" in body_html, "page didn't render at all"
 
     for sec in SECTIONS:
-        assert f"<header>{sec}</header>" not in body_html, (
+        assert not _has_header(body_html, sec), (
             f"section '{sec}' rendered with an empty body — conditional gate broken"
         )

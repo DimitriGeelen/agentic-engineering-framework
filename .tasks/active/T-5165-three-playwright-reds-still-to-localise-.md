@@ -7,10 +7,10 @@ description: >
   misses the Acceptance Criteria header; test_review_code_inline finds no syntax-highlighted
   code. Each may be its own bug: split once localised. Found in T-5153 triage.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [playwright, ci]
 components: []
 related_tasks: [T-5153]
@@ -42,7 +42,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T22:29:12Z
-last_update: '2026-11-15T22:30:49Z'
+last_update: 2026-11-15T22:44:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,20 +88,23 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5153 triage (2026-11-15): three Playwright tests fail on CI and locally, each for its own reason:
+1. `test_inception_detail_sections.py::test_inception_detail_renders_all_five_sections_when_present` — `'<header>Acceptance Criteria</header>'` not in the page.
+2. `test_review_code_inline.py::...test_source_file_viewer_still_renders_syntax_highlighted` — the first `<pre>` on `/file/lib/task_pair_acd.sh` has no `<code>` child (innerCodeDisplay None).
+3. `test_bvp_form_htmx.py::test_add_form_submit_keeps_user_on_bvp` — `#da-result span` never appears within 5 s after submit.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** (1) is a stale test: T-4046 (GitHub #93) deliberately put a task-page link inside that header, so the exact string no longer occurs. (2) and (3) not localised yet: either the page structure moved on (stale test) or the page regressed (product bug).
 
-**Goal:** <what we are trying to achieve>
+**Goal:** localise each; fix the ones that are stale tests here (tests only); file each real product regression as its own task.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the stale tests are green again and pin the current, intended behaviour; any product bug has its own task with evidence.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] each of the three has a stated cause in ## Updates (stale test, or product regression with evidence)
+- [x] stale ones are fixed in tests/playwright only and pass; each product regression is filed as its own task and not fixed here (none found: 3 files, 11 passed)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,8 +290,17 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 python3 -m pytest -q -p no:cacheprovider tests/playwright/test_inception_detail_sections.py tests/playwright/test_review_code_inline.py tests/playwright/test_bvp_form_htmx.py > /tmp/.t5165.out 2>&1 && grep -q passed /tmp/.t5165.out && ! grep -q failed /tmp/.t5165.out
 
 ## RCA
+
+**Symptom:** three Playwright reds with three different messages.
+
+**Root cause:** two tests pinned an exact HTML shape that a later, deliberate change replaced (T-4046 header link, T-3587 line spans); the third depended on the served project's driver count and wrote to its policy.
+
+**Why structurally allowed:** the Playwright suite gates nothing (informational CI job, on-demand locally), so the changes that broke these tests closed with them red, and a test that mutates real project state was never noticed (T-5153).
+
+**Prevention:** the two shape tests now check the property they guard, not one HTML spelling; the BVP test no longer touches the server. Making the suite visible is T-5153's subject.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -384,3 +396,12 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5165-three-playwright-reds-still-to-localise-.md
 - **Context:** Initial task creation
+
+### 2026-11-15T22:44:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-15 — causes [agent]
+- **Inception sections: stale test.** T-4046 (GitHub #93, 770394b19) put a task-page link inside the Acceptance Criteria `<header>`, so the exact `<header>X</header>` string no longer occurs. The absence test had the mirror problem: it would pass with the header present. Both now match the header by its leading text (`_has_header`).
+- **Source viewer: stale test.** T-3587 (e7d05fd01) made Pygments emit one `<span class="line" id="L<n>">` per line directly inside `<pre>` (line anchors), with no `<code>` element. The test now accepts that layout and checks what it was guarding: pre is a block, line breaks preserved (`white-space: pre*`), highlighted token spans present.
+- **BVP add form: test reached the real policy.** The submit did a real `fw bvp driver --add` on the served project. This repo has 4 protected + 5 free drivers = the cap of 9, so the add is refused with a 400, htmx does not swap a 4xx, and `#da-result span` never appears. Below the cap the test wrote a `t2079probe` driver into policy/value-drivers.yaml and removed it with a second real request. Now the add is answered by `page.route` in the browser; the test checks the browser stays on /bvp and the form POSTed through htmx. At the cap the form also shows a required "drop" select, so the browser refused to submit at all; the test picks an option (harmless, the add is stubbed). Policy file checked byte-identical before and after the run. No product regression in any of the three.

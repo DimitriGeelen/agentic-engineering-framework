@@ -121,19 +121,30 @@ class TestReviewCodeInline:
                 if (!pre) return {missing: true};
                 const innerCode = pre.querySelector('code');
                 const innerCs = innerCode ? window.getComputedStyle(innerCode) : null;
+                // T-3587: Pygments now emits one <span class="line" id="L<n>"> per line (line
+                // anchors) straight inside <pre>, with no <code> element.
+                const line = pre.querySelector('span.line');
                 return {
                     preDisplay: window.getComputedStyle(pre).display,
                     innerCodeDisplay: innerCs ? innerCs.display : null,
+                    lineSpans: pre.querySelectorAll('span.line').length,
+                    tokenSpans: pre.querySelectorAll('span.line span[class]').length,
+                    preWhiteSpace: window.getComputedStyle(pre).whiteSpace,
                     contentLooksLikeShell: pre.innerText.includes('extract_deliverables'),
                 };
             }"""
         )
         assert not result.get("missing"), "/file/lib/task_pair_acd.sh has no <pre> block"
         assert result["preDisplay"] == "block"
+        if result["innerCodeDisplay"] is None:
+            # T-5165: the per-line layout — highlighted tokens present, line breaks preserved
+            assert result["lineSpans"] > 10 and result["tokenSpans"] > 0, result
+            assert result["preWhiteSpace"].startswith("pre"), result
         # pre > code should NOT be display:inline (else syntax tokens collapse)
-        assert result["innerCodeDisplay"] in ("inline-block", "block", "inline"), (
-            f"unexpected inner code display: {result['innerCodeDisplay']}"
-        )
+        else:
+            assert result["innerCodeDisplay"] in ("inline-block", "block", "inline"), (
+                f"unexpected inner code display: {result['innerCodeDisplay']}"
+            )
         assert result["contentLooksLikeShell"], "shell content should be present"
 
     def test_no_regression_on_t1575_backticked_url_styling(self, page: Page):
