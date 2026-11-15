@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T08:49:08Z
-last_update: '2026-11-15T08:49:19Z'
+last_update: 2026-11-15T09:07:47Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,9 +92,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] the failure is reproduced outside the gate by setting the one environment difference that causes it, and the cause is written in this task
-- [ ] the wrong side is fixed (test isolation or hook); t3814 and t3221 pass both alone and with that environment difference set
-- [ ] T-4108 closes through its normal gate
+- [x] the failure is reproduced outside the gate by setting the one environment difference that causes it, and the cause is written in this task
+      — the difference was repository state, not an environment variable: with this repo's focus set to T-4108 (as it is during T-4108's own close), the same 3 cases fail outside the gate. Cause in `## RCA`.
+- [x] the wrong side is fixed (test isolation or hook); t3814 and t3221 pass both alone and with that environment difference set
+      — the test was wrong; the hook's re-anchoring (T-2463) is by design. t3814 0 failures with focus T-5138 and with focus T-4108; t3221 0 failures.
+- [x] T-4108 closes through its normal gate
+      — closed 2026-11-15, a766885d2.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -280,8 +283,18 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t3814_fw_git_commit_checkpoint.bats tests/unit/t3221_commit_exemption_clause.bats
+! grep -nE '_verdict "\$r" [^|]*"\$ROOT"\)' tests/unit/t3814_fw_git_commit_checkpoint.bats
 
 ## RCA
+
+**Cause:** cases 2, 4 and 11 of `t3814_fw_git_commit_checkpoint.bats` passed the LIVE checkout (`$ROOT`) as the payload cwd, to test the relative `bin/fw` spelling. `check-active-task.sh` re-anchors its project to the payload cwd (T-2463, so a worktree session reads its own focus). So those cases read this repository's real focus, not the test's null-focus fixture. They passed only while the repo's focus allowed a commit. During T-4108's own close, focus is T-4108, a task without the four-part Context, and the T-4907 gate refuses. Reproduced outside the gate by setting focus to T-4108: the same 3 failures.
+
+**Not the cause (ruled out by measurement):** TMPDIR/BATS_TMPDIR, `FW_TASK_UPDATE_IN_CLOSE`, `FW_REEXEC_DEPTH`, the path variables `lib/paths.sh` sets. An inherited `_FW_PATHS_LOADED` does flip case 11 on its own, but the gate clears it. The hook call now runs under `env -i` anyway, so no inherited variable can reach it.
+
+**Fix:** the fixture root carries its own `bin/fw` shim, which the T-4203 rule counts as the project's own launcher, and every relative-launcher case uses the fixture root as cwd. The framework-launcher rule is still exercised by the absolute `$ROOT/bin/fw` spelling with the fixture cwd. A verification line refuses any `_verdict` that passes `$ROOT` as cwd again.
+
+**Why it went unnoticed:** run by hand, the repo's focus is usually a started task with Context, which admits the commit. The test was green for the reason that hid the dependency.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
