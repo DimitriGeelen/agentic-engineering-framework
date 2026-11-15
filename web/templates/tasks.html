@@ -441,21 +441,21 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
 
 {# ── Shared filter bar (board + list) ──────────────────── #}
 <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem; font-size: 0.8rem;">
-    <input type="text" name="q" value="{{ search_query }}" placeholder="Search tasks..."
+    <input type="text" name="q" data-task-filter value="{{ search_query }}" placeholder="Search tasks..."
            style="flex: 1; min-width: 10rem; max-width: 20rem; padding: 0.3rem 0.6rem; font-size: 0.8rem; margin: 0;"
            hx-get="/tasks" hx-target="#content" hx-push-url="true" hx-trigger="keyup changed delay:300ms"
-           hx-include="[name='owner'],[name='horizon'],[name='tag'],[name='status'],[name='type'],[name='component'],[name='sort'],[name='view']">
-    <select name="owner" class="btn-sm"
+           hx-include="[data-task-filter]">
+    <select name="owner" data-task-filter class="btn-sm"
             hx-get="/tasks" hx-target="#content" hx-push-url="true"
-            hx-include="[name='q'],[name='horizon'],[name='tag'],[name='status'],[name='type'],[name='component'],[name='sort'],[name='view']">
+            hx-include="[data-task-filter]">
         <option value="">All Owners</option>
         {% for o in owners %}
         <option value="{{ o }}" {% if owner_filter == o %}selected{% endif %}>{{ o }}</option>
         {% endfor %}
     </select>
-    <select name="horizon" class="btn-sm"
+    <select name="horizon" data-task-filter class="btn-sm"
             hx-get="/tasks" hx-target="#content" hx-push-url="true"
-            hx-include="[name='q'],[name='owner'],[name='tag'],[name='status'],[name='type'],[name='component'],[name='sort'],[name='view']">
+            hx-include="[data-task-filter]">
         <option value="">All Horizons</option>
         {# T-2160 (arc-009 Slice 1): render-only list includes 'past' (derived
            from .tasks/completed/). Storage enum stays now/next/later — past
@@ -465,9 +465,9 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
         {% endfor %}
     </select>
     {% if all_tags %}
-    <select name="tag" class="btn-sm"
+    <select name="tag" data-task-filter class="btn-sm"
             hx-get="/tasks" hx-target="#content" hx-push-url="true"
-            hx-include="[name='q'],[name='owner'],[name='horizon'],[name='status'],[name='type'],[name='component'],[name='sort'],[name='view']">
+            hx-include="[data-task-filter]">
         <option value="">All Tags</option>
         {#- T-3575: whitespace-trimmed; this dropdown alone was 68KB of the page -#}
         {%- for tg in all_tags -%}
@@ -475,7 +475,7 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
         {%- endfor %}
     </select>
     {% endif %}
-    <input type="hidden" name="view" value="{{ view }}">
+    <input type="hidden" name="view" data-task-filter value="{{ view }}">
     {# ── arc-007 S4c (T-2016): one removable chip per active filter ──────── #}
     {% if active_filter_chips %}
     <div class="filter-chips" style="display: inline-flex; flex-wrap: wrap; gap: 0.35rem; align-items: center;">
@@ -703,30 +703,32 @@ document.addEventListener('htmx:afterRequest', function(event) {
      ════════════════════════════════════════════════════════ -->
 
 <!-- List-specific filters (status, type, component, sort) -->
-{% set all_filters = "[name='q'],[name='owner'],[name='horizon'],[name='tag'],[name='status'],[name='type'],[name='component'],[name='sort'],[name='view']" %}
+{# T-5145: filter controls carry data-task-filter; a bare [name=...] also matched every row's
+   inline edit selects and the new-task form, so the first row's values became filters. #}
+{% set all_filters = "[data-task-filter]" %}
 <div class="grid" style="margin-bottom: 1rem;">
-    <select name="status" hx-get="/tasks" hx-target="#content" hx-push-url="true"
+    <select name="status" data-task-filter hx-get="/tasks" hx-target="#content" hx-push-url="true"
             hx-include="{{ all_filters }}">
         <option value="">All Statuses</option>
         {% for s in enum_statuses|default(['captured','started-work','issues','work-completed']) %}
         <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s }}</option>
         {% endfor %}
     </select>
-    <select name="type" hx-get="/tasks" hx-target="#content" hx-push-url="true"
+    <select name="type" data-task-filter hx-get="/tasks" hx-target="#content" hx-push-url="true"
             hx-include="{{ all_filters }}">
         <option value="">All Types</option>
         {% for t in types %}
         <option value="{{ t }}" {% if type_filter == t %}selected{% endif %}>{{ t }}</option>
         {% endfor %}
     </select>
-    <select name="component" hx-get="/tasks" hx-target="#content" hx-push-url="true"
+    <select name="component" data-task-filter hx-get="/tasks" hx-target="#content" hx-push-url="true"
             hx-include="{{ all_filters }}">
         <option value="">All Components</option>
         {% for c in components %}
         <option value="{{ c }}" {% if component_filter == c %}selected{% endif %}>{{ c }}</option>
         {% endfor %}
     </select>
-    <select name="sort" hx-get="/tasks" hx-target="#content" hx-push-url="true"
+    <select name="sort" data-task-filter hx-get="/tasks" hx-target="#content" hx-push-url="true"
             hx-include="{{ all_filters }}">
         <option value="id" {% if sort_by == 'id' %}selected{% endif %}>Sort by ID</option>
         <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Sort by Name</option>
