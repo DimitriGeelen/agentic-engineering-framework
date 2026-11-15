@@ -122,8 +122,15 @@ class TestTheSeatCanUseItsTemp:
 class TestTheAllowanceIsExactlySeatTmp:
     def test_the_config_names_only_seat_tmp(self):
         cfg = json.loads(vl.opencode_seat_config("/x/w/tmp"))
-        assert cfg == {"agent": {"plan": {"permission": {"external_directory": {
-            "/x/w/tmp": "allow", "/x/w/tmp/*": "allow"}}}}}, cfg
+        assert list(cfg) == ["agent"] and list(cfg["agent"]) == ["plan"], cfg
+        perm = cfg["agent"]["plan"]["permission"]
+        assert perm["external_directory"] == {"/x/w/tmp": "allow", "/x/w/tmp/*": "allow"}, cfg
+        # T-5158: T-5008 added kill-by-name bash denials; the only ALLOWANCE stays the seat tmp.
+        others = {k: v for k, v in perm.items() if k != "external_directory"}
+
+        def values(x):
+            return [w for v in x.values() for w in values(v)] if isinstance(x, dict) else [x]
+        assert set(values(others)) <= {"deny"}, cfg
 
     def test_the_ledger_accepts_the_exact_value_for_its_wdir(self, tmp_path):
         (tmp_path / "env.json").write_text(json.dumps(
