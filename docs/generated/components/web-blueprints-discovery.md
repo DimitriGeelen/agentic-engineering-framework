@@ -8,6 +8,10 @@
 
 ## What It Does
 
+T-3786: no page view builds the vector index. The background-build helper that
+lived here had no caller after T-3786, yet one call would have brought back the
+index wipe; it is removed, and test_t3786 keeps the builder out of web/blueprints.
+
 ## Dependencies (24)
 
 | Component | Relationship | Description |

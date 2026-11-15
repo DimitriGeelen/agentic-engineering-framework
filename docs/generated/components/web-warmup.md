@@ -11,6 +11,7 @@ The pages whose cold build is the expensive one (measured T-4363: /, /search,
 named in 832's doctor report). Order: shared corpus readers first.
 /search carries a keyword query (T-4458): without one the page never builds the
 keyword index, and the first real search paid that build (17-89 s, host load).
+T-5136: the bare /search is warmed too. Only the empty page builds the tag cloud, a
 
 ---
 *Auto-generated from Component Fabric. Card: `web-warmup.yaml`*
