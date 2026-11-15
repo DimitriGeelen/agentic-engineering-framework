@@ -13,8 +13,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
 components: [tests/playwright/test_htmx_nav_page_scripts.py, 
       web/templates/base.html]
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-14T11:46:17Z
-last_update: '2026-11-15T12:15:22Z'
+last_update: 2026-11-15T16:43:35Z
 date_finished: 2026-11-14T19:45:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,6 +94,7 @@ cost_estimate_proposed:
     rationale: blast_radius=3 (2-components); tier=2 (workflow:build); effort=8 
       (lines=355,acs=6)
     rubric_sha: e4a00f38e801
+date_finalised: 2026-11-15T16:43:35Z
 ---
 
 # T-5130: htmx-boosted navigation runs a page's inline scripts before its own <script src> libraries load: /bvp (d3 is not defined) and /terminal (io is not defined) break when reached through the nav
@@ -119,7 +120,7 @@ cost_estimate_proposed:
       — Watchtower restarted 2026-11-14 (pid 2126904), `current` passes. Full Playwright run: no failure is new. The 14 failing files of the first part fail identically with `base.html` stashed. The 6 failing files of the rest, rerun one at a time with no port clash, are outside the change: 5 never click (`page.goto` only, so `htmx:beforeSwap` never fires), and `test_task_panel::test_panel_opens_after_htmx_board_swap` stays a swap (same-document marker kept, checked live) but the list view takes 36.9 s for 5,120 rows against the test's 5 s wait — a speed problem, not this change.
 
 ### Human
-- [ ] [REVIEW] In-app navigation to the BVP and terminal pages
+- [x] [REVIEW] In-app navigation to the BVP and terminal pages
   **Steps:**
   1. Open http://192.168.10.107:3000/fabric and use the top navigation to reach the BVP page (http://192.168.10.107:3000/bvp)
   2. From there, use the navigation to reach the terminal (http://192.168.10.107:3000/terminal)
@@ -170,6 +171,7 @@ cost_estimate_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261115-98eec4bd — reviewer-judge-t-5130-r3-bfc840345be2:reviewer (rung rung-3-termlink-single-reviewer), digest 5a4229473a42; dispatch judge-t-5130-r3-bfc840345be2; evidence: .context/reviews/evidence/T-5130/AC1-judge-t-5130-r3-bfc840345be2.md, .context/reviews/evidence/T-5130/01-fabric-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/02-bvp-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/03-terminal-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/04-tasks-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/05-docs-generated-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/06-settings-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/07-settings-models-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/08-settings-appearance-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/visual-bvp-at-1024-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/visual-bvp-at-1440-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/visual-bvp-at-1920-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/visual-terminal-at-1024-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/visual-terminal-at-1440-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/visual-terminal-at-1920-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/visual-tasks-at-1024-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/visual-tasks-at-1440-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/visual-tasks-at-1920-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/visual-tasks-viewport-at-1024-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/visual-tasks-viewport-at-1440-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/visual-tasks-viewport-at-1920-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/own-1-bvp-scatter-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/own-1-bvp-top-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/own-2-terminal-judge-t-5130-r3-bfc840345be2.png, .context/reviews/evidence/T-5130/own-3-tasks-judge-t-5130-r3-bfc840345be2.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 

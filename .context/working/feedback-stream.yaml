@@ -55243,3 +55243,75 @@ scan_id: R-0bf624f3
 task_id: T-3922
 payload:
   task_file: .tasks/active/T-3922-triage-the-127-waiting-sidecar-messages-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-15T14:13:08Z'
+scan_id: R-41f75523
+task_id: T-5140
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-15T14:13:08Z'
+scan_id: R-41f75523
+task_id: T-5140
+payload:
+  task_file: .tasks/active/T-5140-four-watchtower-pages-render-with-an-emp.md
+---
+kind: scan_emitted
+timestamp: '2026-11-15T15:25:25Z'
+scan_id: R-090713c1
+task_id: T-5145
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-15T15:25:25Z'
+scan_id: R-090713c1
+task_id: T-5145
+payload:
+  task_file: .tasks/active/T-5145-task-list-filters-collapse-the-list-the-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-15T15:48:53Z'
+scan_id: R-016b54f9
+task_id: T-5146
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-15T15:48:53Z'
+scan_id: R-016b54f9
+task_id: T-5146
+payload:
+  task_file: .tasks/active/T-5146-in-app-navigation-to-bvp-fetches-the-pag.md
+---
+kind: scan_emitted
+timestamp: '2026-11-15T16:42:58Z'
+scan_id: R-35847cd4
+task_id: T-5147
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-15T16:42:58Z'
+scan_id: R-35847cd4
+task_id: T-5147
+payload:
+  task_file: .tasks/active/T-5147-first-task-boardlist-load-after-any-revi.md
