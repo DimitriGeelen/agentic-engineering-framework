@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4627: Read-only allowlist: git ls-remote/fetch --upload-pack (and --receive-pack, -u) run an arbitrary program
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T08:37:25Z
+# ============================================================================
+
+task_id: T-4627
+task_name: "Read-only allowlist: git ls-remote/fetch --upload-pack (and --receive-pack, -u) run an arbitrary program"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-22T10:36:00Z
+completed: 2026-11-15T08:35:53Z
+duration_days: 24
+updates_count: 3
+first_commit: 2026-10-22T13:02:42+02:00
+last_commit: 2026-10-22T13:02:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  read-only allowlist refuses git ls-remote/fetch --upload-pack (any abbreviation, -u in any short bundle) and push --receive-pack/--exec, quoted or expanded; t4627_git_transport_program.bats (6 tests, both directions)
+
+# Key outcomes
+outcomes:
+  - '`is_bash_safe_command` refuses `--upload-pack` on git ls-remote and git fetch in every spelling git accepts (`=CMD`, separate value, unambiguous abbreviation, `-u` / `-uCMD` / bundled `-qu`, quoted or brace-built, a word beginning with an expansion), behind git global options too'
+  - '`is_bash_safe_command` refuses `--receive-pack` / `--exec` (and their abbreviations) on git push'
+  - 'Controls stay SAFE: `git ls-remote origin`, `git ls-remote --heads --refs origin`, `git fetch origin`, `git fetch --prune --tags origin`, `git push origin bleeding-edge`, `git push --repo=origin`'
+  - 'Regression test `tests/unit/t4627_git_transport_program.bats` fails on the pre-fix code and passes after; existing safe-commands suites stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-22 — fetch -u and push scope'
+    chose: 'refuse any short bundle holding `u` on fetch too, and extend the check to push `--receive-pack` / `--exec`.'
+    rationale: 'on fetch `-u` is the harmless `--update-head-ok`, but refusing it costs one rare spelling and keeps one rule for both verbs; push is admitted by T-2462 and its pack options are the same vector.'
+    alternatives_rejected: ['per-verb short-option tables (more surface to get wrong for no measured gain).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-4627-read-only-allowlist-git-ls-remotefetch--.md'
+  - 'agents/context/lib/safe-commands.sh'
+  - 'tests/unit/t4627_git_transport_program.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T13:02:42'
+    action: 'T-4627: read-only allowlist refuses git ls-remote/fetch --upload-pack (any abbreviation, -u in any short bundle) and push --receive-pack/--exec, quoted or expanded; t4627_git_transport_program.bats (6 tests, both directions)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 34439 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, security, read-only-allowlist, G-121]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 34439
+  commits: 2
+  files_changed: 7
+  lines_added: 343
+  lines_removed: 15
+  footprint_refreshed_at: '2026-11-15T08:37:32Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4627-read-only-allowlist-git-ls-remotefetch--.md
+generated_by: context-agent-hybrid
