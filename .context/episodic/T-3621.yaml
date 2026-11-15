@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3621: Pre-push unit-suite gate as a ratchet: block NEW reds against a recorded baseline; full red list stays FAIL in daily fw audit
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T08:00:12Z
+# ============================================================================
+
+task_id: T-3621
+task_name: "Pre-push unit-suite gate as a ratchet: block NEW reds against a recorded baseline; full red list stays FAIL in daily fw audit"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-01T07:38:58Z
+completed: 2026-11-15T07:59:13Z
+duration_days: 45
+updates_count: 3
+first_commit: 2026-10-01T09:41:22+02:00
+last_commit: 2026-10-01T10:04:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file pre-push unit-suite ratchet (operator option a); build prompt. pre-push unit-suite ratchet — committed red baseline (114: 42 triaged, 72 untriaged, expiry 14d); pre-push scope grades baselined reds WARN, new/expired FAIL; every other scope FAILs every red; shrink-only baseline tool (add needs --i-am-human). tick AC5 — CLAUDE.md rule + git push origin bleeding-edge passed pre-push (a5389c4b8, unit suite WARN 114 baselined, 0 new)
+
+# Key outcomes
+outcomes:
+  - 'A committed baseline file lists today''s red unit tests (file + test name). Each entry carries the triage task that owns it, or "untriaged", and an expiry date (default 14 days).'
+  - 'The pre-push structure section FAILs on:'
+  - 'The full `fw audit` (cron/daily) still FAILs on every red, baselined or not, so the backlog never reads as green.'
+  - 'The baseline only shrinks without review. An entry that turns green is dropped by a regenerate verb, and adding entries is refused unless `--i-am-human` (operator) is given. Test: an agent adding an entry is refused.'
+  - 'CLAUDE.md (§Verification Gate or the audit paragraph) states the rule in two sentences, and `git push origin bleeding-edge` passes the pre-push audit on today''s tree without `--no-verify`.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-01 — how the audit knows it is pre-push'
+    chose: '`SECTIONS` exactly equal to `structure` (`_audit_is_prepush_scope`), which is the scope the pre-push hook passes and nothing else uses on its own. The */30 cron''s multi-section run and the unscoped daily run both keep FAILing.'
+    rationale: 'reuses the existing signal; no env flag, no change to agents/git/lib/hooks.sh. A test pins that the hook still passes exactly `--section structure`.'
+    alternatives_rejected: ['a new env flag set by the hook (a second path; touches hooks.sh, which another worker owns).']
+  - decision: '2026-10-01 — owner mapping granularity'
+    chose: 'per test FILE, parsed from the verdict tables in docs/reports/*-triage.md. Owner = first task id in the Action column, else the triage task itself.'
+    rationale: 'the tables cite test numbers, not names. A file-level owner is right for 13 of the 14 mapped files. audit_inception_recommendation maps to T-3609 because test 10 is its regression; its STALE tests 8–9 were already fixed by T-3603.'
+    alternatives_rejected: ['per-test-number mapping (fragile to test reordering for little gain).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/audit/unit_suite_baseline.py'
+  - '.context/audits/unit-suite/baseline.yaml'
+  - '.fabric/components/agents-audit-unit_suite_baseline.yaml'
+  - '.tasks/active/T-3621-pre-push-unit-suite-gate-as-a-ratchet-bl.md'
+  - 'CLAUDE.md'
+  - 'agents/audit/audit.sh'
+  - 'agents/audit/unit_suite_baseline.py'
+  - 'docs/reports/T-3621-fix-prompt.md'
+  - 'tests/unit/t3621_unit_suite_ratchet.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T09:41:22'
+    action: 'T-3621: file pre-push unit-suite ratchet (operator option a); build prompt'
+  - time: '2026-10-01T09:56:41'
+    action: 'T-3621: pre-push unit-suite ratchet — committed red baseline (114: 42 triaged, 72 untriaged, expiry 14d); pre-push scope grades baselined reds WARN, new/expired FAIL; every other scope FAILs every red; shrink-only baseline tool (add needs --i-am-human)'
+  - time: '2026-10-01T10:04:39'
+    action: 'T-3621: tick AC5 — CLAUDE.md rule + git push origin bleeding-edge passed pre-push (a5389c4b8, unit suite WARN 114 baselined, 0 new)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 64820 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [audit, pre-push, OBS-587, T-3602]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 64820
+  commits: 4
+  files_changed: 13
+  lines_added: 2346
+  lines_removed: 21
+  footprint_refreshed_at: '2026-11-15T08:00:23Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3621-pre-push-unit-suite-gate-as-a-ratchet-bl.md
+generated_by: context-agent-hybrid
