@@ -7,12 +7,12 @@ description: >
   misses the Acceptance Criteria header; test_review_code_inline finds no syntax-highlighted
   code. Each may be its own bug: split once localised. Found in T-5153 triage.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [playwright, ci]
-components: []
+components: [tests/playwright/test_review_code_inline.py]
 related_tasks: [T-5153]
 origin: {kind: "agent"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -42,8 +42,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T22:29:12Z
-last_update: 2026-11-15T22:44:34Z
-date_finished:
+last_update: 2026-11-15T23:01:03Z
+date_finished: 2026-11-15T23:01:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -405,3 +405,16 @@ timeout 900 python3 -m pytest -q -p no:cacheprovider tests/playwright/test_incep
 - **Inception sections: stale test.** T-4046 (GitHub #93, 770394b19) put a task-page link inside the Acceptance Criteria `<header>`, so the exact `<header>X</header>` string no longer occurs. The absence test had the mirror problem: it would pass with the header present. Both now match the header by its leading text (`_has_header`).
 - **Source viewer: stale test.** T-3587 (e7d05fd01) made Pygments emit one `<span class="line" id="L<n>">` per line directly inside `<pre>` (line anchors), with no `<code>` element. The test now accepts that layout and checks what it was guarding: pre is a block, line breaks preserved (`white-space: pre*`), highlighted token spans present.
 - **BVP add form: test reached the real policy.** The submit did a real `fw bvp driver --add` on the served project. This repo has 4 protected + 5 free drivers = the cap of 9, so the add is refused with a 400, htmx does not swap a 4xx, and `#da-result span` never appears. Below the cap the test wrote a `t2079probe` driver into policy/value-drivers.yaml and removed it with a second real request. Now the add is answered by `page.route` in the browser; the test checks the browser stays on /bvp and the form POSTed through htmx. At the cap the form also shows a required "drop" select, so the browser refused to submit at all; the test picks an option (harmless, the add is stubbed). Policy file checked byte-identical before and after the run. No product regression in any of the three.
+
+### 2026-11-15T23:01:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1516c72c
+- **Timestamp:** 2026-11-15T23:03:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

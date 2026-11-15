@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5165: Three Playwright reds still to localise (bvp form, inception sections, source viewer)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T23:03:34Z
+# ============================================================================
+
+task_id: T-5165
+task_name: "Three Playwright reds still to localise (bvp form, inception sections, source viewer)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-15T22:29:12Z
+completed: 2026-11-15T23:01:03Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-11-16T00:01:00+01:00
+last_commit: 2026-11-16T00:01:00+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  three Playwright reds were stale tests — inception header match by leading text (T-4046 link; absence check no longer vacuous), source viewer accepts T-3587's per-line spans, bvp add form stubbed in the browser (it wrote to the real policy and failed at the driver cap)
+
+# Key outcomes
+outcomes:
+  - 'each of the three has a stated cause in ## Updates (stale test, or product regression with evidence)'
+  - 'stale ones are fixed in tests/playwright only and pass; each product regression is filed as its own task and not fixed here (none found: 3 files, 11 passed)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5165-three-playwright-reds-still-to-localise-.md'
+  - 'tests/playwright/test_bvp_form_htmx.py'
+  - 'tests/playwright/test_inception_detail_sections.py'
+  - 'tests/playwright/test_review_code_inline.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T00:01:00'
+    action: 'T-5165: three Playwright reds were stale tests — inception header match by leading text (T-4046 link; absence check no longer vacuous), source viewer accepts T-3587''s per-line spans, bvp add form stubbed in the browser (it wrote to the real policy and failed at the driver cap)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 31 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [playwright, ci]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 31
+  commits: 2
+  files_changed: 7
+  lines_added: 192
+  lines_removed: 30
+  footprint_refreshed_at: '2026-11-15T23:03:46Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5165-three-playwright-reds-still-to-localise-.md
+generated_by: context-agent-hybrid
