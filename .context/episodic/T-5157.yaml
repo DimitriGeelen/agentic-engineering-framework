@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5157: fw sidecar inbox --mark-read TOPIC: start a newly declared alias at its latest offset (010 msg aece8b4f)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T20:29:18Z
+# ============================================================================
+
+task_id: T-5157
+task_name: "fw sidecar inbox --mark-read TOPIC: start a newly declared alias at its latest offset (010 msg aece8b4f)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-15T20:03:19Z
+completed: 2026-11-15T20:28:36Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-15T21:28:29+01:00
+last_commit: 2026-11-15T21:28:29+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw sidecar inbox --mark-read TOPIC moves this project's cursor past a topic's latest offset (bare name = inbox:<hub>/NAME), no drain, no receipts, never backwards; 8 tests; vendored copies refreshed (also carries T-5149/T-5151 lib changes)
+
+# Key outcomes
+outcomes:
+  - '`fw sidecar inbox --mark-read TOPIC` sets `topics[TOPIC].cursor` in inbox-state.json to latest_offset + 1 read from the hub; a bare name (no `inbox:` prefix) is expanded to this hub''s `inbox:<hub>/<name>`'
+  - 'It sends no receipts, prints no message bodies and does not touch the shown ledger; it never moves a cursor backwards'
+  - 'When the hub cannot be asked or does not list the topic, it says so and exits non-zero, changing nothing'
+  - 'Unit tests cover set, bare-name expansion, no-backwards, and unknown topic; existing inbox tests stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/sidecar/addressing.py'
+  - '.agentic-framework/lib/sidecar/inbox.py'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.tasks/active/T-5157-fw-sidecar-inbox---mark-read-topic-start.md'
+  - 'lib/sidecar/inbox.py'
+  - 'lib/sidecar_cli.py'
+  - 'tests/unit/test_t5157_inbox_mark_read.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-15T21:28:29'
+    action: 'T-5157: fw sidecar inbox --mark-read TOPIC moves this project''s cursor past a topic''s latest offset (bare name = inbox:<hub>/NAME), no drain, no receipts, never backwards; 8 tests; vendored copies refreshed (also carries T-5149/T-5151 lib changes)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 25 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 25
+  commits: 2
+  files_changed: 11
+  lines_added: 820
+  lines_removed: 9
+  footprint_refreshed_at: '2026-11-15T20:29:38Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5157-fw-sidecar-inbox---mark-read-topic-start.md
+generated_by: context-agent-hybrid

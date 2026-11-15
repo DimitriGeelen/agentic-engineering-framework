@@ -55369,3 +55369,39 @@ scan_id: R-eb3c8cad
 task_id: T-5150
 payload:
   task_file: .tasks/active/T-5150-fw-sidecar-send---to-bare-name-not-in-th.md
+---
+kind: scan_emitted
+timestamp: '2026-11-15T19:47:13Z'
+scan_id: R-b16b34f4
+task_id: T-5148
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-15T19:47:13Z'
+scan_id: R-b16b34f4
+task_id: T-5148
+payload:
+  task_file: .tasks/active/T-5148-sidecar-read-side-a-project-cannot-decla.md
+---
+kind: scan_emitted
+timestamp: '2026-11-15T20:28:47Z'
+scan_id: R-4d759955
+task_id: T-5157
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-15T20:28:47Z'
+scan_id: R-4d759955
+task_id: T-5157
+payload:
+  task_file: .tasks/active/T-5157-fw-sidecar-inbox---mark-read-topic-start.md
