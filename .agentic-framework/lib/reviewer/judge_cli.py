@@ -577,6 +577,27 @@ def _note_lines(notes: dict) -> list[str]:
     return out
 
 
+def _bare_get_refusals(base_url: str, pages: list[str]) -> dict[str, str]:
+    """T-5151: {page: "HTTP <code>"} for pages that answer a bare GET with 4xx. Pages that answer
+    2xx/3xx/5xx, or that cannot be asked, are left in (never excluded on a guess)."""
+    out: dict[str, str] = {}
+    if not base_url:
+        return out
+    import urllib.error
+    import urllib.request
+    for p in pages:
+        try:
+            with urllib.request.urlopen(base_url.rstrip("/") + p, timeout=15) as r:
+                code = r.status
+        except urllib.error.HTTPError as e:
+            code = e.code
+        except Exception:  # noqa: BLE001 — unreachable: keep the page required
+            continue
+        if 400 <= code < 500:
+            out[p] = f"HTTP {code}"
+    return out
+
+
 def _gather_evidence(root: Path, task_id: str, task_data: dict, criteria: list[dict],
                      capture: Capturer, *, dry_run: bool) -> dict:
     """{'needed', 'pages', 'shots', 'error', 'captures', 'partial'}.
@@ -588,7 +609,15 @@ def _gather_evidence(root: Path, task_id: str, task_data: dict, criteria: list[d
     ev = {"needed": needed, "pages": [], "shots": [], "error": "", "captures": [], "partial": []}
     if not needed:
         return ev
-    ev["pages"] = _pages_for(root, task_id, task_data["text"], [c for c in criteria if c["render"]])
+    render = [c for c in criteria if c["render"]]
+    ev["pages"] = _pages_for(root, task_id, task_data["text"], render)
+    # T-5151: a route found only as a changed blueprint's GET route (not named by the
+    # criterion) that answers a bare GET with 4xx needs a query or a body (/ask, /ask/stream,
+    # /search/load-conversation): it is not a page on its own. Requiring a screenshot of it made
+    # every seat return not-evaluated on T-3786. Pages the criterion names stay required.
+    named = {p for c in render for p in _criterion_pages(root, c["body"])}
+    ev["not_pages"] = _bare_get_refusals(_watchtower_url(root), [p for p in ev["pages"] if p not in named])
+    ev["pages"] = [p for p in ev["pages"] if p not in ev["not_pages"]]
     ev["visual"] = _gather_visual(root, task_id, task_data)
     if dry_run:
         return ev

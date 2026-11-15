@@ -282,6 +282,23 @@ def _framed(text) -> str:
 def cmd_inbox(args) -> int:
     if getattr(args, "show", None):
         return _cmd_show(args)
+    if getattr(args, "mark_read", None):
+        # T-5157: start a topic (e.g. a new alias) at its latest offset. Nothing drained,
+        # printed, receipted or marked shown.
+        try:
+            r = inbox.mark_read(args.mark_read)
+        except inbox.MarkReadError as e:
+            print(f"NOT CHANGED: {e}", file=sys.stderr)
+            return 1
+        if args.json:
+            print(json.dumps(r))
+        elif r["cursor"] == r["before"]:
+            print(f"{r['topic']}: cursor already at {r['cursor']} (latest offset "
+                  f"{r['latest_offset']}); nothing changed")
+        else:
+            print(f"{r['topic']}: cursor {r['before']} -> {r['cursor']}; posts up to offset "
+                  f"{r['latest_offset']} will not surface here")
+        return 0
     from lib.sidecar import alerts
     try:
         # T-4312: the strict reader, as `fw sidecar alerts` uses. The default
@@ -1502,6 +1519,10 @@ def build_parser() -> argparse.ArgumentParser:
                      help="do not advance the cursor")
     box.add_argument("--show", metavar="MSG_ID", default=None,
                      help="print the full stored body of one received message (read-only)")
+    box.add_argument("--mark-read", metavar="TOPIC", default=None,
+                     help="move this project's cursor on TOPIC (bare name = inbox:<this hub>/NAME) "
+                     "past its latest offset, so its backlog never surfaces; for a new alias "
+                     "whose posts were handled already (T-5157)")
     box.set_defaults(func=cmd_inbox)
 
     al = sub.add_parser("alerts", help="session-start check: unseen peer mail on both "

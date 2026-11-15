@@ -167,6 +167,46 @@ def save_state(state: dict) -> None:
     os.replace(tmp, path)
 
 
+class MarkReadError(Exception):
+    """The cursor could not be moved; nothing was changed."""
+
+
+def mark_read(topic: str, *, runner=None) -> dict:
+    """T-5157: move this project's cursor on ``topic`` past its latest offset.
+
+    For a topic about to be read for the first time (a new SIDECAR_INBOX_ALIASES name,
+    T-5148) whose backlog was already handled another way. Nothing is drained, printed,
+    receipted or recorded as shown, and a cursor never moves backwards. A bare name
+    (``termlink``) means this hub's ``inbox:<hub>/termlink``.
+
+    Returns ``{"topic", "before", "cursor", "latest_offset"}``; raises MarkReadError when
+    the hub cannot be asked or does not list the topic.
+    """
+    from . import addressing
+    name = (topic or "").strip()
+    if not name:
+        raise MarkReadError("no topic named")
+    hub = circuit.hub_id()
+    if not name.startswith(circuit.TOPIC_PREFIX):
+        if "/" in name:
+            raise MarkReadError(f"{name!r}: give a bare inbox name or a full inbox:<hub>/<name> topic")
+        name = f"{circuit.TOPIC_PREFIX}{hub}/{name}"
+    rows = addressing.hub_inbox_topics(hub, None, runner)
+    if rows is None:
+        raise MarkReadError("the hub could not be asked for its topics; nothing changed")
+    row = next((r for r in rows if r.get("name") == name), None)
+    latest = (row or {}).get("latest_offset")
+    if row is None:
+        raise MarkReadError(f"{name}: the hub does not list this topic; nothing changed")
+    state = load_state()
+    entry = state["topics"].setdefault(name, {"cursor": 0})
+    before = entry.get("cursor", 0) if isinstance(entry.get("cursor"), int) else 0
+    target = latest + 1 if isinstance(latest, int) else 0
+    entry["cursor"] = max(before, target)
+    save_state(state)
+    return {"topic": name, "before": before, "cursor": entry["cursor"], "latest_offset": latest}
+
+
 def _binary() -> str:
     return shutil.which("termlink") or "termlink"
 

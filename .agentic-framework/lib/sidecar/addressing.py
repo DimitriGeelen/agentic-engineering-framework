@@ -677,10 +677,60 @@ def orphan_inboxes(*, runner=None) -> list[dict] | None:
                             "read_topic": inbox.inbox_topic(),
                             "last_writer": (r.get("activity") or {}).get("last_writer")})
             continue
-        if circuit.is_project_id(rest) or not topic_is_unread(r):
+        # T-5149 (010 T-3798): a peer's nickname is judged even when is_project_id accepts
+        # it — that counts a sibling checkout directory as a project, and 010's checkout
+        # here is /opt/termlink, so inbox:<hub>/termlink (54 consults) was never looked at.
+        if circuit.is_project_id(rest) and not nickname_candidates(rest):
             continue
         a = r.get("activity") or {}
-        out.append({"topic": topic, "count": r.get("count"),
+        latest = r.get("latest_offset")
+        if isinstance(latest, int):
+            # Judged by OUR acknowledgement, not the hub's unread_since_ms: any fetch clears
+            # that, a peek included, and a session-start scan peeks every inbox.
+            acked = orphan_acks().get(topic)
+            first_unacked = (acked + 1) if isinstance(acked, int) else 0
+            unacked = max(0, min(r.get("count") or 0, latest + 1 - first_unacked))
+            if not unacked:
+                continue
+            count = unacked
+        else:
+            if not topic_is_unread(r):
+                continue
+            count = r.get("count")
+        out.append({"topic": topic, "count": count,
                     "unread_since_ms": a.get("unread_since_ms"),
-                    "last_writer": a.get("last_writer")})
+                    "last_writer": a.get("last_writer"),
+                    "nickname_of": nickname_candidates(rest)})
     return out
+
+
+def _orphan_acks_path() -> Path:
+    from . import outbox
+    return outbox._root() / ".context" / "sidecar" / "orphan-acks.json"
+
+
+def orphan_acks() -> dict:
+    """T-5149: {topic: last acknowledged offset} for orphan inboxes this project dealt with."""
+    try:
+        data = json.loads(_orphan_acks_path().read_text(encoding="utf-8"))
+        return {k: v for k, v in data.items() if isinstance(v, int)}
+    except (OSError, ValueError, AttributeError):
+        return {}
+
+
+def ack_orphan_inbox(topic: str, *, runner=None) -> int | None:
+    """Record ``topic``'s current latest offset as dealt with. Returns it, or None when the
+    hub could not be asked or does not list the topic."""
+    rows = hub_inbox_topics(own_hub_id(), None, runner)
+    row = next((r for r in rows or [] if r.get("name") == topic), None)
+    latest = (row or {}).get("latest_offset")
+    if not isinstance(latest, int):
+        return None
+    acks = orphan_acks()
+    acks[topic] = latest
+    p = _orphan_acks_path()
+    p.parent.mkdir(parents=True, exist_ok=True)
+    tmp = p.with_suffix(".tmp")
+    tmp.write_text(json.dumps(acks, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+    os.replace(tmp, p)
+    return latest
