@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4630: Read-only allowlist: journalctl --vacuum-*/--rotate/--flush and dmesg -c/-C/--clear change system state
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T08:41:08Z
+# ============================================================================
+
+task_id: T-4630
+task_name: "Read-only allowlist: journalctl --vacuum-*/--rotate/--flush and dmesg -c/-C/--clear change system state"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T10:37:39Z
+completed: 2026-11-15T08:40:26Z
+duration_days: 24
+updates_count: 3
+first_commit: 2026-10-22T13:17:27+02:00
+last_commit: 2026-10-22T13:17:27+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  read-only allowlist refuses journalctl --vacuum-*/--rotate/--flush/--sync/--relinquish-var/--update-catalog/--setup-keys/--cursor-file and dmesg -C/-c/-D/-E/-n (abbreviations, bundles, quoted/expanded); SYSTEMD_PAGER prefix denied; t4630_journal_dmesg_state.bats (6 tests, both directions)
+
+# Key outcomes
+outcomes:
+  - '`is_bash_safe_command` refuses journalctl `--vacuum-time|--vacuum-size|--vacuum-files`, `--rotate`, `--flush`, `--sync`, `--relinquish-var`, `--smart-relinquish-var`, `--update-catalog`, `--setup-keys`, `--cursor-file`, in any getopt abbreviation (`--rot`, `--vacuum-t`) and quoted/expanded spelling'
+  - '`is_bash_safe_command` refuses dmesg `-C`/`--clear`, `-c`/`--read-clear`, `-D`/`--console-off`, `-E`/`--console-on`, `-n`/`--console-level`, in short bundles (`-Hc`), abbreviations and quoted/expanded spellings'
+  - '`SYSTEMD_PAGER` / `SYSTEMD_PAGERSECURE` env prefixes are denied (journalctl hands SYSTEMD_PAGER to a shell)'
+  - 'Controls stay SAFE: `journalctl -u x`, `journalctl -u x -n 50 --no-pager`, `journalctl --cursor=abc`, `journalctl --since today -o json`, `journalctl --verify`, `dmesg`, `dmesg -T`, `dmesg --level=err`, `dmesg -H --color=never`'
+  - 'Regression test `tests/unit/t4630_journal_dmesg_state.bats` fails on the pre-fix code and passes after; existing safe-commands suites stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'read-only allowlist refuses journalctl --vacuum-*/--rotate/--flush/--sync/--relinquish-var/--update-catalog/--setup-keys/--cursor-file and dmesg -C/-c/-D/-E/-n (abbreviations, bundles, quoted/expanded); SYSTEMD_PAGER prefix denied; t4630_journal_dmesg_state.bats (6 tests, both directions)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-4630-read-only-allowlist-journalctl---vacuum-.md'
+  - 'agents/context/lib/safe-commands.sh'
+  - 'tests/unit/t4630_journal_dmesg_state.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T13:17:27'
+    action: 'T-4630: read-only allowlist refuses journalctl --vacuum-*/--rotate/--flush/--sync/--relinquish-var/--update-catalog/--setup-keys/--cursor-file and dmesg -C/-c/-D/-E/-n (abbreviations, bundles, quoted/expanded); SYSTEMD_PAGER prefix denied; t4630_journal_dmesg_state.bats (6 tests, both directions)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 34442 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, security, read-only-allowlist, G-121]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 34442
+  commits: 2
+  files_changed: 7
+  lines_added: 343
+  lines_removed: 15
+  footprint_refreshed_at: '2026-11-15T08:41:13Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4630-read-only-allowlist-journalctl---vacuum-.md
+generated_by: context-agent-hybrid
