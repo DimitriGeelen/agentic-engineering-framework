@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5138: t3814_fw_git_commit_checkpoint.bats passes alone but 3 cases fail inside the close gate (relative bin/fw commit refused) — blocks closing T-4108
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T09:09:46Z
+# ============================================================================
+
+task_id: T-5138
+task_name: "t3814_fw_git_commit_checkpoint.bats passes alone but 3 cases fail inside the close gate (relative bin/fw commit refused) — blocks closing T-4108"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-15T08:49:08Z
+completed: 2026-11-15T09:08:44Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-15T09:57:24+01:00
+last_commit: 2026-11-15T10:08:43+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t3814 runs the hook with a clean environment, so the close gate's inherited framework variables cannot change its verdict. t3814 tests the relative launcher from its own root (project bin/fw shim) instead of the live checkout, whose focus the hook re-anchored to. criteria ticked, RCA, verification
+
+# Key outcomes
+outcomes:
+  - 'the failure is reproduced outside the gate by setting the one environment difference that causes it, and the cause is written in this task'
+  - 'the wrong side is fixed (test isolation or hook); t3814 and t3221 pass both alone and with that environment difference set'
+  - 'T-4108 closes through its normal gate'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5138-t3814fwgitcommitcheckpointbats-passes-al.md'
+  - 'tests/unit/t3814_fw_git_commit_checkpoint.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-15T09:57:24'
+    action: 'T-5138: t3814 runs the hook with a clean environment, so the close gate''s inherited framework variables cannot change its verdict'
+  - time: '2026-11-15T10:05:34'
+    action: 'T-5138: t3814 tests the relative launcher from its own root (project bin/fw shim) instead of the live checkout, whose focus the hook re-anchored to'
+  - time: '2026-11-15T10:08:43'
+    action: 'T-5138: criteria ticked, RCA, verification'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 19 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 19
+  commits: 4
+  files_changed: 5
+  lines_added: 538
+  lines_removed: 18
+  footprint_refreshed_at: '2026-11-15T09:09:56Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5138-t3814fwgitcommitcheckpointbats-passes-al.md
+generated_by: context-agent-hybrid
