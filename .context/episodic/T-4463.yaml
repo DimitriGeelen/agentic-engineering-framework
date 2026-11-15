@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4463: Answer termlink: which of their 19 local AEF patches does v1.8.13 carry (carried / not carried / superseded), and does v1.8.13 descend from 5c886336b
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T08:26:56Z
+# ============================================================================
+
+task_id: T-4463
+task_name: "Answer termlink: which of their 19 local AEF patches does v1.8.13 carry (carried / not carried / superseded), and does v1.8.13 descend from 5c886336b"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T11:54:26Z
+completed: 2026-11-15T08:26:39Z
+duration_days: 26
+updates_count: 3
+first_commit: 2026-10-20T14:11:38+02:00
+last_commit: 2026-10-20T14:11:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  termlink carry map — 19 local patches vs v1.8.13 (5c886336b is an ancestor); item 19 is a live AEF bug
+
+# Key outcomes
+outcomes:
+  - 'docs/reports/T-4463-termlink-carry-map.md exists with a table covering all 19 items (carried / not carried / superseded / partial), each with evidence (commit hash or file:line at v1.8.13)'
+  - 'Ancestry of 5c886336b to v1.8.13 recorded with the command and its exit code'
+  - 'Report names the ID-collision caveat (termlink''s task ids are their own, not AEF''s) and the method used per item'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'termlink carry map — 19 local patches vs v1.8.13 (5c886336b is an ancestor); item 19 is a live AEF bug'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4463-answer-termlink-which-of-their-19-local-.md'
+  - 'docs/reports/T-4463-termlink-carry-map.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T14:11:38'
+    action: 'T-4463: termlink carry map — 19 local patches vs v1.8.13 (5c886336b is an ancestor); item 19 is a live AEF bug'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 37232 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 37232
+  commits: 2
+  files_changed: 5
+  lines_added: 583
+  lines_removed: 4
+  footprint_refreshed_at: '2026-11-15T08:27:01Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4463-answer-termlink-which-of-their-19-local-.md
+generated_by: context-agent-hybrid
