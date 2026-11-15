@@ -191,6 +191,17 @@ NAV_GROUPS = [
     ]),
 ]
 
+# T-5146: menu pages that load their own external script library. Their menu links are
+# plain links (hx-boost="false"), so the browser loads them once, directly. Boosted,
+# htmx fetched the page, T-5130's handler then saw the new library and loaded the URL a
+# second time (/bvp: 5.2-5.7 s against 2.8 s direct). Kept honest by
+# tests/web/test_t5146_nav_full_load.py, which renders every menu page.
+NAV_FULL_LOAD_ENDPOINTS = frozenset({
+    "bvp.bvp_scatter",          # d3
+    "fabric.fabric_graph",      # d3
+    "terminal.terminal_page",   # xterm.js and socket.io
+})
+
 
 def _nav_flatten(items):
     """Yield leaf (label, endpoint, icon) tuples from a group's items, recursing
