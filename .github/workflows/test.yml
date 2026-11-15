@@ -111,7 +111,9 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          pip install pytest flask markupsafe pyyaml
+          # T-5153: playwright (python package only, no browser) and bs4 are imported at
+          # collection by tests/unit/test_playwright_server_adoption.py and friends.
+          pip install pytest flask markupsafe pyyaml playwright beautifulsoup4
           if [ -f web/requirements.txt ]; then
             pip install -r web/requirements.txt
           fi
@@ -186,7 +188,8 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          pip install pyyaml flask markupsafe pytest playwright
+          # T-5153: bs4 is imported at collection by tests/playwright/test_review_htmx_target_inheritance.py
+          pip install pyyaml flask markupsafe pytest playwright beautifulsoup4
           if [ -f web/requirements.txt ]; then
             pip install -r web/requirements.txt
           fi
