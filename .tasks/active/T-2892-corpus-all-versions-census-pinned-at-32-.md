@@ -33,7 +33,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-09T10:52:26Z
-last_update: '2026-10-22T07:45:20Z'
+last_update: 2026-11-15T10:14:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -114,7 +114,13 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Background / trigger:** Found while running the corpus suites for T-2891 (2026-08-09): `tests/unit/test_corpus_lint.py::test_live_corpus_all_versions_census` asserted 32 versions while the live store held 37, so the test was red and nothing had noticed.
+
+**Problem / hypothesis:** the census pin is moved by hand. Corpus growth (the draft-trigger-handling work, T-2620/T-2623) outran it, and no gate surfaced the red test.
+
+**Goal:** establish whether the pin is still wrong at HEAD, who re-derived it, and whether a red pin is now surfaced by a gate.
+
+**Expected outcome:** the census test passes at HEAD, and the task records who moved the pin and which gate would catch it next time.
 
 ## Acceptance Criteria
 
@@ -141,37 +147,8 @@ docstring demands (`tests/unit/test_corpus_lint.py:374-461`):
 
 Question (1) was therefore answered by T-2976 (with the 5 then-unpinned
 versions inside its 7 named adds); no code change is needed here.
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+<!-- 2026-11-15: the empty template `### Human` block was removed; it sat below the
+     `## Reproduction` heading, outside Acceptance Criteria, and held no criterion. -->
 
 ## Verification
 
