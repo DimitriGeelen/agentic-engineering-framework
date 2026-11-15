@@ -1,0 +1,117 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5140: Four Watchtower pages render with an empty site nav on a full load (/bvp, /reviewer/audit, /reviewer/overrides, /escalation-drift): render_template skips render_page's nav_groups
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T16:44:51Z
+# ============================================================================
+
+task_id: T-5140
+task_name: "Four Watchtower pages render with an empty site nav on a full load (/bvp, /reviewer/audit, /reviewer/overrides, /escalation-drift): render_template skips render_page's nav_groups"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-15T13:52:54Z
+completed: 2026-11-15T14:15:20Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-15T15:09:06+01:00
+last_commit: 2026-11-15T17:23:29+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  site nav reaches every template through a context processor — /bvp, /reviewer/audit, /reviewer/overrides and /escalation-drift no longer draw an empty nav on a full load; regression test. vendor self. criteria, visual verification, RCA, recommendation GO. recommendation links as full URLs. partial-complete — review handed over. reviewer verdict
+
+# Key outcomes
+outcomes:
+  - '`nav_groups` and `nav_items` reach every template through a Flask context processor; an explicit value passed by a view still wins'
+  - 'a full GET of `/bvp`, `/reviewer/audit`, `/reviewer/overrides` and `/escalation-drift` contains all four nav groups (regression test, fails without the fix)'
+  - 'every test that reads `web/app.py` passes; Watchtower restarted and `bin/fw watchtower current` passes'
+  - '[REVIEW] The four pages show the full site menu and you can move on from them'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/app.py'
+  - '.context/reviews/evidence/T-5140/01-bvp-judge-t-5140-r3-2d7cff68015b.png'
+  - '.context/reviews/evidence/T-5140/02-reviewer-audit-judge-t-5140-r3-2d7cff68015b.png'
+  - '.context/reviews/evidence/T-5140/03-reviewer-overrides-judge-t-5140-r3-2d7cff68015b.png'
+  - '.context/reviews/evidence/T-5140/04-escalation-drift-judge-t-5140-r3-2d7cff68015b.png'
+  - '.context/reviews/evidence/T-5140/05-fabric-judge-t-5140-r3-2d7cff68015b.png'
+  - '.context/reviews/evidence/T-5140/AC1-judge-t-5140-r3-2d7cff68015b.md'
+  - '.context/reviews/evidence/T-5140/live-bvp-work-menu-open-judge-t-5140-r3-2d7cff68015b.png'
+  - '.context/reviews/evidence/T-5140/visual-bvp@1024-judge-t-5140-r3-2d7cff68015b.png'
+  - '.context/reviews/evidence/T-5140/visual-bvp@1440-judge-t-5140-r3-2d7cff68015b.png'
+  - '.context/reviews/evidence/T-5140/visual-bvp@1920-judge-t-5140-r3-2d7cff68015b.png'
+  - '.context/reviews/evidence/T-5140/visual-escalation-drift@1024-judge-t-5140-r3-2d7cff68015b.png'
+  - '.context/reviews/evidence/T-5140/visual-escalation-drift@1440-judge-t-5140-r3-2d7cff68015b.png'
+  - '.context/reviews/evidence/T-5140/visual-escalation-drift@1920-judge-t-5140-r3-2d7cff68015b.png'
+  - '.context/reviews/evidence/T-5140/visual-reviewer-audit@1024-judge-t-5140-r3-2d7cff68015b.png'
+  - '.context/reviews/evidence/T-5140/visual-reviewer-audit@1440-judge-t-5140-r3-2d7cff68015b.png'
+  - '.context/reviews/evidence/T-5140/visual-reviewer-audit@1920-judge-t-5140-r3-2d7cff68015b.png'
+  - '.context/reviews/evidence/T-5140/visual-reviewer-overrides@1024-judge-t-5140-r3-2d7cff68015b.png'
+  - '.context/reviews/evidence/T-5140/visual-reviewer-overrides@1440-judge-t-5140-r3-2d7cff68015b.png'
+  - '.context/reviews/evidence/T-5140/visual-reviewer-overrides@1920-judge-t-5140-r3-2d7cff68015b.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.fabric/components/tests-web-test_t5140_site_nav_on_every_page.yaml'
+  - '.tasks/active/T-5140-four-watchtower-pages-render-with-an-emp.md'
+  - 'tests/web/test_t5140_site_nav_on_every_page.py'
+  - 'web/app.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-15T15:09:06'
+    action: 'T-5140: site nav reaches every template through a context processor — /bvp, /reviewer/audit, /reviewer/overrides and /escalation-drift no longer draw an empty nav on a full load; regression test'
+  - time: '2026-11-15T15:09:13'
+    action: 'T-5140: vendor self'
+  - time: '2026-11-15T15:12:00'
+    action: 'T-5140: criteria, visual verification, RCA, recommendation GO'
+  - time: '2026-11-15T15:12:47'
+    action: 'T-5140: recommendation links as full URLs'
+  - time: '2026-11-15T15:13:27'
+    action: 'T-5140: partial-complete — review handed over'
+  - time: '2026-11-15T17:23:29'
+    action: 'T-5140: reviewer verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 22 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 22
+  commits: 7
+  files_changed: 31
+  lines_added: 711
+  lines_removed: 13
+  footprint_refreshed_at: '2026-11-15T16:52:28Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5140-four-watchtower-pages-render-with-an-emp.md
+generated_by: context-agent-hybrid

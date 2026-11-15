@@ -13,8 +13,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
 components: [tests/web/test_t5140_site_nav_on_every_page.py, web/app.py]
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T13:52:54Z
-last_update: '2026-11-15T14:15:20Z'
+last_update: 2026-11-15T16:43:59Z
 date_finished: 2026-11-15T14:12:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,6 +85,7 @@ cost_estimate_proposed:
     rationale: blast_radius=3 (2-components); tier=2 (workflow:build); effort=8 
       (lines=367,acs=6)
     rubric_sha: e4a00f38e801
+date_finalised: 2026-11-15T16:43:59Z
 ---
 
 # T-5140: Four Watchtower pages render with an empty site nav on a full load (/bvp, /reviewer/audit, /reviewer/overrides, /escalation-drift): render_template skips render_page's nav_groups
@@ -112,7 +113,7 @@ cost_estimate_proposed:
       — `tests/web` plus 60 unit files importing the app: 1,019 pass, 6 fail. The same 6 fail with the change stashed: `test_bpmn_frozen_v1_pin` (1) and `test_inception_verdict_render` (5, tracked by T-5109). Watchtower pid 1728346, `current` passes.
 
 ### Human
-- [ ] [REVIEW] The four pages show the full site menu and you can move on from them
+- [x] [REVIEW] The four pages show the full site menu and you can move on from them
   **Steps:**
   1. Open http://192.168.10.107:3000/bvp in a fresh tab (a full load, not by clicking)
   2. Open the Work, Knowledge, Architecture and Govern menus and click any entry
@@ -163,6 +164,7 @@ cost_estimate_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261115-f510be9f — reviewer-judge-t-5140-r3-2d7cff68015b:reviewer (rung rung-3-termlink-single-reviewer), digest 54a179edd4b7; dispatch judge-t-5140-r3-2d7cff68015b; evidence: .context/reviews/evidence/T-5140/AC1-judge-t-5140-r3-2d7cff68015b.md, .context/reviews/evidence/T-5140/01-bvp-judge-t-5140-r3-2d7cff68015b.png, .context/reviews/evidence/T-5140/02-reviewer-audit-judge-t-5140-r3-2d7cff68015b.png, .context/reviews/evidence/T-5140/03-reviewer-overrides-judge-t-5140-r3-2d7cff68015b.png, .context/reviews/evidence/T-5140/04-escalation-drift-judge-t-5140-r3-2d7cff68015b.png, .context/reviews/evidence/T-5140/05-fabric-judge-t-5140-r3-2d7cff68015b.png, .context/reviews/evidence/T-5140/live-bvp-work-menu-open-judge-t-5140-r3-2d7cff68015b.png, .context/reviews/evidence/T-5140/visual-bvp@1024-judge-t-5140-r3-2d7cff68015b.png, .context/reviews/evidence/T-5140/visual-bvp@1440-judge-t-5140-r3-2d7cff68015b.png, .context/reviews/evidence/T-5140/visual-bvp@1920-judge-t-5140-r3-2d7cff68015b.png, .context/reviews/evidence/T-5140/visual-escalation-drift@1024-judge-t-5140-r3-2d7cff68015b.png, .context/reviews/evidence/T-5140/visual-escalation-drift@1440-judge-t-5140-r3-2d7cff68015b.png, .context/reviews/evidence/T-5140/visual-escalation-drift@1920-judge-t-5140-r3-2d7cff68015b.png, .context/reviews/evidence/T-5140/visual-reviewer-audit@1024-judge-t-5140-r3-2d7cff68015b.png, .context/reviews/evidence/T-5140/visual-reviewer-audit@1440-judge-t-5140-r3-2d7cff68015b.png, .context/reviews/evidence/T-5140/visual-reviewer-audit@1920-judge-t-5140-r3-2d7cff68015b.png, .context/reviews/evidence/T-5140/visual-reviewer-overrides@1024-judge-t-5140-r3-2d7cff68015b.png, .context/reviews/evidence/T-5140/visual-reviewer-overrides@1440-judge-t-5140-r3-2d7cff68015b.png, .context/reviews/evidence/T-5140/visual-reviewer-overrides@1920-judge-t-5140-r3-2d7cff68015b.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
