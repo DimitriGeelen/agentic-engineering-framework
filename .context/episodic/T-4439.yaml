@@ -1,0 +1,112 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4439: Shared worker contract slice 1: draft the transition table and conformance-suite spec (AEF proposal to TermLink and ring20)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T09:12:49Z
+# ============================================================================
+
+task_id: T-4439
+task_name: "Shared worker contract slice 1: draft the transition table and conformance-suite spec (AEF proposal to TermLink and ring20)"
+workflow_type: specification
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-20T07:57:08Z
+completed: 2026-11-15T09:12:34Z
+duration_days: 26
+updates_count: 6
+first_commit: 2026-10-20T10:01:29+02:00
+last_commit: 2026-11-15T10:12:33+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  shared worker contract transition table + conformance spec (draft wc/0.1). TermLink review of draft v0.1 stored verbatim — structure agreed; v0.2: hub writes T4 itself, explicit --worker-binding, CC-08 reworded; measured outage figures. AEF answers to TermLink's v0.2 input (state-based session end, caller dispatch_id, operator resolve, paused outcome). shared worker contract spec v0.2 (state sweep + epoch, T6b, binding, caller-chosen id, paused outcome, CC-17..21). shared worker contract v0.2.1 — TermLink AGREE plus three fixes (T7c sweep row, deadline_dispatched default, open question 3 closed). shared worker contract v0.3 — ring20 v0.2 review answers and spec revision (external backends, per-attempt fence, last-accepted-transition state, writer credential, attested done, persisted_at bound, CC-22..CC-25). shared worker contract v0.3.1 — ring20 v0.3 check SIGN-WITH-NOTES worded in: N1 single-writer lease for external backends (CC-13/14 test it), N2 per-case pass/n/a mapping (never n/a for a §3 row), N3 channel-bound evidence alternative for T5/T7b/§6.5, N4 commission modulo <backend>: prefix, N5 confirmed exit without hand-back = handback-malformed (CC-25 aligned with CC-16), N6 T7d evidence = T7b bound evidence; hub/local unchanged. spec v0.3.2 — editorial nits from ring20 v0.3 full check (T4/§3.4 hub-only evidence, T8 for reconciler, hub-only G); no semantics change. spec v0.3.3 — TermLink agrees to v0.3.x; hub supervisor_token carrier in §3.2/§4.1, same-uid limit in §6.5, open question 6 closed for the hub (non-hub reconciler credential stays open). v0.3.3 §4.4 — writer delivers a change plus commission marker; who records the commit is a backend detail (ring20 arc-009 evidence 2). context; verification follows the spec — v0.3.3 is still the agreed text after T-4800's v0.3.4 draft
+
+# Key outcomes
+outcomes:
+  - 'docs/specs/shared-worker-contract-transitions.md exists with the 9 numbered sections (purpose/scope, record schema, transition table, attempt/nonce allocation, answer path, local backend, retention, migration, conformance cases)'
+  - 'Transition table lists from-state, to-state, writer, required evidence, CAS expected-prior and precedence, including unknown + resolution verb, lost->done upgrade and fence_reject'
+  - 'At least 11 numbered conformance cases in given/when/then form, covering every case named in the task'
+  - 'Each section names its source (reviewer / condition)'
+  - 'docs/reports/T-4439-reviews/ring20-v0.2-answers.md answers each of ring20''s 12 numbered points and the 4 part-2 security points with accept / accept-with-change / reject, reasoning and normative wording, and lists the changes that need TermLink''s re-agreement'
+  - 'Spec is at v0.3 with a "Changelog v0.2.1 -> v0.3" citing [ring20 v0.2 review §N]; points 4 (late T5 vs stale_attempt) and 5 (rank fold vs T7a) are resolved in §3 and CC-06/CC-07; new conformance cases added (CC-22 onwards)'
+  - 'Spec is at v0.3.1 with a "Changelog v0.3 → v0.3.1" citing [ring20 v0.3 check N1..N6], each entry flagged whether it alters anything TermLink agreed'
+  - 'N1: §3.2/§6.6 allow an external backend to replace `supervisor_gen` + per-write lock with an exclusive single-writer lease declared in its mapping; CC-13 and CC-14 state how they test the lease'
+  - 'N2: §6.6 requires a per-case pass / n/a mapping with reason; n/a only for an absent capability (answer channel, registry epoch, `D-<ulid>`), never for a case whose subject is a §3 transition row; §9 intro points to it'
+  - 'N3: T5 (and so T7b) evidence and §6.5 accept "or channel-bound evidence per §3.2" as an alternative, scoped to external backends'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'shared worker contract v0.3.1 — ring20 v0.3 check SIGN-WITH-NOTES worded in: N1 single-writer lease for external backends (CC-13/14 test it), N2 per-case pass/n/a mapping (never n/a for a §3 row), N3 channel-bound evidence alternative for T5/T7b/§6.5, N4 commission modulo <backend>: prefix, N5 confirmed exit without hand-back = handback-malformed (CC-25 aligned with CC-16), N6 T7d evidence = T7b bound evidence; hub/local unchanged'
+    source: git-mined
+  - description: 'shared worker contract v0.2.1 — TermLink AGREE plus three fixes (T7c sweep row, deadline_dispatched default, open question 3 closed)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4439-shared-worker-contract-slice-1-draft-the.md'
+  - 'docs/reports/T-4439-reviews/ring20-v0.2-answers.md'
+  - 'docs/reports/T-4439-reviews/termlink-v0.1.md'
+  - 'docs/reports/T-4439-reviews/termlink-v0.2-input.md'
+  - 'docs/specs/shared-worker-contract-transitions.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T10:01:29'
+    action: 'T-4439: shared worker contract transition table + conformance spec (draft wc/0.1)'
+  - time: '2026-10-20T12:58:24'
+    action: 'T-4439: TermLink review of draft v0.1 stored verbatim — structure agreed; v0.2: hub writes T4 itself, explicit --worker-binding, CC-08 reworded; measured outage figures'
+  - time: '2026-10-20T21:13:54'
+    action: 'T-4439: AEF answers to TermLink''s v0.2 input (state-based session end, caller dispatch_id, operator resolve, paused outcome)'
+  - time: '2026-10-20T21:29:39'
+    action: 'T-4439: shared worker contract spec v0.2 (state sweep + epoch, T6b, binding, caller-chosen id, paused outcome, CC-17..21)'
+  - time: '2026-10-20T22:27:03'
+    action: 'T-4439: shared worker contract v0.2.1 — TermLink AGREE plus three fixes (T7c sweep row, deadline_dispatched default, open question 3 closed)'
+  - time: '2026-10-20T22:35:22'
+    action: 'T-4439: shared worker contract v0.3 — ring20 v0.2 review answers and spec revision (external backends, per-attempt fence, last-accepted-transition state, writer credential, attested done, persisted_at bound, CC-22..CC-25)'
+  - time: '2026-10-20T23:08:49'
+    action: 'T-4439: shared worker contract v0.3.1 — ring20 v0.3 check SIGN-WITH-NOTES worded in: N1 single-writer lease for external backends (CC-13/14 test it), N2 per-case pass/n/a mapping (never n/a for a §3 row), N3 channel-bound evidence alternative for T5/T7b/§6.5, N4 commission modulo <backend>: prefix, N5 confirmed exit without hand-back = handback-malformed (CC-25 aligned with CC-16), N6 T7d evidence = T7b bound evidence; hub/local unchanged'
+  - time: '2026-10-20T23:44:50'
+    action: 'T-4439: spec v0.3.2 — editorial nits from ring20 v0.3 full check (T4/§3.4 hub-only evidence, T8 for reconciler, hub-only G); no semantics change'
+  - time: '2026-10-20T23:48:39'
+    action: 'T-4439: spec v0.3.3 — TermLink agrees to v0.3.x; hub supervisor_token carrier in §3.2/§4.1, same-uid limit in §6.5, open question 6 closed for the hub (non-hub reconciler credential stays open)'
+  - time: '2026-10-20T23:50:58'
+    action: 'T-4439: v0.3.3 §4.4 — writer delivers a change plus commission marker; who records the commit is a backend detail (ring20 arc-009 evidence 2)'
+  - time: '2026-11-15T10:12:33'
+    action: 'T-4439: context; verification follows the spec — v0.3.3 is still the agreed text after T-4800''s v0.3.4 draft'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 11 commit(s), 37515 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 37515
+  commits: 12
+  files_changed: 8
+  lines_added: 1709
+  lines_removed: 148
+  footprint_refreshed_at: '2026-11-15T09:13:01Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4439-shared-worker-contract-slice-1-draft-the.md
+generated_by: context-agent-hybrid

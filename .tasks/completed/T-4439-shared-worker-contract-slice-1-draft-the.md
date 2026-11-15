@@ -23,10 +23,10 @@ description: >
   hub partition/restart, parent-session loss, answer delivery + ack to a running worker).
   Output: the spec doc, sent to termlink and ring20 for agreement.
 
-status: started-work
+status: work-completed
 workflow_type: specification
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -57,8 +57,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-20T07:57:08Z
-last_update: 2026-11-15T09:11:49Z
-date_finished:
+last_update: 2026-11-15T09:12:34Z
+date_finished: 2026-11-15T09:12:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -505,3 +505,16 @@ grep -qE 'n/a.*never.*§3' docs/specs/shared-worker-contract-transitions.md
 
 ### 2026-10-20 — spec revised v0.1 → v0.2 [agent]
 - **Action:** docs/specs/shared-worker-contract-transitions.md bumped to v0.2 with changelog; folded TermLink v0.1 review + AEF v0.2 answers (state sweep + registry_epoch, T6b, lost-seen-alive, worker binding, caller-chosen id/id_taken, T7d hub-host CLI, fifth outcome paused, CC-08 reworded, CC-17..CC-21); open questions 1 and 5 closed.
+
+### 2026-11-15T09:12:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1996b33c
+- **Timestamp:** 2026-11-15T09:12:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
