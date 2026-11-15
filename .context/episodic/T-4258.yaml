@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4258: init/install neither start nor mention the sidecar watcher that doctor requires (R14).
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T08:25:10Z
+# ============================================================================
+
+task_id: T-4258
+task_name: "init/install neither start nor mention the sidecar watcher that doctor requires (R14)."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T15:25:44Z
+completed: 2026-11-15T08:24:39Z
+duration_days: 29
+updates_count: 3
+first_commit: 2026-10-21T22:56:40+02:00
+last_commit: 2026-10-21T23:16:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  doctor/audit report INFO, not the R14 WARN, for an absent sidecar watcher on a fresh init whose SessionStart sidecar-autostart hook has not fired yet; regression bats. close
+
+# Key outcomes
+outcomes:
+  - '`lib/sidecar-audit.sh` has `fw_sidecar_watcher_awaiting_first_session <root>`: rc 0 only when no session has run the SessionStart `sidecar-autostart` hook here (no `.context/sidecar/watcher/autostart.log`) and the sidecar was never enabled (no `enabled.json`)'
+  - '`fw doctor` and `fw audit` grade an absent watcher (wake not `none`) as INFO "starts at the first agent session" while that helper says so, and keep the R14 WARN once a session has run; the not-live and nothing-wakes FAILs are unchanged'
+  - 'Regression bats `tests/unit/t4258_sidecar_first_session.bats` fails before the fix and passes after, incl. the control leg (autostart.log present → still WARN)'
+  - '`tests/unit/upgrade_fresh_machine_simulation.bats` stays green; vendored copies synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/sidecar-audit.sh'
+  - '.context/episodic/T-4258.yaml'
+  - '.tasks/active/T-4258-initinstall-neither-start-nor-mention-th.md'
+  - '.tasks/completed/T-4258-initinstall-neither-start-nor-mention-th.md'
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - 'lib/sidecar-audit.sh'
+  - 'tests/unit/t4258_sidecar_first_session.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-21T22:56:40'
+    action: 'T-4258: doctor/audit report INFO, not the R14 WARN, for an absent sidecar watcher on a fresh init whose SessionStart sidecar-autostart hook has not fired yet; regression bats'
+  - time: '2026-10-21T23:16:50'
+    action: 'T-4258: close'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 41338 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 41338
+  commits: 3
+  files_changed: 11
+  lines_added: 378
+  lines_removed: 15
+  footprint_refreshed_at: '2026-11-15T08:25:16Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4258-initinstall-neither-start-nor-mention-th.md
+generated_by: context-agent-hybrid
