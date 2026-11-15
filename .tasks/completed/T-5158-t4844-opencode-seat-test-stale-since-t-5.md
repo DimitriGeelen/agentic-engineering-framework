@@ -4,10 +4,10 @@ name: "t4844 opencode seat test stale since T-5008: expects config with only the
 description: >
   t4844 opencode seat test stale since T-5008: expects config with only the seat-tmp allowance, now also carries the kill-by-name bash denials
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T20:48:39Z
-last_update: 2026-11-15T20:48:39Z
-date_finished: null
+last_update: 2026-11-15T20:49:54Z
+date_finished: 2026-11-15T20:49:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -362,3 +362,16 @@ python3 -m pytest -q -p no:cacheprovider tests/unit/t4844_opencode_seat_tmp_test
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5158-t4844-opencode-seat-test-stale-since-t-5.md
 - **Context:** Initial task creation
+
+### 2026-11-15T20:49:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-19377119
+- **Timestamp:** 2026-11-15T20:50:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
