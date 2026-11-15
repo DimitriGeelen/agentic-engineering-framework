@@ -103,9 +103,12 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] a GitHub ruleset on `refs/heads/bleeding-edge` requires a pull request and the status checks "PR checks" and "E2E Tests (Tier A)"; repository admins are the only bypass actor; ruleset 27125484 (deletion, force push) is unchanged
-- [ ] read back through the API, the new ruleset shows exactly those rules and that bypass, enforcement active
-- [ ] a direct push to `bleeding-edge` by the agents still succeeds after the change
+- [x] a GitHub ruleset on `refs/heads/bleeding-edge` requires a pull request and the status checks "PR checks" and "E2E Tests (Tier A)"; repository admins are the only bypass actor; ruleset 27125484 (deletion, force push) is unchanged
+      — ruleset 27324639 created 2026-11-15 through the API (operator-delegated). 27125484 reads back "active deletion,non_fast_forward", unchanged.
+- [x] read back through the API, the new ruleset shows exactly those rules and that bypass, enforcement active
+      — enforcement active; target `refs/heads/bleeding-edge`; rules `pull_request` (0 approvals) and `required_status_checks` ["PR checks", "E2E Tests (Tier A)"], GitHub Actions app 15368; bypass RepositoryRole 5 (admin), mode always.
+- [x] a direct push to `bleeding-edge` by the agents still succeeds after the change
+      — push be9faa02d..6c3093dad accepted; GitHub logs it as "Bypassed rule violations for refs/heads/bleeding-edge", so every direct push is now a recorded bypass.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,6 +294,9 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+gh api repos/DimitriGeelen/agentic-engineering-framework/rulesets/27324639 --jq '.enforcement + " " + (.rules|map(.type)|sort|join(","))' | grep -qx "active pull_request,required_status_checks"
+gh api repos/DimitriGeelen/agentic-engineering-framework/rulesets/27324639 --jq '[.rules[]|select(.type=="required_status_checks")|.parameters.required_status_checks[].context]|sort|join(",")' | grep -qx "E2E Tests (Tier A),PR checks"
+gh api repos/DimitriGeelen/agentic-engineering-framework/rulesets/27125484 --jq '.enforcement + " " + (.rules|map(.type)|sort|join(","))' | grep -qx "active deletion,non_fast_forward"
 
 ## RCA
 
