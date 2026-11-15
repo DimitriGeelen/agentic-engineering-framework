@@ -349,6 +349,27 @@ python3 -c "import ast;[ast.parse(open(f).read()) for f in ('web/embeddings.py',
 bin/fw vendor self --check
 bin/fw watchtower current
 
+## Visual Verification
+
+Shots: `.context/visual/T-3786/{search,search-results,ask}@{1024,1440,1920}.png` (`fw ux shots T-3786 search=… search-results=…?q=vector+index ask=…?mode=ask`, 2026-11-15, Watchtower pid 1728346, current). Added for the independent reviewer pass, which found no visual evidence.
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| search | search box, modes, topic cloud | ok | ok | ok | |
+| search-results | result list for "vector index" | ok | ok | ok | 20 results, "15293 docs indexed" |
+| ask | Ask AI panel, model picker, input | ok | ok | ok | |
+
+**The review criterion's steps, walked in a browser** (Playwright, 1440 px; `.context/visual/T-3786/walk-{1-search,2-ask}.png`, data in `walk.json`):
+
+- search "vector index": 20 results (hybrid) in 5.3 s, T-3786 itself among them; the page reports "15293 docs indexed, 923991 chunks"
+- Ask AI "what is T-3786 about?": an answer streams after 31.5 s, with "Sources (10)"; nothing on the page mentions a rebuild
+- the live index `.context/working/fw-vec-index.db` before and after both steps: 6,107,398,144 bytes and the same modification time, so the page neither rebuilt nor replaced it
+- page errors: none
+
+Read before commit: `walk-1-search.png` (results) and `walk-2-ask.png` (the streamed answer). The direct stream endpoint (`/search/ask?q=…`) also answers: retrieval, then "Found 10 relevant sources", then streamed tokens from `qwen3:14b`.
+
+Seen but outside this task: the Ask AI panel's model picker defaulted to `dengcao/Qwen3-Reranker-0.6B`, a reranker rather than a chat model, so its answer was poor ("none of the sources mention it directly"). That is answer quality, not index safety; filed separately.
+
 ## RCA
 
 **Symptom:** 2026-10-04 01:50 — the live index (`.context/working/fw-vec-index.db`, 2.5 GB, 11,766 docs at 22:20) was 45 KB; the health check reported 0 documents at 00:12; the 00:20 hourly job started a from-scratch full rebuild (hours).
