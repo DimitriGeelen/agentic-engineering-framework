@@ -1892,17 +1892,45 @@ def _compute_readiness(task_id: str, body: str, root: Path, path: Path | None,
 # review ledger moves _readiness_stamp and so invalidates every awaiting task at once; the
 # board's next request recomputed them all inline (9-22 s, independent reviewer on T-5136).
 _READINESS_REFRESH_PENDING: dict[str, str] = {}   # task-file path -> task id
+# Tasks the newest ledger rows name: a just-recorded verdict's task is refreshed first, so
+# it turns ready within seconds instead of after the whole queue (independent reviewer on
+# T-5147: 390 tasks, 99.6 s under load).
+_READINESS_REFRESH_FIRST: dict[str, str] = {}
 _READINESS_REFRESH_LOCK = threading.Lock()
 _READINESS_REFRESH_THREAD: dict = {"t": None}
+_RECENT_LEDGER_IDS: dict = {"stamp": None, "ids": frozenset()}
+_LEDGER_TAIL_BYTES = 65536
+_TASK_ID_RE = re_mod.compile(r'"(T-\d+)"')
+
+
+def _recent_ledger_task_ids(root: Path, stamp: tuple) -> frozenset:
+    """Task ids named in the newest rows of the review ledgers (their last 64 KB), once
+    per ledger stamp. Cheap: only the file tails are read."""
+    if _RECENT_LEDGER_IDS["stamp"] == stamp:
+        return _RECENT_LEDGER_IDS["ids"]
+    ids: set = set()
+    try:
+        for f in (root / ".context" / "reviews").glob("*.jsonl"):
+            try:
+                with open(f, "rb") as fh:
+                    fh.seek(max(0, f.stat().st_size - _LEDGER_TAIL_BYTES))
+                    ids.update(_TASK_ID_RE.findall(fh.read().decode("utf-8", "replace")))
+            except OSError:
+                continue
+    except OSError:
+        pass
+    _RECENT_LEDGER_IDS.update(stamp=stamp, ids=frozenset(ids))
+    return _RECENT_LEDGER_IDS["ids"]
 
 
 def _readiness_refresh_worker() -> None:
     while True:
         with _READINESS_REFRESH_LOCK:
-            if not _READINESS_REFRESH_PENDING:
+            queue = _READINESS_REFRESH_FIRST or _READINESS_REFRESH_PENDING
+            if not queue:
                 _READINESS_REFRESH_THREAD["t"] = None
                 return
-            path, task_id = _READINESS_REFRESH_PENDING.popitem()
+            path, task_id = queue.popitem()
         try:
             review_readiness(task_id, "", "", path)   # exact path: recomputes and stores
         except Exception:  # a failed refresh leaves the stale entry; the next exact call recomputes
@@ -1910,8 +1938,13 @@ def _readiness_refresh_worker() -> None:
 
 
 def _schedule_readiness_refresh(task_id: str, path: Path) -> None:
+    first = task_id in _recent_ledger_task_ids(Path(PROJECT_ROOT), _readiness_stamp(Path(PROJECT_ROOT)))
     with _READINESS_REFRESH_LOCK:
-        _READINESS_REFRESH_PENDING[str(path)] = task_id
+        if first:
+            _READINESS_REFRESH_PENDING.pop(str(path), None)
+            _READINESS_REFRESH_FIRST[str(path)] = task_id
+        elif str(path) not in _READINESS_REFRESH_FIRST:
+            _READINESS_REFRESH_PENDING[str(path)] = task_id
         if _READINESS_REFRESH_THREAD["t"] is None:
             t = threading.Thread(target=_readiness_refresh_worker,
                                  name="readiness-refresh", daemon=True)
