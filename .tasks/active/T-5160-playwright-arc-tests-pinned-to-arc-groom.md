@@ -2,12 +2,16 @@
 id: T-5160
 name: "Playwright arc tests pinned to arc-grooming, closed since (19 reds)"
 description: >
-  test_arc_close, test_arc_close_recommendation_panel, test_arc_review_route, test_approvals_arc_closure_section, test_landing_arc_cards, test_arcs_kanban and test_arc_badge assume arc-grooming is in progress; it is closed. test_arc_badge list view also assumes all rows on one page (T-5136 pages at 200). Pick an arc by state at run time or use a fixture (T-3326). Found in T-5153 triage: fail locally and on CI.
+  test_arc_close, test_arc_close_recommendation_panel, test_arc_review_route, test_approvals_arc_closure_section,
+  test_landing_arc_cards, test_arcs_kanban and test_arc_badge assume arc-grooming
+  is in progress; it is closed. test_arc_badge list view also assumes all rows on
+  one page (T-5136 pages at 200). Pick an arc by state at run time or use a fixture
+  (T-3326). Found in T-5153 triage: fail locally and on CI.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [playwright, ci]
 components: []
 related_tasks: [T-5153]
@@ -39,8 +43,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T22:29:09Z
-last_update: 2026-11-15T22:29:09Z
-date_finished: null
+last_update: '2026-11-15T22:29:58Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +55,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-15T22:29:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5160: Playwright arc tests pinned to arc-grooming, closed since (19 reds)
@@ -70,9 +91,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] no test in the seven files names `arc-grooming` (or any other specific arc id) as the arc under test; arcs are chosen by state at run time through one shared helper
+- [x] no test in the seven files names `arc-grooming` (or any other specific arc id) as the arc under test; arcs are chosen by state at run time through one shared helper
 - [ ] the 19 previously failing tests pass locally; any skip names the missing state
-- [ ] no product code changed (tests/playwright only), unless a test exposed a real page bug, which is then filed as its own task instead of fixed here
+- [x] no product code changed (tests/playwright only), unless a test exposed a real page bug, which is then filed as its own task instead of fixed here
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -353,7 +374,22 @@ timeout 1200 python3 -m pytest -q -p no:cacheprovider tests/playwright/test_arc_
 
 ## Updates
 
+### 2026-11-15 — tests rewritten to pick arcs by state [t5160-arc-tests]
+- **Baseline:** the seven files had 21 reds locally, not 19 (20 passed).
+- **Helper:** `tests/playwright/arc_corpus.py` `pick_arc(status, min_members, min_slug_members, headline_mechanic, close_recommendation, numeric_id, most_members)` reads `.context/arcs/*.yaml` and task frontmatter of the repo under test; it imports nothing from `web/` or `lib/` and skips with the missing state named.
+- **After:** 32 passed, 7 skipped, 2 failed. Criterion 2 is left unticked because of the 2 failures and the 7 skips below.
+- **7 skips, one reason:** "no arc in this corpus with status in-progress, a CLOSE/KEEP-OPEN recommendation in its close-out or anchor task". Since T-4320 the close and review pages show a recommendation panel only for a CLOSE or KEEP-OPEN verdict; every arc here holds GO or DEFER (or none), so no panel exists to test (5 in test_arc_close_recommendation_panel.py, 2 in test_arc_review_route.py). They run again as soon as one arc gets a close recommendation.
+- **Still red, not the pinned arc (left as instructed):** `test_arcs_kanban.py::test_arcs_link_lives_under_work_nav_group`. The nav `<summary>` now holds an icon and a `<span class="nav-group-label">Work</span>` (web/templates/base.html:570). Playwright's `:text-is('Work')` matches only the smallest element with that text, which is now the span, so `summary:text-is('Work')` finds 0. The Work group and its /arcs link are on the page; the selector is out of date (`summary:has-text('Work')` or `summary[title='Work']` would match).
+- **Still red, not the pinned arc (left as instructed):** `test_arc_review_route.py::test_arc_review_no_form_fields`. `page.locator("main, body").first` resolves to `<body>`, and the shell's command palette has `<input id="wt-palette-input" type="text">` (web/templates/base.html:664). The review content itself has no form field; scoping the locator to `main` would pass.
+- **Approvals cards (now green):** every Arc Closure card in the queue is BLOCKED (T-2986: no close recommendation, so no verdict and no Approve / Override link). The two tests took the first card and expected a verdict and a close link. They now check every card against the arc's state in the corpus: reviewable arc → its verdict and a close link; otherwise → BLOCKED and no close link.
+- **Landing count (now green):** the old parser paired every `arc-NNN` with every "N tasks" in the page text by position, which gave an arc another arc's count (cards are in file-name order, not id order). It now reads each card row. The page's counts were right.
+- **Possible page bug, read from code, not fixed, not yet filed:** each landing card links to `/tasks?arc=<arc-NNN>` (web/templates/index.html:322), but the filter passes only that string to `task_dict_in_arc` (web/blueprints/tasks.py:785), with no slug. An arc whose tasks are filed as `arc_id: <slug>` (e.g. orchestrator-rethink: card says 123 tasks, no task has `arc_id: arc-003`) would open an empty list. Needs a render check and its own task.
+
 ### 2026-11-15T22:29:09Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5160-playwright-arc-tests-pinned-to-arc-groom.md
 - **Context:** Initial task creation
+
+### 2026-11-15T22:29:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

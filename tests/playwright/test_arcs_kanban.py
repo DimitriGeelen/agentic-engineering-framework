@@ -46,8 +46,7 @@ def test_arcs_kanban_each_column_has_header_and_count(page, base_url):
 
 def test_arcs_kanban_in_progress_column_contains_at_least_one_arc(page, base_url):
     """In any active corpus with ongoing work, at least one arc should be
-    in the in-progress column. arc-005 (arc-grooming) is the canonical
-    example at the time of writing."""
+    in the in-progress column. No specific arc is named (T-5160)."""
     page.goto(f"{base_url}/arcs", wait_until="domcontentloaded")
     in_progress = page.locator(".kanban-column[data-state='in-progress']")
     cards = in_progress.locator(".arc-card")

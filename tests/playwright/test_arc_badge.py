@@ -14,11 +14,23 @@ asserts the badge link resolves to /arcs/<id>.
 import pytest
 from playwright.sync_api import Page
 
+from tests.playwright.arc_corpus import pick_arc
 from tests.playwright.target import TEST_URL
 
 
 def _url(path: str) -> str:
     return f"{TEST_URL}{path}"
+
+
+def _arc_list_url() -> str:
+    """List view filtered to one arc's tasks (T-5160).
+
+    Since T-5136 `/tasks?view=list` shows 200 rows a page, newest first, and
+    page 1 need not hold a single task that belongs to an arc. The `arc=`
+    filter guarantees rows that do; the arc is chosen by state at run time.
+    """
+    arc = pick_arc("in-progress", min_slug_members=1, numeric_id=True, most_members=True)
+    return _url(f"/tasks?view=list&arc={arc.slug}")
 
 
 class TestArcBadge:
@@ -28,8 +40,8 @@ class TestArcBadge:
         page.goto(_url("/tasks?view=board"))
         page.wait_for_load_state("domcontentloaded")
         badges = page.locator("article.kanban-card a.arc-badge")
-        # arc-grooming has 32+ constituent tasks, kanban shows top 10/column
-        # so we expect at least one badge across all four columns.
+        # The board shows the top cards of each column, so we expect at least
+        # one arc badge across all four columns.
         assert badges.count() > 0, "Kanban cards must show at least one arc badge"
         href = badges.first.get_attribute("href")
         assert href and href.startswith("/arcs/"), (
@@ -37,7 +49,7 @@ class TestArcBadge:
         )
 
     def test_list_view_has_arc_column_and_badges(self, page: Page):
-        page.goto(_url("/tasks?view=list"))
+        page.goto(_arc_list_url())
         page.wait_for_load_state("domcontentloaded")
         # Header
         headers = page.locator("table thead th")
@@ -48,7 +60,8 @@ class TestArcBadge:
         assert badges.count() > 0, "List view must show at least one arc badge in the Arc column"
 
     def test_arc_detail_constituent_table_has_arc_column(self, page: Page):
-        page.goto(_url("/arcs/arc-grooming"))
+        arc = pick_arc("in-progress", min_members=1)
+        page.goto(_url(f"/arcs/{arc.slug}"))
         page.wait_for_load_state("domcontentloaded")
         headers = page.locator("table thead th")
         header_texts = [headers.nth(i).inner_text().strip() for i in range(headers.count())]
@@ -60,7 +73,7 @@ class TestArcBadge:
 
     def test_arc_badge_link_navigates(self, page: Page):
         """Click the first arc badge and confirm it lands on /arcs/<id>."""
-        page.goto(_url("/tasks?view=list"))
+        page.goto(_arc_list_url())
         page.wait_for_load_state("domcontentloaded")
         first = page.locator("a.arc-badge").first
         href = first.get_attribute("href")
@@ -78,7 +91,7 @@ class TestArcBadge:
         visual mix across the page. Now the macro calls `arc_display()` and
         always renders both. Same applies to the `title=` attribute.
         """
-        page.goto(_url("/tasks?view=list"))
+        page.goto(_arc_list_url())
         page.wait_for_load_state("domcontentloaded")
         badges = page.locator("a.arc-badge")
         assert badges.count() > 0, "Need at least one badge to check dual form"
@@ -107,7 +120,7 @@ class TestArcBadge:
 
     def test_arc_badge_title_uses_dual_form(self, page: Page):
         """The accessibility title= attribute carries the full dual form."""
-        page.goto(_url("/tasks?view=list"))
+        page.goto(_arc_list_url())
         page.wait_for_load_state("domcontentloaded")
         badges = page.locator("a.arc-badge")
         assert badges.count() > 0

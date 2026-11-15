@@ -8,6 +8,7 @@ import re
 import pytest
 from playwright.sync_api import Page
 
+from tests.playwright.arc_corpus import pick_arc
 from tests.playwright.target import TEST_URL
 
 
@@ -15,11 +16,17 @@ def _url(path: str) -> str:
     return f"{TEST_URL}{path}"
 
 
+def _open_arc() -> str:
+    """Slug of an arc whose close form is available (T-5160: chosen by state;
+    a closed or abandoned arc redirects /close to its detail page)."""
+    return pick_arc("in-progress", headline_mechanic=True).slug
+
+
 class TestArcCloseSurface:
     """GET /arcs/<slug>/close renders the full close-review form."""
 
     def test_page_loads(self, page: Page):
-        resp = page.goto(_url("/arcs/arc-grooming/close"))
+        resp = page.goto(_url(f"/arcs/{_open_arc()}/close"))
         assert resp.status == 200
 
     def test_unknown_arc_404s(self, page: Page):
@@ -27,7 +34,7 @@ class TestArcCloseSurface:
         assert resp.status == 404
 
     def test_form_has_demo_mode_radios(self, page: Page):
-        page.goto(_url("/arcs/arc-grooming/close"))
+        page.goto(_url(f"/arcs/{_open_arc()}/close"))
         page.wait_for_load_state("domcontentloaded")
         radios = page.locator('input[name="demo_mode"]')
         assert radios.count() == 3, "Form must have 3 demo mode radios (path/url/none)"
@@ -35,7 +42,7 @@ class TestArcCloseSurface:
         assert values == ["none", "path", "url"]
 
     def test_form_has_required_fields(self, page: Page):
-        page.goto(_url("/arcs/arc-grooming/close"))
+        page.goto(_url(f"/arcs/{_open_arc()}/close"))
         page.wait_for_load_state("domcontentloaded")
         assert page.locator('[name="demo_value"]').count() == 1
         assert page.locator('[name="decision"]').count() == 1
@@ -43,7 +50,7 @@ class TestArcCloseSurface:
         assert page.locator('button[type="submit"]').count() == 1
 
     def test_headline_mechanic_visible(self, page: Page):
-        page.goto(_url("/arcs/arc-grooming/close"))
+        page.goto(_url(f"/arcs/{_open_arc()}/close"))
         page.wait_for_load_state("domcontentloaded")
         content = page.content()
         assert "headline-mechanic-box" in content or "headline_mechanic" in content.lower(), (
@@ -51,7 +58,7 @@ class TestArcCloseSurface:
         )
 
     def test_acd_three_question_check_visible(self, page: Page):
-        page.goto(_url("/arcs/arc-grooming/close"))
+        page.goto(_url(f"/arcs/{_open_arc()}/close"))
         page.wait_for_load_state("domcontentloaded")
         content = page.content().lower()
         assert "three-question check" in content, "§ACD three-question prompt must be visible"
@@ -63,7 +70,7 @@ class TestArcClosePost:
     """POST /arcs/<slug>/close submits via shell to fw arc close --from-watchtower."""
 
     def test_invalid_demo_path_shows_error_in_form(self, page: Page):
-        page.goto(_url("/arcs/arc-grooming/close"))
+        page.goto(_url(f"/arcs/{_open_arc()}/close"))
         page.wait_for_load_state("domcontentloaded")
         page.locator('input[name="demo_mode"][value="path"]').check()
         page.fill('[name="demo_value"]', '/tmp/does-not-exist-xyz-playwright.md')
@@ -79,7 +86,7 @@ class TestArcClosePost:
         assert "/close" in page.url
 
     def test_demo_none_without_justification_rejected(self, page: Page):
-        page.goto(_url("/arcs/arc-grooming/close"))
+        page.goto(_url(f"/arcs/{_open_arc()}/close"))
         page.wait_for_load_state("domcontentloaded")
         page.locator('input[name="demo_mode"][value="none"]').check()
         # short justification (<30 chars)
@@ -99,7 +106,8 @@ class TestArcCloseFromDetailLinkage:
     """The close surface should be reachable from /arcs and /arcs/<slug>."""
 
     def test_back_link_to_detail(self, page: Page):
-        page.goto(_url("/arcs/arc-grooming/close"))
+        slug = _open_arc()
+        page.goto(_url(f"/arcs/{slug}/close"))
         page.wait_for_load_state("domcontentloaded")
-        back = page.locator('a[href="/arcs/arc-grooming"]')
+        back = page.locator(f'a[href="/arcs/{slug}"]')
         assert back.count() >= 1, "Close page must have a back-link to the arc detail"

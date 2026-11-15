@@ -8,25 +8,31 @@ DOM-content + behavioural assertions per T-1575.
 
 from playwright.sync_api import expect
 
+from tests.playwright.arc_corpus import pick_arc
+
 
 def test_arc_review_renders_for_in_progress_arc(page, base_url):
-    """value-prioritisation (anchor T-1915 with rec) must render the rec panel."""
-    page.goto(f"{base_url}/arcs/value-prioritisation/review", wait_until="domcontentloaded")
+    """An open arc with a close recommendation (CLOSE / KEEP-OPEN, T-4320)
+    must render the rec panel."""
+    arc = pick_arc("in-progress", close_recommendation=True)
+    page.goto(f"{base_url}/arcs/{arc.slug}/review", wait_until="domcontentloaded")
     expect(page.locator(".arc-review-hdr")).to_be_visible()
     expect(page.locator(".anchor-rec")).to_be_visible()
 
 
 def test_arc_review_panel_links_to_anchor_task(page, base_url):
-    """Recommendation panel must hyperlink the anchor task (T-1915)."""
-    page.goto(f"{base_url}/arcs/value-prioritisation/review", wait_until="domcontentloaded")
-    anchor_link = page.locator('.anchor-rec a[href="/tasks/T-1915"]').first
+    """Recommendation panel must hyperlink the task it was read from."""
+    arc = pick_arc("in-progress", close_recommendation=True)
+    page.goto(f"{base_url}/arcs/{arc.slug}/review", wait_until="domcontentloaded")
+    anchor_link = page.locator(f'.anchor-rec a[href="/tasks/{arc.close_rec_task}"]').first
     expect(anchor_link).to_be_visible()
 
 
 def test_arc_review_approve_override_cta_to_close(page, base_url):
     """In-progress arc: 'Approve / Override' CTA must link to /close."""
-    page.goto(f"{base_url}/arcs/value-prioritisation/review", wait_until="domcontentloaded")
-    close_cta = page.locator('a[href="/arcs/value-prioritisation/close"]').first
+    arc = pick_arc("in-progress")
+    page.goto(f"{base_url}/arcs/{arc.slug}/review", wait_until="domcontentloaded")
+    close_cta = page.locator(f'a[href="/arcs/{arc.slug}/close"]').first
     expect(close_cta).to_be_visible()
     text = (close_cta.text_content() or "").strip()
     assert "Approve" in text or "Override" in text, (
@@ -36,7 +42,8 @@ def test_arc_review_approve_override_cta_to_close(page, base_url):
 
 def test_arc_review_no_form_fields(page, base_url):
     """Read-only — no <form>, no <input>, no <textarea> on the page."""
-    page.goto(f"{base_url}/arcs/value-prioritisation/review", wait_until="domcontentloaded")
+    arc = pick_arc("in-progress")
+    page.goto(f"{base_url}/arcs/{arc.slug}/review", wait_until="domcontentloaded")
     main = page.locator("main, body").first
     assert main.locator('form').count() == 0, "review page must not contain any <form>"
     # Some shared shell elements might contain CSRF meta tags, so we don't ban <input>
@@ -51,9 +58,10 @@ def test_arc_review_no_form_fields(page, base_url):
 
 
 def test_arc_review_renders_for_closed_arc_without_redirect(page, base_url):
-    """dispatch-safety is closed — page must still render (no 302), with closed notice."""
+    """A closed arc's page must still render (no 302), with closed notice."""
+    arc = pick_arc("closed")
     response = page.goto(
-        f"{base_url}/arcs/dispatch-safety/review",
+        f"{base_url}/arcs/{arc.slug}/review",
         wait_until="domcontentloaded",
     )
     assert response is not None and response.status == 200, (
@@ -81,10 +89,11 @@ def test_arc_review_headline_mechanic_box_visible_with_text(page, base_url):
     refactor accidentally drops the box or detaches it from the headline_mechanic
     field, this test fails before the human report does.
 
-    arc-grooming has a populated headline_mechanic (verified at filing). If that arc
-    is renamed or archived, switch the test target to any other in-progress arc.
+    T-5160: the arc is any in-progress arc with a populated headline_mechanic,
+    chosen at run time.
     """
-    page.goto(f"{base_url}/arcs/arc-grooming/review", wait_until="domcontentloaded")
+    arc = pick_arc("in-progress", headline_mechanic=True)
+    page.goto(f"{base_url}/arcs/{arc.slug}/review", wait_until="domcontentloaded")
     box = page.locator(".headline-mechanic-box")
     expect(box).to_be_visible()
     text = (box.text_content() or "").strip()
