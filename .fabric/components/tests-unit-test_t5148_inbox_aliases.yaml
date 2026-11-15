@@ -1,0 +1,21 @@
+id: tests/unit/test_t5148_inbox_aliases.py
+name: test_t5148_inbox_aliases
+type: script
+subsystem: tests
+location: tests/unit/test_t5148_inbox_aliases.py
+tags: []
+
+purpose: "T-5148 (010 T-3798): a project declares inbox aliases; every inbox reader follows."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-15
+created_by: unknown

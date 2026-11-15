@@ -109,7 +109,33 @@ def read_topics(agent: str | None = None) -> list[str]:
     the widening is a one-line change in one place is the property T-3462 built
     this function to have, now collected.
     """
-    return [inbox_topic(agent)] + v9_topics(agent) + legacy_topics(agent)
+    return [inbox_topic(agent)] + v9_topics(agent) + legacy_topics(agent) + alias_topics(agent)
+
+
+def alias_topics(agent: str | None = None) -> list[str]:
+    """T-5148 (010 T-3798): `inbox:<own hub>/<alias>` for each SIDECAR_INBOX_ALIASES name.
+
+    READ-SIDE ONLY. A project's peers addressed it by a nickname (`--to termlink` for
+    010-termlink: 54 consults sat in inbox:<hub>/termlink, read by nobody). The project
+    declares the names it also answers to; every reader follows through read_topics().
+    Only this project's own reader is widened, never a sub-agent's or another agent's.
+    """
+    if agent is not None and agent != circuit.project_id():
+        return []
+    if agent is None and circuit.circuit_id("agent") != circuit.circuit_id("project"):
+        return []   # a sub-agent session reads its own circuit, not the project's aliases
+    from . import identity  # local import: identity imports receiver, which imports us
+    raw = identity._config("SIDECAR_INBOX_ALIASES", "")
+    hub, own = circuit.hub_id(), circuit.project_id()
+    out: list[str] = []
+    for name in re.split(r"[,\s]+", raw or ""):
+        name = name.strip().strip("'\"")
+        if not name or "/" in name or name == own:
+            continue
+        t = circuit.topic_for_circuit(f"{hub}/{name}")
+        if t not in out:
+            out.append(t)
+    return out
 
 
 def _state_path():
