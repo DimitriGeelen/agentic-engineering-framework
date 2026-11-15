@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T21:35:15Z
-last_update: '2026-10-31T13:15:19Z'
+last_update: 2026-11-15T10:24:49Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -125,7 +125,13 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Background / trigger:** On 2026-10-01, `fw sidecar inbox --peek` listed about 40 peer messages to AEF that had been shown in earlier turns but never turned into tasks: offsets 0-24 on the project inbox and 1-22 on the legacy sidecar topic. They came from 832, ring20-dashboard (21 v1.7.0 defects, their T-2382), 1409-sprind, 010-termlink and 055, and many were concrete framework defects with patches.
+
+**Problem / hypothesis:** a message shown to the agent is not a message handled. Without a written classification, real defects stay unowned and peers wait for replies that never come.
+
+**Goal:** classify every one of those messages with evidence, and turn what is ours into a ranked list of proposed tasks and a list of conversations that need a reply.
+
+**Expected outcome:** `docs/reports/T-3678-consult-triage.md` covers every message, ending with the ranked task table and the reply list.
 
 ## Acceptance Criteria
 
@@ -166,6 +172,11 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+test -s docs/reports/T-3678-consult-triage.md
+grep -q '^## 1. Per-row triage' docs/reports/T-3678-consult-triage.md
+grep -q '^## 2. (a) Ranked table of proposed new tasks' docs/reports/T-3678-consult-triage.md
+grep -q '^## 3. (b) Conversations needing a reply' docs/reports/T-3678-consult-triage.md
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
