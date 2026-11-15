@@ -5,12 +5,12 @@ description: >
   Classify each red file stale-test vs code-regression; fix stale tests (test files
   only); file one task per real regression.
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: [tests, OBS-587]
-components: []
+components: [tests/unit/audit_arc_progress_arc_id.bats, tests/unit/audit_corpus_lint_findings.bats, tests/unit/audit_seed_corpus_refs.bats, tests/unit/audit_stale_arc_warning.bats, tests/unit/context_learning.bats, tests/unit/fabric_watch_pattern_fitness.bats, tests/unit/gaps_close.bats, tests/unit/hook_enable_absolute_path.bats, tests/unit/init_git_identity_blocker.bats, tests/unit/learning_application_birth.bats, tests/unit/lib_config.bats, tests/unit/lib_costs.bats, tests/unit/lib_inception.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -39,8 +39,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T21:18:23Z
-last_update: '2026-10-31T13:15:16Z'
-date_finished:
+last_update: 2026-11-15T07:58:35Z
+date_finished: 2026-11-15T07:58:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -387,3 +387,16 @@ OBS-587, half A. T-3601 found these files red on HEAD, re-run in isolation: appr
 
 ### 2026-09-30T21:21:21Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-15T07:58:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cd7cf05c
+- **Timestamp:** 2026-11-15T07:58:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

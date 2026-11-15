@@ -1,0 +1,144 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3603: OBS-587 triage A: red unit suites approvals..lib_review (25 bats files)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T07:58:50Z
+# ============================================================================
+
+task_id: T-3603
+task_name: "OBS-587 triage A: red unit suites approvals..lib_review (25 bats files)"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-30T21:18:23Z
+completed: 2026-11-15T07:58:35Z
+duration_days: 46
+updates_count: 3
+first_commit: 2026-09-30T23:22:33+02:00
+last_commit: 2026-10-01T00:48:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  OBS-587 triage split into T-3603/T-3604 (classify stale vs regression; fix stale tests; one task per regression); shared prompt. audit_arc_progress_arc_id.bats — stale since 9e4bbebf2 (T-3507 delegated arc membership to lib/arc_membership.py). audit_corpus_lint_findings.bats, audit_seed_corpus_refs.bats — stale since 92deaef0c (T-3105 pass_over wording; empty set WARNs). audit_inception_recommendation.bats tests 8-9 — stale since 7a24ba133 (T-3549 handoff-ready predicate refuses first); test 10 is a regression, filed separately. audit_stale_arc_warning.bats — stale since 92deaef0c (T-3105 pass_over wording). bvp_auto_promote.bats — stale since c3165673a (live auto-promote log non-empty; assert baseline-relative count). context_learning.bats — stale since 155aa703b (T-2902 allocator sourced lazily from FRAMEWORK_ROOT). fabric_watch_pattern_fitness.bats — stale since 92deaef0c (T-3105 pass_over wording). gaps_close.bats — stale since 67893ed78 (T-2391 inherited PROJECT_ROOT must look like a project). hook_enable_absolute_path.bats — stale since 74688119d (T-2709 portable ${CLAUDE_PROJECT_DIR} prefix). lib_config.bats — stale since 8193dfaa8 (T-3455 repo .framework.yaml sets CONTEXT_WINDOW; default tests made hermetic). learning_application_birth.bats — stale since 155aa703b (T-2902 comment prose matched; also ./-prefix-independent for ugrep). init_git_identity_blocker.bats — environment, not stale: unset GIT_AUTHOR/COMMITTER env and ceiling off the stray /.git. costs_union_leg.bats, init_head_bootstrap.bats — environment, not stale: fence git discovery off the stray /.git. lib_costs.bats — stale since b2ad63d4b (T-2425 _costs_jsonl_dir emits existing dirs only). lib_inception.bats — stale since 5777bb52d (T-2964 target validated before the sovereignty gate). triage report — 24 files: 12 stale fixed, 4 env hardened, 7 regressions filed (T-3611..T-3617; T-3613 dup of T-3609). tick Agent ACs (verdicts recorded, stale fixed, regressions filed, tests/ only)
+
+# Key outcomes
+outcomes:
+  - 'Every file in the list has a verdict in `docs/reports/T-3603-triage.md`: its failing tests, the commit that broke them, and whether it is a STALE TEST (the code changed on purpose) or a CODE REGRESSION, with the evidence for each'
+  - 'Every stale test is fixed by editing test files only; each fixed file passes in isolation with no skips'
+  - 'Every code regression has its own bug task (one bug, one task), created with `fw task create`, with the evidence and the breaking commit, and is listed in the report. None is fixed here'
+  - 'No source file outside `tests/` is modified by this task'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'tick Agent ACs (verdicts recorded, stale fixed, regressions filed, tests/ only)'
+    source: git-mined
+  - description: 'triage report — 24 files: 12 stale fixed, 4 env hardened, 7 regressions filed (T-3611..T-3617; T-3613 dup of T-3609)'
+    source: git-mined
+  - description: 'learning_application_birth.bats — stale since 155aa703b (T-2902 comment prose matched; also ./-prefix-independent for ugrep)'
+    source: git-mined
+  - description: 'hook_enable_absolute_path.bats — stale since 74688119d (T-2709 portable ${CLAUDE_PROJECT_DIR} prefix)'
+    source: git-mined
+  - description: 'OBS-587 triage split into T-3603/T-3604 (classify stale vs regression; fix stale tests; one task per regression); shared prompt'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3603-obs-587-triage-a-red-unit-suites-approva.md'
+  - '.tasks/active/T-3604-obs-587-triage-b-red-unit-suites-noroott.md'
+  - '.tasks/active/T-3609-fwallowemptyrecommendation-no-longer-byp.md'
+  - '.tasks/active/T-3613-fwallowemptyrecommendation1-no-longer-ad.md'
+  - 'docs/reports/OBS-587-triage-prompt.md'
+  - 'docs/reports/T-3603-triage.md'
+  - 'tests/unit/audit_arc_progress_arc_id.bats'
+  - 'tests/unit/audit_corpus_lint_findings.bats'
+  - 'tests/unit/audit_inception_recommendation.bats'
+  - 'tests/unit/audit_seed_corpus_refs.bats'
+  - 'tests/unit/audit_stale_arc_warning.bats'
+  - 'tests/unit/bvp_auto_promote.bats'
+  - 'tests/unit/context_learning.bats'
+  - 'tests/unit/costs_union_leg.bats'
+  - 'tests/unit/fabric_watch_pattern_fitness.bats'
+  - 'tests/unit/gaps_close.bats'
+  - 'tests/unit/hook_enable_absolute_path.bats'
+  - 'tests/unit/init_git_identity_blocker.bats'
+  - 'tests/unit/init_head_bootstrap.bats'
+  - 'tests/unit/learning_application_birth.bats'
+  - 'tests/unit/lib_config.bats'
+  - 'tests/unit/lib_costs.bats'
+  - 'tests/unit/lib_inception.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-30T23:22:33'
+    action: 'T-3603: OBS-587 triage split into T-3603/T-3604 (classify stale vs regression; fix stale tests; one task per regression); shared prompt'
+  - time: '2026-09-30T23:31:06'
+    action: 'T-3603: audit_arc_progress_arc_id.bats — stale since 9e4bbebf2 (T-3507 delegated arc membership to lib/arc_membership.py)'
+  - time: '2026-09-30T23:33:20'
+    action: 'T-3603: audit_corpus_lint_findings.bats, audit_seed_corpus_refs.bats — stale since 92deaef0c (T-3105 pass_over wording; empty set WARNs)'
+  - time: '2026-09-30T23:34:24'
+    action: 'T-3603: audit_inception_recommendation.bats tests 8-9 — stale since 7a24ba133 (T-3549 handoff-ready predicate refuses first); test 10 is a regression, filed separately'
+  - time: '2026-09-30T23:35:40'
+    action: 'T-3603: audit_stale_arc_warning.bats — stale since 92deaef0c (T-3105 pass_over wording)'
+  - time: '2026-09-30T23:37:01'
+    action: 'T-3603: bvp_auto_promote.bats — stale since c3165673a (live auto-promote log non-empty; assert baseline-relative count)'
+  - time: '2026-09-30T23:37:35'
+    action: 'T-3603: context_learning.bats — stale since 155aa703b (T-2902 allocator sourced lazily from FRAMEWORK_ROOT)'
+  - time: '2026-09-30T23:58:00'
+    action: 'T-3603: fabric_watch_pattern_fitness.bats — stale since 92deaef0c (T-3105 pass_over wording)'
+  - time: '2026-09-30T23:59:06'
+    action: 'T-3603: gaps_close.bats — stale since 67893ed78 (T-2391 inherited PROJECT_ROOT must look like a project)'
+  - time: '2026-10-01T00:00:17'
+    action: 'T-3603: hook_enable_absolute_path.bats — stale since 74688119d (T-2709 portable ${CLAUDE_PROJECT_DIR} prefix)'
+  - time: '2026-10-01T00:01:17'
+    action: 'T-3603: lib_config.bats — stale since 8193dfaa8 (T-3455 repo .framework.yaml sets CONTEXT_WINDOW; default tests made hermetic)'
+  - time: '2026-10-01T00:02:24'
+    action: 'T-3603: learning_application_birth.bats — stale since 155aa703b (T-2902 comment prose matched; also ./-prefix-independent for ugrep)'
+  - time: '2026-10-01T00:31:03'
+    action: 'T-3603: init_git_identity_blocker.bats — environment, not stale: unset GIT_AUTHOR/COMMITTER env and ceiling off the stray /.git'
+  - time: '2026-10-01T00:34:28'
+    action: 'T-3603: costs_union_leg.bats, init_head_bootstrap.bats — environment, not stale: fence git discovery off the stray /.git'
+  - time: '2026-10-01T00:35:04'
+    action: 'T-3603: lib_costs.bats — stale since b2ad63d4b (T-2425 _costs_jsonl_dir emits existing dirs only)'
+  - time: '2026-10-01T00:35:37'
+    action: 'T-3603: lib_inception.bats — stale since 5777bb52d (T-2964 target validated before the sovereignty gate)'
+  - time: '2026-10-01T00:47:55'
+    action: 'T-3603: triage report — 24 files: 12 stale fixed, 4 env hardened, 7 regressions filed (T-3611..T-3617; T-3613 dup of T-3609)'
+  - time: '2026-10-01T00:48:09'
+    action: 'T-3603: tick Agent ACs (verdicts recorded, stale fixed, regressions filed, tests/ only)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 18 commit(s), 65440 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [tests, OBS-587]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 65440
+  commits: 19
+  files_changed: 26
+  lines_added: 1577
+  lines_removed: 46
+  footprint_refreshed_at: '2026-11-15T07:58:55Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3603-obs-587-triage-a-red-unit-suites-approva.md
+generated_by: context-agent-hybrid
