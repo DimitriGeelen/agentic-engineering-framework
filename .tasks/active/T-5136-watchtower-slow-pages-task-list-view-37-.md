@@ -313,21 +313,7 @@ bin/fw watchtower current
 
 ## Visual Verification
 
-Added 2026-11-15 for the independent reviewer pass (rung 5), which found no visual evidence. Watchtower pid 1728346 (current).
-
-**1. The review criterion's steps, walked in a browser and timed** (Playwright, 1440 px; `.context/visual/T-5136/walk-{1-list,2-next,3-filter-next,4-search}.png`, data in `walk.json`):
-
-| step | time | result |
-|------|------|--------|
-| open http://192.168.10.107:3000/tasks?view=list | 1.0 s to the first row | 200 rows, "Showing 1–200 of 5125 (page 1 of 26)"; before T-5136, 36.9 s for one 18.9 MB page |
-| Next → | 2.0 s | `?view=list&page=2`, "Showing 201–400 of 5125 (page 2 of 26)" |
-| ← Previous | 1.9 s | `?view=list&page=1`, "Showing 1–200 of 5125" |
-| status = work-completed, sort by name, then Next | 3.0 s | `?status=work-completed&sort=name&view=list&page=2`: filter and sort both kept |
-| open http://192.168.10.107:3000/search | 0.8 s (warm) | "Browse by topic: 24 topics from 1415 tagged items" |
-
-Page errors across the walk: none. Read before commit: `walk-2-next.png` (pager row: "← Previous · Showing 201–400 of 5125 (page 2 of 26) · Next →") and `walk-4-search.png` (tag cloud shown).
-
-**2. Each page at every width:** `.context/visual/T-5136/{list,list-page2,search,fabric}@{1024,1440,1920}.png` (`fw ux shots T-5136 …`).
+Shots: `.context/visual/T-5136/{list,list-page2,search,fabric}@{1024,1440,1920}.png` (`fw ux shots T-5136 …`, 2026-11-15, Watchtower pid 1728346, current). Added for the independent reviewer pass, which found no visual evidence.
 
 | state | control | 1024 | 1440 | 1920 | note |
 |-------|---------|------|------|------|------|
@@ -335,6 +321,16 @@ Page errors across the walk: none. Read before commit: `walk-2-next.png` (pager 
 | list-page2 | pager with Previous and Next | ok | ok | ok | |
 | search | search box, tag cloud, try-a-search | ok | ok | ok | |
 | fabric | subsystem overview | ok | ok | ok | page unchanged; only its card parse got faster |
+
+**The review criterion's steps, walked in a browser and timed** (Playwright, 1440 px; `.context/visual/T-5136/walk-{1-list,2-next,3-filter-next,4-search}.png`, data in `walk.json`):
+
+- open http://192.168.10.107:3000/tasks?view=list: 1.0 s to the first row; 200 rows, "Showing 1–200 of 5125 (page 1 of 26)". Before T-5136: 36.9 s for one 18.9 MB page.
+- Next →: 2.0 s; `?view=list&page=2`, "Showing 201–400 of 5125 (page 2 of 26)"
+- ← Previous: 1.9 s; `?view=list&page=1`, "Showing 1–200 of 5125"
+- status = work-completed, sort by name, then Next: 3.0 s; `?status=work-completed&sort=name&view=list&page=2`, so filter and sort are both kept
+- open http://192.168.10.107:3000/search: 0.8 s (warm); "Browse by topic: 24 topics from 1415 tagged items"
+
+Page errors across the walk: none. Read before commit: `walk-2-next.png` (pager row: "← Previous · Showing 201–400 of 5125 (page 2 of 26) · Next →") and `walk-4-search.png` (tag cloud shown).
 
 ## RCA
 
