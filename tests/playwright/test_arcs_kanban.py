@@ -82,11 +82,13 @@ def test_arcs_link_lives_under_work_nav_group(page, base_url):
     user expected it under Work. The nav <details> for 'Work' must contain
     an <a href='/arcs'>; the 'Architecture' <details> must not."""
     page.goto(f"{base_url}/arcs", wait_until="domcontentloaded")
-    work_group = page.locator("li details:has(summary:text-is('Work'))")
+    # T-5160: the label now sits in <span class="nav-group-label"> beside an icon, so
+    # summary:text-is('Work') matched nothing; the summary's title carries the group name.
+    work_group = page.locator("li details:has(summary[title='Work'])")
     expect(work_group).to_have_count(1)
     work_arcs_link = work_group.locator("a[href='/arcs']")
     expect(work_arcs_link).to_have_count(1)
-    arch_group = page.locator("li details:has(summary:text-is('Architecture'))")
+    arch_group = page.locator("li details:has(summary[title='Architecture'])")
     expect(arch_group).to_have_count(1)
     arch_arcs_link = arch_group.locator("a[href='/arcs']")
     expect(arch_arcs_link).to_have_count(0)

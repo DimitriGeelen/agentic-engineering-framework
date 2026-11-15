@@ -43,7 +43,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T22:29:09Z
-last_update: '2026-11-15T23:00:32Z'
+last_update: 2026-11-15T23:03:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -102,7 +102,7 @@ cost_estimate_proposed:
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] no test in the seven files names `arc-grooming` (or any other specific arc id) as the arc under test; arcs are chosen by state at run time through one shared helper
-- [ ] the 19 previously failing tests pass locally; any skip names the missing state
+- [x] the 19 previously failing tests pass locally; any skip names the missing state (2026-11-16: seven files, 34 passed, 7 skipped "no arc … with a CLOSE/KEEP-OPEN recommendation"; the skips' coverage gap is T-5168; page bug found on the way: T-5167)
 - [x] no product code changed (tests/playwright only), unless a test exposed a real page bug, which is then filed as its own task instead of fixed here
 
 ### Human
@@ -293,6 +293,14 @@ cost_estimate_proposed:
 timeout 1200 python3 -m pytest -q -p no:cacheprovider tests/playwright/test_arc_close.py tests/playwright/test_arc_close_recommendation_panel.py tests/playwright/test_arc_review_route.py tests/playwright/test_approvals_arc_closure_section.py tests/playwright/test_landing_arc_cards.py tests/playwright/test_arcs_kanban.py tests/playwright/test_arc_badge.py > /tmp/.t5160.out 2>&1 && grep -q passed /tmp/.t5160.out
 
 ## RCA
+
+**Symptom:** 21 Playwright reds across seven arc test files.
+
+**Root cause:** the tests named `arc-grooming` as the in-progress arc with members; it was closed. Two more had stale selectors (nav label moved into a span; a `main, body` locator that resolved to body and caught the palette input). test_arc_badge assumed every task on one page (T-5136 pages at 200).
+
+**Why structurally allowed:** tests pinned to mutable corpus state (T-3326) in a suite that gates nothing (T-5153), so the reds were not seen when the arc closed.
+
+**Prevention:** one helper (`tests/playwright/arc_corpus.py`, `pick_arc`) chooses arcs by state at run time and skips with the missing state named; selectors use the summary's title and `main#content`. The panel tests' dependence on an arc with a close recommendation is T-5168 (fixture).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).

@@ -44,7 +44,10 @@ def test_arc_review_no_form_fields(page, base_url):
     """Read-only — no <form>, no <input>, no <textarea> on the page."""
     arc = pick_arc("in-progress")
     page.goto(f"{base_url}/arcs/{arc.slug}/review", wait_until="domcontentloaded")
-    main = page.locator("main, body").first
+    # T-5160: "main, body" resolved to <body> and caught the command palette's text input,
+    # which base.html places outside <main id="content">. The review content lives in main.
+    main = page.locator("main#content")
+    expect(main).to_have_count(1)
     assert main.locator('form').count() == 0, "review page must not contain any <form>"
     # Some shared shell elements might contain CSRF meta tags, so we don't ban <input>
     # globally — only ban editable types that suggest a form fragment.

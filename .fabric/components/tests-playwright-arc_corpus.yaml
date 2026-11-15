@@ -1,0 +1,21 @@
+id: tests/playwright/arc_corpus.py
+name: arc_corpus
+type: script
+subsystem: tests-playwright
+location: tests/playwright/arc_corpus.py
+tags: []
+
+purpose: "Pick an arc by STATE from the corpus under test, never by name (T-5160)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-15
+created_by: unknown
