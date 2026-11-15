@@ -1,0 +1,108 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4162: T-4091 slice 1: fw estate push — diff the local vector index against the store and stage new/changed chunks (text + payload, never vectors) and deletions in staging_aef
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T08:24:14Z
+# ============================================================================
+
+task_id: T-4162
+task_name: "T-4091 slice 1: fw estate push — diff the local vector index against the store and stage new/changed chunks (text + payload, never vectors) and deletions in staging_aef"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-13T15:31:27Z
+completed: 2026-11-15T08:23:45Z
+duration_days: 33
+updates_count: 3
+first_commit: 2026-10-13T18:55:50+02:00
+last_commit: 2026-10-14T22:05:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw estate push — plan/redact/diff/stage index chunks to staging_aef (dry run default). vendor estate_push.py + fw estate verb. operator chose batched first fill (≤50k per run, never above the staging budget; continue after drain). fw estate listed in show_help (router-help invariant was red). batched first fill — cap per run (--max-points, default 50k), never past the 100k staging budget minus the staged count, ledger continues across runs, tombstones count, unreadable count stages nothing. tick batched-fill Agent AC (task file only). estate push/ingest read their tokens from Infisical by name at run time. estate tokens via Infisical Universal Auth; misses name their reason
+
+# Key outcomes
+outcomes:
+  - '`lib/estate_push.py` builds a plan from a local index DB: only opted-in pilot categories (completed tasks, episodic, project memory, reports/designs, saved answers, agent docs, specs, module cards; never active tasks/handovers), size/type gate, deterministic chunk id (project+path+chunk index+content hash), payload fields per R-33'
+  - 'Write-time redaction: secret value patterns and hostname/IP→role map applied; an item that still matches a secret pattern is refused and logged, not staged'
+  - 'Diff against the store: new/changed chunks staged as text+payload only (no vectors), deletions for removed sources (R-5); dry-run default, `--apply` writes to `staging_aef`; token read by name from the credential store, never printed'
+  - '`bin/fw estate push` verb routes to it; unit tests (written first, failing on HEAD) pass'
+  - 'Batched first fill (operator 2026-10-13): an `--apply` run stages at most `--max-points` / `FW_ESTATE_PUSH_MAX_POINTS` (default 50,000) and never more than the staging budget (100,000) minus the staged count read from the store; an unreadable count stages nothing; the ledger carries progress so the next run continues; tombstones count towards the cap; the dry run prints total, this run''s batch and runs remaining — `tests/unit/test_estate_push.py` covers cap, continuation, headroom and unreadable count'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-13 — what "the store has" is diffed against'
+    chose: 'a local push ledger `.context/working/estate-push-state.json` (chunk_key → content_hash); deletions are tombstone points (`op: delete`) in staging for the ingest worker to apply.'
+    rationale: 'the project''s staging token cannot read the main collection (403, ring20 spike), and staging is drained by ingest, so staging cannot answer "what is already in the store".'
+    alternatives_rejected: ['scrolling staging (drained, incomplete); giving the project a main-read token (breaks R-25 scoping).']
+  - decision: '2026-10-13 — chunk identity'
+    chose: 'stable key `project|path|chunk_index`; content hash (of the redacted text) in the payload; point id = uuid5(key, hash, op) so re-staging is idempotent.'
+    alternatives_rejected: ['hash inside the key — a changed file would need delete+insert pairs for every chunk.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/estate_ingest.py'
+  - '.agentic-framework/lib/estate_push.py'
+  - '.tasks/active/T-4162-t-4091-slice-1-fw-estate-push--diff-the-.md'
+  - 'bin/fw'
+  - 'lib/estate_ingest.py'
+  - 'lib/estate_push.py'
+  - 'tests/unit/test_estate_ingest.py'
+  - 'tests/unit/test_estate_push.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T18:55:50'
+    action: 'T-4162: fw estate push — plan/redact/diff/stage index chunks to staging_aef (dry run default)'
+  - time: '2026-10-13T18:56:12'
+    action: 'T-4162: vendor estate_push.py + fw estate verb'
+  - time: '2026-10-13T20:24:55'
+    action: 'T-4162: operator chose batched first fill (≤50k per run, never above the staging budget; continue after drain)'
+  - time: '2026-10-13T20:36:33'
+    action: 'T-4162: fw estate listed in show_help (router-help invariant was red)'
+  - time: '2026-10-13T20:46:11'
+    action: 'T-4162: batched first fill — cap per run (--max-points, default 50k), never past the 100k staging budget minus the staged count, ledger continues across runs, tombstones count, unreadable count stages nothing'
+  - time: '2026-10-13T20:46:19'
+    action: 'T-4162: tick batched-fill Agent AC (task file only)'
+  - time: '2026-10-14T21:57:21'
+    action: 'T-4162: estate push/ingest read their tokens from Infisical by name at run time'
+  - time: '2026-10-14T22:05:58'
+    action: 'T-4162: estate tokens via Infisical Universal Auth; misses name their reason'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 47092 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 47092
+  commits: 9
+  files_changed: 12
+  lines_added: 1462
+  lines_removed: 98
+  footprint_refreshed_at: '2026-11-15T08:24:20Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4162-t-4091-slice-1-fw-estate-push--diff-the-.md
+generated_by: context-agent-hybrid
