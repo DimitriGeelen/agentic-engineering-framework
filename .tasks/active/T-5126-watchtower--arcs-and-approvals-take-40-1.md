@@ -14,7 +14,9 @@ workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: [lib/design_register.py, tests/unit/t5126_register_scan_cache_test.py, tests/unit/t5126_token_tile_warm_test.py, web/blueprints/core.py]
+components: [lib/design_register.py, 
+      tests/unit/t5126_register_scan_cache_test.py, 
+      tests/unit/t5126_token_tile_warm_test.py, web/blueprints/core.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-14T09:13:09Z
-last_update: 2026-11-14T10:35:39Z
+last_update: '2026-11-15T09:45:19Z'
 date_finished: 2026-11-14T10:35:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -81,6 +83,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=308,acs=7)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-11-15T09:45:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 5
+      tier: 2
+      effort: 8
+    rationale: blast_radius=5 (4-components-medium-blast); tier=2 
+      (workflow:build); effort=8 (lines=348,acs=10)
     rubric_sha: e4a00f38e801
 ---
 
