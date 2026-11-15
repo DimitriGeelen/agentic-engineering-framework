@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4628: Read-only allowlist: uniq and xxd write their second operand; gunzip deletes the archive
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T08:38:57Z
+# ============================================================================
+
+task_id: T-4628
+task_name: "Read-only allowlist: uniq and xxd write their second operand; gunzip deletes the archive"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T10:36:28Z
+completed: 2026-11-15T08:37:51Z
+duration_days: 24
+updates_count: 3
+first_commit: 2026-10-22T13:08:48+02:00
+last_commit: 2026-10-22T13:08:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  read-only allowlist refuses uniq/xxd with a second (output) operand and gunzip without -c/-t/-l on a file operand; option values skipped, xxd options stop at the first operand, gunzip -S keeps its letter; t4628_operand_writes.bats (6 tests, both directions)
+
+# Key outcomes
+outcomes:
+  - '`is_bash_safe_command` refuses uniq and xxd with a second file operand (options and their values skipped, `--` honoured, quoted/expanded words fail closed), e.g. `uniq IN OUT`, `uniq -c IN OUT`, `uniq -f 1 IN OUT`, `xxd IN OUT`, `xxd -r -p IN OUT`, `xxd -s 16 IN OUT`'
+  - '`is_bash_safe_command` refuses gunzip on a file operand unless it writes to stdout or only inspects (`-c`/`--stdout`/`--to-stdout`, `-t`/`--test`, `-l`/`--list`, also inside a short bundle that does not hand the letter to `-S`): `gunzip X.gz`, `gunzip -k X.gz`, `gunzip -f X.gz`, `gunzip -Sc file.c` refused'
+  - 'Controls stay SAFE: `uniq F`, `uniq -c F`, `sort F | uniq -c`, `xxd F`, `xxd -l 64 F`, `xxd -r -p F`, `gunzip -c X.gz`, `gunzip -t X.gz`, `gunzip -l X.gz`, `cat X.gz | gunzip`, `zcat X.gz`'
+  - 'Regression test `tests/unit/t4628_operand_writes.bats` fails on the pre-fix code and passes after; existing safe-commands suites stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-4628-read-only-allowlist-uniq-and-xxd-write-t.md'
+  - 'agents/context/lib/safe-commands.sh'
+  - 'tests/unit/t4628_operand_writes.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T13:08:48'
+    action: 'T-4628: read-only allowlist refuses uniq/xxd with a second (output) operand and gunzip without -c/-t/-l on a file operand; option values skipped, xxd options stop at the first operand, gunzip -S keeps its letter; t4628_operand_writes.bats (6 tests, both directions)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 34441 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, security, read-only-allowlist, G-121]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 34441
+  commits: 2
+  files_changed: 7
+  lines_added: 369
+  lines_removed: 15
+  footprint_refreshed_at: '2026-11-15T08:39:02Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4628-read-only-allowlist-uniq-and-xxd-write-t.md
+generated_by: context-agent-hybrid

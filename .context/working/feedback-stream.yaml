@@ -55037,3 +55037,21 @@ scan_id: R-ad913129
 task_id: T-4627
 payload:
   task_file: .tasks/active/T-4627-read-only-allowlist-git-ls-remotefetch--.md
+---
+kind: scan_emitted
+timestamp: '2026-11-15T08:38:35Z'
+scan_id: R-f76a333c
+task_id: T-4628
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-15T08:38:35Z'
+scan_id: R-f76a333c
+task_id: T-4628
+payload:
+  task_file: .tasks/active/T-4628-read-only-allowlist-uniq-and-xxd-write-t.md
