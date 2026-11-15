@@ -1,8 +1,15 @@
 ---
 id: T-5156
-name: "Sidecar end-to-end tests leave their topics on the live hub: 80+ test inboxes (t3684b-*, t3684d-*, t3693a-*, t3782a-*, e2e-*) hold ~280 unread posts"
+name: "Sidecar end-to-end tests leave their topics on the live hub: 80+ test inboxes
+  (t3684b-*, t3684d-*, t3693a-*, t3782a-*, e2e-*) hold ~280 unread posts"
 description: >
-  Found 2026-11-15 by T-5149: once the orphan detector stopped trusting the hub's peek-cleared unread flag, it listed 92 orphan inboxes on our hub; most are leftovers of AEF's own sidecar e2e tests (tests/integration/t3684_sidecar_watcher_e2e_test.py and siblings: t3684b-<rand>, t3684d-<rand>, t3693a-*, t3782a-*, e2e-<id>-sender), which post to the real hub and never remove their topics. They were hidden only because something peeked at them. Fix: the tests use a throwaway hub/runtime dir, or remove their topics in teardown; check no test topic remains after a run.
+  Found 2026-11-15 by T-5149: once the orphan detector stopped trusting the hub's
+  peek-cleared unread flag, it listed 92 orphan inboxes on our hub; most are leftovers
+  of AEF's own sidecar e2e tests (tests/integration/t3684_sidecar_watcher_e2e_test.py
+  and siblings: t3684b-<rand>, t3684d-<rand>, t3693a-*, t3782a-*, e2e-<id>-sender),
+  which post to the real hub and never remove their topics. They were hidden only
+  because something peeked at them. Fix: the tests use a throwaway hub/runtime dir,
+  or remove their topics in teardown; check no test topic remains after a run.
 
 status: captured
 workflow_type: build
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T19:52:53Z
-last_update: 2026-11-15T19:52:53Z
-date_finished: null
+last_update: '2026-11-15T20:00:43Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-15T20:00:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5156: Sidecar end-to-end tests leave their topics on the live hub: 80+ test inboxes (t3684b-*, t3684d-*, t3693a-*, t3782a-*, e2e-*) hold ~280 unread posts
