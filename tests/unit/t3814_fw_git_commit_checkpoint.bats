@@ -35,8 +35,11 @@ import json,sys
 p={"tool_name":"Bash","tool_input":{"command":sys.argv[1]}}
 if sys.argv[2] != "NONE": p["cwd"]=sys.argv[2]
 print(json.dumps(p))' "$cmd" "$cwd")"
-    if printf '%s' "$json" | PROJECT_ROOT="$root" FRAMEWORK_ROOT="$root" \
-        CLAUDE_PROJECT_DIR="$root" bash "$HOOK" >/dev/null 2>&1; then
+    # T-5138: a clean environment. Run from the close gate, this file inherited the
+    # caller's framework variables (an inherited _FW_PATHS_LOADED alone flipped case
+    # 11), so the same hook gave a different verdict depending on who ran the test.
+    if printf '%s' "$json" | env -i PATH="$PATH" HOME="$HOME" PROJECT_ROOT="$root" \
+        FRAMEWORK_ROOT="$root" CLAUDE_PROJECT_DIR="$root" bash "$HOOK" >/dev/null 2>&1; then
         printf 'ADMITTED'
     else
         printf 'blocked'
