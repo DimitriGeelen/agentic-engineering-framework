@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4623: Push blocker: t3062_prepush_runtime pre-push structure audit exceeds its budget
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T08:33:53Z
+# ============================================================================
+
+task_id: T-4623
+task_name: "Push blocker: t3062_prepush_runtime pre-push structure audit exceeds its budget"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T09:34:32Z
+completed: 2026-11-15T08:30:48Z
+duration_days: 24
+updates_count: 3
+first_commit: 2026-10-22T12:53:51+02:00
+last_commit: 2026-10-22T12:53:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pre-push structure audit drops ~110s of repeated work — arc staleness walks the 30-day window once (was one git log per arc, ~50s), verdict_ledger audit runs once (was 3x, ~28s), the four read-only history detectors run concurrently (~42s serial), tests/lint runs bats --jobs 8 when GNU parallel exists (59s -> 21-31s); 262s -> 149-158s; regression bats t4623 (4/5 red pre-fix); vendor synced
+
+# Key outcomes
+outcomes:
+  - 'Per-check timing of `audit.sh --section structure` recorded; the dominant cost named with file:line in ## RCA'
+  - 'The cause of the overrun is fixed (not by raising BUDGET_S without evidence)'
+  - '`tests/unit/t3062_prepush_runtime.bats` passes run alone in the foreground'
+  - 'A regression test pins the fix and fails without it'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'pre-push structure audit drops ~110s of repeated work — arc staleness walks the 30-day window once (was one git log per arc, ~50s), verdict_ledger audit runs once (was 3x, ~28s), the four read-only history detectors run concurrently (~42s serial), tests/lint runs bats --jobs 8 when GNU parallel exists (59s -> 21-31s); 262s -> 149-158s; regression bats t4623 (4/5 red pre-fix); vendor synced'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.tasks/active/T-4623-push-blocker-t3062prepushruntime-pre-pus.md'
+  - 'agents/audit/audit.sh'
+  - 'tests/unit/t4623_structure_audit_cost.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T12:53:51'
+    action: 'T-4623: pre-push structure audit drops ~110s of repeated work — arc staleness walks the 30-day window once (was one git log per arc, ~50s), verdict_ledger audit runs once (was 3x, ~28s), the four read-only history detectors run concurrently (~42s serial), tests/lint runs bats --jobs 8 when GNU parallel exists (59s -> 21-31s); 262s -> 149-158s; regression bats t4623 (4/5 red pre-fix); vendor synced'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 34496 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, push-blocker, test]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 34496
+  commits: 2
+  files_changed: 7
+  lines_added: 456
+  lines_removed: 37
+  footprint_refreshed_at: '2026-11-15T08:33:58Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4623-push-blocker-t3062prepushruntime-pre-pus.md
+generated_by: context-agent-hybrid
