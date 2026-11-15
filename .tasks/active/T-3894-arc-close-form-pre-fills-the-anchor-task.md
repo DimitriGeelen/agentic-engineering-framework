@@ -181,6 +181,9 @@ cost_estimate_proposed:
 
 ## Verification
 
+python3 -m pytest -q -p no:cacheprovider tests/web/test_t3841_arc_close_decision_prefill.py
+bin/fw watchtower current
+
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
