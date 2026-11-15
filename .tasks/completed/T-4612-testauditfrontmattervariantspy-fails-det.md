@@ -11,12 +11,12 @@ description: >
   exists to catch. Not reproduced on this host. Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
   (lines 184-186). Triaged in T-4589.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [cloud, test]
-components: []
+components: [agents/audit/audit.sh, tests/unit/test_audit_frontmatter_variants.py]
 related_tasks: [T-4589]
 origin: {kind: "agent"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -46,8 +46,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:47:49Z
-last_update: '2026-10-31T13:15:36Z'
-date_finished:
+last_update: 2026-11-15T08:27:51Z
+date_finished: 2026-11-15T08:27:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -436,3 +436,21 @@ bin/fw vendor self --check --task T-4612
 ### 2026-10-22T11:28:08Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-15T08:27:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-75011caa
+- **Timestamp:** 2026-11-15T08:28:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `agents/audit/audit.sh` no longer skips the task-frontmatter check silently when `web/shared.py` exists but cannot be imported: it emits a WARN naming the import error (the consumer case — no `web/sha
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/audit/audit.sh in: `agents/audit/audit.sh` no longer skips the task-frontmatter check silently when `web/shared.py` exists but cannot be imported: it emits a WARN naming`
