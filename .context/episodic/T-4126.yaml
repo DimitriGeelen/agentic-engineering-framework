@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4126: SECURITY: project-boundary Pattern 3 has no cp/mv/dd/install/ln/sed -i verbs — cp /tmp/a /etc/fstab exits 0 (found by T-4114)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T08:22:05Z
+# ============================================================================
+
+task_id: T-4126
+task_name: "SECURITY: project-boundary Pattern 3 has no cp/mv/dd/install/ln/sed -i verbs — cp /tmp/a /etc/fstab exits 0 (found by T-4114)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-12T18:36:38Z
+completed: 2026-11-15T08:21:08Z
+duration_days: 34
+updates_count: 4
+first_commit: 2026-10-12T20:47:51+02:00
+last_commit: 2026-10-12T20:47:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  boundary Pattern 3 parses cp/mv/install/ln/rsync/dd/sed -i/perl -i/truncate/chmod/chown/touch/mkdir + >| as write verbs; 38 outside cases fail on HEAD
+
+# Key outcomes
+outcomes:
+  - 'Pattern 3 of check-project-boundary.sh parses cp, mv, install, ln, rsync, dd of=, sed/perl -i, truncate, chmod/chown/chgrp, touch, mkdir as write verbs: an outside-project destination exits 2'
+  - 'Options-before-paths, `--`, `-t DIR`/`--target-directory=`, sudo/env prefixes and absolute /usr/bin/<verb> are all covered; `>|` redirect is covered'
+  - '/tmp and in-project destinations still exit 0 (no new false refusals); read-side behaviour unchanged'
+  - 'tests/unit/t4126_boundary_write_verbs.bats passes, and its outside cases fail on HEAD (negative control recorded in Updates)'
+  - 'Existing boundary suites green; deliberate omissions listed in RCA'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-project-boundary.sh'
+  - '.tasks/active/T-4126-security-project-boundary-pattern-3-has-.md'
+  - 'agents/context/check-project-boundary.sh'
+  - 'tests/unit/t4126_boundary_write_verbs.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-12T20:47:51'
+    action: 'T-4126: boundary Pattern 3 parses cp/mv/install/ln/rsync/dd/sed -i/perl -i/truncate/chmod/chown/touch/mkdir + >| as write verbs; 38 outside cases fail on HEAD'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 48344 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, security, boundary]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 48344
+  commits: 2
+  files_changed: 7
+  lines_added: 489
+  lines_removed: 18
+  footprint_refreshed_at: '2026-11-15T08:22:14Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4126-security-project-boundary-pattern-3-has-.md
+generated_by: context-agent-hybrid
