@@ -1,0 +1,21 @@
+id: tests/web/test_t5146_nav_full_load.py
+name: test_t5146_nav_full_load
+type: script
+subsystem: tests
+location: tests/web/test_t5146_nav_full_load.py
+tags: []
+
+purpose: "T-5146: menu links to pages with their own script library are one direct load."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-15
+created_by: unknown

@@ -92,11 +92,21 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] the site-menu links to pages that load their own external script are rendered with `hx-boost="false"`, so the browser loads them once, directly; every other menu link is still boosted
-- [ ] a test renders every menu page and fails if any of them brings an external script that the shell does not load and its menu link is still boosted, so a new library page cannot silently go back to two fetches
-- [ ] measured in a browser: menu navigation to `/bvp` sends one request for `/bvp` (was two) and takes about as long as a direct load; ordinary menu pages are still swaps; T-5130's browser tests still pass
+- [x] the site-menu links to pages that load their own external script are rendered with `hx-boost="false"`, so the browser loads them once, directly; every other menu link is still boosted
+      — `web/shared.py` `NAV_FULL_LOAD_ENDPOINTS` (bvp, fabric graph, terminal: found by rendering every menu page); `nav_render` in `base.html`; set passed by the context processor in `web/app.py`.
+- [x] a test renders every menu page and fails if any of them brings an external script that the shell does not load and its menu link is still boosted, so a new library page cannot silently go back to two fetches
+      — `tests/web/test_t5146_nav_full_load.py` 2/2: the set must equal the library pages exactly (both directions), and only those links are unboosted.
+- [x] measured in a browser: menu navigation to `/bvp` sends one request for `/bvp` (was two) and takes about as long as a direct load; ordinary menu pages are still swaps; T-5130's browser tests still pass
+      — warm, 2026-11-15, host load 58: menu → /bvp **1 request**, 4.3 s to a drawn scatter, against 3.1 s for the bare server fetch; reviewer measured 5.2–5.7 s with two fetches. /terminal 1 request, 0.5 s; /tasks still a swap, 0.9 s. `test_htmx_nav_page_scripts.py` 3/3; 121 tests reading the nav code and 7 bats pass. Data: `.context/visual/T-5146/fetches.json`.
 
 ### Human
+- [ ] [REVIEW] Opening BVP, Fabric Graph and Terminal from the menu feels like one quick load
+  **Steps:**
+  1. Open http://192.168.10.107:3000/fabric
+  2. From the Work, Architecture or Knowledge menu, open BVP, then Terminal, then Fabric Graph (http://192.168.10.107:3000/fabric/graph)
+  3. Then open Tasks from the menu
+  **Expected:** each of the three loads once and draws (scatter, terminal "Connected", graph); Tasks switches instantly as before
+  **If not:** note the page and roughly how long it took; the list is `NAV_FULL_LOAD_ENDPOINTS` in `web/shared.py`
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -280,8 +290,35 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/web/test_t5146_nav_full_load.py tests/web/test_t5140_site_nav_on_every_page.py
+bin/fw vendor self --check --task T-5146
+bin/fw watchtower current
+
+## Visual Verification
+
+Shots: `.context/visual/T-5146/{bvp,terminal,fabric-graph}@{1024,1440,1920}.png` (`fw ux shots T-5146 …`, 2026-11-15, Watchtower pid 3687239, current). Read before commit: `fabric-graph@1440` (graph drawn, full menu).
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| bvp | scatter, sliders, site menu | ok | ok | ok | |
+| terminal | terminal pane, Connected | ok | ok | ok | |
+| fabric-graph | graph drawn, site menu | ok | ok | ok | |
+
+Menu navigation measured in a browser (`.context/visual/T-5146/fetches.json`), warm:
+
+- /fabric → menu → /bvp: 1 request, full load, 4.3 s to a drawn scatter (was 2 requests, 5.2–5.7 s)
+- /fabric → menu → /terminal: 1 request, full load, 0.5 s
+- /fabric → menu → /tasks: swap, 0.9 s
+
+Not changed here: the first visit to /bvp after a Watchtower restart is cold (9.6 s), because /bvp is not in the startup warm-up.
 
 ## RCA
+
+**Cause:** T-5130 decides on a full load only after htmx has fetched the page and found a library the shell has not loaded. It then calls `window.location.assign`, so the browser fetches the page again. The fetched response cannot be reused: most pages answer htmx with a content fragment, not a whole document.
+
+**Fix:** decide before the request. Menu links to the three pages that bring their own library are plain links (`hx-boost="false"`), one direct load. A test renders every menu page and keeps that list exact. T-5130's handler stays as the fallback for links outside the menu.
+
+**Why it went unnoticed:** T-5130's tests checked that the page works after navigation, not how many requests it took. The independent reviewer timed it.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -322,6 +359,17 @@ bvp_scores_proposed:
 -->
 
 ## Recommendation
+
+**Recommendation:** GO
+
+**Rationale:** Opening BVP from the menu fetched the page twice, about 5.5 s where one fetch takes about 3 s. The menu now opens the three pages that bring their own script library with one direct load, and a test keeps that list exact. The other menu pages still switch instantly. What is left is your look.
+
+**Evidence:**
+- Browser measurement: menu → BVP is 1 request and 4.3 s (was 2 requests, 5.2–5.7 s); Terminal 1 request, 0.5 s; Tasks still a swap
+- `tests/web/test_t5146_nav_full_load.py` 2/2; T-5130's navigation browser tests 3/3; 121 tests that read the nav code pass
+- Screenshots in `.context/visual/T-5146/` (see `## Visual Verification`)
+
+Review page: http://192.168.10.107:3000/review/T-5146
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
