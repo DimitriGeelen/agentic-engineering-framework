@@ -55333,3 +55333,21 @@ scan_id: R-2a67e5f2
 task_id: T-5155
 payload:
   task_file: .tasks/active/T-5155-outside-commit-alarm-misses-a-pr-merged-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-15T18:52:17Z'
+scan_id: R-08c8d76b
+task_id: T-5154
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-15T18:52:17Z'
+scan_id: R-08c8d76b
+task_id: T-5154
+payload:
+  task_file: .tasks/active/T-5154-github-ruleset-merging-into-bleeding-edg.md
