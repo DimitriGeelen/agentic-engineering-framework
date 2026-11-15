@@ -9,12 +9,12 @@ description: >
   here; localise with the cloud env (detached HEAD, no session state). Source: docs/reports/T-4508-cloud-prompts/perfailure-f028d507.txt
   (line 187). Triaged in T-4589.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [cloud, test]
-components: []
+components: [tests/unit/test_cockpit_activity.py]
 related_tasks: [T-4589]
 origin: {kind: "agent"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -44,8 +44,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-22T08:48:18Z
-last_update: '2026-10-23T09:01:31Z'
-date_finished:
+last_update: 2026-11-15T08:29:02Z
+date_finished: 2026-11-15T08:29:02Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -397,3 +397,21 @@ grep -q "load_scan" tests/unit/test_cockpit_activity.py
 ### 2026-10-22T11:28:01Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-15T08:29:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d9edaf6c
+- **Timestamp:** 2026-11-15T08:29:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — test_cockpit_activity.py page test supplies its own scan fixture, so it no longer depends on the gitignored .context/scans/LATEST.yaml
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/scans/LATEST.yaml in: test_cockpit_activity.py page test supplies its own scan fixture, so it no longer depends on the gitignored .context/scans/LATEST.yaml`
