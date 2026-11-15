@@ -6,10 +6,10 @@ description: >
   either the size cap grew stricter than the file the test asks for, or the test file
   grew. Found in T-5153 triage.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [playwright, ci]
 components: []
 related_tasks: [T-5153]
@@ -41,7 +41,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T22:29:12Z
-last_update: '2026-11-15T22:30:49Z'
+last_update: 2026-11-15T22:38:27Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,20 +87,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5153 triage (2026-11-15): `tests/playwright/test_api_fabric_source.py::TestFabricSource::test_fabric_source_returns_content` gets 413 instead of 200, on CI and locally.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** the test asks for `/api/fabric/source/bin/fw`. `web/blueprints/fabric.py` refuses files over 500,000 bytes with 413 by design, and `bin/fw` is now 639,645 bytes. The test is pinned to the size of a file that keeps growing. Side effect worth its own decision: `bin/fw` can no longer be opened in the fabric source viewer.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the test reads a small file whose size and first line are stable, and a second test pins the 413 limit itself, so neither depends on how large bin/fw has grown. The viewer limit is a product question, filed separately.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** test_api_fabric_source.py green; a follow-up task records that bin/fw is over the viewer limit.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] the content test reads a small, stable script (well under the limit) and still checks a 200 with a `#!` first line
+- [x] a new test asks for a tracked file over 500,000 bytes and expects 413 (skips with a reason if none exists)
+- [x] test_api_fabric_source.py passes (5 passed, 0 skipped); no product code changed; follow-up T-5166 names the bin/fw viewer limit
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -286,8 +287,17 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 python3 -m pytest -q -p no:cacheprovider tests/playwright/test_api_fabric_source.py > /tmp/.t5164.out 2>&1 && grep -q passed /tmp/.t5164.out && ! grep -q failed /tmp/.t5164.out
 
 ## RCA
+
+**Symptom:** `/api/fabric/source/bin/fw` answered 413 in the Playwright test.
+
+**Root cause:** the test used bin/fw as its sample file; bin/fw grew past the endpoint's deliberate 500,000-byte limit.
+
+**Why structurally allowed:** the test pinned a mutable fact (a growing file's size) and ran only in the informational Playwright job, so its red was not seen (T-5153).
+
+**Prevention:** the content test now uses a small script and asserts it is under the limit (a clear message if that ever changes), and the limit itself has its own test. The product question (bin/fw unviewable) is T-5166.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -383,3 +393,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5164-apifabricsource-answers-413-in-testapifa.md
 - **Context:** Initial task creation
+
+### 2026-11-15T22:38:27Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
