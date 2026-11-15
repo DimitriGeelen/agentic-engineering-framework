@@ -95,3 +95,33 @@ def test_board_path_asks_for_stale(monkeypatch):
                         lambda path, allow_stale=False: seen.setdefault("a", allow_stale) and (None, [], 0) or (None, [], 0))
     shared.board_awaiting_reason({"_path": "/x/T-1-y.md", "_location": "active"})
     assert seen["a"] is True
+
+
+def test_a_task_named_in_the_newest_ledger_rows_is_refreshed_first(monkeypatch):
+    """Independent reviewer on T-5147: 390 queued tasks took 99.6 s; the task whose verdict
+    just changed must not wait behind them."""
+    monkeypatch.setattr(shared, "_recent_ledger_task_ids", lambda root, stamp: frozenset({"T-9002"}))
+    monkeypatch.setattr(shared, "_readiness_stamp", lambda root: ("s",))
+    monkeypatch.setitem(shared._READINESS_REFRESH_THREAD, "t", object())  # hold the worker
+    shared._READINESS_REFRESH_PENDING.clear()
+    shared._READINESS_REFRESH_FIRST.clear()
+    try:
+        shared._schedule_readiness_refresh("T-9001", Path("/x/T-9001-a.md"))
+        shared._schedule_readiness_refresh("T-9002", Path("/x/T-9002-b.md"))
+        shared._schedule_readiness_refresh("T-9003", Path("/x/T-9003-c.md"))
+        assert list(shared._READINESS_REFRESH_FIRST.values()) == ["T-9002"]
+        assert sorted(shared._READINESS_REFRESH_PENDING.values()) == ["T-9001", "T-9003"]
+    finally:
+        shared._READINESS_REFRESH_PENDING.clear()
+        shared._READINESS_REFRESH_FIRST.clear()
+
+
+def test_recent_ledger_ids_read_only_the_tail(tmp_path, monkeypatch):
+    rev = tmp_path / ".context" / "reviews"
+    rev.mkdir(parents=True)
+    old = "".join('{"task": "T-0001", "pad": "%s"}\n' % ("x" * 900) for _ in range(100))
+    (rev / "verdicts.jsonl").write_text(old + '{"task": "T-7777", "outcome": "green"}\n')
+    monkeypatch.setitem(shared._RECENT_LEDGER_IDS, "stamp", None)
+    ids = shared._recent_ledger_task_ids(tmp_path, ("new",))
+    assert "T-7777" in ids
+    assert len((rev / "verdicts.jsonl").read_bytes()) > shared._LEDGER_TAIL_BYTES
