@@ -313,6 +313,31 @@ bin/fw vendor self --check --task T-5130
 bin/fw watchtower current
 grep -q "T-5130 (found under T-5129" web/templates/base.html
 
+## Visual Verification
+
+Added 2026-11-15 after the independent reviewer (V-20261115-c6da6909) declined to judge without it. Watchtower pid 1728346 (current).
+
+**1. In-app click-through: the criterion's own path.** Captured with Playwright at 1440 px. Each step clicks the top-nav link, opening its dropdown first as a user does. A marker set on `window` before each click tells a full load (marker gone) from an htmx swap (marker kept). Shots: `.context/visual/T-5130/click-{0-fabric,1-bvp,2-terminal,3-tasks}.png`; console log per step in `.context/visual/T-5130/clickthrough.json`.
+
+| step | from → to | result | page check | console errors |
+|------|-----------|--------|------------|----------------|
+| 0 | open /fabric | start | — | 0 |
+| 1 | /fabric → nav → /bvp | **full load** | `d3` defined; 275 scatter marks drawn | 0 |
+| 2 | /bvp → nav → /terminal | **full load** | `io` defined; terminal shows "Connected", Bash-1 running | 0 |
+| 3 | /terminal → nav → /tasks | **swap** | ordinary page stays an htmx swap | 0 |
+
+Read before commit: `click-1-bvp.png` (BVP page with the weight-slider table and full site nav) and `click-2-terminal.png` (Terminal, "Connected", shell prompt).
+
+Found while capturing this: a full load of `/bvp` showed an empty site nav, so the click-through could not continue past it. That is T-5140, fixed and live before these shots were taken.
+
+**2. Each page at every width:** `.context/visual/T-5130/{bvp,terminal,tasks}@{1024,1440,1920}.png` (`fw ux shots T-5130 bvp=… terminal=… tasks=…`).
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| bvp | scatter and weight sliders, site nav | ok | ok | ok | |
+| terminal | terminal pane, Connected | ok | ok | ok | |
+| tasks | board | ok | ok | ok | |
+
 ## RCA
 
 **Symptom:** reached through in-app navigation, `/bvp` (`d3 is not defined`) and `/terminal` (`io is not defined`) showed nothing; a reload worked. The same class as 1409's empty fabric graph (T-5129).
