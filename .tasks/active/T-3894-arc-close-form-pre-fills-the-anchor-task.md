@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T18:39:46Z
-last_update: '2026-10-31T13:15:24Z'
+last_update: 2026-11-15T10:19:11Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -123,7 +123,13 @@ cost_estimate_proposed:
 
 ## Context
 
-An arc's ANCHOR task is usually its first design or inception task. Its recommendation is about STARTING the arc. Only a close-out task (`close_task:`) judges whether the arc is DONE. T-3841 and T-3843 pre-fill both the decision and the demo from whichever was found, close_task or anchor.
+**Background / trigger:** On the continuous-run arc, the Watchtower arc-close form proposed "GO — Spike walk S1-S6 completed 2026-06-13…" as the closing decision. That text was the anchor task's recommendation to START the arc.
+
+**Problem / hypothesis:** an arc's ANCHOR task is usually its first design or inception task, so its recommendation is about starting the arc. Only a close-out task (`close_task:`) judges whether the arc is DONE. T-3841 and T-3843 pre-fill both the decision and the demo from whichever was found, close_task or anchor, so the operator was offered a start verdict as a close verdict.
+
+**Goal:** the close form offers a closing verdict only from a close-out task.
+
+**Expected outcome:** with only an anchor recommendation, the form pre-fills nothing and explains that the shown text is the anchor's start recommendation, pointing to `close_task:`.
 
 ## Acceptance Criteria
 
