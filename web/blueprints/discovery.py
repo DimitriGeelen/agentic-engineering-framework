@@ -20,25 +20,9 @@ log = logging.getLogger(__name__)
 bp = Blueprint("discovery", __name__)
 
 
-_index_build_thread = None
-
-
-def _trigger_async_index_build():
-    """Start background thread to build embedding index for next request."""
-    import threading
-    global _index_build_thread
-    if _index_build_thread and _index_build_thread.is_alive():
-        return  # Already building
-    def _build():
-        try:
-            from web.embeddings import build_index
-            log.info("Background index build started")
-            build_index()
-            log.info("Background index build completed")
-        except Exception as e:
-            log.warning("Background index build failed: %s", e)
-    _index_build_thread = threading.Thread(target=_build, daemon=True)
-    _index_build_thread.start()
+# T-3786: no page view builds the vector index. The background-build helper that
+# lived here had no caller after T-3786, yet one call would have brought back the
+# index wipe; it is removed, and test_t3786 keeps the builder out of web/blueprints.
 
 
 @bp.route("/decisions")

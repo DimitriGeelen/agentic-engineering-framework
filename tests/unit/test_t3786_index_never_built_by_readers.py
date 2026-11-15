@@ -89,3 +89,15 @@ def test_successful_build_swaps_atomically(tmp_db, monkeypatch):
         assert con.execute("SELECT COUNT(*) FROM sqlite_master").fetchone()[0] > 0
     finally:
         con.close()
+
+
+def test_no_watchtower_page_module_can_start_a_build():
+    """T-3786: a page view never builds. The discovery blueprint used to hold a
+    background build helper; nothing may import or call build_index from web/blueprints."""
+    import pathlib
+    import re
+    root = pathlib.Path(__file__).resolve().parents[2] / "web" / "blueprints"
+    use = re.compile(r"\bbuild_index\s*\(|import[^\n#]*\bbuild_index\b")
+    offenders = [p.name for p in root.glob("*.py")
+                 if any(use.search(line.split("#", 1)[0]) for line in p.read_text().splitlines())]
+    assert offenders == [], offenders

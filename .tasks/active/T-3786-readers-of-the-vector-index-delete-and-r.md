@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-03T23:51:41Z
-last_update: '2026-10-31T13:15:22Z'
+last_update: 2026-11-15T07:09:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -148,16 +148,26 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Background / trigger:** On 2026-10-03/04 our 2.5 GB vector index (semantic recall for `fw recall`, `fw ask` and Watchtower search) was found at 45 KB. Readers had wiped it.
+
+**Problem / hypothesis:** `web/embeddings.py` `_get_db()` fell through to `build_index()` on any error opening the index. That function unlinked the live file and rebuilt it in place, which takes hours. A transient error, such as sqlite locked during the hourly swap, in a caller with a timeout (post-write hook, recall, a Watchtower page) therefore deleted the index, and the timeout killed the rebuild, leaving it empty. Watchtower's discovery page also started a background build.
+
+**Goal:** no reader ever builds or deletes the index; only `fw index reindex` builds, and it builds atomically.
+
+**Expected outcome:** a reader that cannot open the index says so, with the remedy, and leaves the file untouched. A killed or failed build leaves the previous index and its manifest intact.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `_get_db()` never builds: when the existing index cannot be opened or is empty it raises IndexUnavailable (with the remedy `fw index reindex`) and leaves the file untouched
-- [ ] Watchtower's discovery page no longer starts a background `build_index()`; it reports the index as unavailable with the remedy
-- [ ] `build_index()` is atomic: it builds into `<db>.building` and swaps it (and its manifest) in with os.replace; a killed or failed build leaves the previous index and manifest intact
-- [ ] Tests: a reader against an unopenable/empty index raises and does not delete or rewrite it; a build that fails midway leaves the old index byte-identical; a successful build swaps the file and manifest
+- [x] `_get_db()` never builds: when the existing index cannot be opened or is empty it raises IndexUnavailable (with the remedy `fw index reindex`) and leaves the file untouched
+      — `web/embeddings.py` `_get_db` (commit 4593863c4): three `IndexUnavailable` raises (unopenable, empty, missing), each naming `fw index reindex`; no build path.
+- [x] Watchtower's discovery page no longer starts a background `build_index()`; it reports the index as unavailable with the remedy
+      — the ask stream reports "never rebuilt from this page; rebuild with: fw index reindex" (4593863c4). 2026-11-15: the dead `_trigger_async_index_build` helper, which still held a background build, is removed, and `test_no_watchtower_page_module_can_start_a_build` refuses any call or import of the builder under `web/blueprints/`.
+- [x] `build_index()` is atomic: it builds into `<db>.building` and swaps it (and its manifest) in with os.replace; a killed or failed build leaves the previous index and manifest intact
+      — builds into `<db>.<pid>.building` (pid-scoped since T-3860), then `os.replace` for the file and its manifest.
+- [x] Tests: a reader against an unopenable/empty index raises and does not delete or rewrite it; a build that fails midway leaves the old index byte-identical; a successful build swaps the file and manifest
+      — `tests/unit/test_t3786_index_never_built_by_readers.py` 6/6; 85 tests that read the discovery/search code pass.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
