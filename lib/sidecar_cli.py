@@ -344,6 +344,15 @@ def _orphan_lines(orphans) -> list[str]:
 
 def cmd_orphan_inboxes(args) -> int:
     """T-4418: exit 0 none, 1 found, 2 the hub could not be asked."""
+    if getattr(args, "ack", None):
+        # T-5149: acknowledge one orphan inbox up to its current latest offset
+        off = addressing.ack_orphan_inbox(args.ack) if __import__("shutil").which("termlink") else None
+        if off is None:
+            print(f"orphan-inboxes: could not acknowledge {args.ack} (hub not asked, or topic "
+                  f"not listed)", file=sys.stderr)
+            return 2
+        print(f"acknowledged {args.ack} up to offset {off}; newer posts will be reported")
+        return 0
     rows = addressing.orphan_inboxes() if __import__("shutil").which("termlink") else None
     if args.json:
         print(json.dumps(rows))
@@ -1507,6 +1516,9 @@ def build_parser() -> argparse.ArgumentParser:
                         "no known agent reads — mail sent to a nickname (T-4418; exit 1 found, "
                         "2 the hub could not be asked)")
     oi.add_argument("--json", action="store_true")
+    oi.add_argument("--ack", metavar="TOPIC",
+                    help="record TOPIC's current posts as dealt with; it is reported again "
+                         "only when newer posts arrive (T-5149)")
     oi.set_defaults(func=cmd_orphan_inboxes)
 
     st = sub.add_parser("status", help="out-of-band channel status from our own "

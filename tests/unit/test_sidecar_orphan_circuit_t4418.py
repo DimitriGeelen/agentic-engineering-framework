@@ -305,3 +305,40 @@ def test_second_send_to_a_prompt_driven_reader_goes_with_a_note(cli, monkeypatch
     err = capsys.readouterr().err
     assert rc == 0 and len(cli.posted) == 1
     assert "REFUSED" not in err and "WARNING" not in err and "queues unread" in err
+
+
+# ── T-5149 (010 T-3798): peeks do not hide an orphan; a nickname is judged ────────────────
+
+def _lrow(name, count, latest, fetch=None, unread=None):
+    r = _row(name, count=count, fetch=fetch, unread=unread)
+    r["latest_offset"] = latest
+    return r
+
+
+def test_a_peeked_orphan_is_still_reported(env):
+    # fetched after the last write (a scan peeked it), so the hub says "read"
+    rows = [_lrow(f"inbox:{OWN}/stray-nick", 4, 3, fetch=NOW - 1000)]
+    got = env.orphan_inboxes(runner=_runner(rows))
+    assert [(r["topic"], r["count"]) for r in got] == [(f"inbox:{OWN}/stray-nick", 4)]
+
+
+def test_an_acknowledged_orphan_comes_back_only_with_newer_posts(env):
+    rows = [_lrow(f"inbox:{OWN}/stray-nick", 4, 3)]
+    assert env.ack_orphan_inbox(f"inbox:{OWN}/stray-nick", runner=_runner(rows)) == 3
+    assert env.orphan_inboxes(runner=_runner(rows)) == []
+    rows = [_lrow(f"inbox:{OWN}/stray-nick", 6, 5)]
+    got = env.orphan_inboxes(runner=_runner(rows))
+    assert got[0]["count"] == 2
+
+
+def test_a_peer_nickname_is_judged_even_when_a_sibling_directory_has_that_name(env, monkeypatch):
+    _learn(env, "010-termlink", f"{OWN}/010-termlink")
+    monkeypatch.setattr(env.circuit, "is_project_id", lambda name: True)   # /opt/termlink exists
+    rows = [_lrow(f"inbox:{OWN}/termlink", 54, 53, fetch=NOW - 1000)]
+    got = env.orphan_inboxes(runner=_runner(rows))
+    assert got[0]["topic"] == f"inbox:{OWN}/termlink" and got[0]["nickname_of"] == ["010-termlink"]
+
+
+def test_a_numbered_project_inbox_is_still_not_an_orphan(env):
+    rows = [_lrow(f"inbox:{OWN}/055-agentic-fleet-cockpit", 3, 2)]
+    assert env.orphan_inboxes(runner=_runner(rows)) == []
