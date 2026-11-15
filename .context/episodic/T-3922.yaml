@@ -1,0 +1,122 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3922: Triage the 127 waiting sidecar messages: classify each (request / proposal / issue / FYI-ack), check whether already done or answered, take on what is ours, and hand the operator only the judgment calls — each as a decision with a recommendation (operator 2026-10-06)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T10:27:06Z
+# ============================================================================
+
+task_id: T-3922
+task_name: "Triage the 127 waiting sidecar messages: classify each (request / proposal / issue / FYI-ack), check whether already done or answered, take on what is ours, and hand the operator only the judgment calls — each as a decision with a recommendation (operator 2026-10-06)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-06T08:39:15Z
+completed: 2026-11-15T10:26:47Z
+duration_days: 40
+updates_count: 2
+first_commit: 2026-10-06T10:49:16+02:00
+last_commit: 2026-11-15T11:26:45+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  129 waiting sidecar messages triaged by 3 read-only workers — 118 settled (drop runme for the operator, evidence per item), 5 taken on (T-3923..T-3927), 4 decisions for the operator with recommendations. operator rulings recorded — post-upgrade report (T-3928), wait for ring20-manager's supervisor review request, launcher re-explained, project patch series inception (T-3929). ring20-manager answered (T-2250 route-ledger proposal -> operator decision; T-2222 inception protocol v0.3 -> inception T-3935); 832 acked, reviewer-judge --criterion bug taken first; T-3934 index inception filed. 010's three HIGH upgrade-safety findings filed (T-3955, T-3956, T-3957). 1409's worker Watchtower/sidecar leak filed (T-3959). ring20 S-1 §4.11 — AEF stays on option A; inception T-3961 filed (Tier 0 single pending slot + orch-approve verb). file T-3964..T-3968 from peer mail; curated first action in handover S-2026-1006-2242. context; verification checks every waiting item has a verdict (129/129)
+
+# Key outcomes
+outcomes:
+  - 'Every waiting item (snapshot `docs/reports/T-3922-waiting-items.json`) is assessed. Per-item detail is in `T-3922-triage-{ring20,832-010,rest}.md` and the verdict map in `T-3922-verdicts.json` (129/129 mapped); the integration is `docs/reports/T-3922-waiting-triage.md`. Each entry gives:'
+  - 'The assessment is done by TermLink workers, read-only. They never drop, send or edit anything outside their report files. Their reports are integrated here.'
+  - '(runme `drop-settled-waiting`, 118 drops) `close` items: one operator runme line drops them all, each with its evidence as the reason (`fw sidecar drop` is operator-only).'
+  - '(T-3923…T-3927) `take-on` items: tasks filed or linked.'
+  - '(4 decisions from 9 items, in the triage report) `operator` items: presented to the operator as decisions, few and each with a recommendation.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'ring20-manager answered (T-2250 route-ledger proposal -> operator decision; T-2222 inception protocol v0.3 -> inception T-3935); 832 acked, reviewer-judge --criterion bug taken first; T-3934 index inception filed'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/handovers/S-2026-1006-2242.md'
+  - '.tasks/active/T-3922-triage-the-127-waiting-sidecar-messages-.md'
+  - '.tasks/active/T-3923-checkpointhandover-hook-sanitise-arithme.md'
+  - '.tasks/active/T-3924-fw-config-set-writes-a-lowercase-key-inc.md'
+  - '.tasks/active/T-3925-fw-upgrade-print-the-patch-lost-list-in-.md'
+  - '.tasks/active/T-3926-fw-git-install-hooks-strips-a-consumers-.md'
+  - '.tasks/active/T-3927-fw-doctor-right-after-fw-upgrade-reports.md'
+  - '.tasks/active/T-3928-structured-post-upgrade-report-every-con.md'
+  - '.tasks/active/T-3929-project-patch-series-in-fw-vendorupgrade.md'
+  - '.tasks/active/T-3934-derived-sqlite-task-index-as-an-opt-in-s.md'
+  - '.tasks/active/T-3935-adopt-ring20-managers-inception-protocol.md'
+  - '.tasks/active/T-3955-fw-upgrade-step-7b-overwrites-a-consumer.md'
+  - '.tasks/active/T-3956-fw-upgrade-step-7-replaces-a-consumers-c.md'
+  - '.tasks/active/T-3957-sidecar-projectid-ignores-railprojectlab.md'
+  - '.tasks/active/T-3959-fwwatchtowerensure-and-the-sidecar-start.md'
+  - '.tasks/active/T-3961-tier-0-holds-one-pending-action-slot-tha.md'
+  - '.tasks/active/T-3964-arc-rescore-uses-projectrootbinfw-fails-.md'
+  - '.tasks/active/T-3965-upgrade-step-2-overwrites-customised-tas.md'
+  - '.tasks/active/T-3966-sidecar-inbox-drains-dm-rails-on-the-hos.md'
+  - '.tasks/active/T-3967-fw-ask--fw-recall-keep-no-query-telemetr.md'
+  - '.tasks/active/T-3968-project-declared-operator-only-carve-out.md'
+  - 'docs/reports/T-3922-triage-832-010.md'
+  - 'docs/reports/T-3922-triage-rest.md'
+  - 'docs/reports/T-3922-triage-ring20.md'
+  - 'docs/reports/T-3922-verdicts.json'
+  - 'docs/reports/T-3922-waiting-items.json'
+  - 'docs/reports/T-3922-waiting-triage.md'
+  - 'docs/reports/T-3922-worker-brief.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T10:49:16'
+    action: 'T-3922: 129 waiting sidecar messages triaged by 3 read-only workers — 118 settled (drop runme for the operator, evidence per item), 5 taken on (T-3923..T-3927), 4 decisions for the operator with recommendations'
+  - time: '2026-10-06T11:12:46'
+    action: 'T-3922: operator rulings recorded — post-upgrade report (T-3928), wait for ring20-manager''s supervisor review request, launcher re-explained, project patch series inception (T-3929)'
+  - time: '2026-10-06T12:18:46'
+    action: 'T-3922: ring20-manager answered (T-2250 route-ledger proposal -> operator decision; T-2222 inception protocol v0.3 -> inception T-3935); 832 acked, reviewer-judge --criterion bug taken first; T-3934 index inception filed'
+  - time: '2026-10-06T17:59:46'
+    action: 'T-3922: 010''s three HIGH upgrade-safety findings filed (T-3955, T-3956, T-3957)'
+  - time: '2026-10-06T20:42:02'
+    action: 'T-3922: 1409''s worker Watchtower/sidecar leak filed (T-3959)'
+  - time: '2026-10-06T21:25:36'
+    action: 'T-3922: ring20 S-1 §4.11 — AEF stays on option A; inception T-3961 filed (Tier 0 single pending slot + orch-approve verb)'
+  - time: '2026-10-06T23:11:31'
+    action: 'T-3922: file T-3964..T-3968 from peer mail; curated first action in handover S-2026-1006-2242'
+  - time: '2026-11-15T11:26:45'
+    action: 'T-3922: context; verification checks every waiting item has a verdict (129/129)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 57707 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 57707
+  commits: 9
+  files_changed: 31
+  lines_added: 10605
+  lines_removed: 8
+  footprint_refreshed_at: '2026-11-15T10:27:17Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3922-triage-the-127-waiting-sidecar-messages-.md
+generated_by: context-agent-hybrid
