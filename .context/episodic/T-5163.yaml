@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5163: Command palette search fall-through drops the query
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T22:38:05Z
+# ============================================================================
+
+task_id: T-5163
+task_name: "Command palette search fall-through drops the query"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-15T22:29:11Z
+completed: 2026-11-15T22:35:43Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-15T23:35:40+01:00
+last_commit: 2026-11-15T23:35:40+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  palette fall-through test pins T-4061's POST search (query in the body, never in the URL) instead of the old GET ?q= form; not a product bug
+
+# Key outcomes
+outcomes:
+  - 'the fall-through test asserts `data-url == "/search"`, a POST to /search whose body has `q=<query>`, and no query text in the final URL'
+  - '`tests/playwright/test_command_palette.py` passes; no product code changed (7 passed)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'palette fall-through test pins T-4061''s POST search (query in the body, never in the URL) instead of the old GET ?q= form; not a product bug'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5163-command-palette-search-fall-through-drop.md'
+  - 'tests/playwright/test_command_palette.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-15T23:35:40'
+    action: 'T-5163: palette fall-through test pins T-4061''s POST search (query in the body, never in the URL) instead of the old GET ?q= form; not a product bug'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [playwright, ci]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6
+  commits: 2
+  files_changed: 5
+  lines_added: 146
+  lines_removed: 17
+  footprint_refreshed_at: '2026-11-15T22:38:25Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5163-command-palette-search-fall-through-drop.md
+generated_by: context-agent-hybrid
