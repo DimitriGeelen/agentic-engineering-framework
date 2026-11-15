@@ -46,7 +46,7 @@ origin: {kind: "operator", ref: "2026-10-06 'work them, check them, close the do
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T08:39:15Z
-last_update: '2026-10-31T13:15:25Z'
+last_update: 2026-11-15T10:25:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -125,7 +125,13 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Background / trigger:** Operator ruling 2026-10-06: about 127 sidecar messages to AEF were waiting, and the operator asked for each to be classified (request, proposal, issue, FYI/ack), checked for whether it was already done or answered, taken on where it is ours, and only the judgment calls handed to the operator as decisions with a recommendation.
+
+**Problem / hypothesis:** a waiting list that only grows hides both finished work and real asks. Settled items need closing with evidence, and open ones need an owner.
+
+**Goal:** a verdict for every waiting item: close (with evidence), take on (task filed or linked), or operator decision (few, each with a recommendation).
+
+**Expected outcome:** `docs/reports/T-3922-verdicts.json` maps every item in the snapshot `docs/reports/T-3922-waiting-items.json`, and the settled ones are dropped by an operator runme.
 
 ## Acceptance Criteria
 
@@ -173,6 +179,9 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+python3 -c "import json; s=json.load(open('docs/reports/T-3922-waiting-items.json'))['items']; v=json.load(open('docs/reports/T-3922-verdicts.json')); ids={x['id'] for x in v}; assert len(v)>=len(s) and all(x.get('verdict') in ('close','take-on','operator') for x in v), (len(v),len(s))"
+ls docs/reports/T-3922-triage-*.md
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
