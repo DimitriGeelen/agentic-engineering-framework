@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5151: Review capture requires screenshots of GET routes that only answer with a query (/ask, /ask/stream, /search/load-conversation → 404), so render criteria on those blueprints can never be judged
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-15T20:48:23Z
+# ============================================================================
+
+task_id: T-5151
+task_name: "Review capture requires screenshots of GET routes that only answer with a query (/ask, /ask/stream, /search/load-conversation → 404), so render criteria on those blueprints can never be judged"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-15T16:58:16Z
+completed: 2026-11-15T20:47:58Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-15T20:55:39+01:00
+last_commit: 2026-11-15T21:47:56+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  WIP, UNTESTED — derived blueprint routes that answer a bare GET with 4xx are dropped from the required review pages (named pages kept); brief line and tests still to do. brief names the derived routes left out (not a page on its own, with status); criteria without a body tolerated; 6 tests; t4943 stubs the bare-GET probe (it asked whatever listens on :3000)
+
+# Key outcomes
+outcomes:
+  - 'a route derived only from a changed blueprint (not named in any render criterion) that answers a bare GET with 4xx is removed from the required pages and recorded with its status; 2xx, 3xx, 5xx and unreachable routes stay required'
+  - 'pages a render criterion names stay required whatever they answer'
+  - 'the brief lists the removed routes ("not a page on its own") with their status'
+  - 'tests (HTTP stubbed) for each case; every test that reads `judge_cli.py` passes (2026-11-15: 44 files, 776 passed after the fix below; the one other red, t4844 opencode seat config, fails on the base too and is filed separately; bats 17 ok)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.tasks/active/T-5151-review-capture-requires-screenshots-of-g.md'
+  - 'lib/reviewer/judge_cli.py'
+  - 'tests/unit/t4943_capture_every_required_page_test.py'
+  - 'tests/unit/test_t5151_bare_get_not_pages.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-15T20:55:39'
+    action: 'T-5151: WIP, UNTESTED — derived blueprint routes that answer a bare GET with 4xx are dropped from the required review pages (named pages kept); brief line and tests still to do'
+  - time: '2026-11-15T21:47:56'
+    action: 'T-5151: brief names the derived routes left out (not a page on its own, with status); criteria without a body tolerated; 6 tests; t4943 stubs the bare-GET probe (it asked whatever listens on :3000)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 229 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 229
+  commits: 3
+  files_changed: 8
+  lines_added: 650
+  lines_removed: 12
+  footprint_refreshed_at: '2026-11-15T20:48:34Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5151-review-capture-requires-screenshots-of-g.md
+generated_by: context-agent-hybrid

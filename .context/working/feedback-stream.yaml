@@ -55423,3 +55423,21 @@ scan_id: R-35f39249
 task_id: T-5149
 payload:
   task_file: .tasks/active/T-5149-orphan-inbox-detector-is-blinded-by-peek.md
+---
+kind: scan_emitted
+timestamp: '2026-11-15T20:48:09Z'
+scan_id: R-53f8dcca
+task_id: T-5151
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-15T20:48:09Z'
+scan_id: R-53f8dcca
+task_id: T-5151
+payload:
+  task_file: .tasks/active/T-5151-review-capture-requires-screenshots-of-g.md
