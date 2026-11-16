@@ -1,0 +1,28 @@
+{
+  "id": "ev-0142-out4",
+  "type": "test_report",
+  "schema_version": 1,
+  "content_hash": "sha256:876565a705f7255a42f86e1277d23755a35347b5b03bedd2e00e9eec32d39371",
+  "content_ref": "blob.bus.T-123.R-004",
+  "snapshot_ts": "2026-09-18T15:20:03Z",
+  "redacted": true,
+  "status": "accepted",
+  "producer": {
+    "actor": {
+      "identity": "agent:claude-master-1141196",
+      "kind": "agent",
+      "auth_ref": "auth.termlink.token.v1"
+    },
+    "attempt_id": "att-0142-004",
+    "instance_id": "wi-0142"
+  },
+  "declared_inputs": [
+    "ev-0142-in3"
+  ],
+  "validation_refs": [
+    "validate.test-report.v1"
+  ],
+  "decision_refs": [],
+  "supersedes": "ev-0142-out3",
+  "accepted_at": "2026-09-18T15:22:00Z"
+}

@@ -1,0 +1,35 @@
+{
+  "envelope_id": "env-0142-002",
+  "instance_id": "wi-0142",
+  "actor": {
+    "identity": "user:dimitri",
+    "kind": "human",
+    "auth_ref": "auth.watchtower.session.v1"
+  },
+  "proposed_at": "2026-09-18T15:02:00Z",
+  "source_state": "ready",
+  "target_state": "running",
+  "node": "authorise",
+  "edge": "authorise->run_tests",
+  "reason": "human gate approve",
+  "bound_task_content_hash": "sha256:a5d917465fe649c83b1d8b521b97e418d531354699cc873ee2b90d3f0c9f1b45",
+  "input_refs": [],
+  "output_refs": [
+    "ev-0142-auth"
+  ],
+  "correlation_id": "corr-0142-002",
+  "idempotency_key": "wi-0142:env:2:approve",
+  "prior_position": {
+    "index": 1,
+    "hash": "sha256:b2a4557540d33c4c78a7ae28316afcd3408caf58a80979ff50835e7182baa8e7"
+  },
+  "admission": {
+    "status": "admitted",
+    "admitted_at": "2026-09-18T15:02:00.250Z",
+    "position": {
+      "index": 2,
+      "hash": "sha256:a2daaaecd1e96773ac203c4500d083a0e5e5ec405efc5bc835a7b8ce5cecc816"
+    },
+    "runner_identity": "runner:ewcr-pilot-1"
+  }
+}

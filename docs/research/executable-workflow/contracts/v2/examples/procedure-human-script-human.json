@@ -1,0 +1,98 @@
+{
+  "id": "human-script-human",
+  "version": "1.0.0",
+  "status": "ratified",
+  "content_hash": "sha256:610c6a72035fd13ce6bdb5cfd27cb92a7f3ccc139378253fea26815f9b97480b",
+  "ratification": {
+    "actor": {
+      "identity": "user:dimitri",
+      "kind": "human",
+      "auth_ref": "auth.watchtower.session.v1"
+    },
+    "ts": "2026-09-18T16:00:00Z",
+    "decision_ref": "decision.T-3388.fixture"
+  },
+  "start_node": "gate_in",
+  "terminal_nodes": [
+    "done"
+  ],
+  "nodes": [
+    {
+      "uid": "gate_in",
+      "kind": "human_gate",
+      "outcome": "work_authorised",
+      "inputs": [
+        "task_id"
+      ],
+      "outputs": [
+        "authorisation"
+      ],
+      "human_decision_map": {
+        "approve": "run_script",
+        "decline": "done"
+      }
+    },
+    {
+      "uid": "run_script",
+      "kind": "script",
+      "outcome": "script_evidence_produced",
+      "inputs": [
+        "task_id"
+      ],
+      "outputs": [
+        "script_report"
+      ],
+      "action_ref": "script.registered.example.v1",
+      "execution_profile_ref": "exec.deterministic.v1",
+      "capability_profile_ref": "cap.binding.example-script.v1",
+      "timeout": "PT10M",
+      "retry": {
+        "max_attempts": 0
+      }
+    },
+    {
+      "uid": "gate_out",
+      "kind": "human_gate",
+      "outcome": "evidence_reviewed",
+      "inputs": [
+        "script_report"
+      ],
+      "outputs": [
+        "decision"
+      ],
+      "human_decision_map": {
+        "accept": "done",
+        "reject": "done"
+      }
+    },
+    {
+      "uid": "done",
+      "kind": "gateway",
+      "outcome": "procedure_closed"
+    }
+  ],
+  "edges": [
+    {
+      "from": "gate_in",
+      "to": "run_script",
+      "required_outputs": [
+        "authorisation"
+      ]
+    },
+    {
+      "from": "gate_in",
+      "to": "done"
+    },
+    {
+      "from": "run_script",
+      "to": "gate_out",
+      "required_outputs": [
+        "script_report"
+      ]
+    },
+    {
+      "from": "gate_out",
+      "to": "done"
+    }
+  ]
+}

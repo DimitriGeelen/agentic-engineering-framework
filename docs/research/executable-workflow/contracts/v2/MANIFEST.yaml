@@ -1,0 +1,85 @@
+# EWCR contracts v2 — frozen hashes. Regenerate ONLY with a version bump
+# (tools/ewcr-contracts-check.py --contracts-version 2 --write --force). Drift here is a refusal, not a warning.
+# --write regenerates `schemas:` only; the `changes:` and `documents:` blocks below are
+# written by hand and must be re-added after it.
+contracts_version: 2
+source: architecture-c9070637.md
+frozen_by: T-5179
+schemas:
+- file: attempt.schema.json
+  sha256: 4312709ae2aa9b97880f4ba8e6daec5d230216d2eb5cd5f3b78d731545c8b518
+  schema_version: 1
+  carried_from: v1
+- file: deadline-event.schema.json
+  sha256: 0155e5ea24a127f09de98b939896d2c987a3e2e71d6e727502ab178743090338
+  schema_version: 1
+  carried_from: v1
+- file: evidence-reference.schema.json
+  sha256: 3a853345b656e93b6e6fc6a987b73709013f69d8ea3056e5d3b4613db2ac5a5c
+  schema_version: 1
+  carried_from: v1
+- file: instance.schema.json
+  sha256: 1bc5c35e53ec78b1eb1544f2980ca190706fab7d2eb819fd7577b57e5361ba12
+  schema_version: 1
+  carried_from: v1
+- file: procedure.schema.json
+  sha256: ac9aaefc2495b67679c81b77d74cd622a134c82df5503d84e1e31fed5752edf5
+  schema_version: 1
+  carried_from: v1
+- file: refusal.schema.json
+  sha256: c4148a34b54ed8bf3e3cb7c75b79aba5cb6c0923b9ca28406cb9329d7c9cb857
+  schema_version: 2
+  changed_in: v2
+- file: transition-envelope.schema.json
+  sha256: 8e038ac2eca9baa3984f713d92183dd681b2ba63523682d27a591ea6251076df
+  schema_version: 1
+  carried_from: v1
+
+# What v2 changes from v1, and why. v1 stays frozen and untouched.
+changes:
+  from: v1
+  changed_by: T-5179
+  source: T-5135 (docs/reports/EWCR/T-5135-deepseek-mistral-dispositions.md, rows DS-1 and MS-3)
+  decision: operator, 2026-11-16 — accept N-1 and N-2 as new acceptance scenarios
+  summary:
+  - "accepted-scenarios.md (new): N-1 and N-2, each with situation, required behaviour and pass/fail test"
+  - "refusal.schema.json (version 2): reason_code privilege_exceeds_profile and its privilege_excess record (N-2); scenario_refs also accepts the ids N-1 and N-2"
+  - "examples/refusal-task-cancelled-during-attempt.json and examples/refusal-privilege-exceeds-profile.json (new)"
+  - "traceability.yaml: accepted_scenarios rows N-1 and N-2; the twenty §13 rows are unchanged"
+  - "refusal-threat-matrix.md: rows DS-1 and MS-3 and §5.1 now say the scenarios are accepted"
+  - "the other six schemas, task-lifecycle-contract.md, evidence-and-idempotency.md and the ten v1 examples are byte-identical to v1"
+
+# Prose contracts and trace/analysis surfaces in this directory. No sha256 is
+# recorded for them (as in v1). A row marked `carried_from: v1` IS checked: the
+# fence compares the file byte for byte with v1's.
+documents:
+- file: task-lifecycle-contract.md
+  frozen_by: T-3386
+  carried_from: v1
+  fence: python3 tools/ewcr-contracts-check.py --contracts-version 2
+- file: evidence-and-idempotency.md
+  frozen_by: T-3387
+  carried_from: v1
+  fence: python3 tools/ewcr-contracts-check.py --contracts-version 2
+- file: accepted-scenarios.md
+  frozen_by: T-5179
+  new_in: v2
+  fence: python3 tools/ewcr-trace-check.py --contracts-version 2
+  note: >
+    Scenarios N-1 and N-2. The trace fence checks that each statement in
+    traceability.yaml matches this document verbatim and that its example refusal
+    validates against refusal.schema.json.
+- file: traceability.yaml
+  frozen_by: T-3393
+  changed_in: v2
+  changed_by: T-5179
+  fence: python3 tools/ewcr-trace-check.py --contracts-version 2
+- file: refusal-threat-matrix.md
+  frozen_by: T-3389
+  changed_in: v2
+  changed_by: T-5179
+  fence: python3 tools/ewcr-contracts-check.py --contracts-version 2
+  note: >
+    Consolidated refusal/threat matrix over the four external reviews. Changed in v2
+    only where rows DS-1 and MS-3 and §5.1 called N-1 and N-2 proposals; they are now
+    accepted. Carries the §13 would-fail measurement (14 of 20), unchanged.

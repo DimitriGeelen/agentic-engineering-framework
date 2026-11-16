@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aef.geelenandcompany.com/ewcr/contracts/v1/deadline-event.schema.json",
+  "title": "EWCR v1 — Deadline event",
+  "version": 1,
+  "description": "Freezes architecture-c9070637.md §7.4 (time is durable runtime input: every timeout, retry window, wait-event deadline, routing deadline, lease and TTL is an absolute deadline recorded when admitted; after restart the runner folds the ledger and evaluates overdue deadlines against its declared clock source, never resetting elapsed time; duplicate evaluation is idempotent) and §13 #17.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "deadline_id",
+    "instance_id",
+    "kind",
+    "subject",
+    "admitted_at",
+    "admitted_in_envelope",
+    "due_at",
+    "clock_source",
+    "status",
+    "evaluation_idempotency_key",
+    "on_expiry_route"
+  ],
+  "properties": {
+    "deadline_id": {
+      "type": "string",
+      "pattern": "^dl-[A-Za-z0-9._-]+$"
+    },
+    "instance_id": {
+      "type": "string",
+      "pattern": "^wi-[A-Za-z0-9._-]+$"
+    },
+    "kind": {
+      "enum": [
+        "timeout",
+        "retry_window",
+        "wait_event",
+        "routing",
+        "lease",
+        "ttl"
+      ]
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "ref"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "node",
+            "attempt",
+            "instance",
+            "routing"
+          ]
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "admitted_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+    },
+    "admitted_in_envelope": {
+      "type": "string",
+      "pattern": "^env-[A-Za-z0-9._-]+$"
+    },
+    "due_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$",
+      "description": "Absolute wall-clock deadline fixed at admission. Immutable — a new budget is a new deadline event superseding this one."
+    },
+    "clock_source": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Runner's declared wall-clock source (§7.4)."
+    },
+    "status": {
+      "enum": [
+        "pending",
+        "fired",
+        "cancelled",
+        "superseded"
+      ]
+    },
+    "fired_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+    },
+    "fired_in_envelope": {
+      "type": "string",
+      "pattern": "^env-[A-Za-z0-9._-]+$"
+    },
+    "evaluation_idempotency_key": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Two evaluations of the same key are one firing (§7.4, §13 #17)."
+    },
+    "superseded_by": {
+      "type": "string",
+      "pattern": "^dl-[A-Za-z0-9._-]+$"
+    },
+    "on_expiry_route": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Declared edge/route taken when it fires — never an implicit retry."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "fired"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "fired_at",
+          "fired_in_envelope"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "superseded"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "superseded_by"
+        ]
+      }
+    }
+  ]
+}

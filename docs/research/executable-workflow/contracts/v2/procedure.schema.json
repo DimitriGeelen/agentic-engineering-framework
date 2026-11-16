@@ -1,0 +1,323 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aef.geelenandcompany.com/ewcr/contracts/v1/procedure.schema.json",
+  "title": "EWCR v1 — Workflow procedure",
+  "version": 1,
+  "description": "Freezes architecture-c9070637.md §2.1 (procedure = ratified institutional method, immutable once ratified), §6.1 (node/edge contract), §6.2 (bounded action vocabulary), §7.1 (lifecycle draft → validate → proposed → ratified → deprecated). A change to a ratified procedure is a NEW version; content_hash pins the ratified bytes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "version",
+    "status",
+    "content_hash",
+    "start_node",
+    "terminal_nodes",
+    "nodes",
+    "edges"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "validated",
+        "proposed",
+        "ratified",
+        "deprecated"
+      ]
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "ratification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actor",
+        "ts"
+      ],
+      "properties": {
+        "actor": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "identity",
+            "kind"
+          ],
+          "properties": {
+            "identity": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Per-agent authenticated identity. Host identity alone is refused as ambiguous (arch §7.3, §13 #12)."
+            },
+            "kind": {
+              "enum": [
+                "human",
+                "agent",
+                "runner",
+                "watchtower",
+                "external"
+              ]
+            },
+            "auth_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+            }
+          }
+        },
+        "ts": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+        },
+        "decision_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+        }
+      },
+      "description": "Present iff status is ratified or deprecated. Actor.kind must be human (§2.1, §7.1)."
+    },
+    "successor_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "start_node": {
+      "type": "string"
+    },
+    "terminal_nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "uid",
+          "kind",
+          "outcome"
+        ],
+        "properties": {
+          "uid": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "kind": {
+            "enum": [
+              "human_gate",
+              "script",
+              "command",
+              "agent_prompt",
+              "service",
+              "call_workflow",
+              "wait_event",
+              "gateway",
+              "compensate"
+            ]
+          },
+          "outcome": {
+            "type": "string",
+            "minLength": 1
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "outputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "action_ref": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+          },
+          "execution_profile_ref": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+          },
+          "capability_profile_ref": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+          },
+          "context_selectors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "timeout": {
+            "type": "string",
+            "pattern": "^P(?!$)(\\d+D)?(T(\\d+H)?(\\d+M)?(\\d+S)?)?$"
+          },
+          "retry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "max_attempts"
+            ],
+            "properties": {
+              "max_attempts": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10
+              }
+            }
+          },
+          "human_decision_map": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "human_gate only: decision label → outgoing edge. A gate without a mapped decision cannot auto-advance (§6.2)."
+          },
+          "compensation_ref": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "script"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "action_ref",
+                "capability_profile_ref"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "command"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "action_ref",
+                "capability_profile_ref"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "human_gate"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "human_decision_map"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "from",
+          "to"
+        ],
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "required_outputs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "guard": {
+            "type": "string",
+            "maxLength": 300,
+            "description": "Constrained, typed, deterministic expression over declared outputs — never arbitrary code (§6.1)."
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "ratified",
+              "deprecated"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "ratification"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "deprecated"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "successor_version"
+        ]
+      }
+    }
+  ]
+}

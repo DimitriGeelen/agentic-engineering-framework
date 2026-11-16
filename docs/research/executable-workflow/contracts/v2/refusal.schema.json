@@ -1,0 +1,267 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aef.geelenandcompany.com/ewcr/contracts/v2/refusal.schema.json",
+  "title": "EWCR v2 — Refusal record",
+  "version": 2,
+  "description": "Freezes architecture-c9070637.md §2.5 (evidence of correct refusal: no side effect, durable record), §7.4 (refusal leaves the instance at its node with a recovery requirement; stale-position / conflict refusals for racing proposals), and the refusal routes of §13 scenarios 1–8, 11–13, 15–16, 18–20. reason_code values map one-to-one onto those scenarios. v2 (T-5179, operator decision 2026-11-16) adds the refusal routes of the accepted scenarios N-1 and N-2 (accepted-scenarios.md): reason_code privilege_exceeds_profile with its privilege_excess record, and N-1 / N-2 as scenario_refs values. Everything else is as in v1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "refusal_id",
+    "ts",
+    "instance_id",
+    "requested_by",
+    "refused_by",
+    "reason_code",
+    "detail",
+    "scenario_refs",
+    "side_effect",
+    "recovery_requirement",
+    "ledger_position"
+  ],
+  "properties": {
+    "refusal_id": {
+      "type": "string",
+      "pattern": "^ref-[A-Za-z0-9._-]+$"
+    },
+    "ts": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+    },
+    "instance_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^wi-[A-Za-z0-9._-]+$"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "null only when refusing instance creation itself (§13 #1)."
+    },
+    "envelope_id": {
+      "type": "string",
+      "pattern": "^env-[A-Za-z0-9._-]+$"
+    },
+    "attempt_id": {
+      "type": "string",
+      "pattern": "^att-[A-Za-z0-9._-]+$"
+    },
+    "requested_by": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identity",
+        "kind"
+      ],
+      "properties": {
+        "identity": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Per-agent authenticated identity. Host identity alone is refused as ambiguous (arch §7.3, §13 #12)."
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "runner",
+            "watchtower",
+            "external"
+          ]
+        },
+        "auth_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+        }
+      }
+    },
+    "refused_by": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Runner identity. Exactly one privileged runner admits or refuses (§7.3)."
+    },
+    "reason_code": {
+      "enum": [
+        "unratified_procedure",
+        "unresolved_reference",
+        "human_gate_skipped",
+        "scope_mismatch",
+        "missing_typed_input",
+        "unmeasured_component_scope",
+        "duplicate_delivery",
+        "capability_unsupported",
+        "direct_state_mutation",
+        "ambiguous_identity",
+        "task_hash_drift",
+        "policy_or_capability_drift",
+        "bypass_input",
+        "cancellation_in_effect",
+        "stale_position",
+        "command_substitution",
+        "deadline_expired",
+        "privilege_exceeds_profile"
+      ],
+      "description": "privilege_exceeds_profile is new in v2 (N-2): the resolved binding can do more than the node's declared capability profile allows. scope_mismatch (repository/worktree scope) and capability_unsupported (the provider cannot do the thing) name different axes."
+    },
+    "detail": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "scenario_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          },
+          {
+            "enum": [
+              "N-1",
+              "N-2"
+            ]
+          }
+        ]
+      },
+      "description": "Acceptance scenarios this refusal is evidence for: architecture-c9070637.md §13 numbers (1–20), or, new in v2, the ids of scenarios accepted after §13 was frozen (accepted-scenarios.md). N-1 and N-2 are ids, not §13 numbers: §13 is not renumbered."
+    },
+    "privilege_excess": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node",
+        "capability_profile_ref",
+        "binding_ref",
+        "excess"
+      ],
+      "properties": {
+        "node": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "capability_profile_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "The capability profile the node declares. Opaque catalogue reference (arch §6.2.1)."
+        },
+        "binding_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "The secret binding that was resolved. Opaque reference, never the secret value (arch §6.5)."
+        },
+        "excess": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": "Each privilege the resolved binding carries that the profile does not allow, by name. Never a secret value."
+        }
+      },
+      "description": "privilege_exceeds_profile only (N-2): names the excess, so the record says what was refused and not only that something was."
+    },
+    "side_effect": {
+      "const": false,
+      "description": "A refusal is by definition before side effect (§7.4). A record claiming otherwise is invalid."
+    },
+    "recovery_requirement": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ledger_position": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "hash"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      },
+      "description": "Position at which the refusal itself was appended — refusals are ledger entries, not log lines."
+    },
+    "expected_position": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "hash"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": -1
+        },
+        "hash": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "stale_position only: the position the loser proposed against."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "reason_code": {
+            "const": "stale_position"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "expected_position",
+          "envelope_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "reason_code": {
+            "const": "privilege_exceeds_profile"
+          }
+        },
+        "required": [
+          "reason_code"
+        ]
+      },
+      "then": {
+        "required": [
+          "privilege_excess"
+        ]
+      },
+      "else": {
+        "not": {
+          "required": [
+            "privilege_excess"
+          ]
+        }
+      }
+    }
+  ]
+}

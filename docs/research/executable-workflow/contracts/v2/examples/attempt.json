@@ -1,0 +1,32 @@
+{
+  "attempt_id": "att-0142-003",
+  "instance_id": "wi-0142",
+  "node": "run_tests",
+  "sequence": 1,
+  "procedure_content_hash": "sha256:a07fa032fad17285f4e55ec81722abcf7d1f408c9224dbfd50d8f2060a63d4d2",
+  "task_content_hash": "sha256:a5d917465fe649c83b1d8b521b97e418d531354699cc873ee2b90d3f0c9f1b45",
+  "policy_decision": {
+    "decision": "allow",
+    "policy_ref": "policy.capability-overlay.v3",
+    "decided_at": "2026-09-18T15:02:01Z"
+  },
+  "action_ref": "script.fw-test-unit.v1",
+  "typed_inputs_ref": "ev-0142-in3",
+  "executor": {
+    "identity": "agent:claude-master-1141196",
+    "kind": "agent",
+    "auth_ref": "auth.termlink.token.v1"
+  },
+  "dispatch": {
+    "transport": "local",
+    "correlation_id": "corr-0142-003",
+    "idempotency_key": "wi-0142:att:run_tests:1"
+  },
+  "started_at": "2026-09-18T15:02:02Z",
+  "ended_at": "2026-09-18T15:09:40Z",
+  "output_ref": "ev-0142-out3",
+  "exit_outcome": "succeeded",
+  "exit_code": 0,
+  "outcome_validated": true,
+  "resulting_instance_state": "waiting"
+}

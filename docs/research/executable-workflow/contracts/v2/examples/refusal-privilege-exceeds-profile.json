@@ -1,0 +1,32 @@
+{
+  "refusal_id": "ref-hsh-0001-n2",
+  "ts": "2026-11-16T10:20:00Z",
+  "instance_id": "wi-hsh-0001",
+  "envelope_id": "env-hsh-0001-004x",
+  "requested_by": {
+    "identity": "agent:claude-master-1141196",
+    "kind": "agent",
+    "auth_ref": "auth.termlink.token.v1"
+  },
+  "refused_by": "runner:ewcr-pilot-1",
+  "reason_code": "privilege_exceeds_profile",
+  "detail": "binding secret.registry.deploy-token.v1 resolves to a credential with repo:write and packages:delete; node run_script declares capability.registry.read-only.v1, which allows repo:read only",
+  "scenario_refs": [
+    "N-2"
+  ],
+  "side_effect": false,
+  "privilege_excess": {
+    "node": "run_script",
+    "capability_profile_ref": "capability.registry.read-only.v1",
+    "binding_ref": "secret.registry.deploy-token.v1",
+    "excess": [
+      "repo:write",
+      "packages:delete"
+    ]
+  },
+  "recovery_requirement": "bind a credential whose privilege is within capability.registry.read-only.v1, or have a human ratify a procedure version whose node declares the wider profile; then re-propose against the current ledger position",
+  "ledger_position": {
+    "index": 4,
+    "hash": "sha256:5d1f0c1b8e0b6a3a2f4f6f0f0f3f7d6b1c2a9e8d7c6b5a493827161504f3e2d1"
+  }
+}

@@ -105,10 +105,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] docs/research/executable-workflow/contracts/v2/ exists, starts from v1, and contracts/v1/ is byte-identical to before (git diff empty)
-- [ ] N-1 and N-2 are in v2 in the same form as the §13 scenarios (situation, required behaviour, pass/fail test), traced in v2's traceability.yaml to DS-1/MS-3 and to the arc candidates the dispositions report names
-- [ ] N-2 has a reason code in v2's refusal schema (new code if neither `scope_mismatch` nor `capability_unsupported` fits, with a one-line why), and an example refusal record that validates against the v2 schema
-- [ ] v2's MANIFEST and README state what changed from v1 and why (T-5135, operator decision 2026-11-16); tools/ewcr-contracts-check.py checks v2 as it checks v1, and its existing v1 tests still pass
+- [x] docs/research/executable-workflow/contracts/v2/ exists, starts from v1, and contracts/v1/ is byte-identical to before (git diff empty)
+- [x] N-1 and N-2 are in v2 in the same form as the §13 scenarios (situation, required behaviour, pass/fail test), traced in v2's traceability.yaml to DS-1/MS-3 and to the arc candidates the dispositions report names
+- [x] N-2 has a reason code in v2's refusal schema (new code if neither `scope_mismatch` nor `capability_unsupported` fits, with a one-line why), and an example refusal record that validates against the v2 schema
+- [x] v2's MANIFEST and README state what changed from v1 and why (T-5135, operator decision 2026-11-16); tools/ewcr-contracts-check.py checks v2 as it checks v1, and its existing v1 tests still pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -294,6 +294,16 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+git diff --quiet HEAD -- docs/research/executable-workflow/contracts/v1
+python3 tools/ewcr-contracts-check.py
+python3 tools/ewcr-contracts-check.py --contracts-version 2
+python3 tools/ewcr-trace-check.py
+python3 tools/ewcr-trace-check.py --contracts-version 2
+timeout 300 bats tests/unit/t5179_ewcr_contracts_v2.bats > /tmp/.t5179-v2.out 2>&1 && ! grep -q "^not ok" /tmp/.t5179-v2.out
+test "$(grep -c '# skip' /tmp/.t5179-v2.out)" -eq 0
+timeout 300 bats tests/unit/t3385_ewcr_contracts_v1.bats tests/unit/t3393_ewcr_traceability.bats tests/unit/t3388_ewcr_worked_procedure_fixture.bats > /tmp/.t5179-v1.out 2>&1 && ! grep -q "^not ok" /tmp/.t5179-v1.out
+test "$(grep -c '# skip' /tmp/.t5179-v1.out)" -eq 0
+bin/fw vendor self --check --task T-5179
 
 ## RCA
 
@@ -367,6 +377,21 @@ cost_estimate_proposed:
 ## Decisions
 
 **Operator decision, 2026-11-16:** accept N-1 (from DS-1) and N-2 (from MS-3) as new acceptance scenarios in contracts/v2 (answer "yes" to item 3 of the decision walk-through, after the meaning was explained: the future engine must pass these two tests; no running code changes now).
+
+### 2026-11-16 — reason code for N-2
+- **Chose:** a new code, `privilege_exceeds_profile`, with a required `privilege_excess` record (node, capability profile, binding, non-empty list of excess privileges).
+- **Why:** the scenario requires the refusal to name the excess; a required structured field makes that checkable by the schema, where free-text `detail` is not.
+- **Rejected:** `scope_mismatch` (means repository/worktree scope) and `capability_unsupported` (the provider cannot do the thing; N-2 is the opposite case). Both are named as unfit in the dispositions report.
+
+### 2026-11-16 — how N-1 and N-2 are referenced
+- **Chose:** ids `N-1` / `N-2`, accepted in `scenario_refs` beside the §13 numbers 1–20; scenarios live in a new v2 document `accepted-scenarios.md`.
+- **Why:** v1's threat matrix §5.1 says numbering them 21/22 would put statements into the frozen architecture §13 by assertion.
+- **Rejected:** a separate refs field (a refusal for N-2 alone would then have an empty required `scenario_refs`); editing the carried contracts (their identity with v1 is kept and checked).
+
+### 2026-11-16 — what "version" means for a schema carried into v2
+- **Chose:** the six unchanged schemas stay byte-identical to v1 (version 1, v1 `$id`); only `refusal.schema.json` becomes version 2 with a `/v2/` `$id`. The checker compares against v1 and refuses anything in between.
+- **Why:** the brief asks to keep every v1 file's identity unless a change is required; 832 can tell from the manifest which one schema it must re-read.
+- **Rejected:** bumping all seven to version 2 (seven changed hashes for one real change).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

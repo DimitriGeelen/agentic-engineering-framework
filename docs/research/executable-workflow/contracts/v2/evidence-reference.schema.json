@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aef.geelenandcompany.com/ewcr/contracts/v1/evidence-reference.schema.json",
+  "title": "EWCR v1 — Evidence / artefact reference",
+  "version": 1,
+  "description": "Freezes architecture-c9070637.md §6.6.1 (artefact minimum: stable ID, type/schema version, content ref + hash, status, producer + attempt provenance, declared inputs, validation/decision refs) and §2.5 (evidence is redacted, referenced, hashed BEFORE validation; accepted evidence is immutable — supersession is a new reference).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "type",
+    "schema_version",
+    "content_hash",
+    "content_ref",
+    "snapshot_ts",
+    "redacted",
+    "status",
+    "producer"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^ev-[A-Za-z0-9._-]+$"
+    },
+    "type": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "description": "Artefact type from §6.6 (user_story, technical_description, architecture_decision, pseudocode, change_set, test_report, review_finding, release_evidence, typed_inputs, attempt_output, ...)."
+    },
+    "schema_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "content_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+    },
+    "snapshot_ts": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+    },
+    "redacted": {
+      "type": "boolean"
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "proposed",
+        "accepted",
+        "rejected",
+        "superseded"
+      ]
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actor"
+      ],
+      "properties": {
+        "actor": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "identity",
+            "kind"
+          ],
+          "properties": {
+            "identity": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Per-agent authenticated identity. Host identity alone is refused as ambiguous (arch §7.3, §13 #12)."
+            },
+            "kind": {
+              "enum": [
+                "human",
+                "agent",
+                "runner",
+                "watchtower",
+                "external"
+              ]
+            },
+            "auth_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+            }
+          }
+        },
+        "attempt_id": {
+          "type": "string",
+          "pattern": "^att-[A-Za-z0-9._-]+$"
+        },
+        "instance_id": {
+          "type": "string",
+          "pattern": "^wi-[A-Za-z0-9._-]+$"
+        }
+      }
+    },
+    "declared_inputs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^ev-[A-Za-z0-9._-]+$"
+      },
+      "uniqueItems": true
+    },
+    "validation_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200,
+        "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+      }
+    },
+    "decision_refs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200,
+        "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+      }
+    },
+    "supersedes": {
+      "type": "string",
+      "pattern": "^ev-[A-Za-z0-9._-]+$"
+    },
+    "accepted_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "accepted"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "accepted_at",
+          "validation_refs"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "superseded"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "accepted_at"
+        ]
+      }
+    }
+  ]
+}

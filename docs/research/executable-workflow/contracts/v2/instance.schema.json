@@ -1,0 +1,354 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aef.geelenandcompany.com/ewcr/contracts/v1/instance.schema.json",
+  "title": "EWCR v1 — Workflow instance",
+  "version": 1,
+  "description": "Freezes architecture-c9070637.md §2.3 (one live enactment of exactly one pinned procedure version; runner-owned, never free-writable), §2.4 (task binding by stable IDs with snapshotted task content hash), §7.3 (state machine; current state is a fold of admitted envelopes), §7.6 (pause/resume record).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "procedure_ref",
+    "task_binding",
+    "capability_profile_ref",
+    "state",
+    "current_node",
+    "ledger_position",
+    "attempt_ids"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^wi-[A-Za-z0-9._-]+$"
+    },
+    "procedure_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "content_hash"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "content_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
+    },
+    "task_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task_id",
+        "task_content_hash",
+        "repository",
+        "worktree",
+        "component_scope",
+        "bound_at",
+        "bound_by"
+      ],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "pattern": "^T-[0-9]+$"
+        },
+        "task_content_hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "worktree": {
+          "type": "string",
+          "minLength": 1
+        },
+        "component_scope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "scope_measured": {
+          "type": "boolean",
+          "description": "false = unmeasured, which is never zero impact (§7.5 step 4, §13 #6)."
+        },
+        "bound_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+        },
+        "bound_by": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "identity",
+            "kind"
+          ],
+          "properties": {
+            "identity": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Per-agent authenticated identity. Host identity alone is refused as ambiguous (arch §7.3, §13 #12)."
+            },
+            "kind": {
+              "enum": [
+                "human",
+                "agent",
+                "runner",
+                "watchtower",
+                "external"
+              ]
+            },
+            "auth_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+            }
+          }
+        }
+      }
+    },
+    "execution_profile_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+    },
+    "capability_profile_ref": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+    },
+    "state": {
+      "enum": [
+        "created",
+        "preflighted",
+        "ready",
+        "running",
+        "waiting",
+        "paused",
+        "failed",
+        "compensating",
+        "completed",
+        "cancelled"
+      ]
+    },
+    "current_node": {
+      "type": "string"
+    },
+    "ledger_position": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "hash"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      },
+      "description": "Last admitted envelope. Compare-and-append target for every proposal (§7.4)."
+    },
+    "attempt_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^att-[A-Za-z0-9._-]+$"
+      },
+      "uniqueItems": true
+    },
+    "approvals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "node",
+          "decision",
+          "actor",
+          "ts",
+          "envelope_id"
+        ],
+        "properties": {
+          "node": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string"
+          },
+          "actor": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "identity",
+              "kind"
+            ],
+            "properties": {
+              "identity": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Per-agent authenticated identity. Host identity alone is refused as ambiguous (arch §7.3, §13 #12)."
+              },
+              "kind": {
+                "enum": [
+                  "human",
+                  "agent",
+                  "runner",
+                  "watchtower",
+                  "external"
+                ]
+              },
+              "auth_ref": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+              }
+            }
+          },
+          "ts": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+          },
+          "envelope_id": {
+            "type": "string",
+            "pattern": "^env-[A-Za-z0-9._-]+$"
+          }
+        }
+      }
+    },
+    "cancellation_intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recorded_at",
+        "actor",
+        "envelope_id"
+      ],
+      "properties": {
+        "recorded_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+        },
+        "actor": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "identity",
+            "kind"
+          ],
+          "properties": {
+            "identity": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Per-agent authenticated identity. Host identity alone is refused as ambiguous (arch §7.3, §13 #12)."
+            },
+            "kind": {
+              "enum": [
+                "human",
+                "agent",
+                "runner",
+                "watchtower",
+                "external"
+              ]
+            },
+            "auth_ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+            }
+          }
+        },
+        "envelope_id": {
+          "type": "string",
+          "pattern": "^env-[A-Za-z0-9._-]+$"
+        }
+      },
+      "description": "Takes effect at the attempt boundary; later advancement refused except declared reconciliation (§7.4, §13 #18)."
+    },
+    "pause": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "node",
+        "latest_attempt_id",
+        "resume_condition",
+        "context_snapshot_refs"
+      ],
+      "properties": {
+        "node": {
+          "type": "string"
+        },
+        "latest_attempt_id": {
+          "type": "string",
+          "pattern": "^att-[A-Za-z0-9._-]+$"
+        },
+        "resume_condition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "context_snapshot_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Opaque, versioned reference into a registered catalogue. Never a path, shell string, or secret value (arch §6.2.1, §6.5)."
+          }
+        },
+        "unresolved_checks": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "const": "paused"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "pause"
+        ],
+        "properties": {
+          "pause": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  ]
+}

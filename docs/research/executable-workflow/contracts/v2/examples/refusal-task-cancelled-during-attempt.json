@@ -1,0 +1,24 @@
+{
+  "refusal_id": "ref-hsh-0001-n1",
+  "ts": "2026-11-16T10:12:40Z",
+  "instance_id": "wi-hsh-0001",
+  "envelope_id": "env-hsh-0001-003x",
+  "requested_by": {
+    "identity": "agent:claude-master-1141196",
+    "kind": "agent",
+    "auth_ref": "auth.termlink.token.v1"
+  },
+  "refused_by": "runner:ewcr-pilot-1",
+  "reason_code": "cancellation_in_effect",
+  "detail": "att-hsh-001 started 10:05:00Z; cancellation of the bound task was recorded 10:09:12Z, before the result arrived at 10:12:40Z; the result is recorded on the attempt and not admitted to the instance",
+  "scenario_refs": [
+    18,
+    "N-1"
+  ],
+  "side_effect": false,
+  "recovery_requirement": "only the declared reconciliation route is admissible; the instance stays at run_script",
+  "ledger_position": {
+    "index": 3,
+    "hash": "sha256:9a8b7c6d5e4f30211203f4e5d6c7b8a99a8b7c6d5e4f30211203f4e5d6c7b8a9"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "deadline_id": "dl-0142-003",
+  "instance_id": "wi-0142",
+  "kind": "timeout",
+  "subject": {
+    "type": "attempt",
+    "ref": "att-0142-003"
+  },
+  "admitted_at": "2026-09-18T15:02:02Z",
+  "admitted_in_envelope": "env-0142-003",
+  "due_at": "2026-09-18T15:32:02Z",
+  "clock_source": "runner:ewcr-pilot-1:CLOCK_REALTIME",
+  "status": "pending",
+  "evaluation_idempotency_key": "wi-0142:dl:att-0142-003:timeout",
+  "on_expiry_route": "run_tests:timed_out->review"
+}
