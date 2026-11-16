@@ -110,7 +110,7 @@ bvp_scores_proposed:
 - [x] tier0-or-bypass, sovereignty-field and operator-marked criteria are never widened, even when the widening pattern matches their title (test).
 - [x] The applied tick annotation cites the widening id and the ruling id. human_ac_ticks audit accepts that tick as provenanced. fw audit emits one WARN per widened tick.
 - [x] judge_cli dispatches widened criteria and includes the Measured block in the brief. Unwidened act-in-the-world criteria are still never dispatched.
-- [ ] Tests in tests/unit/test_t5180_*.py cover all of the above. Every existing test that reads a changed file passes, `bin/fw test invariants` passes, and `bin/fw vendor self --check` is clean.
+- [x] Tests in tests/unit/test_t5180_*.py cover all of the above. Every existing test that reads a changed file passes, `bin/fw test invariants` passes, and `bin/fw vendor self --check` is clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
