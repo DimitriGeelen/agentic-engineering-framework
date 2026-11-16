@@ -10,10 +10,10 @@ description: >
   test context (render through the blueprint, or add the key); check whether the template
   should default it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [tests, web, approvals]
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T02:31:25Z
-last_update: '2026-11-16T02:45:58Z'
+last_update: 2026-11-16T05:45:18Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,20 +92,20 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5172's wider run (2026-11-16): all 5 tests in tests/web/test_inception_verdict_render.py fail with `jinja2.exceptions.UndefinedError: 'decided_unclosed_count' is undefined`.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** the test renders `_approvals_content.html` with a hand-built context (`_render_approvals`). T-3175 (183eef3e6) added `decided_unclosed_count` to the template's stat line (`tier0_count + go_count + decided_unclosed_count`); `web/blueprints/approvals.py` passes it, the test's context does not, and adding an Undefined raises. Stale test context, not a page bug: the real page always passes the value.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the test passes the keys the blueprint passes, so it tests the verdict badges again.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the 5 tests pass; the template is unchanged.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] the test's render context carries the keys the approvals blueprint passes to `_approvals_content.html` (at least `decided_unclosed` and `decided_unclosed_count`); the 5 tests pass
+- [x] no template or blueprint change
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,8 +291,17 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/web/test_inception_verdict_render.py > /tmp/.t5174.out 2>&1 && grep -q passed /tmp/.t5174.out && ! grep -q failed /tmp/.t5174.out
 
 ## RCA
+
+**Symptom:** 5 reds in tests/web/test_inception_verdict_render.py: `'decided_unclosed_count' is undefined`.
+
+**Root cause:** the test renders `_approvals_content.html` from a hand-built context; T-3175 (and later T-3694, T-4053) added template variables that only the blueprint passes.
+
+**Why structurally allowed:** tests/web is not in the nightly unit suite or the pre-push ratchet, so the red was never surfaced when T-3175 landed.
+
+**Prevention:** the context now carries every key the blueprint passes. The wider gap (tests/web gating nothing) belongs with T-5153.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -388,3 +397,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5174-testswebtestinceptionverdictrenderpy-5-r.md
 - **Context:** Initial task creation
+
+### 2026-11-16T05:45:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

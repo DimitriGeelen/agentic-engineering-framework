@@ -36,6 +36,17 @@ def _render_approvals(pending_go):
             "_approvals_content.html",
             pending_tier0=[],
             pending_go=pending_go,
+            # T-5174: keys web/blueprints/approvals.py passes since T-3175/T-3694/T-4053/T-1808/
+            # T-1961/T-2335; without them the stat line adds an Undefined and the render fails.
+            decided_unclosed=[],
+            decided_unclosed_count=0,
+            stale_keystones=[],
+            waiting_acs=[],
+            paused_dispatches=[],
+            arcs_close_ready=[],
+            bvp_proposals=[],
+            bvp_proposal_count=0,
+            paused_count=0,
             pending_acs=[],
             resolved_tier0=[],
             tier0_count=0,
