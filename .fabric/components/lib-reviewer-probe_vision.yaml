@@ -1,0 +1,21 @@
+id: lib/reviewer/probe_vision.py
+name: probe_vision
+type: script
+subsystem: framework-core
+location: lib/reviewer/probe_vision.py
+tags: []
+
+purpose: "T-5176: `fw reviewer probe-vision <kind>` — can this harness review seat read a supplied image?"
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-16
+created_by: unknown
