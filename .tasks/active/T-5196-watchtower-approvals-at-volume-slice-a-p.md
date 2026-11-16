@@ -101,11 +101,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] (Revised 2026-11-17 after the independent review; the on-disk memo was reverted in 95e10c8d2.) `_git_out`'s object-content reads (`show <40-hex>:<path>`, and `ls-tree` on a 40-hex tree if it fits) go through ONE long-lived `git cat-file --batch` process per repo instead of a subprocess each. Nothing is written to disk. Answers are identical to the per-call `git` they replace, including a missing object (same failure), which a test proves on a temp repo.
-- [ ] The batch process is safe: a lock per process for concurrent threads; restarted if it dies or desyncs; falls back to the per-call path on any error; no zombie or leaked process (test).
-- [ ] Measured in-process: cold approvals page before/after (fresh process), and the subprocess census. Numbers recorded here.
+- [x] (Revised 2026-11-17 after the independent review; the on-disk memo was reverted in 95e10c8d2.) `_git_out`'s object-content reads (`show <40-hex>:<path>`, and `ls-tree` on a 40-hex tree if it fits) go through ONE long-lived `git cat-file --batch` process per repo instead of a subprocess each. Nothing is written to disk. Answers are identical to the per-call `git` they replace, including a missing object (same failure), which a test proves on a temp repo.
+- [x] The batch process is safe: a lock per process for concurrent threads; restarted if it dies or desyncs; falls back to the per-call path on any error; no zombie or leaked process (test).
+- [x] Measured in-process: cold approvals page before/after (fresh process), and the subprocess census. Numbers recorded here.
 - [x] Slice B's leftover trigger (commits touching `.context/reviews/`) is either fixed with an equivalence test proving no stale READY, or kept with the reason and cost recorded in ## Decisions.
-- [ ] Every existing test that touches lib/verdict_ledger.py or readiness passes, invariants pass, `bin/fw vendor self --check --task T-5196` is clean, and Watchtower is restarted and current.
+- [x] Every existing test that touches lib/verdict_ledger.py or readiness passes, invariants pass, `bin/fw vendor self --check --task T-5196` is clean, and Watchtower is restarted and current.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -353,6 +353,56 @@ so only commits after the last verified one are read; this also stops the memo's
 growing by ~1 MB per review commit; (b) cache `inception_handoff_blockers` per task-file mtime and
 HEAD (~5 s); (c) an mtime-keyed frontmatter cache that survives restarts (~4 s); (d) extend the
 `git log` results incrementally from the previous HEAD (~7 s).
+
+### 2026-11-17 — the `git cat-file --batch` reader (0a2c69ab1, vendored f81b595e6)
+
+Same host, fresh process per run, load average 10–14 (busier than 2026-11-16, so the absolute numbers
+are higher). "before" = this code with `_catfile_show` patched to return None in both module copies
+(`lib.verdict_ledger` and `verdict_ledger`; web imports the second), i.e. every call on the per-call path.
+
+| Cold /approvals, fresh process, no profiler | run 1 | run 2 | run 3 |
+|---|---:|---:|---:|
+| before | 38.4 s | 37.6 s | 39.8 s |
+| after | 26.7 s | 28.0 s | 27.9 s |
+
+Under cProfile the cold page varied 37–53 s in both modes, so those figures are too noisy to use. The
+warm repeat was 4.0–5.8 s in both modes.
+
+Subprocess census (`T-5186-profile-subprocesses.py`):
+
+| | subprocesses | `git show` | page wall |
+|---|---:|---:|---:|
+| before | 2,040 (24.7 s) | 1,909 (9.9 s) | 36.4 s |
+| after | 198 (14.7 s) | 67 (0.3 s): 66 from `_worker_fault`'s own subprocess, 1 `show HEAD:` | 28.6 s |
+
+After the change there is one `git cat-file --batch` per module copy. What remains is unchanged:
+6 `git log` (~7 s), 47 `bash -c` from `inception_handoff_blockers` (~6 s).
+
+- **Routed:** exactly `_git_out(root, "show", "<40-hex>:<path>")` when the path does not start with `/`,
+  `./` or `../` and has no newline or NUL, and the state token exists (not a linked worktree). The
+  reader's answer is used only for a **blob**. A missing or ambiguous object, a tree, a blob that is
+  not valid text in the locale encoding (git show with text=True raises UnicodeDecodeError), or any
+  I/O fault, timeout or desync, falls back to the per-call `git show` for that call, so the outcome
+  is always git's own. Text is decoded exactly as `subprocess` text mode does (encoding, strict,
+  `\r\n`/`\r` → `\n`).
+- **Not routed:** `ls-tree` (cat-file prints binary tree objects, not ls-tree text; 28 calls, 0.2 s),
+  everything ref-dependent, and `_worker_fault`'s direct subprocess.
+- **textconv:** `git show <rev>:<path>` does not apply a textconv driver to a blob unless `--textconv`
+  is given; a test with `diff=up` textconv (`tr a-z A-Z`) shows git show returns the raw bytes, the
+  same as cat-file.
+- **Replace refs:** both honour them, and both ignore them under `GIT_NO_REPLACE_OBJECTS`. A
+  long-lived cat-file loads the replace map once, so the reader is keyed on the state token (refs
+  tree incl. `refs/replace`, packed-refs, HEAD and its reflog), `.git/config`, `.git/objects/pack`
+  (a pruned pack stays mmapped) and the `GIT_*`/`HOME`/`XDG_CONFIG_HOME` environment, and restarts when
+  any of them moves. Tests cover creating a replace ref after the reader started, and the env switch.
+- **Residual:** a config change made only through an `include.path` file does not restart the reader.
+  For a blob read, the only config that matters is `core.useReplaceRefs`.
+
+Tests: `tests/unit/test_t5196_cat_file_batch.py`, 20 passed. Every pytest file under tests/unit and
+tests/integration that names verdict_ledger or readiness (64 files, 4 shards): 1,147 passed, 0 failed.
+The 8 bats files naming verdict_ledger: 83 ok, 0 not ok. `bin/fw test invariants`: the only red before
+the commit was the then-untracked new test file. `bin/fw vendor self --check --task T-5196`: in sync.
+Watchtower restarted (pid 3455303); `bin/fw watchtower current`: current.
 
 ## RCA
 
