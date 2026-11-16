@@ -11,10 +11,10 @@ description: >
   harness drops the screenshot paths, or the seat's output format omits --evidence
   lines for pages; fix the seat or its brief so it cites what it saw.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [reviewer, antigravity, panel]
 components: []
 related_tasks: [T-3786, T-5172]
@@ -46,8 +46,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T02:49:46Z
-last_update: 2026-11-16T05:46:48Z
-date_finished:
+last_update: 2026-11-16T06:42:08Z
+date_finished: 2026-11-16T06:42:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -412,3 +412,21 @@ bin/fw vendor self --check --task T-5175
   1. (recommended) Build `fw reviewer probe-vision <kind>`: one fixed screenshot + the T-4944 questions through the signed review runtime, answer recorded in the T-4944 report. Then record antigravity's flag from evidence. If it sees images, rung-5 render panels gain a third vision seat (claude-code, codex, antigravity), which is what T-3786, T-5136 and T-5172 have lacked.
   2. Declare `vision: false` now: honest about what is known, stops wasting the seat on render criteria, but leaves render panels a seat short.
   3. Declare `vision: true` on vendor documentation alone, without a probe (not recommended: T-4944 exists because a seat can be handed an image it cannot read).
+
+### 2026-11-16T06:42:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-499691ca
+- **Timestamp:** 2026-11-16T06:42:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — (not applicable: it can see) if it cannot see: `vision: false` for antigravity in policy/review-backends.yaml, the registry still loads, and render criteria are no longer sent to it
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/review-backends.yaml in: (not applicable: it can see) if it cannot see: `vision: false` for antigravity in policy/review-backends.yaml, the registry still loads, and render cr`

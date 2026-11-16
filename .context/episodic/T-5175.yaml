@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5175: antigravity review seat returns verdicts the ledger refuses: it does not cite the required page screenshot as evidence (T-3786, T-5172)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T06:42:59Z
+# ============================================================================
+
+task_id: T-5175
+task_name: "antigravity review seat returns verdicts the ledger refuses: it does not cite the required page screenshot as evidence (T-3786, T-5172)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-16T02:49:46Z
+completed: 2026-11-16T06:42:08Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-11-16T03:49:47+01:00
+last_commit: 2026-11-16T07:41:57+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed — antigravity seat verdicts refused for not citing page screenshots (T-3786, T-5172). localised — antigravity has no vision flag in the backend registry, so every render verdict it gives is refused whatever it cites; probe needs a probe-vision command; options recorded for the operator. antigravity declared vision: true on the operator's yes (2026-11-16), from the T-5176 probe (8 cards + exact title via read_file; codex control matched T-4944) — its render verdicts can now count
+
+# Key outcomes
+outcomes:
+  - 'the T-4944 probe is run on antigravity (screenshot .context/visual/T-4947/arc-closure@1440.png; ground truth re-checked 2026-11-16: 8 BLOCKED cards, first title "Onboarding: fw init detects project shape by enumeration, not manifest allowlist") and its answer recorded in docs/reports/T-4944-harness-seat-vision.md'
+  - '(not applicable: it can see) if it cannot see: `vision: false` for antigravity in policy/review-backends.yaml, the registry still loads, and render criteria are no longer sent to it'
+  - 'if it can see: the `vision: true` change is put to the operator with the probe evidence, not made by the agent'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/review-backends.yaml'
+  - '.tasks/active/T-5175-antigravity-review-seat-returns-verdicts.md'
+  - 'policy/review-backends.yaml'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T03:49:47'
+    action: 'T-5175: filed — antigravity seat verdicts refused for not citing page screenshots (T-3786, T-5172)'
+  - time: '2026-11-16T06:49:42'
+    action: 'T-5175: localised — antigravity has no vision flag in the backend registry, so every render verdict it gives is refused whatever it cites; probe needs a probe-vision command; options recorded for the operator'
+  - time: '2026-11-16T07:41:57'
+    action: 'T-5175: antigravity declared vision: true on the operator''s yes (2026-11-16), from the T-5176 probe (8 cards + exact title via read_file; codex control matched T-4944) — its render verdicts can now count'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 232 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [reviewer, antigravity, panel]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 232
+  commits: 4
+  files_changed: 6
+  lines_added: 518
+  lines_removed: 16
+  footprint_refreshed_at: '2026-11-16T06:43:10Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5175-antigravity-review-seat-returns-verdicts.md
+generated_by: context-agent-hybrid
