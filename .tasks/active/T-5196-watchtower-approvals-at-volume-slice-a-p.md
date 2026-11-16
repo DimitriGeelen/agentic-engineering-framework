@@ -6,10 +6,10 @@ name: "Watchtower approvals at volume, slice A: persistent on-disk memo of per-r
 description: >
   Build slice of inception T-5186 (GO 2026-11-16). Evidence: docs/reports/T-5186-watchtower-volume-performance.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T19:37:24Z
-last_update: '2026-11-16T19:45:49Z'
+last_update: 2026-11-16T22:34:33Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,20 +86,26 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Inception T-5186 (GO 2026-11-16, report docs/reports/T-5186-watchtower-volume-performance.md F2). A cold approvals page costs 34–44 s at ~5,000 tasks, still about 40 s after slices B (T-5194) and C (T-5195). Of that, 1,909 `git show` (10.5 s) and 6 `git log` (7.3 s) calls come from `lib/verdict_ledger.py` `_git_out`, plus ~12 s of Python validation. Slice B also left one trigger open: a commit touching `.context/reviews/` moves the global git generation and invalidates every task, and about 42 such commits happen a day.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `_git_out`'s memo (`_GIT_MEMO`) lives in process memory and is dropped whenever the git state token changes, i.e. on every commit, and on every restart. Yet most of those calls ask for content addressed by a full object id (`git show <sha>:<path>`, `git cat-file`, `git ls-tree <sha>`), whose answer can never change. Recomputing them after each commit and restart is pure waste.
 
-**Goal:** <what we are trying to achieve>
+**Goal:**
+1. A persistent, content-addressed memo for `_git_out` calls whose answer is fixed by full 40-hex object ids. On disk under `.context/working/` (gitignored), survives restarts, never invalidated by new commits. Calls that depend on refs or HEAD keep today's in-memory memo.
+2. Measure what remains of a cold page after (1). If per-row validation in Python or `git log` still dominates, propose the next step with numbers; do not build it here.
+3. Investigate the commit-touching-review-ledgers trigger from slice B. Fix it only if a change can be shown not to serve a stale READY (equivalence test). Otherwise record why it must stay and what it costs.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A cold approvals page (after a restart) costs well under half of today's ~40 s, and a commit no longer throws away immutable git results. No readiness verdict differs from today's.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `_git_out` answers immutable-object calls (full 40-hex ids only; never a ref, HEAD, a short id or a range ending in a ref) from a persistent on-disk memo. A test proves a ref-dependent call is never served from it, and that a corrupt or partial memo file falls back to running git.
+- [ ] The memo lives under a gitignored `.context/working/` path, writes atomically, and has a size bound with eviction.
+- [ ] Measured in-process: cold approvals page (fresh process, memo warm on disk) before/after, plus a cold page with an empty memo. Numbers recorded here.
+- [ ] Slice B's leftover trigger (commits touching `.context/reviews/`) is either fixed with an equivalence test proving no stale READY, or kept with the reason and cost recorded in ## Decisions.
+- [ ] Every existing test that touches lib/verdict_ledger.py or readiness passes, invariants pass, `bin/fw vendor self --check --task T-5196` is clean, and Watchtower is restarted and current.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -382,3 +388,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5196-watchtower-approvals-at-volume-slice-a-p.md
 - **Context:** Initial task creation
+
+### 2026-11-16T22:33:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
