@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5170: Refused bare-name send names no close peer for a typo of an alias or nickname ('--to termlnk' vs alias 'termlink')
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T01:27:11Z
+# ============================================================================
+
+task_id: T-5170
+task_name: "Refused bare-name send names no close peer for a typo of an alias or nickname ('--to termlnk' vs alias 'termlink')"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-15T23:54:03Z
+completed: 2026-11-16T01:25:48Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-16T02:25:44+01:00
+last_commit: 2026-11-16T02:25:44+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  refused bare-name send also matches peer nicknames and declared aliases for its 'Closest peers' hint (--to termlnk -> 010-termlink); 6 tests
+
+# Key outcomes
+outcomes:
+  - 'a typo of a peer''s nickname (`termlnk` → `termlink` → `010-termlink`) and of a declared alias suggests the real address; a typo of a full peer id still suggests that peer; nothing close → no hint'
+  - 'each suggested address appears once, and a nickname or alias is never itself offered as the address'
+  - 'tests (peer directory and alias config stubbed); every test that reads addressing.py passes (6 new; 95 pytest + 85 bats across the readers)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/addressing.py'
+  - '.tasks/active/T-5170-refused-bare-name-send-names-no-close-pe.md'
+  - 'lib/sidecar/addressing.py'
+  - 'tests/unit/test_t5170_close_peer_hint_nicknames.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T02:25:44'
+    action: 'T-5170: refused bare-name send also matches peer nicknames and declared aliases for its ''Closest peers'' hint (--to termlnk -> 010-termlink); 6 tests'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 91 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [sidecar, usability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 91
+  commits: 2
+  files_changed: 7
+  lines_added: 237
+  lines_removed: 26
+  footprint_refreshed_at: '2026-11-16T01:27:53Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5170-refused-bare-name-send-names-no-close-pe.md
+generated_by: context-agent-hybrid

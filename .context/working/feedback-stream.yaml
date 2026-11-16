@@ -55585,3 +55585,21 @@ scan_id: R-c287d8ea
 task_id: T-5169
 payload:
   task_file: .tasks/active/T-5169-field-record-010-termlink-verdicts-on-be.md
+---
+kind: scan_emitted
+timestamp: '2026-11-16T01:26:19Z'
+scan_id: R-b98db54f
+task_id: T-5170
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-16T01:26:19Z'
+scan_id: R-b98db54f
+task_id: T-5170
+payload:
+  task_file: .tasks/active/T-5170-refused-bare-name-send-names-no-close-pe.md
