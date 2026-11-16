@@ -109,6 +109,7 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] `VIEWABLE_DIRS` (config key + `FW_VIEWABLE_DIRS`) adds folders to the viewable list used by both `is_viewable_path` and the auto-linker; default empty changes nothing
 - [x] unsafe entries are ignored: `..` anywhere, absolute paths, `.git`, `.context/secrets`, an empty or root entry; extensions are still limited to VIEWABLE_EXTENSIONS
+- [x] live, the /file/ route refuses `.git/config`, `.context/secrets/review-dispatch.key` and a `scripts/../.git/config` traversal while serving `scripts/agent-listeners.sh` (Verification line 2; moved here from the [REVIEW] criterion on 2026-11-16 because both review seats could not screenshot a refusal page — it is a deterministic check)
 - [x] the key is in both config registries (lib/config.sh, web/blueprints/config.py) and config-registry parity stays green
 - [x] unit tests for the setting, the safety filter, the route and the linker; every test that reads web/shared.py passes (96 files in 3 chunks: 980 passed; the one T-5172-caused red — in-process reload leaking into test_file_route_extensions — fixed in 5700bb8e6; 5 reds in tests/web/test_inception_verdict_render.py predate this change and are T-5174; bats 432 with t3458 fixed)
 
@@ -145,9 +146,8 @@ bvp_scores_proposed:
 - [ ] [REVIEW] A file in a declared folder opens from a review page
   **Steps:**
   1. Open http://192.168.10.107:3000/file/scripts/agent-listeners.sh (this repo declares `VIEWABLE_DIRS: scripts` for the check).
-  2. Open http://192.168.10.107:3000/file/.git/config
-  **Expected:** step 1 shows the script with syntax highlighting and line numbers; step 2 is refused (not served).
-  **If not:** note which step behaved differently and what it showed.
+  **Expected:** the script is shown with syntax highlighting and line numbers; long lines scroll sideways inside the code box rather than widening the page.
+  **If not:** note what the page showed instead.
 
 <!--
   Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
@@ -311,7 +311,7 @@ bin/fw watchtower current
 
 | state | control | 1024 | 1440 | 1920 | note |
 |-------|---------|------|------|------|------|
-| script-file | /file/scripts/agent-listeners.sh | ok | ok | ok | served with highlighting and line numbers (VIEWABLE_DIRS: scripts) |
+| script-file | /file/scripts/agent-listeners.sh | ok | ok | ok | served with highlighting and line numbers (VIEWABLE_DIRS: scripts); at 1024 lines 124/198/228 run past the box edge but the code box scrolls (overflow-x: auto, scrollWidth 1151 > clientWidth 918, scrolled 233 px in a browser check) and the page does not overflow |
 
 Screenshots: `.context/visual/T-5172/script-file@{1024,1440,1920}.png` (`fw ux shots`, 2026-11-16, ~0.8 MB each).
 
