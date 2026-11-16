@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5187: t2922 legs 5 and 7 fail on this host: the Watchtower placeholder URL comes out as 127.0.0.1 where the test expects localhost:PORT (pre-existing, reproduced on a snapshot before T-5181)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T15:58:56Z
+# ============================================================================
+
+task_id: T-5187
+task_name: "t2922 legs 5 and 7 fail on this host: the Watchtower placeholder URL comes out as 127.0.0.1 where the test expects localhost:PORT (pre-existing, reproduced on a snapshot before T-5181)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-16T14:23:39Z
+completed: 2026-11-16T15:58:08Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-16T16:58:05+01:00
+last_commit: 2026-11-16T16:58:05+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t2922 legs 5 and 7 resolve the placeholder host through _watchtower_probe_host (T-4239 made 127.0.0.1 the default) instead of pinning localhost; 9/9 green, control: legs still fail when the port is dropped
+
+# Key outcomes
+outcomes:
+  - 'Legs 5 and 7 take the expected host from `_watchtower_probe_host` (sourced from lib/watchtower.sh in the fixture project), not from a literal. t2922 passes 9/9.'
+  - 'Control: with the placeholder broken to a bare path (`printf ''\n''`) or a wrong port, legs 5 and 7 fail. Checked once by hand and recorded here. (2026-11-16: with the port dropped from the placeholder''s printf, legs 5 and 7 failed; lib/watchtower.sh was restored byte-identical.)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5187-t2922-legs-5-and-7-fail-on-this-host-the.md'
+  - 'tests/integration/t2922_greenfield_first_inception.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T16:58:05'
+    action: 'T-5187: t2922 legs 5 and 7 resolve the placeholder host through _watchtower_probe_host (T-4239 made 127.0.0.1 the default) instead of pinning localhost; 9/9 green, control: legs still fail when the port is dropped'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 94 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 94
+  commits: 2
+  files_changed: 5
+  lines_added: 155
+  lines_removed: 16
+  footprint_refreshed_at: '2026-11-16T15:59:11Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5187-t2922-legs-5-and-7-fail-on-this-host-the.md
+generated_by: context-agent-hybrid

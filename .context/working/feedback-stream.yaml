@@ -55925,3 +55925,21 @@ scan_id: R-42ed3f4e
 task_id: T-5188
 payload:
   task_file: .tasks/active/T-5188-p-010-hides-every-later-criterion-behind.md
+---
+kind: scan_emitted
+timestamp: '2026-11-16T15:58:44Z'
+scan_id: R-4eb49b70
+task_id: T-5187
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-16T15:58:44Z'
+scan_id: R-4eb49b70
+task_id: T-5187
+payload:
+  task_file: .tasks/active/T-5187-t2922-legs-5-and-7-fail-on-this-host-the.md
