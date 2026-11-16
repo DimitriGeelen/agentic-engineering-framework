@@ -8,10 +8,10 @@ description: >
   recommendation, so the panel has no coverage on this corpus. Give them a committed
   fixture arc + anchor task (or a served fixture project) so they always run.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [playwright, arcs]
 components: []
 related_tasks: [T-5160]
@@ -43,7 +43,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T23:09:55Z
-last_update: '2026-11-15T23:16:16Z'
+last_update: '2026-11-16T01:53:00Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -82,6 +82,22 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-16T01:53:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5168: Arc close-recommendation panel tests skip whenever no open arc has a CLOSE/KEEP-OPEN recommendation: give them a fixture arc
@@ -89,20 +105,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** After T-5160 (2026-11-16), 7 Playwright tests skip on this corpus: 5 in tests/playwright/test_arc_close_recommendation_panel.py and 2 in tests/playwright/test_arc_review_route.py, with "no arc in this corpus with status in-progress, a CLOSE/KEEP-OPEN recommendation in its close-out or anchor task". They choose arcs at run time through tests/playwright/arc_corpus.py:pick_arc.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** the panel only renders for an in-progress arc whose close-out or anchor task carries a CLOSE/KEEP-OPEN recommendation; whether such an arc exists depends on the live corpus, so the panel can go untested indefinitely.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** these tests always run, against arc data that has the state they need, without changing the real corpus.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the 7 tests run (not skip) and pass on any checkout.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] the 7 tests run without skipping and pass, against a fixture arc + anchor task carrying a CLOSE recommendation (and KEEP-OPEN where a test needs it)
+- [ ] the fixture never touches the real .context/arcs or .tasks of this repo (a served copy or a temporary project the test server reads), and is removed or isolated after the run
+- [ ] tests/playwright only (plus test fixtures); no product code changed
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,6 +306,8 @@ bvp_scores_proposed:
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
 
+timeout 1200 python3 -m pytest -q -p no:cacheprovider -rs tests/playwright/test_arc_close_recommendation_panel.py tests/playwright/test_arc_review_route.py > /tmp/.t5168.out 2>&1 && grep -q passed /tmp/.t5168.out && ! grep -q failed /tmp/.t5168.out && ! grep -q SKIPPED /tmp/.t5168.out
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -385,3 +404,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5168-arc-close-recommendation-panel-tests-ski.md
 - **Context:** Initial task creation
+
+### 2026-11-16T01:52:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
