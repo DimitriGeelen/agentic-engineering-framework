@@ -55747,3 +55747,29 @@ scan_id: R-56a65fdd
 task_id: T-5178
 payload:
   task_file: .tasks/active/T-5178-harness-review-rows-cite-shared-screensh.md
+---
+kind: scan_emitted
+timestamp: '2026-11-16T08:38:25Z'
+scan_id: R-a056de1a
+task_id: T-5171
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-16T08:38:25Z'
+scan_id: R-a056de1a
+task_id: T-5171
+payload:
+  task_file: .tasks/active/T-5171-project-declared-widening-of-delegation-.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-11-16T08:38:25Z'
+scan_id: RC-3651a839
+task_id: T-5171
+payload:
+  overall: UNVERIFIED
+  claim_count: 0

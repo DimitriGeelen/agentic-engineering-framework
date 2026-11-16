@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5171: Project-declared WIDENING of delegation: let a project's recorded operator ruling make one criterion class (act-in-the-world) agent-closeable on measured evidence + reviewer green (010 T-3800)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T08:38:41Z
+# ============================================================================
+
+task_id: T-5171
+task_name: "Project-declared WIDENING of delegation: let a project's recorded operator ruling make one criterion class (act-in-the-world) agent-closeable on measured evidence + reviewer green (010 T-3800)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-15T23:55:07Z
+completed: 2026-11-16T08:38:23Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-16T00:55:30+01:00
+last_commit: 2026-11-16T09:38:26+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception filed (010-termlink msg 1a3cdc2d): project-declared widening of delegation for act-in-the-world criteria; recommendation GO with conditions; operator decides. problem statement with 010's ruling verbatim (msg 1a622646, their T-3800). inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/reviews/human-ac-ticks.jsonl'
+  - '.tasks/active/T-5171-project-declared-widening-of-delegation-.md'
+  - '.tasks/completed/T-5171-project-declared-widening-of-delegation-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T00:55:30'
+    action: 'T-5171: inception filed (010-termlink msg 1a3cdc2d): project-declared widening of delegation for act-in-the-world criteria; recommendation GO with conditions; operator decides'
+  - time: '2026-11-16T01:27:35'
+    action: 'T-5171: problem statement with 010''s ruling verbatim (msg 1a622646, their T-3800)'
+  - time: '2026-11-16T09:38:26'
+    action: 'T-5171: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 523 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [delegation, governance, reviewer]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 523
+  commits: 4
+  files_changed: 5
+  lines_added: 302
+  lines_removed: 9
+  footprint_refreshed_at: '2026-11-16T08:38:48Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5171-project-declared-widening-of-delegation-.md
+generated_by: context-agent-hybrid
