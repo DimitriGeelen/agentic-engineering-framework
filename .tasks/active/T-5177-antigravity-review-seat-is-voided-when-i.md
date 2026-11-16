@@ -1,13 +1,25 @@
 ---
 id: T-5177
-name: "antigravity review seat is voided when it runs Python in the export: __pycache__/*.pyc files change the export fingerprint (T-5172, T-5136, 2026-11-16)"
+name: "antigravity review seat is voided when it runs Python in the export: __pycache__/*.pyc
+  files change the export fingerprint (T-5172, T-5136, 2026-11-16)"
 description: >
-  After T-5175 made antigravity's render verdicts count, its seat on T-5172 and T-5136 recorded green but the runtime voided it ('worker-failed: the worker exited 1'): stderr lists 'export added: ./web/__pycache__/*.cpython-312.pyc' (T-3986 fingerprint: a seat that changes the export it reviews cannot count). The seat imported web modules to check them, and Python wrote bytecode. On T-3786 it did not import, and its green counted. Options: (a) PYTHONDONTWRITEBYTECODE / PYTHONPYCACHEPREFIX for the seat — but sudo drops the environment and the sudo form is operator-approved (2026-09-30), so passing it needs that form reviewed; (b) give the seat a sitecustomize or a read-only export so writes fail instead of landing; (c) have the fingerprint ignore __pycache__/*.pyc, which are derived from files the fingerprint already covers (a narrow change to the T-3986 guard: operator to confirm). codex/opencode run with the same guard; check whether they set the env already.
+  After T-5175 made antigravity's render verdicts count, its seat on T-5172 and T-5136
+  recorded green but the runtime voided it ('worker-failed: the worker exited 1'):
+  stderr lists 'export added: ./web/__pycache__/*.cpython-312.pyc' (T-3986 fingerprint:
+  a seat that changes the export it reviews cannot count). The seat imported web modules
+  to check them, and Python wrote bytecode. On T-3786 it did not import, and its green
+  counted. Options: (a) PYTHONDONTWRITEBYTECODE / PYTHONPYCACHEPREFIX for the seat
+  — but sudo drops the environment and the sudo form is operator-approved (2026-09-30),
+  so passing it needs that form reviewed; (b) give the seat a sitecustomize or a read-only
+  export so writes fail instead of landing; (c) have the fingerprint ignore __pycache__/*.pyc,
+  which are derived from files the fingerprint already covers (a narrow change to
+  the T-3986 guard: operator to confirm). codex/opencode run with the same guard;
+  check whether they set the env already.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [reviewer, antigravity, panel, bug]
 components: []
 related_tasks: [T-5175, T-3986, T-5172, T-5136]
@@ -39,8 +51,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T07:15:15Z
-last_update: 2026-11-16T07:15:15Z
-date_finished: null
+last_update: '2026-11-16T07:29:27Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +63,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-16T07:29:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5177: antigravity review seat is voided when it runs Python in the export: __pycache__/*.pyc files change the export fingerprint (T-5172, T-5136, 2026-11-16)
@@ -58,20 +87,20 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 2026-11-16, after T-5175 made antigravity's render verdicts count: its seat recorded green on T-5172 and T-5136 but was voided ("worker-failed: the worker exited 1"); stderr lists `export added: ./web/__pycache__/*.cpython-312.pyc` (T-3986 export fingerprint). On T-3786 it imported nothing and its green counted.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** codex and opencode are launched with `TMPDIR="$SEAT_TMP"` and receive `PYTHONDONTWRITEBYTECODE=1` (T-4835, signed env.json). antigravity is launched as `sudo -n -u dimitri-mint-dev -H <agy> …` (the operator-approved form, 2026-09-30), and sudo drops the environment, so it gets neither. Its brief (T-4978) says to copy the export to `$TMPDIR` before running code, but `$TMPDIR` is empty for it; it ran Python in place and bytecode landed in the export. T-4835 deliberately keeps the fingerprint strict (a test asserts no .pyc exclusion), so excluding `.pyc` (the option first recommended) would reverse a recorded decision.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** antigravity's seat gets the same scratch space and no-bytecode setting the other seats get, without loosening the fingerprint.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** an antigravity seat that runs Python is not voided; a real edit to the export still voids it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] the operator chooses how antigravity's seat receives TMPDIR and PYTHONDONTWRITEBYTECODE (see ## Decisions options); the chosen route is implemented
+- [ ] a stub antigravity seat that runs Python on an exported module leaves the export fingerprint unchanged; a real edit still voids it (T-4835 test pattern); the fingerprint stays strict
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -329,6 +358,11 @@ date_finished: null
 
 ## Decisions
 
+**Options (put to the operator 2026-11-16; the first recommendation, excluding .pyc from the fingerprint, was withdrawn because T-4835 deliberately keeps it strict):**
+1. Pass the two settings through sudo: `sudo -n -u dimitri-mint-dev -H env TMPDIR=<seat tmp> PYTHONDONTWRITEBYTECODE=1 <agy> …`. Changes the operator-approved command form (2026-09-30) and needs the host's sudo rule to allow it (`env`, or SETENV/env_keep for those two variables), which is a host change.
+2. No sudo change: write the two settings into the brief as literal values for antigravity only (the seat's real scratch path, plus "run Python with `python3 -B`" / `PYTHONDONTWRITEBYTECODE=1` in its own commands). Instruction-based, so it relies on the seat following it, like the existing "copy before running" line.
+3. Exclude `__pycache__/*.pyc` from the fingerprint. Reverses T-4835's recorded choice.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -354,3 +388,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5177-antigravity-review-seat-is-voided-when-i.md
 - **Context:** Initial task creation
+
+### 2026-11-16T07:29:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
