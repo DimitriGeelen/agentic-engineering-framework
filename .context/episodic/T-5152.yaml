@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5152: Acceptance-criterion state 'not met, accepted' ([~]): an honest miss the operator accepts, resolved but never counted as met (832 T-1415)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T09:31:20Z
+# ============================================================================
+
+task_id: T-5152
+task_name: "Acceptance-criterion state 'not met, accepted' ([~]): an honest miss the operator accepts, resolved but never counted as met (832 T-1415)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-15T17:11:07Z
+completed: 2026-11-16T09:31:06Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-16T10:31:09+01:00
+last_commit: 2026-11-16T10:31:09+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/reviews/human-ac-ticks.jsonl'
+  - '.tasks/completed/T-5152-acceptance-criterion-state-not-met-accep.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T10:31:09'
+    action: 'T-5152: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 979 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 979
+  commits: 2
+  files_changed: 4
+  lines_added: 310
+  lines_removed: 0
+  footprint_refreshed_at: '2026-11-16T09:31:31Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5152-acceptance-criterion-state-not-met-accep.md
+generated_by: context-agent-hybrid

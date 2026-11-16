@@ -55773,3 +55773,29 @@ task_id: T-5171
 payload:
   overall: UNVERIFIED
   claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-11-16T09:31:07Z'
+scan_id: R-696560af
+task_id: T-5152
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-16T09:31:07Z'
+scan_id: R-696560af
+task_id: T-5152
+payload:
+  task_file: .tasks/active/T-5152-acceptance-criterion-state-not-met-accep.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-11-16T09:31:07Z'
+scan_id: RC-55d4a071
+task_id: T-5152
+payload:
+  overall: CONFIRMED
+  claim_count: 2
