@@ -117,8 +117,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] designer-0.43-mapping.md reflects all 15 answers: Q2 version rule, Q3 agentType, Q5 lane-wins with events/gateways exempt, Q6 link throw/catch, Q7 timers. Each question is marked answered with 832's reasoning (msg ccdef9f3).
-- [ ] The worked example and tests/unit/test_t5184_designer_mapping.py still pass, with a test for each changed rule that can be checked on the example (at least Q2 and Q5). Contracts v1/v2 checks are clean.
+- [x] designer-0.43-mapping.md reflects all 15 answers: Q2 version rule, Q3 agentType, Q5 lane-wins with events/gateways exempt, Q6 link throw/catch, Q7 timers. Each question is marked answered with 832's reasoning (msg ccdef9f3).
+- [x] The worked example and tests/unit/test_t5184_designer_mapping.py still pass, with a test for each changed rule that can be checked on the example (at least Q2 and Q5). Contracts v1/v2 checks are clean.
 - [x] Q11 (traversed edges by flow aef:uid in the runtime projection) is captured as its own task. (T-5193)
 - [ ] 832 is sent the revised commit.
 
@@ -306,6 +306,10 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5184_designer_mapping.py -q > /tmp/.t5192 2>&1 && grep -q passed /tmp/.t5192 && ! grep -q failed /tmp/.t5192
+python3 tools/ewcr-contracts-check.py
+python3 tools/ewcr-contracts-check.py --contracts-version 2
+grep -q "Answered by 832 (msg ccdef9f3" docs/research/executable-workflow/contracts/v2/designer-0.43-mapping.md
 
 ## RCA
 

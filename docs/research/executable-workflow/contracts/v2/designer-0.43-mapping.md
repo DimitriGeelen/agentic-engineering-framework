@@ -1,7 +1,7 @@
 # Designer 0.43.0 BPMN export → EWCR contracts v2 procedure (shared contract 2)
 
 **Task:** T-5184 · **Pairing:** shared contract 2, mapping/compatibility (T-5183; 832 T-1425) ·
-**Status:** draft for 832 to check · **Worked example:** `examples-mapping/` ·
+**Status:** revised to 832's answers (msg ccdef9f3, 2026-11-16; T-5192) · **Worked example:** `examples-mapping/` ·
 **Test:** `tests/unit/test_t5184_designer_mapping.py`
 
 This file sits beside contracts v2 but is **not part of the frozen set**. It is not listed in
@@ -46,13 +46,13 @@ procedure cannot express it, and dropping it would change behaviour).
 | Other participants, `bpmn:messageFlow`, other `bpmn:process`, `bpmn:message` (kept from an import) | `captureCollaboration`, `s.collab` | none | **refused**: a second process or a message flow is behaviour the procedure cannot express. |
 | `bpmn:process` @id, @isExecutable | `<bpmn:process id=` | none | **lost** (@id). **check**: `isExecutable` must not be `"false"`. |
 | `aef:workflowMeta` @id | `<aef:workflowMeta ` | `id` | **mapped** verbatim. Refused if it does not match `^[a-z][a-z0-9-]*$`. |
-| `aef:workflowMeta` @version (designer default `'1'`) | same line, `wm.version \|\| '1'` | `version` | **mapped**: `X.Y.Z` verbatim; a bare integer `N` becomes `N.0.0`; anything else is refused. *Inferred, Q2.* |
+| `aef:workflowMeta` @version (designer default `'1'`) | same line, `wm.version \|\| '1'` | `version` | **mapped**: the field is free text in 0.43.0. A bare integer `N` becomes `N.0.0`; valid semver `X.Y.Z` is kept as-is; anything else is refused. Semver with a pre-release or build suffix (`1.0.0-rc1`) is refused too, because `procedure.schema.json` `version` allows `X.Y.Z` only. *Answered, Q2.* |
 | `aef:workflowMeta` @kind | `wm.kind` | none | **check**: must be `work-plan`. `documentation` or absent is refused: an illustrative map is not a procedure (T-213/T-875). |
 | `aef:workflowMeta` @uuid, @schemaVersion, @title, @description, @source, @tier_default, @pageWidth, @laneProvenance, @poolProvenance | `wmAttrs` | none | **lost**. The procedure has no title or description field. |
 | Process-level `aef:meta` (mappingVersion, `aef:prefixes`), other tools' process extensions | `procMetaKept`, `pk.procExt` | none | **lost**. The prefixes only qualify io `fieldRef`s, which are lost too (2.3). |
 | Process documentation, data objects/stores, `textAnnotation`, `association`, `group`, categories, event roots | `pk.procDocs`, `s.dataKept`, `pkOut.artifacts`, `pk.categories`, `s.eventRoots` | none | **lost** (documentation and annotations; they have no runtime meaning). |
 | `bpmn:laneSet`, `bpmn:lane` @id @name, `bpmn:flowNodeRef` | `<bpmn:lane id=` | none | **lost**, used only as a check (next row). |
-| `aef:laneMeta` @authority, @authoringDefault, @abbr, @height | `<aef:laneMeta ` | none | **check**: a node in a lane with `authority="sovereignty"` must map to `human_gate`; otherwise the import is refused. Abbr and height are lost. *Inferred, Q5.* |
+| `aef:laneMeta` @authority, @authoringDefault, @abbr, @height | `<aef:laneMeta ` | none | **used**: an **activity** (`userTask`, `serviceTask`, `scriptTask`, `task`) in a lane with `authority="sovereignty"` maps **to** `human_gate`, whatever its tag, `@agentType` or `@nodeKind` (lane wins, O-1); it is not refused. It then needs `aef:decisionOutputs` like any `human_gate` (2.4). Events and gateways in that lane are not gates and are exempt: they map by their tag. Abbr and height are lost. *Answered, Q5.* |
 | `bpmndi:BPMNDiagram` and everything in it (`BPMNShape`, `dc:Bounds`, `BPMNEdge`, `di:waypoint`) | `<bpmndi:BPMNDiagram` | none | **lost** (layout). |
 
 ### 2.2 Flow nodes (the BPMN tag, `TYPE_TAG` line 13724)
@@ -63,18 +63,18 @@ procedure cannot express it, and dropping it would change behaviour).
 | `endEvent` → `bpmn:endEvent` | `gateway`; its uid is in `terminal_nodes` | At least one is required. Same precedent as `done` in `examples/procedure-human-script-human.json`. |
 | `userTask` → `bpmn:userTask` | `human_gate` | `human_decision_map` is required (2.4). |
 | `scriptTask` → `bpmn:scriptTask` | `script` | `action_ref` and `capability_profile_ref` are required by the schema (2.3); without them the import is refused. |
-| `serviceTask` → `bpmn:serviceTask` | `agent_prompt` when `aef:meta/@agentType` is set, else `service` | *Inferred, Q3.* |
+| `serviceTask` → `bpmn:serviceTask` | `@agentType` `primary` or `termlink-worker` → `agent_prompt`; no `@agentType` → `service`; `@agentType="human"` → `human_gate` in a sovereignty lane (lane wins, Q5), **refused** in any other lane (a human service task is a contradiction, never `agent_prompt`) | Any other `@agentType` value is refused. *Answered, Q3.* |
 | `exclusiveGateway` → `bpmn:exclusiveGateway` | `gateway` | Branch conditions become edge `guard`s (2.4). |
 | `parallelGateway` → `bpmn:parallelGateway` | none | **refused**. v2 has no fork/join semantics, and a `gateway` would read as exclusive. *Q4.* |
-| `linkEventThrow` → `bpmn:intermediateThrowEvent` with `aef:link @workflowRef/@targetWorkflow` | `call_workflow` | *Inferred, Q6.* A same-document link pair (only `@linkId`) is **refused**: it is a drawing connector, not a step. |
-| `linkEventCatch` → `bpmn:intermediateCatchEvent` with `aef:link` | none | **refused** under the same rule as link throws (Q6). |
+| `linkEventThrow` → `bpmn:intermediateThrowEvent` with `aef:link` | none | A link throw is a hand-off with no return, not a call. **Cross-workflow** (`@workflowRef`/`@targetWorkflow` set): **refused**, because v2 `call_workflow` awaits a result (arch §6.2: "Invoke sub-procedure and await result"; `procedure.schema.json` has no return-mode field). **Same-document** pair (matching `@linkId`, no target workflow): a goto. The throw and its catch become no node; each flow into the throw and the catch's single outgoing flow collapse into **one edge** (source of the incoming flow → target of the outgoing flow, the incoming flow's `conditionExpression` and `@name`). Refused if a throw has no matching catch or a catch no throw, if the catch has more than one outgoing flow, or if the catch's outgoing flow has its own `conditionExpression`. *Answered, Q6.* |
+| `linkEventCatch` → `bpmn:intermediateCatchEvent` with `aef:link` | none | Same-document: collapsed with its throw (previous row). Without a matching throw: **refused**. *Answered, Q6.* |
 | `eventMessage` → `bpmn:intermediateCatchEvent` + `aef:eventDef kind="message" binding=` (in flow) | `wait_event` | `binding` (bus topic) is **lost**. The procedure has no event-name field. *Q7.* |
-| `eventTimer` → same, `kind="timer"` (in flow) | `wait_event` | `timerSpec` is lost. *Q7.* |
+| `eventTimer` → same, `kind="timer"` (in flow) | `wait_event` | `timerSpec` (a cron expression or a horizon, not ISO 8601) is lost. *Answered, Q7.* |
 | `eventError` → same, `kind="error"` (in flow) | none | **refused**. v2 has no error-path semantics. |
-| Any typed event with `hostRef` → `bpmn:boundaryEvent attachedToRef= cancelActivity=` | none | **refused**, except a timer boundary with no outgoing flow, whose `binding` maps to the host's `timeout` when it is an ISO 8601 duration. *Q7.* |
+| Any typed event with `hostRef` → `bpmn:boundaryEvent attachedToRef= cancelActivity=` | none | **refused**, timer boundaries included: `timerSpec` is a cron expression or a horizon, not an ISO 8601 duration, so it carries no `timeout`. *Answered, Q7.* |
 | `subProcess` (collapsed) → `bpmn:subProcess` | none | **refused**. v2 has no nesting; `call_workflow` names a separate procedure. |
 | Foreign tags kept verbatim (`task`, `sendTask`, `receiveTask`, `manualTask`, `businessRuleTask`, …; `n.foreignTag`) | none | **refused**. Unknown semantics. |
-| `@nodeKind` on `aef:meta` (carried key, see 2.3) | overrides the kind above | The only way to produce `command` or `compensate`. *Proposed carrier, Q1.* |
+| `@nodeKind` on `aef:meta` (carried key, see 2.3) | overrides the kind above | The only way to produce `command` or `compensate`. Does not override a sovereignty lane (Q5). *Carried key, answered Q1.* |
 
 ### 2.3 Per-node attributes and extensions (`aefExtensionXml`, line 13758)
 
@@ -86,26 +86,26 @@ procedure cannot express it, and dropping it would change behaviour).
 | `bpmn:incoming` / `bpmn:outgoing` | none | **lost** (redundant with the sequenceFlows). |
 | `aef:uid @value` (`n_` + 8 hex, `generateUid` 2257) | `nodes[].uid` | **mapped** verbatim. It is the stable identity; it must match `^[a-z][a-z0-9_]*$`, which generated uids do. Missing or duplicated → refused. |
 | `aef:position @x @y` | none | **lost** (layout). |
-| `aef:meta` named keys (`metaKeys`, line 13777): `tier`, `agentType`, `decisionOwner`, `triggeredBy`, `terminalKind`, `state`, `note`, `softFail`, `section`, `guard`, `external`, `exitCode`, `autoTrigger`, `trigger`, `gatewayKind`, `gate`, `scopeOf`, `horizon`, `workflowType`, `owner`, `authority` | none, except `state` (next row) and `agentType` (2.2) | **lost**: design-time governance and prose. `authority` and `owner` are re-checked through the lane (2.1). `aef:meta/@guard` is **not** an edge guard (Q8). |
+| `aef:meta` named keys (`metaKeys`, line 13777): `tier`, `agentType` (2.2), `decisionOwner`, `triggeredBy`, `terminalKind`, `state`, `note`, `softFail`, `section`, `guard`, `external`, `exitCode`, `autoTrigger`, `trigger`, `gatewayKind`, `gate`, `scopeOf`, `horizon`, `workflowType`, `owner`, `authority` | none, except `state` (next row) and `agentType` (2.2) | **lost**: design-time governance and prose. The lane, not `authority` or `owner`, decides `human_gate` (2.1). `aef:meta/@guard` is author prose and is **not** an edge guard (answered, Q8). |
 | `aef:meta @state` on an `endEvent` | `nodes[].outcome` when `@outcome` is absent | **mapped** (fallback). |
 | `aef:meta` carried keys (any other scalar, sorted after the named keys: `carriedKeys`, line 13848; e.g. `determinism`, `sideEffect`) | see the next six rows; anything else is none | Carried keys not named below are **lost**. |
-| `aef:meta @outcome` | `nodes[].outcome` | **mapped**. Required: a node with no `@outcome` (and no end-event `@state`) is refused. *Proposed carrier, Q1.* |
-| `aef:meta @actionRef`, `@capabilityProfileRef`, `@executionProfileRef`, `@compensationRef` | `action_ref`, `capability_profile_ref`, `execution_profile_ref`, `compensation_ref` | **mapped** verbatim (catalogue refs, never paths). *Proposed carriers, Q1.* |
-| `aef:meta @timeout` (ISO 8601 duration), `@maxAttempts` (0–10) | `timeout`, `retry.max_attempts` | **mapped**. *Proposed carriers, Q1.* |
+| `aef:meta @outcome` | `nodes[].outcome` | **mapped**. Required: a node with no `@outcome` (and no end-event `@state`) is refused. *Carried key, answered Q1.* |
+| `aef:meta @actionRef`, `@capabilityProfileRef`, `@executionProfileRef`, `@compensationRef` | `action_ref`, `capability_profile_ref`, `execution_profile_ref`, `compensation_ref` | **mapped** verbatim (catalogue refs, never paths). *Carried keys, answered Q1.* |
+| `aef:meta @timeout` (ISO 8601 duration), `@maxAttempts` (0–10) | `timeout`, `retry.max_attempts` | **mapped**. *Carried keys, answered Q1.* |
 | `aef:endpoint` (text) | none | **lost**, and deliberately **not** used as `action_ref`: it is a shell string or path (`fw report write …`), and the schema forbids that in a ref (arch §6.2.1). |
-| `aef:contextReads @paths` | `context_selectors` (split on `,`, trimmed) | **mapped**. *Inferred, Q9.* |
+| `aef:contextReads @paths` | `context_selectors` (split on `,`, trimmed) | **mapped** as-is, `${…}` placeholders included (bound from instance inputs). *Answered, Q9.* |
 | `aef:artifactsWrites @paths` | none | **lost**. The typed outputs carry what the runtime checks. |
 | `aef:decisionInput` (text) | none | **lost**. The decision is carried by the edge guards. |
 | `aef:decisionOutputs` (comma list) | the keys of `human_decision_map` | **mapped** on `userTask` (2.4). On an `exclusiveGateway` it is **lost** (the guards carry the branches). |
-| `aef:link @workflowRef @name @targetWorkflow @linkId` | `call_workflow` (`@workflowRef`/`@targetWorkflow`) | See 2.2. The procedure has no field that names the called workflow, so the name is **lost**. *Q6.* |
-| `aef:eventDef @kind @binding` (`eventDefXml`, 14696) | kind (2.2) | `@binding` is **lost**, except for a boundary timer (2.2). |
+| `aef:link @workflowRef @name @targetWorkflow @linkId` | none | `@linkId` pairs a same-document throw and catch (collapsed, 2.2). A cross-workflow target is refused (2.2). *Answered, Q6.* |
+| `aef:eventDef @kind @binding` (`eventDefXml`, 14696) | kind (2.2) | `@binding` is **lost**. Boundary events are refused (2.2). |
 | `aef:boundaryPos @value` | none | **lost** (layout). |
-| `aef:io` / `aef:input @name @type @required` (+ extra attributes) | `inputs[]` = the `@name`s in order | `@type`, `@required` and extra attributes are **lost**. *Q10.* |
+| `aef:io` / `aef:input @name @type @required` (+ extra attributes) | `inputs[]` = the `@name`s in order | `@type`, `@required` and extra attributes are **lost** under v2. *Answered, Q10: typed io is for v3, with types from 832.* |
 | `aef:io` / `aef:output @name @type` | `outputs[]` = the `@name`s in order | `@type` is **lost**. |
 | `aef:field` (+`aef:when`), `aef:expect` (+`aef:value`), `aef:example` inside an io | none | **lost** (the field-catalog detail; 832 T-1302/T-1365). |
 | `aef:emits/aef:emit @value`, `aef:compensates/aef:compensate @ref` (`STRUCT_LIST_KEYS`, 2631) | none | **lost**. A node that compensates becomes `compensate` only through `@nodeKind`. |
 | `aef:aggregation`, `aef:multiInstance` | none | **refused**: v2 has no fan-out. |
-| `aef:timer` (dict) | none | **lost**. *Q7.* |
+| `aef:timer` (dict) | none | **lost**. *Answered, Q7.* |
 | `aef:constituents/aef:constituent` | none | Only on `subProcess`, which is refused. |
 | Unknown `aef:` children kept by the designer (`aefKept`, `nodeAefKeptXml` 13663), other tools' extensions, `x832:origin @originalId` (`ORIGIN_NS` 13655) | none | **lost** |
 | `bpmn:linkEventDefinition`, native `*EventDefinition`s | none | Link: see 2.2. Native definitions on a plain event → **refused**. |
@@ -116,12 +116,12 @@ procedure cannot express it, and dropping it would change behaviour).
 | Emitted | Procedure | Outcome / what is lost |
 |---|---|---|
 | `bpmn:sequenceFlow @sourceRef @targetRef` | `edges[].from` / `to` = the target nodes' `aef:uid` | **mapped**. One flow becomes one edge. A dangling ref is refused. |
-| `@id` (`flow_<seq>`, `computeEdgeDisplayId` 2429), `aef:uid` (`e_` + 8 hex) | none | **lost**. Procedure edges have no id. *Q11.* |
+| `@id` (`flow_<seq>`, `computeEdgeDisplayId` 2429), `aef:uid` (`e_` + 8 hex) | none | **lost** from the procedure (edges have no id). AEF keeps the flow `aef:uid` as provenance **outside** the hashed procedure and reports traversed edges by it in the runtime projection. *Answered, Q11; owned by AEF T-5193.* |
 | `@name` | `human_decision_map[name] = to`, on a `userTask` source whose `aef:decisionOutputs` lists that name | **mapped**. Every decision label must match exactly one outgoing flow name; otherwise refused. On other sources `@name` is **lost**. |
 | `bpmn:conditionExpression` (text; @language, @id) | `edges[].guard` (trimmed text, ≤ 300 chars) | **mapped**. @language and @id are **lost**. Whether the text is a lawful typed expression (arch §6.1) is AEF validation, not this mapping. |
 | `aef:anchors`, `aef:loopDetour`, `aef:forceStraight`, `aef:routingHint`, `aef:routing/aef:waypoint` | none | **lost** (layout). |
 | Kept documentation, other tools' extensions, kept children, `x832:origin` | none | **lost** |
-| (nothing) | `edges[].required_outputs` | **No 0.43.0 source.** It stays absent. 0.43.0 drops unknown `aef:` children on a flow at re-save (`elementKept`, 14674, keeps only non-`aef:` extensions), so this needs a carrier. *Q12.* |
+| (nothing) | `edges[].required_outputs` | **No 0.43.0 source.** It stays absent. 0.43.0 drops unknown `aef:` children on a flow at re-save (`elementKept`, 14674, keeps only non-`aef:` extensions), so this needs a carrier. *Answered, Q12: option (c) now, AEF-only with this loss; later (a), a designer-read `aef:requiredOutputs`; not (b).* |
 
 ## 3. Table B: every procedure.schema.json field → its source
 
@@ -137,10 +137,10 @@ Required fields first.
 | `terminal_nodes` | yes | `aef:uid` of every `bpmn:endEvent` |
 | `nodes` | yes | flow nodes, 2.2 |
 | `nodes[].uid` | yes | `aef:uid/@value` |
-| `nodes[].kind` | yes | BPMN tag (2.2), or `aef:meta/@nodeKind` |
+| `nodes[].kind` | yes | BPMN tag (2.2), or `aef:meta/@nodeKind`; `human_gate` for any activity in a sovereignty lane (Q5) |
 | `nodes[].outcome` | yes | `aef:meta/@outcome`; for an `endEvent`, `aef:meta/@state` as fallback |
 | `edges` | yes | `bpmn:sequenceFlow`, 2.4 |
-| `edges[].from` / `to` | yes | `@sourceRef` / `@targetRef` resolved to `aef:uid` |
+| `edges[].from` / `to` | yes | `@sourceRef` / `@targetRef` resolved to `aef:uid`; across a same-document link pair, the throw's source and the catch's target (Q6) |
 | `ratification` (`actor`, `ts`, `decision_ref`) | when ratified/deprecated | **Set by AEF at ratification**: the human decision recorded through AEF's authority (Watchtower decision → ratification contract, item 5). `actor.kind` must be `human`. Never from the export. |
 | `successor_version` | when deprecated | **Set by AEF at deprecation**, when the next version is ratified. |
 | `nodes[].inputs` / `outputs` | no | `aef:io/aef:input/@name` / `aef:output/@name` |
@@ -149,11 +149,11 @@ Required fields first.
 | `nodes[].execution_profile_ref` | no | `aef:meta/@executionProfileRef` (Q1) |
 | `nodes[].compensation_ref` | no | `aef:meta/@compensationRef` (Q1) |
 | `nodes[].context_selectors` | no | `aef:contextReads/@paths` (Q9) |
-| `nodes[].timeout` | no | `aef:meta/@timeout`, or a boundary timer (2.2) (Q1, Q7) |
+| `nodes[].timeout` | no | `aef:meta/@timeout` (Q1). Never a boundary timer (Q7). |
 | `nodes[].retry.max_attempts` | no | `aef:meta/@maxAttempts` (Q1) |
 | `nodes[].human_decision_map` | `human_gate` | `aef:decisionOutputs` + outgoing flow `@name`s (2.4) |
 | `edges[].guard` | no | `bpmn:conditionExpression` text |
-| `edges[].required_outputs` | no | none in 0.43.0 (Q12) |
+| `edges[].required_outputs` | no | none in 0.43.0; AEF-only for now (Q12 option c) |
 
 ## 4. content_hash: the bytes
 
@@ -179,7 +179,7 @@ nodes or edges or adding a ratification. Changing an outcome changes it.
 The designer can compute the same value by running this mapping. If it sends the hash alongside
 the export (architecture "Designer authors/exports proposed definition + content hash"), AEF
 recomputes it and refuses a mismatch. AEF also records `sha256` of the received BPMN bytes as
-the *source* hash, for read-back. That hash names the file, not the procedure. *Q13.*
+the *source* hash, for read-back. That hash names the file, not the procedure. *Answered, Q13: AEF computes `content_hash` alone; the designer does not send one.*
 
 Note: the `content_hash` in `examples/procedure-human-script-human.json` (v1/v2) is a fixture
 value and was not produced by this rule. This document does not change it.
@@ -207,8 +207,8 @@ hash (§4) so it can always say which file a procedure came from.
 |---|---|
 | `edges[].required_outputs` | No 0.43.0 carrier (2.4, Q12). A procedure that has them is **not** round-trippable through 0.43.0. |
 | `status`, `content_hash`, `ratification`, `successor_version` | Never in the BPMN, on purpose: a re-imported procedure is `draft` again with the **same** `content_hash`. That equality is the round-trip test. |
-| A procedure whose start node is not a pass-through `gateway`, or whose terminal is not a `gateway` | 0.43.0 needs start and end events. Such a procedure is written with added start/end gateways, so it does not come back byte-equal. *Q14.* |
-| `kind` `wait_event` (timer vs message), `call_workflow` target | The kind survives through `@nodeKind`, but the target workflow or event name is not a procedure field, so it cannot be produced. |
+| A procedure whose start node is not a pass-through `gateway`, or whose terminal is not a `gateway` | 0.43.0 needs start and end events. Such a procedure is written with added start/end gateways, so it does not come back byte-equal. *Answered, Q14: start/end stay pass-through nodes; their `aef:uid`s anchor the overlay.* |
+| `kind` `wait_event` (timer vs message), `call_workflow` | `wait_event` survives through `@nodeKind`, but the event name is not a procedure field. A `call_workflow` node has no 0.43.0 source (a link throw is not a call, Q6), so it is written only as `@nodeKind` on a task. |
 
 ## 6. Compatibility rule
 
@@ -218,7 +218,7 @@ one is `designer 0.43.0 → contracts v2 (procedure.schema.json schema_version 1
 - **Designer version D maps to contracts v2 only if a mapping document names D.** AEF refuses an
   export whose designer build has no mapping document. The build is identified by
   `exporter="aef-workflow-designer"` plus the artifact sha256 of the delivered build
-  (`policy/designer-pin.yaml`), because 0.43.0 writes no version number into the XML. *Q15.*
+  (`policy/designer-pin.yaml`), because 0.43.0 writes no version number into the XML. *Q15: agreed; 832 will emit `exporterVersion` on `bpmn:definitions` from its next release, once its operator agrees. Until then the sha256 pin stands.*
 - **Designer bump (0.43.0 → 0.44.0 or later).** 832 states whether the export changed: elements,
   attributes, `metaKeys`, `NODE_AEF_READ`, carriage, the flow keep rules. If nothing in §2
   changed, AEF adds a one-line row naming the new version and sha256 and re-runs the example. If
@@ -235,45 +235,50 @@ one is `designer 0.43.0 → contracts v2 (procedure.schema.json schema_version 1
 - Either side's change to this mapping needs the joint compatibility review the architecture
   names, and human-owned ratification.
 
-## 7. Open questions for 832
+## 7. Answered by 832 (msg ccdef9f3, 2026-11-16)
 
-Everything marked *Inferred* or *Proposed carrier* above. These are the rows 832 should look
-at hardest.
+832 answered all fifteen questions from the 0.43.0 source and `validate-workflow.py`. The answers
+are authoritative for this document and are applied in §2–§6.
 
-- **Q1 (proposed carriers).** 0.43.0 has no field for `outcome`, `actionRef`,
-  `capabilityProfileRef`, `executionProfileRef`, `compensationRef`, `timeout`, `maxAttempts` or
-  `nodeKind`. This mapping uses them as **carried `aef:meta` scalars**, which 0.43.0 already
-  writes verbatim (T-570) without a contract change. Are these names acceptable? Does 832 prefer
-  them offered in the panel, as T-618 did for `determinism`?
-- **Q2.** Is `workflowMeta/@version="1"` → `1.0.0` the right reading, or should the designer
-  write semver?
-- **Q3.** Is `serviceTask` + `agentType` → `agent_prompt`, else `service`, how 832 means it?
-- **Q4.** Refuse `parallelGateway` under v2, or does 832 expect AEF to model fork/join?
-- **Q5.** The sovereignty-lane check (a node in a `sovereignty` lane must be a `human_gate`):
-  does it match 832's IW-9 collapse (`AUTHORITY_OWNER`), or is it too strict for, say, a
-  start event drawn in the human lane?
-- **Q6.** Cross-workflow link throw → `call_workflow`? Same-document link pairs refused?
-- **Q7.** In-flow timer and message catches → `wait_event`; error events and boundary events
-  refused, except a flowless boundary timer → host `timeout`. Is the `timerSpec` format an
-  ISO 8601 duration?
-- **Q8.** `aef:meta/@guard` on a node: what is it? This mapping ignores it and uses only
-  `conditionExpression`.
-- **Q9.** `aef:contextReads` paths → `context_selectors` as-is (they may contain `${…}`)?
-- **Q10.** io `@type`/`@required` are dropped because procedure io is names only. Should v3
-  type the io, given that 832's field catalog already has the types?
-- **Q11.** Flow `aef:uid` is lost because procedure edges have no id. Does 832 need edge identity
-  back from AEF (e.g. for runtime projection, shared contract 4)?
-- **Q12.** `required_outputs` has no carrier, and an unknown `aef:` child on a flow is dropped
-  at re-save (`elementKept` keeps only non-`aef:` extensions). Options: (a) 832 adds a flow-level
-  `aef:requiredOutputs` it reads and writes; (b) a non-`aef:` namespace element, which 0.43.0
-  already keeps verbatim; (c) leave it AEF-only. Which one?
-- **Q13.** Will the designer send a `content_hash` with the export, computed by this rule, or
-  should AEF compute it alone?
-- **Q14.** Start and end events become pass-through `gateway` nodes, so each sequenceFlow stays one
-  edge. The alternative is to drop them and point `start_node` at the first step. Preference?
-- **Q15.** Could the export carry its designer version (e.g. `exporterVersion` on
-  `bpmn:definitions`, a standard BPMN attribute) so the mapping version can be read from the
-  file instead of from the delivered build's sha256?
+- **Q1 (carriers): answered.** The eight carried `aef:meta` names are fine: 0.43.0 round-trips
+  unknown `aef:meta` scalars (T-570). No panel fields yet.
+- **Q2 (version): answered, rule changed.** `@version` is free text (default `'1'`). Integer `N` →
+  `N.0.0`; valid semver kept as-is; anything else refused (2.1).
+- **Q3 (agentType): answered, rule changed.** Options are `primary | termlink-worker | human`.
+  `primary`/`termlink-worker` → `agent_prompt`; absent → `service`. `human` on a serviceTask is a
+  contradiction, never `agent_prompt`: lane-wins (`human_gate`) in a sovereignty lane, refused
+  elsewhere (2.2).
+- **Q4 (parallelGateway): answered.** Refusing it under v2 is right.
+- **Q5 (sovereignty lane): answered, rule changed.** Only activities (`userTask`, `serviceTask`,
+  `scriptTask`, `task`) take an owner. Events and gateways in a human lane are not gates and are
+  exempt. An activity in a sovereignty lane maps **to** `human_gate` (lane wins, O-1); it is not
+  refused (2.1).
+- **Q6 (link events): answered, rule changed.** A link throw is a hand-off with no return, not a
+  call (fields `workflowRef`, `targetWorkflow`, `linkId`, `name`). Cross-workflow maps to
+  `call_workflow` only if that allows no-return. **AEF finding:** it does not. Architecture
+  §6.2 (`architecture-c9070637.md`, bounded action vocabulary) defines call workflow as "Invoke
+  sub-procedure and await result", and `procedure.schema.json` v2 carries `call_workflow` only as a
+  `kind` enum value, with no target or return-mode field. So a cross-workflow throw is
+  **refused**. A same-document throw/catch pair is a goto, collapsed into one edge (2.2).
+- **Q7 (timers): answered, rule changed.** `timerSpec` is a cron expression or a horizon, not
+  ISO 8601. Boundary timer → host `timeout` is refused. In-flow timer/message catch →
+  `wait_event` stays (2.2).
+- **Q8 (`aef:meta/@guard`): answered.** It is author prose; ignoring it is right.
+  `conditionExpression` is the only guard.
+- **Q9 (contextReads): answered.** As-is: comma-separated paths with `${…}` placeholders bound
+  from instance inputs.
+- **Q10 (typed io): answered.** Yes, for v3; 832 supplies the types.
+- **Q11 (edge identity): answered, owned by AEF T-5193.** Wanted for runtime projection row 4.
+  Keep flow `aef:uid` as provenance outside the hashed procedure and report traversed edges by it
+  in the runtime projection.
+- **Q12 (`required_outputs` carrier): answered.** Option (c) now: AEF-only, with the stated loss.
+  Later (a): a designer-read `aef:requiredOutputs`. Not (b).
+- **Q13 (content_hash): answered.** AEF computes it alone.
+- **Q14 (start/end): answered.** Keep them as pass-through nodes; their `aef:uid`s anchor the
+  overlay.
+- **Q15 (exporterVersion): agreed, waiting on 832's operator.** 832 will emit `exporterVersion`
+  from its next release once its operator agrees. Until then the build is identified by sha256
+  (§6).
 
 ## 8. Worked example
 
@@ -290,3 +295,7 @@ branch loops back to the first gate.
 which implements §2–§4 for the element subset the example uses, reproduces it exactly. Dropped
 in this example: names, lanes, positions and DI, `aef:endpoint` on the script, `determinism`,
 `tier`, `authority`, `triggeredBy`, `terminalKind`, io types, flow ids and uids.
+
+None of 832's answers changes the example's mapping: its activities in the sovereignty lane are
+already `userTask`s, its version is already `1.0.0`, and it has no service task, link event or
+timer. The rules that changed (Q2, Q3, Q5, Q6, Q7) are pinned by small inline cases in the test.
