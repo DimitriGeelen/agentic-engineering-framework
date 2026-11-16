@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5184: Shared contract 2 (mapping/compatibility): draft 'designer 0.43.0 produces EWCR contracts v2' — versions, round-trip and migration rules (T-5183, paired with 832 T-1425)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T16:38:49Z
+# ============================================================================
+
+task_id: T-5184
+task_name: "Shared contract 2 (mapping/compatibility): draft 'designer 0.43.0 produces EWCR contracts v2' — versions, round-trip and migration rules (T-5183, paired with 832 T-1425)"
+workflow_type: design
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-16T12:53:56Z
+completed: 2026-11-16T16:38:18Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-16T17:18:07+01:00
+last_commit: 2026-11-16T17:26:04+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context, criteria; start. designer 0.43.0 -> contracts v2 procedure mapping (shared contract 2), worked example, test
+
+# Key outcomes
+outcomes:
+  - 'The mapping covers every BPMN element type and attribute the designer 0.43.0 export emits, each mapped to a procedure field or marked "not represented", with the loss stated.'
+  - 'Every required procedure.schema.json field has a stated source in the BPMN export, or is marked "set by AEF at ratification" with the step that sets it.'
+  - 'A worked example procedure JSON validates against contracts v2 procedure.schema.json (test), and contracts v1/v2 checks stay clean.'
+  - '832 is sent the draft with the path and commit. (2026-11-16, 832-ewcr-progress, bf9cc0b7b; their answers to the 15 open questions come back as a follow-up.)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5184-shared-contract-2-mappingcompatibility-d.md'
+  - 'docs/research/executable-workflow/contracts/v2/designer-0.43-mapping.md'
+  - 'docs/research/executable-workflow/contracts/v2/examples-mapping/human-script-human.bpmn'
+  - 'docs/research/executable-workflow/contracts/v2/examples-mapping/human-script-human.procedure.json'
+  - 'tests/unit/test_t5184_designer_mapping.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T17:18:07'
+    action: 'T-5184: context, criteria; start'
+  - time: '2026-11-16T17:26:04'
+    action: 'T-5184: designer 0.43.0 -> contracts v2 procedure mapping (shared contract 2), worked example, test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 224 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 224
+  commits: 3
+  files_changed: 8
+  lines_added: 972
+  lines_removed: 17
+  footprint_refreshed_at: '2026-11-16T16:39:00Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5184-shared-contract-2-mappingcompatibility-d.md
+generated_by: context-agent-hybrid

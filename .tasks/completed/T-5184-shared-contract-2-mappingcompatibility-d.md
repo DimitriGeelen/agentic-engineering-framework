@@ -7,10 +7,10 @@ description: >
   Agreed with 832 2026-11-16 (msg f2c1275e). AEF has no artifact for shared contract
   2; pairs with designer kit 0.43.0 (SHA256SUMS 126451b6).
 
-status: started-work
+status: work-completed
 workflow_type: design
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T12:53:56Z
-last_update: 2026-11-16T16:17:04Z
-date_finished:
+last_update: 2026-11-16T16:38:18Z
+date_finished: 2026-11-16T16:38:18Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -102,7 +102,7 @@ bvp_scores_proposed:
 - [x] The mapping covers every BPMN element type and attribute the designer 0.43.0 export emits, each mapped to a procedure field or marked "not represented", with the loss stated.
 - [x] Every required procedure.schema.json field has a stated source in the BPMN export, or is marked "set by AEF at ratification" with the step that sets it.
 - [x] A worked example procedure JSON validates against contracts v2 procedure.schema.json (test), and contracts v1/v2 checks stay clean.
-- [ ] 832 is sent the draft with the path and commit.
+- [x] 832 is sent the draft with the path and commit. (2026-11-16, 832-ewcr-progress, bf9cc0b7b; their answers to the 15 open questions come back as a follow-up.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -393,3 +393,16 @@ python3 vendor/designer/validate-workflow-0.43.0.py docs/research/executable-wor
 ### 2026-11-16T16:17:04Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-16T16:38:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9698bbb4
+- **Timestamp:** 2026-11-16T16:38:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
