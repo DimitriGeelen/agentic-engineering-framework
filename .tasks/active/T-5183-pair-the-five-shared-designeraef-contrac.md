@@ -1,13 +1,16 @@
 ---
 id: T-5183
-name: "Pair the five shared Designer↔AEF contracts with 832: AEF-side tasks at an agreed version/hash (T-5144 G2, Q-10/Q-11)"
+name: "Pair the five shared Designer↔AEF contracts with 832: AEF-side tasks at an
+  agreed version/hash (T-5144 G2, Q-10/Q-11)"
 description: >
-  T-5144 G2: all five shared contracts are v1 (unset) with no paired task on either side (drive-7 handback :398). Agree versions with 832, then capture one AEF task per contract.
+  T-5144 G2: all five shared contracts are v1 (unset) with no paired task on either
+  side (drive-7 handback :398). Agree versions with 832, then capture one AEF task
+  per contract.
 
-status: captured
+status: started-work
 workflow_type: design
 owner: agent
-horizon: later
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T12:50:22Z
-last_update: 2026-11-16T12:50:22Z
-date_finished: null
+last_update: '2026-11-16T12:53:20Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +53,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-16T12:53:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal);
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5183: Pair the five shared Designer↔AEF contracts with 832: AEF-side tasks at an agreed version/hash (T-5144 G2, Q-10/Q-11)
@@ -57,20 +77,31 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5144 gap G2 (docs/reports/EWCR/T-5144-r7-sd1-reconciliation.md §4). 832 msg e613f58f (2026-11-16) asked for AEF's proposed version per shared contract: which contract, AEF's current version, and the 832 artifact it pairs with. 832 then opens their paired tasks against that list.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The architecture (architecture-c9070637.md §"Shared versioned contracts") names five shared Designer↔AEF contracts. All five are "v1 (unset)" (questions-and-dispositions.md:103-107), and neither side has a paired task. AEF has frozen artifacts for three of them (contracts v2) and none for two (mapping, runtime projection).
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Agree a version pairing with 832 for each of the five, then capture one AEF task per contract that still needs work.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A pairing table both sides accept. The two contracts with no AEF artifact have owner tasks.
+
+**Proposed pairing (sent to 832 on 832-ewcr-progress, 2026-11-16):**
+
+| # | Shared contract | AEF side now | Pairs with (832) | Status |
+|---|---|---|---|---|
+| 1 | Procedure interchange | contracts v2 `procedure.schema.json`, schema_version 1, sha256 ac9aaefc… | designer 0.43.0 export (artifact 85119747…) | AEF artifact exists |
+| 2 | Mapping / compatibility | none | designer 0.43.0 kit (126451b6…) → AEF contracts v2 | AEF must draft: designer 0.43.0 produces contracts v2 |
+| 3 | Validation / refusal diagnostics | contracts v2 `refusal.schema.json`, schema_version 2, sha256 c4148a34… | `validate-workflow.py` 0.43.0 diagnostics (08ac4443…) | AEF artifact exists |
+| 4 | Runtime projection | no frozen schema. Live: `/api/instances` (T-4831), `/api/overlay`; built from contracts v2 `instance`/`attempt`/`evidence-reference` schemas (schema_version 1) | designer 0.43.0 overlay renderer | AEF must freeze a projection schema |
+| 5 | Ratification | contracts v2 `task-lifecycle-contract.md` (frozen T-3386, carried from v1) + Watchtower decision path | designer 0.43.0 save/export (proposal-only) | AEF artifact exists (prose) |
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The proposed pairing for all five contracts is sent to 832, naming the AEF artifact, its version/sha, and the 832 artifact for each.
+- [ ] 832 has accepted or amended the pairing, and the agreed table is recorded here.
+- [ ] Contracts 2 (mapping) and 4 (runtime projection) each have an AEF owner task.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -353,3 +384,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5183-pair-the-five-shared-designeraef-contrac.md
 - **Context:** Initial task creation
+
+### 2026-11-16T12:53:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
