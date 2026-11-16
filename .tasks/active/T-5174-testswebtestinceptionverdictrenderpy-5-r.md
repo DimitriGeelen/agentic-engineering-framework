@@ -1,8 +1,14 @@
 ---
 id: T-5174
-name: "tests/web/test_inception_verdict_render.py: 5 reds, 'decided_unclosed_count' is undefined when the test renders _approvals_content.html"
+name: "tests/web/test_inception_verdict_render.py: 5 reds, 'decided_unclosed_count'
+  is undefined when the test renders _approvals_content.html"
 description: >
-  Found 2026-11-16 in T-5172's wider run (not caused by it): all 5 tests in tests/web/test_inception_verdict_render.py fail with jinja2 UndefinedError 'decided_unclosed_count'. The template (_approvals_content.html line 5) uses it since T-3175 (183eef3e6), and web/blueprints/approvals.py passes it; the test renders the template with its own context that lacks it. Likely a stale test context (render through the blueprint, or add the key); check whether the template should default it.
+  Found 2026-11-16 in T-5172's wider run (not caused by it): all 5 tests in tests/web/test_inception_verdict_render.py
+  fail with jinja2 UndefinedError 'decided_unclosed_count'. The template (_approvals_content.html
+  line 5) uses it since T-3175 (183eef3e6), and web/blueprints/approvals.py passes
+  it; the test renders the template with its own context that lacks it. Likely a stale
+  test context (render through the blueprint, or add the key); check whether the template
+  should default it.
 
 status: captured
 workflow_type: build
@@ -39,8 +45,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T02:31:25Z
-last_update: 2026-11-16T02:31:25Z
-date_finished: null
+last_update: '2026-11-16T02:45:26Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +57,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-16T02:45:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5174: tests/web/test_inception_verdict_render.py: 5 reds, 'decided_unclosed_count' is undefined when the test renders _approvals_content.html
