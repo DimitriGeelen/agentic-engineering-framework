@@ -173,16 +173,16 @@ Who it hurts: every operator of a large project. Overview pages are where decisi
 
 **Rationale:**
 
-The profile names where the time goes, and it is not task-file reading. At ~5,000 tasks, a cold `/approvals` costs 34–44 s. Most of it is re-validating review-ledger history against git: 1,909 `git show` and 6 `git log` calls, plus ~12–22 s of Python in the same validation. Warm, it costs 2.3 s, and `/` costs 2.3 s, so parsing the corpus is already cached and cheap. The page goes cold on a process restart and on any write to any `.context/reviews/*.jsonl`, because the readiness cache keys on all 13 ledger files. 42 commits touched those files in the last 24 h.
+The profile names where the time goes, and it is not task-file reading. At ~5,000 tasks, a cold approvals page (http://192.168.10.107:3000/approvals) costs 34–44 s. Most of it is re-validating review-ledger history against git: 1,909 `git show` and 6 `git log` calls, plus ~12–22 s of Python in the same validation. Warm, it costs 2.3 s, and the home page (http://192.168.10.107:3000/) costs 2.3 s, so parsing the corpus is already cached and cheap. The page goes cold on a process restart and on any write to any `.context/reviews/*.jsonl`, because the readiness cache keys on all 13 ledger files. 42 commits touched those files in the last 24 h.
 
 Build slices:
 - **A:** a persistent memo of per-row ledger validation, keyed on immutable git object ids, so restarts and unrelated ledger writes stop costing a full revalidation.
 - **B:** narrow the readiness stamp to the rows that concern each task.
-- **C:** single-flight plus serve-stale-while-refreshing on `/approvals`, as T-5147 did for the board (a READY is never served stale).
+- **C:** single-flight plus serve-stale-while-refreshing on the approvals page, as T-5147 did for the board (a READY is never served stale).
 
 All three keep the files and ledgers as the only source of truth.
 
-A general rebuildable index (the operator's stepped proposal, D) would not touch this cost; it fits a parsing bottleneck we did not measure. 1409's slow `/` (ours is fast) is the open part. Their profile, using the scripts in docs/reports/, decides whether 1409 has another hotspot or is CPU-starved. D can be revisited on that evidence. A, B and C are right either way.
+A general rebuildable index (the operator's stepped proposal, D) would not touch this cost; it fits a parsing bottleneck we did not measure. 1409's slow home page (ours is fast) is the open part. Their profile, using the scripts in docs/reports/, decides whether 1409 has another hotspot or is CPU-starved. D can be revisited on that evidence. A, B and C are right either way.
 
 **Evidence:**
 
