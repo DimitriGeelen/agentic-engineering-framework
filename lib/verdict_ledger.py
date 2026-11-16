@@ -3967,11 +3967,11 @@ def widened_lines(root: Path) -> list[str]:
     applied log, once per task/criterion/verdict), naming the widening and the project's ruling."""
     seen: dict[tuple, str] = {}
     for a in _read(APPLIED, root):
-        for t in a.get("ticked") or []:
+        for t in (a.get("ticked") or []) + (a.get("recited") or []):
             if isinstance(t, dict) and t.get("widened_by"):
-                seen.setdefault((a.get("task"), t.get("ac"), t.get("verdict_id")),
-                                f"widened by {t['widened_by']} (ruling {t.get('ruling')}): "
-                                f"\"{t.get('criterion', '')}\"")
+                seen[(a.get("task"), t.get("ac"), t.get("verdict_id"))] = (
+                    f"widened by {t['widened_by']} (ruling {t.get('ruling')}): "
+                    f"\"{t.get('criterion', '')}\"")  # latest apply wins (review #3: recited)
     return [f"WARN widened: {task} AC#{ac} {vid}: {what}"
             for (task, ac, vid), what in seen.items()]
 

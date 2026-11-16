@@ -81,8 +81,20 @@ def test_widen_refused_under_agent_control_without_i_am_human(root, monkeypatch)
     today = hat.datetime.now(hat.timezone.utc).strftime("%Y-%m-%d")
     good = list(args)
     good[good.index("--expires") + 1] = today
-    assert _main(root, monkeypatch, *good, "--i-am-human", agent=True) == 0
-    assert _lines(root, Path(hat.DELEGATIONS))[0]["by"] == "agent-override"
+    # T-5180 review #1: --i-am-human does not open this door under agent control
+    assert _main(root, monkeypatch, *good, "--i-am-human", agent=True) == 2
+    assert not (root / hat.DELEGATIONS).exists()
+    assert _main(root, monkeypatch, *good) == 0
+
+
+def test_a_hand_written_agent_override_widening_never_applies(root):
+    _task(root, WORLD_M)
+    w = _widen(root, expires=FAR, today="2098-06-01")
+    rows = _lines(root, Path(hat.DELEGATIONS))
+    rows[0]["by"] = "agent-override"
+    (root / hat.DELEGATIONS).write_text("".join(hat.json.dumps(r) + "\n" for r in rows))
+    got, why = dw.active_widening(root, TASK, _text(root), _crit(root))
+    assert got is None and "agent-override" in why and w["id"] in why
 
 
 @pytest.mark.parametrize("cls", ["tier0-or-bypass", "sovereignty-field", "operator-marked",
@@ -198,11 +210,25 @@ def test_widening_refuses_with_the_missing_part(root, case, why):
     assert _lines(root, vl.REFUSALS)[-1]["class"] == "not-reviewer-judged"
 
 
-def test_arc_scope_covers_a_task_on_that_arc(root):
+def test_arc_scope_is_refused_and_a_hand_written_arc_row_never_applies(root):
+    # T-5180 review #2: a task's arc_id is agent-editable, so arc scope would follow the agent
     f = _task(root, WORLD_M)
     f.write_text(f.read_text().replace("horizon: now", "horizon: now\narc_id: arc-077"))
-    _widen(root, tasks=(), arc="arc-077", expires=FAR, today="2098-06-01")
-    assert dw.active_widening(root, TASK, _text(root), _crit(root))[0] is not None
+    with pytest.raises(ValueError, match="--tasks only"):
+        _widen(root, tasks=(), arc="arc-077", expires=FAR, today="2098-06-01")
+    hat._append(root, hat.DELEGATIONS, {"ts": "2026-11-16T00:00:00Z", "kind": "widening",
+                "class": "act-in-the-world", "ruling": "R", "text": "t", "pattern": PAT,
+                "arc": "arc-077", "tasks": [], "expires": FAR, "by": "op", "id": "SD-arc00001"})
+    assert dw.active_widening(root, TASK, _text(root), _crit(root))[0] is None
+
+
+def test_a_string_task_scope_never_matches_by_substring(root):
+    # T-5180 review #6
+    _task(root, WORLD_M)
+    hat._append(root, hat.DELEGATIONS, {"ts": "2026-11-16T00:00:00Z", "kind": "widening",
+                "class": "act-in-the-world", "ruling": "R", "text": "t", "pattern": PAT,
+                "arc": None, "tasks": TASK + "9", "expires": FAR, "by": "op", "id": "SD-str00001"})
+    assert dw.active_widening(root, TASK, _text(root), _crit(root))[0] is None
 
 
 def test_revoking_after_apply_withdraws_the_tick(root):

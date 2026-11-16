@@ -108,13 +108,6 @@ def measured_block(lines: list[str]) -> tuple[str, str] | None:
     return None
 
 
-def _task_arcs(text: str) -> set[str]:
-    m = re.match(r"(?s)---\n(.*?)\n---", text or "")
-    fm = m.group(1) if m else ""
-    arcs = set(re.findall(r"(?m)^arc_id:\s*['\"]?([\w.-]+)", fm))
-    arcs |= set(re.findall(r"\barc:([\w.-]+)", " ".join(re.findall(r"(?m)^tags:.*$", fm))))
-    return arcs
-
 
 def _workflow(text: str) -> str:
     m = re.search(r"(?m)^workflow_type:\s*['\"]?([\w-]+)", text or "")
@@ -140,7 +133,6 @@ def active_widening(root: Path, task_id: str, task_text: str, criterion,
         return None, f"criterion class {cls} is never widened (only {', '.join(WIDENABLE_CLASSES)})"
     today = today or datetime.now(timezone.utc).strftime("%Y-%m-%d")
     title = re.sub(r"\s+", " ", criterion.title).strip()
-    arcs = _task_arcs(task_text)
     why: list[str] = []
     hit = None
     for wid, w in ws.items():
@@ -153,8 +145,15 @@ def active_widening(root: Path, task_id: str, task_text: str, criterion,
         if str(w.get("expires") or "") < today:
             why.append(f"{wid} expired {w.get('expires')}")
             continue
-        if not (task_id in (w.get("tasks") or []) or (w.get("arc") and w["arc"] in arcs)):
-            why.append(f"{task_id} is outside {wid}'s scope")
+        if w.get("by") == "agent-override":
+            # T-5180 review #1: T-5171's GO says the ruling is operator-authored, never an agent's.
+            why.append(f"{wid} was recorded under agent control (by: agent-override) and never applies")
+            continue
+        scope = w.get("tasks")
+        if not isinstance(scope, list) or task_id not in scope:
+            # T-5180 review #2/#6: task-list scope only. A task's arc_id/tags are agent-editable
+            # and outside the digest, so an arc scope could be pulled onto any task.
+            why.append(f"{task_id} is outside {wid}'s task list")
             continue
         pat = str(w.get("pattern") or "")
         try:

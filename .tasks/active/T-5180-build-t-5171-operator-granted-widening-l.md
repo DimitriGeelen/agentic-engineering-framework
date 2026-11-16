@@ -393,6 +393,17 @@ bin/fw vendor self --check --task T-5180
 - **Chose:** the green-degraded panel path still refuses any criterion that is not REVIEWER-JUDGES, widened ones included.
 - **Why:** the operator's conditions ask for a green at the task's rung. A degraded panel is a weaker close, and the GO did not grant it.
 
+### 2026-11-16 — independent review (AMBER) and what changed
+- **Chose:**
+  - #1 (an agent could record a widening with --i-am-human): `delegation widen` is refused under agent control, --i-am-human included, and a row marked `by: agent-override` never applies.
+  - #2 (arc scope follows the agent-editable arc_id): a widening is scoped by `--tasks` only. `--arc` is refused, and a hand-written arc row never applies.
+  - #3 (audit WARN missed recited ticks): the WARN reads ticked and recited entries, latest wins.
+  - #6 (a string task scope matched by substring): scope must be a list.
+- **Accepted, not changed:**
+  - #4: expiry withdraws an earlier tick on a still-active task at the next apply. This fails closed, and the reviewer flagged it only to confirm intent: the widening must hold while the task is open. Tasks already in completed/ are not re-applied.
+  - #5: Measured output can flip the class. It fails safe (never widened). The reason text is confusing but harmless.
+- **Why:** #1 and #2 are T-5171's "never by an agent" condition. The rest are cheap and tighten the record.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:

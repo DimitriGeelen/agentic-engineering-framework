@@ -795,9 +795,12 @@ def widen_delegation(root: Path, cls: str, ruling: str, text: str, pattern: str,
             raise ValueError(f"--pattern {pattern!r} matches every criterion — name the criterion")
     except re.error as e:
         raise ValueError(f"--pattern does not compile: {e}") from None
+    if arc:
+        raise ValueError("a widening is scoped by --tasks only: a task's arc is agent-editable, "
+                         "so an --arc scope could be pulled onto any task (T-5180 review)")
     bad = [t for t in tasks if not re.fullmatch(r"T-\d+", t)]
-    if bad or not (arc or tasks):
-        raise ValueError("scope needs --arc and/or --tasks T-1,T-2 (task ids)")
+    if bad or not tasks:
+        raise ValueError("scope needs --tasks T-1,T-2 (task ids)")
     today = today or datetime.now(timezone.utc).strftime("%Y-%m-%d")
     try:
         days = (datetime.strptime(expires, "%Y-%m-%d") - datetime.strptime(today, "%Y-%m-%d")).days
@@ -873,6 +876,13 @@ def main(argv: list[str] | None = None) -> int:
                   f"tasks={','.join(wr.get('tasks') or []) or '-'} pattern={wr.get('pattern')!r} "
                   f"by={wr.get('by')} text={wr.get('text')!r}")
         return 0
+    if args.cmd == "delegation" and getattr(args, "dcmd", "") == "widen" and _under_agent_control():
+        # T-5180 review #1: --i-am-human does not open this door. T-5171's GO: the widening is
+        # operator-authored, never written by an agent.
+        print("REFUSED: a widening is the operator's own ruling and is never recorded under agent "
+              "control, --i-am-human included. Ask the operator to run it in their own terminal.",
+              file=sys.stderr)
+        return 2
     if args.cmd == "delegation" and _under_agent_control() and not args.i_am_human:
         print("REFUSED: a standing delegation is the operator's grant (CLAUDECODE/AI_AGENT set). "
               "Ask the operator to run it in their own terminal.", file=sys.stderr)
