@@ -55907,3 +55907,21 @@ scan_id: R-de28aa33
 task_id: T-5181
 payload:
   task_file: .tasks/active/T-5181-build-t-5152-accepted-miss-criterion-sta.md
+---
+kind: scan_emitted
+timestamp: '2026-11-16T15:49:40Z'
+scan_id: R-42ed3f4e
+task_id: T-5188
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-16T15:49:40Z'
+scan_id: R-42ed3f4e
+task_id: T-5188
+payload:
+  task_file: .tasks/active/T-5188-p-010-hides-every-later-criterion-behind.md

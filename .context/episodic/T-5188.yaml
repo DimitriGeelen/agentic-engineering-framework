@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5188: P-010 hides every later criterion behind an unclosed mid-line <!-- : the sed range strip in check_acceptance_criteria deletes to end of section, so a task can close with open boxes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T15:49:58Z
+# ============================================================================
+
+task_id: T-5188
+task_name: "P-010 hides every later criterion behind an unclosed mid-line <!-- : the sed range strip in check_acceptance_criteria deletes to end of section, so a task can close with open boxes"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-16T14:48:52Z
+completed: 2026-11-16T15:48:21Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-16T16:48:15+01:00
+last_commit: 2026-11-16T16:48:15+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  P-010 strips comments structurally (lib/comment_strip.py) and refuses an unclosed comment in the AC section — a mid-line or unclosed <!-- no longer hides later criteria
+
+# Key outcomes
+outcomes:
+  - 'update-task.sh''s P-010 count, its `### Human`-placement check, and the partial-complete recheck strip comments through lib/comment_strip.py. No `sed ''/<!--/,/-->/d''` remains in update-task.sh.'
+  - 'A box line with a trailing mid-line `<!--` is still counted (open). An unclosed whole-line `<!--` inside the AC section refuses the close and names the line. Tested end to end through update-task.sh.'
+  - 'A task file with an invalid UTF-8 byte does not make the gate count zero criteria. It either counts them or refuses; it never passes silently. Tested.'
+  - 'The T-5181 tests and every existing test that reads update-task.sh or comment_strip.py pass, and invariants pass.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-16 — scope: the closing gates only'
+    chose: 'migrate the three update-task.sh sites (P-010 count, `### Human` placement check, partial-complete recheck) to lib/comment_strip.py. The two count sites refuse on an unclosed span inside the AC section. The whole-file placement check does not, because a comment left open in another section is not its business. - **Left as is:** agents/context/check-active-task.sh:1439 (Open Questions) and :1521 (G-020 build-readiness AC count) still use the range strip. Both run at the start of work, not at close. An under-count there can only make the readiness gate stricter (real criteria hidden means "no real ACs") or hide a placeholder. Neither can close a task with open criteria. - **Impact scan:** of 920 active task files, 1 has an unclosed ``) deletes criteria even when the comment closes, so the rule itself had to change.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/comment_strip.py'
+  - '.tasks/active/T-5188-p-010-hides-every-later-criterion-behind.md'
+  - '.tasks/active/T-5189-shared-contract-3-validationrefusal-map-.md'
+  - '.tasks/active/T-5190-cross-project-subscription-quota-overvie.md'
+  - 'agents/task-create/update-task.sh'
+  - 'lib/comment_strip.py'
+  - 'tests/unit/t3546_p011_reports_the_zero.bats'
+  - 'tests/unit/test_t5188_p010_comment_strip.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T16:48:15'
+    action: 'T-5188: P-010 strips comments structurally (lib/comment_strip.py) and refuses an unclosed comment in the AC section — a mid-line or unclosed <!-- no longer hides later criteria'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 59 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 59
+  commits: 2
+  files_changed: 12
+  lines_added: 885
+  lines_removed: 25
+  footprint_refreshed_at: '2026-11-16T15:50:12Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5188-p-010-hides-every-later-criterion-behind.md
+generated_by: context-agent-hybrid

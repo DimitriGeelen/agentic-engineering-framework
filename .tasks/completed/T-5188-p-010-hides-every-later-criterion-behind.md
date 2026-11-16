@@ -9,12 +9,12 @@ description: >
   vanishes from the gate. Fix: an unclosed comment inside ## Acceptance Criteria must
   refuse the close (fail closed), not shrink the count. Bug: one task; needs RCA.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug]
-components: []
+components: [agents/task-create/update-task.sh, lib/comment_strip.py, tests/unit/t3546_p011_reports_the_zero.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T14:48:52Z
-last_update: 2026-11-16T15:26:33Z
-date_finished:
+last_update: 2026-11-16T15:48:21Z
+date_finished: 2026-11-16T15:48:21Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -104,7 +104,7 @@ bvp_scores_proposed:
 - [x] update-task.sh's P-010 count, its `### Human`-placement check, and the partial-complete recheck strip comments through lib/comment_strip.py. No `sed '/<!--/,/-->/d'` remains in update-task.sh.
 - [x] A box line with a trailing mid-line `<!--` is still counted (open). An unclosed whole-line `<!--` inside the AC section refuses the close and names the line. Tested end to end through update-task.sh.
 - [x] A task file with an invalid UTF-8 byte does not make the gate count zero criteria. It either counts them or refuses; it never passes silently. Tested.
-- [ ] The T-5181 tests and every existing test that reads update-task.sh or comment_strip.py pass, and invariants pass.
+- [x] The T-5181 tests and every existing test that reads update-task.sh or comment_strip.py pass, and invariants pass.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -409,3 +409,21 @@ bin/fw vendor self --check --task T-5188
 
 ### 2026-11-16T15:26:33Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-16T15:48:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-42ed3f4e
+- **Timestamp:** 2026-11-16T15:49:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — update-task.sh's P-010 count, its `### Human`-placement check, and the partial-complete recheck strip comments through lib/comment_strip.py. No `sed '/<!--/,/-->/d'` remains in update-task.sh.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/comment_strip.py in: update-task.sh's P-010 count, its `### Human`-placement check, and the partial-complete recheck strip comments through lib/comment_strip.py. No `sed '`
