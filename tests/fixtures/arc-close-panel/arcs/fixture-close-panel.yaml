@@ -1,0 +1,14 @@
+id: arc-900
+slug: fixture-close-panel
+name: "Fixture arc for the close-recommendation panel"
+description: "Test fixture (T-5168). An in-progress arc whose close-out task recommends CLOSE."
+status: in-progress
+anchor_task: T-900001
+close_task: T-900002
+headline_mechanic: "A reviewer opens the arc's close page and reads the agent's CLOSE recommendation above the close form."
+demo_evidence:
+created: 2026-11-16T00:00:00Z
+closed_at:
+decision:
+bvp_scores: {}
+scoped_drivers: []

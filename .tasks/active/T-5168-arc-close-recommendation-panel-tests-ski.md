@@ -117,9 +117,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] the 7 tests run without skipping and pass, against a fixture arc + anchor task carrying a CLOSE recommendation (and KEEP-OPEN where a test needs it)
-- [ ] the fixture never touches the real .context/arcs or .tasks of this repo (a served copy or a temporary project the test server reads), and is removed or isolated after the run
-- [ ] tests/playwright only (plus test fixtures); no product code changed
+- [x] the 7 tests run without skipping and pass, against a fixture arc + anchor task carrying a CLOSE recommendation (and KEEP-OPEN where a test needs it)
+- [x] the fixture never touches the real .context/arcs or .tasks of this repo (a served copy or a temporary project the test server reads), and is removed or isolated after the run
+- [x] tests/playwright only (plus test fixtures); no product code changed
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -387,6 +387,12 @@ timeout 1200 python3 -m pytest -q -p no:cacheprovider -rs tests/playwright/test_
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-16 — where the fixture arc lives and what serves it
+- **Chose:** a committed fixture under `tests/fixtures/arc-close-panel/` (one in-progress arc, an anchor inception recommending GO, a close-out task recommending CLOSE), copied at run time into a temporary directory laid out as a project and served by a second Watchtower on a free port with `PROJECT_ROOT` set to that copy (`tests/playwright/arc_fixture.py`; conftest fixtures `arc_fixture_server`, `arc_fixture_url`, `close_rec_arc`, `fixture_page`). The server is accepted only when `/api/_identity` reports the temporary directory and the pid we started; it is terminated and the directory removed at session end.
+- **Why:** `web/shared.py` fixes `PROJECT_ROOT` once at import, so one server serves one project; the main test server on `FW_TEST_PORT` must keep serving the live corpus for the other tests. A second process is the only way to show different arc data without changing product code or the real `.context/arcs` and `.tasks`. The 7 tests use `fixture_page`, which does not start the main test server. The fixture arc is read by `arc_corpus` (not `web/`), so the expected verdict and task id still come from an independent parser.
+- **Rejected:** (a) writing a fixture arc and tasks into the real `.context/arcs` and `.tasks` for the run: it pollutes the corpus every audit and page reads, and a killed run leaves it behind. (b) serving the committed fixture directory directly: the server writes into its project root (`.context/working/.fw-secret-key`, caches), which would dirty the checkout. (c) restarting the main test server with another root: conftest's identity check refuses a server whose root differs, and the remaining tests in the same file need the live corpus.
+- **Not built:** a KEEP-OPEN fixture arc. No test asserts on KEEP-OPEN; the verdict-badge test compares the badge to whatever the fixture's close-out task says.
 
 ## Decision
 

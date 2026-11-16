@@ -9,29 +9,26 @@ DOM-content + behavioural assertions per T-1575 (not bare element grep).
 
 from playwright.sync_api import expect
 
-from tests.playwright.arc_corpus import pick_arc
+# T-5168: these tests run against the fixture project (tests/fixtures/arc-close-panel,
+# served by conftest's `arc_fixture_server`), not the live corpus. The panel needs an
+# open arc whose close-out or anchor task holds a CLOSE or KEEP-OPEN recommendation
+# (since T-4320 an anchor's GO / NO-GO / DEFER is not shown as one). The live corpus
+# often has no such arc, and the tests then skipped. `close_rec_arc` is that arc.
 
 
-def _arc_with_close_recommendation():
-    """T-5160: an open arc whose close-out or anchor task holds a CLOSE or
-    KEEP-OPEN recommendation. Since T-4320 an anchor's GO / NO-GO / DEFER is not
-    shown as a close recommendation, so an arc with only that has no panel."""
-    return pick_arc("in-progress", close_recommendation=True)
-
-
-def test_arc_close_renders_recommendation_panel(page, base_url):
+def test_arc_close_renders_recommendation_panel(fixture_page, arc_fixture_url, close_rec_arc):
     """An open arc with a close recommendation must render the .anchor-rec
     panel on its /close page."""
-    arc = _arc_with_close_recommendation()
+    page, base_url, arc = fixture_page, arc_fixture_url, close_rec_arc
     page.goto(f"{base_url}/arcs/{arc.slug}/close", wait_until="domcontentloaded")
     panel = page.locator(".anchor-rec")
     assert panel.count() == 1, "expected exactly one .anchor-rec panel"
     expect(panel).to_be_visible()
 
 
-def test_arc_close_panel_verdict_badge_present(page, base_url):
+def test_arc_close_panel_verdict_badge_present(fixture_page, arc_fixture_url, close_rec_arc):
     """Panel must display a verdict badge with one of the canonical verdicts."""
-    arc = _arc_with_close_recommendation()
+    page, base_url, arc = fixture_page, arc_fixture_url, close_rec_arc
     page.goto(f"{base_url}/arcs/{arc.slug}/close", wait_until="domcontentloaded")
     badge = page.locator(".anchor-rec .verdict-badge").first
     text = (badge.text_content() or "").strip()
@@ -41,17 +38,17 @@ def test_arc_close_panel_verdict_badge_present(page, base_url):
     )
 
 
-def test_arc_close_panel_links_to_anchor_task(page, base_url):
+def test_arc_close_panel_links_to_anchor_task(fixture_page, arc_fixture_url, close_rec_arc):
     """Panel must hyperlink the task the recommendation was read from."""
-    arc = _arc_with_close_recommendation()
+    page, base_url, arc = fixture_page, arc_fixture_url, close_rec_arc
     page.goto(f"{base_url}/arcs/{arc.slug}/close", wait_until="domcontentloaded")
     anchor_link = page.locator(f'.anchor-rec a[href="/tasks/{arc.close_rec_task}"]').first
     expect(anchor_link).to_be_visible()
 
 
-def test_arc_close_panel_renders_rationale(page, base_url):
+def test_arc_close_panel_renders_rationale(fixture_page, arc_fixture_url, close_rec_arc):
     """The panel must render the recommendation's rationale as readable content."""
-    arc = _arc_with_close_recommendation()
+    page, base_url, arc = fixture_page, arc_fixture_url, close_rec_arc
     page.goto(f"{base_url}/arcs/{arc.slug}/close", wait_until="domcontentloaded")
     rationale_block = page.locator(".anchor-rec .rec-body").first
     text = (rationale_block.text_content() or "").strip()
@@ -59,9 +56,9 @@ def test_arc_close_panel_renders_rationale(page, base_url):
     assert len(text) > 50, f"expected substantive rationale text, got len={len(text)}"
 
 
-def test_arc_close_panel_positioned_above_form(page, base_url):
+def test_arc_close_panel_positioned_above_form(fixture_page, arc_fixture_url, close_rec_arc):
     """Panel must precede the close form in the DOM (so human reads it first)."""
-    arc = _arc_with_close_recommendation()
+    page, base_url, arc = fixture_page, arc_fixture_url, close_rec_arc
     page.goto(f"{base_url}/arcs/{arc.slug}/close", wait_until="domcontentloaded")
     panel_box = page.locator(".anchor-rec").bounding_box()
     form_box = page.locator('form[action$="/close"]').bounding_box()

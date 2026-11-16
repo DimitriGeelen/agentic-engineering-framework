@@ -11,18 +11,19 @@ from playwright.sync_api import expect
 from tests.playwright.arc_corpus import pick_arc
 
 
-def test_arc_review_renders_for_in_progress_arc(page, base_url):
+def test_arc_review_renders_for_in_progress_arc(fixture_page, arc_fixture_url, close_rec_arc):
     """An open arc with a close recommendation (CLOSE / KEEP-OPEN, T-4320)
-    must render the rec panel."""
-    arc = pick_arc("in-progress", close_recommendation=True)
+    must render the rec panel. T-5168: runs against the fixture project, because
+    the live corpus often holds no such arc."""
+    page, base_url, arc = fixture_page, arc_fixture_url, close_rec_arc
     page.goto(f"{base_url}/arcs/{arc.slug}/review", wait_until="domcontentloaded")
     expect(page.locator(".arc-review-hdr")).to_be_visible()
     expect(page.locator(".anchor-rec")).to_be_visible()
 
 
-def test_arc_review_panel_links_to_anchor_task(page, base_url):
-    """Recommendation panel must hyperlink the task it was read from."""
-    arc = pick_arc("in-progress", close_recommendation=True)
+def test_arc_review_panel_links_to_anchor_task(fixture_page, arc_fixture_url, close_rec_arc):
+    """Recommendation panel must hyperlink the task it was read from (T-5168: fixture project)."""
+    page, base_url, arc = fixture_page, arc_fixture_url, close_rec_arc
     page.goto(f"{base_url}/arcs/{arc.slug}/review", wait_until="domcontentloaded")
     anchor_link = page.locator(f'.anchor-rec a[href="/tasks/{arc.close_rec_task}"]').first
     expect(anchor_link).to_be_visible()

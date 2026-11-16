@@ -314,6 +314,53 @@ def page(browser_instance, watchtower_server):
     context.close()
 
 
+@pytest.fixture(scope="session")
+def arc_fixture_server():
+    """T-5168: a second Watchtower serving the temporary fixture project built from
+    tests/fixtures/arc-close-panel/, for tests that need an arc state the live corpus
+    may not hold. Started only when a test asks for it; see tests/playwright/arc_fixture.py.
+    """
+    from tests.playwright import arc_fixture
+    server = arc_fixture.start()
+    print(f"\n[arc_fixture_server] started on {server.url} serving {server.root}")
+    yield server
+    arc_fixture.stop(server)
+
+
+@pytest.fixture
+def arc_fixture_url(arc_fixture_server):
+    """Base URL of the fixture-project server."""
+    return arc_fixture_server.url
+
+
+@pytest.fixture
+def close_rec_arc(arc_fixture_server):
+    """The fixture project's in-progress arc with a CLOSE recommendation, read from
+    the served copy by `arc_corpus` (not from `web/`). Fails, never skips, when the
+    fixture lacks it: unlike the live corpus, the fixture is ours to keep right.
+    """
+    from tests.playwright.arc_corpus import all_arcs
+    matches = [a for a in all_arcs(arc_fixture_server.root)
+               if a.status == "in-progress" and a.close_rec_task]
+    assert matches, (
+        "tests/fixtures/arc-close-panel holds no in-progress arc with a "
+        "CLOSE/KEEP-OPEN recommendation in its close-out or anchor task"
+    )
+    return matches[0]
+
+
+@pytest.fixture
+def fixture_page(browser_instance, arc_fixture_server):
+    """Fresh browser page for the fixture-project server. Does not start or touch
+    the main test server; these tests only issue GETs, so no CSRF priming."""
+    context = browser_instance.new_context()
+    pg = context.new_page()
+    pg.set_default_timeout(10_000)
+    pg.set_default_navigation_timeout(int(os.environ.get("FW_TEST_NAV_TIMEOUT_MS", "45000")))
+    yield pg
+    context.close()
+
+
 @pytest.fixture
 def base_url(watchtower_server):
     """Base URL for the test server.

@@ -157,8 +157,10 @@ def _load(root_str: str) -> tuple:
     return tuple(arcs)
 
 
-def all_arcs() -> tuple:
-    return _load(str(project_root()))
+def all_arcs(root=None) -> tuple:
+    """Arcs of the corpus under test, or of `root` when given (T-5168: the
+    fixture project of `arc_fixture`)."""
+    return _load(str(root or project_root()))
 
 
 def pick_arc(status="in-progress", *, min_members=0, min_slug_members=0,
