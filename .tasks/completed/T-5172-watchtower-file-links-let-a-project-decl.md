@@ -1,24 +1,27 @@
 ---
-id: T-5136
-name: "Watchtower slow pages: task list view ~37 s (5,120 rows) and search ~35 s on
-  the live server"
+id: T-5172
+name: "Watchtower file links: let a project declare viewable directories (scripts/,
+  top-level docs/), or link any tracked file with a viewable extension (0909 consult)"
 description: >
-  Measured 2026-11-14 while closing T-5130: the task list view becomes visible after
-  36.9 s and the search page responds in 35.3 s (limit 10 s); fabric sits at the 10
-  s limit. 1409 raised Watchtower slowness before their Sunday video. Profile both
-  routes, then fix; one bug per route if causes differ.
+  0909-boot-into-timeshift-snapshots consult d1993c2c (operator asked them to check
+  with us; it sat in inbox:<hub>/agentic-engineering-framework, a nickname inbox,
+  until 010's T-5149 run found it 2026-11-15): web/shared.py VIEWABLE_DIR_PREFIXES
+  is hard-coded, so on their /review/T-999 docs/test-boot.md and scripts/grub-btrfs-install.sh
+  render as plain text and /file/<path> answers 404. Operator expectation: everything
+  a reviewer should read is a Watchtower link. Options: (a) a .framework.yaml key
+  (e.g. VIEWABLE_DIRS) appended to the built-in list; (b) any git-tracked file under
+  PROJECT_ROOT with a VIEWABLE_EXTENSIONS extension is linkable. (b) needs care: never
+  serve gitignored paths (.context/secrets etc.); keep traversal checks. Render surface
+  + exposure scope: needs a [REVIEW] criterion.
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
-tags: []
-components: [tests/unit/test_t5136_tag_cloud_c_loader.py, 
-      tests/web/test_t3575_tasks_page_perf.py, 
-      tests/web/test_t5136_task_list_pager.py, web/blueprints/cockpit.py, 
-      web/blueprints/fabric.py, web/blueprints/tasks.py, web/search_utils.py, 
-      web/templates/tasks.html, web/warmup.py]
+owner: agent
+horizon: null
+tags: [watchtower, consumer, usability]
+components: [lib/config.sh, web/blueprints/config.py, web/shared.py]
 related_tasks: []
+origin: {kind: "peer", source: "0909-boot-into-timeshift-snapshots", ref: "d1993c2c"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -45,9 +48,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-11-14T19:49:31Z
-last_update: '2026-11-15T20:30:30Z'
-date_finished: 2026-11-14T22:08:43Z
+created: 2026-11-15T23:56:21Z
+last_update: 2026-11-16T08:02:03Z
+date_finished: 2026-11-16T02:33:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,8 +61,18 @@ date_finished: 2026-11-14T22:08:43Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-16T00:00:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-11-14T19:50:11Z'
+  - ts: '2026-11-16T00:01:16Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 0
@@ -75,64 +88,33 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-11-14T20:15:47Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=343,acs=7)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-11-15T20:30:30Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 7
-      tier: 2
-      effort: 8
-    rationale: blast_radius=7 (9-components-large-blast); tier=2 
-      (workflow:build); effort=8 (lines=407,acs=7)
-    rubric_sha: e4a00f38e801
+date_finalised: 2026-11-16T08:02:03Z
 ---
 
-# T-5136: Watchtower slow pages: task list view ~37 s (5,120 rows) and search ~35 s on the live server
+# T-5172: Watchtower file links: let a project declare viewable directories (scripts/, top-level docs/), or link any tracked file with a viewable extension (0909 consult)
 
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** While closing T-5130 (2026-11-14) the Playwright run measured the live Watchtower: the task list view (`/tasks?view=list`, 5,120 rows) became visible after 36.9 s, and `/search` answered in 35.3 s against the 10 s limit in `tests/playwright/test_response_times.py`. `/fabric` sat at 10.0 s. 1409 asked for Watchtower to be fast before their Sunday video; T-5126/T-5128/T-5129 fixed other pages.
+**Background / trigger:** 0909-boot-into-timeshift-snapshots consult d1993c2c (asked by the operator; stranded in a nickname inbox until 010's T-5149 run found it, answered 2026-11-16). On their /review/T-999 (vendored 1.8.10) `docs/test-boot.md` and `scripts/grub-btrfs-install.sh` rendered as plain text and `/file/<path>` answered 404. Operator expectation: everything a reviewer should read is a Watchtower link.
 
-**Problem / hypothesis:** Not yet localised. Likely candidates: the list view renders every task with no paging, and search runs a cold query (embeddings or a full scan) per request. Profile first; one cause per route.
+**Problem / hypothesis:** `web/shared.py:is_viewable_path` serves only paths under the hard-coded `VIEWABLE_DIR_PREFIXES` (plus root files, numbered root docs and, since T-4571, depth-1 `docs/*`). `docs/test-boot.md` is served by current releases; `scripts/` (and any other project-specific folder) is not, and a project has no way to add one.
 
-**Goal:** both pages answer well inside the 10 s limit on the live server, without hiding tasks or changing search results.
+**Goal:** a project declares extra folders (`VIEWABLE_DIRS`, comma or space separated, in `.framework.yaml` or `FW_VIEWABLE_DIRS`), added to the built-in list for both the linker and the `/file/` route. Chosen over "any tracked file is linkable" (the consult's option b): explicit, decided by the project, nothing new exposed by default.
 
-**Expected outcome:** the list view and search open in a few seconds; `test_response_times` and `test_task_panel` pass on the live data.
+**Expected outcome:** with `VIEWABLE_DIRS: scripts`, a `scripts/x.sh` mention renders as a link and `/file/scripts/x.sh` serves it; unsafe entries (`..`, absolute paths, `.git`, `.context/secrets`, the root itself) are ignored.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] the cause of each slow route is measured (profile with the hot functions and their share of the time) and written in this task before any fix
-      — measured before the fix, written here after it (see `## RCA`): list view = an 18.9 MB page (server 1.9 s warm); search = a cold tag-cloud parse (57 of 58 s in pure-Python `yaml.safe_load` of 4,180 episodics), skipped by the startup warm-up.
-- [x] the task list view is shown in under 10 s on the live data (the server time was never the problem: 1.9 s warm; the 37 s was the 18.9 MB page), with every task still reachable (a regression test proves both)
-      — live after restart (pid 3425312): page 1 is 864 KB, "Showing 1–200 of 5119 (page 1 of 26)", 2.5 s; last page 0.5 s. `tests/web/test_t5136_task_list_pager.py` 5/5 (every task once across pages, filter and sort kept, clamping). `test_t3575` now follows the pager and still reaches every task of the overflowing status.
-- [x] `/search` returns in under 10 s on the first visit after a restart, with the tag cloud unchanged (a regression test proves the parse gives the same tags)
-      — cold in a fresh process 3.0 s (was 58 s profiled, 19.6 s live); live right after restart 5.5 s during the warm-up, 0.15 s after; all 4,180 files give identical tags in C and pure Python; `tests/unit/test_t5136_tag_cloud_c_loader.py` 3/3; bare `/search` is in `WARM_PATHS`.
-      Not fixed here: a request that lands while the startup warm-up is still running pays the cold cost (the first list view took 39 s at 20:04Z). That is how the warm-up works today (it does not block serving unless `warm_before_serve`).
-- [x] `tests/playwright/test_response_times.py` and `tests/playwright/test_task_panel.py` pass; every test that reads a changed file passes; Watchtower restarted and `bin/fw watchtower current` passes
-      — 2026-11-14 23:03, after the `/fabric` fix and with host load down to about 30: `test_response_times` **27/27 pass**; `test_task_panel` 5/5. Tests reading `cockpit.py` (442) and the fabric loader (52) pass; Watchtower restarted (pid 4038300), `current` passes.
-      — earlier status 2026-11-14 21:17: `test_task_panel` 5/5 (was failing); `/search` and the list routes pass in `test_response_times`. 339 related unit/web tests pass; Watchtower restarted (pid 3425312), `current` passes. **Still red:** `/fabric` (12.1 s, then 16.5 s) and `/metrics` (16.1 s, then 32.7 s) in the fresh test server, with host load 55–77 from other projects' pytest-xdist runs. On the live server the same routes take 2.8 s and 4.8 s cold, then 0.13 s and 1.7 s. Neither route is in this change. Re-run when the host is quieter before ticking.
+- [x] `VIEWABLE_DIRS` (config key + `FW_VIEWABLE_DIRS`) adds folders to the viewable list used by both `is_viewable_path` and the auto-linker; default empty changes nothing
+- [x] unsafe entries are ignored: `..` anywhere, absolute paths, `.git`, `.context/secrets`, an empty or root entry; extensions are still limited to VIEWABLE_EXTENSIONS
+- [x] live, the /file/ route refuses `.git/config`, `.context/secrets/review-dispatch.key` and a `scripts/../.git/config` traversal while serving `scripts/agent-listeners.sh` (Verification line 2; moved here from the [REVIEW] criterion on 2026-11-16 because both review seats could not screenshot a refusal page — it is a deterministic check)
+- [x] the key is in both config registries (lib/config.sh, web/blueprints/config.py) and config-registry parity stays green
+- [x] unit tests for the setting, the safety filter, the route and the linker; every test that reads web/shared.py passes (96 files in 3 chunks: 980 passed; the one T-5172-caused red — in-process reload leaking into test_file_route_extensions — fixed in 5700bb8e6; 5 reds in tests/web/test_inception_verdict_render.py predate this change and are T-5174; bats 432 with t3458 fixed)
 
 ### Human
-- [ ] [REVIEW] The task list opens quickly and the pager is usable
-  **Steps:**
-  1. Open http://192.168.10.107:3000/tasks?view=list
-  2. Scroll to the bottom of the table and use "Next →" and "← Previous"
-  3. Pick a status filter or "Sort by Name", then page again
-  4. Open http://192.168.10.107:3000/search
-  **Expected:** the list appears within a few seconds and shows "Showing 1–200 of …"; paging keeps the filter and sort; the search page with its tag cloud opens within a few seconds
-  **If not:** note the page and the time; the changes are in `web/blueprints/tasks.py` (pager), `web/templates/tasks.html`, `web/search_utils.py` and `web/warmup.py`
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -162,6 +144,11 @@ cost_estimate_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [x] [REVIEW] A file in a declared folder opens from a review page
+  **Steps:**
+  1. Open http://192.168.10.107:3000/file/scripts/agent-listeners.sh (this repo declares `VIEWABLE_DIRS: scripts` for the check).
+  **Expected:** the script is shown with syntax highlighting and line numbers; long lines scroll sideways inside the code box rather than widening the page.
+  **If not:** note what the page showed instead.
 
 <!--
   Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
@@ -177,6 +164,7 @@ cost_estimate_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261116-bf3b8ae1 — reviewer-judge-t-5172-r5-antigravity-09d30276f6cd:antigravity (rung rung-5-panel:antigravity), digest 57d2385e1524; dispatch judge-t-5172-r5-antigravity-09d30276f6cd; evidence: .context/reviews/evidence/T-5172/AC1-judge-t-5172-r5-antigravity-09d30276f6cd.md, .context/working/judge-evidence/T-5172/01-file-scripts-agent-listeners-sh.png, .context/working/judge-evidence/T-5172/02-config.png, .context/visual/T-5172/script-file@1024.png, .context/visual/T-5172/script-file@1440.png, .context/visual/T-5172/script-file@1920.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
@@ -316,56 +304,20 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
-python3 -m pytest -q -p no:cacheprovider tests/web/test_t5136_task_list_pager.py tests/unit/test_t5136_tag_cloud_c_loader.py tests/unit/test_t4363_startup_warmup.py tests/unit/test_t4458_search_degrade.py tests/web/test_t3575_tasks_page_perf.py
-python3 -c "import sys; sys.path.insert(0,'.'); from web import warmup; assert '/search' in warmup.WARM_PATHS"
-test "$(curl -s -o /dev/null -w '%{size_download}' "$(bin/fw watchtower url)/tasks?view=list")" -lt 3000000
-curl -s "$(bin/fw watchtower url)/tasks?view=list" | grep -q 'Showing 1–200 of'
-test "$(curl -s -o /dev/null -w '%{time_total}' "$(bin/fw watchtower url)/search" | cut -d. -f1)" -lt 10
-bin/fw vendor self --check --task T-5136
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_t5172_viewable_dirs.py > /tmp/.t5172.out 2>&1 && grep -q passed /tmp/.t5172.out && ! grep -q failed /tmp/.t5172.out
+U="$(bin/fw watchtower url)"; test "$(curl -s -o /dev/null -w '%{http_code}' "$U/file/scripts/agent-listeners.sh")" = 200 && test "$(curl -s -o /dev/null -w '%{http_code}' "$U/file/.git/config")" != 200 && test "$(curl -s -o /dev/null -w '%{http_code}' "$U/file/.context/secrets/review-dispatch.key")" != 200
+bin/fw vendor self --check --task T-5172
 bin/fw watchtower current
 
 ## Visual Verification
 
-Shots: `.context/visual/T-5136/{list,list-page2,search,fabric}@{1024,1440,1920}.png` (`fw ux shots T-5136 …`, 2026-11-15, Watchtower pid 1728346, current). Added for the independent reviewer pass, which found no visual evidence.
-
 | state | control | 1024 | 1440 | 1920 | note |
 |-------|---------|------|------|------|------|
-| list | table, pager row | ok | ok | ok | pager below the table; Previous hidden on page 1 |
-| list-page2 | pager with Previous and Next | ok | ok | ok | |
-| search | search box, tag cloud, try-a-search | ok | ok | ok | |
-| fabric | subsystem overview | ok | ok | ok | page unchanged; only its card parse got faster |
+| script-file | /file/scripts/agent-listeners.sh | ok | ok | ok | served with highlighting and line numbers (VIEWABLE_DIRS: scripts); at 1024 lines 124/198/228 run past the box edge but the code box scrolls (overflow-x: auto, scrollWidth 1151 > clientWidth 918, scrolled 233 px in a browser check) and the page does not overflow |
 
-**The review criterion's steps, walked in a browser and timed** (Playwright, 1440 px; `.context/visual/T-5136/walk-{1-list,2-next,3-filter-next,4-search}.png`, data in `walk.json`):
-
-- open http://192.168.10.107:3000/tasks?view=list: 1.0 s to the first row; 200 rows, "Showing 1–200 of 5125 (page 1 of 26)". Before T-5136: 36.9 s for one 18.9 MB page.
-- Next →: 2.0 s; `?view=list&page=2`, "Showing 201–400 of 5125 (page 2 of 26)"
-- ← Previous: 1.9 s; `?view=list&page=1`, "Showing 1–200 of 5125"
-- status = work-completed, sort by name, then Next: 3.0 s; `?status=work-completed&sort=name&view=list&page=2`, so filter and sort are both kept
-- open http://192.168.10.107:3000/search: 0.8 s (warm); "Browse by topic: 24 topics from 1415 tagged items"
-
-Page errors across the walk: none. Read before commit: `walk-2-next.png` (pager row: "← Previous · Showing 201–400 of 5125 (page 2 of 26) · Next →") and `walk-4-search.png` (tag cloud shown).
+Screenshots: `.context/visual/T-5172/script-file@{1024,1440,1920}.png` (`fw ux shots`, 2026-11-16, ~0.8 MB each).
 
 ## RCA
-
-**Measured 2026-11-14 on the live Watchtower and with the Flask test client (cProfile):**
-
-| Route | Live time | Where the time went | Cause |
-|---|---|---|---|
-| `/tasks?view=list` | server 1.9 s (warm), browser 36.9 s | the page: 18.9 MB for 5,120 rows, median 3.6 KB per row | every row carries four inline edit forms (status, horizon, type, owner) with a CSRF token each, about 20,000 forms in total for the browser and htmx to set up |
-| `/search` (no query) | 19.6 s on the first visit after a restart, 0.05 s after | 57.8 of 58.4 s in `aggregate_tags` → `_parse_tags_from_path` → pure-Python `yaml.safe_load`, 4,180 episodic files | the empty page builds the tag cloud; the startup warm-up (T-4363/T-4458) only warms `/search?q=warmup`, which skips the tag cloud |
-
-Cold `/tasks?view=list` in a fresh process is also slow (28.6 s profiled: 19.2 s in `board_awaiting_reason` → verdict-ledger git calls, 5.2 s loading task metadata). The live server does not pay that, because the startup warm-up already warms `/tasks`. Not changed here.
-
-**Fix:**
-1. The list view is paged at 200 rows (`LIST_PAGE_SIZE`), with Previous/Next links that keep every filter and the sort. Page 1 is now 842 KB.
-2. The tag parse uses libyaml's `CSafeLoader`, the pattern already in `web/shared.py`: 2.3 s instead of 21.6 s for all 4,180 files, with identical tags. Cold `/search` is now 3.0 s.
-3. Bare `/search` joins the startup warm-up, so the first visitor no longer pays even that.
-
-**Added after 1409's report (msg 6012caf6, 2026-11-14 ~20:20Z):** 1409's landing page `/` does not answer within 8 s at 4,080 active tasks, while their own API routes do. Our cold `/`, profiled: 30.0 s, of which 20.4 s is `cockpit._parse_human_verify_from_path` parsing task frontmatter with pure-Python `yaml.safe_load` (939 files). Same fix, C loader: cold `/` is now 7.4 s; the parse gives identical entries for all 5,119 task files (481 with open Human criteria). Regression test: `test_landing_page_task_parse_uses_the_c_loader`. 1409's own profile is requested, to confirm that their slowness has the same cause.
-
-**Added 2026-11-14 ~22:55 (the two routes still red in `test_response_times`):** profiled cold. `/fabric`: 14.4 of 16.1 s profiled was `fabric._load_components` parsing 1,738 component cards with pure-Python `safe_load`. Same fix; unprofiled, all 1,737 cards load in 0.6 s with C against 3.4 s in Python, with identical results (`test_fabric_cards_load_with_the_c_loader`). `/metrics`: 8.1 of 13.3 s is `parse_frontmatter` over 6,059 task files, which already uses the C loader. Live it is 4.8 s cold and 1.7 s warm, so it is load-sensitive, not mis-coded. Not changed.
-
-**Why it went unnoticed:** `test_response_times` caught `/search`, but only as one of many pre-existing reds. Nothing measured the size of the list page; its server time looked fine.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -407,18 +359,6 @@ Cold `/tasks?view=list` in a fresh process is also slow (28.6 s profiled: 19.2 s
 
 ## Recommendation
 
-**Recommendation:** GO
-
-**Rationale:** Four Watchtower pages were slow for two kinds of reason, and both are fixed. The task list sent all 5,120 rows as one 18.9 MB page; it is now paged at 200. Search, the landing page and the fabric page parsed thousands of YAML files with the slow pure-Python parser on their first build; they now use the C parser, which gives identical results. The browser timing and task-panel tests now pass. What is left is your look at the list pager and the page speed.
-
-**Evidence:**
-- Task list: page 1 is 864 KB instead of 18.9 MB and shows "Showing 1–200 of 5119"; every task is reachable through the pager (`tests/web/test_t5136_task_list_pager.py`, 5/5)
-- Cold times in a fresh process: the search page (http://192.168.10.107:3000/search) 58 s profiled → 3.0 s; the landing page (http://192.168.10.107:3000/) 30 s profiled → 7.4 s; fabric cards 3.4 s → 0.6 s; identical parse results across all task, episodic and card files
-- `tests/playwright/test_response_times.py` 27/27 and `tests/playwright/test_task_panel.py` 5/5 (2026-11-14 23:03)
-- Shipped to 1409 in v1.8.16-be.50 (except the fabric change, which is after the tag)
-
-Review page: http://192.168.10.107:3000/review/T-5136
-
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
      shape is copied rather than reinvented.
@@ -445,6 +385,12 @@ Review page: http://192.168.10.107:3000/review/T-5136
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+**Recommendation:** GO
+**Rationale:** A project can now add folders to what Watchtower links and serves (`VIEWABLE_DIRS`), which is what 0909 needed for `scripts/`. It adds nothing by default, keeps the extension limit, and refuses `.git`, `.context/secrets`, absolute paths and `..`. This repo declares `scripts` for the live check.
+**Evidence:**
+- Live after restart: http://192.168.10.107:3000/file/scripts/agent-listeners.sh answers 200 and renders highlighted with line numbers; `.git/config`, `.context/secrets/review-dispatch.key` and a `scripts/../.git/config` attempt are refused.
+- `tests/unit/test_t5172_viewable_dirs.py` 16/16 (setting, YAML, safety filter, route and linker).
+- Screenshots at 1024/1440/1920: `.context/visual/T-5172/`.
 
 ## Decisions
 
@@ -469,36 +415,31 @@ Review page: http://192.168.10.107:3000/review/T-5136
 
 ## Updates
 
-### 2026-11-14T19:49:31Z — task-created [task-create-agent]
+### 2026-11-15T23:56:21Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5136-watchtower-slow-pages-task-list-view-37-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5172-watchtower-file-links-let-a-project-decl.md
 - **Context:** Initial task creation
 
-### 2026-11-14T19:50:03Z — status-update [task-update-agent]
+### 2026-11-16T01:54:04Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
-### 2026-11-14T22:08:43Z — status-update [task-update-agent]
+### 2026-11-16T02:33:00Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-4fe34a5d
-- **Timestamp:** 2026-11-14T22:09:29Z
+- **Scan ID:** R-d55593b5
+- **Timestamp:** 2026-11-16T02:33:26Z
 - **Catalogue:** v1.3-seed
 - **Overall:** CONCERN
 - **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
 - **Needs Human:** no
-- **Findings:** 3
+- **Findings:** 2
 
 **Per-AC findings:**
 
-- **AC#4 (Agent)** — `tests/playwright/test_response_times.py` and `tests/playwright/test_task_panel.py` pass; every test that reads a changed file passes; Watchtower restarted and `bin/fw watchtower current` passes
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/test_response_times.py in: `tests/playwright/test_response_times.py` and `tests/playwright/test_task_panel.py` pass; every test that reads a changed file passes; Watchtower rest`
-- **AC#1 (Human)** — [REVIEW] The task list opens quickly and the pager is usable
-  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='shows "Showing 1–200 of …"' in Expected: the list appears within a few seconds and shows "Showing 1–200 of …"; paging keeps the filter and sort; the search page with its tag cloud o`
-
-**Verification-level findings:**
-
-  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 140
-     - evidence: `curl -s "$(bin/fw watchtower url)/tasks?view=list" | grep -q 'Showing 1–200 of'`
+- **AC#3 (Agent)** — the key is in both config registries (lib/config.sh, web/blueprints/config.py) and config-registry parity stays green
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/config.sh in: the key is in both config registries (lib/config.sh, web/blueprints/config.py) and config-registry parity stays green`
+- **AC#4 (Agent)** — unit tests for the setting, the safety filter, the route and the linker; every test that reads web/shared.py passes (96 files in 3 chunks: 980 passed; the one T-5172-caused red — in-process reload lea
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: unit tests for the setting, the safety filter, the route and the linker; every test that reads web/shared.py passes (96 files in 3 chunks: 980 passed;`

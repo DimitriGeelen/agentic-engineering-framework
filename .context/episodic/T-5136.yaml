@@ -1,0 +1,289 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5136: Watchtower slow pages: task list view ~37 s (5,120 rows) and search ~35 s on the live server
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T08:03:56Z
+# ============================================================================
+
+task_id: T-5136
+task_name: "Watchtower slow pages: task list view ~37 s (5,120 rows) and search ~35 s on the live server"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-14T19:49:31Z
+completed: 2026-11-15T20:30:30Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-14T20:49:40+01:00
+last_commit: 2026-11-16T09:01:35+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — Watchtower task list view (~37 s) and search (~35 s) are slow on the live server. task list paged at 200 rows (18.9 MB -> 842 KB), search tag cloud parsed with libyaml (21.6 s -> 2.3 s) and warmed at startup; regression tests. vendor self. criteria 2-3 ticked with live evidence; fabric cards for the two new tests. criterion 4 status — task panel green; /fabric and /metrics red under host load 55-77, re-run pending. landing page — cockpit human-verify parse uses libyaml (cold / 30 s -> 7.4 s, identical entries); regression test. /fabric component cards parsed with libyaml (1,737 cards 3.4 s -> 0.6 s, identical); regression test. criterion 4 ticked (response times 27/27, task panel 5/5); recommendation GO. recommendation links as full URLs. partial-complete — agent criteria done, review handed to the operator. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). visual verification — the review steps walked and timed (list 1.0 s, pager keeps filter and sort, search with tag cloud) and per-width shots, for the independent reviewer. visual verification checklist table first (the parser reads only the first table); walk as a list. reviewer verdict (antigravity seat antigravity, recorded by the runtime)
+
+# Key outcomes
+outcomes:
+  - 'the cause of each slow route is measured (profile with the hot functions and their share of the time) and written in this task before any fix'
+  - 'the task list view is shown in under 10 s on the live data (the server time was never the problem: 1.9 s warm; the 37 s was the 18.9 MB page), with every task still reachable (a regression test proves both)'
+  - '`/search` returns in under 10 s on the first visit after a restart, with the tag cloud unchanged (a regression test proves the parse gives the same tags)'
+  - '`tests/playwright/test_response_times.py` and `tests/playwright/test_task_panel.py` pass; every test that reads a changed file passes; Watchtower restarted and `bin/fw watchtower current` passes'
+  - '[REVIEW] The task list opens quickly and the pager is usable'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/cockpit.py'
+  - '.agentic-framework/web/blueprints/fabric.py'
+  - '.agentic-framework/web/blueprints/tasks.py'
+  - '.agentic-framework/web/search_utils.py'
+  - '.agentic-framework/web/templates/tasks.html'
+  - '.agentic-framework/web/warmup.py'
+  - '.context/reviews/applied.jsonl'
+  - '.context/reviews/evidence/T-5136/01-tasks-view-list-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/01-tasks-view-list-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/01-tasks-view-list-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/01-tasks-view-list-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/evidence/T-5136/01-tasks-view-list-judge-t-5136-r5-claude-code-ea12276563f0.png'
+  - '.context/reviews/evidence/T-5136/01-tasks-view-list-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/02-search-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/02-search-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/02-search-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/02-search-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/evidence/T-5136/02-search-judge-t-5136-r5-claude-code-ea12276563f0.png'
+  - '.context/reviews/evidence/T-5136/02-search-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/03-cockpit-activity-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/03-cockpit-activity-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/03-cockpit-activity-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/03-cockpit-activity-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/evidence/T-5136/03-cockpit-activity-judge-t-5136-r5-claude-code-ea12276563f0.png'
+  - '.context/reviews/evidence/T-5136/03-cockpit-activity-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/04-fabric-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/04-fabric-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/04-fabric-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/04-fabric-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/evidence/T-5136/04-fabric-judge-t-5136-r5-claude-code-ea12276563f0.png'
+  - '.context/reviews/evidence/T-5136/04-fabric-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/05-fabric-graph-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/05-fabric-graph-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/05-fabric-graph-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/05-fabric-graph-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/evidence/T-5136/05-fabric-graph-judge-t-5136-r5-claude-code-ea12276563f0.png'
+  - '.context/reviews/evidence/T-5136/05-fabric-graph-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/06-tasks-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/06-tasks-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/06-tasks-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/06-tasks-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/evidence/T-5136/06-tasks-judge-t-5136-r5-claude-code-ea12276563f0.png'
+  - '.context/reviews/evidence/T-5136/06-tasks-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/AC1-judge-t-5136-r5-antigravity-527e05455ff5.md'
+  - '.context/reviews/evidence/T-5136/AC1-judge-t-5136-r5-antigravity-8cc4a690c5f4.md'
+  - '.context/reviews/evidence/T-5136/AC1-judge-t-5136-r5-antigravity-d94e3f95f27c.md'
+  - '.context/reviews/evidence/T-5136/AC1-judge-t-5136-r5-claude-code-554df3dcfb10-amended.md'
+  - '.context/reviews/evidence/T-5136/AC1-judge-t-5136-r5-claude-code-554df3dcfb10.md'
+  - '.context/reviews/evidence/T-5136/AC1-judge-t-5136-r5-claude-code-8d20a229a120.md'
+  - '.context/reviews/evidence/T-5136/AC1-judge-t-5136-r5-claude-code-b872f526a95b.md'
+  - '.context/reviews/evidence/T-5136/AC1-judge-t-5136-r5-claude-code-ce82c67d5c44.md'
+  - '.context/reviews/evidence/T-5136/AC1-judge-t-5136-r5-claude-code-ea12276563f0.md'
+  - '.context/reviews/evidence/T-5136/AC1-judge-t-5136-r5-claude-code-ece509c485b8.md'
+  - '.context/reviews/evidence/T-5136/AC1-judge-t-5136-r5-codex-4f19ae0106d0.md'
+  - '.context/reviews/evidence/T-5136/AC1-judge-t-5136-r5-codex-8d7d3da61aa7.md'
+  - '.context/reviews/evidence/T-5136/AC1-judge-t-5136-r5-codex-8dbed3939e2c.md'
+  - '.context/reviews/evidence/T-5136/AC1-judge-t-5136-r5-codex-a67bbdd225ce.md'
+  - '.context/reviews/evidence/T-5136/crop-list-page2-1024-pager-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/evidence/T-5136/fabric@1024-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/fabric@1024-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/fabric@1024-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/fabric@1024-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/evidence/T-5136/fabric@1024-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/fabric@1440-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/fabric@1440-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/fabric@1440-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/fabric@1440-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/evidence/T-5136/fabric@1440-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/fabric@1920-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/fabric@1920-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/fabric@1920-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/fabric@1920-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/evidence/T-5136/fabric@1920-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/list-page2@1024-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/list-page2@1024-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/list-page2@1024-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/list-page2@1024-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/evidence/T-5136/list-page2@1024-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/list-page2@1440-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/list-page2@1440-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/list-page2@1440-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/list-page2@1440-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/evidence/T-5136/list-page2@1440-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/list-page2@1920-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/list-page2@1920-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/list-page2@1920-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/list-page2@1920-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/evidence/T-5136/list-page2@1920-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/list@1024-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/list@1024-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/list@1024-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/list@1024-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/evidence/T-5136/list@1024-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/list@1440-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/list@1440-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/list@1440-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/list@1440-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/evidence/T-5136/list@1440-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/list@1920-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/list@1920-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/list@1920-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/list@1920-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/evidence/T-5136/list@1920-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/reviewer-crop-list-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/reviewer-crop-list-page2-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/reviewer-toolbar-status-pick-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/reviewer-url-filter-page2-pager-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/reviewer-w1-pager-page1-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/reviewer-w2-pager-page2-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/reviewer-w3-status-pick-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/reviewer-w4-sort-filter-page2-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/reviewer-w5-search-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/reviewer-walk-1-pager-page1-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/reviewer-walk-2-pager-page2-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/reviewer-walk-3-status-pick-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/reviewer-walk-4-sort-filter-page2-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/reviewer-walk-5-search-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/reviewer-walk-pager-page1-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/reviewer-walk-pager-page2-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/reviewer-walk-search-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/reviewer-walk-sort-filter-page2-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/reviewer-walk-status-pick-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/search@1024-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/search@1024-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/search@1024-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/search@1024-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/evidence/T-5136/search@1024-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/search@1440-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/search@1440-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/search@1440-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/search@1440-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/evidence/T-5136/search@1440-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/search@1920-judge-t-5136-r5-claude-code-554df3dcfb10.png'
+  - '.context/reviews/evidence/T-5136/search@1920-judge-t-5136-r5-claude-code-8d20a229a120.png'
+  - '.context/reviews/evidence/T-5136/search@1920-judge-t-5136-r5-claude-code-b872f526a95b.png'
+  - '.context/reviews/evidence/T-5136/search@1920-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/evidence/T-5136/search@1920-judge-t-5136-r5-claude-code-ece509c485b8.png'
+  - '.context/reviews/evidence/T-5136/walk-filter-sort-page2-judge-t-5136-r5-claude-code-ce82c67d5c44.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.fabric/components/tests-unit-test_t5136_tag_cloud_c_loader.yaml'
+  - '.fabric/components/tests-web-test_t5136_task_list_pager.yaml'
+  - '.tasks/active/T-5136-watchtower-slow-pages-task-list-view-37-.md'
+  - 'tests/unit/test_t5136_tag_cloud_c_loader.py'
+  - 'tests/web/test_t3575_tasks_page_perf.py'
+  - 'tests/web/test_t5136_task_list_pager.py'
+  - 'web/blueprints/cockpit.py'
+  - 'web/blueprints/fabric.py'
+  - 'web/blueprints/tasks.py'
+  - 'web/search_utils.py'
+  - 'web/templates/tasks.html'
+  - 'web/warmup.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-14T20:49:40'
+    action: 'T-5136: capture — Watchtower task list view (~37 s) and search (~35 s) are slow on the live server'
+  - time: '2026-11-14T21:03:27'
+    action: 'T-5136: task list paged at 200 rows (18.9 MB -> 842 KB), search tag cloud parsed with libyaml (21.6 s -> 2.3 s) and warmed at startup; regression tests'
+  - time: '2026-11-14T21:03:58'
+    action: 'T-5136: vendor self'
+  - time: '2026-11-14T21:05:35'
+    action: 'T-5136: criteria 2-3 ticked with live evidence; fabric cards for the two new tests'
+  - time: '2026-11-14T21:17:08'
+    action: 'T-5136: criterion 4 status — task panel green; /fabric and /metrics red under host load 55-77, re-run pending'
+  - time: '2026-11-14T21:28:33'
+    action: 'T-5136: landing page — cockpit human-verify parse uses libyaml (cold / 30 s -> 7.4 s, identical entries); regression test'
+  - time: '2026-11-14T21:28:39'
+    action: 'T-5136: vendor self'
+  - time: '2026-11-14T22:56:56'
+    action: 'T-5136: /fabric component cards parsed with libyaml (1,737 cards 3.4 s -> 0.6 s, identical); regression test'
+  - time: '2026-11-14T22:57:12'
+    action: 'T-5136: vendor self'
+  - time: '2026-11-14T23:04:00'
+    action: 'T-5136: criterion 4 ticked (response times 27/27, task panel 5/5); recommendation GO'
+  - time: '2026-11-14T23:07:40'
+    action: 'T-5136: recommendation links as full URLs'
+  - time: '2026-11-14T23:10:15'
+    action: 'T-5136: partial-complete — agent criteria done, review handed to the operator'
+  - time: '2026-11-15T14:32:05'
+    action: 'T-5136: reviewer verdict'
+  - time: '2026-11-15T14:33:00'
+    action: 'T-5136: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-15T15:42:17'
+    action: 'T-5136: visual verification — the review steps walked and timed (list 1.0 s, pager keeps filter and sort, search with tag cloud) and per-width shots, for the independent reviewer'
+  - time: '2026-11-15T15:49:26'
+    action: 'T-5136: visual verification checklist table first (the parser reads only the first table); walk as a list'
+  - time: '2026-11-15T16:02:38'
+    action: 'T-5136: reviewer verdict'
+  - time: '2026-11-15T17:05:08'
+    action: 'T-5136: reviewer verdict'
+  - time: '2026-11-15T17:06:05'
+    action: 'T-5136: reviewer verdict'
+  - time: '2026-11-15T18:02:48'
+    action: 'T-5136: reviewer verdict'
+  - time: '2026-11-15T18:05:35'
+    action: 'T-5136: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-15T18:15:37'
+    action: 'T-5136: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-16T08:05:08'
+    action: 'T-5136: reviewer verdict'
+  - time: '2026-11-16T08:07:23'
+    action: 'T-5136: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-16T08:13:48'
+    action: 'T-5136: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-16T08:52:58'
+    action: 'T-5136: reviewer verdict'
+  - time: '2026-11-16T08:54:58'
+    action: 'T-5136: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-16T09:01:35'
+    action: 'T-5136: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 28 commit(s), 1480 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1480
+  commits: 29
+  files_changed: 160
+  lines_added: 2412
+  lines_removed: 60
+  footprint_refreshed_at: '2026-11-16T08:04:28Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5136-watchtower-slow-pages-task-list-view-37-.md
+generated_by: context-agent-hybrid

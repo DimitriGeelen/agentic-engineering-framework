@@ -1,0 +1,162 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5172: Watchtower file links: let a project declare viewable directories (scripts/, top-level docs/), or link any tracked file with a viewable extension (0909 consult)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T08:02:28Z
+# ============================================================================
+
+task_id: T-5172
+task_name: "Watchtower file links: let a project declare viewable directories (scripts/, top-level docs/), or link any tracked file with a viewable extension (0909 consult)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-15T23:56:21Z
+completed: 2026-11-16T02:33:00Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-16T00:56:29+01:00
+last_commit: 2026-11-16T08:49:33+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed — project-declared viewable directories for Watchtower file links (0909 consult d1993c2c, found stranded in a nickname inbox). VIEWABLE_DIRS — a project adds folders Watchtower links and serves at /file/ (both registries); unsafe entries (.., absolute, .git, .context/secrets, root) ignored; C loader per T-3458; this repo declares scripts; 16 tests. tests no longer reload web.shared in-process (it left other test files with stale objects; test_file_route_extensions went red in a shared run); import-time merge checked in a fresh interpreter. criteria 3-4 ticked with evidence; T-5174 filed for the pre-existing inception-verdict test reds. partial-complete — review handed to the independent reviewer. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (antigravity seat antigravity, recorded by the runtime). refusal check moved from the [REVIEW] criterion to an Agent criterion (deterministic; both review seats could not screenshot a 404); checklist note records that long lines scroll inside the code box at 1024 (codex's question); review ledger updates from the panel run
+
+# Key outcomes
+outcomes:
+  - '`VIEWABLE_DIRS` (config key + `FW_VIEWABLE_DIRS`) adds folders to the viewable list used by both `is_viewable_path` and the auto-linker; default empty changes nothing'
+  - 'unsafe entries are ignored: `..` anywhere, absolute paths, `.git`, `.context/secrets`, an empty or root entry; extensions are still limited to VIEWABLE_EXTENSIONS'
+  - 'live, the /file/ route refuses `.git/config`, `.context/secrets/review-dispatch.key` and a `scripts/../.git/config` traversal while serving `scripts/agent-listeners.sh` (Verification line 2; moved here from the [REVIEW] criterion on 2026-11-16 because both review seats could not screenshot a refusal page — it is a deterministic check)'
+  - 'the key is in both config registries (lib/config.sh, web/blueprints/config.py) and config-registry parity stays green'
+  - 'unit tests for the setting, the safety filter, the route and the linker; every test that reads web/shared.py passes (96 files in 3 chunks: 980 passed; the one T-5172-caused red — in-process reload leaking into test_file_route_extensions — fixed in 5700bb8e6; 5 reds in tests/web/test_inception_verdict_render.py predate this change and are T-5174; bats 432 with t3458 fixed)'
+  - '[REVIEW] A file in a declared folder opens from a review page'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/web/blueprints/config.py'
+  - '.agentic-framework/web/shared.py'
+  - '.context/reviews/evidence/T-5172/01-file-scripts-agent-listeners-sh-judge-t-5172-r5-claude-code-6a9953ca91fd.png'
+  - '.context/reviews/evidence/T-5172/01-file-scripts-agent-listeners-sh-judge-t-5172-r5-claude-code-a252be6293dc.png'
+  - '.context/reviews/evidence/T-5172/01-file-scripts-agent-listeners-sh-judge-t-5172-r5-claude-code-b97363078981.png'
+  - '.context/reviews/evidence/T-5172/01-file-scripts-agent-listeners-sh-judge-t-5172-r5-claude-code-e39f0bcf32f3.png'
+  - '.context/reviews/evidence/T-5172/02-config-judge-t-5172-r5-claude-code-6a9953ca91fd.png'
+  - '.context/reviews/evidence/T-5172/02-config-judge-t-5172-r5-claude-code-b97363078981.png'
+  - '.context/reviews/evidence/T-5172/02-config-judge-t-5172-r5-claude-code-e39f0bcf32f3.png'
+  - '.context/reviews/evidence/T-5172/03-config-judge-t-5172-r5-claude-code-a252be6293dc.png'
+  - '.context/reviews/evidence/T-5172/AC1-judge-t-5172-r5-antigravity-09d30276f6cd.md'
+  - '.context/reviews/evidence/T-5172/AC1-judge-t-5172-r5-antigravity-220a24381535.md'
+  - '.context/reviews/evidence/T-5172/AC1-judge-t-5172-r5-antigravity-3abb2d601aa0.md'
+  - '.context/reviews/evidence/T-5172/AC1-judge-t-5172-r5-antigravity-59eda35261c8.md'
+  - '.context/reviews/evidence/T-5172/AC1-judge-t-5172-r5-claude-code-6a9953ca91fd.md'
+  - '.context/reviews/evidence/T-5172/AC1-judge-t-5172-r5-claude-code-a252be6293dc.md'
+  - '.context/reviews/evidence/T-5172/AC1-judge-t-5172-r5-claude-code-b97363078981.md'
+  - '.context/reviews/evidence/T-5172/AC1-judge-t-5172-r5-claude-code-e39f0bcf32f3.md'
+  - '.context/reviews/evidence/T-5172/AC1-judge-t-5172-r5-codex-1b96ea7d1900.md'
+  - '.context/reviews/evidence/T-5172/AC1-judge-t-5172-r5-codex-1c26b8773c45.md'
+  - '.context/reviews/evidence/T-5172/AC1-judge-t-5172-r5-codex-65cd2d59abda.md'
+  - '.context/reviews/evidence/T-5172/AC1-judge-t-5172-r5-codex-f1affaa546b5.md'
+  - '.context/reviews/evidence/T-5172/script-file@1024-judge-t-5172-r5-claude-code-6a9953ca91fd.png'
+  - '.context/reviews/evidence/T-5172/script-file@1024-judge-t-5172-r5-claude-code-a252be6293dc.png'
+  - '.context/reviews/evidence/T-5172/script-file@1024-judge-t-5172-r5-claude-code-b97363078981.png'
+  - '.context/reviews/evidence/T-5172/script-file@1024-judge-t-5172-r5-claude-code-e39f0bcf32f3.png'
+  - '.context/reviews/evidence/T-5172/script-file@1440-judge-t-5172-r5-claude-code-6a9953ca91fd.png'
+  - '.context/reviews/evidence/T-5172/script-file@1440-judge-t-5172-r5-claude-code-a252be6293dc.png'
+  - '.context/reviews/evidence/T-5172/script-file@1440-judge-t-5172-r5-claude-code-b97363078981.png'
+  - '.context/reviews/evidence/T-5172/script-file@1440-judge-t-5172-r5-claude-code-e39f0bcf32f3.png'
+  - '.context/reviews/evidence/T-5172/script-file@1920-judge-t-5172-r5-claude-code-6a9953ca91fd.png'
+  - '.context/reviews/evidence/T-5172/script-file@1920-judge-t-5172-r5-claude-code-a252be6293dc.png'
+  - '.context/reviews/evidence/T-5172/script-file@1920-judge-t-5172-r5-claude-code-b97363078981.png'
+  - '.context/reviews/evidence/T-5172/script-file@1920-judge-t-5172-r5-claude-code-e39f0bcf32f3.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.framework.yaml'
+  - '.tasks/active/T-5172-watchtower-file-links-let-a-project-decl.md'
+  - '.tasks/active/T-5174-testswebtestinceptionverdictrenderpy-5-r.md'
+  - 'lib/config.sh'
+  - 'tests/unit/test_t5172_viewable_dirs.py'
+  - 'web/blueprints/config.py'
+  - 'web/shared.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T00:56:29'
+    action: 'T-5172: filed — project-declared viewable directories for Watchtower file links (0909 consult d1993c2c, found stranded in a nickname inbox)'
+  - time: '2026-11-16T03:17:51'
+    action: 'T-5172: VIEWABLE_DIRS — a project adds folders Watchtower links and serves at /file/ (both registries); unsafe entries (.., absolute, .git, .context/secrets, root) ignored; C loader per T-3458; this repo declares scripts; 16 tests'
+  - time: '2026-11-16T03:31:24'
+    action: 'T-5172: tests no longer reload web.shared in-process (it left other test files with stale objects; test_file_route_extensions went red in a shared run); import-time merge checked in a fresh interpreter'
+  - time: '2026-11-16T03:32:57'
+    action: 'T-5172: criteria 3-4 ticked with evidence; T-5174 filed for the pre-existing inception-verdict test reds'
+  - time: '2026-11-16T03:34:05'
+    action: 'T-5172: partial-complete — review handed to the independent reviewer'
+  - time: '2026-11-16T03:36:01'
+    action: 'T-5172: reviewer verdict'
+  - time: '2026-11-16T03:37:29'
+    action: 'T-5172: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-16T03:39:45'
+    action: 'T-5172: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-16T03:41:29'
+    action: 'T-5172: refusal check moved from the [REVIEW] criterion to an Agent criterion (deterministic; both review seats could not screenshot a 404); checklist note records that long lines scroll inside the code box at 1024 (codex''s question); review ledger updates from the panel run'
+  - time: '2026-11-16T03:42:57'
+    action: 'T-5172: reviewer verdict'
+  - time: '2026-11-16T03:44:30'
+    action: 'T-5172: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-16T03:48:58'
+    action: 'T-5172: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-16T07:47:44'
+    action: 'T-5172: reviewer verdict'
+  - time: '2026-11-16T07:49:29'
+    action: 'T-5172: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-16T07:51:56'
+    action: 'T-5172: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-16T08:45:49'
+    action: 'T-5172: reviewer verdict'
+  - time: '2026-11-16T08:47:09'
+    action: 'T-5172: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-16T08:49:33'
+    action: 'T-5172: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 18 commit(s), 156 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, consumer, usability]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 156
+  commits: 19
+  files_changed: 52
+  lines_added: 2024
+  lines_removed: 73
+  footprint_refreshed_at: '2026-11-16T08:04:29Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5172-watchtower-file-links-let-a-project-decl.md
+generated_by: context-agent-hybrid
