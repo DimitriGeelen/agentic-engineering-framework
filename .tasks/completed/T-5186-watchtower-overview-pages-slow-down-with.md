@@ -8,16 +8,16 @@ description: >
   on a ~6k-task project): measure, then design a stepped index layer (files stay source
   of truth)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-11-16T13:47:22Z
-last_update: 2026-11-16T16:54:21Z
-date_finished:
+last_update: 2026-11-16T19:35:06Z
+date_finished: 2026-11-16T19:35:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -129,15 +129,15 @@ Who it hurts: every operator of a large project. Overview pages are where decisi
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -208,7 +208,13 @@ A general rebuildable index (the operator's stepped proposal, D) would not touch
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The profile names where the time goes, and it is not task-file reading. At ~5,000 tasks, a cold approvals page (http://192.168.10.107:3000/approvals) costs 34–44 s. Most of it is re-validating review-ledger history against git: 1,909 `git show` and 6 `git log` calls, plus ~12–22 s of Python in the same validation. Warm, it costs 2.3 s, and the home page (http://192.168.10.107:3000/) costs 2.3 s, so parsing the corpus is already cached and cheap. The page goes cold on a process restart and on any write to any `.context/reviews/*.jsonl`, because the readiness cache keys on all 13 ledger files. 42 commits touched those files in the last 24 h.
+
+Build slices:
+
+**Date**: 2026-11-16T19:35:05Z
 
 ## Updates
 
@@ -221,3 +227,40 @@ A general rebuildable index (the operator's stepped proposal, D) would not touch
 ### 2026-11-16T16:54:21Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-16T19:35:05Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The profile names where the time goes, and it is not task-file reading. At ~5,000 tasks, a cold approvals page (http://192.168.10.107:3000/approvals) costs 34–44 s. Most of it is re-validating review-ledger history against git: 1,909 `git show` and 6 `git log` calls, plus ~12–22 s of Python in the same validation. Warm, it costs 2.3 s, and the home page (http://192.168.10.107:3000/) costs 2.3 s, so parsing the corpus is already cached and cheap. The page goes cold on a process restart and on any write to any `.context/reviews/*.jsonl`, because the readiness cache keys on all 13 ledger files. 42 commits touched those files in the last 24 h.
+
+Build slices:
+
+### 2026-11-16T19:35:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-653dd378
+- **Timestamp:** 2026-11-16T19:35:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-c6217771
+- **Timestamp:** 2026-11-16T19:35:08Z
+- **Overall:** CONFIRMED
+- **Claims:** 1
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-5147` | task | ✓ pass |
