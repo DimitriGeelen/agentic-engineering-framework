@@ -102,7 +102,7 @@ cost_estimate_proposed:
 - [x] Test: after an append naming task X, X's entry recomputes and another task Y's cached entry is reused. After an append naming no task, both recompute. A READY is never served from a stale key.
 - [x] Equivalence test: on a fixture with several tasks and ledger rows, readiness from the cache after a sequence of appends equals a from-scratch computation for every task.
 - [x] Measured with docs/reports/T-5186-profile-*.py style timing: after a simulated append naming one task, the approvals page costs within 2× of warm. The before/after numbers are recorded in this task.
-- [ ] Existing readiness/approvals/board tests pass, invariants pass, `bin/fw vendor self --check --task T-5194` is clean, and Watchtower is restarted and current.
+- [x] Existing readiness/approvals/board tests pass, invariants pass, `bin/fw vendor self --check --task T-5194` is clean, and Watchtower is restarted and current.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
