@@ -99,9 +99,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] runtime-projection.schema.json describes both responses (/api/instances, /api/overlay) as the code emits them today, every field with a description, and marks which fields the designer must not rely on (internal).
-- [ ] A test validates real responses from both endpoints (Flask test client, fixture project) against the schema, and fails when a required field is removed from the response.
-- [ ] The response code is unchanged (no web/ edits), and contracts v1/v2 checks stay clean.
+- [x] runtime-projection.schema.json describes both responses (/api/instances, /api/overlay) as the code emits them today, every field with a description, and marks which fields the designer must not rely on (internal).
+- [x] A test validates real responses from both endpoints (Flask test client, fixture project) against the schema, and fails when a required field is removed from the response.
+- [x] The response code is unchanged (no web/ edits), and contracts v1/v2 checks stay clean.
 - [ ] 832 is sent the schema path and commit.
 
 ### Human
@@ -288,6 +288,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5185_runtime_projection.py tests/web/test_api_overlay.py tests/web/test_t4831_instances.py -q > /tmp/.t5185 2>&1 && grep -q passed /tmp/.t5185
+python3 tools/ewcr-contracts-check.py > /tmp/.t5185c1 2>&1 && grep -q "^OK" /tmp/.t5185c1
+python3 tools/ewcr-contracts-check.py --contracts-version 2 > /tmp/.t5185c2 2>&1 && grep -q "^OK" /tmp/.t5185c2
+test -z "$(git log --format=%H --grep='^T-5185' -- web/)"
 
 ## RCA
 
