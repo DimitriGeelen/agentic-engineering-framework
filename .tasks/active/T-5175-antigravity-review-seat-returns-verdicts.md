@@ -11,10 +11,10 @@ description: >
   harness drops the screenshot paths, or the seat's output format omits --evidence
   lines for pages; fix the seat or its brief so it cites what it saw.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [reviewer, antigravity, panel]
 components: []
 related_tasks: [T-3786, T-5172]
@@ -46,7 +46,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T02:49:46Z
-last_update: '2026-11-16T03:01:22Z'
+last_update: 2026-11-16T05:46:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,20 +92,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** The antigravity seat's render verdicts were refused by the ledger twice ("the screenshot of '<page>' is not cited as evidence"): T-3786 (/search) and T-5172 (/file/scripts/agent-listeners.sh, 2026-11-16). On T-5172 its result.md does name every screenshot (`--evidence .context/working/judge-evidence/T-5172/01-file-scripts-agent-listeners-sh.png` and the three checklist shots) and says what it saw in them.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** not a citation-format problem. `lib/verdict_ledger.py:_seat_named_screenshots` (T-4944, operator ruling "vision-gated", 2026-11-01) credits a harness seat with a screenshot only when the backend registry declares that kind `vision: true`. `policy/review-backends.yaml` declares claude-code and codex `true`, opencode `false`, and antigravity nothing, because antigravity was added after the T-4944 probe. Unknown counts as blind, so every antigravity render verdict is refused whatever it saw, and a rung-5 panel loses that seat on every render criterion.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** know whether antigravity can actually see a supplied image (the T-4944 probe: same screenshot, same questions), and record the answer in the registry so the seat is either credited or routed away from render criteria.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** a probe result in docs/reports/T-4944-harness-seat-vision.md for antigravity, and a `vision:` entry for it. `false` an agent may add (it only narrows); `true` widens what counts as evidence, so it goes to the operator.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] the T-4944 probe is run on antigravity (screenshot .context/visual/T-4947/arc-closure@1440.png; ground truth re-checked 2026-11-16: 8 BLOCKED cards, first title "Onboarding: fw init detects project shape by enumeration, not manifest allowlist") and its answer recorded in docs/reports/T-4944-harness-seat-vision.md
+- [ ] if it cannot see: `vision: false` for antigravity in policy/review-backends.yaml, the registry still loads, and render criteria are no longer sent to it
+- [ ] if it can see: the `vision: true` change is put to the operator with the probe evidence, not made by the agent
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -388,3 +389,15 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5175-antigravity-review-seat-returns-verdicts.md
 - **Context:** Initial task creation
+
+### 2026-11-16T05:46:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-16 — localised; probe blocked on tooling [agent]
+- **Cause confirmed:** antigravity has no `vision:` key in policy/review-backends.yaml (claude-code true, codex true, opencode false). `_seat_named_screenshots` returns [] for a kind not declared `vision: true`, so every antigravity render verdict is refused, however it cites. Its T-5172 result.md did name all five screenshots.
+- **Probe not run:** antigravity dispatches only as `--task-type review` (refused for a build dispatch), and `fw reviewer judge` has no way to aim one fixed question at one seat. T-4944's probes were run by hand through the review runtime; no script was kept. The T-5172 run left no tool-use transcript (stderr has only the runtime's lines), so it cannot show whether the seat opened the images.
+- **Options for the operator:**
+  1. (recommended) Build `fw reviewer probe-vision <kind>`: one fixed screenshot + the T-4944 questions through the signed review runtime, answer recorded in the T-4944 report. Then record antigravity's flag from evidence. If it sees images, rung-5 render panels gain a third vision seat (claude-code, codex, antigravity), which is what T-3786, T-5136 and T-5172 have lacked.
+  2. Declare `vision: false` now: honest about what is known, stops wasting the seat on render criteria, but leaves render panels a seat short.
+  3. Declare `vision: true` on vendor documentation alone, without a probe (not recommended: T-4944 exists because a seat can be handed an image it cannot read).
