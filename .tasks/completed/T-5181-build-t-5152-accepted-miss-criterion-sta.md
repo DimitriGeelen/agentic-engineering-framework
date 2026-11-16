@@ -5,12 +5,12 @@ name: "Build T-5152: accepted-miss criterion state [~], operator-accepted with l
 description: >
   Build slice of inception T-5152 (GO 2026-11-16).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [acceptance-criteria, governance]
-components: []
+components: [agents/audit/audit.sh, agents/context/lib/episodic.sh, agents/task-create/update-task.sh, bin/fw, lib/accepted_miss.py, lib/inception.sh, lib/shell_write_scan.py]
 related_tasks: [T-5152, T-3695]
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -39,8 +39,8 @@ related_tasks: [T-5152, T-3695]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T12:43:09Z
-last_update: 2026-11-16T13:02:49Z
-date_finished:
+last_update: 2026-11-16T14:49:55Z
+date_finished: 2026-11-16T14:49:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -441,3 +441,16 @@ Traced each one; none closes a task, and where it sees a `[~]`/`[X]` it either o
 ### 2026-11-16T13:02:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-16T14:49:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-de28aa33
+- **Timestamp:** 2026-11-16T14:51:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

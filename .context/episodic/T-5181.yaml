@@ -1,0 +1,133 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5181: Build T-5152: accepted-miss criterion state [~], operator-accepted with ledger provenance, never counted as met (832 T-1415)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T14:52:15Z
+# ============================================================================
+
+task_id: T-5181
+task_name: "Build T-5152: accepted-miss criterion state [~], operator-accepted with ledger provenance, never counted as met (832 T-1415)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-16T12:43:09Z
+completed: 2026-11-16T14:49:55Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-16T13:44:01+01:00
+last_commit: 2026-11-16T15:49:46+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture build of T-5152 (accepted-miss state) with context, criteria, verification. accepted-miss criterion state [~] — operator verb, ledger, P-010, episodic, audit. vendor accepted-miss changes; fabric card for lib/accepted_miss.py. tick criterion 6 (20 new tests, 496 py + 150 bats regression green, invariants 166/166, vendor check clean). review RED fixes — accept-miss refused under agent control even with --i-am-human, agent-override rows never resolve; shell gates pass their counted text (one source of truth); id must match file name; only the first annotation line is outside the digest; audit prefiltered by git grep (1m23s -> ~1.3s); restore 'oc env' audit prefetch. review-2 fixes — ASCII-only whitespace in the box parser (a control byte could hide an accepted box from the shell count), accept digests the same inline-comment-stripped text the gate does, Bash text gate refuses accept-miss and delegation widen. review-3 fix — accepted-misses.jsonl is a guarded ledger path (hand-appended rows refused); reviews recorded in Decisions; T-5188 filed for the pre-existing unclosed-comment P-010 hole; T-5186/T-5187 captured
+
+# Key outcomes
+outcomes:
+  - '`fw task accept-miss` writes the box, the annotation and the ledger row. It refuses under CLAUDECODE=1 without --i-am-human, refuses Human criteria, refuses an already-met criterion, and refuses an out-of-range N.'
+  - 'P-010 treats `[~]` with a matching ledger row as resolved and never as met. A bare `[~]`, a `[~]` whose criterion was edited after acceptance, and an unknown box character each block completion with a message naming the criterion. Tested through update-task.sh on fixture tasks.'
+  - 'The completion output and the episodic summary list each accepted miss (id, criterion, reason).'
+  - 'fw audit FAILs on a committed `[~]` with no matching row, and on a non-append-only ledger edit.'
+  - 'Every other closure-gating AC counter found by the grep is either updated or recorded in ## Decisions with why it needs no change.'
+  - 'Tests in tests/unit/test_t5181_*.py (and/or tests/unit/t5181_*.bats) cover all of the above. Every existing test that reads a changed file passes, `bin/fw test invariants` passes, and `bin/fw vendor self --check` is clean.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'review-3 fix — accepted-misses.jsonl is a guarded ledger path (hand-appended rows refused); reviews recorded in Decisions; T-5188 filed for the pre-existing unclosed-comment P-010 hole; T-5186/T-5187 captured'
+    source: git-mined
+  - description: 'review-2 fixes — ASCII-only whitespace in the box parser (a control byte could hide an accepted box from the shell count), accept digests the same inline-comment-stripped text the gate does, Bash text gate refuses accept-miss and delegation widen'
+    source: git-mined
+  - description: 'review RED fixes — accept-miss refused under agent control even with --i-am-human, agent-override rows never resolve; shell gates pass their counted text (one source of truth); id must match file name; only the first annotation line is outside the digest; audit prefiltered by git grep (1m23s -> ~1.3s); restore ''oc env'' audit prefetch'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-16 — three independent reviews (RED, RED, AMBER) and what changed'
+  # 3 decision(s) below are recorded in the register (.context/project/decisions.yaml) for this task but absent from the task file's Decisions section (T-4193).
+  - decision: 'D-988'
+    chose: 'update the counters that decide a close or an archive move: P-010 (`update-task.sh` check_acceptance_criteria, Agent + Human + un-split), the partial-complete recheck (`update-task.sh` ALL_TOTAL/ALL_CHECKED), the inception-decide Agent preflight (`lib/inception.sh` ~709), and the inception sweep''s Human recount before `mv` to completed/ (`lib/inception.sh` ~1309). All count any one-character box; met = `[x]`/`[X]`; a valid accepted miss (Agent only) is subtracted as resolved; everything else is unchecked. Episodic `ac_total_count` also counts any box.'
+    rationale: 'Auto-captured from task file on completion'
+    id: 'D-988'
+    source: register
+  - decision: 'D-989'
+    chose: '`[X]` counts as met (every other counter already reads `[xX]`; P-010 used to ignore it entirely, so no task that closed before is now refused). The one `[~]` already committed before this module (T-2535''s DESCOPED line) is grandfathered by the audit: boxes present at the parent of the commit that added `lib/accepted_miss.py` are reported as grandfathered, not FAILed (forward-looking, same as human_ac_ticks). Fixtures and repos without that commit grandfather nothing.'
+    rationale: 'Auto-captured from task file on completion'
+    id: 'D-989'
+    source: register
+  - decision: 'D-990'
+    chose: 'the shell gates pipe the exact text they counted (comment-stripped Agent block or section) into `accepted_miss.py gate FILE --stdin [--agent]`; Python judges only those boxes. `accept` is refused under agent control even with `--i-am-human`, and a `by: agent-override` row never resolves. A `[~]` resolves only when the file''s `id:` equals its basename''s T-NNNN. Only the annotation line directly under the title is outside the digest.'
+    rationale: 'Auto-captured from task file on completion'
+    id: 'D-990'
+    source: register
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/context/lib/episodic.sh'
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/accepted_miss.py'
+  - '.agentic-framework/lib/inception.sh'
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - '.fabric/components/lib-accepted_miss.yaml'
+  - '.tasks/active/T-5181-build-t-5152-accepted-miss-criterion-sta.md'
+  - '.tasks/active/T-5186-watchtower-overview-pages-slow-down-with.md'
+  - '.tasks/active/T-5187-t2922-legs-5-and-7-fail-on-this-host-the.md'
+  - '.tasks/active/T-5188-p-010-hides-every-later-criterion-behind.md'
+  - 'agents/audit/audit.sh'
+  - 'agents/context/lib/episodic.sh'
+  - 'agents/task-create/update-task.sh'
+  - 'bin/fw'
+  - 'lib/accepted_miss.py'
+  - 'lib/inception.sh'
+  - 'lib/shell_write_scan.py'
+  - 'tests/unit/test_t5181_accepted_miss.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T13:44:01'
+    action: 'T-5181: capture build of T-5152 (accepted-miss state) with context, criteria, verification'
+  - time: '2026-11-16T14:18:02'
+    action: 'T-5181: accepted-miss criterion state [~] — operator verb, ledger, P-010, episodic, audit'
+  - time: '2026-11-16T14:18:19'
+    action: 'T-5181: vendor accepted-miss changes; fabric card for lib/accepted_miss.py'
+  - time: '2026-11-16T14:21:29'
+    action: 'T-5181: tick criterion 6 (20 new tests, 496 py + 150 bats regression green, invariants 166/166, vendor check clean)'
+  - time: '2026-11-16T15:16:58'
+    action: 'T-5181: review RED fixes — accept-miss refused under agent control even with --i-am-human, agent-override rows never resolve; shell gates pass their counted text (one source of truth); id must match file name; only the first annotation line is outside the digest; audit prefiltered by git grep (1m23s -> ~1.3s); restore ''oc env'' audit prefetch'
+  - time: '2026-11-16T15:34:41'
+    action: 'T-5181: review-2 fixes — ASCII-only whitespace in the box parser (a control byte could hide an accepted box from the shell count), accept digests the same inline-comment-stripped text the gate does, Bash text gate refuses accept-miss and delegation widen'
+  - time: '2026-11-16T15:49:46'
+    action: 'T-5181: review-3 fix — accepted-misses.jsonl is a guarded ledger path (hand-appended rows refused); reviews recorded in Decisions; T-5188 filed for the pre-existing unclosed-comment P-010 hole; T-5186/T-5187 captured'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 126 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [acceptance-criteria, governance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 126
+  commits: 8
+  files_changed: 23
+  lines_added: 3425
+  lines_removed: 181
+  footprint_refreshed_at: '2026-11-16T14:52:30Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5181-build-t-5152-accepted-miss-criterion-sta.md
+generated_by: context-agent-hybrid
