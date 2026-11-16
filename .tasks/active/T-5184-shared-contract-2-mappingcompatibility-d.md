@@ -7,10 +7,10 @@ description: >
   Agreed with 832 2026-11-16 (msg f2c1275e). AEF has no artifact for shared contract
   2; pairs with designer kit 0.43.0 (SHA256SUMS 126451b6).
 
-status: captured
+status: started-work
 workflow_type: design
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T12:53:56Z
-last_update: '2026-11-16T13:00:56Z'
+last_update: 2026-11-16T16:17:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,20 +87,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Shared contract 2 (mapping/compatibility) of the five pairings agreed with 832 (T-5183; their T-1425). AEF had no artifact. 832 msg 66c77219 confirmed that row 1 (procedure interchange) is checked as designer BPMN 2.0 export → this mapping → validation against contracts v2 procedure.schema.json, so row 1 waits on this.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The designer (0.43.0, vendored at vendor/designer/) exports BPMN 2.0 XML. AEF's runtime contract is a JSON procedure (contracts v2 procedure.schema.json, schema_version 1: nodes[].kind human_gate/script/…/gateway, content_hash, status, ratification). No document says how one becomes the other, which BPMN elements have no procedure equivalent (and the reverse), or which designer version produces which contract version.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A versioned mapping document, "designer 0.43.0 → EWCR contracts v2", covering: element-by-element BPMN → procedure field mapping; what is lost or refused in each direction (lossless round-trip or named loss); how content_hash is computed from the exported definition; and the compatibility rule (which designer versions map to which contracts version, and what a version bump on either side requires).
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** docs/research/executable-workflow/contracts/v2/designer-0.43-mapping.md plus a worked example (one real designer export from vendor/designer/ or 832's published samples, mapped to a procedure JSON that validates against procedure.schema.json). 832 can check it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The mapping covers every BPMN element type and attribute the designer 0.43.0 export emits, each mapped to a procedure field or marked "not represented", with the loss stated.
+- [ ] Every required procedure.schema.json field has a stated source in the BPMN export, or is marked "set by AEF at ratification" with the step that sets it.
+- [ ] A worked example procedure JSON validates against contracts v2 procedure.schema.json (test), and contracts v1/v2 checks stay clean.
+- [ ] 832 is sent the draft with the path and commit.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -383,3 +385,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5184-shared-contract-2-mappingcompatibility-d.md
 - **Context:** Initial task creation
+
+### 2026-11-16T16:17:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
