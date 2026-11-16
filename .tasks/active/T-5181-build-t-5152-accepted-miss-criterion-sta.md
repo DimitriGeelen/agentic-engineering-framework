@@ -373,6 +373,25 @@ bin/fw vendor self --check --task T-5181
 
 ## Decisions
 
+### 2026-11-16 — three independent reviews (RED, RED, AMBER) and what changed
+- **Review 1 (RED), fixed in 785a57c0e:**
+  - An agent could self-grant with --i-am-human. Now refused, and agent-override rows never resolve.
+  - The shell and Python parsers disagreed, so one miss could cancel a different open box. The gate now judges only the text the shell counted.
+  - Cross-task row reuse: `id:` must match the file name.
+  - The `ocenv` audit typo is restored to `oc env`.
+  - The slow audit is now 1.3s.
+  - Only the first annotation line is outside the digest.
+- **Review 2 (RED), fixed in 3e19f2bd4:**
+  - A control byte before `- [~]` hid it from grep but not from Python. BOX_RE now uses ASCII whitespace, a subset of grep's in every locale; review 3 checked 1,382 cases.
+  - accept and the gate digested different text when an inline comment was present. Both now strip inline comments.
+  - The Bash text gate refuses `accept-miss` and `delegation widen` (`env -u CLAUDECODE` stripped the module's own check).
+- **Review 3 (AMBER), fixed:** `accepted-misses.jsonl` is now a guarded path in lib/shell_write_scan.py, so a hand-appended row is refused like the other operator ledgers.
+- **Accepted, not changed (review 3, low):**
+  - #5: `grep accept lib/accepted_miss.py` is refused as a write. This is the same false positive the existing `ack` rule has, and the same boundary.
+  - #6: accept refuses a box whose line starts with an inline comment ("could not locate"). Fails closed.
+  - #7: accept rewrites a CRLF task file to LF. Harmless to the gate; task files here are LF.
+- **Filed separately:** review 3 #8, an unclosed mid-line `<!--` that hides every later box from P-010. It is older than this task and not caused by `[~]`, so it is its own bug: T-5188.
+
 ### 2026-11-16 — closure-gating AC counters (grep of lib/ agents/ bin/ web/blueprints)
 - **Chose:** update the counters that decide a close or an archive move: P-010 (`update-task.sh` check_acceptance_criteria, Agent + Human + un-split), the partial-complete recheck (`update-task.sh` ALL_TOTAL/ALL_CHECKED), the inception-decide Agent preflight (`lib/inception.sh` ~709), and the inception sweep's Human recount before `mv` to completed/ (`lib/inception.sh` ~1309). All count any one-character box; met = `[x]`/`[X]`; a valid accepted miss (Agent only) is subtracted as resolved; everything else is unchecked. Episodic `ac_total_count` also counts any box.
 - **No change, because the counter does not decide closure:** `bin/fw` archive-sweep eligibility (~6730) only nominates candidates — the sweep closes through `update-task.sh`, so P-010 decides; `audit.sh` archive-eligible / limbo / stuck-review scans (~7492, ~8297, ~8368, ~8907), `active-task-scan.py`, `completed-task-scan.py`, `handover.sh`, `bin/fw` task verify / poll / review-readiness listings (~6298, ~6484, ~9664), `verify-acs.sh` are reports; `update-task.sh` ~2903 (horizon demote preservation) and ~3085 (Human Steps warning) are not gates; `check-active-task.sh` REAL_AC_COUNT is the G-020 build-readiness gate (start of work, not close); `human_review_state.py`, `human_ac_ticks.py`, `verdict_ledger.py`, `unclosable_misfiled.py`, `delegation_cli.py`, `restatement_cli.py` act on Human criteria, where `[~]` is never valid; `bvp_judge.py`, `ac_placeholder.py`, the BVP estimator are scoring/lint; `web/blueprints/tasks.py` is the Watchtower render/toggle (out of scope — follow-up render task).

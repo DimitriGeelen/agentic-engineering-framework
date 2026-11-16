@@ -69,12 +69,13 @@ from typing import Callable, Optional
 
 LEDGER_NAME = "human-ac-ticks.jsonl"
 # T-4165: the operator's standing-delegation grants are guarded the same way
-LEDGER_NAMES = (LEDGER_NAME, "standing-delegations.jsonl")
+# T-5181 review 3 #3: the operator's accepted misses too
+LEDGER_NAMES = (LEDGER_NAME, "standing-delegations.jsonl", "accepted-misses.jsonl")
 
 # A mention of a guarded path anywhere in the command (quotes/backslashes removed).
 MENTION_RE = re.compile(
     r"\.tasks\b|tasks/(?:active|completed|templates)\b|/(?:active|completed)/T-\d"
-    r"|human-ac-ticks\.jsonl|standing-delegations\.jsonl|toggle-ac",
+    r"|human-ac-ticks\.jsonl|standing-delegations\.jsonl|accepted-misses\.jsonl|toggle-ac",
     re.I,
 )
 # T-4159: a task-file NAME (`T-NNNN[-slug].md`) with the path word in front of it. It is

@@ -434,6 +434,9 @@ def test_accept_digest_matches_gate_with_inline_comment(proj):
     "python3 .agentic-framework/lib/accepted_miss.py accept T-9801 --ac 2 --reason x",
     "bin/fw task accept-miss T-9801 --ac 2 --reason x",
     "python3 lib/human_ac_ticks.py delegation widen --class act-in-the-world --ruling R",
+    # T-5181 review 3 #3: a hand-appended ledger row
+    "echo '{}' >> .context/reviews/accepted-misses.jsonl",
+    "tee -a .context/reviews/accepted-misses.jsonl < row.json",
 ])
 def test_text_gate_refuses_operator_verbs(cmd):
     # T-5181 review 2 #3: the module's env check is stripped by `env -u`; the Bash text gate
