@@ -67,6 +67,13 @@ bvp_scores_proposed:
 ## Problem Statement
 
 <!-- What problem are we exploring? For whom? Why now? -->
+010-termlink's operator ruled that their agent may close a task whose remaining act-in-the-world step it measured as done, once an independent review passes. AEF's `lib/delegation.py` keeps act-in-the-world operator-only in every project, with no bypass flag. So the agent cannot carry out the ruling, and the operator ends up ticking evidence two reviewers already checked: the rubber-stamping D-626 exists to prevent. T-3968 (closed) let a project NARROW delegation; nothing lets a project WIDEN it. Who: any consumer whose operator makes such a ruling (010 first, 7 tasks through it so far). Why now: three 010 tasks (T-1632, T-2258, T-3685) are waiting on rubber-stamp ticks.
+
+**The ruling, verbatim** (010-termlink msg 1a622646, from their T-3800 ## Decisions, 2026-11-15). Their operator, two messages in sequence:
+1. "Yes, you may close the task yourself." (answering option A: "when I can check the action directly (a file on disk, an installed unit, a commit, a peer's reply on record), I close the task myself and record the command and its output in the task. Anything I can't measure stays with you.")
+2. "of course assuming you got a positive review from the reviewers as we have defined it in our review protocol."
+
+Recorded by 010 as: the agent may close such a task provided (1) the command and its output are recorded in the task, and (2) an independent reviewer seat, run per their protocol (isolated run, tools off, neutral bundle with the task and the measured evidence, no recommendation), returns a positive verdict; a negative or unclear verdict sends it back to the operator. Scope: extends D-626 for that project; decisions, sovereignty fields, tier-0 approvals and anything not measurable stay with the operator. In practice they run two seats (opencode + claude-code) and require BOTH to pass; a split goes back to evidence-gathering, then to the operator.
 
 ## Assumptions
 
