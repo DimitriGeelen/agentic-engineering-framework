@@ -14,12 +14,12 @@ description: >
   serve gitignored paths (.context/secrets etc.); keep traversal checks. Render surface
   + exposure scope: needs a [REVIEW] criterion.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [watchtower, consumer, usability]
-components: []
+components: [lib/config.sh, web/blueprints/config.py, web/shared.py]
 related_tasks: []
 origin: {kind: "peer", source: "0909-boot-into-timeshift-snapshots", ref: "d1993c2c"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -49,8 +49,8 @@ origin: {kind: "peer", source: "0909-boot-into-timeshift-snapshots", ref: "d1993
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T23:56:21Z
-last_update: 2026-11-16T01:54:04Z
-date_finished:
+last_update: 2026-11-16T02:33:00Z
+date_finished: 2026-11-16T02:33:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -421,3 +421,23 @@ Screenshots: `.context/visual/T-5172/script-file@{1024,1440,1920}.png` (`fw ux s
 ### 2026-11-16T01:54:04Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-16T02:33:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d55593b5
+- **Timestamp:** 2026-11-16T02:33:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — the key is in both config registries (lib/config.sh, web/blueprints/config.py) and config-registry parity stays green
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/config.sh in: the key is in both config registries (lib/config.sh, web/blueprints/config.py) and config-registry parity stays green`
+- **AC#4 (Agent)** — unit tests for the setting, the safety filter, the route and the linker; every test that reads web/shared.py passes (96 files in 3 chunks: 980 passed; the one T-5172-caused red — in-process reload lea
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: unit tests for the setting, the safety filter, the route and the linker; every test that reads web/shared.py passes (96 files in 3 chunks: 980 passed;`
