@@ -6,9 +6,6 @@
 
 ## What It Does
 
-arc-grooming has 32+ constituent tasks, kanban shows top 10/column
-so we expect at least one badge across all four columns.
-
 ## Dependencies (1)
 
 | Component | Relationship | Description |

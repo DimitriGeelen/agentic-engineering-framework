@@ -21,10 +21,7 @@ landing page.
 
 ## What It Does
 
-Each card renders "<arc-id> <name> <N> tasks" or " ... 1 task" — pull pairs.
-The arc id form is arc-NNN; the count word is "task" or "tasks".
-Order in the body text places the id near its count, but a robust scan
-finds all (arc-NNN, count) pairs in sequence and joins by adjacency.
+First occurrence wins (the landing page lists each arc once in cards)
 
 ## Dependencies (5)
 

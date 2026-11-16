@@ -8,8 +8,6 @@
 
 ## What It Does
 
-Flask URL normalization may return 404 before handler runs
-
 ## Dependencies (3)
 
 | Component | Relationship | Description |

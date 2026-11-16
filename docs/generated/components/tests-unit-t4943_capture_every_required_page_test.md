@@ -6,6 +6,8 @@
 
 ## What It Does
 
+T-5151: the bare-GET probe would ask whatever listens on :3000; not this test's subject.
+
 ---
 *Auto-generated from Component Fabric. Card: `tests-unit-t4943_capture_every_required_page_test.yaml`*
 *Last verified: 2026-11-01*
