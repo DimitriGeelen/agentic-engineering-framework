@@ -101,7 +101,7 @@ bvp_scores_proposed:
 - [x] Single-flight: concurrent requests for the same task's readiness trigger at most one computation (test with threads and a counting stand-in for `_compute_readiness`).
 - [x] The page shows, in plain words, that some entries are being refreshed when it serves stale ones (count only; no layout change beyond one line).
 - [x] Measured in-process: after a simulated invalidation of all tasks, the approvals page answers within 2× of warm, and the refresh finishes in the background. Before/after numbers are recorded here.
-- [ ] Existing readiness/approvals/board tests pass, invariants pass, `bin/fw vendor self --check --task T-5195` is clean, and Watchtower is restarted and current.
+- [x] Existing readiness/approvals/board tests pass, invariants pass, `bin/fw vendor self --check --task T-5195` is clean, and Watchtower is restarted and current.
 
 ### Human
 - [ ] [REVIEW] The approvals page reads correctly while entries refresh
