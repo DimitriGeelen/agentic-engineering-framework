@@ -12,8 +12,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: [watchtower, arcs, bug]
 components: [lib/arc_membership.py, web/blueprints/tasks.py]
 related_tasks: [T-5160]
@@ -45,7 +45,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T23:09:55Z
-last_update: 2026-11-15T23:42:06Z
+last_update: 2026-11-16T00:40:17Z
 date_finished: 2026-11-15T23:42:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -84,6 +84,7 @@ bvp_scores_proposed:
       (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+date_finalised: 2026-11-16T00:40:17Z
 ---
 
 # T-5167: Landing-page arc cards open an empty task list: they link /tasks?arc=arc-NNN, but the filter matches only that literal and most tasks record the slug
@@ -137,7 +138,7 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
-- [ ] [REVIEW] An arc card on the landing page opens that arc's tasks
+- [x] [REVIEW] An arc card on the landing page opens that arc's tasks
   **Steps:**
   1. Open http://192.168.10.107:3000/ and find the arc cards.
   2. Click the card of an arc that has tasks (its card shows a non-zero count).
@@ -159,6 +160,7 @@ bvp_scores_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261116-c48e9b3c — reviewer-judge-t-5167-r3-2443ea0687df:reviewer (rung rung-3-termlink-single-reviewer), digest abd7098f7da2; dispatch judge-t-5167-r3-2443ea0687df; evidence: .context/reviews/evidence/T-5167/AC1-judge-t-5167-r3-2443ea0687df.md, .context/reviews/evidence/T-5167/01-root-judge-t-5167-r3-2443ea0687df.png, .context/reviews/evidence/T-5167/02-tasks-view-list-arc-arc-grooming-judge-t-5167-r3-2443ea0687df.png, .context/reviews/evidence/T-5167/03-tasks-view-list-arc-arc-005-judge-t-5167-r3-2443ea0687df.png, .context/reviews/evidence/T-5167/04-tasks-judge-t-5167-r3-2443ea0687df.png, .context/reviews/evidence/T-5167/click-arc-012-judge-t-5167-r3-2443ea0687df.png, .context/reviews/evidence/T-5167/landing@1024-judge-t-5167-r3-2443ea0687df.png, .context/reviews/evidence/T-5167/landing@1440-judge-t-5167-r3-2443ea0687df.png, .context/reviews/evidence/T-5167/landing@1920-judge-t-5167-r3-2443ea0687df.png, .context/reviews/evidence/T-5167/list-by-id@1024-judge-t-5167-r3-2443ea0687df.png, .context/reviews/evidence/T-5167/list-by-id@1440-judge-t-5167-r3-2443ea0687df.png, .context/reviews/evidence/T-5167/list-by-id@1920-judge-t-5167-r3-2443ea0687df.png, .context/reviews/evidence/T-5167/list-by-slug@1024-judge-t-5167-r3-2443ea0687df.png, .context/reviews/evidence/T-5167/list-by-slug@1440-judge-t-5167-r3-2443ea0687df.png, .context/reviews/evidence/T-5167/list-by-slug@1920-judge-t-5167-r3-2443ea0687df.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
