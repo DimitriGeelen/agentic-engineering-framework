@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5183: Pair the five shared Designer↔AEF contracts with 832: AEF-side tasks at an agreed version/hash (T-5144 G2, Q-10/Q-11)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T12:54:23Z
+# ============================================================================
+
+task_id: T-5183
+task_name: "Pair the five shared Designer↔AEF contracts with 832: AEF-side tasks at an agreed version/hash (T-5144 G2, Q-10/Q-11)"
+workflow_type: design
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-16T12:50:22Z
+completed: 2026-11-16T12:54:08Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-16T13:53:20+01:00
+last_commit: 2026-11-16T13:53:20+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  proposed pairing of the five shared contracts, sent to 832
+
+# Key outcomes
+outcomes:
+  - 'The proposed pairing for all five contracts is sent to 832, naming the AEF artifact, its version/sha, and the 832 artifact for each.'
+  - '832 has accepted or amended the pairing, and the agreed table is recorded here. (832 msg f2c1275e, 2026-11-16: all five rows accepted as proposed, verified against tag designer-v0.43.0; 832''s side owned by their T-1425. Row 3 note: their T-1424 rewords the validator header only, so 08ac4443 stays the paired 0.43.0 artifact.)'
+  - 'Contracts 2 (mapping) and 4 (runtime projection) each have an AEF owner task. (T-5184 mapping, T-5185 runtime projection.)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5183-pair-the-five-shared-designeraef-contrac.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T13:53:20'
+    action: 'T-5183: proposed pairing of the five shared contracts, sent to 832'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 6
+  lines_added: 872
+  lines_removed: 18
+  footprint_refreshed_at: '2026-11-16T12:54:29Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5183-pair-the-five-shared-designeraef-contrac.md
+generated_by: context-agent-hybrid
