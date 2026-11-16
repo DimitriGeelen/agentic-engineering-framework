@@ -1,0 +1,123 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5179: EWCR contracts v2: add acceptance scenarios N-1 (task cancelled during an attempt) and N-2 (credential exceeds the node's capability profile), accepted by the operator 2026-11-16
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T10:13:53Z
+# ============================================================================
+
+task_id: T-5179
+task_name: "EWCR contracts v2: add acceptance scenarios N-1 (task cancelled during an attempt) and N-2 (credential exceeds the node's capability profile), accepted by the operator 2026-11-16"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-16T09:58:14Z
+completed: 2026-11-16T10:13:08Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-16T10:58:39+01:00
+last_commit: 2026-11-16T11:10:09+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed with the operator's decision (accept N-1, N-2 into contracts v2); criteria before dispatch. EWCR contracts v2 — acceptance scenarios N-1 and N-2, reason code privilege_exceeds_profile
+
+# Key outcomes
+outcomes:
+  - 'docs/research/executable-workflow/contracts/v2/ exists, starts from v1, and contracts/v1/ is byte-identical to before (git diff empty)'
+  - 'N-1 and N-2 are in v2 in the same form as the §13 scenarios (situation, required behaviour, pass/fail test), traced in v2''s traceability.yaml to DS-1/MS-3 and to the arc candidates the dispositions report names'
+  - 'N-2 has a reason code in v2''s refusal schema (new code if neither `scope_mismatch` nor `capability_unsupported` fits, with a one-line why), and an example refusal record that validates against the v2 schema'
+  - 'v2''s MANIFEST and README state what changed from v1 and why (T-5135, operator decision 2026-11-16); tools/ewcr-contracts-check.py checks v2 as it checks v1, and its existing v1 tests still pass'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-16 — reason code for N-2'
+    chose: 'a new code, `privilege_exceeds_profile`, with a required `privilege_excess` record (node, capability profile, binding, non-empty list of excess privileges).'
+    rationale: 'the scenario requires the refusal to name the excess; a required structured field makes that checkable by the schema, where free-text `detail` is not.'
+    alternatives_rejected: ['`scope_mismatch` (means repository/worktree scope) and `capability_unsupported` (the provider cannot do the thing; N-2 is the opposite case). Both are named as unfit in the dispositions report.']
+  - decision: '2026-11-16 — how N-1 and N-2 are referenced'
+    chose: 'ids `N-1` / `N-2`, accepted in `scenario_refs` beside the §13 numbers 1–20; scenarios live in a new v2 document `accepted-scenarios.md`.'
+    rationale: 'v1''s threat matrix §5.1 says numbering them 21/22 would put statements into the frozen architecture §13 by assertion.'
+    alternatives_rejected: ['a separate refs field (a refusal for N-2 alone would then have an empty required `scenario_refs`); editing the carried contracts (their identity with v1 is kept and checked).']
+  - decision: '2026-11-16 — what "version" means for a schema carried into v2'
+    chose: 'the six unchanged schemas stay byte-identical to v1 (version 1, v1 `$id`); only `refusal.schema.json` becomes version 2 with a `/v2/` `$id`. The checker compares against v1 and refuses anything in between.'
+    rationale: 'the brief asks to keep every v1 file''s identity unless a change is required; 832 can tell from the manifest which one schema it must re-read.'
+    alternatives_rejected: ['bumping all seven to version 2 (seven changed hashes for one real change).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/tools/ewcr-contracts-check.py'
+  - '.agentic-framework/tools/ewcr-trace-check.py'
+  - '.tasks/active/T-5179-ewcr-contracts-v2-add-acceptance-scenari.md'
+  - 'docs/research/executable-workflow/contracts/v2/MANIFEST.yaml'
+  - 'docs/research/executable-workflow/contracts/v2/README.md'
+  - 'docs/research/executable-workflow/contracts/v2/accepted-scenarios.md'
+  - 'docs/research/executable-workflow/contracts/v2/attempt.schema.json'
+  - 'docs/research/executable-workflow/contracts/v2/deadline-event.schema.json'
+  - 'docs/research/executable-workflow/contracts/v2/evidence-and-idempotency.md'
+  - 'docs/research/executable-workflow/contracts/v2/evidence-reference.schema.json'
+  - 'docs/research/executable-workflow/contracts/v2/examples/attempt.json'
+  - 'docs/research/executable-workflow/contracts/v2/examples/deadline-event.json'
+  - 'docs/research/executable-workflow/contracts/v2/examples/evidence-reference-superseding.json'
+  - 'docs/research/executable-workflow/contracts/v2/examples/evidence-reference.json'
+  - 'docs/research/executable-workflow/contracts/v2/examples/instance-human-script-human.json'
+  - 'docs/research/executable-workflow/contracts/v2/examples/instance.json'
+  - 'docs/research/executable-workflow/contracts/v2/examples/procedure-human-script-human.json'
+  - 'docs/research/executable-workflow/contracts/v2/examples/procedure.json'
+  - 'docs/research/executable-workflow/contracts/v2/examples/refusal-privilege-exceeds-profile.json'
+  - 'docs/research/executable-workflow/contracts/v2/examples/refusal-task-cancelled-during-attempt.json'
+  - 'docs/research/executable-workflow/contracts/v2/examples/refusal.json'
+  - 'docs/research/executable-workflow/contracts/v2/examples/transition-envelope.json'
+  - 'docs/research/executable-workflow/contracts/v2/instance.schema.json'
+  - 'docs/research/executable-workflow/contracts/v2/procedure.schema.json'
+  - 'docs/research/executable-workflow/contracts/v2/refusal-threat-matrix.md'
+  - 'docs/research/executable-workflow/contracts/v2/refusal.schema.json'
+  - 'docs/research/executable-workflow/contracts/v2/task-lifecycle-contract.md'
+  - 'docs/research/executable-workflow/contracts/v2/traceability.yaml'
+  - 'docs/research/executable-workflow/contracts/v2/transition-envelope.schema.json'
+  - 'tests/unit/t5179_ewcr_contracts_v2.bats'
+  - 'tools/ewcr-contracts-check.py'
+  - 'tools/ewcr-trace-check.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T10:58:39'
+    action: 'T-5179: filed with the operator''s decision (accept N-1, N-2 into contracts v2); criteria before dispatch'
+  - time: '2026-11-16T11:10:09'
+    action: 'T-5179: EWCR contracts v2 — acceptance scenarios N-1 and N-2, reason code privilege_exceeds_profile'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [ewcr, contracts]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 14
+  commits: 3
+  files_changed: 35
+  lines_added: 5043
+  lines_removed: 53
+  footprint_refreshed_at: '2026-11-16T10:14:26Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5179-ewcr-contracts-v2-add-acceptance-scenari.md
+generated_by: context-agent-hybrid
