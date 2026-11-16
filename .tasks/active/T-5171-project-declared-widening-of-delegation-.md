@@ -1,8 +1,18 @@
 ---
 id: T-5171
-name: "Project-declared WIDENING of delegation: let a project's recorded operator ruling make one criterion class (act-in-the-world) agent-closeable on measured evidence + reviewer green (010 T-3800)"
+name: "Project-declared WIDENING of delegation: let a project's recorded operator
+  ruling make one criterion class (act-in-the-world) agent-closeable on measured evidence
+  + reviewer green (010 T-3800)"
 description: >
-  010-termlink msg 1a3cdc2d (2026-11-15): their operator ruled (010 T-3800 Decisions, extending D-626) that the agent may close a task whose remaining act-in-the-world criterion it MEASURED as done (command + output recorded) AND an independent reviewer passed. lib/delegation.py keeps act-in-the-world operator-only always, with no bypass flag, so 3 of their 7 qualifying tasks (T-1632, T-2258, T-3685) went to partial-complete and the operator must tick evidence two reviewers already checked. T-3968 (closed) covered the opposite direction, a project NARROWING delegation. Question: should AEF let a project declare, in a committed policy file, a ruling that widens one class under stated conditions, with the ruling id cited on every tick?
+  010-termlink msg 1a3cdc2d (2026-11-15): their operator ruled (010 T-3800 Decisions,
+  extending D-626) that the agent may close a task whose remaining act-in-the-world
+  criterion it MEASURED as done (command + output recorded) AND an independent reviewer
+  passed. lib/delegation.py keeps act-in-the-world operator-only always, with no bypass
+  flag, so 3 of their 7 qualifying tasks (T-1632, T-2258, T-3685) went to partial-complete
+  and the operator must tick evidence two reviewers already checked. T-3968 (closed)
+  covered the opposite direction, a project NARROWING delegation. Question: should
+  AEF let a project declare, in a committed policy file, a ruling that widens one
+  class under stated conditions, with the ruling id cited on every tick?
 
 status: captured
 workflow_type: inception
@@ -13,8 +23,8 @@ components: []
 related_tasks: [T-3968, T-3557, T-3445]
 origin: {kind: "peer", source: "010-termlink", ref: "1a3cdc2d"}
 created: 2026-11-15T23:55:07Z
-last_update: 2026-11-15T23:55:07Z
-date_finished: null
+last_update: '2026-11-16T00:00:42Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -23,6 +33,16 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-11-16T00:00:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=112,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5171: Project-declared WIDENING of delegation: let a project's recorded operator ruling make one criterion class (act-in-the-world) agent-closeable on measured evidence + reviewer green (010 T-3800)
