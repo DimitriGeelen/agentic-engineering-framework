@@ -17,8 +17,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
 components: [lib/ask.py, web/blueprints/api.py, C-003, web/embeddings.py]
 related_tasks: []
@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-03T23:51:41Z
-last_update: '2026-11-15T07:30:24Z'
+last_update: 2026-11-16T07:14:10Z
 date_finished: 2026-11-15T07:16:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -151,6 +151,7 @@ cost_estimate_proposed:
     rationale: blast_radius=5 (4-components-medium-blast); tier=2 
       (workflow:build); effort=8 (lines=328,acs=7)
     rubric_sha: e4a00f38e801
+date_finalised: 2026-11-16T07:14:10Z
 ---
 
 # T-3786: Readers of the vector index delete and rebuild it on any transient error: _get_db() falls through to build_index(), which unlinks the live index and rebuilds in place (hours); a caller's timeout leaves it empty — our 2.5 GB index became 45 KB on 2026-10-03/04
@@ -179,7 +180,7 @@ cost_estimate_proposed:
       — `tests/unit/test_t3786_index_never_built_by_readers.py` 6/6; 85 tests that read the discovery/search code pass.
 
 ### Human
-- [ ] [REVIEW] Search and ask still work, and never rebuild the index from the page
+- [x] [REVIEW] Search and ask still work, and never rebuild the index from the page
   **Steps:**
   1. Open http://192.168.10.107:3000/search and search for "vector index"
   2. On the same page switch to the ask mode and ask "what is T-3786 about?"
@@ -214,6 +215,7 @@ cost_estimate_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+  **Reviewer verdict:** green V-20261116-91b8c0de — reviewer-judge-t-3786-r5-antigravity-565e4063c288:antigravity (rung rung-5-panel:antigravity), digest 679b0a045aaa; dispatch judge-t-3786-r5-antigravity-565e4063c288; evidence: .context/reviews/evidence/T-3786/AC1-judge-t-3786-r5-antigravity-565e4063c288.md, .context/working/judge-evidence/T-3786/01-search.png, .context/working/judge-evidence/T-3786/02-root.png, .context/working/judge-evidence/T-3786/03-health.png, .context/working/judge-evidence/T-3786/04-decisions.png, .context/working/judge-evidence/T-3786/05-learnings.png, .context/working/judge-evidence/T-3786/06-gaps.png, .context/working/judge-evidence/T-3786/07-api-learnings.png, .context/working/judge-evidence/T-3786/08-api-decisions.png, .context/working/judge-evidence/T-3786/09-search-ask.png, .context/working/judge-evidence/T-3786/10-search-conversations.png, .context/working/judge-evidence/T-3786/11-search-feedback-analytics.png, .context/working/judge-evidence/T-3786/12-patterns.png, .context/working/judge-evidence/T-3786/13-api-patterns.png, .context/working/judge-evidence/T-3786/14-graduation.png, .context/visual/T-3786/search@1024.png, .context/visual/T-3786/search@1440.png, .context/visual/T-3786/search@1920.png, .context/visual/T-3786/search-results@1024.png, .context/visual/T-3786/search-results@1440.png, .context/visual/T-3786/search-results@1920.png, .context/visual/T-3786/ask@1024.png, .context/visual/T-3786/ask@1440.png, .context/visual/T-3786/ask@1920.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 

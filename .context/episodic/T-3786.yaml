@@ -1,0 +1,238 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3786: Readers of the vector index delete and rebuild it on any transient error: _get_db() falls through to build_index(), which unlinks the live index and rebuilds in place (hours); a caller's timeout leaves it empty — our 2.5 GB index became 45 KB on 2026-10-03/04
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T07:14:39Z
+# ============================================================================
+
+task_id: T-3786
+task_name: "Readers of the vector index delete and rebuild it on any transient error: _get_db() falls through to build_index(), which unlinks the live index and rebuilds in place (hours); a caller's timeout leaves it empty — our 2.5 GB index became 45 KB on 2026-10-03/04"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-03T23:51:41Z
+completed: 2026-11-15T07:30:24Z
+duration_days: 43
+updates_count: 3
+first_commit: 2026-10-04T01:58:08+02:00
+last_commit: 2026-11-16T08:02:00+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  readers never build the vector index — _get_db raises IndexUnavailable instead of unlinking the live index and rebuilding in place; Watchtower discovery no longer starts a background build; build_index is atomic (build to .building, os.replace incl. manifest); API answers 503 with the remedy, fw ask exits 3; tests (live 2.5 GB index was found at 45 KB). vendored copies. remove the dead background-build helper from discovery; guard test refuses any builder call/import under web/blueprints; context, criteria ticked. vendor self. review criterion for the search/ask pages; recommendation GO. partial-complete — review handed to the operator. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). visual verification — search and ask walked in a browser, live index byte-identical before and after; per-width shots. reviewer verdict (antigravity seat antigravity, recorded by the runtime)
+
+# Key outcomes
+outcomes:
+  - '`_get_db()` never builds: when the existing index cannot be opened or is empty it raises IndexUnavailable (with the remedy `fw index reindex`) and leaves the file untouched'
+  - 'Watchtower''s discovery page no longer starts a background `build_index()`; it reports the index as unavailable with the remedy'
+  - '`build_index()` is atomic: it builds into `<db>.building` and swaps it (and its manifest) in with os.replace; a killed or failed build leaves the previous index and manifest intact'
+  - 'Tests: a reader against an unopenable/empty index raises and does not delete or rewrite it; a build that fails midway leaves the old index byte-identical; a successful build swaps the file and manifest'
+  - '[REVIEW] Search and ask still work, and never rebuild the index from the page'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/ask.py'
+  - '.agentic-framework/web/blueprints/api.py'
+  - '.agentic-framework/web/blueprints/discovery.py'
+  - '.agentic-framework/web/embeddings.py'
+  - '.context/episodic/T-3751.yaml'
+  - '.context/reviews/evidence/T-3786/01-search-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/01-search-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/01-search-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/01-search-judge-t-3786-r5-claude-code-f88082497687.png'
+  - '.context/reviews/evidence/T-3786/02-root-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/02-root-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/02-root-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/02-root-judge-t-3786-r5-claude-code-f88082497687.png'
+  - '.context/reviews/evidence/T-3786/03-health-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/03-health-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/04-decisions-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/04-decisions-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/05-health-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/05-health-judge-t-3786-r5-claude-code-f88082497687.png'
+  - '.context/reviews/evidence/T-3786/05-learnings-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/05-learnings-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/06-decisions-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/06-decisions-judge-t-3786-r5-claude-code-f88082497687.png'
+  - '.context/reviews/evidence/T-3786/06-gaps-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/06-gaps-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/07-api-learnings-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/07-api-learnings-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/07-learnings-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/07-learnings-judge-t-3786-r5-claude-code-f88082497687.png'
+  - '.context/reviews/evidence/T-3786/08-api-decisions-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/08-api-decisions-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/08-gaps-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/08-gaps-judge-t-3786-r5-claude-code-f88082497687.png'
+  - '.context/reviews/evidence/T-3786/09-api-learnings-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/09-api-learnings-judge-t-3786-r5-claude-code-f88082497687.png'
+  - '.context/reviews/evidence/T-3786/09-search-ask-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/09-search-ask-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/10-api-decisions-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/10-api-decisions-judge-t-3786-r5-claude-code-f88082497687.png'
+  - '.context/reviews/evidence/T-3786/10-search-conversations-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/10-search-conversations-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/11-search-ask-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/11-search-ask-judge-t-3786-r5-claude-code-f88082497687.png'
+  - '.context/reviews/evidence/T-3786/11-search-feedback-analytics-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/11-search-feedback-analytics-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/12-patterns-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/12-patterns-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/12-search-conversations-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/12-search-conversations-judge-t-3786-r5-claude-code-f88082497687.png'
+  - '.context/reviews/evidence/T-3786/13-api-patterns-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/13-api-patterns-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/14-graduation-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/14-graduation-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/14-search-feedback-analytics-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/14-search-feedback-analytics-judge-t-3786-r5-claude-code-f88082497687.png'
+  - '.context/reviews/evidence/T-3786/15-patterns-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/15-patterns-judge-t-3786-r5-claude-code-f88082497687.png'
+  - '.context/reviews/evidence/T-3786/16-api-patterns-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/16-api-patterns-judge-t-3786-r5-claude-code-f88082497687.png'
+  - '.context/reviews/evidence/T-3786/17-graduation-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/17-graduation-judge-t-3786-r5-claude-code-f88082497687.png'
+  - '.context/reviews/evidence/T-3786/AC1-judge-t-3786-r5-antigravity-256a00113ea2.md'
+  - '.context/reviews/evidence/T-3786/AC1-judge-t-3786-r5-antigravity-565e4063c288.md'
+  - '.context/reviews/evidence/T-3786/AC1-judge-t-3786-r5-antigravity-787c7503b715.md'
+  - '.context/reviews/evidence/T-3786/AC1-judge-t-3786-r5-claude-code-2aa46c050e99.md'
+  - '.context/reviews/evidence/T-3786/AC1-judge-t-3786-r5-claude-code-8c29bf82cd84.md'
+  - '.context/reviews/evidence/T-3786/AC1-judge-t-3786-r5-claude-code-bd4a81f89295.md'
+  - '.context/reviews/evidence/T-3786/AC1-judge-t-3786-r5-claude-code-f88082497687.md'
+  - '.context/reviews/evidence/T-3786/AC1-judge-t-3786-r5-codex-95c055cf9d85.md'
+  - '.context/reviews/evidence/T-3786/AC1-judge-t-3786-r5-codex-ccb262d7623b.md'
+  - '.context/reviews/evidence/T-3786/AC1-judge-t-3786-r5-codex-e64aea1c82fe.md'
+  - '.context/reviews/evidence/T-3786/AC1-judge-t-3786-r5-codex-fd227ac9706c.md'
+  - '.context/reviews/evidence/T-3786/ask@1024-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/ask@1024-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/ask@1024-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/ask@1440-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/ask@1440-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/ask@1440-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/ask@1920-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/ask@1920-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/ask@1920-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/myask-loaded@1024-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/myask-loaded@1440-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/myask-loaded@1920-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/mywalk-1-search-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/mywalk-2-ask-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/reviewer-ask-live@1024-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/reviewer-ask-live@1440-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/reviewer-ask-live@1920-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/reviewer-walk-1-search-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/reviewer-walk-2-ask-default-model-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/reviewer-walk-3-ask-qwen3-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/search-results@1024-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/search-results@1024-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/search-results@1024-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/search-results@1440-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/search-results@1440-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/search-results@1440-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/search-results@1920-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/search-results@1920-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/search-results@1920-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/search@1024-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/search@1024-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/search@1024-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/search@1440-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/search@1440-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/search@1440-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/search@1920-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/search@1920-judge-t-3786-r5-claude-code-8c29bf82cd84.png'
+  - '.context/reviews/evidence/T-3786/search@1920-judge-t-3786-r5-claude-code-bd4a81f89295.png'
+  - '.context/reviews/evidence/T-3786/walk-1-search-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/evidence/T-3786/walk-2-ask-judge-t-3786-r5-claude-code-2aa46c050e99.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-3786-readers-of-the-vector-index-delete-and-r.md'
+  - '.tasks/completed/T-3751-sidecar-circuit-project-level-minted-pro.md'
+  - 'lib/ask.py'
+  - 'tests/unit/test_t3786_index_never_built_by_readers.py'
+  - 'web/blueprints/api.py'
+  - 'web/blueprints/discovery.py'
+  - 'web/embeddings.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-04T01:58:08'
+    action: 'T-3786: readers never build the vector index — _get_db raises IndexUnavailable instead of unlinking the live index and rebuilding in place; Watchtower discovery no longer starts a background build; build_index is atomic (build to .building, os.replace incl. manifest); API answers 503 with the remedy, fw ask exits 3; tests (live 2.5 GB index was found at 45 KB)'
+  - time: '2026-10-04T01:58:11'
+    action: 'T-3786: vendored copies'
+  - time: '2026-11-15T08:14:44'
+    action: 'T-3786: remove the dead background-build helper from discovery; guard test refuses any builder call/import under web/blueprints; context, criteria ticked'
+  - time: '2026-11-15T08:14:52'
+    action: 'T-3786: vendor self'
+  - time: '2026-11-15T08:16:32'
+    action: 'T-3786: review criterion for the search/ask pages; recommendation GO'
+  - time: '2026-11-15T08:18:00'
+    action: 'T-3786: partial-complete — review handed to the operator'
+  - time: '2026-11-15T14:38:21'
+    action: 'T-3786: reviewer verdict'
+  - time: '2026-11-15T14:41:00'
+    action: 'T-3786: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-15T15:51:54'
+    action: 'T-3786: visual verification — search and ask walked in a browser, live index byte-identical before and after; per-width shots'
+  - time: '2026-11-15T17:10:42'
+    action: 'T-3786: reviewer verdict'
+  - time: '2026-11-15T17:13:26'
+    action: 'T-3786: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-15T17:18:07'
+    action: 'T-3786: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-15T21:56:21'
+    action: 'T-3786: reviewer verdict'
+  - time: '2026-11-15T21:58:39'
+    action: 'T-3786: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-15T22:02:59'
+    action: 'T-3786: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-16T07:56:30'
+    action: 'T-3786: reviewer verdict'
+  - time: '2026-11-16T07:59:04'
+    action: 'T-3786: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-16T08:02:00'
+    action: 'T-3786: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 18 commit(s), 60938 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 60938
+  commits: 19
+  files_changed: 127
+  lines_added: 1622
+  lines_removed: 266
+  footprint_refreshed_at: '2026-11-16T07:14:54Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3786-readers-of-the-vector-index-delete-and-r.md
+generated_by: context-agent-hybrid
