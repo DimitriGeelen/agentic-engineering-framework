@@ -8,12 +8,12 @@ description: >
   recommendation, so the panel has no coverage on this corpus. Give them a committed
   fixture arc + anchor task (or a served fixture project) so they always run.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [playwright, arcs]
-components: []
+components: [tests/playwright/arc_corpus.py, tests/playwright/arc_fixture.py, tests/playwright/conftest.py, tests/playwright/test_arc_close_recommendation_panel.py, tests/playwright/test_arc_review_route.py]
 related_tasks: [T-5160]
 origin: {kind: "agent"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -43,8 +43,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T23:09:55Z
-last_update: '2026-11-16T01:53:00Z'
-date_finished:
+last_update: 2026-11-16T02:09:00Z
+date_finished: 2026-11-16T02:09:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -414,3 +414,16 @@ timeout 1200 python3 -m pytest -q -p no:cacheprovider -rs tests/playwright/test_
 ### 2026-11-16T01:52:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-16T02:09:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-db6f9cbc
+- **Timestamp:** 2026-11-16T02:10:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

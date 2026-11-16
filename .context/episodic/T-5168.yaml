@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5168: Arc close-recommendation panel tests skip whenever no open arc has a CLOSE/KEEP-OPEN recommendation: give them a fixture arc
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T02:11:29Z
+# ============================================================================
+
+task_id: T-5168
+task_name: "Arc close-recommendation panel tests skip whenever no open arc has a CLOSE/KEEP-OPEN recommendation: give them a fixture arc"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-15T23:09:55Z
+completed: 2026-11-16T02:09:00Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-16T02:53:00+01:00
+last_commit: 2026-11-16T03:08:59+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context, criteria and verification before dispatch. arc close-recommendation panel tests run against a fixture project served by a second test server (tests/fixtures/arc-close-panel copied to a temp root); 7 tests no longer skip. fabric card for tests/playwright/arc_fixture.py; verification re-run by the parent (12 passed, 0 skipped)
+
+# Key outcomes
+outcomes:
+  - 'the 7 tests run without skipping and pass, against a fixture arc + anchor task carrying a CLOSE recommendation (and KEEP-OPEN where a test needs it)'
+  - 'the fixture never touches the real .context/arcs or .tasks of this repo (a served copy or a temporary project the test server reads), and is removed or isolated after the run'
+  - 'tests/playwright only (plus test fixtures); no product code changed'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fabric card for tests/playwright/arc_fixture.py; verification re-run by the parent (12 passed, 0 skipped)'
+    source: git-mined
+  - description: 'arc close-recommendation panel tests run against a fixture project served by a second test server (tests/fixtures/arc-close-panel copied to a temp root); 7 tests no longer skip'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-16 — where the fixture arc lives and what serves it'
+    chose: 'a committed fixture under `tests/fixtures/arc-close-panel/` (one in-progress arc, an anchor inception recommending GO, a close-out task recommending CLOSE), copied at run time into a temporary directory laid out as a project and served by a second Watchtower on a free port with `PROJECT_ROOT` set to that copy (`tests/playwright/arc_fixture.py`; conftest fixtures `arc_fixture_server`, `arc_fixture_url`, `close_rec_arc`, `fixture_page`). The server is accepted only when `/api/_identity` reports the temporary directory and the pid we started; it is terminated and the directory removed at session end.'
+    rationale: '`web/shared.py` fixes `PROJECT_ROOT` once at import, so one server serves one project; the main test server on `FW_TEST_PORT` must keep serving the live corpus for the other tests. A second process is the only way to show different arc data without changing product code or the real `.context/arcs` and `.tasks`. The 7 tests use `fixture_page`, which does not start the main test server. The fixture arc is read by `arc_corpus` (not `web/`), so the expected verdict and task id still come from an independent parser.'
+    alternatives_rejected: ['(a) writing a fixture arc and tasks into the real `.context/arcs` and `.tasks` for the run: it pollutes the corpus every audit and page reads, and a killed run leaves it behind. (b) serving the committed fixture directory directly: the server writes into its project root (`.context/working/.fw-secret-key`, caches), which would dirty the checkout. (c) restarting the main test server with another root: conftest''s identity check refuses a server whose root differs, and the remaining tests in the same file need the live corpus. - **Not built:** a KEEP-OPEN fixture arc. No test asserts on KEEP-OPEN; the verdict-badge test compares the badge to whatever the fixture''s close-out task says.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-playwright-arc_fixture.yaml'
+  - '.tasks/active/T-5168-arc-close-recommendation-panel-tests-ski.md'
+  - 'tests/fixtures/arc-close-panel/README.md'
+  - 'tests/fixtures/arc-close-panel/arcs/fixture-close-panel.yaml'
+  - 'tests/fixtures/arc-close-panel/tasks/active/T-900002-fixture-arc-close-out.md'
+  - 'tests/fixtures/arc-close-panel/tasks/completed/T-900001-fixture-arc-anchor-inception.md'
+  - 'tests/playwright/arc_corpus.py'
+  - 'tests/playwright/arc_fixture.py'
+  - 'tests/playwright/conftest.py'
+  - 'tests/playwright/test_arc_close_recommendation_panel.py'
+  - 'tests/playwright/test_arc_review_route.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T02:53:00'
+    action: 'T-5168: context, criteria and verification before dispatch'
+  - time: '2026-11-16T03:04:24'
+    action: 'T-5168: arc close-recommendation panel tests run against a fixture project served by a second test server (tests/fixtures/arc-close-panel copied to a temp root); 7 tests no longer skip'
+  - time: '2026-11-16T03:08:59'
+    action: 'T-5168: fabric card for tests/playwright/arc_fixture.py; verification re-run by the parent (12 passed, 0 skipped)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 179 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [playwright, arcs]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 179
+  commits: 4
+  files_changed: 14
+  lines_added: 492
+  lines_removed: 43
+  footprint_refreshed_at: '2026-11-16T02:11:41Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5168-arc-close-recommendation-panel-tests-ski.md
+generated_by: context-agent-hybrid
