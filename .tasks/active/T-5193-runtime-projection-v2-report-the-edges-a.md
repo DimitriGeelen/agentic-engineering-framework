@@ -8,6 +8,11 @@ description: >
   nothing records which edges were taken. Keep flow aef:uid as provenance outside
   the hashed procedure and report traversed edges by it in /api/instances. A breaking
   schema change bumps runtime_projection_version and is announced to 832.
+  Also in this version bump (832 msg 4fe08e05): /api/instances `refusals` today lists
+  unparseable task FILES {task: file name, reason}, while the designer reads `refusals`
+  as TRANSITION refusals {task id, node, rule/reason_code, target} and draws them on the
+  map. Rename ours to `unplaced`; serve transition refusals under `refusals` only once
+  AEF has an instance runtime that records them (refusal.schema.json v2 reason_code).
 
 status: captured
 workflow_type: design
