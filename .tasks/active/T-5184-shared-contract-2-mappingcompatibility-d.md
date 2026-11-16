@@ -99,9 +99,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The mapping covers every BPMN element type and attribute the designer 0.43.0 export emits, each mapped to a procedure field or marked "not represented", with the loss stated.
-- [ ] Every required procedure.schema.json field has a stated source in the BPMN export, or is marked "set by AEF at ratification" with the step that sets it.
-- [ ] A worked example procedure JSON validates against contracts v2 procedure.schema.json (test), and contracts v1/v2 checks stay clean.
+- [x] The mapping covers every BPMN element type and attribute the designer 0.43.0 export emits, each mapped to a procedure field or marked "not represented", with the loss stated.
+- [x] Every required procedure.schema.json field has a stated source in the BPMN export, or is marked "set by AEF at ratification" with the step that sets it.
+- [x] A worked example procedure JSON validates against contracts v2 procedure.schema.json (test), and contracts v1/v2 checks stay clean.
 - [ ] 832 is sent the draft with the path and commit.
 
 ### Human
@@ -288,6 +288,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5184_designer_mapping.py -q > /tmp/.t5184 2>&1 && grep -q passed /tmp/.t5184
+python3 tools/ewcr-contracts-check.py
+python3 tools/ewcr-contracts-check.py --contracts-version 2
+python3 vendor/designer/validate-workflow-0.43.0.py docs/research/executable-workflow/contracts/v2/examples-mapping/human-script-human.bpmn
 
 ## RCA
 

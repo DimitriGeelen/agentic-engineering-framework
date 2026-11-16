@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_human-script-human"
+                  exporter="aef-workflow-designer"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <!--Hand-built by T-5184 in the shape buildBpmnXml (designer 0.43.0) writes. Not saved from the designer.-->
+
+  <bpmn:collaboration id="Collaboration_human-script-human">
+    <bpmn:participant id="Pool_human-script-human" name="human-script-human" processRef="Process_human-script-human"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_human-script-human" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="human-script-human" version="1.0.0" schemaVersion="2" title="Human gate, script, human gate" kind="work-plan"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="human" name="Human · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="130"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_1_authorise</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_2_review</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="framework" name="Framework · Authority">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="frw" authority="authority" height="130"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>frw_1_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_2_run</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>frw_3_end</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="320"/>
+        </bpmn:extensionElements>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="frw_1_start" name="Start">
+      <bpmn:extensionElements>
+        <aef:uid value="n_1a0c3e01"/>
+        <aef:position x="90.0" y="207.0"/>
+        <aef:meta triggeredBy="operator binds a task" outcome="procedure_started"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="hum_1_authorise" name="Authorise work">
+      <bpmn:extensionElements>
+        <aef:uid value="n_2b1d4f02"/>
+        <aef:position x="170.0" y="63.0"/>
+        <aef:meta authority="sovereignty" outcome="work_authorised"/>
+        <aef:decisionOutputs>approve, decline</aef:decisionOutputs>
+        <aef:io>
+          <aef:input name="task_id" type="string" required="true"/>
+          <aef:output name="authorisation" type="string"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_1</bpmn:incoming>
+      <bpmn:incoming>flow_6</bpmn:incoming>
+      <bpmn:outgoing>flow_2</bpmn:outgoing>
+      <bpmn:outgoing>flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:scriptTask id="frw_2_run" name="Run script">
+      <bpmn:extensionElements>
+        <aef:uid value="n_3c2e5a03"/>
+        <aef:position x="340.0" y="193.0"/>
+        <aef:meta tier="2" authority="authority" actionRef="script.registered.example.v1" capabilityProfileRef="cap.binding.example-script.v1" determinism="deterministic" executionProfileRef="exec.deterministic.v1" maxAttempts="0" outcome="script_evidence_produced" timeout="PT10M"/>
+        <aef:endpoint>fw report write example --task ${task_id}</aef:endpoint>
+        <aef:io>
+          <aef:input name="task_id" type="string" required="true"/>
+          <aef:output name="script_report" type="file"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_2</bpmn:incoming>
+      <bpmn:outgoing>flow_4</bpmn:outgoing>
+    </bpmn:scriptTask>
+
+    <bpmn:userTask id="hum_2_review" name="Review evidence">
+      <bpmn:extensionElements>
+        <aef:uid value="n_4d3f6b04"/>
+        <aef:position x="510.0" y="63.0"/>
+        <aef:meta authority="sovereignty" outcome="evidence_reviewed"/>
+        <aef:decisionOutputs>accept, reject</aef:decisionOutputs>
+        <aef:io>
+          <aef:input name="script_report" type="file" required="true"/>
+          <aef:output name="decision" type="string"/>
+        </aef:io>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_4</bpmn:incoming>
+      <bpmn:outgoing>flow_5</bpmn:outgoing>
+      <bpmn:outgoing>flow_6</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:endEvent id="frw_3_end" name="Closed">
+      <bpmn:extensionElements>
+        <aef:uid value="n_5e4a7c05"/>
+        <aef:position x="700.0" y="207.0"/>
+        <aef:meta terminalKind="success" state="procedure_closed"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>flow_3</bpmn:incoming>
+      <bpmn:incoming>flow_5</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="flow_1" sourceRef="frw_1_start" targetRef="hum_1_authorise">
+      <bpmn:extensionElements>
+        <aef:uid value="e_6f5b8d06"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_2" name="approve" sourceRef="hum_1_authorise" targetRef="frw_2_run">
+      <bpmn:extensionElements>
+        <aef:uid value="e_7a6c9e07"/>
+      </bpmn:extensionElements>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">decision == "approve"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_3" name="decline" sourceRef="hum_1_authorise" targetRef="frw_3_end">
+      <bpmn:extensionElements>
+        <aef:uid value="e_8b7daf08"/>
+      </bpmn:extensionElements>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">decision == "decline"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_4" sourceRef="frw_2_run" targetRef="hum_2_review">
+      <bpmn:extensionElements>
+        <aef:uid value="e_9c8eb009"/>
+      </bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_5" name="accept" sourceRef="hum_2_review" targetRef="frw_3_end">
+      <bpmn:extensionElements>
+        <aef:uid value="e_ad9fc10a"/>
+      </bpmn:extensionElements>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">decision == "accept"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+
+    <bpmn:sequenceFlow id="flow_6" name="reject" sourceRef="hum_2_review" targetRef="hum_1_authorise">
+      <bpmn:extensionElements>
+        <aef:uid value="e_bea0d20b"/>
+        <aef:routing>
+          <aef:waypoint x="565.0" y="40.0"/>
+          <aef:waypoint x="225.0" y="40.0"/>
+        </aef:routing>
+      </bpmn:extensionElements>
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">decision == "reject"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_human-script-human">
+    <bpmndi:BPMNPlane id="BPMNPlane_human-script-human" bpmnElement="Collaboration_human-script-human">
+      <bpmndi:BPMNShape id="BPMNShape_frw_1_start" bpmnElement="frw_1_start">
+        <dc:Bounds x="90.0" y="207.0" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_hum_1_authorise" bpmnElement="hum_1_authorise">
+        <dc:Bounds x="170.0" y="63.0" width="110" height="64"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_frw_2_run" bpmnElement="frw_2_run">
+        <dc:Bounds x="340.0" y="193.0" width="110" height="64"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_hum_2_review" bpmnElement="hum_2_review">
+        <dc:Bounds x="510.0" y="63.0" width="110" height="64"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_frw_3_end" bpmnElement="frw_3_end">
+        <dc:Bounds x="700.0" y="207.0" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="BPMNEdge_flow_1" bpmnElement="flow_1">
+        <di:waypoint x="126.0" y="225.0"/>
+        <di:waypoint x="225.0" y="127.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_flow_2" bpmnElement="flow_2">
+        <di:waypoint x="280.0" y="95.0"/>
+        <di:waypoint x="395.0" y="193.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_flow_3" bpmnElement="flow_3">
+        <di:waypoint x="225.0" y="127.0"/>
+        <di:waypoint x="718.0" y="243.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_flow_4" bpmnElement="flow_4">
+        <di:waypoint x="450.0" y="225.0"/>
+        <di:waypoint x="565.0" y="127.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_flow_5" bpmnElement="flow_5">
+        <di:waypoint x="620.0" y="95.0"/>
+        <di:waypoint x="718.0" y="207.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="BPMNEdge_flow_6" bpmnElement="flow_6">
+        <di:waypoint x="565.0" y="63.0"/>
+        <di:waypoint x="565.0" y="40.0"/>
+        <di:waypoint x="225.0" y="40.0"/>
+        <di:waypoint x="225.0" y="63.0"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

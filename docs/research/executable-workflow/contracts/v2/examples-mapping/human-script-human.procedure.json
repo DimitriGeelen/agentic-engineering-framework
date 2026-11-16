@@ -1,0 +1,100 @@
+{
+  "id": "human-script-human",
+  "version": "1.0.0",
+  "status": "draft",
+  "content_hash": "sha256:5aa2061bfbeb4cd0761465c0499fb9021a146c6f680e06b9bdd3ed258e87f4f7",
+  "start_node": "n_1a0c3e01",
+  "terminal_nodes": [
+    "n_5e4a7c05"
+  ],
+  "nodes": [
+    {
+      "uid": "n_1a0c3e01",
+      "kind": "gateway",
+      "outcome": "procedure_started"
+    },
+    {
+      "uid": "n_2b1d4f02",
+      "kind": "human_gate",
+      "outcome": "work_authorised",
+      "inputs": [
+        "task_id"
+      ],
+      "outputs": [
+        "authorisation"
+      ],
+      "human_decision_map": {
+        "approve": "n_3c2e5a03",
+        "decline": "n_5e4a7c05"
+      }
+    },
+    {
+      "uid": "n_3c2e5a03",
+      "kind": "script",
+      "outcome": "script_evidence_produced",
+      "inputs": [
+        "task_id"
+      ],
+      "outputs": [
+        "script_report"
+      ],
+      "action_ref": "script.registered.example.v1",
+      "execution_profile_ref": "exec.deterministic.v1",
+      "capability_profile_ref": "cap.binding.example-script.v1",
+      "timeout": "PT10M",
+      "retry": {
+        "max_attempts": 0
+      }
+    },
+    {
+      "uid": "n_4d3f6b04",
+      "kind": "human_gate",
+      "outcome": "evidence_reviewed",
+      "inputs": [
+        "script_report"
+      ],
+      "outputs": [
+        "decision"
+      ],
+      "human_decision_map": {
+        "accept": "n_5e4a7c05",
+        "reject": "n_2b1d4f02"
+      }
+    },
+    {
+      "uid": "n_5e4a7c05",
+      "kind": "gateway",
+      "outcome": "procedure_closed"
+    }
+  ],
+  "edges": [
+    {
+      "from": "n_1a0c3e01",
+      "to": "n_2b1d4f02"
+    },
+    {
+      "from": "n_2b1d4f02",
+      "to": "n_3c2e5a03",
+      "guard": "decision == \"approve\""
+    },
+    {
+      "from": "n_2b1d4f02",
+      "to": "n_5e4a7c05",
+      "guard": "decision == \"decline\""
+    },
+    {
+      "from": "n_3c2e5a03",
+      "to": "n_4d3f6b04"
+    },
+    {
+      "from": "n_4d3f6b04",
+      "to": "n_5e4a7c05",
+      "guard": "decision == \"accept\""
+    },
+    {
+      "from": "n_4d3f6b04",
+      "to": "n_2b1d4f02",
+      "guard": "decision == \"reject\""
+    }
+  ]
+}
