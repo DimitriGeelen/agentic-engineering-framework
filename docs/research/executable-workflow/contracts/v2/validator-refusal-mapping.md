@@ -1,7 +1,7 @@
 # Validator codes ↔ runtime refusal codes (shared contract 3)
 
 **Task:** T-5189 · **Pairing:** shared contract 3, validation/refusal (T-5183; 832 T-1425) ·
-**Status:** draft for 832 to check · **Machine-readable twin:** `validator-refusal-mapping.yaml`
+**Status:** reviewed by 832 (msg afe9ff0c, 2026-11-16); corrections applied in T-5191 · **Machine-readable twin:** `validator-refusal-mapping.yaml`
 
 This file sits beside contracts v2 but is **not part of the frozen set**: it is not listed in
 `MANIFEST.yaml`, and no contracts v1/v2 file was changed to write it.
@@ -32,29 +32,28 @@ validator emits too and are listed so the set is complete. Codes are emitted as 
 only (checked: every `err`/`warn`/`info` call passes a string constant); `--strict` raises
 some `W-` codes to errors but keeps their names, so it adds no codes.
 
-Rows marked **\*** are **inferred**: the source does not state the link, and I reasoned it
-from what the code checks and what the refusal guards. They are listed at the end and are
-the rows 832 should look at hardest.
+The draft marked six links as inferred (the source does not state them). 832 checked all six
+against the validator's own rule texts; their verdicts are applied below and recorded at the end.
 
 ## Table A — runtime reason_codes
 
 | reason_code | What it refuses | Prevented by | Why |
 |---|---|---|---|
-| `unratified_procedure` * | instance creation from a procedure no human has ratified | `E-WORKFLOW-KIND`, `E-XML-WORKFLOW-KIND`, `W-XML-NO-WORKFLOWMETA` | §13 #1 (architecture-c9070637.md:911). Only the kind marker is design-time: a map whose kind is invalid or undeclared cannot be told apart from documentation, so the runtime must treat it as not a ratifiable procedure. A valid executable map is still unratified until a human ratifies it; that refusal stays runtime-only. |
+| `unratified_procedure` | instance creation from a procedure no human has ratified | `E-WORKFLOW-KIND`, `E-XML-WORKFLOW-KIND` | §13 #1 (architecture-c9070637.md:911). Only the kind marker is design-time: a map whose kind is invalid or undeclared cannot be told apart from documentation, so the runtime must treat it as not a ratifiable procedure. A valid executable map is still unratified until a human ratifies it; that refusal stays runtime-only. |
 | `unresolved_reference` | a reference that does not resolve (action, profile, node, field, compensation) before dispatch | `E-EDGE-DANGLING`, `E-NODE-LANE`, `E-SCOPEOF-DANGLING`, `E-UID-DUP`, `E-XML-FLOW-DANGLING`, `E-XML-ID-DUP`, `E-XML-IO-PREFIX-UNDECLARED`, `E-XML-LANEREF-DANGLING`, `E-XML-UID-DUP`, `W-XML-GW-DEFAULT-NOT-OWN`, `W-XML-IO-FIELD-UNKNOWN`, `W-XML-IO-MATCH-UNRESOLVED` | §13 #2 (architecture-c9070637.md:912); evidence-and-idempotency.md:164 (compensation on a node that declares none). The validator catches dangling or ambiguous references inside the map and against the field catalog. It does not check action or capability-profile references, the main subject of §13 #2; those stay runtime-only. |
-| `human_gate_skipped` * | an actor passing a human gate without an admitted human envelope | `E-AUTHORITY`, `E-INCEPTION-NOT-SOVEREIGN`, `E-META-AUTHORITY`, `E-NODE-LANE`, `E-XML-AUTHORITY`, `E-XML-LANE-AUTHORING-DEFAULT`, `E-XML-META-AUTHORITY`, `E-XML-NODE-UNASSIGNED`, `W-LANE-NO-OWNER`, `W-TYPE-LANE-MISMATCH`, `W-XML-LANE-NO-AUTHORITY` | §13 #3 (architecture-c9070637.md:913); task-lifecycle-contract.md:102. A step with no derivable authority must be treated as gated, so an agent completing it is refused; the authority findings remove that cause. An agent deliberately passing a correctly declared gate is runtime-only. |
+| `human_gate_skipped` | an actor passing a human gate without an admitted human envelope | `E-AUTHORITY`, `E-INCEPTION-NOT-SOVEREIGN`, `E-META-AUTHORITY`, `E-NODE-LANE`, `E-XML-AUTHORITY`, `E-XML-LANE-AUTHORING-DEFAULT`, `E-XML-META-AUTHORITY`, `E-XML-NODE-UNASSIGNED`, `W-LANE-NO-OWNER`, `W-TYPE-LANE-MISMATCH`, `W-XML-LANE-NO-AUTHORITY` | §13 #3 (architecture-c9070637.md:913); task-lifecycle-contract.md:102. A step with no derivable authority must be treated as gated, so an agent completing it is refused; the authority findings remove that cause. An agent deliberately passing a correctly declared gate is runtime-only. |
 | `scope_mismatch` | work outside the pinned repository/worktree, or a bound task no longer in active/ | runtime-only | §13 #4 (architecture-c9070637.md:914); task-lifecycle-contract.md:35-38; accepted-scenarios.md:47. The map has no repository, worktree or task binding to check. |
 | `missing_typed_input` | advancement when a declared typed input is absent, whatever the worker claims | `E-XML-IO-EXPECT-CONTRADICTS`, `E-XML-IO-MATCH-MISSING`, `W-IO-INPUT`, `W-XML-IO-FIELD-ENTITY`, `W-XML-IO-INCOMPLETE` | §13 #5 (architecture-c9070637.md:915). W-IO-INPUT finds a required input with no upstream producer; the io findings find inputs that are untyped, sourceless, of another object or unsatisfiable. A worker that simply fails to produce a declared output is runtime-only. |
 | `unmeasured_component_scope` | treating unmeasured component scope as zero impact | runtime-only | §13 #6 (architecture-c9070637.md:916). The validator has no component-scope model; aef.constituents is composite-node metadata, not a Component Fabric measurement. |
 | `duplicate_delivery` | a second delivery of an already-consumed attempt or result | runtime-only | §13 #7 (architecture-c9070637.md:917); evidence-and-idempotency.md:127,152. Delivery is a runtime event; a map cannot contain it. |
-| `capability_unsupported` * | a step the bound provider cannot perform (no silent substitution) | `E-NODE-TYPE`, `E-XML-NODE-TYPE` | §13 #8 (architecture-c9070637.md:918). Only the node-type vocabulary is design-time: an element no executor knows can never be performed. Provider capability itself is resolved at binding time and is runtime-only. |
+| `capability_unsupported` | a step the bound provider cannot perform (no silent substitution) | `E-NODE-TYPE`, `E-XML-NODE-TYPE` | §13 #8 (architecture-c9070637.md:918). Only the node-type vocabulary is design-time: an element no executor knows can never be performed. Provider capability itself is resolved at binding time and is runtime-only. |
 | `direct_state_mutation` | state changed outside an admitted envelope (agent edit, Watchtower write, deadline replay) | runtime-only | §13 #11, #17, #20 (architecture-c9070637.md:921,927,930); refusal-threat-matrix.md ZA-3, ZA-5. A map describes no state writes. |
 | `ambiguous_identity` | a request carrying only shared host identity | runtime-only | §13 #12 (architecture-c9070637.md:922). Requester identity exists only at run time. |
 | `task_hash_drift` | advancement after the bound task changed between gates or during an attempt | runtime-only | §13 #13 (architecture-c9070637.md:923); accepted-scenarios.md:46 (N-1). The task binding and its hash exist only at run time. |
 | `policy_or_capability_drift` | an attempt whose policy or capability changed since ratification | runtime-only | §13 #15 (architecture-c9070637.md:925). Drift is a difference between two runtime moments; one map has no second moment. |
 | `bypass_input` | an env flag or --force-equivalent presented to cross the runner boundary | runtime-only | §13 #16 (architecture-c9070637.md:926); task-lifecycle-contract.md:106. Inputs are presented at run time. |
 | `cancellation_in_effect` | advancement after the instance or bound task was cancelled | runtime-only | §13 #18 (architecture-c9070637.md:928); accepted-scenarios.md:45 (N-1). Cancellation is a runtime event. |
-| `stale_position` * | a proposal made against a ledger position that is no longer the head (the loser of a race) | `W-GW-AMBIGUOUS`, `W-XML-GW-AMBIGUOUS`, `W-XML-GW-BRANCH-UNCONDITIONED` | §13 #19 (architecture-c9070637.md:929); evidence-and-idempotency.md:95,144. An exclusive gateway with more than one unconditioned branch lets two proposals advance one position along different edges; one of them must lose. Races between actors are runtime-only. |
+| `stale_position` | a proposal made against a ledger position that is no longer the head (the loser of a race) | runtime-only | §13 #19 (architecture-c9070637.md:929); evidence-and-idempotency.md:95,144. A ledger race (a non-head position, or two payloads for one attempt). Two actors can produce it on a fully conditioned gateway too, so no design-time finding prevents it (832 review). |
 | `command_substitution` | an action that escapes its registered argv to a shell string | runtime-only | §13 #4, #16 (architecture-c9070637.md:914,926); refusal-threat-matrix.md CL-6, MS-5. The validator does not read script contracts or arguments. |
 | `deadline_expired` | advancement after a recorded deadline passed | runtime-only | §13 #17 (architecture-c9070637.md:927). Deadlines are ledgered runtime events; the map declares none the validator checks. |
 | `privilege_exceeds_profile` | a resolved secret binding that can do more than the node's capability profile allows | runtime-only | N-2 (accepted-scenarios.md:86). Bindings resolve at run time; the validator reads no capability profile or binding. |
@@ -69,9 +68,9 @@ the rows 832 should look at hardest.
 | `E-NOT-MAPPING` | the YAML top level is not a mapping | design-only |
 | `E-TOPLEVEL-MISSING` | a required top-level key is missing | design-only |
 | `E-XML-STRUCTURE` | no <bpmn:definitions> containing a <bpmn:process> | design-only |
-| `E-WORKFLOW-KIND` * | workflow kind is not in the closed kind vocabulary (YAML) | `unratified_procedure` |
-| `E-XML-WORKFLOW-KIND` * | workflow kind is not in the closed kind vocabulary (XML) | `unratified_procedure` |
-| `W-XML-NO-WORKFLOWMETA` * | no <aef:workflowMeta>: no id of its own and no kind | `unratified_procedure` |
+| `E-WORKFLOW-KIND` | workflow kind is not in the closed kind vocabulary (YAML) | `unratified_procedure` |
+| `E-XML-WORKFLOW-KIND` | workflow kind is not in the closed kind vocabulary (XML) | `unratified_procedure` |
+| `W-XML-NO-WORKFLOWMETA` | no <aef:workflowMeta>: no id of its own and no kind | design-only |
 | `E-LANES-EMPTY` | no lane declared (YAML) | design-only |
 | `E-XML-LANES-EMPTY` | no <bpmn:lane> declared (XML) | design-only |
 | `E-LANE-FIELD` | a lane is not a mapping or misses a required field | design-only |
@@ -88,14 +87,14 @@ the rows 832 should look at hardest.
 | `E-XML-NODE-UNASSIGNED` | a flow node is in no lane, so it has no authority-of-record | `human_gate_skipped` |
 | `W-XML-LANE-NO-AUTHORITY` | a lane declares no authority, so its tasks' owner cannot be derived | `human_gate_skipped` |
 | `W-LANE-NO-OWNER` | a lane's authority names no owner, so the task has no derivable owner | `human_gate_skipped` |
-| `W-TYPE-LANE-MISMATCH` * | the node type implies a performer the lane's authority contradicts (lane wins) | `human_gate_skipped` |
+| `W-TYPE-LANE-MISMATCH` | the node type implies a performer the lane's authority contradicts (lane wins) | `human_gate_skipped` |
 | `W-XML-AUTHORITY-DEFAULT-MISMATCH` | a node's authority overrides its lane's authoringDefault (recorded, legitimate) | design-only |
-| `E-NODE-TYPE` * | unknown node type (YAML) | `capability_unsupported` |
-| `E-XML-NODE-TYPE` * | unknown flow-node element (XML) | `capability_unsupported` |
+| `E-NODE-TYPE` | unknown node type (YAML) | `capability_unsupported` |
+| `E-XML-NODE-TYPE` | unknown flow-node element (XML) | `capability_unsupported` |
 | `E-NODE-LANE` | a node's lane does not match any lane id | `unresolved_reference`, `human_gate_skipped` |
-| `E-UID-DUP` * | a uid is used more than once (YAML) | `unresolved_reference` |
-| `E-XML-ID-DUP` * | a bpmn:id is not unique | `unresolved_reference` |
-| `E-XML-UID-DUP` * | an aef:uid is not unique | `unresolved_reference` |
+| `E-UID-DUP` | a uid is used more than once (YAML) | `unresolved_reference` |
+| `E-XML-ID-DUP` | a bpmn:id is not unique | `unresolved_reference` |
+| `E-XML-UID-DUP` | an aef:uid is not unique | `unresolved_reference` |
 | `E-EDGE-DANGLING` | an edge endpoint does not resolve to a node uid | `unresolved_reference` |
 | `E-XML-FLOW-DANGLING` | a sequence-flow endpoint does not resolve to a flow node | `unresolved_reference` |
 | `E-XML-LANEREF-DANGLING` | a lane's flowNodeRef does not resolve to a flow node | `unresolved_reference` |
@@ -110,15 +109,15 @@ the rows 832 should look at hardest.
 | `W-XML-IO-MATCH-UNRESOLVED` | a match field has neither fieldRef nor path | `unresolved_reference` |
 | `W-XML-GW-DEFAULT-NOT-OWN` | a gateway's default is not one of its own outgoing flows | `unresolved_reference` |
 | `W-IO-INPUT` | a required input has no upstream node emitting a matching output | `missing_typed_input` |
-| `W-XML-IO-INCOMPLETE` * | an object io lacks typeRef, source/target system or operation | `missing_typed_input` |
-| `W-XML-IO-FIELD-ENTITY` * | an io field belongs to another object in the catalog | `missing_typed_input` |
-| `E-XML-IO-EXPECT-CONTRADICTS` * | an aef:expect requires a value the attribute's own rule forbids | `missing_typed_input` |
-| `E-XML-IO-MATCH-MISSING` * | an instance-changing operation names no match field (acts on every instance) | `missing_typed_input` |
+| `W-XML-IO-INCOMPLETE` | an object io lacks typeRef, source/target system or operation | `missing_typed_input` |
+| `W-XML-IO-FIELD-ENTITY` | an io field belongs to another object in the catalog | `missing_typed_input` |
+| `E-XML-IO-EXPECT-CONTRADICTS` | an aef:expect requires a value the attribute's own rule forbids | `missing_typed_input` |
+| `E-XML-IO-MATCH-MISSING` | an instance-changing operation names no match field (acts on every instance) | `missing_typed_input` |
 | `W-XML-IO-MISSING` | steps carry no io at all, so nothing they read or write is recorded | design-only |
 | `W-XML-IO-EXPECT-REDUNDANT` | an aef:expect repeats the catalog's own pattern | design-only |
-| `W-GW-AMBIGUOUS` * | an exclusive gateway has more than one unconditioned outgoing edge (YAML) | `stale_position` |
-| `W-XML-GW-AMBIGUOUS` * | an exclusive gateway has more than one unconditioned outgoing flow (XML) | `stale_position` |
-| `W-XML-GW-BRANCH-UNCONDITIONED` * | a deciding gateway branch has no condition and is not the default | `stale_position` |
+| `W-GW-AMBIGUOUS` | an exclusive gateway has more than one unconditioned outgoing edge (YAML) | design-only |
+| `W-XML-GW-AMBIGUOUS` | an exclusive gateway has more than one unconditioned outgoing flow (XML) | design-only |
+| `W-XML-GW-BRANCH-UNCONDITIONED` | a deciding gateway branch has no condition and is not the default | design-only |
 | `W-GW-OUTGOING` | an exclusive gateway has fewer than two outgoing edges (YAML) | design-only |
 | `W-XML-GW-OUTGOING` | an exclusive gateway has fewer than two outgoing flows (XML) | design-only |
 | `W-PGW-CONDITION` | a parallel fork's outgoing edge carries an ignored condition (YAML) | design-only |
@@ -144,43 +143,39 @@ the rows 832 should look at hardest.
 | `I-XML-LANE-GEOMETRY-SKIP` | info: lane/geometry agreement not evaluated (nodes carry no position) | design-only |
 | `I-XML-LANE-CAPACITY-SKIP` | info: lane capacity not evaluated (unknown node occupancy) | design-only |
 
-## Inferred links (\*) — please check
+## 832's review of the six inferred links (msg afe9ff0c, 2026-11-16)
 
-1. **`unratified_procedure` ← kind codes** (`E-WORKFLOW-KIND`, `E-XML-WORKFLOW-KIND`,
-   `W-XML-NO-WORKFLOWMETA`). The kind marker separates documentation maps from plans of
-   actionable work. I read an invalid or missing kind as a map the runtime cannot accept as
-   a procedure, so it is refused as never ratified. Ratification itself is not checkable at
-   design time.
-2. **`human_gate_skipped` ← `W-TYPE-LANE-MISMATCH`**. The node type says a human performs
-   the step, the lane says otherwise, and the lane wins. I read this as an author's intended
-   gate that the runtime would not hold, so an author who fixes it either moves the step to
-   a human lane or retypes it. The other authority codes are stated links (authority-of-record,
-   mapping-v1 §3) and are not marked.
-3. **`capability_unsupported` ← unknown node type** (`E-NODE-TYPE`, `E-XML-NODE-TYPE`). An
-   element no executor knows can never be performed. The nearest runtime route is "cannot do
-   this, no silent substitution". `unresolved_reference` is the other candidate.
-4. **`unresolved_reference` ← duplicate ids** (`E-UID-DUP`, `E-XML-ID-DUP`,
-   `E-XML-UID-DUP`). A reference to a non-unique id resolves to two elements, which I treat
-   as unresolved.
-5. **`missing_typed_input` ← io codes** (`W-XML-IO-INCOMPLETE`, `W-XML-IO-FIELD-ENTITY`,
-   `E-XML-IO-EXPECT-CONTRADICTS`, `E-XML-IO-MATCH-MISSING`). Each leaves a declared input
-   untyped, sourceless, of the wrong object, unsatisfiable, or (match) without the key that
-   picks the instance. `W-IO-INPUT` is the direct, stated link and is not marked.
-   `W-XML-IO-MISSING` is mapped design-only: a step with no io declares no input, so there
-   is nothing the runtime could find missing. It makes the check possible rather than
-   preventing a refusal.
-6. **`stale_position` ← ambiguous exclusive gateways** (`W-GW-AMBIGUOUS`,
-   `W-XML-GW-AMBIGUOUS`, `W-XML-GW-BRANCH-UNCONDITIONED`). With more than one unconditioned
-   branch, two proposals can each advance the same position along a different edge; the
-   runtime admits one and refuses the other `stale_position` (§13 #19). This is the weakest
-   link in the table.
+1. **Kind codes → `unratified_procedure`: kept** for `E-WORKFLOW-KIND` / `E-XML-WORKFLOW-KIND`.
+   **`W-XML-NO-WORKFLOWMETA` moved to design-only**: without workflowMeta the map is judged as an
+   executable process (the default reading is defined), so nothing is left for the runtime to
+   refuse. The finding is identity falling back to the process id and an undeclared kind.
+2. **`W-TYPE-LANE-MISMATCH` → `human_gate_skipped`: kept, reasoning reversed.** The lane wins and
+   the type is presentational (O-1). The prevented case is a serviceTask/scriptTask in a human
+   lane: the runtime holds a gate the type hides, so an agent completing it is refused
+   `human_gate_skipped`. A userTask in an agent lane leaves no gate to hold, so nothing is refused
+   (that half is design-only: the author's intended gate is silently absent). A plain task has no
+   implied performer and never fires this.
+3. **Unknown node type → `capability_unsupported`: kept** (not `unresolved_reference`). The element is
+   well-formed BPMN outside the vocabulary (callActivity today, 832 T-1252): a known kind no executor
+   performs.
+4. **Duplicate ids → `unresolved_reference`: kept.** `aef:uid` is what instances and the overlay key on.
+5. **io codes → `missing_typed_input`: kept**, all four. `E-XML-IO-MATCH-MISSING` is the key input that
+   picks the instance; `scope_mismatch` is repository scope in v2, so it does not fit.
+6. **Ambiguous gateways → `stale_position`: dropped.** `W-GW-AMBIGUOUS`, `W-XML-GW-AMBIGUOUS` and
+   `W-XML-GW-BRANCH-UNCONDITIONED` are design-only. `stale_position` is a ledger race (a non-head
+   position, or two payloads for one attempt) that two actors can produce on a fully conditioned
+   gateway too, so the finding does not prevent it. The finding is an authoring gap: when each branch
+   is taken is not written down. `stale_position` is now runtime-only.
+
+Net: 5 reason_codes prevented at design time, 13 runtime-only; 31 validator codes prevent at least
+one reason_code.
 
 ## Not covered by the validator at all
 
 `scope_mismatch`, `unmeasured_component_scope`, `duplicate_delivery`,
 `direct_state_mutation`, `ambiguous_identity`, `task_hash_drift`,
 `policy_or_capability_drift`, `bypass_input`, `cancellation_in_effect`,
-`command_substitution`, `deadline_expired` and `privilege_exceeds_profile` are runtime-only.
+`command_substitution`, `deadline_expired`, `privilege_exceeds_profile` and `stale_position` are runtime-only.
 For some of them a design-time check could exist if the map carried the data:
 capability-profile and binding refs (`privilege_exceeds_profile`, `capability_unsupported`),
 action/script contracts (`command_substitution`, `unresolved_reference` for actions), and

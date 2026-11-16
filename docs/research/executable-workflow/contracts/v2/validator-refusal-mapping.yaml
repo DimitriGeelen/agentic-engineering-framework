@@ -18,11 +18,10 @@ reason_codes:
     prevented_by:
     - E-WORKFLOW-KIND
     - E-XML-WORKFLOW-KIND
-    - W-XML-NO-WORKFLOWMETA
     runtime_only: false
     why: '§13 #1 (architecture-c9070637.md:911). Only the kind marker is design-time: a map whose kind is invalid or undeclared cannot be told apart from documentation, so the runtime must treat it as not
       a ratifiable procedure. A valid executable map is still unratified until a human ratifies it; that refusal stays runtime-only.'
-    inferred: true
+    inferred: false
   unresolved_reference:
     refuses: a reference that does not resolve (action, profile, node, field, compensation) before dispatch
     prevented_by:
@@ -59,7 +58,7 @@ reason_codes:
     runtime_only: false
     why: '§13 #3 (architecture-c9070637.md:913); task-lifecycle-contract.md:102. A step with no derivable authority must be treated as gated, so an agent completing it is refused; the authority findings
       remove that cause. An agent deliberately passing a correctly declared gate is runtime-only.'
-    inferred: true
+    inferred: false
   scope_mismatch:
     refuses: work outside the pinned repository/worktree, or a bound task no longer in active/
     prevented_by: []
@@ -98,7 +97,7 @@ reason_codes:
     runtime_only: false
     why: '§13 #8 (architecture-c9070637.md:918). Only the node-type vocabulary is design-time: an element no executor knows can never be performed. Provider capability itself is resolved at binding time
       and is runtime-only.'
-    inferred: true
+    inferred: false
   direct_state_mutation:
     refuses: state changed outside an admitted envelope (agent edit, Watchtower write, deadline replay)
     prevented_by: []
@@ -137,14 +136,11 @@ reason_codes:
     inferred: false
   stale_position:
     refuses: a proposal made against a ledger position that is no longer the head (the loser of a race)
-    prevented_by:
-    - W-GW-AMBIGUOUS
-    - W-XML-GW-AMBIGUOUS
-    - W-XML-GW-BRANCH-UNCONDITIONED
-    runtime_only: false
-    why: '§13 #19 (architecture-c9070637.md:929); evidence-and-idempotency.md:95,144. An exclusive gateway with more than one unconditioned branch lets two proposals advance one position along different
-      edges; one of them must lose. Races between actors are runtime-only.'
-    inferred: true
+    prevented_by: []
+    runtime_only: true
+    why: '§13 #19 (architecture-c9070637.md:929); evidence-and-idempotency.md:95,144. A ledger race (a non-head position, or two payloads for one attempt). Two actors can produce it on a fully conditioned
+      gateway too, so no design-time finding prevents it (832 review, msg afe9ff0c, T-5191).'
+    inferred: false
   command_substitution:
     refuses: an action that escapes its registered argv to a shell string
     prevented_by: []
@@ -199,19 +195,20 @@ validator_codes:
     prevents:
     - unratified_procedure
     design_only: false
-    inferred: true
+    inferred: false
   E-XML-WORKFLOW-KIND:
     rule: workflow kind is not in the closed kind vocabulary (XML)
     prevents:
     - unratified_procedure
     design_only: false
-    inferred: true
+    inferred: false
   W-XML-NO-WORKFLOWMETA:
     rule: 'no <aef:workflowMeta>: no id of its own and no kind'
-    prevents:
-    - unratified_procedure
-    design_only: false
-    inferred: true
+    prevents: []
+    design_only: true
+    inferred: false
+    note: 'The map is then judged as an executable process (the default reading is defined), so nothing is left for the runtime to refuse; the finding is identity falling back to the process id and an undeclared
+      kind (832 review, msg afe9ff0c, T-5191).'
   E-LANES-EMPTY:
     rule: no lane declared (YAML)
     prevents: []
@@ -306,7 +303,10 @@ validator_codes:
     prevents:
     - human_gate_skipped
     design_only: false
-    inferred: true
+    inferred: false
+    note: 'The lane wins and the type is presentational (O-1). Prevented direction: a serviceTask/scriptTask in a human lane, where the runtime holds a gate the type hides, so an agent completing it is refused
+      human_gate_skipped. The other direction (a userTask in an agent lane) leaves no gate to hold, so nothing is refused: that half is design-only, the author''s intended gate is silently absent. A plain
+      task has no implied performer and never fires this (832 review, msg afe9ff0c, T-5191).'
   W-XML-AUTHORITY-DEFAULT-MISMATCH:
     rule: a node's authority overrides its lane's authoringDefault (recorded, legitimate)
     prevents: []
@@ -317,13 +317,13 @@ validator_codes:
     prevents:
     - capability_unsupported
     design_only: false
-    inferred: true
+    inferred: false
   E-XML-NODE-TYPE:
     rule: unknown flow-node element (XML)
     prevents:
     - capability_unsupported
     design_only: false
-    inferred: true
+    inferred: false
   E-NODE-LANE:
     rule: a node's lane does not match any lane id
     prevents:
@@ -336,19 +336,19 @@ validator_codes:
     prevents:
     - unresolved_reference
     design_only: false
-    inferred: true
+    inferred: false
   E-XML-ID-DUP:
     rule: a bpmn:id is not unique
     prevents:
     - unresolved_reference
     design_only: false
-    inferred: true
+    inferred: false
   E-XML-UID-DUP:
     rule: an aef:uid is not unique
     prevents:
     - unresolved_reference
     design_only: false
-    inferred: true
+    inferred: false
   E-EDGE-DANGLING:
     rule: an edge endpoint does not resolve to a node uid
     prevents:
@@ -433,25 +433,25 @@ validator_codes:
     prevents:
     - missing_typed_input
     design_only: false
-    inferred: true
+    inferred: false
   W-XML-IO-FIELD-ENTITY:
     rule: an io field belongs to another object in the catalog
     prevents:
     - missing_typed_input
     design_only: false
-    inferred: true
+    inferred: false
   E-XML-IO-EXPECT-CONTRADICTS:
     rule: an aef:expect requires a value the attribute's own rule forbids
     prevents:
     - missing_typed_input
     design_only: false
-    inferred: true
+    inferred: false
   E-XML-IO-MATCH-MISSING:
     rule: an instance-changing operation names no match field (acts on every instance)
     prevents:
     - missing_typed_input
     design_only: false
-    inferred: true
+    inferred: false
   W-XML-IO-MISSING:
     rule: steps carry no io at all, so nothing they read or write is recorded
     prevents: []
@@ -464,22 +464,22 @@ validator_codes:
     inferred: false
   W-GW-AMBIGUOUS:
     rule: an exclusive gateway has more than one unconditioned outgoing edge (YAML)
-    prevents:
-    - stale_position
-    design_only: false
-    inferred: true
+    prevents: []
+    design_only: true
+    inferred: false
+    note: 'An authoring gap (when each branch is taken is not written down); stale_position is a ledger race the finding does not prevent (832 review, msg afe9ff0c, T-5191).'
   W-XML-GW-AMBIGUOUS:
     rule: an exclusive gateway has more than one unconditioned outgoing flow (XML)
-    prevents:
-    - stale_position
-    design_only: false
-    inferred: true
+    prevents: []
+    design_only: true
+    inferred: false
+    note: 'An authoring gap; stale_position is a ledger race the finding does not prevent (832 review, msg afe9ff0c, T-5191).'
   W-XML-GW-BRANCH-UNCONDITIONED:
     rule: a deciding gateway branch has no condition and is not the default
-    prevents:
-    - stale_position
-    design_only: false
-    inferred: true
+    prevents: []
+    design_only: true
+    inferred: false
+    note: 'An authoring gap; stale_position is a ledger race the finding does not prevent (832 review, msg afe9ff0c, T-5191).'
   W-GW-OUTGOING:
     rule: an exclusive gateway has fewer than two outgoing edges (YAML)
     prevents: []
