@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5101: Re-pin Workflow Designer 0.41.0 -> 0.42.0 (832 release, designer-v0.42.0)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T10:12:34Z
+# ============================================================================
+
+task_id: T-5101
+task_name: "Re-pin Workflow Designer 0.41.0 -> 0.42.0 (832 release, designer-v0.42.0)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-12T17:36:12Z
+completed: 2026-11-16T10:12:08Z
+duration_days: 4
+updates_count: 3
+first_commit: 2026-11-12T18:36:29+01:00
+last_commit: 2026-11-16T11:12:06+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — re-pin Workflow Designer 0.42.0 (832 release). G-116 recurrences — AEF T-5073 and 832's be.47 rehearsal (fixed on their side, 832 T-1398). re-pin Workflow Designer 0.41.0 -> 0.43.0 (832 msg df95ece2, tag designer-v0.43.0; skips 0.42.0 by agreement) via pull-at-tag — artifact, validator and kit all verified against 832's MANIFEST at the tag; /designer serves APP_VERSION 0.43.0. last criterion ticked with evidence
+
+# Key outcomes
+outcomes:
+  - '`fw designer sync --from-tag designer-v0.43.0 --dry-run` verifies the tag (artifact sha256 = 8511974771820287731f8c5a11033feba573a45c9446678c7f02aed12acb287f, 1351062 bytes, matching 832''s MANIFEST at the tag and msg df95ece2)'
+  - 'policy/designer-pin.yaml pins 0.43.0 (artifact and validator fields), the build and validator are installed under vendor/designer/, and `fw designer status` reports the pin valid'
+  - '/designer serves 0.43.0 after a Watchtower restart; the designer tests pass; the vendored copy carries 0.43.0 (served APP_VERSION 0.43.0, sha256 8511974…; 155 pytest + 92 bats, pin-drift guard green after commit)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'G-116 recurrences — AEF T-5073 and 832''s be.47 rehearsal (fixed on their side, 832 T-1398)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/designer-pin.yaml'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.43.0.html'
+  - '.agentic-framework/vendor/designer/validate-workflow-0.43.0.py'
+  - '.context/project/concerns.yaml'
+  - '.tasks/active/T-5101-re-pin-workflow-designer-0410---0420-832.md'
+  - 'policy/designer-pin.yaml'
+  - 'vendor/designer/aef-workflow-designer-0.43.0.html'
+  - 'vendor/designer/validate-workflow-0.43.0.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-12T18:36:29'
+    action: 'T-5101: capture — re-pin Workflow Designer 0.42.0 (832 release)'
+  - time: '2026-11-12T18:42:59'
+    action: 'T-5101: G-116 recurrences — AEF T-5073 and 832''s be.47 rehearsal (fixed on their side, 832 T-1398)'
+  - time: '2026-11-16T11:09:55'
+    action: 'T-5101: re-pin Workflow Designer 0.41.0 -> 0.43.0 (832 msg df95ece2, tag designer-v0.43.0; skips 0.42.0 by agreement) via pull-at-tag — artifact, validator and kit all verified against 832''s MANIFEST at the tag; /designer serves APP_VERSION 0.43.0'
+  - time: '2026-11-16T11:12:06'
+    action: 'T-5101: last criterion ticked with evidence'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 5315 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5315
+  commits: 5
+  files_changed: 11
+  lines_added: 19937
+  lines_removed: 66
+  footprint_refreshed_at: '2026-11-16T10:12:49Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5101-re-pin-workflow-designer-0410---0420-832.md
+generated_by: context-agent-hybrid

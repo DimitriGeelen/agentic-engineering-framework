@@ -7,12 +7,12 @@ description: >
   bytes; validator unchanged since 0.41.0; field-profile controls now hidden where
   not served (our T-4737). Same route as T-5074.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [policy/designer-pin.yaml]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T17:36:12Z
-last_update: 2026-11-16T10:02:50Z
-date_finished:
+last_update: 2026-11-16T10:12:08Z
+date_finished: 2026-11-16T10:12:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -399,3 +399,21 @@ Screenshots: `.context/visual/T-5101/designer@{1024,1440,1920}.png` (`fw ux shot
 ### 2026-11-16T10:02:50Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-16T10:12:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ab13146e
+- **Timestamp:** 2026-11-16T10:12:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — policy/designer-pin.yaml pins 0.43.0 (artifact and validator fields), the build and validator are installed under vendor/designer/, and `fw designer status` reports the pin valid
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/designer-pin.yaml in: policy/designer-pin.yaml pins 0.43.0 (artifact and validator fields), the build and validator are installed under vendor/designer/, and `fw designer s`
