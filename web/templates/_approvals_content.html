@@ -1,5 +1,6 @@
 <!-- Approvals content fragment — served by /approvals/content for htmx polling (T-669) -->
 
+{% if refreshing_count %}<p class="approvals-refreshing" style="margin:0 0 .5rem;"><small>{{ refreshing_count }} entr{{ 'y is' if refreshing_count == 1 else 'ies are' }} being refreshed; reload in a minute.</small></p>{% endif %}
 <!-- Summary counts bar — T-1416 (T-1388 B6 / F5): split into Decisions vs Verifications -->
 <div class="approvals-summary">
     <a href="#section-decisions" class="approval-stat approval-stat-group {{ 'decisions-active' if (tier0_count + go_count + decided_unclosed_count) else '' }}" style="text-decoration:none; color:inherit;">

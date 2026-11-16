@@ -2120,16 +2120,42 @@ def _schedule_readiness_refresh(task_id: str, path: Path) -> None:
             t.start()
 
 
+# T-5195: single-flight. One readiness computation per task file at a time; a concurrent
+# caller that needs the exact value waits for it (bounded), an allow_stale caller with a
+# cached WAITING is served that and never starts its own.
+_READINESS_INFLIGHT: dict[str, threading.Event] = {}
+_READINESS_INFLIGHT_LOCK = threading.Lock()
+_READINESS_INFLIGHT_WAIT_S = 30.0
+
+
+def _readiness_fresh_hit(p: Path, mtime: int, tstamp: tuple):
+    hit = _READINESS_CACHE.get(str(p))
+    # T-4133: an entry that never consulted the ledger is stored with stamp None - it
+    # depends on the task file alone, so a commit elsewhere does not invalidate it.
+    if hit and hit[0] == mtime and (hit[1] is None or hit[1] == tstamp):
+        return hit
+    return None
+
+
 def review_readiness(task_id: str, status: str, body: str,
                      path: Path | str | None = None,
-                     allow_stale: bool = False) -> tuple[str, list[str]]:
+                     allow_stale: bool = False,
+                     stale_out: "set | None" = None) -> tuple[str, list[str]]:
     """``(state, reasons)`` for a task awaiting the operator; state is ``READY`` or
     ``WAITING_ON_AGENT``. Reasons are empty iff ready. Cached per task-file mtime and
     the ledger stamp when ``path`` is given. Fails toward waiting, never silently ready.
 
     ``allow_stale`` (T-5147, board only): when only the ledger stamp moved since the cached
     entry, a cached WAITING is returned as is and refreshed in the background. A cached
-    READY is never served stale, so stale data can only under-report readiness."""
+    READY is never served stale, so stale data can only under-report readiness.
+
+    ``stale_out`` (T-5195): when given, receives ``task_id`` each time a stale entry is
+    served, so a page can say how many entries are being refreshed.
+
+    Single-flight (T-5195): while one caller computes a task, another caller does not
+    start a second computation. It waits for the first (up to
+    ``_READINESS_INFLIGHT_WAIT_S``, then computes itself, so nothing hangs) and uses its
+    result when that result is valid for this caller's key."""
     root = Path(PROJECT_ROOT)
     p = Path(path) if path else None
     stamp = _readiness_stamp(root)
@@ -2143,19 +2169,44 @@ def review_readiness(task_id: str, status: str, body: str,
             mtime = p.stat().st_mtime_ns
         except OSError:
             p = None
-    if p is not None:
-        hit = _READINESS_CACHE.get(str(p))
-        # T-4133: an entry that never consulted the ledger is stored with stamp None - it
-        # depends on the task file alone, so a commit elsewhere does not invalidate it.
-        if hit and hit[0] == mtime and (hit[1] is None or hit[1] == tstamp):
+    if p is None:
+        state, reasons = _compute_readiness(task_id, body, root, p, stamp, [])
+        return state, list(reasons)
+    key = str(p)
+    waited = False
+    while True:
+        hit = _readiness_fresh_hit(p, mtime, tstamp)
+        if hit:
             return hit[2][0], list(hit[2][1])
+        hit = _READINESS_CACHE.get(key)
         if allow_stale and hit and hit[0] == mtime and hit[2][0] != READY:
             _schedule_readiness_refresh(task_id, p)
+            if stale_out is not None:
+                stale_out.add(task_id)
             return hit[2][0], list(hit[2][1])
-    used: list = []
-    state, reasons = _compute_readiness(task_id, body, root, p, stamp, used)
-    if p is not None:
-        _READINESS_CACHE[str(p)] = (mtime, tstamp if used else None, (state, reasons))
+        with _READINESS_INFLIGHT_LOCK:
+            ev = _READINESS_INFLIGHT.get(key)
+            if ev is None:
+                ev = _READINESS_INFLIGHT[key] = threading.Event()
+                owned = True
+                break
+        if waited:   # the other computation outlived the wait: compute unregistered
+            owned = False
+            break
+        # Another caller is computing this task: wait for it, then re-check the cache
+        # against this caller's own key (its result may be for an older key).
+        ev.wait(_READINESS_INFLIGHT_WAIT_S)
+        waited = True
+    try:
+        used: list = []
+        state, reasons = _compute_readiness(task_id, body, root, p, stamp, used)
+        _READINESS_CACHE[key] = (mtime, tstamp if used else None, (state, reasons))
+    finally:
+        if owned:
+            with _READINESS_INFLIGHT_LOCK:
+                if _READINESS_INFLIGHT.get(key) is ev:
+                    del _READINESS_INFLIGHT[key]
+            ev.set()
     return state, list(reasons)
 
 
@@ -2237,7 +2288,9 @@ _INCEPTION_DECIDED_RE = re_mod.compile(r"^\*\*Decision\*\*:\s*(GO|NO-GO|DEFER)\b
 
 
 def review_queue_groups(root: Path | str | None = None,
-                        entries: "Iterable[tuple] | None" = None) -> dict[str, list[str]]:
+                        entries: "Iterable[tuple] | None" = None,
+                        allow_stale: bool = False,
+                        stale_out: "set | None" = None) -> dict[str, list[str]]:
     """The ONE grouping behind ``/approvals`` and ``fw review-queue`` (T-4096).
 
     Reads ``.tasks/active/*.md`` directly (no metadata cache, so neither surface can
@@ -2251,6 +2304,8 @@ def review_queue_groups(root: Path | str | None = None,
 
     ``entries`` is an optional ``(path, text[, frontmatter])`` source (the page passes its mtime-cached
     bodies); the CLI reads the directory. The classification below is the only logic.
+    ``allow_stale`` / ``stale_out``: passed to ``review_readiness`` (T-5195, the page only;
+    a stale entry is only ever a WAITING, so it can only under-report ready).
     """
     out: dict[str, list[str]] = {"decisions": [], "ready": [], "waiting": []}
     if entries is None:
@@ -2287,7 +2342,8 @@ def review_queue_groups(root: Path | str | None = None,
                 continue
         if count_unchecked_human_acs(text) == 0:
             continue
-        state, _ = review_readiness(tid, field("status"), text, f)
+        state, _ = review_readiness(tid, field("status"), text, f,
+                                    allow_stale=allow_stale, stale_out=stale_out)
         out["ready" if state == READY else "waiting"].append(tid)
     return out
 

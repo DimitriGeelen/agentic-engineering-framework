@@ -97,10 +97,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The approvals page reads readiness with allow_stale (the T-5147 path). A cached READY whose key moved is never served; it is recomputed inline, or shown as waiting until recomputed.
-- [ ] Single-flight: concurrent requests for the same task's readiness trigger at most one computation (test with threads and a counting stand-in for `_compute_readiness`).
-- [ ] The page shows, in plain words, that some entries are being refreshed when it serves stale ones (count only; no layout change beyond one line).
-- [ ] Measured in-process: after a simulated invalidation of all tasks, the approvals page answers within 2× of warm, and the refresh finishes in the background. Before/after numbers are recorded here.
+- [x] The approvals page reads readiness with allow_stale (the T-5147 path). A cached READY whose key moved is never served; it is recomputed inline, or shown as waiting until recomputed.
+- [x] Single-flight: concurrent requests for the same task's readiness trigger at most one computation (test with threads and a counting stand-in for `_compute_readiness`).
+- [x] The page shows, in plain words, that some entries are being refreshed when it serves stale ones (count only; no layout change beyond one line).
+- [x] Measured in-process: after a simulated invalidation of all tasks, the approvals page answers within 2× of warm, and the refresh finishes in the background. Before/after numbers are recorded here.
 - [ ] Existing readiness/approvals/board tests pass, invariants pass, `bin/fw vendor self --check --task T-5195` is clean, and Watchtower is restarted and current.
 
 ### Human
@@ -294,6 +294,19 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5195_approvals_single_flight.py tests/unit/test_t5194_readiness_per_task_key.py -q -p no:cacheprovider > /tmp/.t5195.out 2>&1 && grep -q passed /tmp/.t5195.out
+bin/fw vendor self --check --task T-5195
+bin/fw watchtower current
+
+## Visual Verification
+
+Shots: `bin/fw ux shots T-5195 approvals-top=@.context/visual/T-5195/approvals-top.steps.yaml` (cropped from
+the top of the page to the Decisions heading: a full-page shot of the 436-item page timed out at load average 30).
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| approvals-top | summary bar | ok | ok | ok | unchanged layout |
+| approvals-top | refresh line | ok | ok | ok | correctly absent: nothing was stale at shot time; its text ("2 entries are being refreshed; reload in a minute.") is rendered and asserted in test_approvals_context_reports_stale_count |
 
 ## RCA
 
@@ -364,7 +377,30 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+## Measurements
+
+In-process, this repo, `app.test_client().get("/approvals")`. Invalidation is simulated by wrapping
+`_readiness_task_key` so every task's key moves. "Before" is the same build with the page forced back
+to exact reads (no allow_stale), i.e. the pre-T-5195 behaviour. The host was also running test suites,
+so absolute numbers are noisy.
+
+| step | before (exact) | after (allow_stale + single-flight) |
+|---|---:|---:|
+| cold | 50.40 s | 36.64 s |
+| warm | 3.07 s | 5.36 s |
+| right after invalidating every task | **21.78 s** | **4.99 s** (refresh line shown) |
+| background refresh finished | n/a (inline) | 16.04 s after invalidation |
+| after refresh | 2.74 s | 2.69 s (no refresh line) |
+
+After invalidation the page answers within 2× of warm (4.99 s against 5.36 s, and against 2.7 s steady). Cold is
+still inline: there is nothing stale to serve on an empty cache.
+
 ## Decisions
+
+### 2026-11-16 — single-flight waiter that times out
+- **Chose:** a waiter whose wait (30 s) expires computes on its own without registering, and does not remove or signal the other caller's in-flight entry.
+- **Why:** so nothing hangs, and a slow first computation is not double-counted by a third caller.
+- **Rejected:** taking over the registration on timeout. A third caller would then start another computation while the first is still running.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

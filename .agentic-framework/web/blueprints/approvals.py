@@ -276,6 +276,21 @@ def _queue_groups() -> dict:
     return groups
 
 
+def _stale_ids() -> set:
+    """Task ids this request was served a stale readiness for (T-5195): the page reads
+    readiness with allow_stale, so a WAITING whose key moved is shown while it is
+    re-verified in the background. Per request (flask.g); a fresh set outside one."""
+    try:
+        from flask import g, has_app_context
+        if has_app_context():
+            if getattr(g, "_t5195_stale_ids", None) is None:
+                g._t5195_stale_ids = set()
+            return g._t5195_stale_ids
+    except Exception:
+        pass
+    return set()
+
+
 def _compute_queue_groups() -> dict:
     entries = []
     for fm in sorted(_task_meta(), key=lambda m: task_id_sort_key(m.get("_path", ""))):
@@ -283,7 +298,9 @@ def _compute_queue_groups() -> dict:
             body = _get_body_cached(fm["_path"])
             if body:
                 entries.append((Path(str(fm["_path"])), body, fm))
-    return review_queue_groups(entries=entries)
+    # T-5195: the T-5147 path - a stale WAITING is served and refreshed in the
+    # background; a stale READY is never served (recomputed inline, single-flight).
+    return review_queue_groups(entries=entries, allow_stale=True, stale_out=_stale_ids())
 
 
 def _load_pending_go_decisions():
@@ -482,7 +499,8 @@ def _load_pending_human_acs():
 
         # T-4053: ready for the operator, or waiting on the agent (with reasons).
         readiness, wait_reasons = review_readiness(
-            str(fm.get("id", "")), str(fm.get("status", "")), body, path)
+            str(fm.get("id", "")), str(fm.get("status", "")), body, path,
+            allow_stale=True, stale_out=_stale_ids())  # T-5195
 
         # DISPLAY ONLY (T-3590): the per-criterion detail rendered in the card.
         # No decision on this page reads it — `_parse_acceptance_criteria` stops
@@ -1159,6 +1177,7 @@ def _build_approvals_context(expand_overflow: bool = False):
         waiting_messages=waiting["items"],  # T-3782
         waiting_error=waiting["error"],     # T-3782
         waiting_warn_hours=waiting["warn_hours"],
+        refreshing_count=len(_stale_ids()),  # T-5195
     )
 
 
