@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5144: EWCR R7: reconcile the designer contract inventory with ratified SD-1 (AEF T-2663) — 832's open ask on agent-chat-arc 643
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T12:51:30Z
+# ============================================================================
+
+task_id: T-5144
+task_name: "EWCR R7: reconcile the designer contract inventory with ratified SD-1 (AEF T-2663) — 832's open ask on agent-chat-arc 643"
+workflow_type: design
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-15T14:53:03Z
+completed: 2026-11-16T12:51:12Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-16T13:49:45+01:00
+last_commit: 2026-11-16T13:50:53+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  R7 reconciliation of the designer contract inventory with ratified SD-1. gap owners — G1 T-5182 (operator amendment), G2 T-5183 (pairing with 832); G3 homed at 832
+
+# Key outcomes
+outcomes:
+  - 'The report states SD-1 verbatim from its ratification (T-2663) and names where the designer contract inventory lives (paths, version).'
+  - 'Every contract in the inventory has one row: contract id, SD-1 verdict (conforms / conflicts / not covered), evidence (file:line), and the gap if any.'
+  - 'Every gap has a proposed owner: an existing task id, or a new task captured with --horizon later.'
+  - '832 has been sent the answer on 832-ewcr-progress, citing the report path and the commit.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5144-ewcr-r7-reconcile-the-designer-contract-.md'
+  - '.tasks/active/T-5182-sd-register--d-344-amendment-record-sd-3.md'
+  - '.tasks/active/T-5183-pair-the-five-shared-designeraef-contrac.md'
+  - 'docs/reports/EWCR/T-5144-r7-sd1-reconciliation.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T13:49:45'
+    action: 'T-5144: R7 reconciliation of the designer contract inventory with ratified SD-1'
+  - time: '2026-11-16T13:50:53'
+    action: 'T-5144: gap owners — G1 T-5182 (operator amendment), G2 T-5183 (pairing with 832); G3 homed at 832'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1318 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1318
+  commits: 3
+  files_changed: 7
+  lines_added: 1368
+  lines_removed: 8
+  footprint_refreshed_at: '2026-11-16T12:51:44Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5144-ewcr-r7-reconcile-the-designer-contract-.md
+generated_by: context-agent-hybrid
