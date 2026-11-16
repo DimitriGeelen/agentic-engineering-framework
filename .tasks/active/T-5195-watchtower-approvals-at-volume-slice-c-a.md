@@ -5,10 +5,10 @@ name: "Watchtower approvals at volume, slice C: approvals page — single-flight
 description: >
   Build slice of inception T-5186 (GO 2026-11-16). Evidence: docs/reports/T-5186-watchtower-volume-performance.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -39,7 +39,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T19:37:24Z
-last_update: '2026-11-16T19:45:49Z'
+last_update: 2026-11-16T20:13:38Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,22 +85,32 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Inception T-5186 (GO 2026-11-16, report docs/reports/T-5186-watchtower-volume-performance.md F2, F5). A cold approvals page costs 34–44 s at ~5,000 tasks. On 1409, which is CPU-starved at CPUWeight=20, it exceeds 90 s. Slice B (T-5194) removed most per-write invalidations. A cold or partly invalid cache still makes the request that hits it wait for every recomputation.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The approvals page computes readiness inline for every task whose cached entry is invalid, inside the request. Concurrent requests (a reload, a second browser tab, the Watchtower poller) each recompute the same entries. Under CPU starvation that multiplies the work and lets requests time out before any finishes, so the cache never fills.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Use the T-5147 machinery (`allow_stale`, background refresh) on the approvals page, as the board already does. Make the refresh single-flight: one recompute per task at a time, and concurrent callers wait for it or are served the stale WAITING, never their own duplicate. Safety stays as T-5147 set it: a READY is never served stale; only WAITING may be served stale, and it is refreshed in the background.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** After any invalidation, the approvals page answers in about warm time with stale WAITING entries marked as refreshing, and the background refresh brings them current. Concurrent requests never recompute the same task twice.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The approvals page reads readiness with allow_stale (the T-5147 path). A cached READY whose key moved is never served; it is recomputed inline, or shown as waiting until recomputed.
+- [ ] Single-flight: concurrent requests for the same task's readiness trigger at most one computation (test with threads and a counting stand-in for `_compute_readiness`).
+- [ ] The page shows, in plain words, that some entries are being refreshed when it serves stale ones (count only; no layout change beyond one line).
+- [ ] Measured in-process: after a simulated invalidation of all tasks, the approvals page answers within 2× of warm, and the refresh finishes in the background. Before/after numbers are recorded here.
+- [ ] Existing readiness/approvals/board tests pass, invariants pass, `bin/fw vendor self --check --task T-5195` is clean, and Watchtower is restarted and current.
 
 ### Human
+- [ ] [REVIEW] The approvals page reads correctly while entries refresh
+  **Steps:**
+  1. Open http://192.168.10.107:3000/approvals right after a review ledger changes (or after a Watchtower restart).
+  2. Look for the line that says some entries are being refreshed, then reload after a minute.
+  **Expected:** The page loads in a few seconds, the refresh line is plain and unobtrusive, and after the refresh the queue looks the same as before this change.
+  **If not:** Note what looked wrong (slow load, missing line, wrong grouping) on the task.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -381,3 +391,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5195-watchtower-approvals-at-volume-slice-c-a.md
 - **Context:** Initial task creation
+
+### 2026-11-16T20:12:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
