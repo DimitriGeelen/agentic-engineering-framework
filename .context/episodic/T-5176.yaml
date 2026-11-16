@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5176: fw reviewer probe-vision <kind>: measure whether a harness review seat can read a supplied screenshot (T-4944 probe, scripted)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T06:40:49Z
+# ============================================================================
+
+task_id: T-5176
+task_name: "fw reviewer probe-vision <kind>: measure whether a harness review seat can read a supplied screenshot (T-4944 probe, scripted)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-16T06:02:53Z
+completed: 2026-11-16T06:40:08Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-16T07:19:05+01:00
+last_commit: 2026-11-16T07:19:05+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw reviewer probe-vision <kind> — the T-4944 screenshot probe, scripted (registered binary in its review form, screenshot alone in a throwaway folder, graded against ground truth, one line per run in .context/reviews/vision-probes.jsonl; never touches the ledger or the registry); 11 tests; real runs: codex SEES (control), antigravity SEES
+
+# Key outcomes
+outcomes:
+  - '`fw reviewer probe-vision <kind>` (codex, opencode, antigravity) launches the registered binary in the same form the review runtime uses for that kind, in a throwaway folder holding only the screenshot, with the T-4944 questions; it writes nothing to the verdict ledger and never edits policy/review-backends.yaml'
+  - 'the answer is graded: `sees` (count and exact title right), `cannot-view` (says CANNOT VIEW), `wrong` (answered, but wrong), `no-answer` (failed or timed out); each run appends one line to .context/reviews/vision-probes.jsonl and prints the suggested `vision:` value'
+  - 'defaults: the T-4947 arc-closure screenshot and its ground truth (8 BLOCKED cards; first title "Onboarding: fw init detects project shape by enumeration, not manifest allowlist"), overridable with --image/--expect-count/--expect-title'
+  - 'unit tests with the launch stubbed (grading, record line, refusal of a non-harness kind, no registry write) — 11 pass; real runs 2026-11-16: codex SEES (control, matches T-4944), antigravity SEES (.context/reviews/vision-probes.jsonl, docs/reports/T-4944-harness-seat-vision.md)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/reviewer/probe_vision.py'
+  - '.context/reviews/vision-probes.jsonl'
+  - '.fabric/components/lib-reviewer-probe_vision.yaml'
+  - '.tasks/active/T-5176-fw-reviewer-probe-vision-kind-measure-wh.md'
+  - 'bin/fw'
+  - 'docs/reports/T-4944-harness-seat-vision.md'
+  - 'lib/reviewer/probe_vision.py'
+  - 'tests/unit/test_t5176_probe_vision.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T07:19:05'
+    action: 'T-5176: fw reviewer probe-vision <kind> — the T-4944 screenshot probe, scripted (registered binary in its review form, screenshot alone in a throwaway folder, graded against ground truth, one line per run in .context/reviews/vision-probes.jsonl; never touches the ledger or the registry); 11 tests; real runs: codex SEES (control), antigravity SEES'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 37 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 37
+  commits: 2
+  files_changed: 12
+  lines_added: 1049
+  lines_removed: 5
+  footprint_refreshed_at: '2026-11-16T06:41:00Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5176-fw-reviewer-probe-vision-kind-measure-wh.md
+generated_by: context-agent-hybrid

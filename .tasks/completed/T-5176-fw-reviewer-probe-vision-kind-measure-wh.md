@@ -6,12 +6,12 @@ description: >
   fw reviewer probe-vision <kind>: measure whether a harness review seat can read
   a supplied screenshot (T-4944 probe, scripted)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/reviewer/probe_vision.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T06:02:53Z
-last_update: '2026-11-16T06:31:37Z'
-date_finished:
+last_update: 2026-11-16T06:40:08Z
+date_finished: 2026-11-16T06:40:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -388,3 +388,25 @@ bin/fw vendor self --check --task T-5176
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5176-fw-reviewer-probe-vision-kind-measure-wh.md
 - **Context:** Initial task creation
+
+### 2026-11-16T06:40:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8e75145a
+- **Timestamp:** 2026-11-16T06:40:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `fw reviewer probe-vision <kind>` (codex, opencode, antigravity) launches the registered binary in the same form the review runtime uses for that kind, in a throwaway folder holding only the screensho
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/review-backends.yaml in: `fw reviewer probe-vision <kind>` (codex, opencode, antigravity) launches the registered binary in the same form the review runtime uses for that kind`
+- **AC#2 (Agent)** — the answer is graded: `sees` (count and exact title right), `cannot-view` (says CANNOT VIEW), `wrong` (answered, but wrong), `no-answer` (failed or timed out); each run appends one line to .context/re
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/reviews/vision-probes.jsonl in: the answer is graded: `sees` (count and exact title right), `cannot-view` (says CANNOT VIEW), `wrong` (answered, but wrong), `no-answer` (failed or ti`
+- **AC#4 (Agent)** — unit tests with the launch stubbed (grading, record line, refusal of a non-harness kind, no registry write) — 11 pass; real runs 2026-11-16: codex SEES (control, matches T-4944), antigravity SEES (.co
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/reviews/vision-probes.jsonl in: unit tests with the launch stubbed (grading, record line, refusal of a non-harness kind, no registry write) — 11 pass; real runs 2026-11-16: codex SEE`
