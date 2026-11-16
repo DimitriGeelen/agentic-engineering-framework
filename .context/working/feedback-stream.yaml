@@ -55639,3 +55639,39 @@ scan_id: R-db6f9cbc
 task_id: T-5168
 payload:
   task_file: .tasks/active/T-5168-arc-close-recommendation-panel-tests-ski.md
+---
+kind: scan_emitted
+timestamp: '2026-11-16T02:33:26Z'
+scan_id: R-d55593b5
+task_id: T-5172
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-16T02:33:26Z'
+scan_id: R-d55593b5
+task_id: T-5172
+payload:
+  task_file: .tasks/active/T-5172-watchtower-file-links-let-a-project-decl.md
+---
+kind: scan_emitted
+timestamp: '2026-11-16T05:46:22Z'
+scan_id: R-52be04ee
+task_id: T-5174
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-16T05:46:22Z'
+scan_id: R-52be04ee
+task_id: T-5174
+payload:
+  task_file: .tasks/active/T-5174-testswebtestinceptionverdictrenderpy-5-r.md

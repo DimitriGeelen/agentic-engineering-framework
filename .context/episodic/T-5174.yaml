@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5174: tests/web/test_inception_verdict_render.py: 5 reds, 'decided_unclosed_count' is undefined when the test renders _approvals_content.html
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T05:46:36Z
+# ============================================================================
+
+task_id: T-5174
+task_name: "tests/web/test_inception_verdict_render.py: 5 reds, 'decided_unclosed_count' is undefined when the test renders _approvals_content.html"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-16T02:31:25Z
+completed: 2026-11-16T05:46:20Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-16T06:46:18+01:00
+last_commit: 2026-11-16T06:46:18+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception verdict render test passes the context keys the approvals blueprint passes (decided_unclosed_count since T-3175, and others); 5 reds green, no template change
+
+# Key outcomes
+outcomes:
+  - 'the test''s render context carries the keys the approvals blueprint passes to `_approvals_content.html` (at least `decided_unclosed` and `decided_unclosed_count`); the 5 tests pass'
+  - 'no template or blueprint change'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5174-testswebtestinceptionverdictrenderpy-5-r.md'
+  - 'tests/web/test_inception_verdict_render.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T06:46:18'
+    action: 'T-5174: inception verdict render test passes the context keys the approvals blueprint passes (decided_unclosed_count since T-3175, and others); 5 reds green, no template change'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 194 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [tests, web, approvals]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 194
+  commits: 2
+  files_changed: 5
+  lines_added: 164
+  lines_removed: 13
+  footprint_refreshed_at: '2026-11-16T05:46:45Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5174-testswebtestinceptionverdictrenderpy-5-r.md
+generated_by: context-agent-hybrid
