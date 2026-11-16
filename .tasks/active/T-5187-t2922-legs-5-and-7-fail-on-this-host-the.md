@@ -8,10 +8,10 @@ description: >
   legs 5 and 7 fail on HEAD and on the tree at a71ce6b2c^. Decide whether the test
   pins host-specific state or the placeholder lost the configured port.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T14:23:39Z
-last_update: '2026-11-16T15:01:07Z'
+last_update: 2026-11-16T15:54:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,20 +88,20 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** During the T-5181 regression runs (2026-11-16), tests/integration/t2922_greenfield_first_inception.bats legs 5 and 7 failed. They fail identically on the tree before T-5181 (a71ce6b2c^).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Confirmed. T-4239 (e6c438be7, 2026-11-11, operator decision C-local) made Watchtower default to 127.0.0.1. `_watchtower_base_or_placeholder` builds the not-running placeholder from `_watchtower_probe_host`, so it now prints `http://127.0.0.1:PORT`. The two legs still hard-code `http://localhost:PORT`. The code is right and the test is stale.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** The legs assert the contract (an absolute URL on the configured port, from the same host resolution the code uses) instead of one host spelling.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** t2922 passes 9/9 on this host, and would fail again if the placeholder lost its port or became a bare path.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Legs 5 and 7 take the expected host from `_watchtower_probe_host` (sourced from lib/watchtower.sh in the fixture project), not from a literal. t2922 passes 9/9.
+- [x] Control: with the placeholder broken to a bare path (`printf '\n'`) or a wrong port, legs 5 and 7 fail. Checked once by hand and recorded here. (2026-11-16: with the port dropped from the placeholder's printf, legs 5 and 7 failed; lib/watchtower.sh was restored byte-identical.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,8 +287,17 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 bats tests/integration/t2922_greenfield_first_inception.bats > /tmp/.t5187 2>&1 && ! grep -q "^not ok" /tmp/.t5187
 
 ## RCA
+
+**Symptom:** t2922 legs 5 and 7 failed: the Watchtower-down placeholder read `http://127.0.0.1:PORT` where the legs expected `http://localhost:PORT`.
+
+**Root cause:** T-4239 (e6c438be7, 2026-11-11) deliberately made 127.0.0.1 the default Watchtower host. The placeholder follows `_watchtower_probe_host`, so its output changed by design. The two legs pinned the old host literal, not the contract (absolute URL, configured port).
+
+**Why structurally allowed:** tests/integration/ is not part of the nightly unit-suite ratchet that pre-push reads, and T-4239 ran the unit tests, not this integration file. A host change landed with a red integration test that nothing re-ran for five days.
+
+**Prevention:** the legs now resolve the host through the same helper the code uses, so a future host default cannot make them go stale while the port and absolute-URL checks still bite (control recorded under Acceptance Criteria). The wider gap, integration tests outside every automatic run, is noted for the operator in the session report instead of filed here, because whether integration tests join the nightly ratchet is a cost/time decision.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -384,3 +393,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5187-t2922-legs-5-and-7-fail-on-this-host-the.md
 - **Context:** Initial task creation
+
+### 2026-11-16T15:54:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

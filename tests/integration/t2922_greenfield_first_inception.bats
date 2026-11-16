@@ -108,6 +108,14 @@ setup() {
     rm -f "$T2922_PROJ/.context/working/.reviewed-$T2922_TASK"
 }
 
+# T-5187: the placeholder's host comes from _watchtower_probe_host, which follows the
+# project's bound HOST (T-4239 made 127.0.0.1 the default). Resolve it the same way
+# instead of pinning one spelling; the port and the absolute form stay pinned.
+_t2922_host() {
+    bash -c "export PROJECT_ROOT='$T2922_PROJ' FRAMEWORK_ROOT='$FRAMEWORK_ROOT'
+             source '$FRAMEWORK_ROOT/lib/watchtower.sh'; _watchtower_probe_host" 2>/dev/null
+}
+
 # ── AC1: the regression must bite before it is repaired ──────────────────────
 
 @test "t2922: BEFORE the fix, review on a Watchtower-less project dies with no marker" {
@@ -169,8 +177,9 @@ setup() {
     # An empty base_url concatenates into "/review/T-XXX" — a broken relative
     # path that still reads as a link. The placeholder must be a real absolute
     # URL, correct the moment `fw serve` runs.
+    local host; host=$(_t2922_host); [ -n "$host" ]
     run bash -c "cd '$T2922_PROJ' && PROJECT_ROOT='$T2922_PROJ' '$FRAMEWORK_ROOT/bin/fw' task review '$T2922_TASK' 2>&1"
-    [[ "$output" == *"http://localhost:$T2922_PORT/inception/$T2922_TASK"* ]] || {
+    [[ "$output" == *"http://$host:$T2922_PORT/inception/$T2922_TASK"* ]] || {
         echo "no absolute placeholder URL in output" >&2
         return 1
     }
@@ -230,7 +239,8 @@ setup() {
         echo \"rc=\$rc out=\$out\"
     "
     [ "$status" -eq 0 ]
-    [ "$output" = "rc=2 out=http://localhost:$T2922_PORT" ]
+    local host; host=$(_t2922_host); [ -n "$host" ]
+    [ "$output" = "rc=2 out=http://$host:$T2922_PORT" ]
 }
 
 @test "t2922: it never answers empty — the down case is a code, not a blank" {
