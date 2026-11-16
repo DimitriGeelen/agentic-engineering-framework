@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5194: Watchtower approvals at volume, slice B: review readiness depends only on the ledger rows that concern each task, not on every .context/reviews/*.jsonl mtime (T-5186 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T20:08:22Z
+# ============================================================================
+
+task_id: T-5194
+task_name: "Watchtower approvals at volume, slice B: review readiness depends only on the ledger rows that concern each task, not on every .context/reviews/*.jsonl mtime (T-5186 GO)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-16T19:37:23Z
+completed: 2026-11-16T20:04:54Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-16T20:38:26+01:00
+last_commit: 2026-11-16T21:01:52+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  slice B context, criteria, design; T-5195 (C) and T-5196 (A) captured (T-5186 GO). review readiness keyed on per-task ledger fingerprints, not every ledger mtime. tick criterion 5 — 148 existing readiness/approvals/board tests, invariants, vendor check and Watchtower currency green. review fix — a verdicts row with an illegible task is global (the validator refuses every task on it), parsed task value counts as an id; 3 fail-first tests; 793 readiness tests pass
+
+# Key outcomes
+outcomes:
+  - '`review_readiness`''s cache key uses a per-task ledger fingerprint (lines naming the task) plus a global fingerprint (lines naming no task) plus `_task_git_generation`. Lines are indexed in one pass per ledger stamp, never once per task.'
+  - 'Test: after an append naming task X, X''s entry recomputes and another task Y''s cached entry is reused. After an append naming no task, both recompute. A READY is never served from a stale key.'
+  - 'Equivalence test: on a fixture with several tasks and ledger rows, readiness from the cache after a sequence of appends equals a from-scratch computation for every task.'
+  - 'Measured with docs/reports/T-5186-profile-*.py style timing: after a simulated append naming one task, the approvals page costs within 2× of warm. The before/after numbers are recorded in this task.'
+  - 'Existing readiness/approvals/board tests pass, invariants pass, `bin/fw vendor self --check --task T-5194` is clean, and Watchtower is restarted and current.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'review fix — a verdicts row with an illegible task is global (the validator refuses every task on it), parsed task value counts as an id; 3 fail-first tests; 793 readiness tests pass'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-16 — independent review (AMBER) and what changed'
+  - decision: '2026-11-16 — what counts as "a line that concerns a task"'
+    chose: 'a line names every `T-NNNN` in it AND every task another ledger line ties to one of its ids (`id`/`dispatch_id`/`run_id`/`verdict_id`). Global (invalidates all): lines naming no task, torn or unterminated lines, a row id repeated within a file, and any non-append change to a file (prefix hash mismatch) or a file that disappears. If the files move while being read, or the stamp does not match the files, the key falls back to the whole stamp (pre-T-5194 behaviour).'
+    rationale: 'verdict_ledger looks completions up by dispatch id, not task id, and refuses the WHOLE ledger on a duplicated, modified or deleted row — so those cannot be attributed to one task. Over-attribution only costs a recompute; under-attribution could serve a stale READY.'
+    alternatives_rejected: ['regex-only attribution (`"T-NNNN"`, as `_recent_ledger_task_ids` uses) — misses a completion row tied to a task only through its dispatch id.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/shared.py'
+  - '.tasks/active/T-5194-watchtower-approvals-at-volume-slice-b-r.md'
+  - '.tasks/active/T-5195-watchtower-approvals-at-volume-slice-c-a.md'
+  - '.tasks/active/T-5196-watchtower-approvals-at-volume-slice-a-p.md'
+  - 'tests/unit/test_t5194_readiness_per_task_key.py'
+  - 'web/shared.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T20:38:26'
+    action: 'T-5194: slice B context, criteria, design; T-5195 (C) and T-5196 (A) captured (T-5186 GO)'
+  - time: '2026-11-16T20:47:25'
+    action: 'T-5194: review readiness keyed on per-task ledger fingerprints, not every ledger mtime'
+  - time: '2026-11-16T20:48:17'
+    action: 'T-5194: tick criterion 5 — 148 existing readiness/approvals/board tests, invariants, vendor check and Watchtower currency green'
+  - time: '2026-11-16T21:01:52'
+    action: 'T-5194: review fix — a verdicts row with an illegible task is global (the validator refuses every task on it), parsed task value counts as an id; 3 fail-first tests; 793 readiness tests pass'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 27 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 27
+  commits: 5
+  files_changed: 9
+  lines_added: 1787
+  lines_removed: 35
+  footprint_refreshed_at: '2026-11-16T20:08:36Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5194-watchtower-approvals-at-volume-slice-b-r.md
+generated_by: context-agent-hybrid
