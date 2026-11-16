@@ -101,11 +101,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `_git_out` answers immutable-object calls (full 40-hex ids only; never a ref, HEAD, a short id or a range ending in a ref) from a persistent on-disk memo. A test proves a ref-dependent call is never served from it, and that a corrupt or partial memo file falls back to running git.
-- [x] The memo lives under a gitignored `.context/working/` path, writes atomically, and has a size bound with eviction.
-- [x] Measured in-process: cold approvals page (fresh process, memo warm on disk) before/after, plus a cold page with an empty memo. Numbers recorded here.
+- [ ] (Revised 2026-11-17 after the independent review; the on-disk memo was reverted in 95e10c8d2.) `_git_out`'s object-content reads (`show <40-hex>:<path>`, and `ls-tree` on a 40-hex tree if it fits) go through ONE long-lived `git cat-file --batch` process per repo instead of a subprocess each. Nothing is written to disk. Answers are identical to the per-call `git` they replace, including a missing object (same failure), which a test proves on a temp repo.
+- [ ] The batch process is safe: a lock per process for concurrent threads; restarted if it dies or desyncs; falls back to the per-call path on any error; no zombie or leaked process (test).
+- [ ] Measured in-process: cold approvals page before/after (fresh process), and the subprocess census. Numbers recorded here.
 - [x] Slice B's leftover trigger (commits touching `.context/reviews/`) is either fixed with an equivalence test proving no stale READY, or kept with the reason and cost recorded in ## Decisions.
-- [x] Every existing test that touches lib/verdict_ledger.py or readiness passes, invariants pass, `bin/fw vendor self --check --task T-5196` is clean, and Watchtower is restarted and current.
+- [ ] Every existing test that touches lib/verdict_ledger.py or readiness passes, invariants pass, `bin/fw vendor self --check --task T-5196` is clean, and Watchtower is restarted and current.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -425,7 +425,16 @@ HEAD (~5 s); (c) an mtime-keyed frontmatter cache that survives restarts (~4 s);
 
 ## Decisions
 
-### 2026-11-16 — what may be served from the persistent memo
+### 2026-11-17 — the on-disk memo is reverted; one `git cat-file --batch` reader instead
+- **Independent review (AMBER):** no path found that makes a verdict count wrongly in normal operation. But:
+  - The live db was 160 MB after one page: every committed version of two append-only ledgers, stored again for each launch environment. It grows ~14 MB/day toward the 512 MiB cap, in every consumer project, for 10 s off a cold page.
+  - It had two reproducible stale-answer cases: an object pruned after caching was still answered (exit 0), and a config change made through `include.path` was missed.
+  - The reviewer's verdict on cost: not proportionate.
+- **Chose:** revert ee89a5c73 (commit 95e10c8d2) and take the reviewer's cheaper design. The measured gain came mostly from 1,900 process spawns (~17 s), and one long-lived `git cat-file --batch` reader removes those with no disk store and no stale-answer class.
+- **Rejected:** keeping the blob store with dedup and a 32 MiB cap. It is still a second copy of git's own object store, with its own invalidation rules to get right.
+- The 160 MB `.context/working/git-object-memo.db` is no longer read by anything. Removing it is left to the operator.
+
+### 2026-11-16 — what may be served from the persistent memo (superseded 2026-11-17, reverted)
 - **Chose:** only `show <40-hex>:<path>` and `ls-tree [-r] [--name-only] <40-hex> -- <paths>` (lower-case full id, plain repo-relative paths, no pathspec magic, no other flags). Every key also carries a context hash: memo format version, the output text encoding, `.git/config` contents and the stats of the global/system git config files, and every replace ref (loose and packed, name → target). The memo is not used at all when the state token cannot be taken, refs move while the context is read, or a `GIT_*` variable outside a harmless list (author/committer identity, editor, pager, ssh, askpass) is set.
 - **Why:** an object id fixes the object, not the answer: this repo has 2,970 replace refs on commits, and a replace ref changes what `<sha>:<path>` resolves to (test `test_replace_ref_changes_the_answer`). Config (`core.useReplaceRefs`, `core.quotePath`) and env (`GIT_NO_REPLACE_OBJECTS`, `GIT_DIR`, pathspec env) can change it too. Folding them into the key makes old entries unreachable, never stale.
 - **Rejected:** `cat-file -e`, `merge-base --is-ancestor` and `rev-parse` on full ids — existence and ancestry can change when objects are pruned or grafts/shallow change, and together they are 78 cheap calls a page. Refs, HEAD, short ids, `^`/`~`, ranges and `log` stay on the in-memory, state-token memo as before.
