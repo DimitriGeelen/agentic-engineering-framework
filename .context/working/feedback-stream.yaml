@@ -55711,3 +55711,21 @@ scan_id: R-499691ca
 task_id: T-5175
 payload:
   task_file: .tasks/active/T-5175-antigravity-review-seat-returns-verdicts.md
+---
+kind: scan_emitted
+timestamp: '2026-11-16T08:05:37Z'
+scan_id: R-a21e8939
+task_id: T-5177
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-16T08:05:37Z'
+scan_id: R-a21e8939
+task_id: T-5177
+payload:
+  task_file: .tasks/active/T-5177-antigravity-review-seat-is-voided-when-i.md
