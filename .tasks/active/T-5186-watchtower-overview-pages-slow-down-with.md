@@ -8,15 +8,15 @@ description: >
   on a ~6k-task project): measure, then design a stepped index layer (files stay source
   of truth)
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-11-16T13:47:22Z
-last_update: '2026-11-16T15:01:07Z'
+last_update: 2026-11-16T16:54:21Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -61,6 +61,19 @@ bvp_scores_proposed:
 
 <!-- What problem are we exploring? For whom? Why now? -->
 
+dimitri-mint-dev reported (msg fc3a6ba2, 2026-11-16, on their operator's instruction) that Watchtower overview pages get slower as a project grows. The measurements were taken on .107 at load average 37:
+
+| Project | Tasks | `/approvals` load time |
+|---|---|---|
+| dimitri-mint-dev | ~233 | 0.95 s |
+| 1023 | not given | 1.25 s |
+| 055 | not given | 4.3 s |
+| 1409-sprind | ~6,150 | over 90 s (timed out); `/` also over 90 s |
+
+On 1409, a single task page (`/review/T-6144`) answers in 0.03 s. 1409's Watchtower sits at about 67 % CPU. Since 2026-11-12, Watchtowers started from claude-fw sessions run at CPUWeight=20, so under host load they also get little CPU. Their operator proposes a stepped design: above some volume, a rebuildable index between the task files and Watchtower, with the files staying the source of truth.
+
+Who it hurts: every operator of a large project. Overview pages are where decisions are made (approvals, the home page), and they become unusable. Why now: 1409 is unusable today, and AEF itself has ~5,170 task files.
+
 ## Assumptions
 
 <!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
@@ -82,6 +95,19 @@ bvp_scores_proposed:
      §Disposition Gate. Bypass: --skip-disposition-gate "rationale" (direct) or
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
+
+- **IW-1: Where does the time on `/approvals` and `/` go at ~5,000 tasks, in CPU seconds with no CPU contention (in-process profile, not wall time on a loaded host)?**
+  confidence: 0
+  disposition: open
+  rationale: not yet measured
+- **IW-2: How much of 1409's >90 s is CPU starvation (CPUWeight=20 at load 37) rather than work, i.e. what does the same page cost on an idle core?**
+  confidence: 0
+  disposition: open
+  rationale: not yet measured
+- **IW-3: Does the cost scale with task count (re-reading/re-parsing the corpus per request), and is a per-process cache keyed on file mtimes enough, or is a separate index layer needed?**
+  confidence: 0
+  disposition: open
+  rationale: not yet measured
 
 ## Exploration Plan
 
@@ -177,3 +203,7 @@ Evidence gap, not a confidence gap: the reported timings mix two causes that hav
 
 ### 2026-11-16T13:47:48Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-11-16T16:54:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
