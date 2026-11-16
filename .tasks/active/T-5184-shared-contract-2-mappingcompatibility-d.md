@@ -1,8 +1,11 @@
 ---
 id: T-5184
-name: "Shared contract 2 (mapping/compatibility): draft 'designer 0.43.0 produces EWCR contracts v2' — versions, round-trip and migration rules (T-5183, paired with 832 T-1425)"
+name: "Shared contract 2 (mapping/compatibility): draft 'designer 0.43.0 produces
+  EWCR contracts v2' — versions, round-trip and migration rules (T-5183, paired with
+  832 T-1425)"
 description: >
-  Agreed with 832 2026-11-16 (msg f2c1275e). AEF has no artifact for shared contract 2; pairs with designer kit 0.43.0 (SHA256SUMS 126451b6).
+  Agreed with 832 2026-11-16 (msg f2c1275e). AEF has no artifact for shared contract
+  2; pairs with designer kit 0.43.0 (SHA256SUMS 126451b6).
 
 status: captured
 workflow_type: design
@@ -38,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T12:53:56Z
-last_update: 2026-11-16T12:53:56Z
-date_finished: null
+last_update: '2026-11-16T13:00:28Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +53,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-16T13:00:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 3
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
+      (workflow:design); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5184: Shared contract 2 (mapping/compatibility): draft 'designer 0.43.0 produces EWCR contracts v2' — versions, round-trip and migration rules (T-5183, paired with 832 T-1425)
