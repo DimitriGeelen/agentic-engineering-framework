@@ -82,10 +82,39 @@ def strip_html_comment_lines(text: str) -> str:
     return "\n".join(out)
 
 
+def unclosed_comment_line(text: str) -> int | None:
+    """1-based line number of a whole-line `<!--` whose span never closes, else None.
+
+    T-5188: a COUNTING caller must not let an unclosed span swallow the rest of what it
+    counts (P-010 counted 0 criteria behind `- [ ] one` + a later bare `<!--`)."""
+    opened_at = None
+    for n, line in enumerate(text.split("\n"), start=1):
+        stripped = line.lstrip()
+        if opened_at is not None:
+            if "-->" in line:
+                opened_at = None
+            continue
+        if stripped.startswith("<!--") and "-->" not in stripped[4:]:
+            opened_at = n
+    return opened_at
+
+
 if __name__ == "__main__":
     # T-4608: decode strict UTF-8 from bytes, never through the locale. With
     # LANG unset or C, Python runs in UTF-8 mode (PEP 540) and sys.stdin uses
     # surrogateescape (C.UTF-8 too), so an undecodable byte passed silently and
     # extract_verification_block returned 0 where it must return 2 (T-3232).
-    text = sys.stdin.buffer.read().decode("utf-8")
+    # T-5188: --lenient decodes with U+FFFD for COUNTING callers (P-010): a bad byte
+    # must not make the strip fail and the count come out 0; it cannot create or hide a
+    # `<!--`, `-->` or box marker. --fail-unclosed exits 3 naming an unclosed span.
+    args = sys.argv[1:]
+    raw = sys.stdin.buffer.read()
+    text = raw.decode("utf-8", errors="replace") if "--lenient" in args else raw.decode("utf-8")
+    if "--fail-unclosed" in args:
+        n = unclosed_comment_line(text)
+        if n is not None:
+            line = text.split("\n")[n - 1].strip()
+            sys.stderr.write(f"unclosed HTML comment opened at line {n} of the section: "
+                             f"{line[:80]!r} — everything after it would be hidden\n")
+            sys.exit(3)
     sys.stdout.buffer.write(strip_html_comment_lines(text).encode("utf-8"))

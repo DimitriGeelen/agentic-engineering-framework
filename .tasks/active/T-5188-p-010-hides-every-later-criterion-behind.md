@@ -9,7 +9,7 @@ description: >
   vanishes from the gate. Fix: an unclosed comment inside ## Acceptance Criteria must
   refuse the close (fail closed), not shrink the count. Bug: one task; needs RCA.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T14:48:52Z
-last_update: '2026-11-16T15:01:07Z'
+last_update: 2026-11-16T15:26:33Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,20 +89,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** The third independent review of T-5181 (2026-11-16, finding #8) reproduced it: `- [~] one <!-- z` with no closing `-->` gave total=0 in the P-010 count. The bug is older than T-5181 and needs no `[~]`.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The completion gate strips comments with `sed '/<!--/,/-->/d'`, which opens on any line containing `<!--`. A mid-line or unclosed comment deletes real criteria, so the gate under-counts and passes. See ## RCA.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** The P-010 count and the partial-complete recheck use the canonical structural strip (`lib/comment_strip.py`, as `lib/inception.sh` has since T-3696). A comment left open inside `## Acceptance Criteria` blocks the close with a clear message.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** No comment shape can make P-010 count fewer criteria than the task has.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] update-task.sh's P-010 count, its `### Human`-placement check, and the partial-complete recheck strip comments through lib/comment_strip.py. No `sed '/<!--/,/-->/d'` remains in update-task.sh.
+- [x] A box line with a trailing mid-line `<!--` is still counted (open). An unclosed whole-line `<!--` inside the AC section refuses the close and names the line. Tested end to end through update-task.sh.
+- [x] A task file with an invalid UTF-8 byte does not make the gate count zero criteria. It either counts them or refuses; it never passes silently. Tested.
+- [ ] The T-5181 tests and every existing test that reads update-task.sh or comment_strip.py pass, and invariants pass.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,8 +290,20 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_t5188_p010_comment_strip.py > /tmp/.t5188 2>&1 && grep -q passed /tmp/.t5188
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_t5181_accepted_miss.py > /tmp/.t5188b 2>&1 && grep -q passed /tmp/.t5188b
+bin/fw test invariants > /tmp/.t5188i 2>&1
+bin/fw vendor self --check --task T-5188
 
 ## RCA
+
+**Symptom:** a task whose `## Acceptance Criteria` holds `- [ ] one <!-- z` with no closing `-->` reports total=0 to the completion gate (P-010). Every box after that line vanishes, so the task closes with open criteria. Found by the T-5181 third independent review.
+
+**Root cause:** `check_acceptance_criteria` (agents/task-create/update-task.sh:311) and the partial-complete recheck (:2316) strip comments with `sed '/<!--/,/-->/d'`. That range opens on ANY line containing `<!--`, including mid-line, and deletes the opening line itself. With no `-->` it runs to the end of the section. A mid-line `<!--` closed by a later `-->` deletes every box in between too.
+
+**Why structurally allowed:** T-2954 made `lib/comment_strip.py` the canonical structural rule, and T-3696 moved `lib/inception.sh` onto it after this exact class of bug (a range opened by a one-line comment let the unchecked-AC gate pass). The two copies in update-task.sh were never migrated. Nothing pins parity between the gate's strip and the canonical one, and no test feeds the gate an unclosed or mid-line comment.
+
+**Prevention:** the gate uses the canonical module (a single rule, parity by construction). An unclosed whole-line comment inside the section refuses the close instead of shrinking the count. Tests drive update-task.sh end to end with mid-line, unclosed, and bad-UTF-8 cases.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -360,6 +374,13 @@ bvp_scores_proposed:
 
 ## Decisions
 
+### 2026-11-16 — scope: the closing gates only
+- **Chose:** migrate the three update-task.sh sites (P-010 count, `### Human` placement check, partial-complete recheck) to lib/comment_strip.py. The two count sites refuse on an unclosed span inside the AC section. The whole-file placement check does not, because a comment left open in another section is not its business.
+- **Left as is:** agents/context/check-active-task.sh:1439 (Open Questions) and :1521 (G-020 build-readiness AC count) still use the range strip. Both run at the start of work, not at close. An under-count there can only make the readiness gate stricter (real criteria hidden means "no real ACs") or hide a placeholder. Neither can close a task with open criteria.
+- **Impact scan:** of 920 active task files, 1 has an unclosed `<!--` in its AC section: T-3180, where the Human template comment never closes. It will now be refused at close until the comment is closed. Of 4,253 completed files, 1 has it (T-3173); completed tasks are not re-gated.
+- **Test intent changed (t3546_p011_reports_the_zero.bats):** its "T-3545's shape still closes" fixture held an unclosed Human template comment. That test pins that P-011 reporting never blocks, and it still does not. The fixture now closes the comment, so the P-011 wording is still tested. A new leg pins that the OPEN shape refuses at P-010.
+- **Rejected:** keeping the sed range strip and adding a separate unclosed-comment check. The mid-line case (`- [ ] x <!-- note` closed by a later `-->`) deletes criteria even when the comment closes, so the rule itself had to change.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -385,3 +406,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5188-p-010-hides-every-later-criterion-behind.md
 - **Context:** Initial task creation
+
+### 2026-11-16T15:26:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

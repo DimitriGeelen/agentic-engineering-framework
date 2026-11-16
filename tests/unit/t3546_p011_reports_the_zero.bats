@@ -60,7 +60,11 @@ _make_project() {
       case "$1" in
           clean)    printf '## Verification\n\ntrue\necho hi\n\n' ;;
           absent)   : ;;
-          spliced)  printf '### Human\n<!-- the reviewer command in `## Verification\n\ntrue\necho hi\n\n' ;;
+          # T-5188: the comment is closed after the swallowed commands. Unclosed, it now
+          # refuses at P-010 (an open span inside the AC section hides every criterion
+          # after it) before P-011 is reached; that refusal is pinned by `spliced_open`.
+          spliced)  printf '### Human\n<!-- the reviewer command in `## Verification\n\ntrue\necho hi\n-->\n\n' ;;
+          spliced_open) printf '### Human\n<!-- the reviewer command in `## Verification\n\ntrue\necho hi\n\n' ;;
           comments) printf '## Verification\n\n# only a comment\n\n' ;;
       esac
       printf '## Decisions\n\n'; } > "$P/.tasks/active/T-9999-fixture.md"
@@ -163,6 +167,17 @@ _close() {
     run _close
     [ "$(echo "$output" | grep -c 'BLOCKED')" -eq 0 ]
     echo "$output" | grep -q "work-completed"
+}
+
+@test "T-5188: the same shape with the comment left OPEN refuses at P-010, naming it" {
+    # An unclosed `<!--` inside ## Acceptance Criteria hides every criterion after it
+    # (Human ones included), so P-010 refuses rather than counting what is left. This is
+    # P-010, not P-011: the P-011 reporting above still never blocks.
+    _make_project spliced_open
+    run _close
+    [ "$status" -ne 0 ]
+    echo "$output" | grep -q "unclosed HTML comment"
+    [ -f "$P/.tasks/active/T-9999-fixture.md" ]
 }
 
 @test "the heading probe is wording-only: the rc=2 extractor contract is untouched" {

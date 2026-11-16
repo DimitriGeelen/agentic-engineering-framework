@@ -308,7 +308,23 @@ check_acceptance_criteria() {
     # T-2554 (832 G-009): [^>]* stopped at the first '>' INSIDE a comment (e.g. a
     # cited <tag>), so the range strip swallowed down to a later '-->'. Minimal
     # POSIX match to the first '-->' instead — tolerates '>' in comment text.
-    ac_section=$(echo "$ac_section" | sed -E 's/<!--([^-]|-[^-]|--[^>])*-->//g' | sed '/<!--/,/-->/d')
+    # T-5188: the range strip `sed '/<!--/,/-->/d'` still opened on a MID-line `<!--` (deleting
+    # that criterion) and, unclosed, ran to the end of the section — P-010 counted 0 and passed.
+    # The structural rule (lib/comment_strip.py, T-2954; lib/inception.sh since T-3696) replaces
+    # it, and an unclosed span inside the section refuses the close.
+    local _strip_err _strip_rc
+    _strip_err=$(mktemp)
+    ac_section=$(printf '%s\n' "$ac_section" | sed -E 's/<!--([^-]|-[^-]|--[^>])*-->//g' \
+        | python3 "$FRAMEWORK_ROOT/lib/comment_strip.py" --lenient --fail-unclosed 2>"$_strip_err") \
+        && _strip_rc=0 || _strip_rc=$?
+    if [ "$_strip_rc" -ne 0 ]; then
+        echo -e "${RED}ERROR: Cannot complete — acceptance criteria UNVERIFIED:${NC}" >&2
+        sed 's/^/  /' "$_strip_err" >&2
+        [ "$_strip_rc" -eq 3 ] && echo "  Close the comment with --> (or remove it) so every criterion after it is counted." >&2
+        rm -f "$_strip_err"
+        exit 1
+    fi
+    rm -f "$_strip_err"
     [ -z "$ac_section" ] && return 0
 
     has_agent_header=$(echo "$ac_section" | grep -c '^### Agent' || true)
@@ -333,7 +349,10 @@ check_acceptance_criteria() {
     # that have no misplaced heading at all. Strip comments the same way
     # ac_section is stripped above, so both sides of the comparison see the same
     # document. Measured before and after — 60 raw hits, 54 real.
-    _acs_body=$(sed -E 's/<!--([^-]|-[^-]|--[^>])*-->//g' "$TASK_FILE" 2>/dev/null | sed '/<!--/,/-->/d')
+    # T-5188: structural strip (whole file, so no --fail-unclosed: a comment left open in
+    # another section is not this check's business; it can only hide headings, never add one).
+    _acs_body=$(sed -E 's/<!--([^-]|-[^-]|--[^>])*-->//g' "$TASK_FILE" 2>/dev/null \
+        | python3 "$FRAMEWORK_ROOT/lib/comment_strip.py" --lenient)
     if [ "$has_human_header" -eq 0 ] && echo "$_acs_body" | grep -qE '^### Human\b'; then
         if [ "${FW_ALLOW_AC_STRUCTURE_DRIFT:-0}" = "1" ]; then
             echo -e "${YELLOW}WARNING: \`### Human\` heading found outside \`## Acceptance Criteria\` — Human ACs reported as 0 (FW_ALLOW_AC_STRUCTURE_DRIFT=1 bypass)${NC}"
@@ -2312,8 +2331,13 @@ if [ -n "$NEW_STATUS" ]; then
             # T-3148: anchored, FIRST-WINS extraction (lib/section-extract.sh).
             AC_SECTION=$(extract_ac_section "$TASK_FILE")
             # Strip HTML comments — template examples contain checkbox patterns.
-            # T-1967: two-step strip (one-line first, then range) — see line ~87.
-            AC_SECTION=$(echo "$AC_SECTION" | sed -E 's/<!--([^-]|-[^-]|--[^>])*-->//g' | sed '/<!--/,/-->/d')
+            # T-1967: one-line comments first; T-5188: then the structural strip (same as
+            # check_acceptance_criteria), and an unclosed span refuses instead of hiding boxes.
+            if ! AC_SECTION=$(printf '%s\n' "$AC_SECTION" | sed -E 's/<!--([^-]|-[^-]|--[^>])*-->//g' \
+                    | python3 "$FRAMEWORK_ROOT/lib/comment_strip.py" --lenient --fail-unclosed); then
+                echo -e "${RED}ERROR: acceptance criteria UNVERIFIED (comment strip failed — see above); task stays in active/${NC}" >&2
+                exit 1
+            fi
             # T-5181: any box counts; a valid accepted miss (Agent only) is resolved, not met.
             ALL_TOTAL=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[.\]' || true)
             ALL_CHECKED=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[[xX]\]' || true)
