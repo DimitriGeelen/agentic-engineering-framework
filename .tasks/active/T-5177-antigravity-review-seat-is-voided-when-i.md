@@ -109,8 +109,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] the operator chooses how antigravity's seat receives TMPDIR and PYTHONDONTWRITEBYTECODE (see ## Decisions options); the chosen route is implemented
-- [ ] a stub antigravity seat that runs Python on an exported module leaves the export fingerprint unchanged; a real edit still voids it (T-4835 test pattern); the fingerprint stays strict
+- [x] the operator chooses how antigravity's seat receives TMPDIR and PYTHONDONTWRITEBYTECODE (see ## Decisions options); the chosen route is implemented (option 1, commit 1c8d7d309)
+- [x] a stub antigravity seat that runs Python on an exported module leaves the export fingerprint unchanged; a real edit still voids it (T-4835 test pattern); the fingerprint stays strict (test_t5177_antigravity_seat_env.py runs a real import through the exact sudo form; t3582/t4835 36 passed; live: antigravity seats on T-5172 and T-5136 recorded green and counted, 2026-11-16)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -296,8 +296,18 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_t5177_antigravity_seat_env.py tests/unit/t4835_review_seat_pycache_test.py > /tmp/.t5177.out 2>&1 && grep -q passed /tmp/.t5177.out && ! grep -q failed /tmp/.t5177.out
+bin/fw vendor self --check --task T-5177
 
 ## RCA
+
+**Symptom:** antigravity seats recorded green on T-5172 and T-5136 but were voided: their export gained `__pycache__/*.pyc` files.
+
+**Root cause:** T-4835 gave every review seat `PYTHONDONTWRITEBYTECODE=1` through its signed env.json, and codex/opencode get `TMPDIR`; antigravity is launched through `sudo -u dimitri-mint-dev`, whose env_reset dropped both. The brief's "copy the export to $TMPDIR before running code" pointed at an empty variable, so the seat ran Python in place.
+
+**Why structurally allowed:** the T-4835 test checked the env.json writer and the codex/opencode stubs, not the antigravity launch line; and until T-5175 antigravity's render verdicts never counted, so its voids went unnoticed.
+
+**Prevention:** the launch passes both settings through `/usr/bin/env` inside sudo; `test_t5177_antigravity_seat_env.py` pins the line and runs a real import through the exact sudo form (skips on hosts without the seat user).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
