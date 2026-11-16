@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5192: Apply 832's answers to the 15 T-5184 mapping questions (msg ccdef9f3): version rule, agentType, sovereignty lane -> human_gate, link throw/catch, timers refused, traversed edges for row 4
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T16:51:19Z
+# ============================================================================
+
+task_id: T-5192
+task_name: "Apply 832's answers to the 15 T-5184 mapping questions (msg ccdef9f3): version rule, agentType, sovereignty lane -> human_gate, link throw/catch, timers refused, traversed edges for row 4"
+workflow_type: design
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-16T16:43:23Z
+completed: 2026-11-16T16:51:04Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-16T17:44:30+01:00
+last_commit: 2026-11-16T17:47:27+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context (832's 15 answers), criteria; T-5193 captured for Q11. apply 832's answers (msg ccdef9f3) to the designer 0.43 mapping — version rule, agentType, sovereignty lane wins, link throw refused/goto collapsed, boundary timers refused; Q1-Q15 recorded as answered; test per changed rule
+
+# Key outcomes
+outcomes:
+  - 'designer-0.43-mapping.md reflects all 15 answers: Q2 version rule, Q3 agentType, Q5 lane-wins with events/gateways exempt, Q6 link throw/catch, Q7 timers. Each question is marked answered with 832''s reasoning (msg ccdef9f3).'
+  - 'The worked example and tests/unit/test_t5184_designer_mapping.py still pass, with a test for each changed rule that can be checked on the example (at least Q2 and Q5). Contracts v1/v2 checks are clean.'
+  - 'Q11 (traversed edges by flow aef:uid in the runtime projection) is captured as its own task. (T-5193)'
+  - '832 is sent the revised commit. (d3ea48d73, 2026-11-16)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5192-apply-832s-answers-to-the-15-t-5184-mapp.md'
+  - '.tasks/active/T-5193-runtime-projection-v2-report-the-edges-a.md'
+  - 'docs/research/executable-workflow/contracts/v2/designer-0.43-mapping.md'
+  - 'tests/unit/test_t5184_designer_mapping.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T17:44:30'
+    action: 'T-5192: context (832''s 15 answers), criteria; T-5193 captured for Q11'
+  - time: '2026-11-16T17:47:27'
+    action: 'T-5192: apply 832''s answers (msg ccdef9f3) to the designer 0.43 mapping — version rule, agentType, sovereignty lane wins, link throw refused/goto collapsed, boundary timers refused; Q1-Q15 recorded as answered; test per changed rule'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 7
+  commits: 3
+  files_changed: 7
+  lines_added: 1169
+  lines_removed: 84
+  footprint_refreshed_at: '2026-11-16T16:51:23Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5192-apply-832s-answers-to-the-15-t-5184-mapp.md
+generated_by: context-agent-hybrid

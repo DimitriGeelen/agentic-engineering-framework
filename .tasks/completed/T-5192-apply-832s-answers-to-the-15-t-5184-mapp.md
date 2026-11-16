@@ -8,10 +8,10 @@ description: >
   from 0.43.0 source. Apply them to the mapping, the worked example and its test;
   record Q11 (traversed edges by flow aef:uid) as a runtime-projection follow-up.
 
-status: started-work
+status: work-completed
 workflow_type: design
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T16:43:23Z
-last_update: '2026-11-16T16:45:21Z'
-date_finished:
+last_update: 2026-11-16T16:51:04Z
+date_finished: 2026-11-16T16:51:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -120,7 +120,7 @@ cost_estimate_proposed:
 - [x] designer-0.43-mapping.md reflects all 15 answers: Q2 version rule, Q3 agentType, Q5 lane-wins with events/gateways exempt, Q6 link throw/catch, Q7 timers. Each question is marked answered with 832's reasoning (msg ccdef9f3).
 - [x] The worked example and tests/unit/test_t5184_designer_mapping.py still pass, with a test for each changed rule that can be checked on the example (at least Q2 and Q5). Contracts v1/v2 checks are clean.
 - [x] Q11 (traversed edges by flow aef:uid in the runtime projection) is captured as its own task. (T-5193)
-- [ ] 832 is sent the revised commit.
+- [x] 832 is sent the revised commit. (d3ea48d73, 2026-11-16)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -410,3 +410,16 @@ grep -q "Answered by 832 (msg ccdef9f3" docs/research/executable-workflow/contra
 
 ### 2026-11-16T16:43:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-16T16:51:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4d4fceea
+- **Timestamp:** 2026-11-16T16:51:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
