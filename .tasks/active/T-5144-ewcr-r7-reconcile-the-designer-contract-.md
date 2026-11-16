@@ -93,7 +93,7 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] The report states SD-1 verbatim from its ratification (T-2663) and names where the designer contract inventory lives (paths, version).
 - [x] Every contract in the inventory has one row: contract id, SD-1 verdict (conforms / conflicts / not covered), evidence (file:line), and the gap if any.
-- [ ] Every gap has a proposed owner: an existing task id, or a new task captured with --horizon later.
+- [x] Every gap has a proposed owner: an existing task id, or a new task captured with --horizon later.
 - [ ] 832 has been sent the answer on 832-ewcr-progress, citing the report path and the commit.
 
 ### Human
