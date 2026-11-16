@@ -172,6 +172,7 @@ backends:
     cost_estimate_method: "unmetered"
     description: "Antigravity 1.1.15 CLI on the operator's Google account; runs as user dimitri-mint-dev via sudo -n -u dimitri-mint-dev -H <binary> -p ... --mode plan --sandbox (operator approved 2026-09-30; the absolute path is needed because sudo's secure_path does not include ~/.local/bin). Spare panel seat (after claude, codex, opencode in registry order)."
     worker_kind: antigravity
+    vision: true   # T-5175: probe 2026-11-16 (fw reviewer probe-vision, T-5176): 8 cards + exact title via read_file; set on the operator's yes (2026-11-16)
     vendor: google
     credential:
       source: cli-login

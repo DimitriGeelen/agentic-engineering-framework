@@ -104,9 +104,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] the T-4944 probe is run on antigravity (screenshot .context/visual/T-4947/arc-closure@1440.png; ground truth re-checked 2026-11-16: 8 BLOCKED cards, first title "Onboarding: fw init detects project shape by enumeration, not manifest allowlist") and its answer recorded in docs/reports/T-4944-harness-seat-vision.md
-- [ ] if it cannot see: `vision: false` for antigravity in policy/review-backends.yaml, the registry still loads, and render criteria are no longer sent to it
-- [ ] if it can see: the `vision: true` change is put to the operator with the probe evidence, not made by the agent
+- [x] the T-4944 probe is run on antigravity (screenshot .context/visual/T-4947/arc-closure@1440.png; ground truth re-checked 2026-11-16: 8 BLOCKED cards, first title "Onboarding: fw init detects project shape by enumeration, not manifest allowlist") and its answer recorded in docs/reports/T-4944-harness-seat-vision.md
+- [x] (not applicable: it can see) if it cannot see: `vision: false` for antigravity in policy/review-backends.yaml, the registry still loads, and render criteria are no longer sent to it
+- [x] if it can see: the `vision: true` change is put to the operator with the probe evidence, not made by the agent
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -292,8 +292,19 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -c "import sys; sys.path.insert(0,'.'); from lib import verdict_ledger as vl; assert vl.kind_vision().get('antigravity') is True"
+grep -q '"kind": "antigravity".*"grade": "sees"' .context/reviews/vision-probes.jsonl
+bin/fw vendor self --check --task T-5175
 
 ## RCA
+
+**Symptom:** every antigravity verdict on a render criterion was refused ("the screenshot of '<page>' is not cited as evidence"), though its output named the screenshots (T-3786, T-5172).
+
+**Root cause:** T-4944's vision gate credits a harness seat with a screenshot only when the registry declares its kind `vision: true`. antigravity was added to policy/review-backends.yaml after the T-4944 probe, with no `vision:` entry, and an undeclared kind counts as blind.
+
+**Why structurally allowed:** adding a backend did not require a vision measurement, and the probe that sets the flag was manual with no script kept; nothing flagged a kind with no `vision:` value.
+
+**Prevention:** `fw reviewer probe-vision <kind>` (T-5176) measures it in one command and records the run; antigravity measured SEES on 2026-11-16 and is now `vision: true` on the operator's yes. A check that every harness kind declares `vision:` is a reasonable follow-up.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
