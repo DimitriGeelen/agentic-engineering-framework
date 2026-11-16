@@ -109,6 +109,8 @@ import subprocess
 import sys
 import secrets
 import shutil
+import sqlite3
+import threading
 import time
 import uuid
 from typing import NoReturn
@@ -2213,7 +2215,270 @@ def _git_state_token(root: Path) -> tuple | None:
         return None
 
 
+# T-5196: a persistent memo for calls whose answer is fixed by a full object id. `git show
+# <40-hex>:<path>` and `git ls-tree [-r] [--name-only] <40-hex> -- <paths>` read only objects,
+# and an object never changes - EXCEPT through what can re-map or re-render one: replace refs
+# (this repo carries thousands, on commits), config (core.useReplaceRefs, core.quotePath),
+# git environment variables (GIT_NO_REPLACE_OBJECTS, GIT_DIR, pathspec magic...) and the text
+# encoding the output is decoded with. All of those are folded into every key (`_imm_context`),
+# so a change to any of them makes every old entry unreachable rather than stale. Everything
+# else - refs, HEAD, short ids, ranges, `log`, `merge-base`, `cat-file` (existence can change
+# when objects are pruned) - keeps the in-memory memo above. A non-zero exit is never kept.
+_IMM_HEX40 = re.compile(r"[0-9a-f]{40}")
+_IMM_LS_TREE_FLAGS = frozenset({"-r", "--name-only"})
+_IMM_ENV_OK = ("GIT_AUTHOR_NAME", "GIT_AUTHOR_EMAIL", "GIT_AUTHOR_DATE", "GIT_COMMITTER_NAME",
+               "GIT_COMMITTER_EMAIL", "GIT_COMMITTER_DATE", "GIT_EDITOR", "GIT_PAGER",
+               "GIT_TERMINAL_PROMPT", "GIT_ASKPASS", "GIT_SSH", "GIT_SSH_COMMAND")
+IMM_MEMO_FILE = Path(".context/working/git-object-memo.db")   # gitignored by `.context/working/*.db`
+IMM_MEMO_VERSION = 1
+IMM_MEMO_MAX_BYTES = 512 << 20
+IMM_MEMO_MAX_ROWS = 100000
+IMM_MEMO_TOUCH_S = 3600          # a hit refreshes its last-use time at most this often
+IMM_MEMO_MAX_OUT = 4 << 20
+IMM_MEMO_EVICT_EVERY = 256
+_IMM_MEM: dict = {}              # in-process layer: key -> out (entries <= _GIT_MEMO_MAX_OUT)
+_IMM_MEM_MAX = 16384
+_IMM_CTX: dict = {}              # root -> (state token, config stats, encoding, env, context hash)
+_IMM_DB: dict = {}               # root -> {"conn", "lock", "writes"} or None (persistence off)
+_IMM_DB_LOCK = threading.Lock()
+
+
+def _imm_path_ok(p: str) -> bool:
+    return bool(p) and not p.startswith(("/", "./", "../", ":")) and "\n" not in p and "\0" not in p
+
+
+def _immutable_args(args: tuple) -> bool:
+    """True only for call shapes whose output is fixed by a full 40-hex object id (lower case).
+    When in doubt, False."""
+    if len(args) == 2 and args[0] == "show":
+        rev, sep, path = args[1].partition(":")
+        return bool(sep) and bool(_IMM_HEX40.fullmatch(rev)) and _imm_path_ok(path)
+    if args and args[0] == "ls-tree" and "--" in args:
+        i = args.index("--")
+        head, paths = args[1:i], args[i + 1:]
+        if not head or not _IMM_HEX40.fullmatch(head[-1]):
+            return False
+        if not set(head[:-1]) <= _IMM_LS_TREE_FLAGS or len(set(head[:-1])) != len(head[:-1]):
+            return False
+        return all(_imm_path_ok(p) for p in paths)
+    return False
+
+
+def _imm_context(root: Path) -> str | None:
+    """Hash of everything besides the object id that can change an immutable call's answer;
+    None when it cannot be established (no `.git` directory, an unlisted GIT_* variable set,
+    unreadable refs) - the caller then does not use the immutable memo at all."""
+    if any(k.startswith("GIT_") and k not in _IMM_ENV_OK for k in os.environ):
+        return None
+    tok = _git_state_token(root)
+    if tok is None:
+        return None
+    gd = os.path.join(str(root), ".git")
+    import locale
+    enc = locale.getpreferredencoding(False)
+    cfg: list = []
+    xdg = os.environ.get("XDG_CONFIG_HOME") or os.path.join(os.path.expanduser("~"), ".config")
+    for f in (os.path.join(gd, "config"), os.path.expanduser("~/.gitconfig"),
+              os.path.join(xdg, "git", "config"), "/etc/gitconfig"):
+        try:
+            st = os.stat(f)
+            cfg.append((f, st.st_mtime_ns, st.st_size, st.st_ino))
+        except OSError:
+            cfg.append((f, 0, 0, 0))
+    env = tuple(sorted((k, v) for k, v in os.environ.items() if k.startswith("GIT_")))
+    key = str(root)
+    held = _IMM_CTX.get(key)
+    if held is not None and held[:4] == (tok, tuple(cfg), enc, env):
+        return held[4]
+    h = hashlib.sha256(f"v{IMM_MEMO_VERSION}\0{enc}\0".encode())
+    try:
+        with open(os.path.join(gd, "config"), "rb") as fh:
+            h.update(fh.read())
+        h.update(repr(cfg[1:]).encode())
+        # every replace ref, loose and packed: name -> target
+        reps: list = []
+        try:
+            with open(os.path.join(gd, "packed-refs"), "rb") as fh:
+                for ln in fh:
+                    if b" refs/replace/" in ln and not ln.startswith((b"#", b"^")):
+                        reps.append(ln.strip())
+        except FileNotFoundError:
+            pass
+        rdir = os.path.join(gd, "refs", "replace")
+        for dp, _dn, fns in os.walk(rdir):
+            for fn in fns:
+                with open(os.path.join(dp, fn), "rb") as fh:
+                    reps.append(os.path.relpath(os.path.join(dp, fn), rdir).encode() + b" " + fh.read().strip())
+        for r in sorted(reps):
+            h.update(r + b"\n")
+    except OSError:
+        return None
+    if _git_state_token(root) != tok:      # refs moved while being read
+        return None
+    ctx = h.hexdigest()
+    _IMM_CTX[key] = (tok, tuple(cfg), enc, env, ctx)
+    return ctx
+
+
+def _imm_db(root: Path):
+    """The persistent store for `root`, or None (persistence off: no `.context/working/`, the
+    file is not gitignored there, or sqlite failed). Decided once per process per root."""
+    key = str(root)
+    with _IMM_DB_LOCK:
+        if key in _IMM_DB:
+            return _IMM_DB[key]
+        _IMM_DB[key] = None
+        path = Path(root) / IMM_MEMO_FILE
+        if not path.parent.is_dir():
+            return None
+        try:
+            ign = subprocess.run(["git", "check-ignore", "-q", str(IMM_MEMO_FILE)], cwd=key,
+                                 capture_output=True, timeout=30)
+        except (OSError, subprocess.SubprocessError):
+            return None
+        if ign.returncode != 0:
+            return None
+        conn = None
+        for attempt in (0, 1):
+            try:
+                conn = _imm_open(path)
+                break
+            except sqlite3.OperationalError:     # locked, unwritable: run git this process
+                return None
+            except sqlite3.DatabaseError:        # not a database / malformed: only a cache
+                if attempt:
+                    return None
+                for suf in ("", "-wal", "-shm", "-journal"):
+                    try:
+                        os.unlink(str(path) + suf)
+                    except OSError:
+                        pass
+        if conn is None:
+            return None
+        # the first write of a process checks the bounds; later ones every IMM_MEMO_EVICT_EVERY
+        _IMM_DB[key] = {"conn": conn, "lock": threading.Lock(), "writes": IMM_MEMO_EVICT_EVERY}
+        return _IMM_DB[key]
+
+
+def _imm_open(path: Path):
+    conn = sqlite3.connect(str(path), timeout=2.0, check_same_thread=False, isolation_level=None)
+    try:
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("PRAGMA synchronous=NORMAL")
+        conn.execute("CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT NOT NULL)")
+        row = conn.execute("SELECT v FROM meta WHERE k='version'").fetchone()
+        if row is None or row[0] != str(IMM_MEMO_VERSION):
+            conn.execute("DROP TABLE IF EXISTS memo")
+            conn.execute("INSERT OR REPLACE INTO meta VALUES ('version', ?)", (str(IMM_MEMO_VERSION),))
+        conn.execute("CREATE TABLE IF NOT EXISTS memo (key TEXT PRIMARY KEY, args TEXT NOT NULL, "
+                     "out TEXT NOT NULL, digest TEXT NOT NULL, size INTEGER NOT NULL, "
+                     "used INTEGER NOT NULL)")
+        conn.execute("CREATE INDEX IF NOT EXISTS memo_used ON memo (used)")
+        return conn
+    except BaseException:
+        conn.close()
+        raise
+
+
+def _imm_get(db, key: str, argtxt: str) -> str | None:
+    try:
+        with db["lock"]:
+            row = db["conn"].execute("SELECT args, out, digest, used FROM memo WHERE key=?",
+                                     (key,)).fetchone()
+    except (sqlite3.Error, ValueError):
+        return None
+    if row is None or row[0] != argtxt or not isinstance(row[1], str):
+        return None
+    try:
+        if hashlib.sha256(row[1].encode("utf-8", "surrogatepass")).hexdigest() != row[2]:
+            return None                    # damaged row: run git
+    except (UnicodeError, TypeError):
+        return None
+    now = int(time.time())
+    if not isinstance(row[3], int) or row[3] < now - IMM_MEMO_TOUCH_S:
+        try:
+            with db["lock"]:
+                db["conn"].execute("UPDATE memo SET used=? WHERE key=?", (now, key))
+        except sqlite3.Error:
+            pass
+    return row[1]
+
+
+def _imm_put(db, key: str, argtxt: str, out: str) -> None:
+    try:
+        data = out.encode("utf-8", "surrogatepass")
+        with db["lock"]:
+            c = db["conn"]
+            c.execute("INSERT OR REPLACE INTO memo VALUES (?, ?, ?, ?, ?, ?)",
+                      (key, argtxt, out, hashlib.sha256(data).hexdigest(), len(data),
+                       int(time.time())))
+            db["writes"] += 1
+            if db["writes"] >= IMM_MEMO_EVICT_EVERY:
+                db["writes"] = 0
+                _imm_evict(c)
+    except (sqlite3.Error, UnicodeError, ValueError):
+        pass
+
+
+def _imm_evict(c) -> None:
+    """Least recently used first (last-use time, then write order) until under 80% of both
+    bounds."""
+    n, total = c.execute("SELECT COUNT(*), COALESCE(SUM(size), 0) FROM memo").fetchone()
+    if n <= IMM_MEMO_MAX_ROWS and total <= IMM_MEMO_MAX_BYTES:
+        return
+    keep_n, keep_b = IMM_MEMO_MAX_ROWS * 4 // 5, IMM_MEMO_MAX_BYTES * 4 // 5
+    drop, cut_n, cut_b = [], n, total
+    for rowid, size in c.execute("SELECT rowid, size FROM memo ORDER BY used, rowid").fetchall():
+        if cut_n <= keep_n and cut_b <= keep_b:
+            break
+        drop.append((rowid,))
+        cut_n, cut_b = cut_n - 1, cut_b - size
+    if drop:
+        c.executemany("DELETE FROM memo WHERE rowid = ?", drop)
+
+
+def _git_out_immutable(root: Path, args: tuple) -> tuple[int, str] | None:
+    """(0, out) for an immutable call, from memory, disk or git; None when the immutable memo
+    does not apply here (the caller then takes the ordinary path)."""
+    ctx = _imm_context(root)
+    if ctx is None:
+        return None
+    argtxt = "\0".join(args)
+    key = hashlib.sha256(f"{root}\0{ctx}\0{argtxt}".encode("utf-8", "surrogatepass")).hexdigest()
+    hit = _IMM_MEM.get(key)
+    if hit is not None:
+        return 0, hit
+    db = _imm_db(root)
+    if db is not None:
+        out = _imm_get(db, key, argtxt)
+        if out is not None:
+            if len(out) <= _GIT_MEMO_MAX_OUT:
+                _imm_mem_put(key, out)
+            return 0, out
+    cp = subprocess.run(["git", *args], cwd=str(root), capture_output=True, text=True, timeout=60)
+    if cp.returncode == 0 and _imm_context(root) == ctx:
+        if len(cp.stdout) <= _GIT_MEMO_MAX_OUT:
+            _imm_mem_put(key, cp.stdout)
+        if db is not None and len(cp.stdout) <= IMM_MEMO_MAX_OUT:
+            _imm_put(db, key, argtxt, cp.stdout)
+    return cp.returncode, cp.stdout
+
+
+def _imm_mem_put(key: str, out: str) -> None:
+    if len(_IMM_MEM) >= _IMM_MEM_MAX:
+        try:
+            for k in list(_IMM_MEM)[:_IMM_MEM_MAX // 4]:
+                _IMM_MEM.pop(k, None)
+        except RuntimeError:                     # resized by another thread: drop it all
+            _IMM_MEM.clear()
+    _IMM_MEM[key] = out
+
+
 def _git_out(root: Path, *args: str) -> tuple[int, str]:
+    if _immutable_args(args):
+        res = _git_out_immutable(root, args)
+        if res is not None:
+            return res
     memo = bool(args) and args[0] in _GIT_MEMO_CMDS
     key = str(root)
     tok = _git_state_token(root) if memo else None
