@@ -55943,3 +55943,21 @@ scan_id: R-4eb49b70
 task_id: T-5187
 payload:
   task_file: .tasks/active/T-5187-t2922-legs-5-and-7-fail-on-this-host-the.md
+---
+kind: scan_emitted
+timestamp: '2026-11-16T16:13:27Z'
+scan_id: R-fa92d5aa
+task_id: T-5189
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-16T16:13:27Z'
+scan_id: R-fa92d5aa
+task_id: T-5189
+payload:
+  task_file: .tasks/active/T-5189-shared-contract-3-validationrefusal-map-.md

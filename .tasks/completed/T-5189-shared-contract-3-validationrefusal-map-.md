@@ -10,10 +10,10 @@ description: >
   (e.g. unresolved_reference, missing_typed_input, human_gate_skipped). Deliverable:
   a mapping table both sides check.
 
-status: started-work
+status: work-completed
 workflow_type: design
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T15:30:01Z
-last_update: 2026-11-16T16:03:14Z
-date_finished:
+last_update: 2026-11-16T16:13:25Z
+date_finished: 2026-11-16T16:13:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -105,7 +105,7 @@ bvp_scores_proposed:
 - [x] Every reason_code in contracts v2 refusal.schema.json appears exactly once in the mapping, with "prevented by" codes or "runtime-only" and a reason.
 - [x] Every E-/W- code defined in vendor/designer/validate-workflow-0.43.0.py appears in the mapping, with the reason_codes it prevents or "design-only".
 - [x] A YAML twin exists, and a check (test or tools/ script) proves both coverage rules above against the two source files. Contracts v1/v2 frozen files are byte-identical (`tools/ewcr-contracts-check.py --contracts-version 2` clean).
-- [ ] 832 is sent the draft with the path and commit.
+- [x] 832 is sent the draft with the path and commit. (2026-11-16, 832-ewcr-progress, commit 1bd55e51b; their corrections to the six inferred rows come back as a follow-up.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -395,3 +395,16 @@ python3 tools/ewcr-contracts-check.py
 ### 2026-11-16T16:03:14Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-16T16:13:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fa92d5aa
+- **Timestamp:** 2026-11-16T16:13:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

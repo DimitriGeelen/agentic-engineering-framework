@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5189: Shared contract 3 (validation/refusal): map designer validator E-/W- codes to the runtime refusal reason_codes they prevent (refusal.schema.json v2) — the checkable relation for row 3 (T-5183, 832 T-1425)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T16:13:41Z
+# ============================================================================
+
+task_id: T-5189
+task_name: "Shared contract 3 (validation/refusal): map designer validator E-/W- codes to the runtime refusal reason_codes they prevent (refusal.schema.json v2) — the checkable relation for row 3 (T-5183, 832 T-1425)"
+workflow_type: design
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-16T15:30:01Z
+completed: 2026-11-16T16:13:25Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-16T17:03:41+01:00
+last_commit: 2026-11-16T17:09:29+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context, criteria; start. validator-refusal mapping (shared contract 3) — 18 reason_codes x 80 validator codes, YAML twin, coverage/agreement/sha test
+
+# Key outcomes
+outcomes:
+  - 'Every reason_code in contracts v2 refusal.schema.json appears exactly once in the mapping, with "prevented by" codes or "runtime-only" and a reason.'
+  - 'Every E-/W- code defined in vendor/designer/validate-workflow-0.43.0.py appears in the mapping, with the reason_codes it prevents or "design-only".'
+  - 'A YAML twin exists, and a check (test or tools/ script) proves both coverage rules above against the two source files. Contracts v1/v2 frozen files are byte-identical (`tools/ewcr-contracts-check.py --contracts-version 2` clean).'
+  - '832 is sent the draft with the path and commit. (2026-11-16, 832-ewcr-progress, commit 1bd55e51b; their corrections to the six inferred rows come back as a follow-up.)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5189-shared-contract-3-validationrefusal-map-.md'
+  - 'docs/research/executable-workflow/contracts/v2/validator-refusal-mapping.md'
+  - 'docs/research/executable-workflow/contracts/v2/validator-refusal-mapping.yaml'
+  - 'tests/unit/test_t5189_validator_refusal_mapping.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T17:03:41'
+    action: 'T-5189: context, criteria; start'
+  - time: '2026-11-16T17:09:29'
+    action: 'T-5189: validator-refusal mapping (shared contract 3) — 18 reason_codes x 80 validator codes, YAML twin, coverage/agreement/sha test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 43 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 43
+  commits: 3
+  files_changed: 7
+  lines_added: 1080
+  lines_removed: 17
+  footprint_refreshed_at: '2026-11-16T16:13:50Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5189-shared-contract-3-validationrefusal-map-.md
+generated_by: context-agent-hybrid
