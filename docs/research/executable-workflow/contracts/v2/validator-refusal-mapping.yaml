@@ -1,0 +1,602 @@
+# T-5189 — sidecar mapping, NOT part of the frozen contracts v2 set (not in MANIFEST.yaml).
+# Human-readable twin: validator-refusal-mapping.md. Checked by tests/unit/test_t5189_validator_refusal_mapping.py.
+mapping: 'EWCR shared contract 3 (validation/refusal): designer validator codes -> runtime refusal reason_codes'
+task: T-5189
+relation: 'A validator finding is design-time and is never a refusal record. "prevents" means: the finding flags a defect in the map which, if shipped, would be a cause of that runtime refusal; fixing the
+  finding removes that cause.'
+sources:
+  refusal_schema:
+    path: docs/research/executable-workflow/contracts/v2/refusal.schema.json
+    sha256: c4148a34b54ed8bf3e3cb7c75b79aba5cb6c0923b9ca28406cb9329d7c9cb857
+  validator:
+    path: vendor/designer/validate-workflow-0.43.0.py
+    version: 0.43.0
+    sha256: 08ac44430d1a72625b5a7fb5e443b573fecdf06b2bb9bd03b3ed4e3919eb225e
+reason_codes:
+  unratified_procedure:
+    refuses: instance creation from a procedure no human has ratified
+    prevented_by:
+    - E-WORKFLOW-KIND
+    - E-XML-WORKFLOW-KIND
+    - W-XML-NO-WORKFLOWMETA
+    runtime_only: false
+    why: '§13 #1 (architecture-c9070637.md:911). Only the kind marker is design-time: a map whose kind is invalid or undeclared cannot be told apart from documentation, so the runtime must treat it as not
+      a ratifiable procedure. A valid executable map is still unratified until a human ratifies it; that refusal stays runtime-only.'
+    inferred: true
+  unresolved_reference:
+    refuses: a reference that does not resolve (action, profile, node, field, compensation) before dispatch
+    prevented_by:
+    - E-EDGE-DANGLING
+    - E-NODE-LANE
+    - E-SCOPEOF-DANGLING
+    - E-UID-DUP
+    - E-XML-FLOW-DANGLING
+    - E-XML-ID-DUP
+    - E-XML-IO-PREFIX-UNDECLARED
+    - E-XML-LANEREF-DANGLING
+    - E-XML-UID-DUP
+    - W-XML-GW-DEFAULT-NOT-OWN
+    - W-XML-IO-FIELD-UNKNOWN
+    - W-XML-IO-MATCH-UNRESOLVED
+    runtime_only: false
+    why: '§13 #2 (architecture-c9070637.md:912); evidence-and-idempotency.md:164 (compensation on a node that declares none). The validator catches dangling or ambiguous references inside the map and against
+      the field catalog. It does not check action or capability-profile references, the main subject of §13 #2; those stay runtime-only.'
+    inferred: false
+  human_gate_skipped:
+    refuses: an actor passing a human gate without an admitted human envelope
+    prevented_by:
+    - E-AUTHORITY
+    - E-INCEPTION-NOT-SOVEREIGN
+    - E-META-AUTHORITY
+    - E-NODE-LANE
+    - E-XML-AUTHORITY
+    - E-XML-LANE-AUTHORING-DEFAULT
+    - E-XML-META-AUTHORITY
+    - E-XML-NODE-UNASSIGNED
+    - W-LANE-NO-OWNER
+    - W-TYPE-LANE-MISMATCH
+    - W-XML-LANE-NO-AUTHORITY
+    runtime_only: false
+    why: '§13 #3 (architecture-c9070637.md:913); task-lifecycle-contract.md:102. A step with no derivable authority must be treated as gated, so an agent completing it is refused; the authority findings
+      remove that cause. An agent deliberately passing a correctly declared gate is runtime-only.'
+    inferred: true
+  scope_mismatch:
+    refuses: work outside the pinned repository/worktree, or a bound task no longer in active/
+    prevented_by: []
+    runtime_only: true
+    why: '§13 #4 (architecture-c9070637.md:914); task-lifecycle-contract.md:35-38; accepted-scenarios.md:47. The map has no repository, worktree or task binding to check.'
+    inferred: false
+  missing_typed_input:
+    refuses: advancement when a declared typed input is absent, whatever the worker claims
+    prevented_by:
+    - E-XML-IO-EXPECT-CONTRADICTS
+    - E-XML-IO-MATCH-MISSING
+    - W-IO-INPUT
+    - W-XML-IO-FIELD-ENTITY
+    - W-XML-IO-INCOMPLETE
+    runtime_only: false
+    why: '§13 #5 (architecture-c9070637.md:915). W-IO-INPUT finds a required input with no upstream producer; the io findings find inputs that are untyped, sourceless, of another object or unsatisfiable.
+      A worker that simply fails to produce a declared output is runtime-only.'
+    inferred: false
+  unmeasured_component_scope:
+    refuses: treating unmeasured component scope as zero impact
+    prevented_by: []
+    runtime_only: true
+    why: '§13 #6 (architecture-c9070637.md:916). The validator has no component-scope model; aef.constituents is composite-node metadata, not a Component Fabric measurement.'
+    inferred: false
+  duplicate_delivery:
+    refuses: a second delivery of an already-consumed attempt or result
+    prevented_by: []
+    runtime_only: true
+    why: '§13 #7 (architecture-c9070637.md:917); evidence-and-idempotency.md:127,152. Delivery is a runtime event; a map cannot contain it.'
+    inferred: false
+  capability_unsupported:
+    refuses: a step the bound provider cannot perform (no silent substitution)
+    prevented_by:
+    - E-NODE-TYPE
+    - E-XML-NODE-TYPE
+    runtime_only: false
+    why: '§13 #8 (architecture-c9070637.md:918). Only the node-type vocabulary is design-time: an element no executor knows can never be performed. Provider capability itself is resolved at binding time
+      and is runtime-only.'
+    inferred: true
+  direct_state_mutation:
+    refuses: state changed outside an admitted envelope (agent edit, Watchtower write, deadline replay)
+    prevented_by: []
+    runtime_only: true
+    why: '§13 #11, #17, #20 (architecture-c9070637.md:921,927,930); refusal-threat-matrix.md ZA-3, ZA-5. A map describes no state writes.'
+    inferred: false
+  ambiguous_identity:
+    refuses: a request carrying only shared host identity
+    prevented_by: []
+    runtime_only: true
+    why: '§13 #12 (architecture-c9070637.md:922). Requester identity exists only at run time.'
+    inferred: false
+  task_hash_drift:
+    refuses: advancement after the bound task changed between gates or during an attempt
+    prevented_by: []
+    runtime_only: true
+    why: '§13 #13 (architecture-c9070637.md:923); accepted-scenarios.md:46 (N-1). The task binding and its hash exist only at run time.'
+    inferred: false
+  policy_or_capability_drift:
+    refuses: an attempt whose policy or capability changed since ratification
+    prevented_by: []
+    runtime_only: true
+    why: '§13 #15 (architecture-c9070637.md:925). Drift is a difference between two runtime moments; one map has no second moment.'
+    inferred: false
+  bypass_input:
+    refuses: an env flag or --force-equivalent presented to cross the runner boundary
+    prevented_by: []
+    runtime_only: true
+    why: '§13 #16 (architecture-c9070637.md:926); task-lifecycle-contract.md:106. Inputs are presented at run time.'
+    inferred: false
+  cancellation_in_effect:
+    refuses: advancement after the instance or bound task was cancelled
+    prevented_by: []
+    runtime_only: true
+    why: '§13 #18 (architecture-c9070637.md:928); accepted-scenarios.md:45 (N-1). Cancellation is a runtime event.'
+    inferred: false
+  stale_position:
+    refuses: a proposal made against a ledger position that is no longer the head (the loser of a race)
+    prevented_by:
+    - W-GW-AMBIGUOUS
+    - W-XML-GW-AMBIGUOUS
+    - W-XML-GW-BRANCH-UNCONDITIONED
+    runtime_only: false
+    why: '§13 #19 (architecture-c9070637.md:929); evidence-and-idempotency.md:95,144. An exclusive gateway with more than one unconditioned branch lets two proposals advance one position along different
+      edges; one of them must lose. Races between actors are runtime-only.'
+    inferred: true
+  command_substitution:
+    refuses: an action that escapes its registered argv to a shell string
+    prevented_by: []
+    runtime_only: true
+    why: '§13 #4, #16 (architecture-c9070637.md:914,926); refusal-threat-matrix.md CL-6, MS-5. The validator does not read script contracts or arguments.'
+    inferred: false
+  deadline_expired:
+    refuses: advancement after a recorded deadline passed
+    prevented_by: []
+    runtime_only: true
+    why: '§13 #17 (architecture-c9070637.md:927). Deadlines are ledgered runtime events; the map declares none the validator checks.'
+    inferred: false
+  privilege_exceeds_profile:
+    refuses: a resolved secret binding that can do more than the node's capability profile allows
+    prevented_by: []
+    runtime_only: true
+    why: N-2 (accepted-scenarios.md:86). Bindings resolve at run time; the validator reads no capability profile or binding.
+    inferred: false
+validator_codes:
+  E-LOAD:
+    rule: the file cannot be found or read
+    prevents: []
+    design_only: true
+    inferred: false
+  E-YAML-PARSE:
+    rule: the YAML does not parse
+    prevents: []
+    design_only: true
+    inferred: false
+  E-XML-PARSE:
+    rule: the XML does not parse
+    prevents: []
+    design_only: true
+    inferred: false
+  E-NOT-MAPPING:
+    rule: the YAML top level is not a mapping
+    prevents: []
+    design_only: true
+    inferred: false
+  E-TOPLEVEL-MISSING:
+    rule: a required top-level key is missing
+    prevents: []
+    design_only: true
+    inferred: false
+  E-XML-STRUCTURE:
+    rule: no <bpmn:definitions> containing a <bpmn:process>
+    prevents: []
+    design_only: true
+    inferred: false
+  E-WORKFLOW-KIND:
+    rule: workflow kind is not in the closed kind vocabulary (YAML)
+    prevents:
+    - unratified_procedure
+    design_only: false
+    inferred: true
+  E-XML-WORKFLOW-KIND:
+    rule: workflow kind is not in the closed kind vocabulary (XML)
+    prevents:
+    - unratified_procedure
+    design_only: false
+    inferred: true
+  W-XML-NO-WORKFLOWMETA:
+    rule: 'no <aef:workflowMeta>: no id of its own and no kind'
+    prevents:
+    - unratified_procedure
+    design_only: false
+    inferred: true
+  E-LANES-EMPTY:
+    rule: no lane declared (YAML)
+    prevents: []
+    design_only: true
+    inferred: false
+  E-XML-LANES-EMPTY:
+    rule: no <bpmn:lane> declared (XML)
+    prevents: []
+    design_only: true
+    inferred: false
+  E-LANE-FIELD:
+    rule: a lane is not a mapping or misses a required field
+    prevents: []
+    design_only: true
+    inferred: false
+  E-NODE-FIELD:
+    rule: a node is not a mapping or misses a required field
+    prevents: []
+    design_only: true
+    inferred: false
+  E-EDGE-FIELD:
+    rule: an edge is not a mapping or misses a required field
+    prevents: []
+    design_only: true
+    inferred: false
+  E-ABBR-DUP:
+    rule: two lanes share an abbreviation (YAML)
+    prevents: []
+    design_only: true
+    inferred: false
+  E-XML-ABBR-DUP:
+    rule: two lanes share an abbreviation (XML)
+    prevents: []
+    design_only: true
+    inferred: false
+  E-AUTHORITY:
+    rule: a lane's authority is not in the authority vocabulary (YAML)
+    prevents:
+    - human_gate_skipped
+    design_only: false
+    inferred: false
+  E-META-AUTHORITY:
+    rule: a node's own aef.authority is not in the authority vocabulary (YAML)
+    prevents:
+    - human_gate_skipped
+    design_only: false
+    inferred: false
+  E-XML-AUTHORITY:
+    rule: a lane's authority is not in the authority vocabulary (XML)
+    prevents:
+    - human_gate_skipped
+    design_only: false
+    inferred: false
+  E-XML-META-AUTHORITY:
+    rule: a node's own authority is not in the authority vocabulary (XML)
+    prevents:
+    - human_gate_skipped
+    design_only: false
+    inferred: false
+  E-XML-LANE-AUTHORING-DEFAULT:
+    rule: a lane's authoringDefault is not in the authority vocabulary
+    prevents:
+    - human_gate_skipped
+    design_only: false
+    inferred: false
+  E-INCEPTION-NOT-SOVEREIGN:
+    rule: an inception does not carry sovereignty authority
+    prevents:
+    - human_gate_skipped
+    design_only: false
+    inferred: false
+  E-XML-NODE-UNASSIGNED:
+    rule: a flow node is in no lane, so it has no authority-of-record
+    prevents:
+    - human_gate_skipped
+    design_only: false
+    inferred: false
+  W-XML-LANE-NO-AUTHORITY:
+    rule: a lane declares no authority, so its tasks' owner cannot be derived
+    prevents:
+    - human_gate_skipped
+    design_only: false
+    inferred: false
+  W-LANE-NO-OWNER:
+    rule: a lane's authority names no owner, so the task has no derivable owner
+    prevents:
+    - human_gate_skipped
+    design_only: false
+    inferred: false
+  W-TYPE-LANE-MISMATCH:
+    rule: the node type implies a performer the lane's authority contradicts (lane wins)
+    prevents:
+    - human_gate_skipped
+    design_only: false
+    inferred: true
+  W-XML-AUTHORITY-DEFAULT-MISMATCH:
+    rule: a node's authority overrides its lane's authoringDefault (recorded, legitimate)
+    prevents: []
+    design_only: true
+    inferred: false
+  E-NODE-TYPE:
+    rule: unknown node type (YAML)
+    prevents:
+    - capability_unsupported
+    design_only: false
+    inferred: true
+  E-XML-NODE-TYPE:
+    rule: unknown flow-node element (XML)
+    prevents:
+    - capability_unsupported
+    design_only: false
+    inferred: true
+  E-NODE-LANE:
+    rule: a node's lane does not match any lane id
+    prevents:
+    - unresolved_reference
+    - human_gate_skipped
+    design_only: false
+    inferred: false
+  E-UID-DUP:
+    rule: a uid is used more than once (YAML)
+    prevents:
+    - unresolved_reference
+    design_only: false
+    inferred: true
+  E-XML-ID-DUP:
+    rule: a bpmn:id is not unique
+    prevents:
+    - unresolved_reference
+    design_only: false
+    inferred: true
+  E-XML-UID-DUP:
+    rule: an aef:uid is not unique
+    prevents:
+    - unresolved_reference
+    design_only: false
+    inferred: true
+  E-EDGE-DANGLING:
+    rule: an edge endpoint does not resolve to a node uid
+    prevents:
+    - unresolved_reference
+    design_only: false
+    inferred: false
+  E-XML-FLOW-DANGLING:
+    rule: a sequence-flow endpoint does not resolve to a flow node
+    prevents:
+    - unresolved_reference
+    design_only: false
+    inferred: false
+  E-XML-LANEREF-DANGLING:
+    rule: a lane's flowNodeRef does not resolve to a flow node
+    prevents:
+    - unresolved_reference
+    design_only: false
+    inferred: false
+  E-SCOPEOF-DANGLING:
+    rule: aef.scopeOf does not resolve to a node uid
+    prevents:
+    - unresolved_reference
+    design_only: false
+    inferred: false
+  E-SCOPEOF-SELF:
+    rule: aef.scopeOf references the node itself
+    prevents: []
+    design_only: true
+    inferred: false
+  W-SCOPEOF-TYPE:
+    rule: aef.scopeOf on a node that is not a subProcess
+    prevents: []
+    design_only: true
+    inferred: false
+  E-CONST-SHAPE:
+    rule: aef.constituents is not a non-empty list of {id, name, ref?}
+    prevents: []
+    design_only: true
+    inferred: false
+  E-CONST-DUP:
+    rule: a constituent id is duplicated within one node
+    prevents: []
+    design_only: true
+    inferred: false
+  W-CONST-FIELD:
+    rule: a constituent carries a field that the bridge would drop
+    prevents: []
+    design_only: true
+    inferred: false
+  E-XML-IO-PREFIX-UNDECLARED:
+    rule: an io prefix is not declared in the process aef:prefixes
+    prevents:
+    - unresolved_reference
+    design_only: false
+    inferred: false
+  W-XML-IO-FIELD-UNKNOWN:
+    rule: an io fieldRef is not in the project's field catalog
+    prevents:
+    - unresolved_reference
+    design_only: false
+    inferred: false
+  W-XML-IO-MATCH-UNRESOLVED:
+    rule: a match field has neither fieldRef nor path
+    prevents:
+    - unresolved_reference
+    design_only: false
+    inferred: false
+  W-XML-GW-DEFAULT-NOT-OWN:
+    rule: a gateway's default is not one of its own outgoing flows
+    prevents:
+    - unresolved_reference
+    design_only: false
+    inferred: false
+  W-IO-INPUT:
+    rule: a required input has no upstream node emitting a matching output
+    prevents:
+    - missing_typed_input
+    design_only: false
+    inferred: false
+  W-XML-IO-INCOMPLETE:
+    rule: an object io lacks typeRef, source/target system or operation
+    prevents:
+    - missing_typed_input
+    design_only: false
+    inferred: true
+  W-XML-IO-FIELD-ENTITY:
+    rule: an io field belongs to another object in the catalog
+    prevents:
+    - missing_typed_input
+    design_only: false
+    inferred: true
+  E-XML-IO-EXPECT-CONTRADICTS:
+    rule: an aef:expect requires a value the attribute's own rule forbids
+    prevents:
+    - missing_typed_input
+    design_only: false
+    inferred: true
+  E-XML-IO-MATCH-MISSING:
+    rule: an instance-changing operation names no match field (acts on every instance)
+    prevents:
+    - missing_typed_input
+    design_only: false
+    inferred: true
+  W-XML-IO-MISSING:
+    rule: steps carry no io at all, so nothing they read or write is recorded
+    prevents: []
+    design_only: true
+    inferred: false
+  W-XML-IO-EXPECT-REDUNDANT:
+    rule: an aef:expect repeats the catalog's own pattern
+    prevents: []
+    design_only: true
+    inferred: false
+  W-GW-AMBIGUOUS:
+    rule: an exclusive gateway has more than one unconditioned outgoing edge (YAML)
+    prevents:
+    - stale_position
+    design_only: false
+    inferred: true
+  W-XML-GW-AMBIGUOUS:
+    rule: an exclusive gateway has more than one unconditioned outgoing flow (XML)
+    prevents:
+    - stale_position
+    design_only: false
+    inferred: true
+  W-XML-GW-BRANCH-UNCONDITIONED:
+    rule: a deciding gateway branch has no condition and is not the default
+    prevents:
+    - stale_position
+    design_only: false
+    inferred: true
+  W-GW-OUTGOING:
+    rule: an exclusive gateway has fewer than two outgoing edges (YAML)
+    prevents: []
+    design_only: true
+    inferred: false
+  W-XML-GW-OUTGOING:
+    rule: an exclusive gateway has fewer than two outgoing flows (XML)
+    prevents: []
+    design_only: true
+    inferred: false
+  W-PGW-CONDITION:
+    rule: a parallel fork's outgoing edge carries an ignored condition (YAML)
+    prevents: []
+    design_only: true
+    inferred: false
+  W-XML-PGW-CONDITION:
+    rule: a parallel fork's outgoing flow carries an ignored condition (XML)
+    prevents: []
+    design_only: true
+    inferred: false
+  W-PGW-NOOP:
+    rule: a parallel gateway neither forks nor joins (YAML)
+    prevents: []
+    design_only: true
+    inferred: false
+  W-XML-PGW-NOOP:
+    rule: a parallel gateway neither forks nor joins (XML)
+    prevents: []
+    design_only: true
+    inferred: false
+  W-PGW-UNBALANCED:
+    rule: a parallel fork has no matching join (YAML)
+    prevents: []
+    design_only: true
+    inferred: false
+  W-XML-PGW-UNBALANCED:
+    rule: a parallel fork has no matching join (XML)
+    prevents: []
+    design_only: true
+    inferred: false
+  W-NO-START-EVENT:
+    rule: no start event, so reachability was not assessed (YAML)
+    prevents: []
+    design_only: true
+    inferred: false
+  W-XML-NO-START-EVENT:
+    rule: no start event, so reachability was not assessed (XML)
+    prevents: []
+    design_only: true
+    inferred: false
+  W-NO-END-EVENT:
+    rule: no end event, so termination was not assessed (YAML)
+    prevents: []
+    design_only: true
+    inferred: false
+  W-XML-NO-END-EVENT:
+    rule: no end event, so termination was not assessed (XML)
+    prevents: []
+    design_only: true
+    inferred: false
+  W-UNREACHABLE:
+    rule: a node is not reachable from any start event (YAML)
+    prevents: []
+    design_only: true
+    inferred: false
+  W-XML-UNREACHABLE:
+    rule: a node is not reachable from any start event (XML)
+    prevents: []
+    design_only: true
+    inferred: false
+  W-DEADEND:
+    rule: no end event is reachable from a node (YAML)
+    prevents: []
+    design_only: true
+    inferred: false
+  W-XML-DEADEND:
+    rule: no end event is reachable from a node (XML)
+    prevents: []
+    design_only: true
+    inferred: false
+  W-XML-DISCONNECTED:
+    rule: the flow graph falls into disconnected parts
+    prevents: []
+    design_only: true
+    inferred: false
+  W-XML-DOC-PREFIX:
+    rule: a documentation line starts with no known prefix
+    prevents: []
+    design_only: true
+    inferred: false
+  W-XML-DATA-UNLINKED:
+    rule: a data object has no name or is linked to no step
+    prevents: []
+    design_only: true
+    inferred: false
+  W-XML-POSITION-DI:
+    rule: aef:position and the DI bounds disagree
+    prevents: []
+    design_only: true
+    inferred: false
+  W-XML-LANE-GEOMETRY:
+    rule: declared lane order disagrees with drawn geometry
+    prevents: []
+    design_only: true
+    inferred: false
+  W-XML-LANE-CAPACITY:
+    rule: a lane's declared height cannot contain its members
+    prevents: []
+    design_only: true
+    inferred: false
+  I-XML-LANE-GEOMETRY-SKIP:
+    rule: 'info: lane/geometry agreement not evaluated (nodes carry no position)'
+    prevents: []
+    design_only: true
+    inferred: false
+  I-XML-LANE-CAPACITY-SKIP:
+    rule: 'info: lane capacity not evaluated (unknown node occupancy)'
+    prevents: []
+    design_only: true
+    inferred: false

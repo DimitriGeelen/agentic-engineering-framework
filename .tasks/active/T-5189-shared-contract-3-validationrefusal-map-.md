@@ -102,9 +102,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Every reason_code in contracts v2 refusal.schema.json appears exactly once in the mapping, with "prevented by" codes or "runtime-only" and a reason.
-- [ ] Every E-/W- code defined in vendor/designer/validate-workflow-0.43.0.py appears in the mapping, with the reason_codes it prevents or "design-only".
-- [ ] A YAML twin exists, and a check (test or tools/ script) proves both coverage rules above against the two source files. Contracts v1/v2 frozen files are byte-identical (`tools/ewcr-contracts-check.py --contracts-version 2` clean).
+- [x] Every reason_code in contracts v2 refusal.schema.json appears exactly once in the mapping, with "prevented by" codes or "runtime-only" and a reason.
+- [x] Every E-/W- code defined in vendor/designer/validate-workflow-0.43.0.py appears in the mapping, with the reason_codes it prevents or "design-only".
+- [x] A YAML twin exists, and a check (test or tools/ script) proves both coverage rules above against the two source files. Contracts v1/v2 frozen files are byte-identical (`tools/ewcr-contracts-check.py --contracts-version 2` clean).
 - [ ] 832 is sent the draft with the path and commit.
 
 ### Human
@@ -291,6 +291,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5189_validator_refusal_mapping.py -q > /tmp/.t5189.out 2>&1 && grep -q passed /tmp/.t5189.out
+python3 tools/ewcr-contracts-check.py --contracts-version 2
+python3 tools/ewcr-contracts-check.py
 
 ## RCA
 
