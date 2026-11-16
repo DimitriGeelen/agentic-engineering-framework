@@ -101,7 +101,7 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] `fw designer sync --from-tag designer-v0.43.0 --dry-run` verifies the tag (artifact sha256 = 8511974771820287731f8c5a11033feba573a45c9446678c7f02aed12acb287f, 1351062 bytes, matching 832's MANIFEST at the tag and msg df95ece2)
 - [x] policy/designer-pin.yaml pins 0.43.0 (artifact and validator fields), the build and validator are installed under vendor/designer/, and `fw designer status` reports the pin valid
-- [ ] /designer serves 0.43.0 after a Watchtower restart; the designer tests pass; the vendored copy carries 0.43.0
+- [x] /designer serves 0.43.0 after a Watchtower restart; the designer tests pass; the vendored copy carries 0.43.0 (served APP_VERSION 0.43.0, sha256 8511974…; 155 pytest + 92 bats, pin-drift guard green after commit)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
