@@ -6382,6 +6382,16 @@ PYTASK_VERIFY
                 PYTHONPATH="$FRAMEWORK_ROOT" \
                 python3 -m lib.delegation_cli delegate "$@"
             ;;
+        accept-miss)
+            # T-5181 (T-5152 GO): operator-only — resolve an honestly missed Agent
+            # criterion as an accepted miss ([~] + ledger row); never counted as met.
+            if [ -z "${1:-}" ]; then
+                echo -e "${RED}Usage: fw task accept-miss T-XXX --ac N --reason \"...\" [--i-am-human]${NC}" >&2
+                exit 1
+            fi
+            exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                python3 "$FRAMEWORK_ROOT/lib/accepted_miss.py" accept "$@"
+            ;;
         classify-ac)
             # T-3963: who closes a criterion — the same lib/delegation.classify the
             # delegate verb and the close gate use, on text, with no task file. Consumers
@@ -6515,6 +6525,7 @@ PYTASK_VERIFY
             echo "  review T-XXX      Print clickable URL + QR code for Human AC review"
             echo "  review-batch T-A T-B [...]  Emit markdown table of full URLs for multi-task chat handoff (T-2182)"
             echo "  delegate T-XXX [--dry-run]  Delegate deterministic [REVIEW] criteria to the reviewer (D-626 / T-3445)"
+            echo "  accept-miss T-XXX --ac N --reason \"...\"  Operator: accept a missed Agent criterion as [~] (T-5181)"
             echo "  revisit-due       Show tasks whose revisit_at is <= today UTC (G-053 / T-1452)"
             echo ""
             echo "Usage:"

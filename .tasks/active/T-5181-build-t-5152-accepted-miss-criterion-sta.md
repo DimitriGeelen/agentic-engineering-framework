@@ -5,10 +5,10 @@ name: "Build T-5152: accepted-miss criterion state [~], operator-accepted with l
 description: >
   Build slice of inception T-5152 (GO 2026-11-16).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [acceptance-criteria, governance]
 components: []
 related_tasks: [T-5152, T-3695]
@@ -39,7 +39,7 @@ related_tasks: [T-5152, T-3695]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T12:43:09Z
-last_update: '2026-11-16T12:45:56Z'
+last_update: 2026-11-16T13:02:49Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -107,11 +107,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw task accept-miss` writes the box, the annotation and the ledger row. It refuses under CLAUDECODE=1 without --i-am-human, refuses Human criteria, refuses an already-met criterion, and refuses an out-of-range N.
-- [ ] P-010 treats `[~]` with a matching ledger row as resolved and never as met. A bare `[~]`, a `[~]` whose criterion was edited after acceptance, and an unknown box character each block completion with a message naming the criterion. Tested through update-task.sh on fixture tasks.
-- [ ] The completion output and the episodic summary list each accepted miss (id, criterion, reason).
-- [ ] fw audit FAILs on a committed `[~]` with no matching row, and on a non-append-only ledger edit.
-- [ ] Every other closure-gating AC counter found by the grep is either updated or recorded in ## Decisions with why it needs no change.
+- [x] `fw task accept-miss` writes the box, the annotation and the ledger row. It refuses under CLAUDECODE=1 without --i-am-human, refuses Human criteria, refuses an already-met criterion, and refuses an out-of-range N.
+- [x] P-010 treats `[~]` with a matching ledger row as resolved and never as met. A bare `[~]`, a `[~]` whose criterion was edited after acceptance, and an unknown box character each block completion with a message naming the criterion. Tested through update-task.sh on fixture tasks.
+- [x] The completion output and the episodic summary list each accepted miss (id, criterion, reason).
+- [x] fw audit FAILs on a committed `[~]` with no matching row, and on a non-append-only ledger edit.
+- [x] Every other closure-gating AC counter found by the grep is either updated or recorded in ## Decisions with why it needs no change.
 - [ ] Tests in tests/unit/test_t5181_*.py (and/or tests/unit/t5181_*.bats) cover all of the above. Every existing test that reads a changed file passes, `bin/fw test invariants` passes, and `bin/fw vendor self --check` is clean.
 
 ### Human
@@ -373,6 +373,15 @@ bin/fw vendor self --check --task T-5181
 
 ## Decisions
 
+### 2026-11-16 — closure-gating AC counters (grep of lib/ agents/ bin/ web/blueprints)
+- **Chose:** update the counters that decide a close or an archive move: P-010 (`update-task.sh` check_acceptance_criteria, Agent + Human + un-split), the partial-complete recheck (`update-task.sh` ALL_TOTAL/ALL_CHECKED), the inception-decide Agent preflight (`lib/inception.sh` ~709), and the inception sweep's Human recount before `mv` to completed/ (`lib/inception.sh` ~1309). All count any one-character box; met = `[x]`/`[X]`; a valid accepted miss (Agent only) is subtracted as resolved; everything else is unchecked. Episodic `ac_total_count` also counts any box.
+- **No change, because the counter does not decide closure:** `bin/fw` archive-sweep eligibility (~6730) only nominates candidates — the sweep closes through `update-task.sh`, so P-010 decides; `audit.sh` archive-eligible / limbo / stuck-review scans (~7492, ~8297, ~8368, ~8907), `active-task-scan.py`, `completed-task-scan.py`, `handover.sh`, `bin/fw` task verify / poll / review-readiness listings (~6298, ~6484, ~9664), `verify-acs.sh` are reports; `update-task.sh` ~2903 (horizon demote preservation) and ~3085 (Human Steps warning) are not gates; `check-active-task.sh` REAL_AC_COUNT is the G-020 build-readiness gate (start of work, not close); `human_review_state.py`, `human_ac_ticks.py`, `verdict_ledger.py`, `unclosable_misfiled.py`, `delegation_cli.py`, `restatement_cli.py` act on Human criteria, where `[~]` is never valid; `bvp_judge.py`, `ac_placeholder.py`, the BVP estimator are scoring/lint; `web/blueprints/tasks.py` is the Watchtower render/toggle (out of scope — follow-up render task).
+- **Rejected:** widening `lib/reviewer/static_scan._AC_LINE_RE` (feeds `lib/delegation.parse_criteria`) to `[~]`. It drives ~10 reviewer detectors that would start reporting `[~]` lines as unticked criteria. Known consequence left as is: in `parse_criteria` a `[~]` line is read as body of the preceding Agent criterion, which shifts later Agent indices there. The verdict/delegation paths it feeds are Human-criterion paths, so no gate is affected; `lib/accepted_miss.py` has its own parser and numbering, matching P-010's.
+
+### 2026-11-16 — `[X]` and legacy `[~]`
+- **Chose:** `[X]` counts as met (every other counter already reads `[xX]`; P-010 used to ignore it entirely, so no task that closed before is now refused). The one `[~]` already committed before this module (T-2535's DESCOPED line) is grandfathered by the audit: boxes present at the parent of the commit that added `lib/accepted_miss.py` are reported as grandfathered, not FAILed (forward-looking, same as human_ac_ticks). Fixtures and repos without that commit grandfather nothing.
+- **Rejected:** rewriting T-2535 (a completed task) or FAILing the audit on it permanently.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -398,3 +407,7 @@ bin/fw vendor self --check --task T-5181
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5181-build-t-5152-accepted-miss-criterion-sta.md
 - **Context:** Initial task creation
+
+### 2026-11-16T13:02:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

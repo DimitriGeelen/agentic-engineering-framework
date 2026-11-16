@@ -3307,8 +3307,10 @@ _audit_collect() {
     _audit_prefetch vl env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" audit
 [ -f "$FRAMEWORK_ROOT/lib/human_ac_ticks.py" ] && \
     _audit_prefetch hat env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/human_ac_ticks.py" audit
+[ -f "$FRAMEWORK_ROOT/lib/accepted_miss.py" ] && \
+    _audit_prefetch am env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/accepted_miss.py" audit
 [ -f "$FRAMEWORK_ROOT/lib/outside_commits.py" ] && \
-    _audit_prefetch oc env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/outside_commits.py" audit
+    _audit_prefetch ocenv PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/outside_commits.py" audit
 [ -f "$FRAMEWORK_ROOT/lib/watchtower_decision_revert.py" ] && \
     _audit_prefetch wdr python3 -I "$FRAMEWORK_ROOT/lib/watchtower_decision_revert.py" --repo "$PROJECT_ROOT"
 [ -f "$FRAMEWORK_ROOT/lib/index_reconcile.py" ] && \
@@ -3379,6 +3381,31 @@ if [ -f "$FRAMEWORK_ROOT/lib/human_ac_ticks.py" ]; then
     fi
 else
     fail "Human-AC ticks: lib/human_ac_ticks.py is missing — Human ticks UNVERIFIED" \
+         "detector code unavailable" \
+         "Restore it: bin/fw vendor self (or fw upgrade)"
+fi
+
+# T-5181 (T-5152 GO): an accepted miss `[~]` resolves an Agent criterion for P-010 only with
+# a matching row in the append-only .context/reviews/accepted-misses.jsonl (operator verb
+# `fw task accept-miss`). FAIL on a committed `[~]` with no matching row (bare, stale after
+# an edit, or citing an unknown id) and on any commit that rewrote committed ledger rows.
+if [ -f "$FRAMEWORK_ROOT/lib/accepted_miss.py" ]; then
+    _audit_collect am
+    _am_out=$_PF_OUT
+    _am_rc=$_PF_RC
+    if [ "$_am_rc" -eq 0 ]; then
+        pass "Accepted misses: $(echo "$_am_out" | tail -1)"
+    elif [ "$_am_rc" -eq 2 ]; then
+        fail "Accepted misses: $(echo "$_am_out" | tail -1)" \
+             "$(echo "$_am_out" | grep '^FAIL' | head -3 | tr '\n' ';')" \
+             "Inspect: python3 lib/accepted_miss.py audit — a [~] the operator did not accept goes back to [ ] (the agent may add **Miss proposed:** under it); the operator accepts with: fw task accept-miss T-XXX --ac N --reason '...'; a rewritten ledger is restored from git"
+    else
+        fail "Accepted misses: audit could not run (rc=$_am_rc) — accepted misses UNVERIFIED" \
+             "$(echo "$_am_out" | tail -2 | tr '\n' ';')" \
+             "Run: python3 lib/accepted_miss.py audit"
+    fi
+else
+    fail "Accepted misses: lib/accepted_miss.py is missing — accepted misses UNVERIFIED" \
          "detector code unavailable" \
          "Restore it: bin/fw vendor self (or fw upgrade)"
 fi
