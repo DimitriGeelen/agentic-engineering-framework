@@ -10,10 +10,10 @@ description: >
   (e.g. unresolved_reference, missing_typed_input, human_gate_skipped). Deliverable:
   a mapping table both sides check.
 
-status: captured
+status: started-work
 workflow_type: design
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T15:30:01Z
-last_update: '2026-11-16T16:00:58Z'
+last_update: 2026-11-16T16:03:14Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,20 +90,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Shared contract 3 of the five pairings agreed with 832 (T-5183; their T-1425). 832 msg 66c77219 (2026-11-16) pointed out that a designer validator finding is design-time (a map, no instance, no ledger), so it can never validate as a runtime refusal record (refusal.schema.json v2). AEF agreed that the checkable relation is a code mapping.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Nothing states which design-time validator codes (E-/W- in 832's validate-workflow.py 0.43.0, sha256 08ac4443…, vendored at vendor/designer/validate-workflow-0.43.0.py) prevent which runtime refusal reason_codes (contracts v2 refusal.schema.json, 17 + privilege_exceeds_profile). Without that, row 3 cannot be checked.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A mapping table: every runtime reason_code mapped to the validator codes that catch its cause at design time ("prevented by"), or marked "runtime-only (no design-time equivalent)" with a reason. Every validator code is mapped to the reason_codes it prevents, or marked "design-only".
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** docs/research/executable-workflow/contracts/v2/validator-refusal-mapping.md (new; contracts v2's frozen files untouched) plus a machine-checkable YAML twin. 832 can check it against their validator.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Every reason_code in contracts v2 refusal.schema.json appears exactly once in the mapping, with "prevented by" codes or "runtime-only" and a reason.
+- [ ] Every E-/W- code defined in vendor/designer/validate-workflow-0.43.0.py appears in the mapping, with the reason_codes it prevents or "design-only".
+- [ ] A YAML twin exists, and a check (test or tools/ script) proves both coverage rules above against the two source files. Contracts v1/v2 frozen files are byte-identical (`tools/ewcr-contracts-check.py --contracts-version 2` clean).
+- [ ] 832 is sent the draft with the path and commit.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -386,3 +388,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5189-shared-contract-3-validationrefusal-map-.md
 - **Context:** Initial task creation
+
+### 2026-11-16T16:03:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
