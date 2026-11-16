@@ -348,24 +348,39 @@ check_acceptance_criteria() {
         fi
     fi
 
+    # T-5181 (T-5152 GO): every one-character box is a criterion. `\[[ x]\]` ignored `[~]`
+    # and any other character, so a criterion rewritten to `[~]` vanished from the count and
+    # the task closed. Met = [x]/[X]. An accepted miss (`[~]` + matching ledger row,
+    # lib/accepted_miss.py) is RESOLVED, never met. Anything else is unchecked.
+    _am_gate_out=$(python3 "$FRAMEWORK_ROOT/lib/accepted_miss.py" gate "$TASK_FILE" 2>&1) || {
+        echo -e "${RED}ERROR: accepted-miss check could not run — acceptance criteria UNVERIFIED${NC}" >&2
+        echo "$_am_gate_out" | tail -3 | sed 's/^/  /' >&2
+        exit 1
+    }
+    ACCEPTED_MISSES=$(echo "$_am_gate_out" | grep '^MISS	' || true)
+    local ac_missed=0
+    [ -n "$ACCEPTED_MISSES" ] && ac_missed=$(echo "$ACCEPTED_MISSES" | wc -l | tr -d ' ')
+    local _am_bad
+    _am_bad=$(echo "$_am_gate_out" | grep '^BAD	' || true)
+
     if [ "$has_agent_header" -gt 0 ]; then
         agent_acs=$(echo "$ac_section" | awk '/^### Agent/{f=1; next} /^### /{f=0} f')
-        ac_total=$(echo "$agent_acs" | grep -cE '^\s*-\s*\[[ x]\]' || true)
-        ac_checked=$(echo "$agent_acs" | grep -cE '^\s*-\s*\[x\]' || true)
-        ac_unchecked=$((ac_total - ac_checked))
+        ac_total=$(echo "$agent_acs" | grep -cE '^\s*-\s*\[.\]' || true)
+        ac_checked=$(echo "$agent_acs" | grep -cE '^\s*-\s*\[[xX]\]' || true)
+        ac_unchecked=$((ac_total - ac_checked - ac_missed))
         ac_label="agent AC"
 
         HUMAN_AC_TOTAL=0
         HUMAN_AC_CHECKED=0
         if [ "$has_human_header" -gt 0 ]; then
             human_acs=$(echo "$ac_section" | awk '/^### Human/{f=1; next} /^### /{f=0} f')
-            HUMAN_AC_TOTAL=$(echo "$human_acs" | grep -cE '^\s*-\s*\[[ x]\]' || true)
-            HUMAN_AC_CHECKED=$(echo "$human_acs" | grep -cE '^\s*-\s*\[x\]' || true)
+            HUMAN_AC_TOTAL=$(echo "$human_acs" | grep -cE '^\s*-\s*\[.\]' || true)
+            HUMAN_AC_CHECKED=$(echo "$human_acs" | grep -cE '^\s*-\s*\[[xX]\]' || true)
         fi
     else
-        ac_total=$(echo "$ac_section" | grep -cE '^\s*-\s*\[[ x]\]' || true)
-        ac_checked=$(echo "$ac_section" | grep -cE '^\s*-\s*\[x\]' || true)
-        ac_unchecked=$((ac_total - ac_checked))
+        ac_total=$(echo "$ac_section" | grep -cE '^\s*-\s*\[.\]' || true)
+        ac_checked=$(echo "$ac_section" | grep -cE '^\s*-\s*\[[xX]\]' || true)
+        ac_unchecked=$((ac_total - ac_checked - ac_missed))
         ac_label="acceptance criteria"
         HUMAN_AC_TOTAL=0
         HUMAN_AC_CHECKED=0
@@ -378,10 +393,16 @@ check_acceptance_criteria() {
             log_gate_bypass "--skip-acceptance-criteria" "check_acceptance_criteria"
         else
             echo -e "${RED}ERROR: Cannot complete — $ac_unchecked/$ac_total $ac_label unchecked:${NC}" >&2
+            # T-5181: `|| true` — the open criteria may all be non-[ ] boxes now (listed below).
             if [ "$has_agent_header" -gt 0 ]; then
-                echo "$agent_acs" | grep -E '^\s*-\s*\[ \]' | sed 's/^/  /' >&2
+                { echo "$agent_acs" | grep -E '^\s*-\s*\[ \]' || true; } | sed 's/^/  /' >&2
             else
-                echo "$ac_section" | grep -E '^\s*-\s*\[ \]' | sed 's/^/  /' >&2
+                { echo "$ac_section" | grep -E '^\s*-\s*\[ \]' || true; } | sed 's/^/  /' >&2
+            fi
+            # T-5181: name each non-[ ] box that does not resolve, and why.
+            if [ -n "$_am_bad" ]; then
+                echo "$_am_bad" | awk -F'\t' '{printf "  %s\n      ↳ AC#%s: %s\n", $4, $2, $3}' >&2
+                echo "  An accepted miss is the operator's: fw task accept-miss T-XXX --ac N --reason \"...\"" >&2
             fi
             echo "" >&2
             # T-1836 (T-1831 C-3): surface body-vs-checkbox drift hint.
@@ -445,6 +466,10 @@ check_acceptance_criteria() {
                 echo "  2. Use --skip-acceptance-criteria to bypass (logged)" >&2
                 exit 1
             fi
+        elif [ "$ac_missed" -gt 0 ]; then
+            # T-5181: resolved, never met — say so every time.
+            echo -e "${YELLOW}Acceptance criteria: $ac_checked/$ac_total met, closed with $ac_missed accepted miss(es):${NC}"
+            echo "$ACCEPTED_MISSES" | awk -F'\t' '{printf "  %s  AC#%s %s\n      reason: %s\n", $3, $2, $4, $5}'
         else
             echo -e "${GREEN}Acceptance criteria: $ac_checked/$ac_total checked ✓${NC}"
         fi
@@ -2280,9 +2305,11 @@ if [ -n "$NEW_STATUS" ]; then
             # Strip HTML comments — template examples contain checkbox patterns.
             # T-1967: two-step strip (one-line first, then range) — see line ~87.
             AC_SECTION=$(echo "$AC_SECTION" | sed -E 's/<!--([^-]|-[^-]|--[^>])*-->//g' | sed '/<!--/,/-->/d')
-            ALL_TOTAL=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[[ x]\]' || true)
-            ALL_CHECKED=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[x\]' || true)
-            ALL_UNCHECKED=$((ALL_TOTAL - ALL_CHECKED))
+            # T-5181: any box counts; a valid accepted miss (Agent only) is resolved, not met.
+            ALL_TOTAL=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[.\]' || true)
+            ALL_CHECKED=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[[xX]\]' || true)
+            _all_missed=$(python3 "$FRAMEWORK_ROOT/lib/accepted_miss.py" gate "$TASK_FILE" 2>/dev/null | grep -c '^MISS	' || true)
+            ALL_UNCHECKED=$((ALL_TOTAL - ALL_CHECKED - ${_all_missed:-0}))
 
             # T-1559: SKIP_AC must bypass the recheck too. The auth flag is the
             # marker of authorization — semantically equivalent on both branches.

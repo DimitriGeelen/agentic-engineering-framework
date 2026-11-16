@@ -127,7 +127,7 @@ do_generate_episodic() {
             outcomes="$completed_criteria"
         fi
         ac_completed_count=$(echo "$ac_section" | grep -cE '^\s*-\s*\[x\]' || true)
-        ac_total_count=$(echo "$ac_section" | grep -cE '^\s*-\s*\[[ x]\]' || true)
+        ac_total_count=$(echo "$ac_section" | grep -cE '^\s*-\s*\[.\]' || true)  # T-5181: any box
     fi
 
     # =========================================================================
@@ -333,6 +333,20 @@ HEREDOC
         done
     else
         echo "  - 'Task completed'" >> "$episodic_file"
+    fi
+
+    # T-5181 (T-5152): criteria closed as operator-accepted misses — resolved, never met.
+    # Only emitted when there are any, so every other episodic is byte-identical to before.
+    local _am_yaml=""
+    _am_yaml=$(python3 "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}/lib/accepted_miss.py" \
+        list "$task_file" --yaml 2>/dev/null || true)
+    if [ -n "$_am_yaml" ]; then
+        {
+            echo ""
+            echo "# Accepted misses (operator-accepted, NOT met — closed with $(printf '%s\n' "$_am_yaml" | grep -c '^  - id:') accepted miss(es); T-5181)"
+            echo "accepted_misses:"
+            printf '%s\n' "$_am_yaml"
+        } >> "$episodic_file"
     fi
 
     # Challenges section — auto-filled from git

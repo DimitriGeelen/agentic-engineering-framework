@@ -706,14 +706,19 @@ do_inception_decide() {
         _ac_section=$(extract_ac_section "$task_file" | python3 "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/lib/comment_strip.py")
         if echo "$_ac_section" | grep -q '^### Agent'; then
             _agent_acs=$(echo "$_ac_section" | awk '/^### Agent/{f=1; next} /^### /{f=0} f')
-            _agent_total=$(echo "$_agent_acs" | grep -cE '^\s*-\s*\[[ x]\]' || true)
-            _agent_checked=$(echo "$_agent_acs" | grep -cE '^\s*-\s*\[x\]' || true)
-            _agent_unchecked=$((_agent_total - _agent_checked))
+            # T-5181: any box counts; a valid accepted miss ([~] + ledger row) is resolved,
+            # never met; any other state (bare/stale [~], unknown char) stays unchecked.
+            _agent_total=$(echo "$_agent_acs" | grep -cE '^\s*-\s*\[.\]' || true)
+            _agent_checked=$(echo "$_agent_acs" | grep -cE '^\s*-\s*\[[xX]\]' || true)
+            local _agent_missed
+            _agent_missed=$(python3 "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/lib/accepted_miss.py" \
+                gate "$task_file" 2>/dev/null | grep -c '^MISS	' || true)
+            _agent_unchecked=$((_agent_total - _agent_checked - ${_agent_missed:-0}))
             if [ "$_agent_total" -gt 0 ] && [ "$_agent_unchecked" -gt 0 ]; then
                 echo -e "${RED}ERROR: Cannot record decision — $_agent_unchecked/$_agent_total agent AC unchecked${NC}" >&2
                 echo "" >&2
                 echo "Unchecked Agent ACs:" >&2
-                echo "$_agent_acs" | grep -E '^\s*-\s*\[ \]' | head -10 >&2
+                { echo "$_agent_acs" | grep -E '^\s*-\s*\[[^xX]\]' || true; } | head -10 >&2
                 echo "" >&2
                 # T-1836 (T-1831 C-3): body-vs-checkbox drift hint at decide-preflight.
                 local _rec_block _rec_filled=false
@@ -1306,7 +1311,7 @@ do_inception_sweep() {
         local human_unchecked
         human_unchecked=$(awk '/^### Human/,/^## [A-Z]/' "$f" \
             | python3 -c 'import re,sys; sys.stdout.write(re.sub(r"<!--.*?-->", "", sys.stdin.read(), flags=re.DOTALL))' \
-            | grep -cE '^\s*- \[ \]' || true)
+            | grep -cE '^\s*- \[[^xX]\]' || true)  # T-5181: any non-met box is unchecked
 
         if [ "${human_unchecked:-0}" -eq 0 ]; then
             local dest="$completed_dir/$(basename "$f")"

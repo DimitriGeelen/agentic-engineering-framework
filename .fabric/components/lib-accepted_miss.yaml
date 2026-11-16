@@ -1,0 +1,21 @@
+id: lib/accepted_miss.py
+name: accepted_miss
+type: script
+subsystem: framework-core
+location: lib/accepted_miss.py
+tags: []
+
+purpose: "accepted_miss — the third acceptance-criterion state: an operator-accepted miss (T-5181)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-16
+created_by: unknown
