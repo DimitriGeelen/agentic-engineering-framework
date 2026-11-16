@@ -1,8 +1,17 @@
 ---
 id: T-5173
-name: "Review evidence over the 10 MB commit limit fails the verdict commit with a truncated message: fw ux shots and the judge never check screenshot size"
+name: "Review evidence over the 10 MB commit limit fails the verdict commit with a
+  truncated message: fw ux shots and the judge never check screenshot size"
 description: >
-  T-5167, 2026-11-16: full-page landing shots (page ~40,000 px tall) were 12-13 MB each. fw ux shots wrote them without a word, the judge copied them into .context/reviews/evidence/, and the runtime's verdict commit hit the T-1845 large-file guard (10 MB). The reviewer's green stayed uncommitted, fw audit then FAILed and blocked every push, and only the operator could discard the row. The judge printed the guard's message cut mid-word ('ould not be in git: unstage it'), which read as a transient staging clash. Fix: fw ux shots warns at capture (and suggests a crop step) when a shot exceeds the warn threshold and refuses above the block threshold; the judge checks evidence sizes before dispatching; the commit error is reported whole.
+  T-5167, 2026-11-16: full-page landing shots (page ~40,000 px tall) were 12-13 MB
+  each. fw ux shots wrote them without a word, the judge copied them into .context/reviews/evidence/,
+  and the runtime's verdict commit hit the T-1845 large-file guard (10 MB). The reviewer's
+  green stayed uncommitted, fw audit then FAILed and blocked every push, and only
+  the operator could discard the row. The judge printed the guard's message cut mid-word
+  ('ould not be in git: unstage it'), which read as a transient staging clash. Fix:
+  fw ux shots warns at capture (and suggests a crop step) when a shot exceeds the
+  warn threshold and refuses above the block threshold; the judge checks evidence
+  sizes before dispatching; the commit error is reported whole.
 
 status: captured
 workflow_type: build
@@ -39,8 +48,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T00:35:36Z
-last_update: 2026-11-16T00:35:36Z
-date_finished: null
+last_update: '2026-11-16T00:45:29Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +60,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-16T00:45:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5173: Review evidence over the 10 MB commit limit fails the verdict commit with a truncated message: fw ux shots and the judge never check screenshot size
