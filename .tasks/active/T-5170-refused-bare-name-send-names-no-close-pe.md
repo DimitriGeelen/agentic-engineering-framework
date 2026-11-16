@@ -9,10 +9,10 @@ description: >
   (difflib) only compares against the peer directory's project ids. Include declared
   aliases and known nicknames among the candidates.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [sidecar, usability]
 components: []
 related_tasks: [T-5150, T-5169]
@@ -44,7 +44,7 @@ origin: {kind: "peer", source: "010-termlink", ref: "290aad95"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T23:54:03Z
-last_update: '2026-11-16T00:01:16Z'
+last_update: 2026-11-16T01:19:35Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,20 +90,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 010-termlink msg 290aad95 (2026-11-15, be.52 field verdict on T-5150): `fw sidecar send --to termlnk` is refused correctly and nothing is posted, but the refusal names no close peer, although `termlnk` is one letter off `termlink` (010's declared alias, and the nickname of 010-termlink).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `lib/sidecar/addressing.py:_close_peers_hint` compares the name only against the peer directory's full project ids (`010-termlink`). difflib's ratio between `termlnk` and `010-termlink` is below the 0.6 cutoff, so nothing is suggested. Nicknames (`termlink`) and this project's declared aliases are never compared.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** the hint also compares against each peer's nickname (the part after a numeric prefix) and this project's `SIDECAR_INBOX_ALIASES` names, and always suggests the real address.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `--to termlnk` is refused with "Closest peers: 010-termlink" (the address to use).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] a typo of a peer's nickname (`termlnk` → `termlink` → `010-termlink`) and of a declared alias suggests the real address; a typo of a full peer id still suggests that peer; nothing close → no hint
+- [x] each suggested address appears once, and a nickname or alias is never itself offered as the address
+- [x] tests (peer directory and alias config stubbed); every test that reads addressing.py passes (6 new; 95 pytest + 85 bats across the readers)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,6 +290,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_t5170_close_peer_hint_nicknames.py tests/unit/test_t5150_nickname_refused.py > /tmp/.t5170.out 2>&1 && grep -q passed /tmp/.t5170.out && ! grep -q failed /tmp/.t5170.out
+bin/fw vendor self --check --task T-5170
 
 ## RCA
 
@@ -386,3 +389,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5170-refused-bare-name-send-names-no-close-pe.md
 - **Context:** Initial task creation
+
+### 2026-11-16T01:19:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -491,14 +491,34 @@ def resolve(to: str, *, hub: str | None = None, level: str = "auto",
 
 
 def _close_peers_hint(name: str) -> str:
-    """T-5150: name the closest peers in the general refusal, when there are any."""
+    """T-5150: name the closest peers in the general refusal, when there are any.
+
+    T-5170: compare against each peer's id AND its nickname (the part after a numeric prefix,
+    `termlink` for `010-termlink`) and this project's declared inbox aliases, so a typo of a
+    nickname (`termlnk`) still finds its peer. The hint always names the real address."""
     import difflib
-    close = difflib.get_close_matches(name.lower(), [p.lower() for p in load_peers()["peers"]],
-                                      n=3, cutoff=0.6)
-    if not close:
+    target: dict[str, str] = {}          # comparable name (lower) -> address to suggest
+    for peer in sorted(load_peers()["peers"]):
+        p = peer.lower()
+        target.setdefault(p, peer)
+        head, _, rest = p.partition("-")
+        if head.isdigit() and rest:
+            target.setdefault(rest, peer)
+    try:
+        from . import inbox
+        own = circuit.project_id()
+        for topic in inbox.alias_topics():
+            target.setdefault(topic.rsplit("/", 1)[-1].lower(), own)
+    except Exception:  # noqa: BLE001 — a hint must never break the refusal it decorates
+        pass
+    close = difflib.get_close_matches(name.lower(), list(target), n=6, cutoff=0.6)
+    suggested: list[str] = []
+    for c in close:
+        if target[c] not in suggested:
+            suggested.append(target[c])
+    if not suggested:
         return ""
-    by_lower = {p.lower(): p for p in load_peers()["peers"]}
-    return ". Closest peers: " + ", ".join(by_lower[c] for c in close)
+    return ". Closest peers: " + ", ".join(suggested[:3])
 
 
 # ── T-4418: is anything reading an explicit circuit? ─────────────────────────
