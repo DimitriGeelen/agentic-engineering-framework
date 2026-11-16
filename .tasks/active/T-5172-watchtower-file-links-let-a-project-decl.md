@@ -109,8 +109,8 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] `VIEWABLE_DIRS` (config key + `FW_VIEWABLE_DIRS`) adds folders to the viewable list used by both `is_viewable_path` and the auto-linker; default empty changes nothing
 - [x] unsafe entries are ignored: `..` anywhere, absolute paths, `.git`, `.context/secrets`, an empty or root entry; extensions are still limited to VIEWABLE_EXTENSIONS
-- [ ] the key is in both config registries (lib/config.sh, web/blueprints/config.py) and config-registry parity stays green
-- [ ] unit tests for the setting, the safety filter, the route and the linker; every test that reads web/shared.py passes
+- [x] the key is in both config registries (lib/config.sh, web/blueprints/config.py) and config-registry parity stays green
+- [x] unit tests for the setting, the safety filter, the route and the linker; every test that reads web/shared.py passes (96 files in 3 chunks: 980 passed; the one T-5172-caused red — in-process reload leaking into test_file_route_extensions — fixed in 5700bb8e6; 5 reds in tests/web/test_inception_verdict_render.py predate this change and are T-5174; bats 432 with t3458 fixed)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
