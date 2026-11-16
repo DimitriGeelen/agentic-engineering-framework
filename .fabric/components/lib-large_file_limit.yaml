@@ -1,0 +1,21 @@
+id: lib/large_file_limit.py
+name: large_file_limit
+type: script
+subsystem: framework-core
+location: lib/large_file_limit.py
+tags: []
+
+purpose: "T-5173: the large-file commit limit, read the way the T-1845 git guard reads it."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-16
+created_by: unknown

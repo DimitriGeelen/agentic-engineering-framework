@@ -13,10 +13,10 @@ description: >
   warn threshold and refuses above the block threshold; the judge checks evidence
   sizes before dispatching; the commit error is reported whole.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [reviewer, ux-shots, bug]
 components: []
 related_tasks: [T-5167, T-1845, T-4958]
@@ -48,7 +48,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T00:35:36Z
-last_update: '2026-11-16T00:46:02Z'
+last_update: 2026-11-16T01:00:01Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,20 +94,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5167, 2026-11-16. `fw ux shots` captured the landing page full-height (~40,000 px), 12-13 MB a shot. The judge copied those shots into `.context/reviews/evidence/T-5167/`; the review runtime's verdict commit hit the T-1845 large-file guard (`FW_LARGE_FILE_BLOCK_BYTES`, default 10,485,760). The reviewer's green stayed uncommitted, `fw audit` FAILed on the row and blocked every push, and only the operator could discard it (runme discard-t5167-row). The judge printed `ould not be in git: unstage it ...`, which read as a transient staging clash.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** three missing checks. (1) `agents/ux-review/ux_shots.py` never looks at the size of what it wrote. (2) The judge dispatches with evidence it cannot commit; the failure appears only after the reviewer has worked. (3) `lib/verdict_ledger.py:_commit_rows_once` keeps the LAST 500 characters of git's stderr, which cuts off the start of the hook message, where it names the file and the reason.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** an oversized shot is reported where it is made; a review never starts with evidence that cannot be committed; a commit error is reported with its beginning.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** the T-5167 sequence ends at capture time with "landing@1024.png is 13.2 MB, over the 10 MB commit limit: add a crop step", instead of a stranded green verdict and an operator discard.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw ux shots` reports each shot over the commit block threshold as an error naming the file, its size, the limit and the crop step, and exits non-zero; a shot over half the threshold gets a warning; the threshold is read the same way as the large-file guard (`FW_LARGE_FILE_BLOCK_BYTES`, default 10,485,760)
+- [x] `fw reviewer judge` refuses to dispatch when any evidence file it would cite is over the block threshold, naming the file and saying what to do; nothing is dispatched or recorded
+- [x] a refused verdict commit reports the START of git's output (where the hook names the file and reason), not only the end
+- [x] unit tests for each; every test that reads the changed files passes (7 new; 61 files, 1020 pytest + 115 bats, all pass)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -293,8 +295,18 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_t5173_oversized_evidence.py > /tmp/.t5173.out 2>&1 && grep -q passed /tmp/.t5173.out && ! grep -q failed /tmp/.t5173.out
+bin/fw vendor self --check --task T-5173
 
 ## RCA
+
+**Symptom:** a green reviewer verdict on T-5167 stayed uncommitted; `fw audit` FAILed and blocked every push until the operator discarded the row; the judge's message read "ould not be in git: unstage it".
+
+**Root cause:** three unchecked steps in a row. `fw ux shots` wrote 12-13 MB full-page shots without looking at their size; the judge cited them as evidence without checking they could be committed; the runtime kept only the last 500 characters of git's stderr, cutting off the hook's first line, which names the file and the reason.
+
+**Why structurally allowed:** the large-file guard (T-1845) sits at commit time, the last step, so everything upstream assumed its outputs were committable. Pages had not been that tall before; the T-5161 height growth (landing ~40,000 px) made full-page shots cross 10 MB.
+
+**Prevention:** `lib/large_file_limit.py` reads the guard's limit the same way the guard does (a test pins the shared default); `fw ux shots` errors (exit 1) per oversized shot and warns above half the limit; the judge refuses to dispatch with oversized evidence, before any run is registered; the commit error keeps its start (`_clip_git_error`). Seven tests in `tests/unit/test_t5173_oversized_evidence.py`.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -390,3 +402,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5173-review-evidence-over-the-10-mb-commit-li.md
 - **Context:** Initial task creation
+
+### 2026-11-16T01:00:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

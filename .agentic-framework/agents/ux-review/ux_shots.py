@@ -63,8 +63,34 @@ TASK_RE = re.compile(r"^T-\d+$")
 STATE_RE = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
 
 EXIT_OK = 0
+EXIT_OVERSIZED = 1   # T-5173: a shot is over the commit limit; it would strand a review verdict
 EXIT_USAGE = 2
 EXIT_NOT_CHECKED = 3
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from lib import large_file_limit  # noqa: E402
+
+
+def size_report(paths) -> tuple[list[str], list[str]]:
+    """T-5173: (errors, warnings) for shots over the commit limit / over half of it."""
+    limit = large_file_limit.block_bytes()
+    errors, warnings_ = [], []
+    for p in paths:
+        try:
+            size = Path(p).stat().st_size
+        except OSError:
+            continue
+        if size > limit:
+            errors.append(
+                f"{p} is {large_file_limit.human(size)}, over the {large_file_limit.human(limit)} "
+                "commit limit (FW_LARGE_FILE_BLOCK_BYTES): a review citing it cannot commit its "
+                "verdict. Shoot only the part that matters with a steps file ending in a crop step, "
+                "e.g. `- crop: \"#section\"` (see `fw ux shots --help`, T-4958).")
+        elif size > limit // 2:
+            warnings_.append(
+                f"{p} is {large_file_limit.human(size)}, more than half the "
+                f"{large_file_limit.human(limit)} commit limit; consider a crop step.")
+    return errors, warnings_
 
 
 class PlanError(ValueError):
@@ -460,7 +486,12 @@ def main(argv: list[str] | None = None) -> int:
     for path in written:
         print(path)
     print(f"fw ux shots: {len(written)} shot(s) — {len(args.targets)} state(s) x {len(widths)} width(s)")
-    return EXIT_OK
+    errors, warnings_ = size_report(written)
+    for w in warnings_:
+        print(f"fw ux shots: WARNING — {w}", file=sys.stderr)
+    for e in errors:
+        print(f"fw ux shots: ERROR — {e}", file=sys.stderr)
+    return EXIT_OVERSIZED if errors else EXIT_OK
 
 
 if __name__ == "__main__":

@@ -332,6 +332,16 @@ def _uncommitted_why(root: Path, row: dict) -> str:
                   f"{row['id']} --reason \"…\"")
 
 
+def _clip_git_error(text: str, head: int = 900, tail: int = 300) -> str:
+    """T-5173: keep the START of git's output (a refusing hook names the file and the reason
+    there) and its end. Keeping only the last 500 characters turned the T-1845 large-file
+    refusal into 'ould not be in git: unstage it', which read as a staging clash."""
+    text = (text or "").strip()
+    if len(text) <= head + tail + 20:
+        return text
+    return f"{text[:head]} […{len(text) - head - tail} characters cut…] {text[-tail:]}"
+
+
 def _commit_rows_once(root: Path, paths: list[str], identity: str, message: str,
                       email: str = "") -> tuple[str, str]:
     # T-3655: per-reviewer email, never a shared one.
@@ -356,8 +366,8 @@ def _commit_rows_once(root: Path, paths: list[str], identity: str, message: str,
                              cwd=str(root), env=env, capture_output=True, text=True)
         if not (add.returncode or com.returncode):
             return _head_sha(root), ""
-        err = (add.stderr + com.stderr).strip()[-500:]
-        if "index.lock" not in err or time.monotonic() >= deadline:
+        err = _clip_git_error(add.stderr + com.stderr)
+        if "index.lock" not in (add.stderr + com.stderr) or time.monotonic() >= deadline:
             break
         attempt += 1
         time.sleep(min(0.5 * attempt, 2.0, max(deadline - time.monotonic(), 0.05)))
