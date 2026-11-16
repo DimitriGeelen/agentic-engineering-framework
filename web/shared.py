@@ -595,6 +595,47 @@ VIEWABLE_DIR_PREFIXES = (
     "deploy/",
 )
 
+#: T-5172: never servable, whatever a project declares.
+_NEVER_VIEWABLE = (".git/", ".context/secrets/")
+
+
+def _declared_viewable_dirs(root=None) -> tuple:
+    """T-5172 (0909 consult d1993c2c): extra folders a project declares viewable.
+
+    `VIEWABLE_DIRS` (comma or space separated) from FW_VIEWABLE_DIRS or .framework.yaml, added
+    to the built-in list for both the linker and the /file/ route. Chosen over "any tracked file
+    is linkable": the project decides, nothing new is exposed by default. Unsafe entries are
+    dropped: `..`, absolute paths, the root itself, `.git` and `.context/secrets`."""
+    raw = os.environ.get("FW_VIEWABLE_DIRS", "")
+    if not raw:
+        try:
+            data = yaml.load((Path(root or PROJECT_ROOT) / ".framework.yaml").read_text(),
+                             Loader=_YAML_LOADER) or {}
+            for scope in (data, data.get("config") or {}):
+                if isinstance(scope, dict) and scope.get("VIEWABLE_DIRS") not in (None, ""):
+                    raw = scope["VIEWABLE_DIRS"]
+                    break
+        except Exception:  # noqa: BLE001 — no config, unreadable config: nothing declared
+            raw = ""
+    items = raw if isinstance(raw, list) else re_mod.split(r"[,\s]+", str(raw))
+    out = []
+    for item in items:
+        d = str(item).strip().replace("\\", "/")
+        while d.startswith("./"):
+            d = d[2:]
+        if not d or d in (".", "/") or d.startswith("/") or ".." in d.split("/"):
+            continue
+        d = d.rstrip("/") + "/"
+        if any(d.startswith(n) or n.startswith(d) for n in _NEVER_VIEWABLE):
+            continue
+        if d not in out:
+            out.append(d)
+    return tuple(out)
+
+
+VIEWABLE_DIR_PREFIXES = VIEWABLE_DIR_PREFIXES + tuple(
+    d for d in _declared_viewable_dirs() if d not in VIEWABLE_DIR_PREFIXES)
+
 VIEWABLE_EXTENSIONS = ("md", "yaml", "yml", "py", "sh", "bats", "json", "toml")
 
 # T-2281 (T-2275 prong B): depth-0 root files cannot match a directory prefix

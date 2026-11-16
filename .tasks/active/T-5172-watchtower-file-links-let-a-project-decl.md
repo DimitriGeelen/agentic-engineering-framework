@@ -14,10 +14,10 @@ description: >
   serve gitignored paths (.context/secrets etc.); keep traversal checks. Render surface
   + exposure scope: needs a [REVIEW] criterion.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [watchtower, consumer, usability]
 components: []
 related_tasks: []
@@ -49,7 +49,7 @@ origin: {kind: "peer", source: "0909-boot-into-timeshift-snapshots", ref: "d1993
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T23:56:21Z
-last_update: '2026-11-16T00:01:16Z'
+last_update: 2026-11-16T01:54:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,20 +95,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 0909-boot-into-timeshift-snapshots consult d1993c2c (asked by the operator; stranded in a nickname inbox until 010's T-5149 run found it, answered 2026-11-16). On their /review/T-999 (vendored 1.8.10) `docs/test-boot.md` and `scripts/grub-btrfs-install.sh` rendered as plain text and `/file/<path>` answered 404. Operator expectation: everything a reviewer should read is a Watchtower link.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `web/shared.py:is_viewable_path` serves only paths under the hard-coded `VIEWABLE_DIR_PREFIXES` (plus root files, numbered root docs and, since T-4571, depth-1 `docs/*`). `docs/test-boot.md` is served by current releases; `scripts/` (and any other project-specific folder) is not, and a project has no way to add one.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** a project declares extra folders (`VIEWABLE_DIRS`, comma or space separated, in `.framework.yaml` or `FW_VIEWABLE_DIRS`), added to the built-in list for both the linker and the `/file/` route. Chosen over "any tracked file is linkable" (the consult's option b): explicit, decided by the project, nothing new exposed by default.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** with `VIEWABLE_DIRS: scripts`, a `scripts/x.sh` mention renders as a link and `/file/scripts/x.sh` serves it; unsafe entries (`..`, absolute paths, `.git`, `.context/secrets`, the root itself) are ignored.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `VIEWABLE_DIRS` (config key + `FW_VIEWABLE_DIRS`) adds folders to the viewable list used by both `is_viewable_path` and the auto-linker; default empty changes nothing
+- [x] unsafe entries are ignored: `..` anywhere, absolute paths, `.git`, `.context/secrets`, an empty or root entry; extensions are still limited to VIEWABLE_EXTENSIONS
+- [ ] the key is in both config registries (lib/config.sh, web/blueprints/config.py) and config-registry parity stays green
+- [ ] unit tests for the setting, the safety filter, the route and the linker; every test that reads web/shared.py passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -140,6 +142,12 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] A file in a declared folder opens from a review page
+  **Steps:**
+  1. Open http://192.168.10.107:3000/file/scripts/agent-listeners.sh (this repo declares `VIEWABLE_DIRS: scripts` for the check).
+  2. Open http://192.168.10.107:3000/file/.git/config
+  **Expected:** step 1 shows the script with syntax highlighting and line numbers; step 2 is refused (not served).
+  **If not:** note which step behaved differently and what it showed.
 
 <!--
   Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
@@ -294,6 +302,18 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_t5172_viewable_dirs.py > /tmp/.t5172.out 2>&1 && grep -q passed /tmp/.t5172.out && ! grep -q failed /tmp/.t5172.out
+U="$(bin/fw watchtower url)"; test "$(curl -s -o /dev/null -w '%{http_code}' "$U/file/scripts/agent-listeners.sh")" = 200 && test "$(curl -s -o /dev/null -w '%{http_code}' "$U/file/.git/config")" != 200 && test "$(curl -s -o /dev/null -w '%{http_code}' "$U/file/.context/secrets/review-dispatch.key")" != 200
+bin/fw vendor self --check --task T-5172
+bin/fw watchtower current
+
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| script-file | /file/scripts/agent-listeners.sh | ok | ok | ok | served with highlighting and line numbers (VIEWABLE_DIRS: scripts) |
+
+Screenshots: `.context/visual/T-5172/script-file@{1024,1440,1920}.png` (`fw ux shots`, 2026-11-16, ~0.8 MB each).
 
 ## RCA
 
@@ -363,6 +383,12 @@ bvp_scores_proposed:
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+**Recommendation:** GO
+**Rationale:** A project can now add folders to what Watchtower links and serves (`VIEWABLE_DIRS`), which is what 0909 needed for `scripts/`. It adds nothing by default, keeps the extension limit, and refuses `.git`, `.context/secrets`, absolute paths and `..`. This repo declares `scripts` for the live check.
+**Evidence:**
+- Live after restart: http://192.168.10.107:3000/file/scripts/agent-listeners.sh answers 200 and renders highlighted with line numbers; `.git/config`, `.context/secrets/review-dispatch.key` and a `scripts/../.git/config` attempt are refused.
+- `tests/unit/test_t5172_viewable_dirs.py` 16/16 (setting, YAML, safety filter, route and linker).
+- Screenshots at 1024/1440/1920: `.context/visual/T-5172/`.
 
 ## Decisions
 
@@ -391,3 +417,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5172-watchtower-file-links-let-a-project-decl.md
 - **Context:** Initial task creation
+
+### 2026-11-16T01:54:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
