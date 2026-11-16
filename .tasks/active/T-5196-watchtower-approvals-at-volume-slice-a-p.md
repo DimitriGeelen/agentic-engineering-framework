@@ -101,11 +101,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `_git_out` answers immutable-object calls (full 40-hex ids only; never a ref, HEAD, a short id or a range ending in a ref) from a persistent on-disk memo. A test proves a ref-dependent call is never served from it, and that a corrupt or partial memo file falls back to running git.
-- [ ] The memo lives under a gitignored `.context/working/` path, writes atomically, and has a size bound with eviction.
-- [ ] Measured in-process: cold approvals page (fresh process, memo warm on disk) before/after, plus a cold page with an empty memo. Numbers recorded here.
-- [ ] Slice B's leftover trigger (commits touching `.context/reviews/`) is either fixed with an equivalence test proving no stale READY, or kept with the reason and cost recorded in ## Decisions.
-- [ ] Every existing test that touches lib/verdict_ledger.py or readiness passes, invariants pass, `bin/fw vendor self --check --task T-5196` is clean, and Watchtower is restarted and current.
+- [x] `_git_out` answers immutable-object calls (full 40-hex ids only; never a ref, HEAD, a short id or a range ending in a ref) from a persistent on-disk memo. A test proves a ref-dependent call is never served from it, and that a corrupt or partial memo file falls back to running git.
+- [x] The memo lives under a gitignored `.context/working/` path, writes atomically, and has a size bound with eviction.
+- [x] Measured in-process: cold approvals page (fresh process, memo warm on disk) before/after, plus a cold page with an empty memo. Numbers recorded here.
+- [x] Slice B's leftover trigger (commits touching `.context/reviews/`) is either fixed with an equivalence test proving no stale READY, or kept with the reason and cost recorded in ## Decisions.
+- [x] Every existing test that touches lib/verdict_ledger.py or readiness passes, invariants pass, `bin/fw vendor self --check --task T-5196` is clean, and Watchtower is restarted and current.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,6 +291,68 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5196_git_object_memo.py -q -p no:cacheprovider > /tmp/.t5196.out 2>&1 && grep -q passed /tmp/.t5196.out
+python3 -m pytest tests/unit/test_t5194_readiness_per_task_key.py tests/unit/test_t5195_approvals_single_flight.py tests/web/test_t4394_readiness_git_key.py tests/web/test_t4133_readiness_perf.py -q -p no:cacheprovider > /tmp/.t5196b.out 2>&1 && grep -q passed /tmp/.t5196b.out
+git check-ignore -q .context/working/git-object-memo.db
+bin/fw vendor self --check --task T-5196
+bin/fw watchtower current
+
+## Measurements
+
+All in-process on this repo (~5,200 task files, ~400 awaiting review), same host, 2026-11-16.
+"off" = this code with the immutable memo disabled (`_immutable_args` patched to False), i.e. the
+pre-T-5196 code path. Wall times; the host was otherwise lightly loaded.
+
+| Cold /approvals, fresh process | run 1 | run 2 | warm repeat (same process) |
+|---|---:|---:|---:|
+| off (before) | 34.8 s | 36.6 s | 2.6–2.8 s |
+| empty memo (first fill) | 33.9 s | — | 2.6 s |
+| memo warm on disk | 25.4 s | 25.9 s | 2.4–2.7 s |
+
+Subprocess census (`docs/reports/T-5186-profile-subprocesses.py`, profiler overhead included):
+
+| | subprocesses | `git show` | `git log` | page wall |
+|---|---:|---:|---:|---:|
+| before | 2,040 (33.4 s) | 1,909 (16.9 s) | 6 (9.2 s) | 49.2 s |
+| after, empty memo | 512 (17.4 s) | 389 (2.1 s) | 6 (7.4 s) | 33.1 s |
+| after, memo warm | 171 (15.4 s) | 67 (0.3 s) | 6 (8.3 s) | 28.8 s |
+
+`_git_out` call shapes on one cold page: 3,033 `show <40-hex>:<path>` and 28 `ls-tree … <40-hex> --`
+(memoised on disk); not memoised: 36 `rev-parse`, 21 `cat-file -e`, 21 `merge-base --is-ancestor`,
+21 `log --reverse --format=%H HEAD -- <ledger>`, 4 `show HEAD:<path>`, 4 `log <sha>..HEAD --grep`,
+4 `diff`, 1 `log --all`, 1 `log --full-history`.
+
+Memo size after one page: 341 rows, 79.6 MB. Nearly all of it is every committed version of
+`verdicts.jsonl` (550 KB, 152 versions) and `review-completions.jsonl` (496 KB), read by the
+append-only walks (`load_ledger`, `history_fault`).
+
+**Goal 3 trigger cost** (warm process; a commit touching `.context/reviews/` simulated by clearing
+the ref-keyed memos and moving the global generation): the page itself stays at 2.7–2.9 s (it serves
+stale WAITING, T-5195), and the background refresh of every awaiting task finishes after
+**23.6 s off → 12.6 s with the memo**. Frequency: 101 such commits in the last 7 days (~14/day),
+177 in 30 days.
+
+**Goal 2: what remains of a cold page with the memo warm (~25 s)**, from cProfile:
+- ref-dependent git, ~7.0 s in 48 `_git_out` subprocesses: `log --all --name-only` (producer index),
+  the per-ledger `log --reverse HEAD -- <file>` walks, `log <rev>..HEAD --grep`.
+- `inception_handoff_blockers` → 47 `bash -c` subprocesses, ~5.2 s (not ledger code).
+- task frontmatter YAML for ~5,200 files, ~4.4 s (`get_all_task_metadata`).
+- the append-only walks still read and compare every committed ledger version in Python
+  (`history_fault` ~2.4 s over 21 calls) and `_imm_context` ~1.0 s over 3,061 calls.
+
+**Tests (2026-11-17):** new `tests/unit/test_t5196_git_object_memo.py` 42 passed. Every pytest
+file under tests/ that reads lib/verdict_ledger.py or readiness (+ T-5195's): 1,035 passed, 1 failed
+when run as 4 parallel shards: `t5008…test_pkill_inside_the_seat_leaves_the_outside_decoy_alive`.
+It passed alone (a pkill test racing the other shards). Ledger bats suites (8 files): 83 ok, 0 not
+ok, 0 skipped. `bin/fw test invariants`: only red was this task's then-untracked test file, which
+is tracked since ee89a5c73.
+
+Proposed next step (not built here), in order of measured size: (a) make the append-only walks
+incremental — persist, per ledger path, the verified prefix (commit id, line count, prefix hash)
+so only commits after the last verified one are read; this also stops the memo's working set from
+growing by ~1 MB per review commit; (b) cache `inception_handoff_blockers` per task-file mtime and
+HEAD (~5 s); (c) an mtime-keyed frontmatter cache that survives restarts (~4 s); (d) extend the
+`git log` results incrementally from the previous HEAD (~7 s).
 
 ## RCA
 
@@ -362,6 +424,21 @@ bvp_scores_proposed:
 -->
 
 ## Decisions
+
+### 2026-11-16 — what may be served from the persistent memo
+- **Chose:** only `show <40-hex>:<path>` and `ls-tree [-r] [--name-only] <40-hex> -- <paths>` (lower-case full id, plain repo-relative paths, no pathspec magic, no other flags). Every key also carries a context hash: memo format version, the output text encoding, `.git/config` contents and the stats of the global/system git config files, and every replace ref (loose and packed, name → target). The memo is not used at all when the state token cannot be taken, refs move while the context is read, or a `GIT_*` variable outside a harmless list (author/committer identity, editor, pager, ssh, askpass) is set.
+- **Why:** an object id fixes the object, not the answer: this repo has 2,970 replace refs on commits, and a replace ref changes what `<sha>:<path>` resolves to (test `test_replace_ref_changes_the_answer`). Config (`core.useReplaceRefs`, `core.quotePath`) and env (`GIT_NO_REPLACE_OBJECTS`, `GIT_DIR`, pathspec env) can change it too. Folding them into the key makes old entries unreachable, never stale.
+- **Rejected:** `cat-file -e`, `merge-base --is-ancestor` and `rev-parse` on full ids — existence and ancestry can change when objects are pruned or grafts/shallow change, and together they are 78 cheap calls a page. Refs, HEAD, short ids, `^`/`~`, ranges and `log` stay on the in-memory, state-token memo as before.
+
+### 2026-11-16 — storage
+- **Chose:** sqlite at `.context/working/git-object-memo.db` (WAL, synchronous=NORMAL), gitignored by the existing `.context/working/*.db` / `*.db-wal` / `*.db-shm` rules. Used only when `git check-ignore` confirms it is ignored in that repo. Each row carries its args (compared on read) and a sha256 of its output (verified on read; a mismatch runs git). A file that is not a database is deleted and started again; a locked/unwritable one turns the memo off for the process. Bound 512 MiB / 100,000 rows, least-recently-used eviction to 80% (last use refreshed at most hourly), checked on a process's first write and every 256 writes. Entries over 4 MiB are not kept. Non-zero exits are never kept.
+- **Why:** the brief asked for tmp+rename atomic files, but I may not edit `.gitignore`, and the only gitignored names under `.context/working/` that fit a cache are `*.db`. sqlite transactions give the same atomicity (a reader never sees a half-written entry), handle Watchtower threads plus CLI processes writing concurrently, and evict without rewriting a whole file; a per-file layout would have needed thousands of files under a misleading `*.db` directory name.
+- **Known limit:** the working set is every committed version of the two big ledgers (79.6 MB today) and grows ~1 MB per review commit (~14/day), so it reaches the 512 MiB bound in roughly a month. After that the LRU will evict versions every cold page needs and the gain degrades toward today's cost (never toward a wrong answer). Next-step (a) in ## Measurements removes that growth.
+
+### 2026-11-16 — slice B's leftover trigger: kept
+- **Chose:** keep `.context/reviews/` in `_GLOBAL_GIT_INPUTS`; a commit touching it still moves the global generation.
+- **Why it is global:** what the validator reads from git under `.context/reviews/` is not per-task. (1) `load_ledger` walks every committed version of `verdicts.jsonl` and refuses the WHOLE ledger (every task) when any commit modified, deleted or duplicated a row; the same append-only walk (`history_fault`) runs over `review-completions.jsonl` and the acknowledgements file. (2) Which rows count depends on whether they are committed and on the identity of the commit that introduced each row (producer and worker checks), and a completion row is tied to its task only through its dispatch id, so attributing a commit's added lines to tasks needs the whole cross-ledger link map at that commit, not the commit's diff alone. A per-task key would have to reproduce all of that exactly, and an under-attribution serves a stale READY. I could not build a temp-repo fixture that drives the full validator to READY (signed dispatch registry, runs, completions, producer identities) within this slice, so there is no equivalence test, and the rule was: no test, no change.
+- **Cost:** ~14 commits/day touch `.context/reviews/`. Each one sends every awaiting task to a background refresh; the page keeps serving stale WAITING (2.7–2.9 s). The refresh took 23.6 s before this slice and 12.6 s with the memo warm.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
