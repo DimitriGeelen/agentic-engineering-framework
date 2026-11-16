@@ -97,17 +97,17 @@ Who it hurts: every operator of a large project. Overview pages are where decisi
 -->
 
 - **IW-1: Where does the time on `/approvals` and `/` go at ~5,000 tasks, in CPU seconds with no CPU contention (in-process profile, not wall time on a loaded host)?**
-  confidence: 0
-  disposition: open
-  rationale: not yet measured
+  confidence: 3
+  disposition: answered
+  rationale: docs/reports/T-5186-watchtower-volume-performance.md F2 — cold 34–44 s, of which 2,041 subprocesses (1,909 git show + 6 git log from lib/verdict_ledger.py, 48 bash -c) and ~12–22 s CPU in review-readiness ledger validation; warm 2.3 s
 - **IW-2: How much of 1409's >90 s is CPU starvation (CPUWeight=20 at load 37) rather than work, i.e. what does the same page cost on an idle core?**
-  confidence: 0
-  disposition: open
-  rationale: not yet measured
+  confidence: 1
+  disposition: deferred
+  rationale: report F5 — 1409's `/` exceeds 90 s while ours is 2.3 s at similar volume, so 1409 may hit another hotspot or CPU starvation; needs 1409's own profile (docs/reports/T-5186-profile-*.py, read-only), requested via dimitri-mint-dev. Not blocking: A/B/C are right for the measured hotspot either way
 - **IW-3: Does the cost scale with task count (re-reading/re-parsing the corpus per request), and is a per-process cache keyed on file mtimes enough, or is a separate index layer needed?**
-  confidence: 0
-  disposition: open
-  rationale: not yet measured
+  confidence: 2
+  disposition: answered
+  rationale: report F3/F4 — task-file reading is already cached and a new commit does not make the page cold; the cold trigger is any write to any .context/reviews/*.jsonl (readiness stamp keys on all 13 files) and process restart; a cache keyed on immutable git object ids (A) plus a narrower stamp (B) addresses it without a separate index layer (D)
 
 ## Exploration Plan
 
@@ -169,13 +169,27 @@ Who it hurts: every operator of a large project. Overview pages are where decisi
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO, for three targeted build slices (A, B, C below), not for a general index layer (D) yet.
 
 **Rationale:**
 
-Evidence gap, not a confidence gap: the reported timings mix two causes that have not been separated: per-request re-parsing of the whole corpus (systemic, grows with task count) and CPU starvation (Watchtowers in agentic.slice at CPUWeight=20 on a host at load 37). The next step is a profile of /approvals and / on a large corpus, with CPU weight controlled. The recommendation becomes GO or NO-GO once that profile names where the time goes.
+The profile names where the time goes, and it is not task-file reading. At ~5,000 tasks, a cold `/approvals` costs 34–44 s. Most of it is re-validating review-ledger history against git: 1,909 `git show` and 6 `git log` calls, plus ~12–22 s of Python in the same validation. Warm, it costs 2.3 s, and `/` costs 2.3 s, so parsing the corpus is already cached and cheap. The page goes cold on a process restart and on any write to any `.context/reviews/*.jsonl`, because the readiness cache keys on all 13 ledger files. 42 commits touched those files in the last 24 h.
+
+Build slices:
+- **A:** a persistent memo of per-row ledger validation, keyed on immutable git object ids, so restarts and unrelated ledger writes stop costing a full revalidation.
+- **B:** narrow the readiness stamp to the rows that concern each task.
+- **C:** single-flight plus serve-stale-while-refreshing on `/approvals`, as T-5147 did for the board (a READY is never served stale).
+
+All three keep the files and ledgers as the only source of truth.
+
+A general rebuildable index (the operator's stepped proposal, D) would not touch this cost; it fits a parsing bottleneck we did not measure. 1409's slow `/` (ours is fast) is the open part. Their profile, using the scripts in docs/reports/, decides whether 1409 has another hotspot or is CPU-starved. D can be revisited on that evidence. A, B and C are right either way.
 
 **Evidence:**
+
+- docs/reports/T-5186-watchtower-volume-performance.md F1–F5 (the cold/warm profile, the subprocess census, the invalidation tests).
+- web/shared.py:1845 `_readiness_stamp` (keys on every `.context/reviews/*.jsonl` mtime).
+- lib/verdict_ledger.py `_git_out` / `_row_fault` / `_fault` (the subprocess sources).
+- Simulated review-ledger write: 2.4 s → 16.5 s. Process start: 34–44 s. A git state change alone: 2.2 s (no effect).
 
 <!-- Add evidence bullets as exploration progresses (file paths,
      commit hashes, test results). The filing-time recommendation
