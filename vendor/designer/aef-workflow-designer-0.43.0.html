@@ -1385,6 +1385,11 @@ font-family: 'Outfit';
   .settings-dialog {
     width: 560px;
     max-width: calc(100vw - 40px);
+    /* T-1392: never taller than the window below the modal's 90px top padding (plus a 20px margin): the body scrolls
+       under a header that stays in view. Before, it ran past the window's bottom and Labels / Reset were unreachable. */
+    max-height: calc(100vh - 110px);
+    display: flex;
+    flex-direction: column;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -1398,7 +1403,7 @@ font-family: 'Outfit';
     justify-content: space-between;
   }
   .settings-title { font-family: var(--mono); font-size: 13px; color: var(--accent); }
-  .settings-body { padding: 14px 18px 18px; }
+  .settings-body { padding: 14px 18px 18px; overflow-y: auto; min-height: 0; }   /* T-1392: scrolls inside the dialog */
   .settings-section { margin-bottom: 16px; }
   .settings-section-label {
     font-family: var(--mono);
@@ -2929,6 +2934,57 @@ function getInvestigateWorkflow() {
   return result;
 }
 
+// T-976: x for a map whose file gave no node a position. Before this, an unpositioned node was placed by its index in
+// the FILE within its lane, 90 px apart, so a generator that omitted geometry got End before its tasks and overlaps.
+// Columns follow the flows instead: depth = the longest forward path to the node (loop-back flows, found by a DFS
+// from the sources in file order, do not count); nodes of one lane at one depth sit side by side; a column is as wide
+// as its fullest lane. y is left at 0: the parse tail puts each node at its lane's centre.
+function layoutByFlowOrder(nodes, edges) {
+  const PITCH = 160;
+  const byUid = new Map(nodes.map(n => [n.uid, n]));
+  const fwd = edges.filter(e => byUid.has(e.source) && byUid.has(e.target) && e.source !== e.target);
+  const out = new Map(nodes.map(n => [n.uid, []]));
+  for (const e of fwd) out.get(e.source).push(e);
+  const hasIn = new Set(fwd.map(e => e.target));
+  const back = new Set(), state2 = new Map();   // 1 = on the DFS stack, 2 = done
+  const visit = u => {
+    state2.set(u, 1);
+    for (const e of out.get(u)) {
+      const s = state2.get(e.target);
+      if (s === 1) back.add(e);
+      else if (!s) visit(e.target);
+    }
+    state2.set(u, 2);
+  };
+  for (const n of nodes) if (!hasIn.has(n.uid) && !state2.get(n.uid)) visit(n.uid);
+  for (const n of nodes) if (!state2.get(n.uid)) visit(n.uid);
+  const dag = fwd.filter(e => !back.has(e));
+  const indeg = new Map(nodes.map(n => [n.uid, 0]));
+  for (const e of dag) indeg.set(e.target, indeg.get(e.target) + 1);
+  const depth = new Map(nodes.map(n => [n.uid, 0]));
+  const queue = nodes.filter(n => indeg.get(n.uid) === 0).map(n => n.uid);
+  while (queue.length) {
+    const u = queue.shift();
+    for (const e of dag) if (e.source === u) {
+      depth.set(e.target, Math.max(depth.get(e.target), depth.get(u) + 1));
+      indeg.set(e.target, indeg.get(e.target) - 1);
+      if (indeg.get(e.target) === 0) queue.push(e.target);
+    }
+  }
+  const slot = new Map(), perCell = new Map();
+  for (const n of nodes) {
+    const k = n.lane + '\u0000' + depth.get(n.uid);
+    const i = perCell.get(k) || 0;
+    slot.set(n.uid, i); perCell.set(k, i + 1);
+  }
+  const maxD = Math.max(0, ...depth.values());
+  const width = new Array(maxD + 1).fill(1);
+  for (const [k, c] of perCell) { const d = +k.split('\u0000')[1]; width[d] = Math.max(width[d], c); }
+  const colX = [0];
+  for (let d = 1; d <= maxD; d++) colX[d] = colX[d - 1] + width[d - 1] * PITCH;
+  for (const n of nodes) n.x = POOL_X + LANE_HEADER + 30 + colX[depth.get(n.uid)] + slot.get(n.uid) * PITCH;
+}
+
 function getLanes() { return (state && state.lanes) ? state.lanes : defaultLanes(); }
 function findLane(id) { return getLanes().find(l => l.id === id); }
 function laneTop(laneId) {
@@ -2972,6 +3028,19 @@ function contentRightEdgeNatural() {
     right = Math.max(right, n.x + d.w + 60 /* right margin */);
   }
   return right;
+}
+// T-1386: the pool's left edge, the mirror of contentRightEdge(). POOL_X unless a node lies left of the pool's usable
+// area (left of POOL_X, or over the lane-name column when there are lanes): then the edge moves left to enclose it with
+// a margin, as the right edge grows for the right-most node. Only an imported file with another tool's coordinates puts
+// a node there (nested-subprocesses' start event at x=26); the designer's own layout never does, so its maps draw as
+// before.
+function contentLeftEdge() {
+  const header = getLanes().length ? LANE_HEADER : 0;
+  let left = POOL_X;
+  // Only a node that lies LEFT of the usable area moves the edge; one at or right of it (the lane-name column's edge
+  // included) leaves the pool where it is, so T-601's left-edge case keeps its label clear of the column.
+  for (const n of (state?.nodes || [])) if (n.x < POOL_X + header) left = Math.min(left, n.x - header - 20 /* left margin */);
+  return Math.floor(left);
 }
 function contentRightEdge() {
   // T-255: workflowMeta.pageWidth is an authored FLOOR (pool-relative width set by
@@ -4021,11 +4090,13 @@ function fitLaneLabel(headerG, lane, cx, cy, laneH, isSelected) {
 // scores against the box edge, so the pad cannot feed back into it) and the page-width drag keep the box edge.
 // The bottom works the same way with its own pad (id badges under bottom-lane nodes reached up to 6 px past it):
 // the LAST lane is drawn taller by poolLabelPadBottom; lane.height, which is saved, does not change.
-let poolLabelPad = 0, poolLabelPadBottom = 0;
+// T-1386: the left works the same way with poolLabelPadLeft: a name or id badge centred under a node the pool's left
+// edge (contentLeftEdge) only just encloses hangs past it, and the drawn pool grows left to cover it.
+let poolLabelPad = 0, poolLabelPadBottom = 0, poolLabelPadLeft = 0;
 const POOL_LABEL_MARGIN = 12, POOL_LABEL_MARGIN_BOTTOM = 4;
 function fitPoolToLabels() {
-  const edge = contentRightEdge(), floor = POOL_Y + poolHeight();
-  let right = edge, bottom = floor;
+  const edge = contentRightEdge(), floor = POOL_Y + poolHeight(), leftEdge = contentLeftEdge();
+  let right = edge, bottom = floor, left = leftEdge;
   for (const t of svg.querySelectorAll('#g-nodes .node-label, #g-badges text, #g-badges-top text')) {
     let b; try { b = t.getBBox(); } catch (_) { continue; }
     if (!b.width) continue;
@@ -4033,10 +4104,12 @@ function fitPoolToLabels() {
     // picture-disagrees-with-the-file case LANE-GEOMETRY reports, and widening the drawn lane around it would hide it.
     if (b.x < edge) right = Math.max(right, b.x + b.width + POOL_LABEL_MARGIN);
     if (b.y < floor) bottom = Math.max(bottom, b.y + b.height + POOL_LABEL_MARGIN_BOTTOM);
+    if (b.x + b.width > leftEdge && b.y < floor) left = Math.min(left, b.x - POOL_LABEL_MARGIN);   // T-1386, same rule mirrored
   }
   const pad = Math.ceil(right - edge), padB = getLanes().length ? Math.ceil(bottom - floor) : 0;
-  if (pad !== poolLabelPad || padB !== poolLabelPadBottom) {
-    poolLabelPad = pad; poolLabelPadBottom = padB;
+  const padL = Math.max(0, Math.ceil(leftEdge - left));
+  if (pad !== poolLabelPad || padB !== poolLabelPadBottom || padL !== poolLabelPadLeft) {
+    poolLabelPad = pad; poolLabelPadBottom = padB; poolLabelPadLeft = padL;
     renderPool();
     syncCanvasSize();   // the drawn pool changed size; outside renderAll nothing else would refit the view
   }
@@ -4045,8 +4118,8 @@ function fitPoolToLabels() {
 function renderPool() {
   gPool.innerHTML = '';
   // pool outline
-  const px = POOL_X, py = POOL_Y;
-  const pw = contentRightEdge() - POOL_X + poolLabelPad; // encloses the right-most node (T-043) and its label (T-1154)
+  const px = contentLeftEdge() - poolLabelPadLeft, py = POOL_Y;   // T-1386: grows left to enclose a node an import placed there, and its label
+  const pw = contentRightEdge() - px + poolLabelPad; // encloses the right-most node (T-043) and its label (T-1154)
   const ph = poolHeight() + poolLabelPadBottom;           // T-1154: drawn only; the last lane below carries the pad
 
   // pool header strip
@@ -4811,8 +4884,8 @@ function adjustLabelPlacements() {
   // px/pw/ph, same band stacking from POOL_Y + POOL_HEADER — except the drawn pool's
   // label pad (T-1154): it is derived FROM label placement, so scoring against it
   // would feed back; the box edge is the bound here.
-  const px = POOL_X, py = POOL_Y;
-  const pw = contentRightEdge() - POOL_X;
+  const px = contentLeftEdge(), py = POOL_Y;   // T-1386: the same left edge renderPool() draws
+  const pw = contentRightEdge() - px;
   const ph = poolHeight();
   const bandTop = py + POOL_HEADER;
   const laneBands = [];
@@ -5048,7 +5121,8 @@ function clearLabelsOfFlows() {
   const shapes = state.nodes.map(n => { const d = dims(n); return { x1: n.x - 2, y1: n.y - 2, x2: n.x + d.w + 2, y2: n.y + d.h + 2 }; });
   const bandTop = POOL_Y + POOL_HEADER, lanes = [];
   { let y = bandTop; for (const l of getLanes()) { lanes.push({ y1: y, y2: y + l.height }); y += l.height; } }
-  const pw = contentRightEdge() - POOL_X, ph = poolHeight();
+  const PX = contentLeftEdge();   // T-1386: the left edge renderPool() draws
+  const pw = contentRightEdge() - PX, ph = poolHeight();
   const hasPool = lanes.length > 0 && pw > 0 && ph > 0;
   const isBelow = n => n.type === 'startEvent' || n.type === 'endEvent' ||
     n.type.endsWith('Gateway') || n.type.startsWith('linkEvent') || n.type.startsWith('event');
@@ -5056,7 +5130,7 @@ function clearLabelsOfFlows() {
   const LH = 12, ASC = 9, DESC = 3;
   // T-1068 F1 holds here too: a block never starts on the lane header strip; it is nudged right by its overrun
   // before it is judged, so it is judged where it will be drawn.
-  const headerEdge = POOL_X + LANE_HEADER + 1;
+  const headerEdge = PX + LANE_HEADER + 1;
   const put = (els, x, b0, anchor) => {
     els.forEach((t, i) => { t.setAttribute('x', x); t.setAttribute('y', b0 + i * LH); t.setAttribute('text-anchor', anchor); });
     if (!hasPool) return;
@@ -5095,8 +5169,8 @@ function clearLabelsOfFlows() {
         for (const o of others) if (inter(r, o)) { c += 10; hard++; }
         for (const s of shapes) if (inter(r, s)) c += 30;
         if (hasPool) {
-          if (r.x1 < POOL_X || r.x2 > POOL_X + pw || r.y1 < bandTop || r.y2 > POOL_Y + ph) c += 1;
-          if (r.x1 < POOL_X + LANE_HEADER) c += 2;
+          if (r.x1 < PX || r.x2 > PX + pw || r.y1 < bandTop || r.y2 > POOL_Y + ph) c += 1;
+          if (r.x1 < PX + LANE_HEADER) c += 2;
           if (lane && (r.y1 < lane.y1 - 1 || r.y2 > lane.y2 + 1)) c += 3;
         }
       }
@@ -7460,6 +7534,13 @@ function _fieldProfileAnswer(r, d) {
 function fieldSettingsSupported() {
   return _apiAvailable && (_fieldProfileStatus === 'none' || _fieldProfileStatus === 'loaded');
 }
+// T-1391 (operator, 2026-11-11, option 2): the field-profile settings are SHOWN only where the host serves
+// /api/field-profile — 'none' and 'loaded', and 'refused' (it serves it, but the project's file is wrong: that error
+// must stay visible). With no project server, or one that does not offer it (AEF, by its T-4737), they are hidden
+// instead of shown read-only; they come back on a host that serves the endpoint.
+function fieldProfileServed() {
+  return _apiAvailable && _fieldProfileStatus !== 'unsupported' && _fieldProfileStatus !== 'standalone';
+}
 let _fieldProfile = null;
 let _fieldProfileBase = 'none';   // T-1128: the version a Settings save must name (409 if it moved)
 let _fieldProfileStatus = 'standalone';
@@ -7475,6 +7556,10 @@ async function loadFieldProfile() {
     aefRecordFault('field-profile:load', e);
   }
   if (typeof renderProperties === 'function') renderProperties();
+  // T-1391: Settings opened before this answer came shows the field settings hidden (not yet known to be served);
+  // refresh it in place, so it does not take a reopen to see them.
+  const _sm = document.getElementById('settings-modal');
+  if (_sm && _sm.classList.contains('visible') && typeof syncSettingsUI === 'function') syncSettingsUI();
 }
 // T-1128: a map's OWN profile, stored on the project server beside the map's versions and keyed by the
 // map id (state.workflowMeta.id — the Save target). Fetched on first use per id and cached; a map saved
@@ -7569,12 +7654,12 @@ function suggestFieldRow(n, k) {
   b.dataset.testid = 'suggest-field';
   b.dataset.key = k;
   const s = _fieldSuggestions && _fieldSuggestions.get(n.type + '.' + k);
+  // T-1391 (operator, 2026-11-11, option 2): no button where the host does not offer field suggestions (no project
+  // server, or one that does not serve /api/field-suggestions — AEF, by its T-4737); nor while that is still being asked.
+  // It appears once the host answers that it does. The evidence line stays: it is about the map, not the host.
+  let offered = true;
   if (!_apiAvailable || _fieldSuggestionsSupported !== true) {
-    b.textContent = 'Suggest as a field';
-    b.disabled = true;
-    b.title = !_apiAvailable ? 'Needs the project server — suggestions are recorded there for the operator to approve'
-      : _fieldSuggestionsSupported === false ? 'This project server does not offer field suggestions'
-      : 'Checking whether this project server offers field suggestions…';
+    offered = false;
   } else if (s && s.status === 'pending') {
     b.textContent = 'Suggested ✓';
     b.disabled = true;
@@ -7608,7 +7693,7 @@ function suggestFieldRow(n, k) {
     };
   }
   if (_apiAvailable && _fieldSuggestions === null) loadFieldSuggestions();
-  wrap.append(evd, b);
+  if (offered) wrap.append(evd, b); else wrap.append(evd);
   return wrap;
 }
 function fieldMetaFor(k) {
@@ -7672,6 +7757,12 @@ function _fdTidy(profile) {   // drop empty lists and types, keep the file minim
 function renderFieldDefaultsUI() {
   const sel = $('set-fd-type'), rows = $('set-fd-rows'), status = $('set-fd-status');
   if (!sel || !rows) return;
+  // T-1391: hidden where the host does not serve field profiles (the status row and the whole section)
+  const served = fieldProfileServed();
+  const fdSec = $('set-fd-section'), profRow = $('set-field-profile-status') && $('set-field-profile-status').closest('.settings-row');
+  if (fdSec) fdSec.style.display = served ? '' : 'none';
+  if (profRow) profRow.style.display = served ? '' : 'none';
+  if (!served) return;
   const types = Object.keys(AEF_FIELDS).filter(t => (AEF_FIELDS[t] || []).length);
   if (sel.options.length !== types.length) {
     const keep = sel.value;
@@ -8603,8 +8694,10 @@ function _renderPropsInto(props, details) {
     why.className = 'field-hint';
     why.style.cssText = 'display:block;margin:2px 0 8px;line-height:1.45';
     why.textContent = 'Carried by this node in the source document. Shown read-only — these '
-      + 'keys are either derived from the diagram or not authored here. They are not lost. '
-      + '"Suggest as a field" asks the operator to make one an editable field for this project.';
+      + 'keys are either derived from the diagram or not authored here. They are not lost.'
+      // T-1391: the sentence about the button only where the button is offered
+      + (_apiAvailable && _fieldSuggestionsSupported === true
+        ? ' "Suggest as a field" asks the operator to make one an editable field for this project.' : '');
     sOther.appendChild(why);
     for (const k of hiddenKeys) {
       const row = document.createElement('div');
@@ -13977,7 +14070,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.41.0';
+const APP_VERSION = '0.43.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
@@ -15459,6 +15552,7 @@ function parseBpmnXml(text) {
   REVERSE_TYPE['boundaryEvent'] = 'linkEventCatch';
 
   const nodes = [];
+  const autoPos = new Set();   // T-976: uids of nodes the file gave no position (laid out below if it gave none at all)
   const displayIdToUid = new Map(); // for resolving sourceRef/targetRef on edges
 
   const nodeTags = ['startEvent', 'endEvent', 'serviceTask', 'userTask', 'scriptTask',
@@ -15829,6 +15923,7 @@ function parseBpmnXml(text) {
         const sameLane = nodes.filter(n => n.lane === laneId);
         x = POOL_X + LANE_HEADER + 30 + sameLane.length * 90;
         y = 0; // patched below once lanes are inserted into state
+        autoPos.add(uid);
       }
 
       // T-337: `foreignTag` is written ONLY for an out-of-allowlist element. A
@@ -16121,6 +16216,9 @@ function parseBpmnXml(text) {
   // reconcile below never sees those nodes as out-of-band at all. On an
   // ordering-dirty map this is a no-op by construction, so T-310's behaviour
   // there is byte-identical to before.
+  // T-976: a file that positions NONE of its nodes is laid out along its flows. A file that positions any node keeps
+  // today's placement for all of them, so every corpus and third-party file (all carry positions) is byte-identical.
+  if (nodes.length && nodes.every(n => autoPos.has(n.uid))) layoutByFlowOrder(nodes, edges);
   _laneGrowReport = growUnderDeclaredLanes(lanes, nodes);
   for (const n of nodes) {
     const def = dims(n) || NODE_DEFAULTS.serviceTask;

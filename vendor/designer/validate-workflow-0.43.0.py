@@ -1726,7 +1726,9 @@ class XmlValidator:
 
     # T-1377: the documentation-line prefixes of a step (832's rule C to its consumers; the authoring kit lists them).
     # `Notes` opens the free part: from that line on, the text is the author's own and is not checked.
-    DOC_PREFIXES = ("Instruction:", "Screen:", "Decision:", "Keys:", "Open:", "Rule:", "Master:", "Detail:",
+    # T-1416: `source:` is the kit's own citation line (GENERATE.md, AUTHORING §1b); without it here, a cited step with
+    # an Open: line, or any cited step under --strict, drew W-XML-DOC-PREFIX on the citation the kit requires.
+    DOC_PREFIXES = ("source:", "Instruction:", "Screen:", "Decision:", "Keys:", "Open:", "Rule:", "Master:", "Detail:",
                     "Mapping:")
     DOC_FREE = "Notes"
     # aef:position and DI both carry the shape's top-left corner (src parseBpmnXml, "GEOMETRY CONVENTION"); the

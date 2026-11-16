@@ -7,10 +7,10 @@ description: >
   bytes; validator unchanged since 0.41.0; field-profile controls now hidden where
   not served (our T-4737). Same route as T-5074.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-12T17:36:12Z
-last_update: '2026-11-12T17:46:13Z'
+last_update: 2026-11-16T10:02:50Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,20 +87,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 832 released designer 0.42.0 (this task was filed for it) and then 0.43.0 (msg df95ece2, 2026-11-16: tag designer-v0.43.0, release commit 351490ea9, artifact dist/aef-workflow-designer-0.43.0.html, sha256 8511974771820287731f8c5a11033feba573a45c9446678c7f02aed12acb287f, 1351062 bytes; kit dist/aef-authoring-kit-0.43.0). We agreed (reply 2026-11-16) to go straight from 0.41.0 to 0.43.0, today, shipping in the next be-tag; 832 acknowledged (msg 4e475b4e).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** AEF pins 0.41.0 (policy/designer-pin.yaml). 0.43.0 changes only APP_VERSION in the page (maps save byte-identically to 0.42.0) and one validator rule: `source:` is a known documentation prefix, so cited steps no longer draw W-XML-DOC-PREFIX.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** pin and serve 0.43.0 through the pull-at-tag intake (`fw designer sync --from-tag`), verified against 832's MANIFEST at the tag, 832's message and the pin.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** /designer serves 0.43.0; the vendored build and validator are 0.43.0 in vendor/designer/ and the vendored copy; 832 is told the be-tag.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw designer sync --from-tag designer-v0.43.0 --dry-run` verifies the tag (artifact sha256 = 8511974771820287731f8c5a11033feba573a45c9446678c7f02aed12acb287f, 1351062 bytes, matching 832's MANIFEST at the tag and msg df95ece2)
+- [x] policy/designer-pin.yaml pins 0.43.0 (artifact and validator fields), the build and validator are installed under vendor/designer/, and `fw designer status` reports the pin valid
+- [ ] /designer serves 0.43.0 after a Watchtower restart; the designer tests pass; the vendored copy carries 0.43.0
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -286,6 +287,17 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bin/fw designer status > /tmp/.t5101.out 2>&1 && grep -q "sha256 matches pin" /tmp/.t5101.out && grep -q "0.43.0" /tmp/.t5101.out
+U="$(bin/fw watchtower url)"; curl -sfL "$U/designer/app" -o /tmp/.t5101.html && grep -q "const APP_VERSION = '0.43.0'" /tmp/.t5101.html
+bin/fw vendor self --check --task T-5101
+
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| designer | /designer/app | ok | ok | ok | header shows v0.43.0; a map opens and renders; palette, canvas and properties panel all present |
+
+Screenshots: `.context/visual/T-5101/designer@{1024,1440,1920}.png` (`fw ux shots`, 2026-11-16). The page is 832's released build, verified byte-for-byte (sha256 8511974…); AEF changes none of its bytes.
 
 ## RCA
 
@@ -383,3 +395,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5101-re-pin-workflow-designer-0410---0420-832.md
 - **Context:** Initial task creation
+
+### 2026-11-16T10:02:50Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
