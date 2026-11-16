@@ -64,7 +64,16 @@ LEDGER = ".context/reviews/accepted-misses.jsonl"
 
 #: Any one-character box. P-010 counts every one of these as a criterion (T-5181): before,
 #: `\[[ x]\]` ignored `[~]` and every other character, so rewriting an open box hid it.
-BOX_RE = re.compile(r"^(?P<indent>\s*)-\s*\[(?P<state>.)\]\s*(?P<body>.*?)\s*$")
+#: Leading and inner whitespace is ASCII only (T-5181 review 2, #1): Python's `\s` also matches
+#: \x1c-\x1f and U+0085, which grep's `\s` does not, so a box Python counted could be invisible
+#: to the shell's `grep -cE '^\s*-\s*\[.\]'` and one accepted miss could cancel an open box.
+#: ASCII space/tab/VT/FF/CR is a subset of grep's [[:space:]] in every locale, so every box this
+#: parser sees, the shell counts too.
+_WS = r"[ \t\v\f\r]"
+BOX_RE = re.compile(rf"^(?P<indent>{_WS}*)-{_WS}*\[(?P<state>.)\]{_WS}*(?P<body>.*?){_WS}*$")
+#: The shell gate strips inline comments per line before counting (update-task.sh, T-1967/T-2554);
+#: accept must digest the same text the gate does (T-5181 review 2, #2).
+_INLINE_COMMENT_RE = re.compile(r"<!--(?:[^-]|-[^-]|--[^>])*-->")
 SUBHEAD_RE = re.compile(r"^### (.*)$")
 AC_HEADING_RE = re.compile(r"^## Acceptance Criteria[ \t]*$")
 ANNOTATION_RE = re.compile(r"^\s*\*\*Accepted miss:\*\*\s*(AM-[0-9a-f]{8})\b\s*(?:—|-)?\s*(.*)$")
@@ -118,6 +127,7 @@ def parse(text: str) -> list[Box]:
     """Every box under the FIRST `## Acceptance Criteria`, comments stripped.
 
     Line indices refer to the comment-stripped text; use `locate` to edit the raw file."""
+    text = "\n".join(_INLINE_COMMENT_RE.sub("", ln) for ln in (text or "").split("\n"))
     lines = strip_html_comment_lines(text).split("\n")
     start = next((i + 1 for i, ln in enumerate(lines) if AC_HEADING_RE.match(ln)), -1)
     if start < 0:
@@ -291,6 +301,7 @@ def _raw_index(raw_lines: list[str], stripped_line_no: int) -> int:
     keep: list[int] = []
     in_comment = False
     for i, line in enumerate(raw_lines):
+        line = _INLINE_COMMENT_RE.sub("", line)  # same pre-pass as parse()
         s = line.lstrip()
         if in_comment:
             if "-->" in line:

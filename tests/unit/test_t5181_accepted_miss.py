@@ -399,3 +399,54 @@ def test_audit_grandfathers_tilde_older_than_the_module(proj):
     _git(proj, "commit", "-qm", "new bare")
     r = _audit(proj)
     assert r.returncode == 2 and "T-9803" in r.stdout and "T-9801" not in r.stdout.split("\n")[0]
+
+
+@pytest.mark.parametrize("ch", ["\x1f", "\x1c", "\u0085"])
+def test_p010_control_byte_before_accepted_box_cannot_cancel_other_open_box(proj, ch):
+    # T-5181 review 2 #1: Python's \s matched \x1c-\x1f and U+0085, grep's does not. A byte
+    # in front of the accepted `- [~]` hid the box from the shell count while Python still
+    # reported MISS, so the miss cancelled a different open box.
+    p = _task(proj)
+    assert _accept(proj, "T-9801", 2).returncode == 0
+    t = p.read_text().replace("- [~] Run was done", ch + "- [~] Run was done")
+    t = t.replace("- [x] Third thing done\n", "- [x] Third thing done\n- [ ] Fourth thing still open\n")
+    p.write_text(t)
+    r = _close(proj)
+    assert r.returncode != 0, (r.stdout + r.stderr)[-2000:]
+    assert p.exists()
+
+
+def test_accept_digest_matches_gate_with_inline_comment(proj):
+    # T-5181 review 2 #2: accept digested the criterion with its inline comment, the gate
+    # without it, so a legitimately accepted miss read as stale forever.
+    p = _task(proj)
+    p.write_text(p.read_text().replace("- [ ] Run was done the canonical way",
+                                       "- [ ] Run was done the canonical way <!-- note -->"))
+    assert _accept(proj, "T-9801", 2).returncode == 0
+    r = _close(proj)
+    assert r.returncode == 0, (r.stdout + r.stderr)[-2000:]
+    assert "accepted miss" in (r.stdout + r.stderr)
+
+
+@pytest.mark.parametrize("cmd", [
+    "python3 lib/accepted_miss.py accept T-9801 --ac 2 --reason x",
+    "env -u CLAUDECODE -u AI_AGENT python3 lib/accepted_miss.py accept T-9801 --ac 2 --reason x",
+    "python3 .agentic-framework/lib/accepted_miss.py accept T-9801 --ac 2 --reason x",
+    "bin/fw task accept-miss T-9801 --ac 2 --reason x",
+    "python3 lib/human_ac_ticks.py delegation widen --class act-in-the-world --ruling R",
+])
+def test_text_gate_refuses_operator_verbs(cmd):
+    # T-5181 review 2 #3: the module's env check is stripped by `env -u`; the Bash text gate
+    # refuses the verb itself, like `delegation grant` (T-4165). `widen` is T-5180's.
+    from lib import shell_write_scan as sws
+    assert sws.scan(cmd, cwd=str(FW), project_root=str(FW)), cmd
+
+
+@pytest.mark.parametrize("cmd", [
+    "python3 lib/accepted_miss.py audit",
+    "python3 lib/accepted_miss.py list T-9801",
+    "bin/fw task show T-9801",
+])
+def test_text_gate_allows_reads(cmd):
+    from lib import shell_write_scan as sws
+    assert not sws.scan(cmd, cwd=str(FW), project_root=str(FW)), cmd

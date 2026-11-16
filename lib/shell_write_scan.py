@@ -1223,8 +1223,18 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
     ops = [a for a in args if not a.startswith("-")]
     if not ctx.boundary and \
             any(os.path.basename(a) in ("human_ac_ticks.py", "human_ac_ticks") for a in ops[:2]) and ("ack" in ops or ("delegation" in ops and
-                                                   ("grant" in ops or "revoke" in ops))):
+                                                   ("grant" in ops or "revoke" in ops or "widen" in ops))):
+        # T-5181 review 2 #3: `widen` (T-5180) is the operator's ruling too
         ctx.hits.append(Hit("records a Human-tick provenance row (the operator's act)"))
+        return
+    if not ctx.boundary and "accept" in ops and \
+            any(os.path.basename(a) in ("accepted_miss.py", "accepted_miss") for a in ops[:2]):
+        # T-5181 review 2 #3: the module refuses under CLAUDECODE/AI_AGENT, but `env -u` strips
+        # those; the text gate refuses the verb itself (same boundary as `delegation grant`).
+        ctx.hits.append(Hit("records an accepted miss (the operator's act)"))
+        return
+    if not ctx.boundary and verb == "fw" and ops[:2] == ["task", "accept-miss"]:
+        ctx.hits.append(Hit("records an accepted miss (the operator's act)"))
         return
     if verb in ("cd", "pushd"):
         dest = next((a for a in args if not a.startswith("-")), None)
