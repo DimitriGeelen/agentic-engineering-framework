@@ -397,6 +397,16 @@ still inline: there is nothing stale to serve on an empty cache.
 
 ## Decisions
 
+### 2026-11-16 — independent review (AMBER) and what changed
+- The safety property held: no stale or in-flight READY is ever served (reviewer focus 1–3 OK).
+- **Fixed #1 (medium):** a one-shot `waited` flag let every waiter compute unregistered once the key moved during the owner's run (reproduced: 6 computations where 2 are expected). Waiters now loop on one overall deadline and wait on the next owner. Test `test_waiters_after_a_key_move_share_one_recompute` fails on the reviewed code and passes now.
+- **Fixed #2 (low):** a waiter re-derives its key (stamp, task key, file mtime) after every wait instead of keeping its arrival-time key. The added test `test_a_waiter_rederives_its_key_after_waiting` passes on both versions, so it does not prove this fix. The change is by reading the code.
+- **Accepted (low):**
+  - #5: the single refresh thread can block up to 30 s behind a slow owner. Bounded, not a hang.
+  - #6: exact callers (CLI, board, refresh worker) may now wait up to 30 s on another thread's computation instead of duplicating it. The dashboard tile count became allow_stale via `_queue_groups`, so it can only under-count ready.
+  - #7: the stale count means "served stale in this request".
+- Regression: 800/801 readiness/approvals tests passed. One failed once and passed on an immediate full rerun; the failing test was not captured. The two timing-sensitive files passed 5/5 consecutive runs.
+
 ### 2026-11-16 — single-flight waiter that times out
 - **Chose:** a waiter whose wait (30 s) expires computes on its own without registering, and does not remove or signal the other caller's in-flight entry.
 - **Why:** so nothing hangs, and a slow first computation is not double-counted by a third caller.

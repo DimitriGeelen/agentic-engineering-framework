@@ -2173,8 +2173,21 @@ def review_readiness(task_id: str, status: str, body: str,
         state, reasons = _compute_readiness(task_id, body, root, p, stamp, [])
         return state, list(reasons)
     key = str(p)
-    waited = False
+    # T-5195 review #1/#2: one overall deadline, and the key is re-derived after every wait.
+    # A one-shot "waited" flag let every waiter compute unregistered once the key moved
+    # during the owner's run (6 computations for 2), and a waiter kept its arrival-time key.
+    deadline = _time.monotonic() + _READINESS_INFLIGHT_WAIT_S
+    first = True
     while True:
+        if not first:
+            stamp = _readiness_stamp(root)
+            tstamp = _readiness_task_key(root, task_id, stamp) + (_task_git_generation(root, task_id),)
+            try:
+                mtime = p.stat().st_mtime_ns
+            except OSError:
+                state, reasons = _compute_readiness(task_id, body, root, None, stamp, [])
+                return state, list(reasons)
+        first = False
         hit = _readiness_fresh_hit(p, mtime, tstamp)
         if hit:
             return hit[2][0], list(hit[2][1])
@@ -2190,13 +2203,14 @@ def review_readiness(task_id: str, status: str, body: str,
                 ev = _READINESS_INFLIGHT[key] = threading.Event()
                 owned = True
                 break
-        if waited:   # the other computation outlived the wait: compute unregistered
+        remaining = deadline - _time.monotonic()
+        if remaining <= 0:   # in-flight work outlived the overall wait: compute unregistered
             owned = False
             break
         # Another caller is computing this task: wait for it, then re-check the cache
-        # against this caller's own key (its result may be for an older key).
-        ev.wait(_READINESS_INFLIGHT_WAIT_S)
-        waited = True
+        # against this caller's freshly derived key (its result may be for an older key);
+        # if the key moved, the next owner registers and the rest wait on it in turn.
+        ev.wait(remaining)
     try:
         used: list = []
         state, reasons = _compute_readiness(task_id, body, root, p, stamp, used)

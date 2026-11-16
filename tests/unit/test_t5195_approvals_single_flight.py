@@ -212,3 +212,53 @@ def test_approvals_context_reports_stale_count(rig, monkeypatch):
         ctx = ap._build_approvals_context()
     assert ctx["refreshing_count"] == 0
     assert len(ctx["pending_acs"]) == 3
+
+
+def test_waiters_after_a_key_move_share_one_recompute(rig):
+    # T-5195 review #1: the key moves while the owner computes; the waiters must register one
+    # new computation between them, not each compute once (was 6 computations for 2).
+    state, make = rig
+    p = make("T-9201")
+    state["delay"] = 0.6
+
+    def call():
+        shared.review_readiness("T-9201", "", "", p)
+
+    owner = threading.Thread(target=call)
+    owner.start()
+    time.sleep(0.15)
+    state["key"] = 1
+    ws = [threading.Thread(target=call) for _ in range(5)]
+    for t in ws:
+        t.start()
+    owner.join(timeout=20)
+    for t in ws:
+        t.join(timeout=20)
+    assert state["calls"]["T-9201"] == 2, state["calls"]
+
+
+def test_a_waiter_rederives_its_key_after_waiting(rig):
+    # T-5195 review #2: a waiter that arrived under the old key must not accept a result for
+    # it once the key moved during its wait; it gets the answer for the new key.
+    state, make = rig
+    p = make("T-9202")
+    state["delay"] = 0.5
+    out = {}
+
+    def owner():
+        shared.review_readiness("T-9202", "", "", p)
+
+    def waiter():
+        out["w"] = shared.review_readiness("T-9202", "", "", p)
+
+    to = threading.Thread(target=owner)
+    to.start()
+    time.sleep(0.1)
+    tw = threading.Thread(target=waiter)
+    tw.start()                       # arrives under key 0, waits on the owner
+    time.sleep(0.1)
+    state["key"] = 1                 # a ledger row lands; the truth turns WAITING
+    state["answer"]["T-9202"] = shared.WAITING_ON_AGENT
+    to.join(timeout=20)
+    tw.join(timeout=20)
+    assert out["w"][0] == shared.WAITING_ON_AGENT, out
