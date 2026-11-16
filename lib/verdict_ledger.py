@@ -108,6 +108,7 @@ import re
 import subprocess
 import sys
 import secrets
+import shutil
 import time
 import uuid
 from typing import NoReturn
@@ -1672,6 +1673,25 @@ def parse_harness_verdicts(text: str) -> dict[int, dict]:
     return {n: v for n, v in out.items() if n not in bad}
 
 
+def _freeze_seat_evidence(root: Path, task: str, did: str, paths: list[str]) -> list[str]:
+    """T-5178: per-dispatch copies of the screenshots a harness seat cited, as a claude seat makes
+    them itself (brief, T-4514): `REPORT_DIR/<task>/<stem>-<dispatch><ext>`. The originals under
+    .context/working/judge-evidence/ and .context/visual/ are overwritten by the next capture of
+    the same page, which broke the row's evidence hash. Same bytes, so the sha256-matched page and
+    checklist checks are unaffected. An existing copy is never overwritten."""
+    out = []
+    for rel in paths:
+        src = root / rel
+        p = Path(rel)
+        dst_rel = Path(REPORT_DIR) / task / f"{p.stem}-{did}{p.suffix}"
+        dst = root / dst_rel
+        if not dst.exists():
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, dst)
+        out.append(str(dst_rel))
+    return out
+
+
 def _seat_named_screenshots(root: Path, did: str, kind: str, revision: str, v: dict) -> list[str]:
     """T-4944 (operator 2026-11-01, "vision-gated"): the screenshots a harness seat may be cited as
     having seen. Only for a kind the committed registry declares `vision: true` (probed:
@@ -1773,6 +1793,8 @@ def _record_for_worker_locked(root: Path, did: str, drec: dict, kind: str, here:
         guidance = v["guidance"] or ("" if v["outcome"] == GREEN else v["why"])
         seen = _seat_named_screenshots(root, did, kind, str(drec.get("revision") or ""), v) \
             if v["outcome"] == GREEN else []
+        seen = _freeze_seat_evidence(root, task, did, seen)
+        touched.extend(seen)
         try:
             rec = record(task, ac, v["outcome"], reviewer=f"{identity}:{seat}", rung=rung,
                          guidance=guidance, evidence=[str(rep)] + seen, digest=criterion_digest(crit),
