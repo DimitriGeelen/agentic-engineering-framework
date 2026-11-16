@@ -5,12 +5,12 @@ name: "Watchtower approvals at volume, slice C: approvals page — single-flight
 description: >
   Build slice of inception T-5186 (GO 2026-11-16). Evidence: docs/reports/T-5186-watchtower-volume-performance.md.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/approvals.py, web/shared.py, web/templates/_approvals_content.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -39,8 +39,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T19:37:24Z
-last_update: 2026-11-16T20:13:38Z
-date_finished:
+last_update: 2026-11-16T21:13:25Z
+date_finished: 2026-11-16T21:13:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -377,6 +377,16 @@ the top of the page to the Decisions heading: a full-page shot of the 436-item p
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The approvals page now serves a cached WAITING immediately and refreshes it in the background, and concurrent requests compute each task once. Right after every cached entry goes out of date, the page answers in 5.0 s instead of 21.8 s; warm stays at 2.45 s. An independent review (AMBER) confirmed that no stale READY is ever served. Its two findings are fixed, one with a test that fails on the reviewed code. The only open point is how the new "N entries are being refreshed" line reads on the page, which is the Human criterion.
+
+**Evidence:**
+- Timings in ## Measurements below; warm re-measured by the parent at 2.45 s in-process and 2.7–4.9 s live (load ~24).
+- 8 single-flight tests and 14 per-task key tests passed 5/5 consecutive runs; 800/801 readiness/approvals tests passed (one intermittent failure that did not recur).
+- Review fixes: commit 0a57a1620; findings and dispositions in ## Decisions.
+- Watchtower restarted and current on this code.
+
 ## Measurements
 
 In-process, this repo, `app.test_client().get("/approvals")`. Invalidation is simulated by wrapping
@@ -441,3 +451,16 @@ still inline: there is nothing stale to serve on an empty cache.
 ### 2026-11-16T20:12:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-16T21:13:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ee0ae5e3
+- **Timestamp:** 2026-11-16T21:14:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
