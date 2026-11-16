@@ -383,6 +383,17 @@ stamp; the stamp itself (13 `stat`s + git token) is ~12 ms. 165 task ids indexed
 
 ## Decisions
 
+### 2026-11-16 — independent review (AMBER) and what changed
+- **Fixed #1 (stale READY, medium-high):** verdict_ledger refuses every task when any verdicts.jsonl row has an illegible `task` (not `T-<digits>`). The index used to attribute such a row to whatever ids appeared in its text, so other tasks kept their keys. Such a row now counts toward the global fingerprint.
+- **Fixed #2:** the parsed `task` value is added to the row's ids, so an escaped spelling (`T-9002`) still moves that task's key.
+- Three new test cases fail on the reviewed code and pass now (14/14). 793 readiness/approvals tests pass.
+- **Accepted, not changed (low):**
+  - #3: linkage is one hop, not a closure. The reviewer found no reachable case: real dispatch/run/completion rows all carry `task`, and the validator rejects a mismatched one.
+  - #4: a half-read append can pin a false WAITING until the next stamp move. Liveness only, never a stale READY; appends are single small locked writes.
+  - #5: a rewrite-counter race under threads. Very low; would need a rewrite, a restore and a different rewrite around a late store.
+  - #6: the index rebuilds per call when git is unreadable. Nothing is cached in that state anyway.
+- **Left to slice A (T-5196):** a commit touching `.context/reviews/` still moves the global git generation and invalidates every task. That is the common real-world trigger (42 commits/day).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:

@@ -1940,6 +1940,17 @@ def _ledger_index(root: Path, stamp: tuple) -> dict | None:
                     glob_parts.append(name.encode() + b"\0dup\0" + raw)
                 seen.add(rid)
             ids = {"T-" + m for m in _LEDGER_ID_RE.findall(raw.decode("utf-8", "replace"))}
+            # T-5194 review #1/#2: the validator refuses EVERY task when a verdicts.jsonl row's
+            # `task` is not a legible `T-<digits>` (verdict_ledger.satisfying_verdict), so such a
+            # row is global, not attributed by ids found elsewhere in its text. The parsed `task`
+            # value also counts as an id (an escaped spelling never hides the row).
+            tval = obj.get("task")
+            if name == "verdicts.jsonl" and not (isinstance(tval, str)
+                                                 and re_mod.fullmatch(r"T-\d+", tval)):
+                glob_parts.append(name.encode() + b"\0illegible-task\0" + raw)
+                continue
+            if isinstance(tval, str) and re_mod.fullmatch(r"T-\d+", tval):
+                ids.add(tval)
             toks = [v for k in _LEDGER_LINK_KEYS if isinstance(v := obj.get(k), str) and v]
             for t in toks:
                 links.setdefault(t, set()).update(ids)

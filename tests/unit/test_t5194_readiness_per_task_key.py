@@ -123,7 +123,8 @@ def test_a_row_tied_to_x_by_its_dispatch_id_recomputes_x(rig):
     assert calls["T-9002"] == base["T-9002"]
 
 
-@pytest.mark.parametrize("change", ["no-task", "torn", "dup-id", "rewrite", "unterminated"])
+@pytest.mark.parametrize("change", ["no-task", "torn", "dup-id", "rewrite", "unterminated",
+                                    "illegible-task", "lowercase-task"])
 def test_a_change_no_task_owns_recomputes_everyone(rig, change):
     root, paths, calls = rig
     seed(root)
@@ -137,6 +138,13 @@ def test_a_change_no_task_owns_recomputes_everyone(rig, change):
         append(root, "verdicts.jsonl", '{"task": "T-9001", "outc')
     elif change == "dup-id":
         append(root, "verdicts.jsonl", {"id": "v0", "task": "T-9002", "outcome": "red"})
+    elif change == "illegible-task":
+        # review #1: verdict_ledger refuses EVERY task on a verdicts row whose `task` is not
+        # `T-<digits>`, even though its dispatch id names T-9001
+        append(root, "verdicts.jsonl", {"id": "v8", "task": "?", "dispatch_id": "judge-t-9001-r2-bb",
+                                        "outcome": "green"})
+    elif change == "lowercase-task":
+        append(root, "verdicts.jsonl", {"id": "v8", "task": "t-9001", "outcome": "green"})
     elif change == "rewrite":   # a committed row of T-9002 edited: the ledger refuses as a whole
         f.write_text(f.read_text().replace('"v1", "task": "T-9002", "outcome": "red"',
                                            '"v1", "task": "T-9002", "outcome": "reddd"'))
@@ -216,3 +224,17 @@ def test_a_stamp_that_does_not_match_the_files_falls_back_to_the_whole_stamp(rig
     real = shared._readiness_stamp(root)
     assert shared._readiness_task_key(root, "T-9001", ("x",)) == ("x",)
     assert shared._readiness_task_key(root, "T-9001", real)[1] == "idx"
+
+
+def test_an_escaped_task_spelling_is_still_attributed_to_its_task(rig):
+    # review #2: `"task":"T-9002"` is T-9002's row to the validator; it must move T-9002's key
+    # even though the raw bytes only name T-9001 (in the dispatch id)
+    root, paths, calls = rig
+    seed(root)
+    for t in TASKS:
+        ask(paths, t)
+    base = dict(calls)
+    append(root, "verdicts.jsonl", '{"id": "v8", "task": "T\\u002d9002", "dispatch_id": "judge-t-9001-x", "outcome": "green"}')
+    for t in TASKS:
+        ask(paths, t)
+    assert calls["T-9002"] == base["T-9002"] + 1
