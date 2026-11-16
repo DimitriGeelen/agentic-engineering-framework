@@ -2213,6 +2213,154 @@ def _git_state_token(root: Path) -> tuple | None:
         return None
 
 
+# T-5196: `git show <40-hex>:<path>` is served by ONE long-lived `git cat-file --batch` reader
+# per repo root instead of a process per call (~1,900 on a cold approvals page). Nothing is
+# stored: the reader only replaces the spawn. It answers only when the object is a blob; a
+# missing/ambiguous object, a tree, any error, timeout or desync makes that call take the old
+# subprocess path, so failures are git's own. `git show` prints a blob's plain bytes (textconv
+# only with an explicit --textconv), exactly what cat-file prints. The reader is restarted when
+# anything it could have loaded once goes stale: refs (replace refs live there) and HEAD (the
+# state token), .git/config, objects/pack (a pruned pack stays mmapped) or the GIT_*/HOME env.
+_SHOW_SPEC = re.compile(r"[0-9a-f]{40}:(?!\.{0,2}/)[^\n\x00]+")
+_CATFILE: dict[str, "_CatFileBatch"] = {}
+_CATFILE_LOCK = __import__("threading").Lock()
+_CATFILE_TIMEOUT = 60.0
+
+
+def _catfile_key(root: Path, tok: tuple) -> tuple:
+    gd = os.path.join(str(root), ".git")
+    extra = []
+    for rel in ("config", "objects/pack"):
+        try:
+            st = os.stat(gd + "/" + rel)
+            extra.append((st.st_mtime_ns, st.st_size, st.st_ino))
+        except OSError:
+            extra.append(None)
+    env = tuple(sorted((k, v) for k, v in os.environ.items()
+                       if k.startswith("GIT_") or k in ("HOME", "XDG_CONFIG_HOME")))
+    return (tok, tuple(extra), env)
+
+
+class _CatFileBatch:
+    def __init__(self, root: Path, key: tuple):
+        self.key = key
+        self.pid = os.getpid()
+        self.lock = __import__("threading").Lock()
+        self.buf = bytearray()
+        self.proc = subprocess.Popen(["git", "cat-file", "--batch"], cwd=str(root),
+                                     stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                     stderr=subprocess.DEVNULL, bufsize=0)
+
+    def close(self) -> None:
+        p = self.proc
+        if p is None:
+            return
+        self.proc = None
+        for f in (p.stdin, p.stdout):
+            try:
+                f.close()
+            except OSError:
+                pass
+        try:
+            p.wait(timeout=2)
+        except Exception:
+            try:
+                p.kill()
+                p.wait(timeout=5)
+            except Exception:
+                pass
+
+    def _fill(self, deadline: float) -> None:
+        import select
+        fd = self.proc.stdout.fileno()
+        left = deadline - time.monotonic()
+        if left <= 0 or not select.select([fd], [], [], left)[0]:
+            raise TimeoutError("cat-file --batch read timed out")
+        chunk = os.read(fd, 1 << 16)
+        if not chunk:
+            raise EOFError("cat-file --batch closed its output")
+        self.buf += chunk
+
+    def request(self, spec: str) -> bytes | None:
+        """The blob's bytes, or None when the object is not a blob (missing, ambiguous, tree,
+        commit). Raises on any I/O fault; the caller then closes this reader."""
+        deadline = time.monotonic() + _CATFILE_TIMEOUT
+        data = os.fsencode(spec) + b"\n"
+        while data:
+            data = data[os.write(self.proc.stdin.fileno(), data):]
+        while (nl := self.buf.find(b"\n")) < 0:
+            self._fill(deadline)
+        header = bytes(self.buf[:nl]).decode("utf-8", "surrogateescape")
+        del self.buf[:nl + 1]
+        if header.endswith((" missing", " ambiguous")):
+            return None
+        parts = header.split(" ")
+        if len(parts) != 3 or not re.fullmatch(r"[0-9a-f]{40}", parts[0]) or not parts[2].isdigit():
+            raise ValueError(f"cat-file --batch desync: {header[:80]!r}")
+        size = int(parts[2])
+        while len(self.buf) < size + 1:
+            self._fill(deadline)
+        if self.buf[size] != 0x0A:
+            raise ValueError("cat-file --batch desync: no LF after content")
+        body = bytes(self.buf[:size])
+        del self.buf[:size + 1]
+        return body if parts[1] == "blob" else None
+
+
+def _catfile_show(root: Path, spec: str, tok: tuple) -> tuple[int, str] | None:
+    """(0, text) exactly as `git show <spec>` with text=True would return it, or None: take the
+    per-call path. Never raises."""
+    try:
+        key = _catfile_key(root, tok)
+        rkey = str(root)
+        with _CATFILE_LOCK:
+            rd = _CATFILE.get(rkey)
+            if rd is not None and rd.pid != os.getpid():
+                rd = None                     # inherited across fork: the parent owns its pipe
+                _CATFILE.pop(rkey, None)
+            if rd is not None and rd.key != key:
+                _CATFILE.pop(rkey, None)
+                with rd.lock:
+                    rd.close()
+                rd = None
+            if rd is None:
+                rd = _CATFILE[rkey] = _CatFileBatch(root, key)
+        with rd.lock:
+            if rd.proc is None:
+                return None
+            try:
+                body = rd.request(spec)
+            except Exception:
+                rd.close()
+                with _CATFILE_LOCK:
+                    if _CATFILE.get(rkey) is rd:
+                        del _CATFILE[rkey]
+                return None
+        if body is None:
+            return None
+        enc = getattr(subprocess, "_text_encoding", None)
+        enc = enc() if enc else __import__("locale").getpreferredencoding(False)
+        try:
+            text = body.decode(enc)           # strict, as subprocess text=True; a failure below
+        except UnicodeError:                  # re-runs git so the caller sees git's own outcome
+            return None
+        return 0, text.replace("\r\n", "\n").replace("\r", "\n")
+    except Exception:
+        return None
+
+
+def _catfile_shutdown() -> None:
+    with _CATFILE_LOCK:
+        readers = list(_CATFILE.values())
+        _CATFILE.clear()
+    for rd in readers:
+        if rd.pid == os.getpid():
+            rd.close()
+
+
+__import__("atexit").register(_catfile_shutdown)
+
+
 def _git_out(root: Path, *args: str) -> tuple[int, str]:
     memo = bool(args) and args[0] in _GIT_MEMO_CMDS
     key = str(root)
@@ -2223,9 +2371,13 @@ def _git_out(root: Path, *args: str) -> tuple[int, str]:
             hit = held[1].get(args)
             if hit is not None:
                 return hit
-    cp = subprocess.run(["git", *args], cwd=str(root), capture_output=True, text=True, timeout=60)
-    res = (cp.returncode, cp.stdout)
-    if tok is not None and cp.returncode == 0 and len(cp.stdout) <= _GIT_MEMO_MAX_OUT \
+    res = None
+    if tok is not None and len(args) == 2 and args[0] == "show" and _SHOW_SPEC.fullmatch(args[1]):
+        res = _catfile_show(root, args[1], tok)
+    if res is None:
+        cp = subprocess.run(["git", *args], cwd=str(root), capture_output=True, text=True, timeout=60)
+        res = (cp.returncode, cp.stdout)
+    if tok is not None and res[0] == 0 and len(res[1]) <= _GIT_MEMO_MAX_OUT \
             and _git_state_token(root) == tok:
         held = _GIT_MEMO.get(key)
         if held is None or held[0] != tok or len(held[1]) >= _GIT_MEMO_MAX:
