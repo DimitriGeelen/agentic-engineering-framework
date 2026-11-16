@@ -55603,3 +55603,21 @@ scan_id: R-b98db54f
 task_id: T-5170
 payload:
   task_file: .tasks/active/T-5170-refused-bare-name-send-names-no-close-pe.md
+---
+kind: scan_emitted
+timestamp: '2026-11-16T01:44:36Z'
+scan_id: R-b56c12c5
+task_id: T-5173
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-16T01:44:36Z'
+scan_id: R-b56c12c5
+task_id: T-5173
+payload:
+  task_file: .tasks/active/T-5173-review-evidence-over-the-10-mb-commit-li.md

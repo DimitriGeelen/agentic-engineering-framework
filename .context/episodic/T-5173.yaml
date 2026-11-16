@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5173: Review evidence over the 10 MB commit limit fails the verdict commit with a truncated message: fw ux shots and the judge never check screenshot size
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T01:45:30Z
+# ============================================================================
+
+task_id: T-5173
+task_name: "Review evidence over the 10 MB commit limit fails the verdict commit with a truncated message: fw ux shots and the judge never check screenshot size"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-16T00:35:36Z
+completed: 2026-11-16T01:43:53Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-16T01:35:44+01:00
+last_commit: 2026-11-16T02:43:41+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed — evidence over the 10 MB limit silently fails the verdict commit (found on T-5167). oversized review evidence caught where it is made — fw ux shots errors per shot over the commit limit (warns above half), the judge refuses to dispatch with oversized evidence, a refused verdict commit keeps the start of git's message; shared lib/large_file_limit.py; 7 tests
+
+# Key outcomes
+outcomes:
+  - '`fw ux shots` reports each shot over the commit block threshold as an error naming the file, its size, the limit and the crop step, and exits non-zero; a shot over half the threshold gets a warning; the threshold is read the same way as the large-file guard (`FW_LARGE_FILE_BLOCK_BYTES`, default 10,485,760)'
+  - '`fw reviewer judge` refuses to dispatch when any evidence file it would cite is over the block threshold, naming the file and saying what to do; nothing is dispatched or recorded'
+  - 'a refused verdict commit reports the START of git''s output (where the hook names the file and reason), not only the end'
+  - 'unit tests for each; every test that reads the changed files passes (7 new; 61 files, 1020 pytest + 115 bats, all pass)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'oversized review evidence caught where it is made — fw ux shots errors per shot over the commit limit (warns above half), the judge refuses to dispatch with oversized evidence, a refused verdict commit keeps the start of git''s message; shared lib/large_file_limit.py; 7 tests'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/ux-review/ux_shots.py'
+  - '.agentic-framework/lib/large_file_limit.py'
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.fabric/components/lib-large_file_limit.yaml'
+  - '.tasks/active/T-5173-review-evidence-over-the-10-mb-commit-li.md'
+  - 'agents/ux-review/ux_shots.py'
+  - 'lib/large_file_limit.py'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/verdict_ledger.py'
+  - 'tests/unit/test_t5173_oversized_evidence.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T01:35:44'
+    action: 'T-5173: filed — evidence over the 10 MB limit silently fails the verdict commit (found on T-5167)'
+  - time: '2026-11-16T02:43:41'
+    action: 'T-5173: oversized review evidence caught where it is made — fw ux shots errors per shot over the commit limit (warns above half), the judge refuses to dispatch with oversized evidence, a refused verdict commit keeps the start of git''s message; shared lib/large_file_limit.py; 7 tests'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 68 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [reviewer, ux-shots, bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 68
+  commits: 3
+  files_changed: 14
+  lines_added: 871
+  lines_removed: 20
+  footprint_refreshed_at: '2026-11-16T01:45:48Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5173-review-evidence-over-the-10-mb-commit-li.md
+generated_by: context-agent-hybrid
