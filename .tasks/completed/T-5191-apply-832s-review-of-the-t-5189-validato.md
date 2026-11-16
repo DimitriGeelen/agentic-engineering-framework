@@ -6,10 +6,10 @@ description: >
   832 checked the six inferred rows against validate-workflow.py 0.43.0 rule texts.
   Apply in md + yaml, keep the coverage test green, send the new yaml sha256.
 
-status: started-work
+status: work-completed
 workflow_type: design
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T16:23:23Z
-last_update: '2026-11-16T16:23:29Z'
-date_finished:
+last_update: 2026-11-16T16:30:04Z
+date_finished: 2026-11-16T16:30:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -92,9 +92,9 @@ One inference was right with the wrong reasoning: for W-TYPE-LANE-MISMATCH, the 
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] YAML and markdown reflect all six verdicts. The counts are 5 prevented / 13 runtime-only and 31 preventing codes.
-- [ ] tests/unit/test_t5189_validator_refusal_mapping.py passes.
-- [ ] 832 is sent the commit and the YAML's sha256.
+- [x] YAML and markdown reflect all six verdicts. The counts are 5 prevented / 13 runtime-only and 31 preventing codes.
+- [x] tests/unit/test_t5189_validator_refusal_mapping.py passes.
+- [x] 832 is sent the commit and the YAML's sha256. (49f00d2fd, sha256 713cb005…, 2026-11-16)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -380,3 +380,21 @@ One inference was right with the wrong reasoning: for W-TYPE-LANE-MISMATCH, the 
 
 ### 2026-11-16T16:23:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-16T16:30:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-17405f91
+- **Timestamp:** 2026-11-16T16:30:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — tests/unit/test_t5189_validator_refusal_mapping.py passes.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/test_t5189_validator_refusal_mapping.py in: tests/unit/test_t5189_validator_refusal_mapping.py passes.`

@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5191: Apply 832's review of the T-5189 validator/refusal mapping: four codes to design-only, stale_position runtime-only, W-TYPE-LANE-MISMATCH reasoning reversed (832 msg afe9ff0c)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T16:30:23Z
+# ============================================================================
+
+task_id: T-5191
+task_name: "Apply 832's review of the T-5189 validator/refusal mapping: four codes to design-only, stale_position runtime-only, W-TYPE-LANE-MISMATCH reasoning reversed (832 msg afe9ff0c)"
+workflow_type: design
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-16T16:23:23Z
+completed: 2026-11-16T16:30:04Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-16T17:26:30+01:00
+last_commit: 2026-11-16T17:26:30+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  apply 832's review of the T-5189 mapping — W-XML-NO-WORKFLOWMETA and the three gateway codes design-only, stale_position runtime-only, W-TYPE-LANE-MISMATCH reasoning reversed; all six reviewed rows confirmed (5 prevented / 13 runtime-only, 31 preventing codes)
+
+# Key outcomes
+outcomes:
+  - 'YAML and markdown reflect all six verdicts. The counts are 5 prevented / 13 runtime-only and 31 preventing codes.'
+  - 'tests/unit/test_t5189_validator_refusal_mapping.py passes.'
+  - '832 is sent the commit and the YAML''s sha256. (49f00d2fd, sha256 713cb005…, 2026-11-16)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5191-apply-832s-review-of-the-t-5189-validato.md'
+  - 'docs/research/executable-workflow/contracts/v2/validator-refusal-mapping.md'
+  - 'docs/research/executable-workflow/contracts/v2/validator-refusal-mapping.yaml'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T17:26:30'
+    action: 'T-5191: apply 832''s review of the T-5189 mapping — W-XML-NO-WORKFLOWMETA and the three gateway codes design-only, stale_position runtime-only, W-TYPE-LANE-MISMATCH reasoning reversed; all six reviewed rows confirmed (5 prevented / 13 runtime-only, 31 preventing codes)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6
+  commits: 2
+  files_changed: 6
+  lines_added: 595
+  lines_removed: 102
+  footprint_refreshed_at: '2026-11-16T16:30:28Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5191-apply-832s-review-of-the-t-5189-validato.md
+generated_by: context-agent-hybrid
