@@ -27,6 +27,12 @@ PROVENANCE — a tick counts as the human's when either holds:
      pattern; <id> is a GREEN verdict row for this task bound (ac_digest) to a DIFFERENT
      Human criterion whose title matches the condition; and the ticked criterion is not
      tier0-or-bypass / act-in-the-world (lib/delegation.py). One cite licenses one tick.
+     WIDENING (T-5180, T-5171 GO) is a different row kind in the same file: `delegation widen
+     --class act-in-the-world --ruling ID --text "verbatim" --pattern RX (--arc|--tasks)
+     --expires YYYY-MM-DD` (operator only, like grant). It does not license a cite here; it
+     makes a MEASURED act-in-the-world criterion reviewer-judged (lib/delegation_widening.py),
+     so its tick arrives through path 2 with `widened by SD-… (ruling …)` on the annotation.
+     `revoke` and `list` cover both kinds.
 One ledger row licenses ONE tick (consumed oldest-first), every `### Human` section is
 read, and merge commits are judged against every parent.
 Everything else FAILs. The FAIL line names the committing identity and says AGENT when it
@@ -770,6 +776,44 @@ def grant_delegation(root: Path, pattern: str, condition: str, arc: str, tasks: 
     return row
 
 
+def widen_delegation(root: Path, cls: str, ruling: str, text: str, pattern: str, arc: str,
+                     tasks: list[str], expires: str, by: str, today: str | None = None) -> dict:
+    """Append an operator widening (T-5180, T-5171 GO): `cls` criteria matching `pattern` in
+    scope become reviewer-judgeable when they carry a Measured block. ValueError names what is
+    wrong with it. Same scope/expiry rules as `grant_delegation`."""
+    import delegation_widening as _dw  # noqa: PLC0415
+    if cls not in _dw.WIDENABLE_CLASSES:
+        raise ValueError(f"--class {cls!r} cannot be widened; only "
+                         f"{', '.join(_dw.WIDENABLE_CLASSES)} (tier0-or-bypass, sovereignty-field "
+                         f"and operator-marked stay with the operator)")
+    if not (ruling or "").strip():
+        raise ValueError("--ruling needs the project's ruling id")
+    if not (text or "").strip():
+        raise ValueError("--text needs the ruling, verbatim")
+    try:
+        if not pattern or re.search(pattern, ""):
+            raise ValueError(f"--pattern {pattern!r} matches every criterion — name the criterion")
+    except re.error as e:
+        raise ValueError(f"--pattern does not compile: {e}") from None
+    bad = [t for t in tasks if not re.fullmatch(r"T-\d+", t)]
+    if bad or not (arc or tasks):
+        raise ValueError("scope needs --arc and/or --tasks T-1,T-2 (task ids)")
+    today = today or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    try:
+        days = (datetime.strptime(expires, "%Y-%m-%d") - datetime.strptime(today, "%Y-%m-%d")).days
+    except ValueError:
+        raise ValueError(f"--expires {expires!r} is not YYYY-MM-DD") from None
+    if not 0 <= days <= MAX_DELEGATION_DAYS:
+        raise ValueError(f"--expires must be today..{MAX_DELEGATION_DAYS} days ahead")
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    row = {"ts": ts, "kind": "widening", "class": cls, "ruling": ruling.strip(), "text": text,
+           "pattern": pattern, "arc": arc or None, "tasks": tasks, "expires": expires, "by": by,
+           "id": "SD-" + hashlib.sha256(f"widening\n{ts}\n{cls}\n{ruling}\n{pattern}\n{arc}\n"
+                                        f"{tasks}".encode()).hexdigest()[:8]}
+    _append(root, DELEGATIONS, row)
+    return row
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="human_ac_ticks")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -783,7 +827,18 @@ def main(argv: list[str] | None = None) -> int:
     g.add_argument("--tasks", default="", help="scope: comma-separated task ids")
     g.add_argument("--expires", required=True, help="YYYY-MM-DD, at most a year ahead")
     g.add_argument("--i-am-human", action="store_true")
-    r = dsub.add_parser("revoke", help="revoke a grant; ticks committed afterwards stop counting")
+    w = dsub.add_parser("widen", help="make act-in-the-world criteria reviewer-judgeable when "
+                                      "measured (T-5180; operator ruling, cited on every tick)")
+    w.add_argument("--class", dest="wclass", required=True,
+                   help="criterion class to widen; only act-in-the-world is accepted")
+    w.add_argument("--ruling", required=True, help="the project's ruling id")
+    w.add_argument("--text", required=True, help="the ruling, verbatim")
+    w.add_argument("--pattern", required=True, help="regex on the widened criterion's title")
+    w.add_argument("--arc", default="", help="scope: tasks whose arc_id (or arc: tag) is this")
+    w.add_argument("--tasks", default="", help="scope: comma-separated task ids")
+    w.add_argument("--expires", required=True, help="YYYY-MM-DD, at most a year ahead")
+    w.add_argument("--i-am-human", action="store_true")
+    r = dsub.add_parser("revoke", help="revoke a grant or widening; it stops counting from then")
     r.add_argument("grant_id")
     r.add_argument("--reason", default="")
     r.add_argument("--i-am-human", action="store_true")
@@ -809,6 +864,14 @@ def main(argv: list[str] | None = None) -> int:
             print(f"{gid} {state} expires={gr.get('expires')} arc={gr.get('arc') or '-'} "
                   f"tasks={','.join(gr.get('tasks') or []) or '-'} pattern={gr.get('pattern')!r} "
                   f"condition={gr.get('condition')!r} by={gr.get('by')}")
+        import delegation_widening as _dw  # noqa: PLC0415
+        for wid, wr in _dw.widenings(root).items():
+            state = ("revoked " + wr["revoked"]) if wr["revoked"] else \
+                ("expired" if str(wr.get("expires")) < today else "active")
+            print(f"{wid} widening {state} class={wr.get('class')} ruling={wr.get('ruling')} "
+                  f"expires={wr.get('expires')} arc={wr.get('arc') or '-'} "
+                  f"tasks={','.join(wr.get('tasks') or []) or '-'} pattern={wr.get('pattern')!r} "
+                  f"by={wr.get('by')} text={wr.get('text')!r}")
         return 0
     if args.cmd == "delegation" and _under_agent_control() and not args.i_am_human:
         print("REFUSED: a standing delegation is the operator's grant (CLAUDECODE/AI_AGENT set). "
@@ -817,7 +880,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "delegation":
         by = "agent-override" if _under_agent_control() else (os.environ.get("USER") or "operator")
         if args.dcmd == "revoke":
-            if args.grant_id not in delegation_grants(root):
+            import delegation_widening as _dw  # noqa: PLC0415
+            if args.grant_id not in delegation_grants(root) and \
+                    args.grant_id not in _dw.widenings(root):
                 print(f"no grant {args.grant_id} in {DELEGATIONS}", file=sys.stderr)
                 return 1
             _append(root, DELEGATIONS, {"ts": datetime.now(timezone.utc).strftime(
@@ -826,6 +891,17 @@ def main(argv: list[str] | None = None) -> int:
             print(f"revoked {args.grant_id}")
             return 0
         tasks = [t.strip() for t in args.tasks.split(",") if t.strip()]
+        if args.dcmd == "widen":
+            try:
+                row = widen_delegation(root, args.wclass, args.ruling, args.text, args.pattern,
+                                       args.arc, tasks, args.expires, by)
+            except ValueError as e:
+                print(f"REFUSED: {e}", file=sys.stderr)
+                return 1
+            print(f"widened {row['id']} in {DELEGATIONS}: {row['class']} criteria matching "
+                  f"{row['pattern']!r} in scope are reviewer-judged when they carry a Measured "
+                  f"block; every tick cites {row['id']} (ruling {row['ruling']})")
+            return 0
         try:
             row = grant_delegation(root, args.pattern, args.condition, args.arc, tasks,
                                    args.expires, by)

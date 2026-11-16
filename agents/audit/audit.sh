@@ -3507,6 +3507,22 @@ _audit_review_green_degraded() {
 }
 _audit_review_green_degraded
 
+# T-5180 (T-5171 GO): every criterion an operator widening let a reviewer close (a measured
+# act-in-the-world step) is a WARN of its own, naming the task, criterion, widening id and ruling.
+_audit_review_widened() {
+    [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ] || return 0
+    local _wl
+    _wl=$(printf '%s\n' "$_VL_AUDIT_OUT" | grep '^WARN widened:' || true)
+    [ -z "$_wl" ] && return 0
+    while IFS= read -r _line; do
+        [ -n "$_line" ] || continue
+        warn "Reviewer-closed act-in-the-world criterion under an operator widening: ${_line#WARN widened: }" \
+             "" \
+             "Inspect: python3 lib/human_ac_ticks.py delegation list — revoke the widening there if the ruling no longer holds"
+    done <<<"$_wl"
+}
+_audit_review_widened
+
 # T-3282 (G-104): the RUNNING Watchtower is a deployment surface of its own —
 # source can be fixed, tested, and closed green while the process serves the
 # pre-fix bytes (Flask debug=False, no reloader). The T-2938 detector fired

@@ -175,7 +175,14 @@ def _partition(task_data: dict, root: Path, task_id: str,
         if cl.delegation_class == REVIEWER_JUDGES:
             judged.append(item)
         elif cl.delegation_class == OPERATOR_ONLY:
-            item["reason"] = cl.reason
+            # T-5180: an operator widening (lib/delegation_widening.py) makes a MEASURED
+            # act-in-the-world criterion reviewer-judged; the ledger asks the same function.
+            wide, why = ctx.widening(crit)
+            if wide is not None:
+                item["widened"] = {"id": wide["id"], "ruling": str(wide.get("ruling") or "")}
+                judged.append(item)
+                continue
+            item["reason"] = cl.reason + (f" [widening: {why}]" if why else "")
             operator.append(item)
     return judged, operator
 
@@ -747,6 +754,16 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
     lines += ["", "## The criteria", "", f"Task: {task_id}", ""]
     for c in criteria:
         lines += [f"### Criterion {c['index']} (Human AC#{c['ac_index']})", "", c["body"], ""]
+        if c.get("widened"):
+            lines += [
+                f"**Widened act-in-the-world criterion** — {c['widened']['id']} (project ruling "
+                f"{c['widened']['ruling']}). This criterion is an act outside the repository that "
+                "the operator's ruling lets an independent reviewer close on measured evidence. "
+                "The `**Measured:**` line above names the command that was run and the fenced "
+                "block under it is its recorded output. Judge whether that recorded output proves "
+                "the act happened as the criterion states. Return green only if it does; if the "
+                "output is missing, ambiguous, or does not show the act, return red or escalate.",
+                ""]
 
     if ev["needed"]:
         lines += ["## Rendered pages", ""]

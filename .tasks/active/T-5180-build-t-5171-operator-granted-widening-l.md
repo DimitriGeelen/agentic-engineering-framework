@@ -104,12 +104,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `delegation widen` writes a `kind: widening` row with id, class, ruling, verbatim text, pattern, scope and expiry. It refuses under CLAUDECODE=1 without --i-am-human, refuses any class other than act-in-the-world, and refuses a pattern that matches everything. `list` shows it, and `revoke` stops it applying.
-- [ ] With no widening recorded, classification, judge dispatch, verdict record/apply and audit output are unchanged. Pinned by a test over the existing suites that read these modules.
-- [ ] Under an active widening in scope, an act-in-the-world criterion WITH a Measured block can have a green verdict recorded and applied. WITHOUT a Measured block, out of scope, expired or revoked, the record is still refused, with a reason naming what is missing.
-- [ ] tier0-or-bypass, sovereignty-field and operator-marked criteria are never widened, even when the widening pattern matches their title (test).
-- [ ] The applied tick annotation cites the widening id and the ruling id. human_ac_ticks audit accepts that tick as provenanced. fw audit emits one WARN per widened tick.
-- [ ] judge_cli dispatches widened criteria and includes the Measured block in the brief. Unwidened act-in-the-world criteria are still never dispatched.
+- [x] `delegation widen` writes a `kind: widening` row with id, class, ruling, verbatim text, pattern, scope and expiry. It refuses under CLAUDECODE=1 without --i-am-human, refuses any class other than act-in-the-world, and refuses a pattern that matches everything. `list` shows it, and `revoke` stops it applying.
+- [x] With no widening recorded, classification, judge dispatch, verdict record/apply and audit output are unchanged. Pinned by a test over the existing suites that read these modules.
+- [x] Under an active widening in scope, an act-in-the-world criterion WITH a Measured block can have a green verdict recorded and applied. WITHOUT a Measured block, out of scope, expired or revoked, the record is still refused, with a reason naming what is missing.
+- [x] tier0-or-bypass, sovereignty-field and operator-marked criteria are never widened, even when the widening pattern matches their title (test).
+- [x] The applied tick annotation cites the widening id and the ruling id. human_ac_ticks audit accepts that tick as provenanced. fw audit emits one WARN per widened tick.
+- [x] judge_cli dispatches widened criteria and includes the Measured block in the brief. Unwidened act-in-the-world criteria are still never dispatched.
 - [ ] Tests in tests/unit/test_t5180_*.py cover all of the above. Every existing test that reads a changed file passes, `bin/fw test invariants` passes, and `bin/fw vendor self --check` is clean.
 
 ### Human
@@ -379,6 +379,19 @@ bin/fw vendor self --check --task T-5180
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+### 2026-11-16 — where the widening decision lives
+- **Chose:** a new `lib/delegation_widening.py` with one function, `active_widening`. verdict_ledger (`_Ctx.widening` / `_Ctx.judged`) and judge_cli both call it. `delegation.classify` is unchanged, so act-in-the-world still routes to OPERATOR-ONLY, and the risk classes ahead of it still win.
+- **Why:** this keeps one decision point and leaves classification byte-identical for every reader that does not ask about widening: `fw task delegate`, the surface audit and the standing-grant NEVER_DELEGABLE check.
+- **Rejected:** changing CLASS_TO_DELEGATION per project, because that would leak widening into every classifier reader. Putting the function inside human_ac_ticks.py, because verdict_ledger would then import the tick detector.
+
+### 2026-11-16 — the fw audit WARN lives in agents/audit/audit.sh
+- **Chose:** `verdict_ledger.py audit` emits `WARN widened: <task> AC#N <verdict>: widened by SD-x (ruling R): "<criterion>"`. A new `_audit_review_widened` in audit.sh turns each of those lines into its own `warn`, next to the green-degraded block.
+- **Why:** the task asks for one fw audit WARN per widened tick. Without the audit.sh hook the ledger lines would only show up inside the ledger's summary. This is the one edit outside lib/.
+- **Rejected:** returning exit 3 (WARN) from the ledger audit, because audit.sh labels that state "non-counting rows", which is wrong here.
+
+### 2026-11-16 — widened criteria never close green-degraded
+- **Chose:** the green-degraded panel path still refuses any criterion that is not REVIEWER-JUDGES, widened ones included.
+- **Why:** the operator's conditions ask for a green at the task's rung. A degraded panel is a weaker close, and the GO did not grant it.
 
 ## Decision
 
