@@ -7,10 +7,10 @@ description: >
   Agreed with 832 2026-11-16 (msg f2c1275e). Live endpoints exist (T-4831) but no
   frozen schema; pairs with designer 0.43.0 overlay renderer.
 
-status: captured
+status: started-work
 workflow_type: design
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T12:53:56Z
-last_update: '2026-11-16T13:00:56Z'
+last_update: 2026-11-16T16:22:10Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,20 +87,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Shared contract 4 (runtime projection) of the five pairings agreed with 832 (T-5183; their T-1425). It pairs with the designer 0.43.0 overlay renderer. AEF serves live state at `GET /api/instances` (web/blueprints/designer_api.py:323, T-4831) and `GET /api/overlay` (web/blueprints/designer.py:269), but no frozen schema describes either response.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The designer renders whatever those endpoints return. A field rename or shape change on the AEF side breaks the overlay silently, and 832 has nothing to check their renderer against. The architecture asks for "read-only instance/attempt/evidence state plus authenticated operator proposal types".
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Freeze a versioned JSON schema (runtime-projection v1) for the two responses as they are today. Fields are documented and derived from the code, not invented. A test pins the live responses to the schema, so a drift fails a test instead of the designer.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** docs/research/executable-workflow/contracts/v2/runtime-projection.schema.json plus a short README section, and a test that calls both endpoints through the Flask test client on a fixture corpus and validates the responses. 832 can check their renderer against it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] runtime-projection.schema.json describes both responses (/api/instances, /api/overlay) as the code emits them today, every field with a description, and marks which fields the designer must not rely on (internal).
+- [ ] A test validates real responses from both endpoints (Flask test client, fixture project) against the schema, and fails when a required field is removed from the response.
+- [ ] The response code is unchanged (no web/ edits), and contracts v1/v2 checks stay clean.
+- [ ] 832 is sent the schema path and commit.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -383,3 +385,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5185-shared-contract-4-runtime-projection-fre.md
 - **Context:** Initial task creation
+
+### 2026-11-16T16:22:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
