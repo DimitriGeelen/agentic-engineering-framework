@@ -309,9 +309,9 @@ bin/fw watchtower current
 |-------|---------|------|------|------|------|
 | list-by-id | arc filter by id (arc-005) | ok | ok | ok | 52 tasks, each badged arc-005 · arc-grooming |
 | list-by-slug | arc filter by slug (arc-grooming) | ok | ok | ok | same 52 tasks |
-| landing | arc cards | ok | ok | ok | card links unchanged (/tasks?arc=arc-NNN), now non-empty |
+| landing | arc cards | ok | ok | ok | cropped to the "Arcs in flight" card (landing.steps.yaml); links unchanged, now non-empty |
 
-Screenshots: `.context/visual/T-5167/{list-by-id,list-by-slug,landing}@{1024,1440,1920}.png` (`fw ux shots`, 2026-11-16).
+Screenshots: `.context/visual/T-5167/{list-by-id,list-by-slug,landing}@{1024,1440,1920}.png` (`fw ux shots`, 2026-11-16). The first landing shots were full-page (the page is ~40,000 px tall, T-5161) at 12-13 MB each, over the 10 MB commit limit, which made the first review's verdict commit fail; the landing state is now cropped to the arc cards (~125 KB).
 
 ## RCA
 
