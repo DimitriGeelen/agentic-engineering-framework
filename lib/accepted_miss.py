@@ -16,11 +16,16 @@ it. A bare `[~]`, a stale one, or any other box character counts as unchecked.
 
 The agent may PROPOSE a miss by adding `**Miss proposed:** <why, with evidence>` under an
 open criterion; that line changes nothing for any gate and is excluded from the digest.
+Only the FIRST `**Accepted miss:**` line, directly under the title, is the annotation and
+outside the digest; any other such line is criterion text (T-5181 review #7).
 
-Verbs (operator-only for `accept`; refused under CLAUDECODE/AI_AGENT without --i-am-human,
-the same rule as `human_ac_ticks.py delegation grant`):
+Verbs (`accept` is the operator's alone: refused under CLAUDECODE/AI_AGENT even with
+--i-am-human, like `human_ac_ticks.py delegation widen` — T-5181 review #1; a row written
+with `by: agent-override` by an older build never resolves anything):
     accept T-XXX --ac N --reason "..."   rewrite the box, annotate, append the ledger row
-    gate FILE                            P-010 helper: MISS / BAD lines for the gated section
+    gate FILE [--stdin [--agent]]        P-010 helper: MISS / BAD lines. With --stdin the
+                                         boxes are those in the text the CALLER counted
+                                         (one source of truth, T-5181 review #2)
     list FILE                            accepted misses of a task (close output, episodic)
     audit                                FAIL on a committed [~] without a matching row, and on
                                          a non-append-only ledger history
@@ -64,7 +69,10 @@ SUBHEAD_RE = re.compile(r"^### (.*)$")
 AC_HEADING_RE = re.compile(r"^## Acceptance Criteria[ \t]*$")
 ANNOTATION_RE = re.compile(r"^\s*\*\*Accepted miss:\*\*\s*(AM-[0-9a-f]{8})\b\s*(?:—|-)?\s*(.*)$")
 #: Lines that never enter the digest: our own annotation and the agent's proposal.
-EXCLUDED_RE = re.compile(r"^\s*\*\*(Accepted miss|Miss proposed):\*\*")
+PROPOSED_RE = re.compile(r"^\s*\*\*Miss proposed:\*\*")
+#: `id:` frontmatter line, and the T-NNNN prefix of a task file's basename.
+_ID_LINE_RE = re.compile(r"(?m)^id:\s*(T-\d+)\s*$")
+_NAME_ID_RE = re.compile(r"(T-\d+)(?=[-.])")
 
 
 @dataclass
@@ -82,11 +90,9 @@ class Box:
         return self.subhead.lower().startswith("human")
 
     def annotation(self) -> tuple[str, str] | None:
-        for ln in self.lines[1:]:
-            m = ANNOTATION_RE.match(ln)
-            if m:
-                return m.group(1), m.group(2).strip()
-        return None
+        """The annotation is the line DIRECTLY under the title, and only that one."""
+        m = ANNOTATION_RE.match(self.lines[1]) if len(self.lines) > 1 else None
+        return (m.group(1), m.group(2).strip()) if m else None
 
 
 class _Crit:
@@ -98,8 +104,13 @@ class _Crit:
 
 
 def digest(box: Box) -> str:
-    """verdict_ledger.criterion_digest over the box, minus accepted-miss/proposal lines."""
-    lines = [box.lines[0]] + [ln for ln in box.lines[1:] if not EXCLUDED_RE.match(ln)]
+    """verdict_ledger.criterion_digest over the box, minus the annotation (the line directly
+    under the title, when it is one) and any `**Miss proposed:**` line. Every other
+    `**Accepted miss:**` line is criterion text and inside the digest (T-5181 review #7)."""
+    rest = box.lines[1:]
+    if rest and ANNOTATION_RE.match(rest[0]):
+        rest = rest[1:]
+    lines = [box.lines[0]] + [ln for ln in rest if not PROPOSED_RE.match(ln)]
     return _vl_criterion_digest(_Crit(box.title, lines))
 
 
@@ -112,8 +123,19 @@ def parse(text: str) -> list[Box]:
     if start < 0:
         return []
     end = next((j for j in range(start, len(lines)) if lines[j].startswith("## ")), len(lines))
+    return _boxes(lines, start, end, "")
+
+
+def parse_counted(text: str, subhead: str = "") -> list[Box]:
+    """Every box in `text` EXACTLY as given — the text a shell gate already counted, after its
+    own comment strip. No stripping and no section search here: a box this sees is a box the
+    caller counted, so a miss can never resolve a box the caller did not count (T-5181 #2)."""
+    lines = text.split("\n")
+    return _boxes(lines, 0, len(lines), subhead)
+
+
+def _boxes(lines: list[str], start: int, end: int, subhead: str) -> list[Box]:
     out: list[Box] = []
-    subhead = ""
     cur: Box | None = None
 
     def close(at: int) -> None:
@@ -169,19 +191,28 @@ def ledger_rows(root: Path) -> list[dict]:
     return _jsonl(root / LEDGER)
 
 
-def _task_id_of(path: Path, text: str) -> str:
-    m = re.search(r"(?m)^id:\s*(T-\d+)\s*$", text)
-    if m:
-        return m.group(1)
-    m = re.match(r"(T-\d+)", path.name)
-    return m.group(1) if m else ""
+def _task_id_of(path: Path, text: str) -> tuple[str, str]:
+    """(task id, '') when the `id:` line and the file name's T-NNNN prefix agree, else
+    ('', why). Rows are keyed by task id; taking it from `id:` alone let a file whose id was
+    changed to another task's reuse that task's rows (T-5181 review #3)."""
+    m = _ID_LINE_RE.search(text)
+    n = _NAME_ID_RE.match(path.name)
+    if not m:
+        return "", f"{path.name} has no `id: T-NNNN` line"
+    if not n:
+        return "", f"{path.name} does not start with a T-NNNN id"
+    if m.group(1) != n.group(1):
+        return "", f"id: {m.group(1)} does not match the file name {path.name}"
+    return m.group(1), ""
 
 
-def judge(boxes: list[Box], task_id: str, rows: list[dict]) -> list[tuple[Box, str, dict | None]]:
+def judge(boxes: list[Box], task_id: str, rows: list[dict],
+          id_why: str = "") -> list[tuple[Box, str, dict | None]]:
     """For every non-met gated box: (box, why-not-resolved or '', matching row).
 
-    why == '' means a valid accepted miss. One ledger row resolves one box."""
-    by_id = {r.get("id"): r for r in rows if r.get("task") == task_id and r.get("id")}
+    why == '' means a valid accepted miss. One ledger row resolves one box. task_id == ''
+    (the file's identity did not verify, `id_why` says why) resolves nothing."""
+    by_id = {r.get("id"): r for r in rows if task_id and r.get("task") == task_id and r.get("id")}
     used: set[str] = set()
     out: list[tuple[Box, str, dict | None]] = []
     for b in boxes:
@@ -200,9 +231,16 @@ def judge(boxes: list[Box], task_id: str, rows: list[dict]) -> list[tuple[Box, s
         if not ann:
             out.append((b, "[~] without an **Accepted miss:** annotation — counts as unchecked", None))
             continue
+        if not task_id:
+            out.append((b, f"[~] cannot resolve: {id_why or 'task id unknown'}", None))
+            continue
         row = by_id.get(ann[0])
         if row is None:
             out.append((b, f"[~] cites {ann[0]} but {LEDGER} has no such row for {task_id}", None))
+            continue
+        if row.get("by") == "agent-override":
+            out.append((b, f"[~] {ann[0]} was recorded under agent control (by: agent-override) "
+                           f"and never resolves a criterion — accepting a miss is the operator's", row))
             continue
         if row.get("digest") != digest(b):
             out.append((b, f"[~] {ann[0]} is stale — the criterion was edited after acceptance", row))
@@ -309,12 +347,12 @@ def accept(root: Path, task: str, ac_n: int, reason: str, by: str) -> dict:
     if not m:
         raise ValueError(f"could not locate criterion #{ac_n} in {path.name}")
     raw[i] = re.sub(r"\[.\]", "[~]", raw[i], count=1)
-    # Drop a previous (stale/void) annotation on this criterion before writing the new one.
+    # Replace a previous (stale/void) annotation — only the one directly under the title, the
+    # line digest() excludes; any other such line is criterion text and stays.
     j = i + 1
-    nxt = next((b.start for b in boxes if b.start > box.start), None)
-    stop = _raw_index(raw, nxt) if nxt is not None else len(raw)
-    raw[j:stop] = [ln for ln in raw[j:stop] if not ANNOTATION_RE.match(ln)]
-    raw.insert(j, f"{m.group('indent')}  **Accepted miss:** {am_id} — {reason1}")
+    if j < len(raw) and ANNOTATION_RE.match(raw[j]):
+        del raw[j]
+    raw.insert(j,f"{m.group('indent')}  **Accepted miss:** {am_id} — {reason1}")
     row = {"ts": ts, "id": am_id, "task": task, "ac": ac_n, "digest": d,
            "title": box.title, "reason": reason1, "by": by}
     p = root / LEDGER
@@ -347,16 +385,27 @@ def legacy_boxes(root: Path) -> set[tuple[str, str]]:
     if not shas:
         return set()
     base = shas[-1] + "^"
-    rc, listing = _git(root, "ls-tree", "-r", "--name-only", base, "--", ".tasks/active",
-                       ".tasks/completed")
-    if rc != 0:
-        return set()
+    if _git(root, "rev-parse", "-q", "--verify", base + "^{commit}")[0] != 0:
+        return set()   # the module arrived in the root commit: nothing predates it
     legacy: set[tuple[str, str]] = set()
-    for name in listing.splitlines():
+    for name in _files_with_tilde(root, base):
         rc, text = _git(root, "show", f"{base}:{name}")
         if rc == 0 and "[~]" in text:
             legacy |= {(Path(name).name, b.lines[0].strip()) for b in parse(text) if b.state == "~"}
     return legacy
+
+
+def _files_with_tilde(root: Path, rev: str) -> list[str]:
+    """Task files at `rev` containing a literal `[~]` anywhere — a superset of the files with
+    a `[~]` box. One `git grep` instead of a `git show` per task file (T-5181 review #5)."""
+    r = subprocess.run(["git", "-C", str(root), "grep", "-l", "-F", "[~]", rev, "--",
+                        ".tasks/active", ".tasks/completed"], capture_output=True, text=True)
+    if r.returncode == 1:          # no match
+        return []
+    if r.returncode != 0:
+        raise RuntimeError(f"git grep failed at {rev}: {r.stderr.strip()[:200]}")
+    pre = rev + ":"
+    return [ln[len(pre):] if ln.startswith(pre) else ln for ln in r.stdout.splitlines()]
 
 
 def audit(root: Path) -> tuple[int, list[str]]:
@@ -372,35 +421,36 @@ def audit(root: Path) -> tuple[int, list[str]]:
         findings.append(f"FAIL ledger {LEDGER}: {fault}")
     rc, blob = _git(root, "show", f"HEAD:{LEDGER}")
     rows = [json.loads(ln) for ln in blob.splitlines() if ln.strip().startswith("{")] if rc == 0 else []
-    rc, listing = _git(root, "ls-tree", "-r", "--name-only", "HEAD", "--", ".tasks/active",
-                       ".tasks/completed")
-    if rc != 0:
-        return 3, ["accepted misses: git ls-tree failed — committed tasks UNVERIFIED"]
+    try:
+        names = _files_with_tilde(root, "HEAD")
+    except RuntimeError as e:
+        return 3, [f"accepted misses: {e} — committed tasks UNVERIFIED"]
     n_valid = 0
-    for name in listing.splitlines():
+    for name in names:
         if not name.endswith(".md"):
             continue
         rc, text = _git(root, "show", f"HEAD:{name}")
-        if rc != 0 or "[" not in text:
-            continue
+        if rc != 0:
+            return 3, [f"accepted misses: git show HEAD:{name} failed — UNVERIFIED"]
         boxes = parse(text)
         if not any(b.state == "~" for b in boxes):
             continue
-        tid = _task_id_of(Path(name), text)
+        tid, id_why = _task_id_of(Path(name), text)
+        tid_label = tid or Path(name).name
         sel = gated(boxes)
-        for b, why, _ in judge(sel, tid, rows):
+        for b, why, _ in judge(sel, tid, rows, id_why):
             if b.state != "~":
                 continue
             if why and (Path(name).name, b.lines[0].strip()) in legacy:
                 n_legacy += 1
             elif why:
-                findings.append(f"FAIL {tid} criterion #{b.index}: {why} — {b.title[:80]}")
+                findings.append(f"FAIL {tid_label} criterion #{b.index}: {why} — {b.title[:80]}")
             else:
                 n_valid += 1
         for b in boxes:
             if b.state == "~" and b not in sel and \
                     (Path(name).name, b.lines[0].strip()) not in legacy:
-                findings.append(f"FAIL {tid}: [~] outside the gated Agent criteria — {b.title[:80]}")
+                findings.append(f"FAIL {tid_label}: [~] outside the gated Agent criteria — {b.title[:80]}")
     if findings:
         return 2, findings + [f"{len(findings)} accepted-miss finding(s)"]
     tail = f" ({n_legacy} pre-T-5181 [~] grandfathered)" if n_legacy else ""
@@ -421,9 +471,14 @@ def main(argv: list[str] | None = None) -> int:
     a.add_argument("task_id")
     a.add_argument("--ac", type=int, required=True, help="Agent criterion number (1-based)")
     a.add_argument("--reason", required=True)
-    a.add_argument("--i-am-human", action="store_true")
+    a.add_argument("--i-am-human", action="store_true",
+                   help="accepted for compatibility; it does not lift the agent-control refusal")
     g = sub.add_parser("gate", help="P-010 helper: MISS/BAD lines for the gated criteria")
     g.add_argument("task_file")
+    g.add_argument("--stdin", action="store_true",
+                   help="judge only the boxes in the text on stdin — the text the caller counted")
+    g.add_argument("--agent", action="store_true",
+                   help="with --stdin: the text is the ### Agent block, heading already removed")
     li = sub.add_parser("list", help="accepted misses of a task file")
     li.add_argument("task_file")
     li.add_argument("--yaml", action="store_true", help="episodic YAML list items")
@@ -445,8 +500,13 @@ def main(argv: list[str] | None = None) -> int:
         # the verification extractor's refusal to raise (T-3232), not this gate's.
         text = path.read_text(encoding="utf-8", errors="replace")
         root = _root_for(path)
-        tid = _task_id_of(path, text)
-        res = judge(gated(parse(text)), tid, ledger_rows(root))
+        tid, id_why = _task_id_of(path, text)
+        if args.cmd == "gate" and args.stdin:
+            boxes = parse_counted(sys.stdin.read(), "Agent" if args.agent else "")
+            gated(boxes)  # numbering only: Agent boxes when present, else every box
+            res = judge(boxes, tid, ledger_rows(root), id_why)
+        else:
+            res = judge(gated(parse(text)), tid, ledger_rows(root), id_why)
         if args.cmd == "gate":
             for b, why, row in res:
                 if not why and row:
@@ -465,13 +525,15 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"{row['id']}  #{b.index} {b.title} — {row.get('reason', '')}")
         return 0
 
-    if _under_agent_control() and not args.i_am_human:
-        print("REFUSED: accepting a missed criterion is the operator's act (CLAUDECODE/AI_AGENT "
-              "set). Propose it instead: add `**Miss proposed:** <why, with evidence>` under the "
+    if _under_agent_control():
+        # T-5181 review #1: --i-am-human does not open this door (as T-5180's `widen`).
+        print("REFUSED: accepting a missed criterion is the operator's act and is never recorded "
+              "under agent control (CLAUDECODE/AI_AGENT set; --i-am-human does not apply). "
+              "Propose it instead: add `**Miss proposed:** <why, with evidence>` under the "
               f"criterion, and hand the task over with: fw task review {args.task_id}",
               file=sys.stderr)
         return 2
-    by = "agent-override" if _under_agent_control() else (os.environ.get("USER") or "operator")
+    by = os.environ.get("USER") or "operator"
     try:
         row = accept(_project_root(), args.task_id, args.ac, args.reason, by)
     except ValueError as e:

@@ -711,8 +711,9 @@ do_inception_decide() {
             _agent_total=$(echo "$_agent_acs" | grep -cE '^\s*-\s*\[.\]' || true)
             _agent_checked=$(echo "$_agent_acs" | grep -cE '^\s*-\s*\[[xX]\]' || true)
             local _agent_missed
-            _agent_missed=$(python3 "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/lib/accepted_miss.py" \
-                gate "$task_file" 2>/dev/null | grep -c '^MISS	' || true)
+            # T-5181 review #2: judge exactly the boxes counted above (stdin), never the raw file.
+            _agent_missed=$(printf '%s\n' "$_agent_acs" | python3 "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/lib/accepted_miss.py" \
+                gate "$task_file" --stdin --agent 2>/dev/null | grep -c '^MISS	' || true)
             _agent_unchecked=$((_agent_total - _agent_checked - ${_agent_missed:-0}))
             if [ "$_agent_total" -gt 0 ] && [ "$_agent_unchecked" -gt 0 ]; then
                 echo -e "${RED}ERROR: Cannot record decision — $_agent_unchecked/$_agent_total agent AC unchecked${NC}" >&2

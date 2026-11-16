@@ -3310,7 +3310,7 @@ _audit_collect() {
 [ -f "$FRAMEWORK_ROOT/lib/accepted_miss.py" ] && \
     _audit_prefetch am env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/accepted_miss.py" audit
 [ -f "$FRAMEWORK_ROOT/lib/outside_commits.py" ] && \
-    _audit_prefetch ocenv PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/outside_commits.py" audit
+    _audit_prefetch oc env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/outside_commits.py" audit
 [ -f "$FRAMEWORK_ROOT/lib/watchtower_decision_revert.py" ] && \
     _audit_prefetch wdr python3 -I "$FRAMEWORK_ROOT/lib/watchtower_decision_revert.py" --repo "$PROJECT_ROOT"
 [ -f "$FRAMEWORK_ROOT/lib/index_reconcile.py" ] && \

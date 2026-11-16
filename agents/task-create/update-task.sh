@@ -352,7 +352,17 @@ check_acceptance_criteria() {
     # and any other character, so a criterion rewritten to `[~]` vanished from the count and
     # the task closed. Met = [x]/[X]. An accepted miss (`[~]` + matching ledger row,
     # lib/accepted_miss.py) is RESOLVED, never met. Anything else is unchecked.
-    _am_gate_out=$(python3 "$FRAMEWORK_ROOT/lib/accepted_miss.py" gate "$TASK_FILE" 2>&1) || {
+    # T-5181 review #2: ONE source of truth — the helper judges exactly the text counted here
+    # (stdin), so a miss can only resolve a box this gate counted; a `[~]` that a comment
+    # hides from one parser but not the other can no longer cancel a different open box.
+    local _am_counted _am_flag=""
+    if [ "$has_agent_header" -gt 0 ]; then
+        agent_acs=$(echo "$ac_section" | awk '/^### Agent/{f=1; next} /^### /{f=0} f')
+        _am_counted=$agent_acs; _am_flag="--agent"
+    else
+        _am_counted=$ac_section
+    fi
+    _am_gate_out=$(printf '%s\n' "$_am_counted" | python3 "$FRAMEWORK_ROOT/lib/accepted_miss.py" gate "$TASK_FILE" --stdin $_am_flag 2>&1) || {
         echo -e "${RED}ERROR: accepted-miss check could not run — acceptance criteria UNVERIFIED${NC}" >&2
         echo "$_am_gate_out" | tail -3 | sed 's/^/  /' >&2
         exit 1
@@ -364,7 +374,6 @@ check_acceptance_criteria() {
     _am_bad=$(echo "$_am_gate_out" | grep '^BAD	' || true)
 
     if [ "$has_agent_header" -gt 0 ]; then
-        agent_acs=$(echo "$ac_section" | awk '/^### Agent/{f=1; next} /^### /{f=0} f')
         ac_total=$(echo "$agent_acs" | grep -cE '^\s*-\s*\[.\]' || true)
         ac_checked=$(echo "$agent_acs" | grep -cE '^\s*-\s*\[[xX]\]' || true)
         ac_unchecked=$((ac_total - ac_checked - ac_missed))
@@ -2308,7 +2317,8 @@ if [ -n "$NEW_STATUS" ]; then
             # T-5181: any box counts; a valid accepted miss (Agent only) is resolved, not met.
             ALL_TOTAL=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[.\]' || true)
             ALL_CHECKED=$(echo "$AC_SECTION" | grep -cE '^\s*-\s*\[[xX]\]' || true)
-            _all_missed=$(python3 "$FRAMEWORK_ROOT/lib/accepted_miss.py" gate "$TASK_FILE" 2>/dev/null | grep -c '^MISS	' || true)
+            # T-5181 review #2: judge exactly the boxes counted above (stdin), never the raw file.
+            _all_missed=$(printf '%s\n' "$AC_SECTION" | python3 "$FRAMEWORK_ROOT/lib/accepted_miss.py" gate "$TASK_FILE" --stdin 2>/dev/null | grep -c '^MISS	' || true)
             ALL_UNCHECKED=$((ALL_TOTAL - ALL_CHECKED - ${_all_missed:-0}))
 
             # T-1559: SKIP_AC must bypass the recheck too. The auth flag is the

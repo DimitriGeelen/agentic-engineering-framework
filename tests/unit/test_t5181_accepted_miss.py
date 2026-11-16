@@ -138,18 +138,31 @@ def test_accept_writes_box_annotation_and_ledger_row(proj):
     assert "- [x] First thing done" in text and "- [x] Third thing done" in text
 
 
-def test_accept_refused_under_agent_control_without_i_am_human(proj):
+def test_accept_refused_under_agent_control_even_with_i_am_human(proj):
+    # T-5181 review #1: --i-am-human does not open the door (as T-5180's widen).
     p = _task(proj)
     before = p.read_text()
     for env in ({"CLAUDECODE": "1"}, {"AI_AGENT": "x"}):
-        r = _accept(proj, "T-9801", 2, "r", **env)
-        assert r.returncode == 2
-        assert "REFUSED" in r.stderr and "operator" in r.stderr
+        for flags in ((), ("--i-am-human",)):
+            r = _accept(proj, "T-9801", 2, "r", *flags, **env)
+            assert r.returncode == 2, r.stderr
+            assert "REFUSED" in r.stderr and "operator" in r.stderr
     assert p.read_text() == before
     assert not (proj / LEDGER).exists()
-    r = _accept(proj, "T-9801", 2, "r", "--i-am-human", CLAUDECODE="1")
-    assert r.returncode == 0, r.stderr
-    assert json.loads((proj / LEDGER).read_text())["by"] == "agent-override"
+
+
+def test_agent_override_row_never_resolves(proj):
+    # A row an older build wrote under agent control (by: agent-override) is no row.
+    _task(proj)
+    assert _accept(proj, "T-9801", 2).returncode == 0
+    led = proj / LEDGER
+    row = json.loads(led.read_text())
+    row["by"] = "agent-override"
+    led.write_text(json.dumps(row, sort_keys=True) + "\n")
+    r = _close(proj)
+    assert r.returncode != 0
+    assert "agent-override" in r.stderr and "Run was done the canonical way" in r.stderr
+    assert (proj / ".tasks" / "active" / "T-9801-fixture.md").exists()
 
 
 @pytest.mark.parametrize("ac,needle", [
@@ -247,6 +260,84 @@ def test_p010_miss_proposed_line_changes_nothing(proj):
     assert _accept(proj, "T-9801", 2).returncode == 0
     p.write_text(p.read_text().replace("see report", "see report, and more evidence"))
     assert _close(proj).returncode == 0
+
+
+def test_p010_miss_hidden_from_shell_count_cannot_cancel_other_open_box(proj):
+    # T-5181 review #2 (reviewer's repro): a mid-line `<!--` the shell range-strips but
+    # comment_strip keeps, closed by `### Agent -->`, wraps the accepted box. The shell counts
+    # only the open box after it; the miss must not cancel that open box.
+    p = _task(proj)
+    assert _accept(proj, "T-9801", 2).returncode == 0
+    t = p.read_text()
+    t = t.replace("- [x] First thing done", "- [x] First thing done <!-- hidden from the shell")
+    t = t.replace("- [x] Third thing done\n", "- [x] Third thing done\n### Agent -->\n"
+                  "- [ ] Fourth thing still open\n")
+    p.write_text(t)
+    r = _close(proj)
+    assert r.returncode != 0, (r.stdout + r.stderr)[-2000:]
+    assert "Fourth thing still open" in r.stderr
+    assert p.exists()
+
+
+def test_p010_gate_counts_misses_only_in_given_text(proj):
+    p = _task(proj)
+    assert _accept(proj, "T-9801", 2).returncode == 0
+    gate = lambda text, *f: subprocess.run(  # noqa: E731
+        ["python3", str(AM), "gate", str(p), "--stdin", *f], input=text, capture_output=True,
+        text=True, env=_env(PROJECT_ROOT=str(proj))).stdout
+    assert gate("- [ ] Fourth thing still open\n", "--agent").count("MISS\t") == 0
+    agent = p.read_text().split("### Agent\n", 1)[1].split("\n## ", 1)[0]
+    assert gate(agent, "--agent").count("MISS\t") == 1
+
+
+def test_id_must_match_file_name(proj):
+    # T-5181 review #3: a file whose id: names another task cannot reuse that task's rows.
+    p = _task(proj)
+    assert _accept(proj, "T-9801", 2).returncode == 0
+    other = proj / ".tasks" / "active" / "T-9802-copy.md"
+    other.write_text(p.read_text())          # id: T-9801 inside a T-9802 file
+    p.unlink()
+    r = subprocess.run(["python3", str(AM), "gate", str(other)], capture_output=True, text=True,
+                       env=_env(PROJECT_ROOT=str(proj)))
+    assert "MISS\t" not in r.stdout
+    assert "does not match the file name" in r.stdout
+    _git(proj, "add", "-A")
+    _git(proj, "commit", "-q", "-m", "copy")
+    a = _audit(proj)
+    assert a.returncode == 2 and "does not match the file name" in a.stdout
+
+
+def test_only_first_annotation_line_is_outside_the_digest(proj):
+    # T-5181 review #7: the annotation directly under the title is excluded; any other
+    # **Accepted miss:** line is criterion text, so adding one voids the acceptance.
+    p = _task(proj)
+    assert _accept(proj, "T-9801", 2).returncode == 0
+    t = p.read_text()
+    g = lambda: subprocess.run(["python3", str(AM), "gate", str(p)], capture_output=True,  # noqa: E731
+                               text=True, env=_env(PROJECT_ROOT=str(proj))).stdout
+    p.write_text(t.replace("— operator: run was ad hoc", "— operator: reworded"))
+    assert g().startswith("MISS\t")
+    p.write_text(t.replace("  **Expected:** the run report says canonical",
+                           "  **Expected:** the run report says canonical\n"
+                           "  **Accepted miss:** AM-00000000 — and this means nothing"))
+    out = g()
+    assert "MISS\t" not in out and "stale" in out
+
+
+def test_audit_runs_when_module_is_in_the_root_commit(tmp_path):
+    # A greenfield seed commits the vendored module in its first commit: `<sha>^` does not
+    # resolve, and nothing can be grandfathered — the audit must still run (rc 0).
+    root = tmp_path / "g"
+    (root / "lib").mkdir(parents=True)
+    (root / ".tasks" / "active").mkdir(parents=True)
+    (root / "lib" / "accepted_miss.py").write_text("# anchor\n")
+    _git(root, "init", "-q")
+    _git(root, "config", "user.email", "t@example.invalid")
+    _git(root, "config", "user.name", "t")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "seed")
+    r = _audit(root)
+    assert r.returncode == 0, r.stdout + r.stderr
 
 
 def test_p010_human_tilde_stays_unchecked(proj):

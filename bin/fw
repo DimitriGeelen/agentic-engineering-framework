@@ -6386,7 +6386,7 @@ PYTASK_VERIFY
             # T-5181 (T-5152 GO): operator-only — resolve an honestly missed Agent
             # criterion as an accepted miss ([~] + ledger row); never counted as met.
             if [ -z "${1:-}" ]; then
-                echo -e "${RED}Usage: fw task accept-miss T-XXX --ac N --reason \"...\" [--i-am-human]${NC}" >&2
+                echo -e "${RED}Usage: fw task accept-miss T-XXX --ac N --reason \"...\"  (operator only; refused under agent control)${NC}" >&2
                 exit 1
             fi
             exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \

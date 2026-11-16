@@ -382,6 +382,17 @@ bin/fw vendor self --check --task T-5181
 - **Chose:** `[X]` counts as met (every other counter already reads `[xX]`; P-010 used to ignore it entirely, so no task that closed before is now refused). The one `[~]` already committed before this module (T-2535's DESCOPED line) is grandfathered by the audit: boxes present at the parent of the commit that added `lib/accepted_miss.py` are reported as grandfathered, not FAILed (forward-looking, same as human_ac_ticks). Fixtures and repos without that commit grandfather nothing.
 - **Rejected:** rewriting T-2535 (a completed task) or FAILing the audit on it permanently.
 
+### 2026-11-16 — review RED fixes: the four `[ x]`-only counters left unchanged (review #6)
+Traced each one; none closes a task, and where it sees a `[~]`/`[X]` it either only advises or refuses:
+- `update-task.sh` ~3122 `HUMAN_AC_COUNT` — gates nothing: a yellow "Human ACs lack Steps/Expected" tip after partial-complete. Missing a `[X]`/`[~]` box only shortens the tip.
+- `lib/human_review_state.py:24-25` — P-013 render-surface gate (`check_render_surface_human_ac`): asks whether a `[REVIEW]` Human criterion EXISTS. A `[X]`/`[~]` `[REVIEW]` box goes uncounted → `only_other`/`empty` → the close is refused (fails closed, never opens).
+- `check-active-task.sh` ~1523 `REAL_AC_COUNT` — G-020 build-readiness at START of work (zero real ACs → source edits blocked). Uncounted `[X]`/`[~]` can only lower the count → more blocking, never a close.
+- `audit.sh` ~7520 CTL-031 — WARN-only nomination of "stuck partial-complete" tasks; `fw task archive-eligible` (bin/fw ~6731, same counter) then closes each through `update-task.sh --status work-completed`, where the fixed P-010 decides. A `[~]` it ignores is judged there.
+
+### 2026-11-16 — review RED fixes: one source of truth, identity, agent rows (review #1–#3, #7)
+- **Chose:** the shell gates pipe the exact text they counted (comment-stripped Agent block or section) into `accepted_miss.py gate FILE --stdin [--agent]`; Python judges only those boxes. `accept` is refused under agent control even with `--i-am-human`, and a `by: agent-override` row never resolves. A `[~]` resolves only when the file's `id:` equals its basename's T-NNNN. Only the annotation line directly under the title is outside the digest.
+- **Rejected:** moving all counting into Python — it would change four shell gates' comment-strip semantics at once; feeding Python the shell's text keeps one parse per gate with no new divergence.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
