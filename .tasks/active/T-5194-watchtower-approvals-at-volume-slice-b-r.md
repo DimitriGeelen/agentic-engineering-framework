@@ -98,10 +98,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `review_readiness`'s cache key uses a per-task ledger fingerprint (lines naming the task) plus a global fingerprint (lines naming no task) plus `_task_git_generation`. Lines are indexed in one pass per ledger stamp, never once per task.
-- [ ] Test: after an append naming task X, X's entry recomputes and another task Y's cached entry is reused. After an append naming no task, both recompute. A READY is never served from a stale key.
-- [ ] Equivalence test: on a fixture with several tasks and ledger rows, readiness from the cache after a sequence of appends equals a from-scratch computation for every task.
-- [ ] Measured with docs/reports/T-5186-profile-*.py style timing: after a simulated append naming one task, the approvals page costs within 2× of warm. The before/after numbers are recorded in this task.
+- [x] `review_readiness`'s cache key uses a per-task ledger fingerprint (lines naming the task) plus a global fingerprint (lines naming no task) plus `_task_git_generation`. Lines are indexed in one pass per ledger stamp, never once per task.
+- [x] Test: after an append naming task X, X's entry recomputes and another task Y's cached entry is reused. After an append naming no task, both recompute. A READY is never served from a stale key.
+- [x] Equivalence test: on a fixture with several tasks and ledger rows, readiness from the cache after a sequence of appends equals a from-scratch computation for every task.
+- [x] Measured with docs/reports/T-5186-profile-*.py style timing: after a simulated append naming one task, the approvals page costs within 2× of warm. The before/after numbers are recorded in this task.
 - [ ] Existing readiness/approvals/board tests pass, invariants pass, `bin/fw vendor self --check --task T-5194` is clean, and Watchtower is restarted and current.
 
 ### Human
@@ -288,6 +288,29 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5194_readiness_per_task_key.py -q > /tmp/.t5194a 2>&1 && grep -q passed /tmp/.t5194a
+python3 -m pytest -q tests/web/test_t4133_readiness_perf.py tests/web/test_t4394_readiness_git_key.py tests/web/test_t5147_readiness_stale_while_refresh.py tests/web/test_t4053_review_readiness.py > /tmp/.t5194b 2>&1 && grep -q passed /tmp/.t5194b
+bin/fw vendor self --check --task T-5194
+bin/fw watchtower current
+
+## Measurements (2026-11-16)
+
+In-process `/approvals` via `app.test_client()` on this repo (~5,000 tasks, 345 ledger-keyed
+readiness entries), same method as docs/reports/T-5186-profile-page.py. The append is
+simulated in-process (ledger marks + `Path.read_bytes` of `review-dispatches.jsonl` gain one
+row naming T-332); no governance ledger was written. "old" = the pre-T-5194 key (whole stamp).
+
+| run | old (whole-ledger key) | new (per-task key) |
+|---|---:|---:|
+| cold | 39.68 s | 35.07 s |
+| warm | 2.64 s | 2.38 s |
+| after one append naming one task | **32.42 s** | **3.24 s** (1.36× warm) |
+| after-append, warm again | 2.58 s | 2.40 s |
+
+Index cost: one pass over the 13 ledgers (≈1.88 MB: verdicts 549 KB, review-completions
+493 KB, review-runs 443 KB, review-dispatches 217 KB, refusals-interim 89 KB, human-ac-ticks
+48 KB, recorded 17 KB, the rest < 10 KB each) builds in 41-47 ms (5 runs), once per global
+stamp; the stamp itself (13 `stat`s + git token) is ~12 ms. 165 task ids indexed.
 
 ## RCA
 
@@ -368,6 +391,10 @@ cost_estimate_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+### 2026-11-16 — what counts as "a line that concerns a task"
+- **Chose:** a line names every `T-NNNN` in it AND every task another ledger line ties to one of its ids (`id`/`dispatch_id`/`run_id`/`verdict_id`). Global (invalidates all): lines naming no task, torn or unterminated lines, a row id repeated within a file, and any non-append change to a file (prefix hash mismatch) or a file that disappears. If the files move while being read, or the stamp does not match the files, the key falls back to the whole stamp (pre-T-5194 behaviour).
+- **Why:** verdict_ledger looks completions up by dispatch id, not task id, and refuses the WHOLE ledger on a duplicated, modified or deleted row — so those cannot be attributed to one task. Over-attribution only costs a recompute; under-attribution could serve a stale READY.
+- **Rejected:** regex-only attribution (`"T-NNNN"`, as `_recent_ledger_task_ids` uses) — misses a completion row tied to a task only through its dispatch id.
 
 ## Decision
 

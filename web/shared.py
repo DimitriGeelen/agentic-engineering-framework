@@ -1842,24 +1842,140 @@ def _task_git_generation(root: Path, task_id: str) -> int:
     return st["tasks"].get(task_id.upper(), 0) if st else 0
 
 
+def _ledger_marks(root: Path) -> tuple:
+    """(name, mtime_ns, size) of every review ledger, in name order."""
+    out: list = []
+    for f in sorted((root / ".context" / "reviews").glob("*.jsonl")):
+        st = f.stat()
+        out.append((f.name, st.st_mtime_ns, st.st_size))
+    return tuple(out)
+
+
 def _readiness_stamp(root: Path) -> tuple:
     """What the verdict ledger depends on for every task: the ledger files and the
     task-independent part of the commit history it is verified against (T-4394; the
-    per-task part is ``_task_git_generation``)."""
-    out: list = [_git_generation(root)]
+    per-task part is ``_task_git_generation``). T-4133: every ledger a verdict is validated
+    against (completions, dispatch registry, acknowledgements...) is in it, because an
+    uncommitted edit to one changes the verdict too. T-5194: this is the GLOBAL stamp - it
+    decides when the ledger is reloaded and re-indexed; a task's cached readiness is keyed on
+    ``_ledger_index``'s fingerprints instead."""
     try:
-        out.append((root / ".context/reviews/verdicts.jsonl").stat().st_mtime_ns)
+        marks = _ledger_marks(root)
     except OSError:
-        out.append(0)
-    # T-4133: the other ledgers a verdict is validated against (completions, dispatch
-    # registry, acknowledgements...) - an uncommitted edit to one changes the verdict too.
+        marks = (object(),)       # unreadable: a fresh stamp every call, nothing served from cache
+    return (_git_generation(root),) + marks
+
+
+# T-5194: per-task ledger fingerprints. Before, every task's readiness was keyed on every
+# ledger's mtime, so one append for ANY task (a dispatch, a completion, a cost row)
+# recomputed all ~400 awaiting tasks (T-5186 F4: a warm 2.4 s approvals page became 16.5 s).
+_LEDGER_INDEX: dict[str, dict] = {}
+_LEDGER_ID_RE = re_mod.compile(r"T-(\d+)", re_mod.I)
+_LEDGER_LINK_KEYS = ("id", "dispatch_id", "run_id", "verdict_id")
+
+
+def _ledger_index(root: Path, stamp: tuple) -> dict | None:
+    """``{"tasks": {task id: fingerprint}, "global": fingerprint}`` over the review ledgers,
+    built in ONE pass per global stamp. A task's fingerprint hashes every ledger line that
+    names it; the global one hashes every line that names no task, plus anything that can
+    change every task's verdict at once. When in doubt a line is counted for more tasks,
+    never fewer:
+
+    * a line names every ``T-NNNN`` it contains, and every task another line ties to one of
+      its ids (``id``/``dispatch_id``/``run_id``/``verdict_id``) - a completion row is about
+      its dispatch's task whatever task field it carries;
+    * global: lines naming no task, torn (non-JSON or unterminated) lines, a row id repeated
+      within a file, and every non-append change (a row modified/deleted, a file gone) -
+      verdicts.jsonl refuses as a WHOLE on those (verdict_ledger.load_ledger).
+
+    Returns None - the caller keys on the whole stamp, as before - when the files moved while
+    being read or do not match ``stamp`` (a stamp from another source, e.g. a test)."""
+    import hashlib
+    key = str(root)
+    st = _LEDGER_INDEX.get(key)
+    if st is not None and st["stamp"] == stamp:
+        return st
     try:
-        for f in sorted((root / ".context" / "reviews").glob("*.jsonl")):
-            if f.name != "verdicts.jsonl":
-                out.append(f.stat().st_mtime_ns)
+        before = _ledger_marks(root)
+        if before != tuple(stamp[1:]):
+            return None
+        d = root / ".context" / "reviews"
+        datas = [(name, (d / name).read_bytes()) for name, _, _ in before]
+        if _ledger_marks(root) != before:
+            return None
     except OSError:
-        pass
-    return tuple(out)
+        return None
+    prev_files = st["files"] if st else {}
+    rewrites = st["rewrites"] if st else 0
+    files: dict = {}
+    for name, data in datas:
+        files[name] = (len(data), hashlib.sha256(data).hexdigest())
+        old = prev_files.get(name)
+        if old is not None and (len(data) < old[0]
+                                or hashlib.sha256(data[:old[0]]).hexdigest() != old[1]):
+            rewrites += 1
+    rewrites += sum(1 for name in prev_files if name not in files)
+    import json as _json
+    rows: list = []                      # (file, raw line, direct ids, link tokens)
+    glob_parts: list = []
+    links: dict = {}
+    for name, data in datas:
+        lines = data.split(b"\n")
+        if lines[-1].strip():            # unterminated: an append in flight, or torn
+            glob_parts.append(name.encode() + b"\0torn\0" + lines[-1])
+        seen: set = set()
+        for raw in lines[:-1]:
+            if not raw.strip():
+                continue
+            try:
+                obj = _json.loads(raw)
+            except ValueError:
+                obj = None
+            if not isinstance(obj, dict):
+                glob_parts.append(name.encode() + b"\0torn\0" + raw)
+                continue
+            rid = obj.get("id")
+            if isinstance(rid, str):
+                if rid in seen:
+                    glob_parts.append(name.encode() + b"\0dup\0" + raw)
+                seen.add(rid)
+            ids = {"T-" + m for m in _LEDGER_ID_RE.findall(raw.decode("utf-8", "replace"))}
+            toks = [v for k in _LEDGER_LINK_KEYS if isinstance(v := obj.get(k), str) and v]
+            for t in toks:
+                links.setdefault(t, set()).update(ids)
+            rows.append((name, raw, ids, toks))
+    hashes: dict = {}
+    for name, raw, ids, toks in rows:
+        names = set(ids)
+        for t in toks:
+            names |= links.get(t, set())
+        part = name.encode() + b"\0" + raw + b"\n"
+        if not names:
+            glob_parts.append(part)
+        for tid in names:
+            h = hashes.get(tid)
+            if h is None:
+                h = hashes[tid] = hashlib.sha256()
+            h.update(part)
+    # a file that appears is attributed line by line like any append; one that goes is a
+    # rewrite (counted above)
+    g_h = hashlib.sha256(f"{rewrites}\0".encode())
+    for part in glob_parts:
+        g_h.update(part + b"\n")
+    st = {"stamp": stamp, "files": files, "rewrites": rewrites,
+          "tasks": {tid: h.hexdigest() for tid, h in hashes.items()}, "global": g_h.hexdigest()}
+    _LEDGER_INDEX[key] = st
+    return st
+
+
+def _readiness_task_key(root: Path, task_id: str, stamp: tuple) -> tuple:
+    """The ledger part of a task's readiness cache key (T-5194): the git generation, this
+    task's ledger fingerprint and the global one - or the whole stamp when no index is
+    available, which invalidates on any ledger write (the pre-T-5194 behaviour)."""
+    idx = _ledger_index(root, stamp)
+    if idx is None:
+        return stamp
+    return (stamp[0], "idx", idx["tasks"].get(task_id.upper(), ""), idx["global"])
 
 
 def _shared_ledger(vl, root: Path, stamp: tuple):
@@ -2008,7 +2124,8 @@ def review_readiness(task_id: str, status: str, body: str,
     stamp = _readiness_stamp(root)
     # T-4394: an entry that consulted the ledger is keyed on the ledger-wide stamp plus the
     # commits that concern THIS task, not on every commit in the repo.
-    tstamp = stamp + (_task_git_generation(root, task_id),)
+    # T-5194: ...and on the ledger rows that can concern this task, not every ledger mtime.
+    tstamp = _readiness_task_key(root, task_id, stamp) + (_task_git_generation(root, task_id),)
     mtime = 0
     if p is not None:
         try:
