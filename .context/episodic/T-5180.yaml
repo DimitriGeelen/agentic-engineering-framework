@@ -1,0 +1,113 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5180: Build T-5171: operator-granted widening lets a measured act-in-the-world criterion close on a reviewer green, ruling cited on every tick (010 T-3800)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T13:21:39Z
+# ============================================================================
+
+task_id: T-5180
+task_name: "Build T-5171: operator-granted widening lets a measured act-in-the-world criterion close on a reviewer green, ruling cited on every tick (010 T-3800)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-16T12:39:50Z
+completed: 2026-11-16T13:20:33Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-16T13:41:27+01:00
+last_commit: 2026-11-16T14:19:41+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture build of T-5171 (widening) with context, criteria, verification. operator widening lets a measured act-in-the-world criterion close on a reviewer green. tick criterion 7 (invariants 166/166, vendor check clean after commit). independent review fixes — widen refused under agent control even with --i-am-human, agent-override rows never apply, --tasks scope only, audit WARN reads recited ticks
+
+# Key outcomes
+outcomes:
+  - '`delegation widen` writes a `kind: widening` row with id, class, ruling, verbatim text, pattern, scope and expiry. It refuses under CLAUDECODE=1 without --i-am-human, refuses any class other than act-in-the-world, and refuses a pattern that matches everything. `list` shows it, and `revoke` stops it applying.'
+  - 'With no widening recorded, classification, judge dispatch, verdict record/apply and audit output are unchanged. Pinned by a test over the existing suites that read these modules.'
+  - 'Under an active widening in scope, an act-in-the-world criterion WITH a Measured block can have a green verdict recorded and applied. WITHOUT a Measured block, out of scope, expired or revoked, the record is still refused, with a reason naming what is missing.'
+  - 'tier0-or-bypass, sovereignty-field and operator-marked criteria are never widened, even when the widening pattern matches their title (test).'
+  - 'The applied tick annotation cites the widening id and the ruling id. human_ac_ticks audit accepts that tick as provenanced. fw audit emits one WARN per widened tick.'
+  - 'judge_cli dispatches widened criteria and includes the Measured block in the brief. Unwidened act-in-the-world criteria are still never dispatched.'
+  - 'Tests in tests/unit/test_t5180_*.py cover all of the above. Every existing test that reads a changed file passes, `bin/fw test invariants` passes, and `bin/fw vendor self --check` is clean.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'independent review fixes — widen refused under agent control even with --i-am-human, agent-override rows never apply, --tasks scope only, audit WARN reads recited ticks'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-16 — where the widening decision lives'
+    chose: 'a new `lib/delegation_widening.py` with one function, `active_widening`. verdict_ledger (`_Ctx.widening` / `_Ctx.judged`) and judge_cli both call it. `delegation.classify` is unchanged, so act-in-the-world still routes to OPERATOR-ONLY, and the risk classes ahead of it still win.'
+    rationale: 'this keeps one decision point and leaves classification byte-identical for every reader that does not ask about widening: `fw task delegate`, the surface audit and the standing-grant NEVER_DELEGABLE check.'
+    alternatives_rejected: ['changing CLASS_TO_DELEGATION per project, because that would leak widening into every classifier reader. Putting the function inside human_ac_ticks.py, because verdict_ledger would then import the tick detector.']
+  - decision: '2026-11-16 — the fw audit WARN lives in agents/audit/audit.sh'
+    chose: '`verdict_ledger.py audit` emits `WARN widened: <task> AC#N <verdict>: widened by SD-x (ruling R): "<criterion>"`. A new `_audit_review_widened` in audit.sh turns each of those lines into its own `warn`, next to the green-degraded block.'
+    rationale: 'the task asks for one fw audit WARN per widened tick. Without the audit.sh hook the ledger lines would only show up inside the ledger''s summary. This is the one edit outside lib/.'
+    alternatives_rejected: ['returning exit 3 (WARN) from the ledger audit, because audit.sh labels that state "non-counting rows", which is wrong here.']
+  - decision: '2026-11-16 — widened criteria never close green-degraded'
+    chose: 'the green-degraded panel path still refuses any criterion that is not REVIEWER-JUDGES, widened ones included.'
+    rationale: 'the operator''s conditions ask for a green at the task''s rung. A degraded panel is a weaker close, and the GO did not grant it.'
+  - decision: '2026-11-16 — independent review (AMBER) and what changed'
+    chose: '- #1 (an agent could record a widening with --i-am-human): `delegation widen` is refused under agent control, --i-am-human included, and a row marked `by: agent-override` never applies. - #2 (arc scope follows the agent-editable arc_id): a widening is scoped by `--tasks` only. `--arc` is refused, and a hand-written arc row never applies. - #3 (audit WARN missed recited ticks): the WARN reads ticked and recited entries, latest wins. - #6 (a string task scope matched by substring): scope must be a list. - **Accepted, not changed:** - #4: expiry withdraws an earlier tick on a still-active task at the next apply. This fails closed, and the reviewer flagged it only to confirm intent: the widening must hold while the task is open. Tasks already in completed/ are not re-applied. - #5: Measured output can flip the class. It fails safe (never widened). The reason text is confusing but harmless.'
+    rationale: '#1 and #2 are T-5171''s "never by an agent" condition. The rest are cheap and tighten the record.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/delegation_widening.py'
+  - '.agentic-framework/lib/human_ac_ticks.py'
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.tasks/active/T-5180-build-t-5171-operator-granted-widening-l.md'
+  - 'agents/audit/audit.sh'
+  - 'lib/delegation_widening.py'
+  - 'lib/human_ac_ticks.py'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/verdict_ledger.py'
+  - 'tests/unit/test_t5180_widening.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T13:41:27'
+    action: 'T-5180: capture build of T-5171 (widening) with context, criteria, verification'
+  - time: '2026-11-16T14:00:34'
+    action: 'T-5180: operator widening lets a measured act-in-the-world criterion close on a reviewer green'
+  - time: '2026-11-16T14:01:24'
+    action: 'T-5180: tick criterion 7 (invariants 166/166, vendor check clean after commit)'
+  - time: '2026-11-16T14:19:41'
+    action: 'T-5180: independent review fixes — widen refused under agent control even with --i-am-human, agent-override rows never apply, --tasks scope only, audit WARN reads recited ticks'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 40 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [delegation, governance, reviewer]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 40
+  commits: 5
+  files_changed: 15
+  lines_added: 1656
+  lines_removed: 93
+  footprint_refreshed_at: '2026-11-16T13:21:54Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5180-build-t-5171-operator-granted-widening-l.md
+generated_by: context-agent-hybrid
