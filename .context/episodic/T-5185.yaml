@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5185: Shared contract 4 (runtime projection): freeze a read-only projection schema for /api/instances and /api/overlay on contracts v2 instance/attempt/evidence-reference (T-5183, paired with 832 T-1425)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-16T16:39:29Z
+# ============================================================================
+
+task_id: T-5185
+task_name: "Shared contract 4 (runtime projection): freeze a read-only projection schema for /api/instances and /api/overlay on contracts v2 instance/attempt/evidence-reference (T-5183, paired with 832 T-1425)"
+workflow_type: design
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-16T12:53:56Z
+completed: 2026-11-16T16:39:04Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-16T17:22:12+01:00
+last_commit: 2026-11-16T17:26:17+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context, criteria; start. runtime projection contract v1 — schema + doc for /api/instances and /api/overlay, pinned by test
+
+# Key outcomes
+outcomes:
+  - 'runtime-projection.schema.json describes both responses (/api/instances, /api/overlay) as the code emits them today, every field with a description, and marks which fields the designer must not rely on (internal).'
+  - 'A test validates real responses from both endpoints (Flask test client, fixture project) against the schema, and fails when a required field is removed from the response.'
+  - 'The response code is unchanged (no web/ edits), and contracts v1/v2 checks stay clean.'
+  - '832 is sent the schema path and commit. (2026-11-16, 832-ewcr-progress, ca21db29a.)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5185-shared-contract-4-runtime-projection-fre.md'
+  - 'docs/research/executable-workflow/contracts/v2/runtime-projection/runtime-projection.md'
+  - 'docs/research/executable-workflow/contracts/v2/runtime-projection/runtime-projection.schema.json'
+  - 'tests/unit/test_t5185_runtime_projection.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T17:22:12'
+    action: 'T-5185: context, criteria; start'
+  - time: '2026-11-16T17:26:17'
+    action: 'T-5185: runtime projection contract v1 — schema + doc for /api/instances and /api/overlay, pinned by test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 225 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 225
+  commits: 3
+  files_changed: 7
+  lines_added: 643
+  lines_removed: 17
+  footprint_refreshed_at: '2026-11-16T16:39:40Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5185-shared-contract-4-runtime-projection-fre.md
+generated_by: context-agent-hybrid

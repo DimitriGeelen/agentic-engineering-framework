@@ -7,10 +7,10 @@ description: >
   Agreed with 832 2026-11-16 (msg f2c1275e). Live endpoints exist (T-4831) but no
   frozen schema; pairs with designer 0.43.0 overlay renderer.
 
-status: started-work
+status: work-completed
 workflow_type: design
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T12:53:56Z
-last_update: 2026-11-16T16:22:10Z
-date_finished:
+last_update: 2026-11-16T16:39:04Z
+date_finished: 2026-11-16T16:39:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -102,7 +102,7 @@ bvp_scores_proposed:
 - [x] runtime-projection.schema.json describes both responses (/api/instances, /api/overlay) as the code emits them today, every field with a description, and marks which fields the designer must not rely on (internal).
 - [x] A test validates real responses from both endpoints (Flask test client, fixture project) against the schema, and fails when a required field is removed from the response.
 - [x] The response code is unchanged (no web/ edits), and contracts v1/v2 checks stay clean.
-- [ ] 832 is sent the schema path and commit.
+- [x] 832 is sent the schema path and commit. (2026-11-16, 832-ewcr-progress, ca21db29a.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -393,3 +393,16 @@ test -z "$(git log --format=%H --grep='^T-5185' -- web/)"
 ### 2026-11-16T16:22:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-16T16:39:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-58a60644
+- **Timestamp:** 2026-11-16T16:39:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
