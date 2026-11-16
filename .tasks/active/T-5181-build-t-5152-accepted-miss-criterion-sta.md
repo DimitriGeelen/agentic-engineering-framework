@@ -112,7 +112,7 @@ bvp_scores_proposed:
 - [x] The completion output and the episodic summary list each accepted miss (id, criterion, reason).
 - [x] fw audit FAILs on a committed `[~]` with no matching row, and on a non-append-only ledger edit.
 - [x] Every other closure-gating AC counter found by the grep is either updated or recorded in ## Decisions with why it needs no change.
-- [ ] Tests in tests/unit/test_t5181_*.py (and/or tests/unit/t5181_*.bats) cover all of the above. Every existing test that reads a changed file passes, `bin/fw test invariants` passes, and `bin/fw vendor self --check` is clean.
+- [x] Tests in tests/unit/test_t5181_*.py (and/or tests/unit/t5181_*.bats) cover all of the above. Every existing test that reads a changed file passes, `bin/fw test invariants` passes, and `bin/fw vendor self --check` is clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
