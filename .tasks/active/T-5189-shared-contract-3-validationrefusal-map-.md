@@ -1,8 +1,14 @@
 ---
 id: T-5189
-name: "Shared contract 3 (validation/refusal): map designer validator E-/W- codes to the runtime refusal reason_codes they prevent (refusal.schema.json v2) — the checkable relation for row 3 (T-5183, 832 T-1425)"
+name: "Shared contract 3 (validation/refusal): map designer validator E-/W- codes
+  to the runtime refusal reason_codes they prevent (refusal.schema.json v2) — the
+  checkable relation for row 3 (T-5183, 832 T-1425)"
 description: >
-  832 msg 66c77219 (2026-11-16): a design-time validator finding can never validate as a runtime refusal record (no instance, no ledger). Agreed reading: row 3 is a code mapping — which validate-workflow.py 0.43.0 codes prevent which refusal reason_codes (e.g. unresolved_reference, missing_typed_input, human_gate_skipped). Deliverable: a mapping table both sides check.
+  832 msg 66c77219 (2026-11-16): a design-time validator finding can never validate
+  as a runtime refusal record (no instance, no ledger). Agreed reading: row 3 is a
+  code mapping — which validate-workflow.py 0.43.0 codes prevent which refusal reason_codes
+  (e.g. unresolved_reference, missing_typed_input, human_gate_skipped). Deliverable:
+  a mapping table both sides check.
 
 status: captured
 workflow_type: design
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T15:30:01Z
-last_update: 2026-11-16T15:30:01Z
-date_finished: null
+last_update: '2026-11-16T16:00:30Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-16T16:00:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 3
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
+      (workflow:design); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5189: Shared contract 3 (validation/refusal): map designer validator E-/W- codes to the runtime refusal reason_codes they prevent (refusal.schema.json v2) — the checkable relation for row 3 (T-5183, 832 T-1425)
