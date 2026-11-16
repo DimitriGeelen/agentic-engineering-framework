@@ -51,7 +51,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T07:15:15Z
-last_update: '2026-11-16T07:29:27Z'
+last_update: 2026-11-16T07:40:35Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -362,6 +362,8 @@ bvp_scores_proposed:
 1. Pass the two settings through sudo: `sudo -n -u dimitri-mint-dev -H env TMPDIR=<seat tmp> PYTHONDONTWRITEBYTECODE=1 <agy> …`. Changes the operator-approved command form (2026-09-30) and needs the host's sudo rule to allow it (`env`, or SETENV/env_keep for those two variables), which is a host change.
 2. No sudo change: write the two settings into the brief as literal values for antigravity only (the seat's real scratch path, plus "run Python with `python3 -B`" / `PYTHONDONTWRITEBYTECODE=1` in its own commands). Instruction-based, so it relies on the seat following it, like the existing "copy before running" line.
 3. Exclude `__pycache__/*.pyc` from the fingerprint. Reverses T-4835's recorded choice.
+
+**Decision (operator, 2026-11-16, "1"):** option 1 — pass TMPDIR and PYTHONDONTWRITEBYTECODE through sudo with `env`. The fingerprint stays strict.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

@@ -2158,8 +2158,12 @@ elif [ -n "$HARNESS" ]; then
                 ;;
             antigravity)
                 # The operator-approved form (2026-09-30), with the registered absolute binary:
-                # sudo's secure_path does not reach ~/.local/bin. sudo drops this environment.
-                ( cd "$TREE" && _fw_seat_env && exec ${SEAT_PIDNS[@]+"${SEAT_PIDNS[@]}"} /usr/bin/sudo -n -u dimitri-mint-dev -H "$WORKER_BIN" -p "$PROMPT_TEXT" --mode plan --sandbox < /dev/null > "$WDIR/result.md" 2>> "$WDIR/stderr.log" ) &
+                # sudo's secure_path does not reach ~/.local/bin. sudo drops this environment
+                # (env_reset), so T-5177 (operator 2026-11-16, option 1) passes the two settings the
+                # other seats get through /usr/bin/env inside sudo: TMPDIR (its scratch space, which
+                # the brief tells it to run project code from) and PYTHONDONTWRITEBYTECODE (T-4835).
+                # Without them it ran Python in place and its own .pyc files voided the seat.
+                ( cd "$TREE" && _fw_seat_env && exec ${SEAT_PIDNS[@]+"${SEAT_PIDNS[@]}"} /usr/bin/sudo -n -u dimitri-mint-dev -H /usr/bin/env TMPDIR="$SEAT_TMP" PYTHONDONTWRITEBYTECODE=1 "$WORKER_BIN" -p "$PROMPT_TEXT" --mode plan --sandbox < /dev/null > "$WDIR/result.md" 2>> "$WDIR/stderr.log" ) &
                 ;;
         esac
         HARNESS_PID=$!

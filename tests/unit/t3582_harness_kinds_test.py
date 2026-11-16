@@ -221,7 +221,9 @@ class TestKindsAndVendors:
     def test_the_antigravity_launch_is_the_operator_approved_sudo_form(self):
         body = r3._run_sh()
         # T-5008: the PID-namespace prefix (empty where the host refuses it) runs outside sudo.
-        assert ('exec ${SEAT_PIDNS[@]+"${SEAT_PIDNS[@]}"} /usr/bin/sudo -n -u dimitri-mint-dev -H "$WORKER_BIN" -p "$PROMPT_TEXT" '
+        # T-5177 (operator 2026-11-16): TMPDIR and PYTHONDONTWRITEBYTECODE pass through env inside sudo.
+        assert ('exec ${SEAT_PIDNS[@]+"${SEAT_PIDNS[@]}"} /usr/bin/sudo -n -u dimitri-mint-dev -H '
+                '/usr/bin/env TMPDIR="$SEAT_TMP" PYTHONDONTWRITEBYTECODE=1 "$WORKER_BIN" -p "$PROMPT_TEXT" '
                 '--mode plan --sandbox < /dev/null' in body)
 
 
