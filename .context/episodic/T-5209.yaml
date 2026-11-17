@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5209: Image-evidence panels seat only vision-capable kinds; refusal names how to add one; seats judge supplied images, cannot-reproduce distinct from cannot-view (T-5199 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-17T16:59:00Z
+# ============================================================================
+
+task_id: T-5209
+task_name: "Image-evidence panels seat only vision-capable kinds; refusal names how to add one; seats judge supplied images, cannot-reproduce distinct from cannot-view (T-5199 GO)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-17T16:07:20Z
+completed: 2026-11-17T16:58:13Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-17T17:09:00+01:00
+last_commit: 2026-11-17T17:34:16+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context, criteria (T-5199 GO build; 832's T-893 findings in scope). record 832's T-893 re-judge findings in the T-5199 research artifact. image-evidence criteria seat only vision: true kinds; shortfall names probe-vision; image brief; probe image ships with framework. vendor judge_cli and probe_vision. criteria ticked, verification, decisions
+
+# Key outcomes
+outcomes:
+  - 'An image-evidence criterion that names no route and is not render (for example, it cites `docs/screens/x.png`) is planned without `vision: false` kinds and without kinds whose vision is undeclared. A test shows opencode and an undeclared kind left off, and claude, codex and antigravity seated.'
+  - 'A non-image criterion''s plan is unchanged (test: same seats as before the change)'
+  - 'With one vision kind available at rung 5, the judge output names the count of vision kinds and the `fw reviewer probe-vision` command (test)'
+  - 'The image-evidence brief contains the "judge the supplied images; do not re-run the harness" instruction and the cannot-reproduce / cannot-view wording; the non-image brief does not (test)'
+  - '`fw reviewer probe-vision` resolves its default image inside the framework install (vendored path or generated). A test runs the resolution with FRAMEWORK_ROOT set to a vendored-style tree.'
+  - '`MIN_EVALUATING_SEATS` is still 2, and the existing judge, verdict-ledger, review-runtime and probe-vision suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5209`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-17 — probe-vision default image: ship, not generate'
+    chose: 'ship a copy of T-4947''s arc-closure@1440 capture as `docs/screenshots/T-5209-probe-vision-default.png`, resolved against FRAMEWORK_ROOT. `docs/` is in `fw vendor`''s include list, and `docs/screenshots/*.png` is the existing .gitignore exception, so it is tracked here and copied to consumers.'
+    rationale: 'the probe grades against that image''s known ground truth (8 BLOCKED cards, an exact title). A generated image would need a new ground truth and a rasteriser (PIL is not guaranteed on consumer hosts), and a text-heavy SVG could be answered without seeing pixels.'
+    alternatives_rejected: ['generating at run time (reasons above); keeping the `.context/visual/` path (AEF-only).']
+  - decision: '2026-11-17 — shortfall is reported, not a new refusal'
+    chose: 'when rung 5 cannot reach two vision vendors, the judge result carries `vision_shortfall` (printed): the count of vision kinds, the kinds, and `fw reviewer probe-vision <kind>`. Dispatch still follows the existing degraded path; the ledger still keeps the criterion open.'
+    rationale: 'the Goal keeps ledger acceptance unchanged; the existing single-vendor path already leaves the criterion open, so the gap was the missing instruction, not a missing block.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/reviewer/probe_vision.py'
+  - '.tasks/active/T-5209-image-evidence-panels-seat-only-vision-c.md'
+  - 'docs/reports/T-5199-image-only-rung5-evidence.md'
+  - 'docs/screenshots/T-5209-probe-vision-default.png'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/reviewer/probe_vision.py'
+  - 'tests/unit/test_t5209_image_evidence_seats.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-17T17:09:00'
+    action: 'T-5209: context, criteria (T-5199 GO build; 832''s T-893 findings in scope)'
+  - time: '2026-11-17T17:09:27'
+    action: 'T-5209: record 832''s T-893 re-judge findings in the T-5199 research artifact'
+  - time: '2026-11-17T17:23:23'
+    action: 'T-5209: image-evidence criteria seat only vision: true kinds; shortfall names probe-vision; image brief; probe image ships with framework'
+  - time: '2026-11-17T17:24:02'
+    action: 'T-5209: vendor judge_cli and probe_vision'
+  - time: '2026-11-17T17:34:16'
+    action: 'T-5209: criteria ticked, verification, decisions'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 50 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 50
+  commits: 6
+  files_changed: 11
+  lines_added: 927
+  lines_removed: 26
+  footprint_refreshed_at: '2026-11-17T16:59:26Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5209-image-evidence-panels-seat-only-vision-c.md
+generated_by: context-agent-hybrid

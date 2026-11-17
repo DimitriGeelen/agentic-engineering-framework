@@ -56381,3 +56381,21 @@ task_id: T-5199
 payload:
   overall: CONFIRMED
   claim_count: 1
+---
+kind: scan_emitted
+timestamp: '2026-11-17T16:58:34Z'
+scan_id: R-9ed5e0c2
+task_id: T-5209
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-17T16:58:34Z'
+scan_id: R-9ed5e0c2
+task_id: T-5209
+payload:
+  task_file: .tasks/active/T-5209-image-evidence-panels-seat-only-vision-c.md
