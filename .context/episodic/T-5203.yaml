@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5203: Quota overview S4: per-harness limit-message recognisers (claude weekly/5-hour, glm usage/rate/balance, HTTP 429) to events, reset recorded only when stated (T-5190 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-17T12:34:35Z
+# ============================================================================
+
+task_id: T-5203
+task_name: "Quota overview S4: per-harness limit-message recognisers (claude weekly/5-hour, glm usage/rate/balance, HTTP 429) to events, reset recorded only when stated (T-5190 GO)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-17T09:08:44Z
+completed: 2026-11-17T12:32:58Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-17T12:17:22+01:00
+last_commit: 2026-11-17T13:20:41+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  S4 context, criteria. limit-message recognisers (lib/quota_limits.py) — claude weekly/5h, glm 5h/rate/balance, HTTP 429 -> one limit event per kind per dispatch in the quota ledger; claude reset parsed only with (UTC), glm zone-less time kept as reset_text with reset unknown; run.sh hook after S3's append; 33 tests. vendor lib/quota_limits.py; fabric card. criteria ticked, verification lines (review-runtime 721 passed; dispatch suites green except pre-existing t4730 #4 = T-5207)
+
+# Key outcomes
+outcomes:
+  - '`lib/quota_limits.py` recognises each wording in 1409''s table (fixture strings), with the stated `kind` and reset handling. Claude''s UTC reset is parsed to an ISO time; GLM''s zone-less time gives `reset: "unknown"` plus `reset_text`; balance and rate give `reset: "unknown"`. Unrelated text gives nothing.'
+  - 'Dispatch completion appends at most one `limit` event per kind to the quota ledger when the worker output contains a recognised message, with the dispatch''s subscription. A failure never changes the dispatch outcome. Tested end to end with a stub worker.'
+  - 'No output text other than the matched reset literal is stored (test).'
+  - 'Existing dispatch/run.sh/quota-ledger tests pass (the pre-existing t4730 #4 failure is T-5207), invariants pass, and `bin/fw vendor self --check --task T-5203` is clean.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/lib/quota_limits.py'
+  - '.fabric/components/lib-quota_limits.yaml'
+  - '.tasks/active/T-5203-quota-overview-s4-per-harness-limit-mess.md'
+  - 'agents/termlink/termlink.sh'
+  - 'lib/quota_limits.py'
+  - 'tests/unit/test_t5203_quota_limits.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-17T12:17:22'
+    action: 'T-5203: S4 context, criteria'
+  - time: '2026-11-17T12:21:50'
+    action: 'T-5203: limit-message recognisers (lib/quota_limits.py) — claude weekly/5h, glm 5h/rate/balance, HTTP 429 -> one limit event per kind per dispatch in the quota ledger; claude reset parsed only with (UTC), glm zone-less time kept as reset_text with reset unknown; run.sh hook after S3''s append; 33 tests'
+  - time: '2026-11-17T12:22:07'
+    action: 'T-5203: vendor lib/quota_limits.py; fabric card'
+  - time: '2026-11-17T13:20:41'
+    action: 'T-5203: criteria ticked, verification lines (review-runtime 721 passed; dispatch suites green except pre-existing t4730 #4 = T-5207)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 204 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 204
+  commits: 5
+  files_changed: 10
+  lines_added: 992
+  lines_removed: 18
+  footprint_refreshed_at: '2026-11-17T12:35:00Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5203-quota-overview-s4-per-harness-limit-mess.md
+generated_by: context-agent-hybrid
