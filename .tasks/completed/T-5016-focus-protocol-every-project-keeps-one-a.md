@@ -6,16 +6,16 @@ description: >
   Inception: Focus protocol: every project keeps one arc or goal in focus and drives
   it to completion (pickup from 010, 1409-sprind's protocol)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-11-02T12:50:24Z
-last_update: 2026-11-12T19:05:18Z
-date_finished:
+last_update: 2026-11-17T23:17:44Z
+date_finished: 2026-11-17T23:17:44Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -136,15 +136,15 @@ Research artifact: `docs/reports/T-5016-focus-anchor.md`.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -202,7 +202,22 @@ Build an operator-owned anchor in AEF, in the shape the operator chose in five a
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+Build an operator-owned anchor in AEF, in the shape the operator chose in five answers (IW-1 to IW-5) and on 1409's proven design (their T-1954, 28 versions in daily use), with their three failure lessons built in from the start. The problem is real and measured on this very topic: the anchor request itself sat captured for a month in two duplicate inceptions, invisible in the operator's pending list, until the operator asked whether it had been lost. 1409 reports the anchor stopped drift into parked work; its weaknesses (stale content, a warning everyone ignores, equality instead of "serves the goal") are design choices this build avoids. Scope is bounded: one file, show/check verbs, session-start and handover integration, one question to the operator on a mismatch; no gate.
+
+Evidence:
+
+- Operator answers, 2026-11-12 (dialogue log in `docs/reports/T-5016-focus-anchor.md`): one anchor against drift AND lost asks; agent records asks verbatim, operator owns goals and closes asks; no blocking, ask once and show it where the operator looks; anchor on top, handover and focus follow it; up to three ranked goals, plus asks, parked, never, history.
+- 1409's design and lessons, from 1409 directly (msg bf0d0af4): schema, `show`/`check`, SessionStart and Stop hooks; worked against drift; failed on stale counts written as text, on a shared-focus warning firing constantly, and on equality checks against legitimate side tasks.
+- Lost-ask evidence: T-4111 (2026-10-12) and T-5016 (2026-11-02) both captured with placeholder DEFER and absent from `fw operator pending`; 1409 reports the same loss of operator asks across sessions.
+- Build slices (after GO): (1) the anchor file, schema and `fw anchor show|check`, with history; (2) session-start and handover integration (anchor first; Suggested First Action derived; old asks and an unconfirmed anchor on top; `fw operator pending` lists open asks); (3) "serves the goal" link on tasks and the one-question flow on a mismatch, per session (with T-5103); (4) the agent records asks verbatim when the operator gives them. T-4111 closes as a duplicate of this inception.
+
+**Date**: 2026-11-17T23:17:42Z
 
 ## Updates
 
@@ -211,3 +226,58 @@ Build an operator-owned anchor in AEF, in the shape the operator chose in five a
 
 ### 2026-11-12T18:06:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-17T23:17:42Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+Build an operator-owned anchor in AEF, in the shape the operator chose in five answers (IW-1 to IW-5) and on 1409's proven design (their T-1954, 28 versions in daily use), with their three failure lessons built in from the start. The problem is real and measured on this very topic: the anchor request itself sat captured for a month in two duplicate inceptions, invisible in the operator's pending list, until the operator asked whether it had been lost. 1409 reports the anchor stopped drift into parked work; its weaknesses (stale content, a warning everyone ignores, equality instead of "serves the goal") are design choices this build avoids. Scope is bounded: one file, show/check verbs, session-start and handover integration, one question to the operator on a mismatch; no gate.
+
+Evidence:
+
+- Operator answers, 2026-11-12 (dialogue log in `docs/reports/T-5016-focus-anchor.md`): one anchor against drift AND lost asks; agent records asks verbatim, operator owns goals and closes asks; no blocking, ask once and show it where the operator looks; anchor on top, handover and focus follow it; up to three ranked goals, plus asks, parked, never, history.
+- 1409's design and lessons, from 1409 directly (msg bf0d0af4): schema, `show`/`check`, SessionStart and Stop hooks; worked against drift; failed on stale counts written as text, on a shared-focus warning firing constantly, and on equality checks against legitimate side tasks.
+- Lost-ask evidence: T-4111 (2026-10-12) and T-5016 (2026-11-02) both captured with placeholder DEFER and absent from `fw operator pending`; 1409 reports the same loss of operator asks across sessions.
+- Build slices (after GO): (1) the anchor file, schema and `fw anchor show|check`, with history; (2) session-start and handover integration (anchor first; Suggested First Action derived; old asks and an unconfirmed anchor on top; `fw operator pending` lists open asks); (3) "serves the goal" link on tasks and the one-question flow on a mismatch, per session (with T-5103); (4) the agent records asks verbatim when the operator gives them. T-4111 closes as a duplicate of this inception.
+
+### 2026-11-17T23:17:44Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-176ceeb2
+- **Timestamp:** 2026-11-17T23:17:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 4
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  4. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
+     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-114039bc
+- **Timestamp:** 2026-11-17T23:17:46Z
+- **Overall:** CONFIRMED
+- **Claims:** 4
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-5016-focus-anchor.md` | file | ✓ pass |
+| `T-1954` | task | ✓ pass |
+| `T-4111` | task | ✓ pass |
+| `T-5103` | task | ✓ pass |
