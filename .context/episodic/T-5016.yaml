@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5016: Focus protocol: every project keeps one arc or goal in focus and drives it to completion (pickup from 010, 1409-sprind's protocol)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-17T23:18:17Z
+# ============================================================================
+
+task_id: T-5016
+task_name: "Focus protocol: every project keeps one arc or goal in focus and drives it to completion (pickup from 010, 1409-sprind's protocol)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-02T12:50:24Z
+completed: 2026-11-17T23:17:44Z
+duration_days: 15
+updates_count: 3
+first_commit: 2026-11-12T19:08:16+01:00
+last_commit: 2026-11-18T00:17:48+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception opened — T-4111 merged in, five open questions, research artifact with the AEF mechanism map and dialogue log. IW-1 (both, one anchor) and IW-2 (agent records, operator owns) answered; asked 1409 for the T-1954 design directly. 1409's focus anchor design and its three failure lessons recorded (from 1409 directly). IW-3 (ask once, show where the operator looks) and IW-4 (anchor on top, others follow) answered. IW-5 answered (up to three ranked goals + asks, parked, never); recommendation GO with four build slices. inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/reviews/human-ac-ticks.jsonl'
+  - '.tasks/active/T-5016-focus-protocol-every-project-keeps-one-a.md'
+  - '.tasks/completed/T-5016-focus-protocol-every-project-keeps-one-a.md'
+  - 'docs/reports/T-5016-focus-anchor.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-12T19:08:16'
+    action: 'T-5016: inception opened — T-4111 merged in, five open questions, research artifact with the AEF mechanism map and dialogue log'
+  - time: '2026-11-12T19:25:13'
+    action: 'T-5016: IW-1 (both, one anchor) and IW-2 (agent records, operator owns) answered; asked 1409 for the T-1954 design directly'
+  - time: '2026-11-12T19:30:50'
+    action: 'T-5016: 1409''s focus anchor design and its three failure lessons recorded (from 1409 directly)'
+  - time: '2026-11-12T20:02:07'
+    action: 'T-5016: IW-3 (ask once, show where the operator looks) and IW-4 (anchor on top, others follow) answered'
+  - time: '2026-11-12T20:05:18'
+    action: 'T-5016: IW-5 answered (up to three ranked goals + asks, parked, never); recommendation GO with four build slices'
+  - time: '2026-11-18T00:17:48'
+    action: 'T-5016: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 22227 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 22227
+  commits: 7
+  files_changed: 5
+  lines_added: 511
+  lines_removed: 33
+  footprint_refreshed_at: '2026-11-17T23:18:34Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5016-focus-protocol-every-project-keeps-one-a.md
+generated_by: context-agent-hybrid
