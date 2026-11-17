@@ -104,7 +104,7 @@ bvp_scores_proposed:
 - [x] A new dispatch's meta.json has `subscription` (the assigned id, "unassigned" or "unknown"), and after completion a `tokens` object with only the counts the result reported. Tested with a fixture registry and a stub worker result.
 - [x] Review cost ledger rows written from now on carry `subscription`, and existing rows are untouched. The ledger's append-only check and its readers still pass.
 - [x] An unreadable or invalid registry makes dispatch record "unknown" and continue (test). No account-like value can appear (the field comes only from registry ids, which S1 validates).
-- [ ] Existing termlink dispatch and review-cost tests pass, invariants pass, and `bin/fw vendor self --check --task T-5201` is clean.
+- [x] Existing termlink dispatch and review-cost tests pass, invariants pass, and `bin/fw vendor self --check --task T-5201` is clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
