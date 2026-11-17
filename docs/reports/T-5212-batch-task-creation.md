@@ -72,6 +72,36 @@ The proposal lives in 1409's repo, which this session cannot read; the text has 
   - T-5214: an exported FRAMEWORK_ROOT makes another copy's fw run the exporting copy's code. Not yet reproduced.
 - **Meanwhile on 1409's side:** their operator archived 23 old worktrees, which brought the scan from 2.91 s to 0.51 s per call. They are no longer blocked.
 
+### Proposal design (1409 sidecar f2f55019, their docs/reports/T-6848-id-allocator-proposal.md)
+
+1. **Counter:** `<main worktree>/.tasks/.id-highwater`, the T-4189 mark made authoritative. It is read and raised only under the existing allocation lock, written tmp+rename, and only moves up. Old allocators in other views still read it.
+2. **Block:** `fw_id_allocate N` (lib/idalloc.sh) raises the counter by N; a single id is N=1. N is at most `FW_ID_BLOCK_MAX` (100), below the quarantine gap.
+3. **Ledger:** `.tasks/.id-ledger.jsonl`, append-only, with `reserve` (range, purpose, ts, pid, view), created, and `heal` rows. The ledger is written before the counter, so a crash heals from the ledger.
+4. **Check:** the union scan is demoted to once per reservation. It reads files, every view's mark and the ledger, walks up from the counter in steps no larger than the gap, and can only raise the counter. `FW_ID_CHECK=0` skips it (O(1)).
+5. **Verbs:**
+   - `fw task create-batch --spec F.jsonl --zweck arc:<id>` validates every entry first, makes one reservation, releases the lock, then writes all files through `render_task.py`. That file is create-task's render code lifted verbatim, and create-task calls it too, so there is one writer. Inceptions, `--start`/focus and `--origin` are refused in a batch.
+   - `fw task id-abgleich [--heilen] [--json]` reconciles. ERROR: a duplicate, a file above the counter, a counter below the ledger, overlapping reservations, a missing counter. WARN: an incomplete reservation, files without a reservation. INFO: deleted after creation, the quarantine band.
+6. **Quarantine trap:** handled three ways. Blocks are at most 100, ledger ids count as used, and the walk starts from the counter.
+
+All seven checks are green, including that a 101-block is refused. Measured limit: a mixed old/new allocator would reissue an id inside an aborted reservation (T-7725 in their 2f state).
+
+**Their open questions:**
+1. Should arc ids get their own counter?
+2. Should the verb be `fw arc instantiate` or `create-batch --arc-spec`?
+3. How does an upgrade guarantee no old allocator remains (a doctor check)?
+4. Should the now/next cap apply to batches?
+5. Should objectives-seed route through `fw_id_allocate`? (That is T-5213.)
+6. Should the ledger be tracked in git or stay machine-local?
+7. Should `FW_ID_CHECK` default to on or off?
+
+My initial view, for the dialogue:
+- (2) `fw arc instantiate` reads best, with create-batch underneath.
+- (3) Yes, both in doctor and at upgrade: one allocator is the safety rule.
+- (5) Yes.
+- (6) Tracked in git, since reconciliation must work in a fresh clone and the ledger is the record.
+- (7) On. The check is the guard, and its cost is per reservation, not per id.
+- Verb and flag names in English (`--purpose`, `reconcile`), like every other fw verb.
+
 ## Dialogue Log
 
 - 2026-11-17: the operator chose to open this inception ("1 yes").
