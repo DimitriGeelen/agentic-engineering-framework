@@ -10,15 +10,15 @@ description: >
   overview (tokens per subscription, 5h/7d windows, next reset), and a pre-run quota
   check (1409 T-6158 proposal)
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-11-16T15:30:03Z
-last_update: '2026-11-16T16:00:58Z'
+last_update: 2026-11-17T08:47:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -63,6 +63,14 @@ bvp_scores_proposed:
 
 <!-- What problem are we exploring? For whom? Why now? -->
 
+The operator holds several subscriptions: three Anthropic, GLM, Codex, Antigravity and others. Several projects and the ring20 pool nodes share them. On 2026-11-16 the shared Claude subscription on the four pool nodes hit its weekly limit ("resets Nov 21, 5am (UTC)") and nobody saw it coming. The subscriptions give no counter, ring20 sees none, and each project knows only its own use. 1409 (their T-6158) proposed, at their operator's prompting, that AEF provide:
+- (1) a neutral subscription id per worker/dispatch, never an account identifier;
+- (2) harness limit messages captured as events with reset time;
+- (3) a per-machine overview across projects (tokens per subscription in 5 h / 7 d windows, state, next reset);
+- (4) a pre-run "is there enough quota for N tokens" check.
+
+ring20 already builds the pool-side quota lock (their T-2707), and since 2026-11-17 records the account (2 or 3) per job and holds jobs at the limit instead of failing them. Who it hurts: the operator, who cannot see or plan around shared limits, and every project whose run dies mid-way. Why now: a week-long lockout of the shared Claude subscription has just happened.
+
 ## Assumptions
 
 <!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
@@ -84,6 +92,19 @@ bvp_scores_proposed:
      §Disposition Gate. Bypass: --skip-disposition-gate "rationale" (direct) or
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
+
+- **IW-1: Which of 1409's asks belong in AEF rather than ring20 (pool) or 055 (cockpit)? Candidates: dispatch writes a neutral subscription id into meta.json; a machine-wide, cross-project quota ledger; a shared "free / tight / at limit until" signal.**
+  confidence: 0
+  disposition: open
+  rationale: not yet examined against what fw termlink dispatch, the review cost ledger and ring20 T-2707 already record
+- **IW-2: Where does the subscription id come from without ever touching account identity: a registry entry like policy/review-backends.yaml naming neutral ids, set per worker kind and node by the operator?**
+  confidence: 0
+  disposition: open
+  rationale: not yet examined
+- **IW-3: Can limit messages be captured reliably? 1409's table shows six distinct wordings across claude and glm, one without a time zone; codex/antigravity/vibe showed none in 14 days.**
+  confidence: 1
+  disposition: open
+  rationale: docs/reports/T-5190-subscription-quota-overview.md §Evidence (1409 table); parsing is per-harness and partly ambiguous
 
 ## Exploration Plan
 
@@ -181,3 +202,7 @@ Evidence gap: 1409 is building a project-local reporting tool (their T-6158, rep
 
 ### 2026-11-16T15:30:35Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
+
+### 2026-11-17T08:47:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
