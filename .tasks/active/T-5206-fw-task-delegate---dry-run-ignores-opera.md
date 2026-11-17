@@ -112,7 +112,6 @@ bvp_scores_proposed:
   - With no widenings recorded, the output is unchanged (byte-compare).
 - [ ] The summary counts (`converted / reviewer-judged / left human`) agree with the per-criterion lines
 - [ ] The existing delegation, widening (t5180) and verdict-ledger suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5206`
-- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
