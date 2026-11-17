@@ -84,7 +84,7 @@ The operator, 2026-11-17: when an inception gets a GO, the agent should get a tr
 - **IW-1: Which operator actions in Watchtower should notify the agent: inception decisions only, or also review approvals (human criteria ticked), approved paid-review proposals, accepted restatements and Tier 0 approvals?**
   confidence: 3
   disposition: answered
-  rationale: Operator, 2026-11-18 ("all yes" to proposal 1): inception decisions, human criteria ticked on /review, restatement accept/reject, and paid-review approval. Not Tier 0, because the agent is normally waiting on it in the same turn.
+  rationale: Operator, 2026-11-18 ("all yes" to proposal 1): inception decisions, human criteria ticked on the Watchtower review page, restatement accept/reject, and paid-review approval. Not Tier 0, because the agent is normally waiting on it in the same turn.
 - **IW-2: Can a project post to its own sidecar inbox today, and does the receiver deliver it to its own session when idle (lib/sidecar/addressing.py treats the own inbox specially, line 604)?**
   confidence: 3
   disposition: answered
@@ -166,7 +166,7 @@ The idle-aware delivery already exists (lib/sidecar/inject.py: non-urgent mail g
 
 Build slices if GO:
 1. Inception decisions (GO / NO-GO / DEFER) from the decide chain.
-2. Human criteria ticked on /review, restatement accept/reject, and paid-proposal approval.
+2. Human criteria ticked on the Watchtower review page, restatement accept/reject, and paid-proposal approval.
 
 Tier 0 approvals are excluded: the agent is normally waiting on them in the same turn.
 
