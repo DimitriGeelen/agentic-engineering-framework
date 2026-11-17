@@ -82,12 +82,21 @@ The operator, 2026-11-17: when an inception gets a GO, the agent should get a tr
 -->
 
 - **IW-1: Which operator actions in Watchtower should notify the agent: inception decisions only, or also review approvals (human criteria ticked), approved paid-review proposals, accepted restatements and Tier 0 approvals?**
+  confidence: 3
+  disposition: answered
+  rationale: Operator, 2026-11-18 ("all yes" to proposal 1): inception decisions, human criteria ticked on /review, restatement accept/reject, and paid-review approval. Not Tier 0, because the agent is normally waiting on it in the same turn.
 - **IW-2: Can a project post to its own sidecar inbox today, and does the receiver deliver it to its own session when idle (lib/sidecar/addressing.py treats the own inbox specially, line 604)?**
   confidence: 3
   disposition: answered
   rationale: Yes, verified 2026-11-17 21:47Z. `fw sidecar send --to 999-Agentic-Engineering-Framework --notice` was stored as RECEIVED by this project's receiver (msg 254f3e5a) and surfaced in this session's prompt at the next idle point, between turns, not mid-interaction.
 - **IW-3: The prompt hook frames all sidecar mail as untrusted peer data. Is that right for a notice from the project's own Watchtower? (Proposal: yes. The notice is only a trigger, and the agent reads the decision from the task file, which is the source of truth.)**
+  confidence: 3
+  disposition: answered
+  rationale: Operator, 2026-11-18 ("all yes" to proposal 2): yes. The notice is a trigger only; the agent acts on the task file, so a forged notice cannot start work.
 - **IW-4: With no session running, does the notice wait for the next session's start alerts, and is anything lost if Watchtower restarts mid-chain?**
+  confidence: 3
+  disposition: answered
+  rationale: Operator, 2026-11-18 ("all yes" to proposal 3). With no ready session the message stays flagged and surfaces in the next session's start alerts (lib/sidecar/inject.py). The decide chain runs detached (web/decide_runner.py, T-3749), so a Watchtower restart does not stop it. A failed post never fails the action and is logged.
 
 ## Exploration Plan
 
