@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5201: Quota overview S2: fw termlink dispatch and the review cost ledger record the subscription id and completion tokens (T-5190 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-17T10:19:01Z
+# ============================================================================
+
+task_id: T-5201
+task_name: "Quota overview S2: fw termlink dispatch and the review cost ledger record the subscription id and completion tokens (T-5190 GO)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-17T09:08:42Z
+completed: 2026-11-17T10:17:31Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-17T10:57:33+01:00
+last_commit: 2026-11-17T11:16:41+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  S2 context, criteria. dispatch meta.json records subscription (registry id | unassigned | unknown, never blocks) at launch and reported token counts (no zero-fill) at completion; review cost rows carry subscription; 14 tests. tick — runtime suites green against the committed run.sh, invariants 166 ok, vendor check clean
+
+# Key outcomes
+outcomes:
+  - 'A new dispatch''s meta.json has `subscription` (the assigned id, "unassigned" or "unknown"), and after completion a `tokens` object with only the counts the result reported. Tested with a fixture registry and a stub worker result.'
+  - 'Review cost ledger rows written from now on carry `subscription`, and existing rows are untouched. The ledger''s append-only check and its readers still pass.'
+  - 'An unreadable or invalid registry makes dispatch record "unknown" and continue (test). No account-like value can appear (the field comes only from registry ids, which S1 validates).'
+  - 'Existing termlink dispatch and review-cost tests pass, invariants pass, and `bin/fw vendor self --check --task T-5201` is clean.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/lib/dispatch_tokens.py'
+  - '.agentic-framework/lib/review_cost.py'
+  - '.agentic-framework/lib/subscriptions.py'
+  - '.tasks/active/T-5201-quota-overview-s2-fw-termlink-dispatch-a.md'
+  - 'agents/termlink/termlink.sh'
+  - 'lib/dispatch_tokens.py'
+  - 'lib/review_cost.py'
+  - 'lib/subscriptions.py'
+  - 'tests/unit/test_t5201_subscription_tokens.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-17T10:57:33'
+    action: 'T-5201: S2 context, criteria'
+  - time: '2026-11-17T11:11:06'
+    action: 'T-5201: dispatch meta.json records subscription (registry id | unassigned | unknown, never blocks) at launch and reported token counts (no zero-fill) at completion; review cost rows carry subscription; 14 tests'
+  - time: '2026-11-17T11:16:41'
+    action: 'T-5201: tick — runtime suites green against the committed run.sh, invariants 166 ok, vendor check clean'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 68 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 68
+  commits: 4
+  files_changed: 13
+  lines_added: 678
+  lines_removed: 22
+  footprint_refreshed_at: '2026-11-17T10:19:18Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5201-quota-overview-s2-fw-termlink-dispatch-a.md
+generated_by: context-agent-hybrid

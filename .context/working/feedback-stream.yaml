@@ -56211,3 +56211,21 @@ scan_id: R-a6813f9e
 task_id: T-5205
 payload:
   task_file: .tasks/active/T-5205-text-gate-refuses-read-only---help-on-op.md
+---
+kind: scan_emitted
+timestamp: '2026-11-17T10:18:35Z'
+scan_id: R-260a11ff
+task_id: T-5201
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-17T10:18:35Z'
+scan_id: R-260a11ff
+task_id: T-5201
+payload:
+  task_file: .tasks/active/T-5201-quota-overview-s2-fw-termlink-dispatch-a.md
