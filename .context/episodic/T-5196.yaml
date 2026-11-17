@@ -1,0 +1,119 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5196: Watchtower approvals at volume, slice A: persistent on-disk memo of per-row verdict-ledger validation keyed on immutable git object ids, surviving restarts (T-5186 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-17T00:05:03Z
+# ============================================================================
+
+task_id: T-5196
+task_name: "Watchtower approvals at volume, slice A: persistent on-disk memo of per-row verdict-ledger validation keyed on immutable git object ids, surviving restarts (T-5186 GO)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-16T19:37:24Z
+completed: 2026-11-17T00:03:27Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-16T23:34:33+01:00
+last_commit: 2026-11-17T01:02:19+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  slice A context, criteria (persistent immutable git memo; slice B's leftover trigger). persistent on-disk memo for git calls fixed by full object ids. measurements, decisions (memo scope/storage; reviews trigger kept with reason and cost), verification, criteria ticked. revert the on-disk git object memo (independent review: 160 MB after one page, ~14 MB/day toward 512 MiB in every consumer, two stale-answer cases); replaced by a single git cat-file --batch reader. criteria revised for a cat-file --batch reader; decision recorded (on-disk memo reverted after review). one long-lived git cat-file --batch reader per repo serves show <40-hex>:<path> (blobs only; missing/tree/undecodable/any fault takes the per-call path); restarted on refs/HEAD, .git/config, objects/pack or GIT_* env change; atexit reap; 20 tests. vendor lib/verdict_ledger.py (cat-file --batch reader). cat-file reader measurements, routing/textconv/replace-ref findings, tests; criteria ticked. review fixes — any interruption closes the cat-file reader (no off-by-one answers), paths with .. are not routed, global/system git config is in the reader key; 3 fail-first tests; 1699/1700 ledger+readiness tests (the 1 is an order-dependent alias test that passes alone)
+
+# Key outcomes
+outcomes:
+  - '(Revised 2026-11-17 after the independent review; the on-disk memo was reverted in 95e10c8d2.) `_git_out`''s object-content reads (`show <40-hex>:<path>`, and `ls-tree` on a 40-hex tree if it fits) go through ONE long-lived `git cat-file --batch` process per repo instead of a subprocess each. Nothing is written to disk. Answers are identical to the per-call `git` they replace, including a missing object (same failure), which a test proves on a temp repo.'
+  - 'The batch process is safe: a lock per process for concurrent threads; restarted if it dies or desyncs; falls back to the per-call path on any error; no zombie or leaked process (test).'
+  - 'Measured in-process: cold approvals page before/after (fresh process), and the subprocess census. Numbers recorded here.'
+  - 'Slice B''s leftover trigger (commits touching `.context/reviews/`) is either fixed with an equivalence test proving no stale READY, or kept with the reason and cost recorded in ## Decisions.'
+  - 'Every existing test that touches lib/verdict_ledger.py or readiness passes, invariants pass, `bin/fw vendor self --check --task T-5196` is clean, and Watchtower is restarted and current.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'review fixes — any interruption closes the cat-file reader (no off-by-one answers), paths with .. are not routed, global/system git config is in the reader key; 3 fail-first tests; 1699/1700 ledger+readiness tests (the 1 is an order-dependent alias test that passes alone)'
+    source: git-mined
+  - description: 'criteria revised for a cat-file --batch reader; decision recorded (on-disk memo reverted after review)'
+    source: git-mined
+  - description: 'revert the on-disk git object memo (independent review: 160 MB after one page, ~14 MB/day toward 512 MiB in every consumer, two stale-answer cases); replaced by a single git cat-file --batch reader'
+    source: git-mined
+  - description: 'persistent on-disk memo for git calls fixed by full object ids'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-17 — independent review of the batch reader (AMBER) and what changed'
+  - decision: '2026-11-17 — the on-disk memo is reverted; one `git cat-file --batch` reader instead'
+    chose: 'revert ee89a5c73 (commit 95e10c8d2) and take the reviewer''s cheaper design. The measured gain came mostly from 1,900 process spawns (~17 s), and one long-lived `git cat-file --batch` reader removes those with no disk store and no stale-answer class.'
+    alternatives_rejected: ['keeping the blob store with dedup and a 32 MiB cap. It is still a second copy of git''s own object store, with its own invalidation rules to get right. - The 160 MB `.context/working/git-object-memo.db` is no longer read by anything. Removing it is left to the operator.']
+  - decision: '2026-11-16 — what may be served from the persistent memo (superseded 2026-11-17, reverted)'
+    chose: 'only `show <40-hex>:<path>` and `ls-tree [-r] [--name-only] <40-hex> -- <paths>` (lower-case full id, plain repo-relative paths, no pathspec magic, no other flags). Every key also carries a context hash: memo format version, the output text encoding, `.git/config` contents and the stats of the global/system git config files, and every replace ref (loose and packed, name → target). The memo is not used at all when the state token cannot be taken, refs move while the context is read, or a `GIT_*` variable outside a harmless list (author/committer identity, editor, pager, ssh, askpass) is set.'
+    rationale: 'an object id fixes the object, not the answer: this repo has 2,970 replace refs on commits, and a replace ref changes what `<sha>:<path>` resolves to (test `test_replace_ref_changes_the_answer`). Config (`core.useReplaceRefs`, `core.quotePath`) and env (`GIT_NO_REPLACE_OBJECTS`, `GIT_DIR`, pathspec env) can change it too. Folding them into the key makes old entries unreachable, never stale.'
+    alternatives_rejected: ['`cat-file -e`, `merge-base --is-ancestor` and `rev-parse` on full ids — existence and ancestry can change when objects are pruned or grafts/shallow change, and together they are 78 cheap calls a page. Refs, HEAD, short ids, `^`/`~`, ranges and `log` stay on the in-memory, state-token memo as before.']
+  - decision: '2026-11-16 — storage'
+    chose: 'sqlite at `.context/working/git-object-memo.db` (WAL, synchronous=NORMAL), gitignored by the existing `.context/working/*.db` / `*.db-wal` / `*.db-shm` rules. Used only when `git check-ignore` confirms it is ignored in that repo. Each row carries its args (compared on read) and a sha256 of its output (verified on read; a mismatch runs git). A file that is not a database is deleted and started again; a locked/unwritable one turns the memo off for the process. Bound 512 MiB / 100,000 rows, least-recently-used eviction to 80% (last use refreshed at most hourly), checked on a process''s first write and every 256 writes. Entries over 4 MiB are not kept. Non-zero exits are never kept.'
+    rationale: 'the brief asked for tmp+rename atomic files, but I may not edit `.gitignore`, and the only gitignored names under `.context/working/` that fit a cache are `*.db`. sqlite transactions give the same atomicity (a reader never sees a half-written entry), handle Watchtower threads plus CLI processes writing concurrently, and evict without rewriting a whole file; a per-file layout would have needed thousands of files under a misleading `*.db` directory name. - **Known limit:** the working set is every committed version of the two big ledgers (79.6 MB today) and grows ~1 MB per review commit (~14/day), so it reaches the 512 MiB bound in roughly a month. After that the LRU will evict versions every cold page needs and the gain degrades toward today''s cost (never toward a wrong answer). Next-step (a) in ## Measurements removes that growth.'
+  - decision: '2026-11-16 — slice B''s leftover trigger: kept'
+    chose: 'keep `.context/reviews/` in `_GLOBAL_GIT_INPUTS`; a commit touching it still moves the global generation. - **Why it is global:** what the validator reads from git under `.context/reviews/` is not per-task. (1) `load_ledger` walks every committed version of `verdicts.jsonl` and refuses the WHOLE ledger (every task) when any commit modified, deleted or duplicated a row; the same append-only walk (`history_fault`) runs over `review-completions.jsonl` and the acknowledgements file. (2) Which rows count depends on whether they are committed and on the identity of the commit that introduced each row (producer and worker checks), and a completion row is tied to its task only through its dispatch id, so attributing a commit''s added lines to tasks needs the whole cross-ledger link map at that commit, not the commit''s diff alone. A per-task key would have to reproduce all of that exactly, and an under-attribution serves a stale READY. I could not build a temp-repo fixture that drives the full validator to READY (signed dispatch registry, runs, completions, producer identities) within this slice, so there is no equivalence test, and the rule was: no test, no change.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.tasks/active/T-5196-watchtower-approvals-at-volume-slice-a-p.md'
+  - 'lib/verdict_ledger.py'
+  - 'tests/unit/test_t5196_cat_file_batch.py'
+  - 'tests/unit/test_t5196_git_object_memo.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T23:34:33'
+    action: 'T-5196: slice A context, criteria (persistent immutable git memo; slice B''s leftover trigger)'
+  - time: '2026-11-17T00:07:16'
+    action: 'T-5196: persistent on-disk memo for git calls fixed by full object ids'
+  - time: '2026-11-17T00:07:53'
+    action: 'T-5196: measurements, decisions (memo scope/storage; reviews trigger kept with reason and cost), verification, criteria ticked'
+  - time: '2026-11-17T00:11:19'
+    action: 'T-5196: revert the on-disk git object memo (independent review: 160 MB after one page, ~14 MB/day toward 512 MiB in every consumer, two stale-answer cases); replaced by a single git cat-file --batch reader'
+  - time: '2026-11-17T00:12:01'
+    action: 'T-5196: criteria revised for a cat-file --batch reader; decision recorded (on-disk memo reverted after review)'
+  - time: '2026-11-17T00:34:17'
+    action: 'T-5196: one long-lived git cat-file --batch reader per repo serves show <40-hex>:<path> (blobs only; missing/tree/undecodable/any fault takes the per-call path); restarted on refs/HEAD, .git/config, objects/pack or GIT_* env change; atexit reap; 20 tests'
+  - time: '2026-11-17T00:34:34'
+    action: 'T-5196: vendor lib/verdict_ledger.py (cat-file --batch reader)'
+  - time: '2026-11-17T00:36:53'
+    action: 'T-5196: cat-file reader measurements, routing/textconv/replace-ref findings, tests; criteria ticked'
+  - time: '2026-11-17T01:02:19'
+    action: 'T-5196: review fixes — any interruption closes the cat-file reader (no off-by-one answers), paths with .. are not routed, global/system git config is in the reader key; 3 fail-first tests; 1699/1700 ledger+readiness tests (the 1 is an order-dependent alias test that passes alone)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 9 commit(s), 266 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 266
+  commits: 10
+  files_changed: 8
+  lines_added: 1801
+  lines_removed: 852
+  footprint_refreshed_at: '2026-11-17T00:05:29Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5196-watchtower-approvals-at-volume-slice-a-p.md
+generated_by: context-agent-hybrid

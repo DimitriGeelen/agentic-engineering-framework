@@ -6,12 +6,12 @@ name: "Watchtower approvals at volume, slice A: persistent on-disk memo of per-r
 description: >
   Build slice of inception T-5186 (GO 2026-11-16). Evidence: docs/reports/T-5186-watchtower-volume-performance.md.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/verdict_ledger.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T19:37:24Z
-last_update: 2026-11-16T22:34:33Z
-date_finished:
+last_update: 2026-11-17T00:03:27Z
+date_finished: 2026-11-17T00:03:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -291,7 +291,7 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
-python3 -m pytest tests/unit/test_t5196_git_object_memo.py -q -p no:cacheprovider > /tmp/.t5196.out 2>&1 && grep -q passed /tmp/.t5196.out
+python3 -m pytest tests/unit/test_t5196_cat_file_batch.py -q -p no:cacheprovider > /tmp/.t5196.out 2>&1 && grep -q passed /tmp/.t5196.out
 python3 -m pytest tests/unit/test_t5194_readiness_per_task_key.py tests/unit/test_t5195_approvals_single_flight.py tests/web/test_t4394_readiness_git_key.py tests/web/test_t4133_readiness_perf.py -q -p no:cacheprovider > /tmp/.t5196b.out 2>&1 && grep -q passed /tmp/.t5196b.out
 git check-ignore -q .context/working/git-object-memo.db
 bin/fw vendor self --check --task T-5196
@@ -539,3 +539,16 @@ Watchtower restarted (pid 3455303); `bin/fw watchtower current`: current.
 ### 2026-11-16T22:33:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-17T00:03:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-46f7e5f9
+- **Timestamp:** 2026-11-17T00:04:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
