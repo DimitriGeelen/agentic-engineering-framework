@@ -223,7 +223,17 @@ def root_to_procedure(root):
             named.setdefault(e["from"], {})[f.get("name")] = e["to"]
     for n in nodes:
         labels = n.pop("_labels")
-        if n["kind"] == "human_gate":
+        if n["kind"] == "human_gate" and not labels:
+            # T-5197 (832 msg cad60ce8): a human step that is done, not decided. One outgoing
+            # flow -> a one-entry map keyed by the flow's name or "done"; two or more -> refused.
+            outs = [f for f in flow_els if uid_of.get(f.get("sourceRef")) == n["uid"]]
+            if len(outs) != 1:
+                raise Refused("human_gate %s has %d outgoing flows and no decisionOutputs"
+                              % (n["uid"], len(outs)))
+            f = outs[0]
+            n["human_decision_map"] = {f.get("name") or "done":
+                                       uid_of[goto.get(f.get("targetRef"), f.get("targetRef"))]}
+        elif n["kind"] == "human_gate":
             m = {}
             for lab in labels:
                 if lab not in named.get(n["uid"], {}):
@@ -438,3 +448,32 @@ def test_q7_boundary_timer_refused():
               '<aef:eventDef kind="timer" binding="0 9 * * *"/></bpmn:extensionElements></bpmn:boundaryEvent>')
     with pytest.raises(Refused):
         bpmn_text_to_procedure(_bpmn(body))
+
+
+# ── T-5197 (832 msg cad60ce8): a human step that is done, not decided ────────────────────
+
+def test_t5197_one_flow_human_gate_without_decisions_maps_to_done():
+    proc = bpmn_text_to_procedure(_bpmn(LINEAR(_node("userTask", "x")), lanes=_lane("authority", "x")))
+    gate = next(n for n in proc["nodes"] if n["uid"] == "n_x")
+    assert gate["kind"] == "human_gate" and gate["human_decision_map"] == {"done": "n_e"}
+
+
+def test_t5197_one_named_flow_uses_the_flow_name():
+    body = _node("userTask", "x") + _flow("f1", "s", "x") + _flow("f2", "x", "e", name="signed")
+    proc = bpmn_text_to_procedure(_bpmn(body, lanes=_lane("authority", "x")))
+    assert next(n for n in proc["nodes"] if n["uid"] == "n_x")["human_decision_map"] == {"signed": "n_e"}
+
+
+def test_t5197_two_flows_without_decisions_is_refused():
+    body = (_node("userTask", "x") + _node("userTask", "y") + _flow("f1", "s", "x")
+            + _flow("f2", "x", "e") + _flow("f3", "x", "y") + _flow("f4", "y", "e"))
+    with pytest.raises(Refused):
+        bpmn_text_to_procedure(_bpmn(body, lanes=_lane("authority", "x", "y")))
+
+
+def test_t5197_one_entry_map_validates_against_v2_schema():
+    jsonschema = pytest.importorskip("jsonschema")
+    schema = json.loads((V2 / "procedure.schema.json").read_text())
+    proc = bpmn_text_to_procedure(_bpmn(LINEAR(_node("userTask", "x")), lanes=_lane("authority", "x")))
+    errors = sorted(jsonschema.Draft202012Validator(schema).iter_errors(proc), key=str)
+    assert not errors, [e.message for e in errors]

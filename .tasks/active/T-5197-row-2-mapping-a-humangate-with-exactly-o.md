@@ -10,7 +10,7 @@ description: >
   still holds because the human records the completion with that label. Update designer-0.43-mapping.md
   2.2/2.4 and Q5 note, and add a test.
 
-status: captured
+status: started-work
 workflow_type: design
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T19:40:00Z
-last_update: '2026-11-16T19:45:49Z'
+last_update: 2026-11-17T00:36:14Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,20 +90,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 832 msg cad60ce8 (2026-11-16), reviewing the row-2 mapping (docs/research/executable-workflow/contracts/v2/designer-0.43-mapping.md, T-5184/T-5192): 6 of 12 userTasks in their corpus carry no `aef:decisionOutputs`. They are human steps that are done, not decided (review, acknowledge, sign), with one outgoing flow. AEF agreed the same day.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The mapping says `human_decision_map` is required for every `human_gate` (§2.2 userTask row, §2.4, and the Q5 sovereignty-lane note). That would refuse half of 832's human steps, and every activity in a sovereignty lane. The contract does not require it: contracts v2 `procedure.schema.json` types `human_decision_map` as an object of strings with no minProperties and does not list it as required. The architecture rule (§6.2 table, "cannot auto-advance without mapped decision") still holds with a one-entry map, because the gate advances only when the human records completion under that label.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A `human_gate` with exactly one outgoing flow and no `aef:decisionOutputs` maps to `human_decision_map {<flow @name, else "done">: <target>}`. Two or more outgoing flows with no `aef:decisionOutputs` stays refused.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** The mapping document states the rule in §2.2, §2.4 and the Q5 note. A test pins both cases (the one-flow case maps to a one-entry map that validates against procedure.schema.json; the two-flow case is refused). 832 gets the commit and pins the row-2 mapping.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] designer-0.43-mapping.md states the one-flow rule (key = flow @name, else "done") and the two-or-more refusal, in every place that said `human_decision_map` is required.
+- [ ] tests/unit/test_t5184_designer_mapping.py has a test that a one-entry `human_decision_map` validates against contracts v2 procedure.schema.json, and the existing tests still pass. Contracts v1/v2 checks are clean.
+- [ ] 832 is sent the commit.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -386,3 +387,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5197-row-2-mapping-a-humangate-with-exactly-o.md
 - **Context:** Initial task creation
+
+### 2026-11-17T00:36:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
