@@ -10,16 +10,16 @@ description: >
   overview (tokens per subscription, 5h/7d windows, next reset), and a pre-run quota
   check (1409 T-6158 proposal)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-11-16T15:30:03Z
-last_update: 2026-11-17T08:47:34Z
-date_finished:
+last_update: 2026-11-17T08:57:23Z
+date_finished: 2026-11-17T08:57:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -126,15 +126,15 @@ ring20 already builds the pool-side quota lock (their T-2707), and since 2026-11
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -205,7 +205,13 @@ ring20's pool lock (their T-2707) and node→subscription map, and 055's display
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The shared Claude subscription on the pool hit a week-long limit on 2026-11-16 without warning, and no single place can see it coming. Every project on a machine keeps its own partial record. AEF's own records (dispatch meta.json, the review cost ledger) carry no subscription id at all. AEF is the only thing every project on a machine runs, so only AEF can keep the cross-project record and answer "free / tight / at limit until" for all of them.
+
+The slices:
+
+**Date**: 2026-11-17T08:57:22Z
 
 ## Updates
 
@@ -218,3 +224,44 @@ ring20's pool lock (their T-2707) and node→subscription map, and 055's display
 ### 2026-11-17T08:47:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-17T08:57:22Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The shared Claude subscription on the pool hit a week-long limit on 2026-11-16 without warning, and no single place can see it coming. Every project on a machine keeps its own partial record. AEF's own records (dispatch meta.json, the review cost ledger) carry no subscription id at all. AEF is the only thing every project on a machine runs, so only AEF can keep the cross-project record and answer "free / tight / at limit until" for all of them.
+
+The slices:
+
+### 2026-11-17T08:57:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2c005fdc
+- **Timestamp:** 2026-11-17T08:57:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-e8466f9d
+- **Timestamp:** 2026-11-17T08:57:24Z
+- **Overall:** CONFIRMED
+- **Claims:** 1
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-2707` | task | ✓ pass |
