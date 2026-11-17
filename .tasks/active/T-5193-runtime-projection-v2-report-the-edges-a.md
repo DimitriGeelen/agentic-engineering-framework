@@ -111,9 +111,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `/api/instances` returns `runtime_projection_version: 2`, `unplaced` (the former list), an empty `refusals`, and, per instance, `traversed` (ordered edge uids) plus `unmapped` transitions. The v1 schema file is unchanged; a v2 schema file is added and documented.
-- [ ] Traversed edges come only from recorded status history and real map edges. A test on fixture tasks covers a normal path, a task with a transition that has no edge (listed as unmapped), and a task with no history (empty).
-- [ ] A test validates live responses from both endpoints against the v2 schema; existing endpoint tests are updated and pass. Contracts v1/v2 checks stay clean.
+- [x] `/api/instances` returns `runtime_projection_version: 2`, `unplaced` (the former list), an empty `refusals`, and, per instance, `traversed` (ordered edge uids) plus `unmapped` transitions. The v1 schema file is unchanged; a v2 schema file is added and documented.
+- [x] Traversed edges come only from recorded status history and real map edges. A test on fixture tasks covers a normal path, a task with a transition that has no edge (listed as unmapped), and a task with no history (empty).
+- [x] A test validates live responses from both endpoints against the v2 schema; existing endpoint tests are updated and pass. Contracts v1/v2 checks stay clean.
 - [ ] Invariants pass, `bin/fw vendor self --check --task T-5193` is clean, Watchtower is restarted and current, and 832 is sent the change.
 
 ### Human
@@ -300,6 +300,12 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5193_runtime_projection_v2.py tests/unit/test_t5185_runtime_projection.py tests/web/test_t4831_instances.py tests/web/test_api_overlay.py tests/web/test_designer_overlay.py -q > /tmp/.t5193.out 2>&1 && grep -q passed /tmp/.t5193.out
+git diff --quiet 8f458c628~1 HEAD -- docs/research/executable-workflow/contracts/v2/runtime-projection/runtime-projection.schema.json
+python3 tools/ewcr-contracts-check.py > /tmp/.t5193c1.out 2>&1 && grep -q '^OK' /tmp/.t5193c1.out
+python3 tools/ewcr-contracts-check.py --contracts-version 2 > /tmp/.t5193c2.out 2>&1 && grep -q '^OK' /tmp/.t5193c2.out
+bin/fw vendor self --check --task T-5193
+bin/fw watchtower current
 
 ## RCA
 
@@ -380,6 +386,11 @@ bvp_scores_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-17 — how a recorded change maps onto edges
+- **Chose:** a change from node A to node B maps to the one chain of map edges from A to B whose intermediate nodes are not state carriers (gateways, tl_start, tl_verify). No chain or more than one → `unmapped`. Horizon-only changes count when they move the node (tl_create → tl_parked); the horizon in force is reconstructed backwards from the current frontmatter.
+- **Why:** almost no recorded change has a direct edge (captured → started-work is tl_e2, tl_e14, tl_e3 through a gateway and tl_start), so direct-edge-only would leave most history unmapped; uniqueness keeps it "never forced".
+- **Rejected:** direct edges only (most history unmapped); shortest chain on ambiguity (would guess tl_heal → tl_work as tl_e6 over the gates detour — the derived-path behaviour 832 asked to move away from); git history (not needed: update-task.sh records every status change in the file).
 
 ## Decision
 
