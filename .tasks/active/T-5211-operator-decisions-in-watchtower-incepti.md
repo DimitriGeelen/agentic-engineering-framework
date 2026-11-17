@@ -163,7 +163,7 @@ Tier 0 approvals are excluded: the agent is normally waiting on them in the same
 - This session learned of T-5199's GO (83676d1ac, 84b9e1cb5) only because a later commit was refused.
 - web/decide_runner.py has no notify step. The decide chain ends at its follow-up commit.
 - lib/sidecar/inject.py: non-urgent mail is injected only into a session whose own record says ready.
-- Open for the build (IW-2): whether a send to the project's own address is delivered to its own session. lib/sidecar/addressing.py treats the own inbox specially (lines 604, 689). This is checked with a real test post in slice 1.
+- IW-2 verified: a notice sent to the project's own address (msg 254f3e5a) was delivered to this session at its next idle point (2026-11-17 21:47Z).
 - Research: docs/reports/T-5211-decision-notice-to-agent.md
 
 ## Decisions
