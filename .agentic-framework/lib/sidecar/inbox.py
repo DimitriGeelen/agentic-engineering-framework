@@ -410,18 +410,21 @@ def sender_label(msg: dict) -> str:
 
 def reply_address(msg: dict) -> str | None:
     """What to type as `--to` to answer `msg`. The sender's circuit when it
-    lives on another hub (so the reply lands in ITS namespace, not ours);
+    lives on another hub (so the reply lands in ITS namespace, not ours), or
+    when it names an agent below the project, on any hub (T-5210: the project
+    name alone delivers to the project inbox, which a sub-agent never reads);
     else its name. None for a raw post — there is nobody to address."""
     cid = str(msg.get("from_circuit") or "")
     if cid:
         from . import addressing
         bare = addressing.strip_host(cid)
-        hub = circuit.parse_circuit(bare).get("hub")
+        parts = circuit.parse_circuit(bare)
+        hub = parts.get("hub")
         try:
             own = circuit.hub_id()
         except circuit.CircuitError:
             own = None
-        if hub and hub != own:
+        if hub and (hub != own or parts.get("agent")):
             return bare
     return msg.get("from") or sender_of({"from_circuit": cid}) or None
 
