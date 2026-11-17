@@ -5,10 +5,10 @@ name: "Quota overview S3: machine-wide append-only quota ledger (ids and counts 
 description: >
   Build slice of inception T-5190 (GO 2026-11-17). Design: docs/reports/T-5190-subscription-quota-overview.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -39,7 +39,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-17T09:08:43Z
-last_update: '2026-11-17T09:16:04Z'
+last_update: 2026-11-17T10:36:39Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,20 +85,27 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Inception T-5190 (GO 2026-11-17), slice S3; design docs/reports/T-5190-subscription-quota-overview.md (1409's ask 3.3.1). S1 (T-5200) gave neutral subscription ids. S2 (T-5201) makes every dispatch's `meta.json` and every review cost row carry `subscription`, and dispatches carry reported `tokens`.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** All of that is written inside each project's own `.context/`. Several projects on one machine share a subscription, yet no single record sums their use, so nothing can say how close a subscription is to its limit.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** One append-only quota ledger per machine user, outside any project: default `${XDG_STATE_HOME:-~/.local/state}/aef/quota-ledger.jsonl`, overridable by `FW_QUOTA_LEDGER`.
+- Every project's `fw` appends one row when a dispatch completes, from run.sh after S2 writes `tokens`, and one when a review cost row is written. A row holds: ts, project (directory basename only), task, dispatch id or review id, worker kind, subscription, tokens (only the reported counts).
+- Appends are atomic and safe across processes (flock or O_APPEND with single-write lines). A failed append never fails the dispatch or the review; it warns once.
+- The file holds ids and counts only: no prompts, no host names, no account data.
+- A reader `lib/quota_ledger.py: rows(since=None, subscription=None)` that skips torn lines, and a size bound: rotate to `.1` above a configurable size, default 50 MB.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** One record per machine sums every project's AEF load per subscription. S4 adds limit events to the same file, and S5 reads it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A completed dispatch and a written review cost row each append one row to the machine ledger with the fields above. Two projects writing concurrently produce whole lines only (test with parallel writers).
+- [ ] The ledger path honours FW_QUOTA_LEDGER and XDG_STATE_HOME. A missing directory is created; an unwritable ledger warns once and never fails the dispatch or review (test).
+- [ ] The reader skips torn lines and filters by time and subscription. Rotation at the size bound keeps one previous file (test).
+- [ ] No row contains a prompt, host name or account-like value (test using S1's account-value patterns on every written row).
+- [ ] Existing dispatch, review-cost and runtime tests pass, invariants pass, and `bin/fw vendor self --check --task T-5202` is clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -381,3 +388,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5202-quota-overview-s3-machine-wide-append-on.md
 - **Context:** Initial task creation
+
+### 2026-11-17T10:35:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
