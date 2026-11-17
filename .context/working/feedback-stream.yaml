@@ -56399,3 +56399,21 @@ scan_id: R-9ed5e0c2
 task_id: T-5209
 payload:
   task_file: .tasks/active/T-5209-image-evidence-panels-seat-only-vision-c.md
+---
+kind: scan_emitted
+timestamp: '2026-11-17T17:10:11Z'
+scan_id: R-515df833
+task_id: T-5210
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-17T17:10:11Z'
+scan_id: R-515df833
+task_id: T-5210
+payload:
+  task_file: .tasks/active/T-5210-sidecar-replyaddress-drops-a-same-hub-su.md
