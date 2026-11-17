@@ -6118,6 +6118,22 @@ if [ -f "$FRAMEWORK_ROOT/lib/review_cost.py" ]; then
     done < <(PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 "$FRAMEWORK_ROOT/lib/review_cost.py" audit 2>&1)
 fi
 
+# Subscription registry (T-5200, T-5190 S1): neutral subscription ids, never account data.
+# FAIL when policy/subscriptions.yaml does not validate (account-looking value, duplicate id,
+# unknown harness, assignment to an undefined id); silent when the file is absent.
+if [ -f "$FRAMEWORK_ROOT/lib/subscriptions.py" ]; then
+    while IFS=$'\t' read -r _sb_lvl _sb_msg; do
+        case "$_sb_lvl" in
+            PASS) pass "$_sb_msg" ;;
+            FAIL) fail "$_sb_msg" "policy/subscriptions.yaml" \
+                       "The operator fixes the registry: bin/fw quota subscription list names the ids" ;;
+            "") ;;
+            *) warn "Subscription audit emitted unexpected output: ${_sb_lvl:0:120}" "lib/subscriptions.py audit" \
+                    "Run: python3 lib/subscriptions.py audit" ;;
+        esac
+    done < <(PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 "$FRAMEWORK_ROOT/lib/subscriptions.py" audit 2>&1)
+fi
+
 # Check for commit-msg hook (validates task references)
 if [ -f "$PROJECT_ROOT/.git/hooks/commit-msg" ]; then
     pass "Commit-msg hook installed"

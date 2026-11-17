@@ -1237,6 +1237,16 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
     if not ctx.boundary and verb == "fw" and ops[:2] == ["task", "accept-miss"]:
         ctx.hits.append(Hit("records an accepted miss (the operator's act)"))
         return
+    # T-5200: the subscription registry is the operator's. The module refuses under
+    # CLAUDECODE/AI_AGENT, but `env -u` strips those; the text gate refuses the verbs too.
+    if not ctx.boundary and verb == "fw" and ops[:2] == ["quota", "subscription"] and \
+            len(ops) > 2 and ops[2] in ("add", "assign", "remove"):
+        ctx.hits.append(Hit("changes the subscription registry (the operator's act)"))
+        return
+    if not ctx.boundary and any(os.path.basename(a) in ("subscriptions.py", "subscriptions") for a in ops[:2]) \
+            and any(o in ("add", "assign", "remove") for o in ops[1:4]):
+        ctx.hits.append(Hit("changes the subscription registry (the operator's act)"))
+        return
     if verb in ("cd", "pushd"):
         dest = next((a for a in args if not a.startswith("-")), None)
         if dest is None or dest == UNRESOLVED or re.search(r"[$`{}*?\[~]", dest) or dest == "-":

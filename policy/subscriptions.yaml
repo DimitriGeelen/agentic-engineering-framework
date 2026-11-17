@@ -1,0 +1,36 @@
+# Subscription registry (T-5200, slice S1 of inception T-5190 — quota overview)
+# Neutral names for "which subscription did this worker use". Later slices record the
+# id per dispatch and review (S2), keep a machine-wide ledger (S3) and show it in
+# `fw quota status` (S5). Design: docs/reports/T-5190-subscription-quota-overview.md.
+#
+# RULE: NEVER ACCOUNT IDENTITY. An id is a label the operator chooses (claude-a, glm, …).
+# No e-mail address, token, API key, account id or login name goes anywhere in this file —
+# not in an id, a description, a host, or a comment. The validator refuses the file when it
+# sees an account-looking value: an e-mail address, a hex run of 32+ characters, a
+# base64-like run of 32+ characters, or a known token prefix (OpenAI/Anthropic-style keys,
+# GitHub/GitLab/Slack tokens, AWS access key ids).
+#
+# OPERATOR-OWNED. Every change is the operator's act. Under agent control (CLAUDECODE or
+# AI_AGENT set) the changing verbs are refused, --i-am-human included:
+#   bin/fw quota subscription list | show <id>                         (anyone)
+#   bin/fw quota subscription add <id> --harness H --description D     (operator)
+#   bin/fw quota subscription assign <id> --kind K [--host H]          (operator)
+#   bin/fw quota subscription remove <id>                              (operator; drops its assignments)
+# Each change is appended to .context/costs/subscription-changes.jsonl.
+# lib/subscriptions.py is the only parser; `fw audit` and `fw doctor` report an invalid file.
+#
+# Schema:
+#   subscriptions:            list of
+#     - id: <lowercase id: a-z 0-9 ->     unique
+#       harness: claude | glm | codex | antigravity | openrouter | other
+#       description: <short free text, no account data>
+#   assignments:              list of
+#     - kind: <worker kind, as in `fw termlink worker-kinds` / review-backends worker_kind>
+#       host: <hostname>        optional; a host-specific assignment wins over a kind-only one
+#       subscription: <id defined above>
+# One assignment per (kind, host) pair. A worker kind with no assignment resolves to
+# "unassigned" (lib/subscriptions.py resolve()).
+#
+# Ships with no entries: the operator fills it.
+subscriptions: []
+assignments: []
