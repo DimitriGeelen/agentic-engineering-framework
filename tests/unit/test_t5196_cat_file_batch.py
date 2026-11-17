@@ -225,3 +225,44 @@ def test_new_commit_restarts_reader(repo):
     spec2 = f"{head(repo)}:plain.txt"
     assert served(repo, spec2) == (0, "v2\n")
     assert rd.proc is None and vl._CATFILE[str(repo)] is not rd
+
+
+def test_an_interruption_after_the_write_never_shifts_later_answers(repo, monkeypatch):
+    # T-5196 review #1: a BaseException raised inside request() after the write used to leave the
+    # response unread, so the next request got the previous request's blob (off by one, forever).
+    sha = head(repo)
+    served(repo, f"{sha}:plain.txt")
+    real_fill = vl._CatFileBatch._fill
+    calls = {"n": 0}
+
+    def interrupted_fill(self, deadline):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise KeyboardInterrupt
+        return real_fill(self, deadline)
+
+    monkeypatch.setattr(vl._CatFileBatch, "_fill", interrupted_fill)
+    with pytest.raises(KeyboardInterrupt):
+        served(repo, f"{sha}:empty.txt")
+    monkeypatch.setattr(vl._CatFileBatch, "_fill", real_fill)
+    spec = f"{sha}:crlf.txt"
+    assert served(repo, spec) == old_show(repo, spec)
+
+
+def test_a_path_containing_dotdot_is_not_routed(repo, monkeypatch):
+    # T-5196 review #2: `git show <sha>:a..HEAD` can be a range; the reader must not answer it
+    sha = head(repo)
+    assert not vl._SHOW_SPEC.fullmatch(f"{sha}:a..HEAD")
+    assert not vl._SHOW_SPEC.fullmatch(f"{sha}:dir/x..y")
+    assert vl._SHOW_SPEC.fullmatch(f"{sha}:dir/x.y")
+
+
+def test_a_global_config_change_restarts_the_reader(repo, tmp_path, monkeypatch):
+    # T-5196 review #3: core.useReplaceRefs in the global config changes a blob's bytes
+    home = tmp_path / "home"
+    home.mkdir()
+    monkeypatch.setenv("HOME", str(home))
+    tok = vl._git_state_token(repo)
+    k1 = vl._catfile_key(repo, tok)
+    (home / ".gitconfig").write_text("[core]\n\tuseReplaceRefs = false\n")
+    assert vl._catfile_key(repo, tok) != k1

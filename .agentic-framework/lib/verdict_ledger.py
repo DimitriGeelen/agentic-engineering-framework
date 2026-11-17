@@ -2221,7 +2221,9 @@ def _git_state_token(root: Path) -> tuple | None:
 # only with an explicit --textconv), exactly what cat-file prints. The reader is restarted when
 # anything it could have loaded once goes stale: refs (replace refs live there) and HEAD (the
 # state token), .git/config, objects/pack (a pruned pack stays mmapped) or the GIT_*/HOME env.
-_SHOW_SPEC = re.compile(r"[0-9a-f]{40}:(?!\.{0,2}/)[^\n\x00]+")
+# T-5196 review #2: a path containing `..` is excluded — `git show <sha>:a..HEAD` is a range when
+# both sides resolve, while cat-file would answer the blob literally named `a..HEAD`.
+_SHOW_SPEC = re.compile(r"[0-9a-f]{40}:(?!\.{0,2}/)(?![^\n\x00]*\.\.)[^\n\x00]+")
 _CATFILE: dict[str, "_CatFileBatch"] = {}
 _CATFILE_LOCK = __import__("threading").Lock()
 _CATFILE_TIMEOUT = 60.0
@@ -2236,6 +2238,23 @@ def _catfile_key(root: Path, tok: tuple) -> tuple:
             extra.append((st.st_mtime_ns, st.st_size, st.st_ino))
         except OSError:
             extra.append(None)
+    # T-5196 review #3: global and system config can flip core.useReplaceRefs and so change a
+    # blob's bytes; stat them too. A config file pulled in only through include.path/includeIf is
+    # still not seen (needs a replace ref plus an out-of-tree config edit; recorded in Decisions).
+    home = os.environ.get("HOME", "")
+    xdg = os.environ.get("XDG_CONFIG_HOME") or (os.path.join(home, ".config") if home else "")
+    for path in (os.path.join(home, ".gitconfig") if home else "",
+                 os.path.join(xdg, "git", "config") if xdg else "",
+                 "/etc/gitconfig", os.environ.get("GIT_CONFIG_GLOBAL", ""),
+                 os.environ.get("GIT_CONFIG_SYSTEM", "")):
+        if not path:
+            extra.append(None)
+            continue
+        try:
+            st = os.stat(path)
+            extra.append((path, st.st_mtime_ns, st.st_size, st.st_ino))
+        except OSError:
+            extra.append((path, None))
     env = tuple(sorted((k, v) for k, v in os.environ.items()
                        if k.startswith("GIT_") or k in ("HOME", "XDG_CONFIG_HOME")))
     return (tok, tuple(extra), env)
@@ -2330,11 +2349,18 @@ def _catfile_show(root: Path, spec: str, tok: tuple) -> tuple[int, str] | None:
                 return None
             try:
                 body = rd.request(spec)
-            except Exception:
+            except BaseException as exc:
+                # T-5196 review #1: ANY interruption after the write (KeyboardInterrupt, a
+                # greenlet timeout, SystemExit from a signal handler) leaves an unread response
+                # in the pipe, and the next request would get the previous request's blob. The
+                # reader is closed and dropped for every exception, and non-Exception ones
+                # propagate as before.
                 rd.close()
                 with _CATFILE_LOCK:
                     if _CATFILE.get(rkey) is rd:
                         del _CATFILE[rkey]
+                if not isinstance(exc, Exception):
+                    raise
                 return None
         if body is None:
             return None

@@ -475,6 +475,17 @@ Watchtower restarted (pid 3455303); `bin/fw watchtower current`: current.
 
 ## Decisions
 
+### 2026-11-17 — independent review of the batch reader (AMBER) and what changed
+- **Fixed #1 (high):** an interruption raised inside `request()` after the write (KeyboardInterrupt, a greenlet timeout, SystemExit from a signal handler) left the response unread, so every later answer was the previous request's blob. The reader is now closed and dropped for every exception, and non-Exception ones re-raise.
+- **Fixed #2:** a path containing `..` is never routed (`git show <sha>:a..HEAD` can be a range).
+- **Fixed #3:** global and system config files (`~/.gitconfig`, `$XDG_CONFIG_HOME/git/config`, `/etc/gitconfig`, `GIT_CONFIG_GLOBAL`/`SYSTEM`) are part of the reader's key, since `core.useReplaceRefs` there changes a blob's bytes.
+- All three have tests that fail on the reviewed code (23/23 now).
+- **Accepted, recorded:**
+  - A config file pulled in only through `include.path`/`includeIf` is still not seen. Changing a blob's bytes that way needs a replace ref plus an out-of-tree edit.
+  - Review #4: the global lock is held across a slow close; a fork with threads is a generic hazard.
+  - Review #5: a forked child does not close the parent's pipe ends. The child gets its own reader, and the parent's answers stayed correct.
+  - All three are low.
+
 ### 2026-11-17 — the on-disk memo is reverted; one `git cat-file --batch` reader instead
 - **Independent review (AMBER):** no path found that makes a verdict count wrongly in normal operation. But:
   - The live db was 160 MB after one page: every committed version of two append-only ledgers, stored again for each launch environment. It grows ~14 MB/day toward the 512 MiB cap, in every consumer project, for 10 s off a cold page.
