@@ -50,31 +50,20 @@ fw_objectives_seed_status() {
     echo "needed"
 }
 
-# Next free task id in <project_dir>. Same rule as create-task.sh generate_id:
-# leading ^T-<n> of each filename, ascending, stop at the first gap larger than
-# FW_ID_QUARANTINE_GAP (a quarantined high band does not set the next id).
+# Next free task id in <project_dir>, allocated by lib/idalloc.sh (T-5217, closes
+# T-5213). This used to be a second "max + 1" with no lock, no worktree views and no
+# high-water mark; one allocator per repository is now the rule. <project_dir>/.tasks
+# is the local view; the counter, ledger and lock sit at the repository's main worktree.
+_FW_OBJECTIVES_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 _fw_objectives_next_id() {
-    local dir="$1" gap_threshold="${FW_ID_QUARANTINE_GAP:-1000}"
-    local f id n prev="" main_max=0 found=false
-    local -a ids=()
-    for f in "$dir"/.tasks/active/T-*.md "$dir"/.tasks/completed/T-*.md; do
-        [ -f "$f" ] || continue
-        id=$(basename "$f" | grep -oE '^T-[0-9]+' | grep -oE '[0-9]+')
-        [ -n "$id" ] && ids+=("$((10#$id))")
-    done
-    if [ "${#ids[@]}" -gt 0 ]; then
-        while IFS= read -r n; do
-            if [ "$found" = false ]; then
-                main_max=$n; found=true
-            elif [ $((n - prev)) -gt "$gap_threshold" ]; then
-                break
-            else
-                main_max=$n
-            fi
-            prev=$n
-        done < <(printf '%s\n' "${ids[@]}" | sort -n -u)
-    fi
-    printf "T-%03d" $((main_max + 1))
+    local dir="$1"
+    (
+        # shellcheck source=lib/idalloc.sh
+        source "$_FW_OBJECTIVES_LIB/idalloc.sh" || exit 1
+        TASKS_DIR="$(cd "$dir" && pwd)/.tasks"
+        mkdir -p "$TASKS_DIR"
+        fw_id_allocate 1 "objectives-seed"
+    )
 }
 
 fw_objectives_seed_task() {
@@ -86,7 +75,7 @@ fw_objectives_seed_task() {
     [ -f "$tmpl" ] || { echo "objectives seed template missing: $tmpl" >&2; return 1; }
 
     local task_id now dest
-    task_id=$(_fw_objectives_next_id "$dir")
+    task_id=$(_fw_objectives_next_id "$dir") || return 1
     now=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
     mkdir -p "$dir/.tasks/active"
     dest="$dir/.tasks/active/${task_id}-define-project-objectives.md"
@@ -97,5 +86,7 @@ fw_objectives_seed_task() {
         -e "s|__PROJECT_NAME__|$project_name|g" \
         -e "s|__DATE__|$now|g" \
         "$tmpl" > "$dest" || return 1
+    ( source "$_FW_OBJECTIVES_LIB/idalloc.sh" && TASKS_DIR="$(cd "$dir" && pwd)/.tasks" \
+        && fw_id_ledger_created "$task_id" ) || true
     echo "$dest"
 }

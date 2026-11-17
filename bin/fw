@@ -4172,6 +4172,17 @@ for e in d.get('errors',[])[:3]:
     fi
     fi  # T-2452/F6: end --quick guard for Watchtower smoke test
 
+    # Check (T-5217): one task-id allocator per repository. A second "max + 1" beside the
+    # block allocator reissues ids from an aborted reservation (1409, T-5212).
+    if [ -f "$FRAMEWORK_ROOT/lib/idalloc.sh" ]; then
+        local _idalloc_line
+        _idalloc_line=$(source "$FRAMEWORK_ROOT/lib/idalloc.sh" && fw_id_doctor_line "$FRAMEWORK_ROOT" "$PROJECT_ROOT") || _idalloc_line=""
+        case "$_idalloc_line" in
+            OK\ *)   echo -e "  ${GREEN}OK${NC}  ${_idalloc_line#OK }" ;;
+            WARN\ *) echo -e "  ${YELLOW}WARN${NC}  ${_idalloc_line#WARN }"; warnings=$((warnings + 1)) ;;
+        esac
+    fi
+
     _doctor_phase "TermLink checks"  # T-3452
     # Check (T-4781): one tmux server carrying claude-fw sessions of several projects.
     if [ -f "$FRAMEWORK_ROOT/lib/doctor-tmux.sh" ]; then
@@ -6810,6 +6821,31 @@ print(f'{BOLD}Sweep complete:{NC} {GREEN}{moved} moved{NC}, {YELLOW}{failed} ski
 if failed > 0:
     sys.exit(1)
 PYTASK_ARCHIVE
+            ;;
+        id)
+            # T-5217: task-id allocator verbs (lib/idalloc.sh). Slice 1: reconcile.
+            case "${1:-}" in
+                reconcile)
+                    shift
+                    source "$FW_LIB_DIR/idalloc.sh"
+                    TASKS_DIR="${TASKS_DIR:-$PROJECT_ROOT/.tasks}"
+                    _idr_args=(--main-view "$(fw_id_main_view)")
+                    while IFS= read -r _idr_v; do _idr_args+=(--view "$_idr_v"); done < <(_fw_idalloc_views)
+                    for _idr_a in "$@"; do
+                        case "$_idr_a" in
+                            --heal|--json) _idr_args+=("$_idr_a") ;;
+                            -h|--help) python3 "$FW_LIB_DIR/idalloc_reconcile.py" --help; exit 0 ;;
+                            *) echo -e "${RED}Unknown option: $_idr_a${NC} (usage: fw task id reconcile [--heal] [--json])" >&2; exit 2 ;;
+                        esac
+                    done
+                    exec python3 "$FW_LIB_DIR/idalloc_reconcile.py" "${_idr_args[@]}"
+                    ;;
+                *)
+                    echo "Usage: fw task id reconcile [--heal] [--json]"
+                    echo "  Compare task files, the id counter and the reservation ledger (T-5217)."
+                    [ -z "${1:-}" ] || [ "$1" = "-h" ] || [ "$1" = "--help" ] || exit 2
+                    ;;
+            esac
             ;;
         reid)
             # T-1367: Safely rename a task's ID — updates filename + frontmatter atomically.

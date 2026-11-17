@@ -263,55 +263,18 @@ fi
 # the ID allocator and the audit duplicate-ID check share ONE definition of the
 # corpus view set. Read the contract and the L-506-leg-2 rationale there.
 
+#
+# T-5217 (slice 1 of T-5212): the rules above now live in lib/idalloc.sh, the one
+# task-id allocator. fw_id_allocate keeps one authoritative counter at
+# <main worktree>/.tasks/.id-highwater (the T-4189 mark, made authoritative), an
+# append-only reservation ledger beside it, and runs the union scan described
+# above as a once-per-reservation check (FW_ID_CHECK, default on). One allocator
+# per repository is a hard rule: a second "max + 1" next to a block allocator
+# reissues ids from an aborted reservation (1409, T-5212). fw doctor warns.
+source "$FRAMEWORK_ROOT/lib/idalloc.sh"
+
 generate_id() {
-    local gap_threshold="${FW_ID_QUARANTINE_GAP:-1000}"
-    local ids=() f d
-    shopt -s nullglob
-    while IFS= read -r d; do
-        for f in "$d"/active/T-*.md "$d"/completed/T-*.md; do
-            [ -f "$f" ] || continue
-            # T-4797: parse in bash, no subprocess per file (3 forks x every file x every
-            # corpus view took minutes per create on 1409). Only a leading T-<digits> counts;
-            # 10# forces base 10 (avoids octal issues with 008, 009).
-            f="${f##*/}"
-            [[ "$f" =~ ^T-([0-9]+) ]] && ids+=("$((10#${BASH_REMATCH[1]}))")
-        done
-    done < <(fw_task_view_dirs)
-    shopt -u nullglob
-
-    # Ascending unique; walk up from the bottom and stop at the first gap larger
-    # than the threshold — everything above that cliff is a quarantined band.
-    # No task files at all leaves main_max=0 (next T-001, unless a mark says more).
-    local n prev="" main_max=0
-    [ "${#ids[@]}" -gt 0 ] && while IFS= read -r n; do
-        if [ -z "$prev" ]; then
-            main_max=$n
-        elif [ $((n - prev)) -gt "$gap_threshold" ]; then
-            break
-        else
-            main_max=$n
-        fi
-        prev=$n
-    done < <(printf '%s\n' "${ids[@]}" | sort -n -u)
-
-    # T-4189: max over the files that exist now is pulled DOWN by deletion —
-    # remove the top task file and its id is reissued (832 OBS-426; T-2966 was
-    # the same defect in the OBS allocator). Take the max with the high-water
-    # mark of every view; a mark past the quarantine cliff is ignored like the
-    # band it would point into. Persisted at generation time, inside the
-    # allocation keylock: a crash before the write skips an id, never reuses one.
-    local mark
-    while IFS= read -r d; do
-        mark=$(head -n1 "$d/.id-highwater" 2>/dev/null) || continue
-        [[ "$mark" =~ ^[0-9]+$ ]] || continue
-        mark=$((10#$mark))
-        if [ "$mark" -gt "$main_max" ] && [ $((mark - main_max)) -le "$gap_threshold" ]; then
-            main_max=$mark
-        fi
-    done < <(fw_task_view_dirs)
-    printf '%s\n' $((main_max + 1)) > "$TASKS_DIR/.id-highwater" 2>/dev/null || true
-
-    printf "T-%03d" $((main_max + 1))
+    fw_id_allocate 1 "create-task"
 }
 
 # Generate slug from name
@@ -646,6 +609,8 @@ fi
 )
 # T-4841: id persisted (.id-highwater) and the file written — release now, so
 # nothing after this point (origin, recommendation, --start focus) holds it.
+# T-5217: the ledger's created row first, still under the lock.
+[ -f "$FILEPATH" ] && fw_id_ledger_created "$TASK_ID"
 keylock_release "task-id-allocation"
 
 # Validate the created file

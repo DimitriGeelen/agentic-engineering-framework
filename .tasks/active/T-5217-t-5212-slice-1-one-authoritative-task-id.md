@@ -80,7 +80,7 @@ bvp_scores_proposed:
 
 **Problem / hypothesis:** Each id costs a full scan, and nothing can reserve a block of ids. A second allocator in lib/objectives-seed.sh (T-5213) has no lock, no views and no high-water mark. 1409 measured that mixing allocators is unsafe once aborted reservations exceed the quarantine gap.
 
-**Goal (1409's design, as recorded in the research artifact):**
+**Goal:** build 1409's design, as recorded in the research artifact:
 - **Counter:** `<main worktree>/.tasks/.id-highwater` becomes the one authoritative counter. It is read and raised only under the existing allocation lock, written tmp+rename, and only moves up.
 - **Allocation:** `fw_id_allocate N` (N at most FW_ID_BLOCK_MAX = 100) raises the counter by N; a single id is N=1.
 - **Ledger:** `.tasks/.id-ledger.jsonl` (append-only, tracked in git) records reserve (range, purpose, ts, pid, view), created and heal rows. It is written before the counter.
@@ -292,6 +292,13 @@ Verb and flag names are in English. The batch writer and `fw arc instantiate` ar
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 bats tests/unit/t5217_id_allocator.bats > /tmp/.t5217-out 2>&1 && ! grep -q "^not ok" /tmp/.t5217-out
+test "$(grep -c '# skip' /tmp/.t5217-out)" -eq 0
+timeout 900 bats tests/unit/t4189_task_id_highwater.bats tests/unit/t100202_id_quarantine.bats tests/unit/task_id_race.bats tests/unit/t3636_objectives_seed.bats tests/unit/t4841_create_lock_on_abort.bats tests/unit/t3104_task_corpus_views.bats tests/unit/create_task.bats > /tmp/.t5217-ex 2>&1 && ! grep -q "^not ok" /tmp/.t5217-ex
+bash -n lib/idalloc.sh && python3 -m py_compile lib/idalloc_reconcile.py
+out=$(bin/fw task id reconcile --json 2>&1); python3 -c 'import json,sys; d=json.loads(sys.argv[1]); assert "findings" in d' "$out"
+bash -c 'source lib/idalloc.sh && fw_id_doctor_line "$PWD" "$PWD"' > /tmp/.t5217-doc 2>&1 && grep -q "^OK one task-id allocator" /tmp/.t5217-doc
+bin/fw vendor self --check --task T-5217
 
 ## RCA
 

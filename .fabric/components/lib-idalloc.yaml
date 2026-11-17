@@ -1,0 +1,21 @@
+id: lib/idalloc.sh
+name: idalloc
+type: script
+subsystem: framework-core
+location: lib/idalloc.sh
+tags: []
+
+purpose: "lib/idalloc.sh — the one task-id allocator (T-5217, slice 1 of inception T-5212)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-17
+created_by: unknown
