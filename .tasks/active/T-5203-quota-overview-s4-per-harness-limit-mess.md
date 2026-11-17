@@ -103,10 +103,10 @@ Recognition runs at dispatch completion over the worker's stderr and result (the
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/quota_limits.py` recognises each wording in 1409's table (fixture strings), with the stated `kind` and reset handling. Claude's UTC reset is parsed to an ISO time; GLM's zone-less time gives `reset: "unknown"` plus `reset_text`; balance and rate give `reset: "unknown"`. Unrelated text gives nothing.
-- [ ] Dispatch completion appends at most one `limit` event per kind to the quota ledger when the worker output contains a recognised message, with the dispatch's subscription. A failure never changes the dispatch outcome. Tested end to end with a stub worker.
-- [ ] No output text other than the matched reset literal is stored (test).
-- [ ] Existing dispatch/run.sh/quota-ledger tests pass (the pre-existing t4730 #4 failure is T-5207), invariants pass, and `bin/fw vendor self --check --task T-5203` is clean.
+- [x] `lib/quota_limits.py` recognises each wording in 1409's table (fixture strings), with the stated `kind` and reset handling. Claude's UTC reset is parsed to an ISO time; GLM's zone-less time gives `reset: "unknown"` plus `reset_text`; balance and rate give `reset: "unknown"`. Unrelated text gives nothing.
+- [x] Dispatch completion appends at most one `limit` event per kind to the quota ledger when the worker output contains a recognised message, with the dispatch's subscription. A failure never changes the dispatch outcome. Tested end to end with a stub worker.
+- [x] No output text other than the matched reset literal is stored (test).
+- [x] Existing dispatch/run.sh/quota-ledger tests pass (the pre-existing t4730 #4 failure is T-5207), invariants pass, and `bin/fw vendor self --check --task T-5203` is clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -292,6 +292,8 @@ Recognition runs at dispatch completion over the worker's stderr and result (the
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5203_quota_limits.py tests/unit/test_t5202_quota_ledger.py tests/unit/test_t5201_subscription_tokens.py -q > /tmp/.t5203 2>&1 && grep -q passed /tmp/.t5203
+bin/fw vendor self --check --task T-5203
 
 ## RCA
 
