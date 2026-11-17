@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5066: Using more than one machine for agent work: pattern from 1409's node1 write-up (remote nodes via TermLink pool topics)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-17T23:17:50Z
+# ============================================================================
+
+task_id: T-5066
+task_name: "Using more than one machine for agent work: pattern from 1409's node1 write-up (remote nodes via TermLink pool topics)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-08T19:47:48Z
+completed: 2026-11-17T23:17:14Z
+duration_days: 9
+updates_count: 3
+first_commit: 2026-11-08T20:49:03+01:00
+last_commit: 2026-11-18T00:17:18+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — remote-nodes write-up from 1409 (parts 1-2 of 3, addresses masked), inception filed, IW-1. write-up complete (3 parts + addendum, addresses masked); assessment and GO (narrow scope) recommendation. IW-1 disposed (answered). mask the jump host account name too (1409 msg a178024b). inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/reviews/human-ac-ticks.jsonl'
+  - '.tasks/active/T-5066-using-more-than-one-machine-for-agent-wo.md'
+  - '.tasks/completed/T-5066-using-more-than-one-machine-for-agent-wo.md'
+  - 'docs/reports/T-5066-remote-nodes-writeup.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-08T20:49:03'
+    action: 'T-5066: capture — remote-nodes write-up from 1409 (parts 1-2 of 3, addresses masked), inception filed, IW-1'
+  - time: '2026-11-08T20:52:09'
+    action: 'T-5066: write-up complete (3 parts + addendum, addresses masked); assessment and GO (narrow scope) recommendation'
+  - time: '2026-11-08T20:55:13'
+    action: 'T-5066: IW-1 disposed (answered)'
+  - time: '2026-11-08T20:58:09'
+    action: 'T-5066: mask the jump host account name too (1409 msg a178024b)'
+  - time: '2026-11-18T00:17:18'
+    action: 'T-5066: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 13169 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 13169
+  commits: 6
+  files_changed: 5
+  lines_added: 630
+  lines_removed: 20
+  footprint_refreshed_at: '2026-11-17T23:18:20Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5066-using-more-than-one-machine-for-agent-wo.md
+generated_by: context-agent-hybrid
