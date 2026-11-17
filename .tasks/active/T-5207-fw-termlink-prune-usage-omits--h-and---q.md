@@ -305,6 +305,13 @@ bin/fw vendor self --check --task T-5207
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** t4730 #4 reported prune's -h/--help and -q/--quiet as options without a usage line.
+
+**Root cause:** T-5120 added `-q|--quiet` (for the background prune from dispatch) and a help branch to `cmd_prune`, but the usage heredoc listed only the user-facing options.
+
+**Why structurally allowed:** t4730 caught it, but the red was read as "pre-existing" during several unrelated closes, so it was carried rather than fixed.
+
+**Prevention:** t4730 #4 already pins parser-to-usage parity for every subcommand; it is green again, so the next drift shows as a fresh red, not a known one.
 
 ## Evolution
 
