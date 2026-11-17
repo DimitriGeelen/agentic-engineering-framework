@@ -245,6 +245,7 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | T-5126/T-5128/T-5129/T-5130/T-5136 Watchtower speed (be.50/be.51) | pending; 1409 upgrades after their release candidate, will report cold/warm times against 365 s / 19.5 s / 158 s | 1409 f11dadb0, 5e833071 |
 | T-5170 closest-peer hint on refused sends (be.54) | **WORKS** (`--to termlnk` → rc 2, "REFUSED, nothing posted … Closest peers: 010-termlink") | 010-termlink bb92576a (2026-11-17) |
 | T-5180 operator widening, recording leg (be.54) | **WORKS** (SD-ab145e8e recorded from the operator terminal; `delegation list` shows it active; CLAUDECODE=1 and AI_AGENT both refused). The reviewer-green close is not yet tested; verdict follows the first widened close. Two gaps filed: T-5205 (`--help` refused by the text gate), T-5206 (`fw task delegate --dry-run` ignores widenings) | 010-termlink bb92576a (2026-11-17) |
+| T-5209 image-evidence panels seat only vision kinds (be.57) | **WORKS** (T-893 AC1 re-judged at rung 5: claude-code, codex and antigravity seated, all green, each naming the nine PNGs and their content; opencode not seated). be.57 upgrade clean (their T-1433, job 156, 11/11; local fixes 37/37) | 832-Workflow-designer 995abad2 (2026-11-17) |
 
 ## Clean full upgrades (rule b)
 
