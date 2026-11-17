@@ -146,17 +146,25 @@ The operator, 2026-11-17: when an inception gets a GO, the agent should get a tr
 
 ## Recommendation
 
-**Recommendation:** GO
+**Recommendation:** GO, wide scope: every Watchtower action that hands the next step to the agent
 
 **Rationale:**
 
-The idle-aware delivery already exists (lib/sidecar/inject.py: non-urgent mail goes only to a session whose record says ready; R5 urgent is the only bypass). What is missing is the trigger: web/decide_runner.py commits the decision and tells nobody. Posting one non-urgent notice to the project's own inbox at the end of the decide chain closes the gap with no new delivery machinery; no session running means it waits for the next session's alerts.
+The idle-aware delivery already exists (lib/sidecar/inject.py: non-urgent mail goes only to a session whose record says ready; R5 urgent is the only bypass). What is missing is the trigger. web/decide_runner.py commits the decision and tells nobody, and the review, restatement and paid-proposal actions in Watchtower do the same. The proposal is one non-urgent notice to the project's own inbox per action, sent after the action's commit lands. It needs no new delivery machinery. If no session is running, the notice waits for the next session's alerts. If posting fails, the action still goes through and the failure is logged. The notice is only a trigger: the agent reads the decision from the task file before acting.
+
+Build slices if GO:
+1. Inception decisions (GO / NO-GO / DEFER) from the decide chain.
+2. Human criteria ticked on /review, restatement accept/reject, and paid-proposal approval.
+
+Tier 0 approvals are excluded: the agent is normally waiting on them in the same turn.
 
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- This session learned of T-5199's GO (83676d1ac, 84b9e1cb5) only because a later commit was refused.
+- web/decide_runner.py has no notify step. The decide chain ends at its follow-up commit.
+- lib/sidecar/inject.py: non-urgent mail is injected only into a session whose own record says ready.
+- Open for the build (IW-2): whether a send to the project's own address is delivered to its own session. lib/sidecar/addressing.py treats the own inbox specially (lines 604, 689). This is checked with a real test post in slice 1.
+- Research: docs/reports/T-5211-decision-notice-to-agent.md
 
 ## Decisions
 
