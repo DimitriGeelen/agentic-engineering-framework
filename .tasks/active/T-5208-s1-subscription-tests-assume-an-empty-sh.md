@@ -1,8 +1,10 @@
 ---
 id: T-5208
-name: "S1 subscription tests assume an empty shipped registry; fail since the operator filled it"
+name: "S1 subscription tests assume an empty shipped registry; fail since the operator
+  filled it"
 description: >
-  S1 subscription tests assume an empty shipped registry; fail since the operator filled it
+  S1 subscription tests assume an empty shipped registry; fail since the operator
+  filled it
 
 status: started-work
 workflow_type: build
@@ -38,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-17T12:26:36Z
-last_update: 2026-11-17T12:26:36Z
-date_finished: null
+last_update: '2026-11-17T12:30:34Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +52,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-17T12:30:34Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=310,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5208: S1 subscription tests assume an empty shipped registry; fail since the operator filled it
@@ -273,6 +285,13 @@ python3 -m pytest -q tests/unit/test_t5200_subscriptions.py tests/unit/test_t520
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** Two S1 tests failed after the operator filled policy/subscriptions.yaml.
+
+**Root cause:** The tests asserted the contents of an operator-owned data file (empty lists), and the absent-file test left the framework fallback pointing at the real repo, so it read that data.
+
+**Why structurally allowed:** The file shipped empty when S1 was built, so a content assertion and a shape assertion passed alike; nothing ran the suite after the operator's fill until the S4 close reran it.
+
+**Prevention:** The tests now check shape and validity only, and the absent-file test isolates both registry locations. Same class as T-3326's rule against anchoring tests to mutable corpus state.
 
 ## Evolution
 
