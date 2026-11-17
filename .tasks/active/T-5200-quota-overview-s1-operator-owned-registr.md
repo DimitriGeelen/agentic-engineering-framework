@@ -97,10 +97,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] policy/subscriptions.yaml exists with a documented schema and no entries. lib/subscriptions.py loads and validates it, and `resolve()` returns the assigned id or "unassigned" (host-specific assignment wins over kind-only).
-- [ ] `fw quota subscription add|assign|remove` are refused under CLAUDECODE/AI_AGENT, `--i-am-human` included, and `list|show` work for anyone. Tests cover both.
-- [ ] Validation refuses account-looking values (e-mail, long hex/base64, known token prefixes), duplicate ids, unknown harnesses, and assignments to undefined ids. `fw audit` and `fw doctor` report an invalid registry. Tests cover each.
-- [ ] Tests in tests/unit/test_t5200_*.py; invariants pass; `bin/fw vendor self --check --task T-5200` is clean.
+- [x] policy/subscriptions.yaml exists with a documented schema and no entries. lib/subscriptions.py loads and validates it, and `resolve()` returns the assigned id or "unassigned" (host-specific assignment wins over kind-only).
+- [x] `fw quota subscription add|assign|remove` are refused under CLAUDECODE/AI_AGENT, `--i-am-human` included, and `list|show` work for anyone. Tests cover both.
+- [x] Validation refuses account-looking values (e-mail, long hex/base64, known token prefixes), duplicate ids, unknown harnesses, and assignments to undefined ids. `fw audit` and `fw doctor` report an invalid registry. Tests cover each.
+- [x] Tests in tests/unit/test_t5200_*.py; invariants pass; `bin/fw vendor self --check --task T-5200` is clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
