@@ -280,7 +280,9 @@ def api_overlay():
         return Response('{"error":"not found","ok":false}', status=404,
                         mimetype="application/json")
     import json as _json
-    return Response(_json.dumps(_overlay_module().build_payload(PROJECT_ROOT, map_id)),
+    payload = _overlay_module().build_payload(PROJECT_ROOT, map_id)
+    payload["runtime_projection_version"] = 2  # T-5193: runtime projection v2
+    return Response(_json.dumps(payload),
                     status=200, mimetype="application/json")
 
 
