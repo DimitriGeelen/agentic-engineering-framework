@@ -105,10 +105,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `lib/quota_status.py` computes the state per subscription from `quota_ledger.rows()` and the registry, as a pure function of (rows, registry, now, need) with no I/O in the core
-- [ ] The rules in the Goal are each covered by a test: future reset, unknown reset cleared by a later dispatch, unknown reset expiring after its window, tight after a reset inside the window, tight by `--need` against the estimate, free with "capacity unknown", and unassigned or unknown subscriptions
-- [ ] `bin/fw quota status` prints one line per subscription, `--json` emits the same fields, and the exit codes are 0/1/2 as in the Goal; it writes nothing (test: ledger bytes unchanged)
-- [ ] The output never contains anything except ids, states, times and counts (the S1 account-value check is run over the output in a test)
+- [x] `lib/quota_status.py` computes the state per subscription from `quota_ledger.rows()` and the registry, as a pure function of (rows, registry, now, need) with no I/O in the core
+- [x] The rules in the Goal are each covered by a test: future reset, unknown reset cleared by a later dispatch, unknown reset expiring after its window, tight after a reset inside the window, tight by `--need` against the estimate, free with "capacity unknown", and unassigned or unknown subscriptions
+- [x] `bin/fw quota status` prints one line per subscription, `--json` emits the same fields, and the exit codes are 0/1/2 as in the Goal; it writes nothing (test: ledger bytes unchanged)
+- [x] The output never contains anything except ids, states, times and counts (the S1 account-value check is run over the output in a test)
 - [ ] Existing quota suites (t5200–t5203) pass, plus `bin/fw test invariants` and `bin/fw vendor self --check`
 
 ### Human
@@ -295,6 +295,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5200_subscriptions.py tests/unit/test_t5201_subscription_tokens.py tests/unit/test_t5202_quota_ledger.py tests/unit/test_t5203_quota_limits.py tests/unit/test_t5204_quota_status.py -q > /tmp/.t5204.out 2>&1 && grep -q passed /tmp/.t5204.out
+bin/fw test invariants > /tmp/.t5204inv.out 2>&1 && ! grep -q "^not ok" /tmp/.t5204inv.out
+bin/fw vendor self --check --task T-5204
 
 ## RCA
 
@@ -366,6 +369,11 @@ bvp_scores_proposed:
 -->
 
 ## Decisions
+
+### 2026-11-17 — points the Goal left open
+- **Chose:** (a) the dispatch that raised an unknown-reset limit does not clear it (same dispatch_id; run.sh writes its dispatch row just after the limit row's ts); (b) an unknown reset cleared by a later dispatch inside its window reads **tight** (it is "a limit inside the current window that has reset"); (c) zero counted tokens before the 5h limit = no estimate (unknown is not zero); (d) besides registry ids, any other id with a ledger row in the last 7 days is listed (`registered: false`), which is how unassigned/unknown show; (e) exit 3 for a usage error (unknown `--subscription`, negative `--need`), since 2 means "at limit"; (f) `--now ISO` for replay and tests.
+- **Why:** each keeps a state from reading better than the evidence; (e) keeps 0/1/2 meaning only what the Goal says.
+- **Rejected:** listing registry ids only (unassigned use would be invisible); exit 2 for usage errors (collides with "at limit").
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

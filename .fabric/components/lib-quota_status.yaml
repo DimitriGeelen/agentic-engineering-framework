@@ -1,0 +1,21 @@
+id: lib/quota_status.py
+name: quota_status
+type: script
+subsystem: framework-core
+location: lib/quota_status.py
+tags: []
+
+purpose: "`fw quota status`: free / tight / at limit until, per subscription. Read-only (T-5204, T-5190 S5)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-17
+created_by: unknown
