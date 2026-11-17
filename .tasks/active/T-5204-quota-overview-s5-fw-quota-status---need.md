@@ -5,10 +5,10 @@ name: "Quota overview S5: fw quota status [--need N] — free / tight / at limit
 description: >
   Build slice of inception T-5190 (GO 2026-11-17). Design: docs/reports/T-5190-subscription-quota-overview.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -39,7 +39,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-17T09:08:44Z
-last_update: '2026-11-17T09:16:05Z'
+last_update: 2026-11-17T12:44:08Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,20 +85,31 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Slice S5 of inception T-5190 (GO 2026-11-17), answering 1409's point 3.3.2: one shared signal any project can ask before a large round, in the same words: "free / tight / at limit until". S1–S4 are built: the registry (T-5200), subscription and tokens on dispatches and review cost rows (T-5201), the machine-wide ledger lib/quota_ledger.py (T-5202), and limit events from lib/quota_limits.py (T-5203).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The ledger holds the data, but nothing reads it back as an answer. No provider publishes its quota numbers, so "tight" cannot be a percentage of a known limit. It has to come from what the ledger shows: limit events and the tokens that went before them.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** `fw quota status [--need N] [--subscription ID] [--json]`, read-only, giving one state per subscription in the registry.
+- **at limit until <time>:** the latest limit event has a reset in the future.
+- **at limit (reset unknown):** the latest limit event has no reset, and no dispatch on that subscription has completed since it. This holds at most one window: 5 h for 5-hour, rate and 429 kinds, 7 days for weekly, 24 h for balance and anything else.
+- **tight:** one of two cases.
+  - A limit event inside the current window has already reset.
+  - With `--need N`: the tokens used in the current 5-hour window plus N exceed 80% of the estimated capacity. The estimate is the tokens used in the 5 h before the most recent 5-hour limit event for that subscription.
+- **free:** otherwise. When there is no capacity estimate, it says "capacity unknown".
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:**
+- An agent or the operator runs `bin/fw quota status --need 2000000` before a large round and gets one line per subscription, with the evidence behind each state (last limit event, tokens in the window, the estimate).
+- Exit code 0 means all requested subscriptions are free, 1 means at least one is tight, 2 means at least one is at limit.
+- `--json` gives 055's cockpit the same data.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `lib/quota_status.py` computes the state per subscription from `quota_ledger.rows()` and the registry, as a pure function of (rows, registry, now, need) with no I/O in the core
+- [ ] The rules in the Goal are each covered by a test: future reset, unknown reset cleared by a later dispatch, unknown reset expiring after its window, tight after a reset inside the window, tight by `--need` against the estimate, free with "capacity unknown", and unassigned or unknown subscriptions
+- [ ] `bin/fw quota status` prints one line per subscription, `--json` emits the same fields, and the exit codes are 0/1/2 as in the Goal; it writes nothing (test: ledger bytes unchanged)
+- [ ] The output never contains anything except ids, states, times and counts (the S1 account-value check is run over the output in a test)
+- [ ] Existing quota suites (t5200–t5203) pass, plus `bin/fw test invariants` and `bin/fw vendor self --check`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -381,3 +392,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5204-quota-overview-s5-fw-quota-status---need.md
 - **Context:** Initial task creation
+
+### 2026-11-17T12:44:08Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
