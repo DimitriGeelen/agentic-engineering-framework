@@ -101,6 +101,7 @@ cost_estimate_proposed:
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [ ] `delegation widen|grant|revoke --help`, `accept --help`/`fw task accept-miss --help` and `fw quota subscription add --help` pass the text gate. The same verbs with any real argument besides the help flag are still refused (test).
+- [ ] (Added 2026-11-17, found while closing T-5200.) The Write/Edit guard in agents/context/check-human-ac-tick.py also refuses agent writes to `accepted-misses.jsonl` (T-5181, previously guarded only against Bash) and to `policy/subscriptions.yaml` plus its change log `subscription-changes.jsonl` (T-5200). The Bash scanner treats those two as guarded paths too. Test for each.
 - [ ] Existing shell_write_scan tests pass; invariants pass; `bin/fw vendor self --check --task T-5205` is clean.
 
 ### Human

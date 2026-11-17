@@ -70,12 +70,24 @@ from typing import Callable, Optional
 LEDGER_NAME = "human-ac-ticks.jsonl"
 # T-4165: the operator's standing-delegation grants are guarded the same way
 # T-5181 review 3 #3: the operator's accepted misses too
-LEDGER_NAMES = (LEDGER_NAME, "standing-delegations.jsonl", "accepted-misses.jsonl")
+LEDGER_NAMES = (LEDGER_NAME, "standing-delegations.jsonl", "accepted-misses.jsonl",
+                # T-5205: the operator's subscription registry change log (T-5200)
+                "subscription-changes.jsonl")
+# T-5205: the subscription registry itself (T-5200) is matched by path, since its basename
+# `subscriptions.yaml` is too generic to guard everywhere.
+OPERATOR_POLICY_SUFFIXES = ("policy/subscriptions.yaml",)
+
+
+def _is_operator_policy(path: str) -> bool:
+    p = path.replace("\\", "/")
+    return any(p == s or p.endswith("/" + s) for s in OPERATOR_POLICY_SUFFIXES)
+
 
 # A mention of a guarded path anywhere in the command (quotes/backslashes removed).
 MENTION_RE = re.compile(
     r"\.tasks\b|tasks/(?:active|completed|templates)\b|/(?:active|completed)/T-\d"
-    r"|human-ac-ticks\.jsonl|standing-delegations\.jsonl|accepted-misses\.jsonl|toggle-ac",
+    r"|human-ac-ticks\.jsonl|standing-delegations\.jsonl|accepted-misses\.jsonl"
+    r"|subscription-changes\.jsonl|policy/subscriptions\.yaml|toggle-ac",
     re.I,
 )
 # T-4159: a task-file NAME (`T-NNNN[-slug].md`) with the path word in front of it. It is
@@ -985,7 +997,7 @@ def _segments(tokens: list[str]) -> list[list[str]]:
 
 def is_guarded_path(path: str) -> bool:
     parts = path.replace("\\", "/").split("/")
-    return ".tasks" in parts or os.path.basename(path) in LEDGER_NAMES
+    return ".tasks" in parts or os.path.basename(path) in LEDGER_NAMES or _is_operator_policy(path)
 
 
 def _provably_outside(path: str, root: str) -> bool:
@@ -1003,7 +1015,7 @@ def _guarded_within(root: str) -> Callable[[str], bool]:
     not provably outside the project. The ledger name stays guarded everywhere, as the
     Write/Edit leg already does, so the Bash leg is never more permissive than that one."""
     def guarded(path: str) -> bool:
-        if os.path.basename(path) in LEDGER_NAMES:
+        if os.path.basename(path) in LEDGER_NAMES or _is_operator_policy(path):
             return True
         parts = path.replace("\\", "/").split("/")
         return ".tasks" in parts and not _provably_outside(path, root)
@@ -1222,28 +1234,33 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
         ctx.hits.append(Hit("calls the Watchtower toggle-ac endpoint (that IS a tick)"))
         return
     ops = [a for a in args if not a.startswith("-")]
-    if not ctx.boundary and \
+    # T-5205: a help request on an operator verb only prints usage (argparse exits on -h before
+    # acting), so it passes, but only when the help flag is the only option given. Any other
+    # option keeps the refusal below.
+    _flags = [a for a in args if a.startswith("-")]
+    help_only = bool(_flags) and all(a in ("--help", "-h") for a in _flags)
+    if not ctx.boundary and not help_only and \
             any(os.path.basename(a) in ("human_ac_ticks.py", "human_ac_ticks") for a in ops[:2]) and ("ack" in ops or ("delegation" in ops and
                                                    ("grant" in ops or "revoke" in ops or "widen" in ops))):
         # T-5181 review 2 #3: `widen` (T-5180) is the operator's ruling too
         ctx.hits.append(Hit("records a Human-tick provenance row (the operator's act)"))
         return
-    if not ctx.boundary and "accept" in ops and \
+    if not ctx.boundary and not help_only and "accept" in ops and \
             any(os.path.basename(a) in ("accepted_miss.py", "accepted_miss") for a in ops[:2]):
         # T-5181 review 2 #3: the module refuses under CLAUDECODE/AI_AGENT, but `env -u` strips
         # those; the text gate refuses the verb itself (same boundary as `delegation grant`).
         ctx.hits.append(Hit("records an accepted miss (the operator's act)"))
         return
-    if not ctx.boundary and verb == "fw" and ops[:2] == ["task", "accept-miss"]:
+    if not ctx.boundary and not help_only and verb == "fw" and ops[:2] == ["task", "accept-miss"]:
         ctx.hits.append(Hit("records an accepted miss (the operator's act)"))
         return
     # T-5200: the subscription registry is the operator's. The module refuses under
     # CLAUDECODE/AI_AGENT, but `env -u` strips those; the text gate refuses the verbs too.
-    if not ctx.boundary and verb == "fw" and ops[:2] == ["quota", "subscription"] and \
+    if not ctx.boundary and not help_only and verb == "fw" and ops[:2] == ["quota", "subscription"] and \
             len(ops) > 2 and ops[2] in ("add", "assign", "remove"):
         ctx.hits.append(Hit("changes the subscription registry (the operator's act)"))
         return
-    if not ctx.boundary and any(os.path.basename(a) in ("subscriptions.py", "subscriptions") for a in ops[:2]) \
+    if not ctx.boundary and not help_only and any(os.path.basename(a) in ("subscriptions.py", "subscriptions") for a in ops[:2]) \
             and any(o in ("add", "assign", "remove") for o in ops[1:4]):
         ctx.hits.append(Hit("changes the subscription registry (the operator's act)"))
         return
