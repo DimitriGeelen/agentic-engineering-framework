@@ -32,5 +32,34 @@
 # "unassigned" (lib/subscriptions.py resolve()).
 #
 # Ships with no entries: the operator fills it.
-subscriptions: []
-assignments: []
+subscriptions:
+- id: claude-a
+  harness: claude
+  description: Claude subscription A
+- id: claude-b
+  harness: claude
+  description: Claude subscription B
+- id: claude-c
+  harness: claude
+  description: Claude subscription C
+- id: codex
+  harness: codex
+  description: Codex via ChatGPT login
+- id: glm
+  harness: glm
+  description: Z.ai coding plan (opencode)
+- id: antigravity
+  harness: antigravity
+  description: Antigravity (Google account)
+- id: openrouter
+  harness: openrouter
+  description: OpenRouter pay-per-use (approval per request)
+assignments:
+- kind: claude
+  subscription: claude-a
+- kind: codex
+  subscription: codex
+- kind: opencode
+  subscription: glm
+- kind: antigravity
+  subscription: antigravity

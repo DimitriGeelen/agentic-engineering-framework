@@ -1,0 +1,11 @@
+{"action": "add", "by": "human", "harness": "claude", "id": "claude-a", "ts": "2026-11-17T10:57:24Z"}
+{"action": "add", "by": "human", "harness": "claude", "id": "claude-b", "ts": "2026-11-17T10:57:25Z"}
+{"action": "add", "by": "human", "harness": "claude", "id": "claude-c", "ts": "2026-11-17T10:57:25Z"}
+{"action": "add", "by": "human", "harness": "codex", "id": "codex", "ts": "2026-11-17T10:57:25Z"}
+{"action": "add", "by": "human", "harness": "glm", "id": "glm", "ts": "2026-11-17T10:57:25Z"}
+{"action": "add", "by": "human", "harness": "antigravity", "id": "antigravity", "ts": "2026-11-17T10:57:25Z"}
+{"action": "add", "by": "human", "harness": "openrouter", "id": "openrouter", "ts": "2026-11-17T10:57:25Z"}
+{"action": "assign", "before": null, "by": "human", "host": null, "id": "claude-a", "kind": "claude", "ts": "2026-11-17T10:57:25Z"}
+{"action": "assign", "before": null, "by": "human", "host": null, "id": "codex", "kind": "codex", "ts": "2026-11-17T10:57:26Z"}
+{"action": "assign", "before": null, "by": "human", "host": null, "id": "glm", "kind": "opencode", "ts": "2026-11-17T10:57:26Z"}
+{"action": "assign", "before": null, "by": "human", "host": null, "id": "antigravity", "kind": "antigravity", "ts": "2026-11-17T10:57:26Z"}
