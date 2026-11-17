@@ -56435,3 +56435,159 @@ scan_id: R-60ca1ce0
 task_id: T-5215
 payload:
   task_file: .tasks/active/T-5215-rca-unready-inceptions-handed-to-the-ope.md
+---
+kind: scan_emitted
+timestamp: '2026-11-17T23:16:47Z'
+scan_id: R-616999d0
+task_id: T-4559
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-17T23:16:47Z'
+scan_id: R-616999d0
+task_id: T-4559
+payload:
+  task_file: .tasks/active/T-4559-worker-lifecycle-periodic-own-project-sw.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-11-17T23:16:47Z'
+scan_id: RC-7de43c9a
+task_id: T-4559
+payload:
+  overall: CONFIRMED
+  claim_count: 1
+---
+kind: scan_emitted
+timestamp: '2026-11-17T23:17:10Z'
+scan_id: R-fb89bf42
+task_id: T-5041
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-17T23:17:10Z'
+scan_id: R-fb89bf42
+task_id: T-5041
+payload:
+  task_file: .tasks/active/T-5041-release-channels-bleeding-edge-daily-pre.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-11-17T23:17:10Z'
+scan_id: RC-c6e385d6
+task_id: T-5041
+payload:
+  overall: CONFIRMED
+  claim_count: 1
+---
+kind: scan_emitted
+timestamp: '2026-11-17T23:17:16Z'
+scan_id: R-8a5acba0
+task_id: T-5066
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-17T23:17:16Z'
+scan_id: R-8a5acba0
+task_id: T-5066
+payload:
+  task_file: .tasks/active/T-5066-using-more-than-one-machine-for-agent-wo.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-11-17T23:17:16Z'
+scan_id: RC-8d13c1b8
+task_id: T-5066
+payload:
+  overall: UNVERIFIED
+  claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-11-17T23:17:23Z'
+scan_id: R-362fc4d6
+task_id: T-5211
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-17T23:17:23Z'
+scan_id: R-362fc4d6
+task_id: T-5211
+payload:
+  task_file: .tasks/active/T-5211-operator-decisions-in-watchtower-incepti.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-11-17T23:17:23Z'
+scan_id: RC-9cbf4465
+task_id: T-5211
+payload:
+  overall: CONFIRMED
+  claim_count: 1
+---
+kind: scan_emitted
+timestamp: '2026-11-17T23:17:27Z'
+scan_id: R-3b692be4
+task_id: T-5212
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-17T23:17:27Z'
+scan_id: R-3b692be4
+task_id: T-5212
+payload:
+  task_file: .tasks/active/T-5212-batch-task-creation-reserve-a-block-of-t.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-11-17T23:17:27Z'
+scan_id: RC-1e2063f0
+task_id: T-5212
+payload:
+  overall: CONFIRMED
+  claim_count: 1
+---
+kind: scan_emitted
+timestamp: '2026-11-17T23:17:46Z'
+scan_id: R-176ceeb2
+task_id: T-5016
+payload:
+  overall: CONCERN
+  finding_count: 4
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-17T23:17:46Z'
+scan_id: R-176ceeb2
+task_id: T-5016
+payload:
+  task_file: .tasks/active/T-5016-focus-protocol-every-project-keeps-one-a.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-11-17T23:17:46Z'
+scan_id: RC-114039bc
+task_id: T-5016
+payload:
+  overall: CONFIRMED
+  claim_count: 4
