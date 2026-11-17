@@ -17,6 +17,7 @@ CLI:
   subscriptions.py subscription list | show <id> | add <id> --harness H --description D
                    | assign <id> --kind K [--host H] | remove <id>
   subscriptions.py resolve <kind> [--host H]
+  subscriptions.py record-id <kind> [--host H]   id | unassigned | unknown (+1 stderr warning); exit 0
   subscriptions.py audit          TSV `LEVEL<TAB>message` for fw audit / fw doctor;
                                   nothing when the file is absent
 """
@@ -34,6 +35,7 @@ import yaml
 
 HARNESSES = ("claude", "glm", "codex", "antigravity", "openrouter", "other")
 UNASSIGNED = "unassigned"
+UNKNOWN = "unknown"   # T-5201: the registry could not be read — recorded, never blocking
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{0,47}$")
 HOST_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9.-]{0,252}$")
 CHANGE_LOG = "subscription-changes.jsonl"
@@ -196,6 +198,27 @@ def resolve(worker_kind: str, host: str | None = None, path: Path | None = None)
     return kind_only or UNASSIGNED
 
 
+def record_id(worker_kind: str | None, host: str | None = None,
+              path: Path | None = None) -> tuple[str, str]:
+    """(id, warning) for a record a dispatch or a cost row writes (T-5201, T-5190 S2).
+
+    Never raises: an unreadable or invalid registry gives ("unknown", one-line warning) so
+    the caller records that and carries on. `host` defaults to this machine. The id is a
+    registry id (S1 validates it against ID_RE), "unassigned" or "unknown" — nothing else
+    can come back, so no account-like or host value reaches the record."""
+    if host is None:
+        import socket
+        host = socket.gethostname()
+    try:
+        sid = resolve(worker_kind or "claude", host, path)
+    except Exception as e:  # noqa: BLE001 - any failure to read the registry is "unknown"
+        first = str(e).splitlines()[0] if str(e) else type(e).__name__
+        return UNKNOWN, f"WARNING: subscription registry unreadable — recorded as \"unknown\" ({first})"
+    if sid != UNASSIGNED and not ID_RE.match(str(sid)):
+        return UNKNOWN, "WARNING: subscription registry returned a malformed id — recorded as \"unknown\""
+    return sid, ""
+
+
 # ── mutation (operator only) ─────────────────────────────────────────────────
 
 def _refuse_agent(verb: str) -> None:
@@ -329,7 +352,15 @@ def main(argv: list[str] | None = None) -> int:
     rs = sub.add_parser("resolve", help="subscription id for a worker kind")
     rs.add_argument("kind"); rs.add_argument("--host")
     sub.add_parser("audit", help="TSV LEVEL<TAB>message for fw audit / fw doctor")
+    ri = sub.add_parser("record-id", help="id to record for a dispatch/cost row; never fails (T-5201)")
+    ri.add_argument("kind"); ri.add_argument("--host")
     args = ap.parse_args(argv)
+    if args.cmd == "record-id":
+        sid, warn = record_id(args.kind, args.host)
+        if warn:
+            print(warn, file=sys.stderr)
+        print(sid)
+        return 0
     try:
         if args.cmd == "audit":
             for lvl, msg in audit_lines():

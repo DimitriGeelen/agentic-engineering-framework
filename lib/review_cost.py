@@ -485,9 +485,32 @@ def _log_cost_locked(b: dict, *, task: str, backend: str, purpose: str, tokens: 
     rec = {"ts": _now(), "task": task, "backend": backend, "class": b["cost_class"],
            "purpose": purpose, "tokens": tokens, "cost_amount": cost,
            "metering": "metered" if metered else (UNMETERED_SUB if b["harness_class"] == "subscription" else "unmetered"),
-           "proposal_id": proposal_id, "evidence": evidence}
+           "proposal_id": proposal_id, "evidence": evidence,
+           "subscription": _subscription_for(b)}
     _append(ledger("reviews.jsonl"), rec)
     return rec
+
+
+def _subscription_for(b: dict) -> str:
+    """T-5201 (T-5190 S2): the subscription a review row's load ran on — resolved from the
+    backend's worker kind on this host, as `fw termlink dispatch` resolves a dispatch's. A
+    backend with no worker kind is "unassigned"; an unreadable registry is "unknown" with one
+    stderr warning and never blocks the row. Rows written before T-5201 carry no field."""
+    kind = b.get("worker_kind")
+    if not kind:
+        return "unassigned"
+    try:
+        here = str(Path(__file__).resolve().parent)
+        if here not in sys.path:
+            sys.path.insert(0, here)
+        import subscriptions  # noqa: E402  (sibling module)
+    except Exception:  # noqa: BLE001 - e.g. the module is absent in an old vendored copy
+        print('WARNING: subscription registry unreadable — recorded as "unknown"', file=sys.stderr)
+        return "unknown"
+    sid, warn = subscriptions.record_id(kind)
+    if warn:
+        print(warn, file=sys.stderr)
+    return sid
 
 
 def _week(ts: str) -> str:

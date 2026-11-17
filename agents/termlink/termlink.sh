@@ -1698,6 +1698,23 @@ $prompt"
         allowed_tools_json="\"${allowed_tools//\"/\\\"}\""
     fi
 
+    # T-5201 (T-5190 S2): the subscription this dispatch runs on, from the operator's registry
+    # (policy/subscriptions.yaml) for this worker kind on this host. A registry id, "unassigned"
+    # or "unknown" — never anything else, and never a reason to refuse the dispatch.
+    local subscription="" _sub_err=""
+    if [ -f "$FRAMEWORK_ROOT/lib/subscriptions.py" ]; then
+        subscription=$(PROJECT_ROOT="$project_dir" python3 "$FRAMEWORK_ROOT/lib/subscriptions.py" \
+            record-id "${worker_kind:-claude}" 2>"$wdir/subscription.err") || subscription=""
+        _sub_err=$(head -1 "$wdir/subscription.err" 2>/dev/null)
+        rm -f "$wdir/subscription.err"
+    fi
+    if [ "$subscription" != "unassigned" ] && ! [[ "$subscription" =~ ^[a-z0-9][a-z0-9-]{0,47}$ ]]; then
+        subscription="unknown"
+    fi
+    if [ "$subscription" = "unknown" ]; then
+        echo "${_sub_err:-WARNING: subscription registry unreadable — recorded as \"unknown\"}" >&2
+    fi
+
     # T-1643/W4 + T-1664: meta.json includes task_type, model_used, fallback_used.
     # T-1700: env_keys lists the env var names injected (values not stored — possible secrets).
     # model_used / fallback_used now populated at dispatch time when resolution succeeds;
@@ -1719,6 +1736,7 @@ $prompt"
   "mcp_config": $mcp_config_json,
   "strict_mcp": $strict_mcp_json,
   "allowed_tools": $allowed_tools_json,
+  "subscription": "$subscription",
   "started": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "status": "running"
 }
@@ -2312,6 +2330,17 @@ if command -v jq >/dev/null 2>&1 && [ -f "$WDIR/meta.json" ]; then
        "$WDIR/meta.json" > "$WDIR/meta.json.tmp" 2>/dev/null \
         && mv "$WDIR/meta.json.tmp" "$WDIR/meta.json" \
         || rm -f "$WDIR/meta.json.tmp"
+fi
+# T-5201 (T-5190 S2): the token counts the result reports (modelUsage, or the flat totals an
+# ollama-loop result carries) into meta.json `tokens`. Only reported counts: a missing count
+# stays missing, and no result means no `tokens` key at all (unknown is not zero, T-3519).
+if command -v jq >/dev/null 2>&1 && [ -f "$WDIR/meta.json" ] && [ -f "$FRAMEWORK_ROOT/lib/dispatch_tokens.py" ]; then
+    TOKENS_JSON=$(python3 "$FRAMEWORK_ROOT/lib/dispatch_tokens.py" --stream "$WDIR/result.jsonl" --counts 2>/dev/null || true)
+    if [ -n "$TOKENS_JSON" ]; then
+        jq --argjson t "$TOKENS_JSON" '.tokens = $t' "$WDIR/meta.json" > "$WDIR/meta.json.tmp" 2>/dev/null \
+            && mv "$WDIR/meta.json.tmp" "$WDIR/meta.json" \
+            || rm -f "$WDIR/meta.json.tmp"
+    fi
 fi
 
 # --- T-3440 close-state check (start) ---

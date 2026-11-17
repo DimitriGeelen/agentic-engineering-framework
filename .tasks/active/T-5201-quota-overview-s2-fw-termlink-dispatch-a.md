@@ -101,9 +101,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A new dispatch's meta.json has `subscription` (the assigned id, "unassigned" or "unknown"), and after completion a `tokens` object with only the counts the result reported. Tested with a fixture registry and a stub worker result.
-- [ ] Review cost ledger rows written from now on carry `subscription`, and existing rows are untouched. The ledger's append-only check and its readers still pass.
-- [ ] An unreadable or invalid registry makes dispatch record "unknown" and continue (test). No account-like value can appear (the field comes only from registry ids, which S1 validates).
+- [x] A new dispatch's meta.json has `subscription` (the assigned id, "unassigned" or "unknown"), and after completion a `tokens` object with only the counts the result reported. Tested with a fixture registry and a stub worker result.
+- [x] Review cost ledger rows written from now on carry `subscription`, and existing rows are untouched. The ledger's append-only check and its readers still pass.
+- [x] An unreadable or invalid registry makes dispatch record "unknown" and continue (test). No account-like value can appear (the field comes only from registry ids, which S1 validates).
 - [ ] Existing termlink dispatch and review-cost tests pass, invariants pass, and `bin/fw vendor self --check --task T-5201` is clean.
 
 ### Human
@@ -290,6 +290,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5201_subscription_tokens.py -q -p no:cacheprovider > /tmp/.t5201a.out 2>&1 && grep -q passed /tmp/.t5201a.out
+python3 -m pytest tests/unit/test_t3519_dispatch_tokens.py tests/unit/test_t5200_subscriptions.py tests/unit/test_termlink_worker.py tests/unit/t4843_worker_binary_every_kind_test.py -q -p no:cacheprovider > /tmp/.t5201b.out 2>&1 && grep -q passed /tmp/.t5201b.out
+timeout 600 bats tests/unit/t3586_review_cost.bats tests/unit/t4674_dispatch_target_path.bats > /tmp/.t5201c.out 2>&1 && ! grep -q "^not ok" /tmp/.t5201c.out
+bin/fw vendor self --check --task T-5201
 
 ## RCA
 

@@ -158,6 +158,42 @@ def tokens_for_stream(stream_path) -> dict:
     }
 
 
+#: T-5201: the ollama-loop worker's result line carries flat totals instead of modelUsage.
+_FLAT_FIELDS = {"input": "input_tokens", "output": "output_tokens",
+                "cache_read": "cache_read_input_tokens",
+                "cache_creation": "cache_creation_input_tokens"}
+
+
+def reported_counts(stream_path) -> dict | None:
+    """The token counts the result line REPORTS, for meta.json `tokens` (T-5201, T-5190 S2).
+
+    Unlike tokens_for_stream this never fills a missing count with 0: a count is present
+    only when the result reported it (summed over models when several did). Source order:
+    `modelUsage` (claude), then the flat `input_tokens`/`output_tokens` a result line may
+    carry (ollama-loop). None when nothing was reported — the caller writes no `tokens`."""
+    res = _result_line(Path(stream_path))
+    if res is None:
+        return None
+    out: dict[str, int] = {}
+
+    def add(key: str, v) -> None:
+        if isinstance(v, (int, float)) and not isinstance(v, bool):
+            out[key] = out.get(key, 0) + int(v)
+
+    mu = res.get("modelUsage")
+    if isinstance(mu, dict) and mu:
+        for usage in mu.values():
+            if isinstance(usage, dict):
+                for k, src in _FIELDS.items():
+                    if src in usage:
+                        add(k, usage[src])
+    else:
+        for k, src in _FLAT_FIELDS.items():
+            if src in res:
+                add(k, res[src])
+    return out or None
+
+
 def tokens_for_worker(name: str) -> dict:
     return tokens_for_stream(worker_dir(name) / "result.jsonl")
 
@@ -190,13 +226,19 @@ def format_rollup(roll: dict, name: str = "") -> str:
 
 def main(argv: list[str]) -> int:
     if len(argv) < 2:
-        print("usage: dispatch_tokens.py <worker-name|--stream PATH> [--json]")
+        print("usage: dispatch_tokens.py <worker-name|--stream PATH> [--json|--counts]")
         return 2
     if argv[1] == "--stream":
         if len(argv) < 3:
             print("usage: dispatch_tokens.py --stream PATH [--json]")
             return 2
         name = argv[2]
+        if "--counts" in argv[3:]:
+            # T-5201: compact JSON of the reported counts, or nothing at all.
+            counts = reported_counts(argv[2])
+            if counts:
+                print(json.dumps(counts, sort_keys=True, separators=(",", ":")))
+            return 0
         roll = tokens_for_stream(argv[2])
     else:
         name = argv[1]
