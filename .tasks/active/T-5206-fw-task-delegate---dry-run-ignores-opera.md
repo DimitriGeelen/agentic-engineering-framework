@@ -1,8 +1,12 @@
 ---
 id: T-5206
-name: "fw task delegate --dry-run ignores operator widenings: act-in-the-world criteria covered by an active widening still show as operator-only (010 field report bb92576a)"
+name: "fw task delegate --dry-run ignores operator widenings: act-in-the-world criteria
+  covered by an active widening still show as operator-only (010 field report bb92576a)"
 description: >
-  010, after recording SD-ab145e8e for T-1632/T-2258/T-3685: fw task delegate --dry-run still reports the three criteria as act-in-the-world refused. The dry run should say they are reviewer-judgeable under SD-xxxx once a Measured block is present, and name the missing Measured block otherwise.
+  010, after recording SD-ab145e8e for T-1632/T-2258/T-3685: fw task delegate --dry-run
+  still reports the three criteria as act-in-the-world refused. The dry run should
+  say they are reviewer-judgeable under SD-xxxx once a Measured block is present,
+  and name the missing Measured block otherwise.
 
 status: captured
 workflow_type: build
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-17T09:14:55Z
-last_update: 2026-11-17T09:14:55Z
-date_finished: null
+last_update: '2026-11-17T09:30:33Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-17T09:30:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5206: fw task delegate --dry-run ignores operator widenings: act-in-the-world criteria covered by an active widening still show as operator-only (010 field report bb92576a)
