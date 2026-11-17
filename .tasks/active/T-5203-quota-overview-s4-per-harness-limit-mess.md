@@ -6,10 +6,10 @@ name: "Quota overview S4: per-harness limit-message recognisers (claude weekly/5
 description: >
   Build slice of inception T-5190 (GO 2026-11-17). Design: docs/reports/T-5190-subscription-quota-overview.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-17T09:08:44Z
-last_update: '2026-11-17T09:16:05Z'
+last_update: 2026-11-17T11:17:21Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,20 +86,27 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Inception T-5190 (GO 2026-11-17), slice S4; design and the evidence table in docs/reports/T-5190-subscription-quota-overview.md, from 1409's T-6158 report. S3 (T-5202) built the machine-wide quota ledger (`lib/quota_ledger.py`, append from dispatch completion and review cost rows).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** When a harness hits its limit, the message ends up only in that worker's stderr or result. Nothing records that subscription X was at its limit, or until when. Token counts alone cannot say "at limit": providers count differently, and use outside AEF is invisible to AEF.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Per-harness recognisers that turn the known limit messages into `limit` events in the quota ledger: `{event: "limit", ts, subscription, worker_kind, kind, reset_at | reset: "unknown", source: "dispatch"}`. Known wordings, from 1409's table:
+- **claude:** "You've hit your weekly limit · resets <when> (UTC)" (`kind: weekly`, reset parsed only when the text gives a date or time in UTC); a 5-hour variant if present.
+- **glm:** "Usage limit reached for 5 hour. Your limit will reset at YYYY-MM-DD HH:MM:SS" (`kind: 5h`; the time has NO zone, so `reset: "unknown"` and `reset_text` keeps the literal; never guess UTC+8); "Rate limit reached for requests" / HTTP 429 (`kind: rate`, reset unknown); "Insufficient balance or no resource package" (`kind: balance`).
+- **openrouter or any:** "HTTP Error 429: Too Many Requests" (`kind: rate`).
 
-**Expected outcome:** <what will be different when this is done>
+Recognition runs at dispatch completion over the worker's stderr and result (the same place S3 appends), at most one event per kind per dispatch. Unknown messages are ignored. Nothing else from the output is stored.
+
+**Expected outcome:** The machine ledger shows when a subscription hit a limit and, where the provider says so, until when. S5 can then answer "at limit until".
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `lib/quota_limits.py` recognises each wording in 1409's table (fixture strings), with the stated `kind` and reset handling. Claude's UTC reset is parsed to an ISO time; GLM's zone-less time gives `reset: "unknown"` plus `reset_text`; balance and rate give `reset: "unknown"`. Unrelated text gives nothing.
+- [ ] Dispatch completion appends at most one `limit` event per kind to the quota ledger when the worker output contains a recognised message, with the dispatch's subscription. A failure never changes the dispatch outcome. Tested end to end with a stub worker.
+- [ ] No output text other than the matched reset literal is stored (test).
+- [ ] Existing dispatch/run.sh/quota-ledger tests pass (the pre-existing t4730 #4 failure is T-5207), invariants pass, and `bin/fw vendor self --check --task T-5203` is clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -382,3 +389,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5203-quota-overview-s4-per-harness-limit-mess.md
 - **Context:** Initial task creation
+
+### 2026-11-17T11:16:16Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
