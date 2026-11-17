@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5208: S1 subscription tests assume an empty shipped registry; fail since the operator filled it
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-17T12:31:59Z
+# ============================================================================
+
+task_id: T-5208
+task_name: "S1 subscription tests assume an empty shipped registry; fail since the operator filled it"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-17T12:26:36Z
+completed: 2026-11-17T12:30:38Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-17T13:29:08+01:00
+last_commit: 2026-11-17T13:30:35+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  S1 tests check the shipped registry's shape and validity, not emptiness; absent-file test isolates the framework fallback too. commit the operator's registry change (claude -> claude-b, by: human, 2026-11-17T10:58:35Z via fw quota subscription assign). RCA
+
+# Key outcomes
+outcomes:
+  - 'The shipped-registry test asserts the header, both keys present and `validate()` clean, not empty lists'
+  - 'The absent-file test points FRAMEWORK_ROOT at a directory with no registry and still expects "unassigned"'
+  - 'tests/unit/test_t5200_subscriptions.py passes, plus the other quota suites (t5201–t5203)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/costs/subscription-changes.jsonl'
+  - '.tasks/active/T-5208-s1-subscription-tests-assume-an-empty-sh.md'
+  - 'policy/subscriptions.yaml'
+  - 'tests/unit/test_t5200_subscriptions.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-17T13:29:08'
+    action: 'T-5208: S1 tests check the shipped registry''s shape and validity, not emptiness; absent-file test isolates the framework fallback too'
+  - time: '2026-11-17T13:29:12'
+    action: 'T-5208: commit the operator''s registry change (claude -> claude-b, by: human, 2026-11-17T10:58:35Z via fw quota subscription assign)'
+  - time: '2026-11-17T13:30:35'
+    action: 'T-5208: RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4
+  commits: 4
+  files_changed: 7
+  lines_added: 510
+  lines_removed: 13
+  footprint_refreshed_at: '2026-11-17T12:32:40Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5208-s1-subscription-tests-assume-an-empty-sh.md
+generated_by: context-agent-hybrid
