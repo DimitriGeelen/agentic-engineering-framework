@@ -109,7 +109,7 @@ bvp_scores_proposed:
 - [x] The rules in the Goal are each covered by a test: future reset, unknown reset cleared by a later dispatch, unknown reset expiring after its window, tight after a reset inside the window, tight by `--need` against the estimate, free with "capacity unknown", and unassigned or unknown subscriptions
 - [x] `bin/fw quota status` prints one line per subscription, `--json` emits the same fields, and the exit codes are 0/1/2 as in the Goal; it writes nothing (test: ledger bytes unchanged)
 - [x] The output never contains anything except ids, states, times and counts (the S1 account-value check is run over the output in a test)
-- [ ] Existing quota suites (t5200–t5203) pass, plus `bin/fw test invariants` and `bin/fw vendor self --check`
+- [x] Existing quota suites (t5200–t5203) pass, plus `bin/fw test invariants` and `bin/fw vendor self --check`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
