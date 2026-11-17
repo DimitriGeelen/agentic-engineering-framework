@@ -45,9 +45,22 @@ after the one seat that could look said green.
   blind and unknown kinds from any image-evidence panel (IW-2), escalate with a how-to-add-one
   message when the bar cannot be met (IW-3 a). Candidates C and D rejected.
 
+- 2026-11-17: GO recorded by the operator in Watchtower (commits 83676d1ac, 84b9e1cb5).
+- 2026-11-17 16:03Z (recorded under build T-5209): 832 re-judged T-893 AC1 on be.55 at rung 5:
+  claude-code GREEN, opencode GREEN, codex not-evaluated. Codex was not blind: its sandbox refused
+  the local HTTP server and Chromium when it tried to reproduce the run. Findings for the build:
+  1. **opencode green on image evidence.** AEF's registry has opencode `vision: false` (T-4944
+     probe). Because the blind-kind exclusion fires only for render/page criteria, a seat that
+     cannot see images was seated and counted. This is the hole B closes; 832 was asked to check
+     their registry and whether the opencode verdict names the files.
+  2. **"Cannot reproduce" is not "cannot view".** An image-evidence seat should judge the supplied
+     images, not try to re-run the harness, and a seat that cannot reproduce must say so
+     distinctly from one that cannot view.
+  3. **probe-vision's default image is an AEF-only path,** so consumers cannot probe their kinds.
+
 ## Recommendation
 
-GO on A + B. Build slice: the judge treats any criterion whose evidence includes images like a
+GO on A + B (decided), with 832's findings in the build's scope (T-5209). Build slice: the judge treats any criterion whose evidence includes images like a
 render/page criterion for seat planning, excludes kinds whose vision is `false` or undeclared, and
 when fewer than two vision vendors remain, the refusal names the count and `fw reviewer
 probe-vision` as the way to add one.
