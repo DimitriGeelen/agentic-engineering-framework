@@ -7,8 +7,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
 components: [web/blueprints/approvals.py, web/shared.py, web/templates/_approvals_content.html]
 related_tasks: []
@@ -39,7 +39,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T19:37:24Z
-last_update: 2026-11-16T21:13:25Z
+last_update: 2026-11-17T14:54:46Z
 date_finished: 2026-11-16T21:13:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -78,6 +78,7 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+date_finalised: 2026-11-17T14:54:46Z
 ---
 
 # T-5195: Watchtower approvals at volume, slice C: approvals page — single-flight readiness rebuild and serve-stale-while-refreshing, READY never served stale (T-5186 GO)
@@ -104,7 +105,7 @@ bvp_scores_proposed:
 - [x] Existing readiness/approvals/board tests pass, invariants pass, `bin/fw vendor self --check --task T-5195` is clean, and Watchtower is restarted and current.
 
 ### Human
-- [ ] [REVIEW] The approvals page reads correctly while entries refresh
+- [x] [REVIEW] The approvals page reads correctly while entries refresh
   **Steps:**
   1. Open http://192.168.10.107:3000/approvals right after a review ledger changes (or after a Watchtower restart).
   2. Look for the line that says some entries are being refreshed, then reload after a minute.
@@ -155,6 +156,7 @@ bvp_scores_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261117-20a964ea — reviewer-judge-t-5195-r3-eb9b50f387dc:reviewer (rung rung-3-termlink-single-reviewer), digest 1d3bfd9724a7; dispatch judge-t-5195-r3-eb9b50f387dc; evidence: .context/reviews/evidence/T-5195/AC1-judge-t-5195-r3-eb9b50f387dc.md, .context/reviews/evidence/T-5195/01-approvals-judge-t-5195-r3-eb9b50f387dc.png, .context/reviews/evidence/T-5195/02-approvals-content-judge-t-5195-r3-eb9b50f387dc.png, .context/reviews/evidence/T-5195/03-approvals-continuous-state-judge-t-5195-r3-eb9b50f387dc.png, .context/reviews/evidence/T-5195/approvals-top@1024-judge-t-5195-r3-eb9b50f387dc.png, .context/reviews/evidence/T-5195/approvals-top@1440-judge-t-5195-r3-eb9b50f387dc.png, .context/reviews/evidence/T-5195/approvals-top@1920-judge-t-5195-r3-eb9b50f387dc.png, .context/reviews/evidence/T-5195/refresh-line-1024-judge-t-5195-r3-eb9b50f387dc.png, .context/reviews/evidence/T-5195/refresh-line-1440-judge-t-5195-r3-eb9b50f387dc.png, .context/reviews/evidence/T-5195/refresh-line-1920-judge-t-5195-r3-eb9b50f387dc.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 

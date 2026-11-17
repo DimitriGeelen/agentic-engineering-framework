@@ -1,0 +1,118 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5195: Watchtower approvals at volume, slice C: approvals page — single-flight readiness rebuild and serve-stale-while-refreshing, READY never served stale (T-5186 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-17T14:55:36Z
+# ============================================================================
+
+task_id: T-5195
+task_name: "Watchtower approvals at volume, slice C: approvals page — single-flight readiness rebuild and serve-stale-while-refreshing, READY never served stale (T-5186 GO)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-16T19:37:24Z
+completed: 2026-11-16T21:13:25Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-16T21:13:38+01:00
+last_commit: 2026-11-17T15:54:10+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  slice C context, criteria (one [REVIEW] for the refresh line). approvals page on the T-5147 stale path with single-flight readiness. tick criterion 5 — unit 660 + web 126 readiness/approvals/board tests, invariants (only red was the then-untracked test, now tracked), vendor check, Watchtower current. review fixes — waiters loop on one overall deadline and re-derive their key after each wait (a key move no longer makes every waiter compute: 6 -> 2); 2 tests. partial-complete — recommendation GO; one [REVIEW] for the refresh line. reviewer verdict
+
+# Key outcomes
+outcomes:
+  - 'The approvals page reads readiness with allow_stale (the T-5147 path). A cached READY whose key moved is never served; it is recomputed inline, or shown as waiting until recomputed.'
+  - 'Single-flight: concurrent requests for the same task''s readiness trigger at most one computation (test with threads and a counting stand-in for `_compute_readiness`).'
+  - 'The page shows, in plain words, that some entries are being refreshed when it serves stale ones (count only; no layout change beyond one line).'
+  - 'Measured in-process: after a simulated invalidation of all tasks, the approvals page answers within 2× of warm, and the refresh finishes in the background. Before/after numbers are recorded here.'
+  - 'Existing readiness/approvals/board tests pass, invariants pass, `bin/fw vendor self --check --task T-5195` is clean, and Watchtower is restarted and current.'
+  - '[REVIEW] The approvals page reads correctly while entries refresh'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'review fixes — waiters loop on one overall deadline and re-derive their key after each wait (a key move no longer makes every waiter compute: 6 -> 2); 2 tests'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-16 — independent review (AMBER) and what changed'
+  - decision: '2026-11-16 — single-flight waiter that times out'
+    chose: 'a waiter whose wait (30 s) expires computes on its own without registering, and does not remove or signal the other caller''s in-flight entry.'
+    rationale: 'so nothing hangs, and a slow first computation is not double-counted by a third caller.'
+    alternatives_rejected: ['taking over the registration on timeout. A third caller would then start another computation while the first is still running.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/approvals.py'
+  - '.agentic-framework/web/shared.py'
+  - '.agentic-framework/web/templates/_approvals_content.html'
+  - '.context/reviews/evidence/T-5195/01-approvals-judge-t-5195-r3-eb9b50f387dc.png'
+  - '.context/reviews/evidence/T-5195/02-approvals-content-judge-t-5195-r3-eb9b50f387dc.png'
+  - '.context/reviews/evidence/T-5195/03-approvals-continuous-state-judge-t-5195-r3-eb9b50f387dc.png'
+  - '.context/reviews/evidence/T-5195/AC1-judge-t-5195-r3-eb9b50f387dc.md'
+  - '.context/reviews/evidence/T-5195/approvals-top@1024-judge-t-5195-r3-eb9b50f387dc.png'
+  - '.context/reviews/evidence/T-5195/approvals-top@1440-judge-t-5195-r3-eb9b50f387dc.png'
+  - '.context/reviews/evidence/T-5195/approvals-top@1920-judge-t-5195-r3-eb9b50f387dc.png'
+  - '.context/reviews/evidence/T-5195/refresh-line-1024-judge-t-5195-r3-eb9b50f387dc.png'
+  - '.context/reviews/evidence/T-5195/refresh-line-1440-judge-t-5195-r3-eb9b50f387dc.png'
+  - '.context/reviews/evidence/T-5195/refresh-line-1920-judge-t-5195-r3-eb9b50f387dc.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-5195-watchtower-approvals-at-volume-slice-c-a.md'
+  - 'tests/unit/test_t5195_approvals_single_flight.py'
+  - 'web/blueprints/approvals.py'
+  - 'web/shared.py'
+  - 'web/templates/_approvals_content.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-16T21:13:38'
+    action: 'T-5195: slice C context, criteria (one [REVIEW] for the refresh line)'
+  - time: '2026-11-16T21:42:57'
+    action: 'T-5195: approvals page on the T-5147 stale path with single-flight readiness'
+  - time: '2026-11-16T21:43:12'
+    action: 'T-5195: tick criterion 5 — unit 660 + web 126 readiness/approvals/board tests, invariants (only red was the then-untracked test, now tracked), vendor check, Watchtower current'
+  - time: '2026-11-16T22:07:08'
+    action: 'T-5195: review fixes — waiters loop on one overall deadline and re-derive their key after each wait (a key move no longer makes every waiter compute: 6 -> 2); 2 tests'
+  - time: '2026-11-16T22:15:29'
+    action: 'T-5195: partial-complete — recommendation GO; one [REVIEW] for the refresh line'
+  - time: '2026-11-17T15:54:10'
+    action: 'T-5195: reviewer verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 96 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 96
+  commits: 7
+  files_changed: 25
+  lines_added: 793
+  lines_removed: 63
+  footprint_refreshed_at: '2026-11-17T14:56:16Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5195-watchtower-approvals-at-volume-slice-c-a.md
+generated_by: context-agent-hybrid
