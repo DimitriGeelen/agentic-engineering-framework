@@ -6,16 +6,16 @@ description: >
   Inception: Operator decisions in Watchtower (inception GO first) reach the project's
   own agent as a sidecar notice, delivered only when the session is idle
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-11-17T20:46:40Z
-last_update: '2026-11-17T21:00:36Z'
-date_finished:
+last_update: 2026-11-17T23:17:20Z
+date_finished: 2026-11-17T23:17:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -118,15 +118,15 @@ The operator, 2026-11-17: when an inception gets a GO, the agent should get a tr
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -191,7 +191,29 @@ Tier 0 approvals are excluded: the agent is normally waiting on them in the same
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO, wide scope: every Watchtower action that hands the next step to the agent
+
+Rationale:
+
+The idle-aware delivery already exists (lib/sidecar/inject.py: non-urgent mail goes only to a session whose record says ready; R5 urgent is the only bypass). What is missing is the trigger. web/decide_runner.py commits the decision and tells nobody, and the review, restatement and paid-proposal actions in Watchtower do the same. The proposal is one non-urgent notice to the project's own inbox per action, sent after the action's commit lands. It needs no new delivery machinery. If no session is running, the notice waits for the next session's alerts. If posting fails, the action still goes through and the failure is logged. The notice is only a trigger: the agent reads the decision from the task file before acting.
+
+Build slices if GO:
+1. Inception decisions (GO / NO-GO / DEFER) from the decide chain.
+2. Human criteria ticked on the Watchtower review page, restatement accept/reject, and paid-proposal approval.
+
+Tier 0 approvals are excluded: the agent is normally waiting on them in the same turn.
+
+Evidence:
+
+- This session learned of T-5199's GO (83676d1ac, 84b9e1cb5) only because a later commit was refused.
+- web/decide_runner.py has no notify step. The decide chain ends at its follow-up commit.
+- lib/sidecar/inject.py: non-urgent mail is injected only into a session whose own record says ready.
+- IW-2 verified: a notice sent to the project's own address (msg 254f3e5a) was delivered to this session at its next idle point (2026-11-17 21:47Z).
+- Research: docs/reports/T-5211-decision-notice-to-agent.md
+
+**Date**: 2026-11-17T23:17:18Z
 
 ## Updates
 
@@ -200,3 +222,60 @@ Tier 0 approvals are excluded: the agent is normally waiting on them in the same
 
 ### 2026-11-17T20:47:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-17T23:17:18Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO, wide scope: every Watchtower action that hands the next step to the agent
+
+Rationale:
+
+The idle-aware delivery already exists (lib/sidecar/inject.py: non-urgent mail goes only to a session whose record says ready; R5 urgent is the only bypass). What is missing is the trigger. web/decide_runner.py commits the decision and tells nobody, and the review, restatement and paid-proposal actions in Watchtower do the same. The proposal is one non-urgent notice to the project's own inbox per action, sent after the action's commit lands. It needs no new delivery machinery. If no session is running, the notice waits for the next session's alerts. If posting fails, the action still goes through and the failure is logged. The notice is only a trigger: the agent reads the decision from the task file before acting.
+
+Build slices if GO:
+1. Inception decisions (GO / NO-GO / DEFER) from the decide chain.
+2. Human criteria ticked on the Watchtower review page, restatement accept/reject, and paid-proposal approval.
+
+Tier 0 approvals are excluded: the agent is normally waiting on them in the same turn.
+
+Evidence:
+
+- This session learned of T-5199's GO (83676d1ac, 84b9e1cb5) only because a later commit was refused.
+- web/decide_runner.py has no notify step. The decide chain ends at its follow-up commit.
+- lib/sidecar/inject.py: non-urgent mail is injected only into a session whose own record says ready.
+- IW-2 verified: a notice sent to the project's own address (msg 254f3e5a) was delivered to this session at its next idle point (2026-11-17 21:47Z).
+- Research: docs/reports/T-5211-decision-notice-to-agent.md
+
+### 2026-11-17T23:17:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-362fc4d6
+- **Timestamp:** 2026-11-17T23:17:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-9cbf4465
+- **Timestamp:** 2026-11-17T23:17:23Z
+- **Overall:** CONFIRMED
+- **Claims:** 1
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-5199` | task | ✓ pass |
