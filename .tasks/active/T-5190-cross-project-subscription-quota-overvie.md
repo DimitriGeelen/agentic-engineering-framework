@@ -94,17 +94,17 @@ ring20 already builds the pool-side quota lock (their T-2707), and since 2026-11
 -->
 
 - **IW-1: Which of 1409's asks belong in AEF rather than ring20 (pool) or 055 (cockpit)? Candidates: dispatch writes a neutral subscription id into meta.json; a machine-wide, cross-project quota ledger; a shared "free / tight / at limit until" signal.**
-  confidence: 0
-  disposition: open
-  rationale: not yet examined against what fw termlink dispatch, the review cost ledger and ring20 T-2707 already record
+  confidence: 2
+  disposition: answered
+  rationale: report F1, F2, F4 — dispatch meta.json and the review cost ledger record no subscription id, and all records are per project; AEF is the one thing every project on a machine runs, so the id at dispatch, the machine-wide ledger and the shared signal are AEF's (S2, S3, S5); the node map, pool lock and pool result field are ring20's, the display 055's
 - **IW-2: Where does the subscription id come from without ever touching account identity: a registry entry like policy/review-backends.yaml naming neutral ids, set per worker kind and node by the operator?**
-  confidence: 0
-  disposition: open
-  rationale: not yet examined
+  confidence: 2
+  disposition: answered
+  rationale: report F1 / S1 — policy/review-backends.yaml already names where credentials live (never values) and a harness_class; an operator-owned registry of neutral ids beside it, assigned per worker kind (and host if needed), keeps account data out entirely
 - **IW-3: Can limit messages be captured reliably? 1409's table shows six distinct wordings across claude and glm, one without a time zone; codex/antigravity/vibe showed none in 14 days.**
-  confidence: 1
-  disposition: open
-  rationale: docs/reports/T-5190-subscription-quota-overview.md §Evidence (1409 table); parsing is per-harness and partly ambiguous
+  confidence: 2
+  disposition: answered
+  rationale: report F3 / S4 — recognisable per harness from the six known wordings; a reset is recorded when the message states it (Claude: UTC explicit) and as "unknown" otherwise (GLM's zone-less time is not guessed); harnesses with no message yet get none
 
 ## Exploration Plan
 
@@ -166,15 +166,27 @@ ring20 already builds the pool-side quota lock (their T-2707), and since 2026-11
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO, for build slices S1–S5 in docs/reports/T-5190-subscription-quota-overview.md, in that order.
 
 **Rationale:**
 
-Evidence gap: 1409 is building a project-local reporting tool (their T-6158, report pending) and ring20 a pool quota lock (their T-2707). What AEF should own depends on what those two show: which limit events each harness actually emits and with what reset data, and whether a per-host view belongs in AEF, in ring20, or in the cockpit (055). Decide after reading 1409's T-6158 report.
+The shared Claude subscription on the pool hit a week-long limit on 2026-11-16 without warning, and no single place can see it coming. Every project on a machine keeps its own partial record. AEF's own records (dispatch meta.json, the review cost ledger) carry no subscription id at all. AEF is the only thing every project on a machine runs, so only AEF can keep the cross-project record and answer "free / tight / at limit until" for all of them.
+
+The slices:
+- **S1:** neutral ids in an operator-owned registry; account data never enters.
+- **S2:** the id and tokens recorded per dispatch and per review.
+- **S3:** a machine-wide append-only ledger of ids and counts.
+- **S4:** per-harness recognisers for the limit messages 1409 actually saw. A reset is recorded only when the message states it; otherwise it is "unknown", never a guessed time zone.
+- **S5:** a read-only `fw quota status`.
+
+ring20's pool lock (their T-2707) and node→subscription map, and 055's display, stay theirs. S5's output is what they can read. Each slice is small and reversible.
 
 **Evidence:**
 
-- 1409's T-6158 report is committed (1409 commit d9c4512d7, msg 0a085338, 2026-11-16): docs/reports/T-6158-kontingent-uebersicht.md in the 1409-sprind project, plus a reporting-only patch (tools/kontingent.py zeige|planen, 9 tests, not applied). Per 1409, it covers: per route, which file and field carries tokens; the limit messages each harness actually emitted, with wording and reset time; and what a project cannot see (co-users of a subscription, which subscription runs where, how providers count). The ask for AEF is in its "what is missing" section: a neutral subscription id per dispatch, never an account identifier. Not yet read here. Next step for this inception: read it (read-only; 1409's files are never edited from here).
+- docs/reports/T-5190-subscription-quota-overview.md: 1409's limit-message table (six wordings, which reset times are given) and their stated needs; findings F1–F4 from AEF's own records.
+- .context/dispatch/*/meta.json: fields recorded today, no subscription id. .context/costs/reviews.jsonl: backend, class and metering, no subscription id.
+- policy/review-backends.yaml: credential location blocks (never values) and harness_class: the pattern S1 follows.
+- 1409's report: their commit d9c4512d7, sent as text 2026-11-17 (msg 2b9fb717), since this session cannot read other projects' files.
 
 <!-- Add evidence bullets as exploration progresses (file paths,
      commit hashes, test results). The filing-time recommendation
