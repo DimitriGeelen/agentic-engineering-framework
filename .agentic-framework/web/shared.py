@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 import os
 import re as re_mod
+import stat as stat_mod
 import subprocess
 import threading
 from datetime import datetime, timezone
@@ -1587,51 +1588,242 @@ def count_unchecked_human_acs(body: str) -> int:
     return total
 
 
-_HANDOFF_BLOCKERS_CACHE: dict = {}
+_HANDOFF_BLOCKERS_CACHE: dict = {}  # path -> ((mtime_ns, size, rule key), [blocker, ...])
+
+# T-5198: the shell predicate's regexes, transcribed. POSIX [[:space:]] is the
+# C-locale set below; `.` and `[A-Za-z]` keep their grep meaning on one line.
+_SP = r"[ \t\n\r\f\v]"
+_HB_WF_ANY_RE = re_mod.compile(r"^workflow_type:" + _SP + r"*inception")
+_HB_Q_MARKER_RE = re_mod.compile(
+    r"(^" + _SP + r"*-" + _SP + r"*\*?\*?IW-[0-9]+|^###" + _SP + r"+IW-[0-9]+"
+    r"|^" + _SP + r"*-" + _SP + r"*Q-?[0-9]+)")
+_HB_Q_ID_RE = re_mod.compile(r"IW-[0-9]+|Q-?[0-9]+")
+_HB_DISPOSITION_RE = re_mod.compile(r"disposition:" + _SP + r"*(answered|deferred|dissolved)")
+_HB_RATIONALE_RE = re_mod.compile(r"rationale:" + _SP + r"*.+")
+_HB_REC_HEAD_RE = re_mod.compile(r"^## Recommendation" + _SP + r"*$")
+_HB_REC_LINE_RE = re_mod.compile(
+    r"^" + _SP + r"*[-*]?" + _SP + r"*\*\*Recommendation:\*\*" + _SP + r"*\*{0,2}[A-Za-z]")
+_HB_UNDISPOSED_FIX = ("Give it `disposition: answered|deferred|dissolved` plus a one-line "
+                      "rationale. `deferred` is ALWAYS available.")
+_HB_EMPTY_REC = {
+    "kind": "empty-recommendation",
+    "detail": "## Recommendation has no substantive **Recommendation:** line",
+    "fix": ("Write GO | NO-GO | DEFER plus a rationale. The operator needs an advisory, "
+            "not a blank form (T-1497)."),
+}
+
+
+def _handoff_blockers_from_text(text: str) -> list[dict]:
+    """T-5198: `lib/inception-readiness.sh inception_handoff_blockers`, in-process.
+
+    The shell function stays the ONE definition (update-task.sh, review.sh,
+    inception.sh and audit call it); this is a line-for-line transcription of it
+    and of the two predicates it composes, `inception_underdisposed_questions` and
+    `audit_inception_recommendation` (lib/task-audit.sh). It reads nothing but the
+    task file's text. Parity with the shell, over fixtures and every inception in
+    the corpus, is pinned by tests/unit/test_t5198_handoff_blockers.py — change
+    one, that test makes you change the other.
+    """
+    lines = text.split("\n")          # grep/awk/read lines: split on LF only
+    if lines and lines[-1] == "":
+        lines.pop()
+    if not any(_HB_WF_ANY_RE.search(ln) for ln in lines):
+        return []
+    out: list[dict] = []
+
+    # inception_underdisposed_questions: first `^workflow_type:` line, awk $2
+    # (blank = space/tab), quotes removed, must equal "inception".
+    wf = ""
+    for ln in lines:
+        if ln.startswith("workflow_type:"):
+            fields = [f for f in re_mod.split(r"[ \t]+", ln) if f]
+            wf = fields[1].replace('"', "").replace("'", "") if len(fields) > 1 else ""
+            break
+    if wf == "inception" and any(ln.startswith("## Open Questions") for ln in lines):
+        oq, flag = [], False
+        for ln in lines:                 # awk '/^## Open Questions/{flag=1;next} /^## /{flag=0} flag'
+            if ln.startswith("## Open Questions"):
+                flag = True
+                continue
+            if ln.startswith("## "):
+                flag = False
+            if flag:
+                oq.append(ln)
+        current_q, has_disp, has_rat = "", False, False
+
+        def _flush():
+            if current_q and (not has_disp or not has_rat):
+                out.append({"kind": "undisposed-question",
+                            "detail": (f"{current_q} disposition={str(has_disp).lower()} "
+                                       f"rationale={str(has_rat).lower()}"),
+                            "fix": _HB_UNDISPOSED_FIX})
+
+        for ln in oq:
+            if _HB_Q_MARKER_RE.search(ln):
+                _flush()
+                m = _HB_Q_ID_RE.search(ln)
+                current_q = m.group(0) if m else ""
+                has_disp = has_rat = False
+                continue
+            if _HB_DISPOSITION_RE.search(ln):
+                has_disp = True
+            if _HB_RATIONALE_RE.search(ln):
+                has_rat = True
+        _flush()
+
+    # audit_inception_recommendation: the first `## Recommendation` section up to
+    # the next `##+ ` heading, comment lines dropped, then the verdict-line test.
+    in_rec, section = False, []
+    for ln in lines:
+        if _HB_REC_HEAD_RE.search(ln):
+            in_rec = True
+            continue
+        if in_rec and re_mod.match(r"#{2,} ", ln):
+            break
+        if in_rec:
+            section.append(ln)
+    in_c, substantive = False, False
+    for ln in section:
+        if "<!--" in ln:
+            in_c = True
+        if not in_c and _HB_REC_LINE_RE.search(ln):
+            substantive = True
+            break
+        if "-->" in ln:
+            in_c = False
+    if not substantive:
+        out.append(dict(_HB_EMPTY_REC))
+    return out
+
+
+# T-5198: the shell functions `_handoff_blockers_from_text` transcribes, and the
+# sha256 of their text at transcription time. While the live text hashes to this,
+# the in-process answer is used; if it differs (someone changed the rule in the
+# shell), the shell predicate is run instead, as before T-5198, so the page never
+# disagrees with the gate. tests/unit/test_t5198_handoff_blockers.py fails until the
+# transcription and this digest are brought up to date.
+_HB_SHELL_FUNCTIONS = (
+    ("lib/inception-readiness.sh", "inception_underdisposed_questions"),
+    ("lib/inception-readiness.sh", "inception_handoff_blockers"),
+    ("lib/task-audit.sh", "audit_inception_recommendation"),
+)
+_HB_TRANSCRIBED_DIGEST = "bb1901d8e7ec9062c65153de0beb75d612addbb93ad4bada33e9c959404abf7d"
+_HB_RULE_STATE: dict = {}  # (root, stats) -> True (transcription current) | False
+
+
+def _shell_function_text(text: str, name: str) -> str | None:
+    """`name() {` through the next column-0 `}` line, or None."""
+    out = None
+    for line in text.split("\n"):
+        if out is None:
+            if line == f"{name}() {{":
+                out = [line]
+        else:
+            out.append(line)
+            if line == "}":
+                return "\n".join(out)
+    return None
+
+
+def _handoff_rule_state():
+    """(stat key of the shell rule files, transcription-current?) — or None when a
+    rule file is missing or unreadable, which callers treat as a failed check."""
+    import hashlib
+    root = Path(FRAMEWORK_ROOT)
+    stats = []
+    for rel in dict.fromkeys(rel for rel, _ in _HB_SHELL_FUNCTIONS):
+        try:
+            st = (root / rel).stat()
+        except OSError:
+            return None
+        stats.append((rel, st.st_mtime_ns, st.st_size))
+    key = (str(root), tuple(stats))
+    if key not in _HB_RULE_STATE:
+        try:
+            texts = {rel: (root / rel).read_text(encoding="utf-8")
+                     for rel, _ in _HB_SHELL_FUNCTIONS}
+        except (OSError, UnicodeDecodeError):
+            return None
+        parts = [_shell_function_text(texts[rel], name) for rel, name in _HB_SHELL_FUNCTIONS]
+        current = (None not in parts and hashlib.sha256(
+            "\n".join(parts).encode("utf-8")).hexdigest() == _HB_TRANSCRIBED_DIGEST)
+        _HB_RULE_STATE[key] = current
+    return key, _HB_RULE_STATE[key]
+
+
+def _handoff_blockers_via_shell(fp: Path) -> list[dict]:
+    """The pre-T-5198 path: run the shell predicate itself (one `bash -c`)."""
+    script = (
+        '. "$1/lib/inception-readiness.sh" || exit 3; '
+        '. "$1/lib/task-audit.sh" 2>/dev/null || true; '
+        'command -v inception_handoff_blockers >/dev/null || exit 3; '
+        'inception_handoff_blockers "$2"'
+    )
+    try:
+        r = subprocess.run(["bash", "-c", script, "_", str(FRAMEWORK_ROOT), str(fp)],
+                           capture_output=True, text=True, timeout=20)
+    except (OSError, subprocess.SubprocessError) as e:
+        return [{"kind": "check-failed", "detail": f"readiness check could not run: {e}",
+                 "fix": "the agent must investigate lib/inception-readiness.sh"}]
+    if r.returncode != 0:
+        return [{"kind": "check-failed",
+                 "detail": f"readiness check failed (rc={r.returncode})",
+                 "fix": "the agent must investigate lib/inception-readiness.sh"}]
+    out = []
+    for line in r.stdout.splitlines():
+        parts = line.split("\t")
+        if len(parts) >= 2 and parts[0]:
+            out.append({"kind": parts[0], "detail": parts[1],
+                        "fix": parts[2] if len(parts) > 2 else ""})
+    return out
 
 
 def inception_handoff_blockers(path) -> list[dict]:
     """T-3896 (G-108): what still blocks this inception from a decision, as the
-    decide gate sees it — [] when decision-ready.
+    decide gate sees it — [] when decision-ready. Each item: {kind, detail, fix}.
 
-    Calls the ONE shared predicate (`lib/inception-readiness.sh`
-    `inception_handoff_blockers`, T-3279 / G-102) instead of re-implementing
-    it: a page that invites a GO must ask the gate's own question. Cached by
-    the task file's mtime. Each item: {kind, detail, fix}.
+    The gate's own question is `lib/inception-readiness.sh`
+    `inception_handoff_blockers` (T-3279 / G-102). Until T-5198 this ran it via
+    `bash -c` per inception (~47 subprocesses, ~5-6 s on a cold /approvals). It
+    now runs the transcription `_handoff_blockers_from_text` while the shell
+    rule's text still hashes to `_HB_TRANSCRIBED_DIGEST`, and the shell itself
+    otherwise. Inputs, all in the cache key: the task file's (mtime_ns, size) and
+    the (mtime_ns, size) of the two shell rule files.
 
-    Fails CLOSED: if the predicate cannot run, returns one blocker saying so,
-    so a broken check never reads as "ready".
+    Fails CLOSED: if the task file or the shell rule cannot be read, returns one
+    blocker saying so, so a broken check never reads as "ready". A missing file
+    is not an inception (the shell predicate prints nothing for it): [].
     """
-    import subprocess as _sp
-
     p = Path(path)
-
-    def _run(fp: Path) -> list[dict]:
-        script = (
-            '. "$1/lib/inception-readiness.sh" || exit 3; '
-            '. "$1/lib/task-audit.sh" 2>/dev/null || true; '
-            'command -v inception_handoff_blockers >/dev/null || exit 3; '
-            'inception_handoff_blockers "$2"'
-        )
+    try:
+        st = p.stat()
+    except OSError:
+        return []
+    if not stat_mod.S_ISREG(st.st_mode):   # the shell's `[ -f ]`
+        return []
+    rule = _handoff_rule_state()
+    if rule is None:
+        return [{"kind": "check-failed",
+                 "detail": "readiness check could not run: lib/inception-readiness.sh or "
+                           "lib/task-audit.sh is missing or unreadable",
+                 "fix": "the agent must investigate lib/inception-readiness.sh"}]
+    rule_key, transcription_current = rule
+    key = (st.st_mtime_ns, st.st_size, rule_key)
+    cached = _HANDOFF_BLOCKERS_CACHE.get(str(p))
+    if cached is not None and cached[0] == key:
+        return [dict(b) for b in cached[1]]
+    if not transcription_current:
+        value = _handoff_blockers_via_shell(p)
+    else:
         try:
-            r = _sp.run(["bash", "-c", script, "_", str(FRAMEWORK_ROOT), str(fp)],
-                        capture_output=True, text=True, timeout=20)
-        except (OSError, _sp.SubprocessError) as e:
+            text = p.read_bytes().decode("utf-8", errors="surrogateescape")
+        except OSError as e:
             return [{"kind": "check-failed", "detail": f"readiness check could not run: {e}",
                      "fix": "the agent must investigate lib/inception-readiness.sh"}]
-        if r.returncode != 0:
-            return [{"kind": "check-failed",
-                     "detail": f"readiness check failed (rc={r.returncode})",
-                     "fix": "the agent must investigate lib/inception-readiness.sh"}]
-        out = []
-        for line in r.stdout.splitlines():
-            parts = line.split("\t")
-            if len(parts) >= 2 and parts[0]:
-                out.append({"kind": parts[0], "detail": parts[1],
-                            "fix": parts[2] if len(parts) > 2 else ""})
-        return out
-
-    return mtime_cached_get(p, _run, _HANDOFF_BLOCKERS_CACHE, [])
+        value = _handoff_blockers_from_text(text)
+    if not any(b["kind"] == "check-failed" for b in value):
+        _HANDOFF_BLOCKERS_CACHE[str(p)] = (key, value)
+    return [dict(b) for b in value]
 
 
 def needs_human_review(body: str) -> bool:
@@ -2470,7 +2662,7 @@ _task_cache = {"data": None, "names": None, "tags": None, "ts": 0, "tags_ts": 0,
 # minutes-long safety net for anything a stat signature cannot see.
 _TASK_CACHE_TTL = 300  # seconds — safety net only; freshness comes from the signature
 
-_TASK_FM_CACHE: dict = {}       # path -> (mtime_ns, frontmatter dict | None)
+_TASK_FM_CACHE: dict = {}       # path -> ((mtime_ns, size), frontmatter dict | None) — T-5198
 _EPISODIC_TAGS_CACHE: dict = {}  # path -> (mtime_ns, (task_id, tags) | None)
 _TASK_BUILD_LOCK = threading.Lock()
 _TAGS_BUILD_LOCK = threading.Lock()
@@ -2530,6 +2722,26 @@ def _parse_task_fm_file(path):
     return fm or None
 
 
+def _task_fm_cached(path):
+    """T-5198: parsed frontmatter of one task file, keyed on (path, mtime_ns, size).
+
+    mtime alone (the generic `mtime_cached_get` key) misses a rewrite that lands
+    in the same mtime tick with a different length; size closes that. A missing
+    file is None, as before.
+    """
+    try:
+        st = path.stat()
+    except OSError:
+        return None
+    key = (st.st_mtime_ns, st.st_size)
+    hit = _TASK_FM_CACHE.get(str(path))
+    if hit is not None and hit[0] == key:
+        return hit[1]
+    value = _parse_task_fm_file(path)
+    _TASK_FM_CACHE[str(path)] = (key, value)
+    return value
+
+
 def get_all_task_metadata():
     """Return list of frontmatter dicts for all tasks (active + completed).
 
@@ -2553,6 +2765,7 @@ def get_all_task_metadata():
 def _build_task_metadata(now, sig):
     all_tasks = []
     names = {}
+    seen = set()
     for location in ("active", "completed"):
         task_dir = PROJECT_ROOT / ".tasks" / location
         if not task_dir.exists():
@@ -2560,7 +2773,8 @@ def _build_task_metadata(now, sig):
         for f in sorted(task_dir.glob("T-*.md"), key=task_id_sort_key):
             if is_test_sentinel(f):  # T-2228: skip T-Test-NNN sentinels
                 continue
-            parsed = mtime_cached_get(f, _parse_task_fm_file, _TASK_FM_CACHE, default=None)
+            seen.add(str(f))
+            parsed = _task_fm_cached(f)  # T-5198: re-parses only changed/added files
             if parsed:
                 fm = dict(parsed)  # per-request-safe: the per-file cache stays unmutated
                 fm["_location"] = location
@@ -2570,6 +2784,11 @@ def _build_task_metadata(now, sig):
                 name = fm.get("name", "")
                 if tid and name:
                     names[tid] = name
+
+    # T-5198: a file that left the corpus (deleted, moved active -> completed)
+    # leaves the per-file cache too; it used to stay for the process lifetime.
+    for stale in [k for k in _TASK_FM_CACHE if k not in seen]:
+        _TASK_FM_CACHE.pop(stale, None)
 
     _task_cache["data"] = all_tasks
     _task_cache["names"] = names
