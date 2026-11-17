@@ -45,6 +45,33 @@ against six checks: 20 concurrent processes, a crash mid-block, a stale view, a 
 old outlier band, and equality with the single path. They will send patch, tests and numbers as a
 proposal, to be reviewed rather than merged as is.
 
+### Prototype results (1409 sidecar a8eb045c, 2026-11-17 21:22Z)
+
+The proposal lives in 1409's repo, which this session cannot read; the text has been requested over sidecar.
+- **Shape:**
+  - the authoritative counter is `<main>/.tasks/.id-highwater`, under the existing lock, and only ever moves up;
+  - `fw_id_allocate N` hands out blocks of at most 100;
+  - a ledger, `.id-ledger.jsonl`, records reserve, created and heal;
+  - `fw task create-batch` uses one writer (`render_task.py`) for both the single and the batch path;
+  - `fw task id-abgleich [--heal]` reconciles.
+
+  The union scan stays as the check: once per reservation, when the counter is missing, and in reconciliation.
+- **Checks, all green on a full-size replica (about 50k task files, 24 views):**
+  - Single and batch paths write identical files: 42/42.
+  - 2,020 concurrent allocations from 20 processes gave 0 duplicates and 0 overlaps.
+  - `kill -9` after a reservation, and after the 5th file, reused nothing, and reconciliation reported the arc as incomplete.
+  - The other cases also passed: a stale view, a counter that is missing, too low or too high, a deleted top file, the T-99971/T-100202 band, and 12 aborted 100-blocks against the quarantine gap.
+- **Measured at load 67-88:**
+  - Per id: 4.32 s before; 0.37 s with the check and 0.15 s without it, about 0.06 s per id in a block. 1409's own target of < 0.05 s was not met.
+  - Per unit (arc + 13 tasks): 95.2 s became 2.6 s.
+  - A wave of 50 units takes 3.3 min.
+- **Measured limit:** an OLD `generate_id` running beside the new allocator would, after more than 1,000 aborted reserved ids, hand out an id from a reserved block. That makes "one allocator per repository" a hard rule.
+- **Differences from the agreed shape:** there is no arc-id reservation, because 1409's arc ids are fixed names; the arc is still created by its own `fw arc create`.
+- **Side findings, filed:**
+  - T-5213: lib/objectives-seed.sh has a second allocator with no lock, no views and no high-water. Confirmed.
+  - T-5214: an exported FRAMEWORK_ROOT makes another copy's fw run the exporting copy's code. Not yet reproduced.
+- **Meanwhile on 1409's side:** their operator archived 23 old worktrees, which brought the scan from 2.91 s to 0.51 s per call. They are no longer blocked.
+
 ## Dialogue Log
 
 - 2026-11-17: the operator chose to open this inception ("1 yes").
