@@ -2356,6 +2356,14 @@ if [ -s "$WDIR/quota_ledger.path" ] && [ -f "$WDIR/meta.json" ] && [ -f "$FRAMEW
         append-dispatch --meta "$WDIR/meta.json" --worker-kind "${WORKER_KIND:-claude}" \
         2>> "$WDIR/stderr.log" || true
 fi
+# T-5203 (T-5190 S4): a recognised limit message in this worker's stderr.log / result.jsonl
+# error events -> at most one `limit` event per kind in the same ledger (kind + reset only;
+# nothing else from the output). Best-effort: never changes the outcome.
+if [ -s "$WDIR/quota_ledger.path" ] && [ -f "$WDIR/meta.json" ] && [ -f "$FRAMEWORK_ROOT/lib/quota_limits.py" ]; then
+    FW_QUOTA_LEDGER="$(head -1 "$WDIR/quota_ledger.path")" python3 "$FRAMEWORK_ROOT/lib/quota_limits.py" \
+        append --meta "$WDIR/meta.json" --wdir "$WDIR" --worker-kind "${WORKER_KIND:-claude}" \
+        2>> "$WDIR/stderr.log" || true
+fi
 
 # --- T-3440 close-state check (start) ---
 # A `claude -p` worker has no next turn. If it ended its turn waiting on a
