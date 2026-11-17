@@ -153,6 +153,22 @@ def names_page(text: str) -> bool:
     return any(m.group(1).lower() not in _NOT_A_PAGE for m in _PAGE_ROUTE_RE.finditer(text))
 
 
+# T-5209 (T-5199 GO): a criterion whose evidence is images — an image file or a screenshot — is
+# sat only by kinds that can see images, like a render or page criterion, even when it names no
+# route. `image` (render or page or this) decides who may sit it; the ledger's rules are unchanged.
+_IMAGE_EVIDENCE_RE = re.compile(r"\.(?:png|jpe?g|gif|webp|svg)\b|\bscreen[- ]?shots?\b", re.IGNORECASE)
+
+
+def names_image(text: str) -> bool:
+    """True when `text` names an image file (png, jpg, jpeg, gif, webp, svg) or a screenshot."""
+    return bool(_IMAGE_EVIDENCE_RE.search(text))
+
+
+def is_image_evidence(c: dict) -> bool:
+    """The judge's image-evidence test for a planned criterion (older dicts carry no `image`)."""
+    return bool(c.get("image") or c.get("render") or c.get("page"))
+
+
 def _partition(task_data: dict, root: Path, task_id: str,
                criterion_n: int | None = None) -> tuple[list[dict], list[dict]]:
     """Split the open Human criteria into (judged, operator_only).
@@ -172,6 +188,7 @@ def _partition(task_data: dict, root: Path, task_id: str,
                 "body": vl.criterion_body(crit), "class": cl.cls,
                 "render": cl.cls == "render-surface" and bool(vl._RENDER_REVIEW_RE.search(vl.criterion_body(crit)))}
         item["page"] = item["render"] or names_page(f"{crit.title}\n{item['body']}")
+        item["image"] = item["page"] or names_image(f"{crit.title}\n{item['body']}")
         if cl.delegation_class == REVIEWER_JUDGES:
             judged.append(item)
         elif cl.delegation_class == OPERATOR_ONLY:
@@ -691,6 +708,28 @@ def record_command(task_id: str, seat: str, rung: int, run_id: str) -> str:
     # email still hold — they now live in verdict_ledger._commit_rows.
 
 
+IMAGE_JUDGE_LINE = ("Judge the supplied images; do not re-run the harness, the app or the "
+                    "capture to reproduce them.")
+
+
+def image_evidence_lines(imaged: list[dict]) -> list[str]:
+    """T-5209: the brief's instruction for criteria whose evidence is images (832 T-893 AC1: a
+    seat whose sandbox refused the harness returned not-evaluated on images it could see)."""
+    return [
+        "## Image evidence",
+        "",
+        "The evidence for " + ", ".join(f"Criterion {c['index']}" for c in imaged) + " is images "
+        "(screenshots or image files named in the criterion, or the screenshots listed below). "
+        + IMAGE_JUDGE_LINE + " Open each image and judge the criterion on what it shows, as given.",
+        "- If you cannot re-run something (your sandbox refuses a server, a browser or a "
+        "command), write \"cannot reproduce\" in WHY and STILL judge the images: not being "
+        "able to reproduce a run is not a reason to return not-evaluated.",
+        "- Only if you cannot open or see the images themselves, return `not-evaluated` with a "
+        "reason that starts \"cannot view\" and names the file.",
+        "",
+    ]
+
+
 def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reason: str = "",
                  ceiling_note: str = "", evidence: dict | None = None, seat: str = "",
                  operator_only: list[dict] | None = None, run_id: str = "",
@@ -764,6 +803,10 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
                 "the act happened as the criterion states. Return green only if it does; if the "
                 "output is missing, ambiguous, or does not show the act, return red or escalate.",
                 ""]
+
+    imaged = [c for c in criteria if is_image_evidence(c)]
+    if imaged:
+        lines += image_evidence_lines(imaged)
 
     if ev["needed"]:
         lines += ["## Rendered pages", ""]
@@ -1237,6 +1280,18 @@ def _final(root: Path, task_id: str, judged: list[dict], dispatches: list[dict],
 
 # ── orchestration ────────────────────────────────────────────────────────────
 
+def vision_shortfall_message(vision_kinds: list[str], vendors: int) -> str:
+    """T-5209: why an image-evidence panel cannot reach two vision vendors, and how to add one."""
+    n = len(vision_kinds)
+    return (f"only {n} vision kind{'' if n == 1 else 's'} on this host "
+            f"({', '.join(vision_kinds) or 'none'}; {vendors} vendor{'' if vendors == 1 else 's'} "
+            f"dispatchable): an image-evidence criterion at rung 5 needs "
+            f"{vl.MIN_EVALUATING_SEATS} vendors that can see images. To add one, run "
+            f"`fw reviewer probe-vision <kind>` (codex, opencode or antigravity) and, if it "
+            f"answers from the image, the operator sets `vision: true` for that kind in "
+            f"policy/review-backends.yaml. The criterion stays open until then.")
+
+
 def _plan_seats(root: Path, rung: int, kinds: set[str], kind_vendors: dict | None = None,
                 exclude_kinds: set[str] | frozenset = frozenset()) -> dict:
     """Which registry backends sit this run. {'seats': [...], 'required': N, 'dispatch': [...],
@@ -1284,7 +1339,7 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
     res: dict = {"task_id": task_id, "dry_run": dry_run, "operator_only": [
         {"ac": c["ac_index"], "class": c["class"], "reason": c["reason"]} for c in operator],
         "criteria": [{"ac": c["ac_index"], "text": c["text"][:80], "class": c["class"],
-                      "page": bool(c.get("page"))} for c in judged]}
+                      "page": bool(c.get("page")), "image": is_image_evidence(c)} for c in judged]}
     if not judged:
         res.update(error=f"No REVIEWER_JUDGES criteria found for {task_id}", code=1)
         return res
@@ -1326,10 +1381,21 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
     # T-4944 (operator 2026-11-01, "vision-gated"): a page check goes only to seats that can see
     # the screenshots. A kind the committed registry declares `vision: false` (opencode: its model
     # takes no images) can only return not-evaluated there, so it does not sit a render run.
+    # T-5209: and image-evidence criteria too, and only kinds whose committed vision is TRUE sit
+    # them: `false` and undeclared kinds are both left off (an undeclared kind's green on images
+    # is a green from a seat nobody has shown can see them).
     blind = set()
-    if any(c["render"] or c.get("page") for c in judged):   # T-4978: page criteria too
-        blind = {k for k, seen in vl.kind_vision(root, revision).items() if seen is False}
+    image_run = any(is_image_evidence(c) for c in judged)   # T-4978: page; T-5209: image files
+    if image_run:
+        vision = vl.kind_vision(root, revision)
+        try:
+            registry_kinds = {b["kind"] for b in _backends(root)[0]}
+        except Exception:  # noqa: BLE001 - an unreadable registry is refused by _plan_seats below
+            registry_kinds = set()
+        candidates = registry_kinds | set(kinds) | set(kind_vendors or {})
+        blind = {k for k in candidates if vision.get(k) is not True}
         res["blind_kinds"] = sorted(blind)
+        res["vision_kinds"] = sorted(k for k in candidates if vision.get(k) is True and k in kinds)
     try:
         plan = _plan_seats(root, rung, kinds,
                            _kind_vendors(root) if kind_vendors is None else dict(kind_vendors),
@@ -1349,6 +1415,9 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
     res.update(seats=[s["seat"] for s in seats], dispatchable=[s["seat"] for s in plan["dispatch"]],
                unfilled=[s["seat"] for s in plan["unfilled"]], required_vendors=required,
                dispatch_vendors=plan["vendors"], degraded=degraded)
+    if image_run and rung >= 5 and len(plan["vendors"]) < vl.MIN_EVALUATING_SEATS:
+        # T-5209 (IW-3 a): the bar stays; say exactly how to reach it.
+        res["vision_shortfall"] = vision_shortfall_message(res["vision_kinds"], len(plan["vendors"]))
 
     # The revision under review is captured above, before any worker exists, and handed to the
     # dispatcher, which registers it with the dispatch (round 3).
@@ -1596,6 +1665,8 @@ def _print_result(res: dict) -> None:
     for o in res["operator_only"]:
         print(f"  operator-only (never dispatched): AC#{o['ac']} [{o['class']}]")
     print(f"Rung: {res['rung']} ({res['rung_reason']})")
+    if res.get("vision_shortfall"):
+        print(f"  {res['vision_shortfall']}")
     if res.get("degraded"):
         print(f"  {res['degraded']}: {', '.join(res.get('dispatchable') or []) or 'none'} of "
               f"{res['required_vendors']} vendors can be dispatched (T-3582); its verdict cannot "

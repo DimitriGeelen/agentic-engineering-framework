@@ -33,7 +33,11 @@ HARNESS_KINDS = ("codex", "opencode", "antigravity")
 #: the review runtime runs antigravity as this user (termlink.sh: the operator-approved form, 2026-09-30)
 ANTIGRAVITY_USER = "dimitri-mint-dev"
 
-DEFAULT_IMAGE = ".context/visual/T-4947/arc-closure@1440.png"
+#: T-5209 (832): the default screenshot ships WITH the framework (a copy of T-4947's
+#: arc-closure@1440 capture, whose ground truth is DEFAULT_COUNT / DEFAULT_TITLE), so a consumer
+#: probes with it from its vendored `.agentic-framework/`. Relative to FRAMEWORK_ROOT, never to
+#: the project: the old default was an AEF-only `.context/visual/` path consumers do not have.
+DEFAULT_IMAGE = "docs/screenshots/T-5209-probe-vision-default.png"
 DEFAULT_COUNT = 8
 DEFAULT_TITLE = "Onboarding: fw init detects project shape by enumeration, not manifest allowlist"
 RECORD = ".context/reviews/vision-probes.jsonl"
@@ -60,6 +64,13 @@ MECHANISM: <tool or reason>
 
 def _root() -> Path:
     return Path(os.environ.get("PROJECT_ROOT") or Path(__file__).resolve().parents[2])
+
+
+def default_image() -> Path:
+    """The shipped probe screenshot inside the framework install (FRAMEWORK_ROOT, else this
+    file's own framework tree): `bin/fw` sets FRAMEWORK_ROOT to `.agentic-framework/` in a
+    consumer, so the vendored copy is used there."""
+    return Path(os.environ.get("FRAMEWORK_ROOT") or Path(__file__).resolve().parents[2]) / DEFAULT_IMAGE
 
 
 def launch_argv(kind: str, binary: str, prompt: str, workdir: Path) -> tuple[list[str], dict]:
@@ -132,13 +143,16 @@ def grade(text: str, expect_count: int, expect_title: str, rc: int) -> tuple[str
     return ("sees" if right else "wrong"), answer
 
 
-def run_probe(kind: str, *, image: str = DEFAULT_IMAGE, expect_count: int = DEFAULT_COUNT,
+def run_probe(kind: str, *, image: str | None = None, expect_count: int = DEFAULT_COUNT,
               expect_title: str = DEFAULT_TITLE, timeout: int = 600, launcher=None,
               binary: str | None = None, root: Path | None = None) -> dict:
     root = Path(root or _root())
     if kind not in HARNESS_KINDS:
         raise ValueError(f"{kind!r} is not a harness review kind ({', '.join(HARNESS_KINDS)})")
-    img = Path(image) if Path(image).is_absolute() else root / image
+    if image is None:
+        img = default_image()
+    else:
+        img = Path(image) if Path(image).is_absolute() else root / image
     if not img.is_file():
         raise FileNotFoundError(f"no screenshot at {img}")
     if binary is None:
@@ -180,7 +194,8 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="fw reviewer probe-vision",
                                  description="Can a harness review seat read a supplied screenshot? (T-5176)")
     ap.add_argument("kind", choices=HARNESS_KINDS)
-    ap.add_argument("--image", default=DEFAULT_IMAGE)
+    ap.add_argument("--image", default=None,
+                    help=f"screenshot to show (default: the framework's own {DEFAULT_IMAGE})")
     ap.add_argument("--expect-count", type=int, default=DEFAULT_COUNT)
     ap.add_argument("--expect-title", default=DEFAULT_TITLE)
     ap.add_argument("--timeout", type=int, default=600)
