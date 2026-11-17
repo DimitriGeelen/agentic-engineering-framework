@@ -52,6 +52,7 @@ from lib.delegation import (  # noqa: E402
     surface_verdict,
     task_touches_render_surface_cheap,
 )
+from lib import delegation_widening  # noqa: E402
 
 GREEN, YELLOW, RED, CYAN, BOLD, NC = (
     "\033[0;32m", "\033[1;33m", "\033[0;31m", "\033[0;36m", "\033[1m", "\033[0m"
@@ -298,6 +299,41 @@ def _set_frontmatter(lines: list[str], key: str, value: str) -> list[str]:
 # ── delegate ─────────────────────────────────────────────────────────────────
 
 
+def _widenings(task_id: str, text: str, rows) -> dict[int, tuple[dict | None, str]]:
+    """T-5206: {criterion index: (widening row or None, why not)} for each OPERATOR-ONLY
+    criterion of a widenable class. The answer is `delegation_widening.active_widening`'s,
+    the same call the verdict ledger makes at record/apply (T-5180) — no rule is repeated
+    here. Empty when the project records no widening, so the report is unchanged."""
+    out: dict[int, tuple[dict | None, str]] = {}
+    root = _project_root()
+    for c, cl in rows:
+        if (cl.delegation_class != OPERATOR_ONLY
+                or cl.cls not in delegation_widening.WIDENABLE_CLASSES):
+            continue
+        w, why = delegation_widening.active_widening(root, task_id, text, c)
+        if w is not None or why:
+            out[c.index] = (w, why)
+    return out
+
+
+def _refused_entry(c, cl, widening) -> dict:
+    """One not-converted criterion. A widened one is reported REVIEWER-JUDGES and names the
+    widening; one a widening does not reach keeps its class and carries the reason."""
+    entry = {"index": c.index, "title": c.title[:120], "class": cl.cls,
+             "delegation_class": cl.delegation_class, "reason": cl.reason}
+    if widening is None:
+        return entry
+    w, why = widening
+    if w is not None:
+        entry["delegation_class"] = REVIEWER_JUDGES
+        entry["widened_by"] = w["id"]
+        entry["widening_ruling"] = w.get("ruling")
+    else:
+        entry["widening"] = why
+    return entry
+
+
+
 def cmd_delegate(args) -> int:
     task_id = args.task_id
     path, sub = _find_task(task_id)
@@ -321,11 +357,11 @@ def cmd_delegate(args) -> int:
     rows: list[tuple[Criterion, object]] = [
         (c, classify(c, workflow_type=workflow, render_surface=rs)) for c in criteria
     ]
+    widened = _widenings(task_id, text, rows)
     converted = [{"index": c.index, "title": c.title[:120], "reason": cl.reason}
                  for c, cl in rows if cl.convertible]
-    refused = [{"index": c.index, "title": c.title[:120], "class": cl.cls,
-                "delegation_class": cl.delegation_class, "reason": cl.reason}
-               for c, cl in rows if not cl.convertible]
+    refused = [_refused_entry(c, cl, widened.get(c.index)) for c, cl in rows
+               if not cl.convertible]
 
     # AC 2: one line per Human criterion with its class. Printed before any
     # write, so --dry-run and the real run show the operator the same table.
@@ -341,8 +377,13 @@ def cmd_delegate(args) -> int:
                 mark = f"{CYAN}agent-self{NC}"
             elif cl.delegation_class == REVIEWER_JUDGES:
                 mark = f"{CYAN}reviewer-judged (fw reviewer judge){NC}"
+            w, why = widened.get(c.index, (None, ""))
+            if w is not None:
+                mark = (f"{CYAN}reviewer-judged under {w['id']} (ruling {w.get('ruling')}){NC}")
             print(f"  AC#{c.index:<3} {cl.cls:<18} {mark}  {c.title[:72]}")
             print(f"        {cl.reason}")
+            if why:
+                print(f"        {YELLOW}widening:{NC} {why}")
         if not rows:
             print("  (no open Human criteria)")
 

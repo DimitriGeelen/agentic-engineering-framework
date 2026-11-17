@@ -104,14 +104,14 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The delegate report (dry run and real run) uses `delegation_widening.active_widening` for OPERATOR-ONLY criteria of widenable classes. There is one decision point, with no second copy of the scope, expiry, revocation or pattern rules.
-- [ ] Tests cover each case:
+- [x] The delegate report (dry run and real run) uses `delegation_widening.active_widening` for OPERATOR-ONLY criteria of widenable classes. There is one decision point, with no second copy of the scope, expiry, revocation or pattern rules.
+- [x] Tests cover each case:
   - An active widening plus a Measured block shows the criterion as reviewer-judged and names the SD id.
   - An active widening without a Measured block stays operator-only, and the reason names the missing block.
   - An expired, revoked or agent-override widening, or a task outside its list, stays operator-only.
   - With no widenings recorded, the output is unchanged (byte-compare).
-- [ ] The summary counts (`converted / reviewer-judged / left human`) agree with the per-criterion lines
-- [ ] The existing delegation, widening (t5180) and verdict-ledger suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5206`
+- [x] The summary counts (`converted / reviewer-judged / left human`) agree with the per-criterion lines
+- [x] The existing delegation, widening (t5180) and verdict-ledger suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5206`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -297,6 +297,12 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5206_delegate_widening.py -q > /tmp/.t5206a 2>&1 && grep -q passed /tmp/.t5206a
+python3 -m pytest tests/unit/test_t5180_widening.py tests/unit/test_t3579_verdict_ledger.py tests/unit/test_delegation_fw_path.py tests/unit/test_t4156_ready_to_close_route.py tests/unit/test_reviewer_negative_evidence_t4902.py -q > /tmp/.t5206b 2>&1 && grep -q passed /tmp/.t5206b
+timeout 600 bats tests/unit/t4916_delegate_reroute.bats tests/unit/t3445_delegation_close_path.bats tests/unit/t4199_sovereignty_gate_names_route.bats tests/unit/t3579_verdict_close_path.bats > /tmp/.t5206c 2>&1 && ! grep -q "^not ok" /tmp/.t5206c
+test "$(grep -c '# skip' /tmp/.t5206c)" -eq 0
+bin/fw test invariants > /tmp/.t5206d 2>&1 && ! grep -q "^not ok" /tmp/.t5206d
+bin/fw vendor self --check --task T-5206
 
 ## RCA
 
@@ -313,6 +319,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** after SD-ab145e8e was recorded, `fw task delegate --dry-run` still showed the covered act-in-the-world criteria as OPERATOR-ONLY (010, bb92576a).
+
+**Root cause:** T-5180 wired `delegation_widening.active_widening` into lib/verdict_ledger.py (record/apply) and the judge, but `cmd_delegate` in lib/delegation_cli.py classified with `classify()` alone and never asked it.
+
+**Why structurally allowed:** the widening module names its consumers in prose; no test exercised the delegate report with a widening on disk, so the report and the close path could disagree silently.
+
+**Prevention:** tests/unit/test_t5206_delegate_widening.py pins the report against `active_widening` (including an agreement test calling it directly) and pins byte-identical output against a baseline with the lookup removed.
 
 ## Evolution
 
