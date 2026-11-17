@@ -112,12 +112,12 @@ So opencode (`vision: false` in the committed registry, per the T-4944 probe) sa
 ## Acceptance Criteria
 
 ### Agent
-- [ ] An image-evidence criterion that names no route and is not render (for example, it cites `docs/screens/x.png`) is planned without `vision: false` kinds and without kinds whose vision is undeclared. A test shows opencode and an undeclared kind left off, and claude, codex and antigravity seated.
-- [ ] A non-image criterion's plan is unchanged (test: same seats as before the change)
-- [ ] With one vision kind available at rung 5, the judge output names the count of vision kinds and the `fw reviewer probe-vision` command (test)
-- [ ] The image-evidence brief contains the "judge the supplied images; do not re-run the harness" instruction and the cannot-reproduce / cannot-view wording; the non-image brief does not (test)
-- [ ] `fw reviewer probe-vision` resolves its default image inside the framework install (vendored path or generated). A test runs the resolution with FRAMEWORK_ROOT set to a vendored-style tree.
-- [ ] `MIN_EVALUATING_SEATS` is still 2, and the existing judge, verdict-ledger, review-runtime and probe-vision suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5209`
+- [x] An image-evidence criterion that names no route and is not render (for example, it cites `docs/screens/x.png`) is planned without `vision: false` kinds and without kinds whose vision is undeclared. A test shows opencode and an undeclared kind left off, and claude, codex and antigravity seated.
+- [x] A non-image criterion's plan is unchanged (test: same seats as before the change)
+- [x] With one vision kind available at rung 5, the judge output names the count of vision kinds and the `fw reviewer probe-vision` command (test)
+- [x] The image-evidence brief contains the "judge the supplied images; do not re-run the harness" instruction and the cannot-reproduce / cannot-view wording; the non-image brief does not (test)
+- [x] `fw reviewer probe-vision` resolves its default image inside the framework install (vendored path or generated). A test runs the resolution with FRAMEWORK_ROOT set to a vendored-style tree.
+- [x] `MIN_EVALUATING_SEATS` is still 2, and the existing judge, verdict-ledger, review-runtime and probe-vision suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5209`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -303,6 +303,11 @@ So opencode (`vision: false` in the committed registry, per the T-4944 probe) sa
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5209_image_evidence_seats.py -q > /tmp/.t5209 2>&1 && grep -q passed /tmp/.t5209
+python3 -m pytest tests/unit/test_t4978_page_criteria_vision.py tests/unit/test_t4944_vision_gated_citation.py tests/unit/test_t5176_probe_vision.py -q > /tmp/.t5209b 2>&1 && grep -q passed /tmp/.t5209b
+test -f docs/screenshots/T-5209-probe-vision-default.png && ! git check-ignore -q docs/screenshots/T-5209-probe-vision-default.png
+python3 -c "import sys; sys.path.insert(0,'.'); from lib import verdict_ledger as vl; assert vl.MIN_EVALUATING_SEATS == 2"
+bin/fw vendor self --check --task T-5209
 
 ## RCA
 
@@ -383,6 +388,15 @@ So opencode (`vision: false` in the committed registry, per the T-4944 probe) sa
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-17 — probe-vision default image: ship, not generate
+- **Chose:** ship a copy of T-4947's arc-closure@1440 capture as `docs/screenshots/T-5209-probe-vision-default.png`, resolved against FRAMEWORK_ROOT. `docs/` is in `fw vendor`'s include list, and `docs/screenshots/*.png` is the existing .gitignore exception, so it is tracked here and copied to consumers.
+- **Why:** the probe grades against that image's known ground truth (8 BLOCKED cards, an exact title). A generated image would need a new ground truth and a rasteriser (PIL is not guaranteed on consumer hosts), and a text-heavy SVG could be answered without seeing pixels.
+- **Rejected:** generating at run time (reasons above); keeping the `.context/visual/` path (AEF-only).
+
+### 2026-11-17 — shortfall is reported, not a new refusal
+- **Chose:** when rung 5 cannot reach two vision vendors, the judge result carries `vision_shortfall` (printed): the count of vision kinds, the kinds, and `fw reviewer probe-vision <kind>`. Dispatch still follows the existing degraded path; the ledger still keeps the criterion open.
+- **Why:** the Goal keeps ledger acceptance unchanged; the existing single-vendor path already leaves the criterion open, so the gap was the missing instruction, not a missing block.
 
 ## Decision
 
