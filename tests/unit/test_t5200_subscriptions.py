@@ -59,11 +59,14 @@ GOOD = {"subscriptions": [{"id": "claude-a", "harness": "claude", "description":
 
 # ── the shipped file ─────────────────────────────────────────────────────────
 
-def test_shipped_registry_has_schema_and_no_entries():
+def test_shipped_registry_has_schema_and_is_valid():
+    # The operator fills this file (T-5200 S1); check its shape and validity, never its
+    # contents, so the test holds for any registry the operator writes (T-5208).
     p = FW / "policy" / "subscriptions.yaml"
     text = p.read_text()
     data = yaml.safe_load(text)
-    assert data == {"subscriptions": [], "assignments": []}
+    assert set(data) == {"subscriptions", "assignments"}
+    assert isinstance(data["subscriptions"], list) and isinstance(data["assignments"], list)
     assert "NEVER ACCOUNT IDENTITY" in text and "harness:" in text and "subscription:" in text
     assert subs.validate(data, text) == []
 
@@ -88,8 +91,10 @@ def test_host_specific_wins_regardless_of_order(proj):
     assert subs.resolve("claude", "h2") == "claude-a"
 
 
-def test_resolve_absent_file_is_unassigned(proj):
+def test_resolve_absent_file_is_unassigned(proj, tmp_path_factory, monkeypatch):
+    # Both locations absent: the project's and the framework fallback's (T-5208).
     (proj / "policy" / "subscriptions.yaml").unlink()
+    monkeypatch.setenv("FRAMEWORK_ROOT", str(tmp_path_factory.mktemp("fw-empty")))
     assert subs.resolve("claude") == subs.UNASSIGNED
 
 
