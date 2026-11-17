@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5206: fw task delegate --dry-run ignores operator widenings: act-in-the-world criteria covered by an active widening still show as operator-only (010 field report bb92576a)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-17T15:13:21Z
+# ============================================================================
+
+task_id: T-5206
+task_name: "fw task delegate --dry-run ignores operator widenings: act-in-the-world criteria covered by an active widening still show as operator-only (010 field report bb92576a)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-17T09:14:55Z
+completed: 2026-11-17T15:10:20Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-17T16:01:25+01:00
+last_commit: 2026-11-17T16:09:04+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context, criteria. fw task delegate reports operator widenings via active_widening
+
+# Key outcomes
+outcomes:
+  - 'The delegate report (dry run and real run) uses `delegation_widening.active_widening` for OPERATOR-ONLY criteria of widenable classes. There is one decision point, with no second copy of the scope, expiry, revocation or pattern rules.'
+  - 'Tests cover each case:'
+  - 'The summary counts (`converted / reviewer-judged / left human`) agree with the per-criterion lines'
+  - 'The existing delegation, widening (t5180) and verdict-ledger suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5206`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/delegation_cli.py'
+  - '.tasks/active/T-5206-fw-task-delegate---dry-run-ignores-opera.md'
+  - 'lib/delegation_cli.py'
+  - 'tests/unit/test_t5206_delegate_widening.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-17T16:01:25'
+    action: 'T-5206: context, criteria'
+  - time: '2026-11-17T16:01:58'
+    action: 'T-5206: context, criteria'
+  - time: '2026-11-17T16:09:04'
+    action: 'T-5206: fw task delegate reports operator widenings via active_widening'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 355 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 355
+  commits: 4
+  files_changed: 7
+  lines_added: 471
+  lines_removed: 25
+  footprint_refreshed_at: '2026-11-17T15:13:30Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5206-fw-task-delegate---dry-run-ignores-opera.md
+generated_by: context-agent-hybrid
