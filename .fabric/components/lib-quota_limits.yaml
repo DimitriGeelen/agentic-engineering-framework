@@ -1,0 +1,21 @@
+id: lib/quota_limits.py
+name: quota_limits
+type: script
+subsystem: framework-core
+location: lib/quota_limits.py
+tags: []
+
+purpose: "Limit-message recognisers per harness -> `limit` events in the quota ledger (T-5203, T-5190 S4)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-17
+created_by: unknown
