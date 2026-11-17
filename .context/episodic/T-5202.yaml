@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5202: Quota overview S3: machine-wide append-only quota ledger (ids and counts only) written by every project's fw (T-5190 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-17T11:12:07Z
+# ============================================================================
+
+task_id: T-5202
+task_name: "Quota overview S3: machine-wide append-only quota ledger (ids and counts only) written by every project's fw (T-5190 GO)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-17T09:08:43Z
+completed: 2026-11-17T11:11:28Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-17T11:36:40+01:00
+last_commit: 2026-11-17T11:40:47+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  S3 context, criteria. machine-wide quota ledger (lib/quota_ledger.py) — run.sh appends one row per completed dispatch, review_cost one per cost row; ids and reported counts only; flock + single O_APPEND write; rotation to .1; 13 tests
+
+# Key outcomes
+outcomes:
+  - 'A completed dispatch and a written review cost row each append one row to the machine ledger with the fields above. Two projects writing concurrently produce whole lines only (test with parallel writers).'
+  - 'The ledger path honours FW_QUOTA_LEDGER and XDG_STATE_HOME. A missing directory is created; an unwritable ledger warns once and never fails the dispatch or review (test).'
+  - 'The reader skips torn lines and filters by time and subscription. Rotation at the size bound keeps one previous file (test).'
+  - 'No row contains a prompt, host name or account-like value (test using S1''s account-value patterns on every written row).'
+  - 'Existing dispatch, review-cost and runtime tests pass, invariants pass, and `bin/fw vendor self --check --task T-5202` is clean. (pytest 1227 passed / 2 skipped; bats 502 ok, 1 failure: t4730 #4, the `fw termlink prune` usage text. It fails identically on the tree before this task (7b457421e^, checked by the parent), so it is filed as T-5207 and is not caused here. Invariants 166 ok; vendor check clean.)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/lib/quota_ledger.py'
+  - '.agentic-framework/lib/review_cost.py'
+  - '.tasks/active/T-5202-quota-overview-s3-machine-wide-append-on.md'
+  - 'agents/termlink/termlink.sh'
+  - 'lib/quota_ledger.py'
+  - 'lib/review_cost.py'
+  - 'tests/unit/conftest.py'
+  - 'tests/unit/test_t5202_quota_ledger.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-17T11:36:40'
+    action: 'T-5202: S3 context, criteria'
+  - time: '2026-11-17T11:40:47'
+    action: 'T-5202: machine-wide quota ledger (lib/quota_ledger.py) — run.sh appends one row per completed dispatch, review_cost one per cost row; ids and reported counts only; flock + single O_APPEND write; rotation to .1; 13 tests'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 122 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 122
+  commits: 3
+  files_changed: 13
+  lines_added: 1338
+  lines_removed: 19
+  footprint_refreshed_at: '2026-11-17T11:12:20Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5202-quota-overview-s3-machine-wide-append-on.md
+generated_by: context-agent-hybrid

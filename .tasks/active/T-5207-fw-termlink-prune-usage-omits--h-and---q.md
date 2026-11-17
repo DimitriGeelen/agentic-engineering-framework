@@ -1,15 +1,14 @@
 ---
-id: T-5202
-name: "Quota overview S3: machine-wide append-only quota ledger (ids and counts only)
-  written by every project's fw (T-5190 GO)"
+id: T-5207
+name: "fw termlink prune usage omits -h and --quiet: t4730_termlink_subcommand_help.bats #4 fails (pre-existing, T-5120 code)"
 description: >
-  Build slice of inception T-5190 (GO 2026-11-17). Design: docs/reports/T-5190-subscription-quota-overview.md.
+  Found during T-5202 regression runs 2026-11-17; reproduced on the tree before T-5202 (7b457421e^). The usage text of fw termlink prune does not name every option its parser accepts.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
-tags: []
+horizon: next
+tags: [bug]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -38,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-11-17T09:08:43Z
-last_update: 2026-11-17T10:36:39Z
-date_finished:
+created: 2026-11-17T11:11:03Z
+last_update: 2026-11-17T11:11:03Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,61 +50,27 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-11-17T09:15:29Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=302,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-11-17T09:16:04Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 0
-      D2: 0
-      D3: 0
-      D4: 0
-      F-RECALL: 0
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
-      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-5202: Quota overview S3: machine-wide append-only quota ledger (ids and counts only) written by every project's fw (T-5190 GO)
+# T-5207: fw termlink prune usage omits -h and --quiet: t4730_termlink_subcommand_help.bats #4 fails (pre-existing, T-5120 code)
 
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** Inception T-5190 (GO 2026-11-17), slice S3; design docs/reports/T-5190-subscription-quota-overview.md (1409's ask 3.3.1). S1 (T-5200) gave neutral subscription ids. S2 (T-5201) makes every dispatch's `meta.json` and every review cost row carry `subscription`, and dispatches carry reported `tokens`.
+**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
 
-**Problem / hypothesis:** All of that is written inside each project's own `.context/`. Several projects on one machine share a subscription, yet no single record sums their use, so nothing can say how close a subscription is to its limit.
+**Problem / hypothesis:** <what we think is wrong and why>
 
-**Goal:** One append-only quota ledger per machine user, outside any project: default `${XDG_STATE_HOME:-~/.local/state}/aef/quota-ledger.jsonl`, overridable by `FW_QUOTA_LEDGER`.
-- Every project's `fw` appends one row when a dispatch completes, from run.sh after S2 writes `tokens`, and one when a review cost row is written. A row holds: ts, project (directory basename only), task, dispatch id or review id, worker kind, subscription, tokens (only the reported counts).
-- Appends are atomic and safe across processes (flock or O_APPEND with single-write lines). A failed append never fails the dispatch or the review; it warns once.
-- The file holds ids and counts only: no prompts, no host names, no account data.
-- A reader `lib/quota_ledger.py: rows(since=None, subscription=None)` that skips torn lines, and a size bound: rotate to `.1` above a configurable size, default 50 MB.
+**Goal:** <what we are trying to achieve>
 
-**Expected outcome:** One record per machine sums every project's AEF load per subscription. S4 adds limit events to the same file, and S5 reads it.
+**Expected outcome:** <what will be different when this is done>
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] A completed dispatch and a written review cost row each append one row to the machine ledger with the fields above. Two projects writing concurrently produce whole lines only (test with parallel writers).
-- [x] The ledger path honours FW_QUOTA_LEDGER and XDG_STATE_HOME. A missing directory is created; an unwritable ledger warns once and never fails the dispatch or review (test).
-- [x] The reader skips torn lines and filters by time and subscription. Rotation at the size bound keeps one previous file (test).
-- [x] No row contains a prompt, host name or account-like value (test using S1's account-value patterns on every written row).
-- [ ] Existing dispatch, review-cost and runtime tests pass, invariants pass, and `bin/fw vendor self --check --task T-5202` is clean.
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,9 +256,6 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
-python3 -m pytest tests/unit/test_t5202_quota_ledger.py tests/unit/test_t5201_subscription_tokens.py -q > /tmp/.t5202.out 2>&1 && grep -q passed /tmp/.t5202.out
-python3 -c "import ast; ast.parse(open('lib/quota_ledger.py').read())"
-bin/fw vendor self --check --task T-5202
 
 ## RCA
 
@@ -387,11 +349,7 @@ bin/fw vendor self --check --task T-5202
 
 ## Updates
 
-### 2026-11-17T09:08:43Z — task-created [task-create-agent]
+### 2026-11-17T11:11:03Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5202-quota-overview-s3-machine-wide-append-on.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5207-fw-termlink-prune-usage-omits--h-and---q.md
 - **Context:** Initial task creation
-
-### 2026-11-17T10:35:43Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
