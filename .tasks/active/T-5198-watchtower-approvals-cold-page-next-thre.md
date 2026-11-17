@@ -110,9 +110,9 @@ Out of scope here: the ledger's `git log` walks (they decide verdicts and need t
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `inception_handoff_blockers` no longer runs a subprocess per inception on a warm cache, and its cached answer is invalidated by every input it reads. Equivalence test: cached == uncached after editing each input.
-- [ ] Frontmatter parsing re-parses only files whose (mtime_ns, size) changed, plus added or removed files. Equivalence test against a full parse after adds, edits and deletes.
-- [ ] Measured in-process: cold approvals page and the subprocess census before/after, recorded here.
+- [x] `inception_handoff_blockers` no longer runs a subprocess per inception on a warm cache, and its cached answer is invalidated by every input it reads. Equivalence test: cached == uncached after editing each input.
+- [x] Frontmatter parsing re-parses only files whose (mtime_ns, size) changed, plus added or removed files. Equivalence test against a full parse after adds, edits and deletes.
+- [x] Measured in-process: cold approvals page and the subprocess census before/after, recorded here.
 - [ ] Existing approvals/readiness/tasks tests pass, invariants pass, `bin/fw vendor self --check --task T-5198` is clean, and Watchtower is restarted and current.
 
 ### Human
@@ -299,6 +299,39 @@ Out of scope here: the ledger's `git log` walks (they decide verdicts and need t
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5198_handoff_blockers.py tests/unit/test_t5198_frontmatter_incremental.py tests/web/test_t3896_inception_readiness.py -q -p no:cacheprovider > /tmp/.t5198.out 2>&1 && grep -q passed /tmp/.t5198.out
+bin/fw vendor self --check --task T-5198
+bin/fw watchtower current
+
+## Measurements
+
+2026-11-17, this repo (~5,180 task files, 70–71 active inceptions), fresh process per run,
+host load average 18–28 (busy, so absolutes are noisy; before/after were alternated run by run).
+"before" = `git show HEAD:web/shared.py` at 838626bba swapped in; "after" = 60bad0767.
+
+| Cold /approvals, fresh process (in-process test client) | run 1 | run 2 | run 3 |
+|---|---:|---:|---:|
+| before | 27.7 s | 31.3 s | 28.7 s |
+| after | 22.8 s | 21.5 s | 23.6 s |
+
+Same processes, timed in isolation after the page: `inception_handoff_blockers` over all active
+inceptions, cache cleared: **6.2–7.4 s before → 0.01 s after**. Full frontmatter parse, cache
+cleared: 2.4–3.3 s in both (unchanged: a cold process still parses every file once — nothing is
+stored on disk, by scope). A rebuild with no file changed: 0.10 s, 0 files re-parsed.
+
+Subprocess census (`docs/reports/T-5186-profile-subprocesses.py`):
+
+| | subprocesses | `bash -c` | `git log` | page wall |
+|---|---:|---:|---:|---:|
+| before | 210 (36.7 s summed) | 48 (6.2 s) | 10 (13.4 s) | 36.8 s |
+| after | 151 (9.3 s summed) | 0 | 6 (7.5 s) | 22.8 s |
+
+(`git log` count/time differ between the two runs because of the ledger's own memo state, not
+this change; this task does not touch lib/verdict_ledger.py.)
+
+Shell parity: the transcription equals the shell predicate on all 4,020 task files that mention
+"inception" (117 of them with blockers) and on 24 edge-case fixtures (CRLF, non-UTF-8, quoted or
+spaceless `workflow_type`, comment-wrapped verdicts, repeated headings, markers in prose, …).
 
 ## RCA
 
@@ -379,6 +412,19 @@ Out of scope here: the ledger's `git log` walks (they decide verdicts and need t
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-17 — inception_handoff_blockers: transcribe, not cache
+- **Chose:** compute in-process (`_handoff_blockers_from_text`), guarded by a sha256 of the three
+  shell functions' text (`_HB_TRANSCRIBED_DIGEST`): while the shell rule is unchanged the
+  transcription answers; if it changes, the shell predicate runs as before; if the rule files are
+  missing, the check fails closed. Cache key: task file (mtime_ns, size) + (mtime_ns, size) of
+  lib/inception-readiness.sh and lib/task-audit.sh.
+- **Why:** the predicate reads only the task file (no git, no other file), and an in-memory
+  cache alone cannot help a cold process, which is where the ~6 s was. The digest guard keeps
+  the shell function the one definition (L-399): a page can never disagree with the gate, even
+  before someone updates the transcription; `test_transcription_digest_is_current` then goes red.
+- **Rejected:** a per-task cache over the `bash -c` call (no cold gain); a batched single
+  `bash` call (still ~6 s of per-line forks inside the shell loop).
 
 ## Decision
 
