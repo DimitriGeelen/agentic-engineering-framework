@@ -107,7 +107,7 @@ The operator rejected both, angrily and with reason. This keeps happening, and o
 - [x] `emit_review_batch` runs the same readiness predicates as `emit_review` for every undecided inception in the batch, through one shared function rather than a copy. For an unready inception it prints no link and names the blockers, under the same FW_ALLOW_UNREADY_HANDOFF bypass.
 - [x] A test: review-batch over an inception with undisposed IW questions prints no `/inception/` link and exits non-zero. With all questions disposed and a Recommendation, it prints the link. Build tasks in the same batch are unaffected.
 - [x] A test pins parity: for the same task file, the single and batch paths agree on ready or not ready
-- [ ] The existing review-handoff suites pass (grep tests/ for emit_review, review-batch, T-3549, T-2206), and `bin/fw vendor self --check --task T-5215` is clean
+- [x] The existing review-handoff suites pass (grep tests/ for emit_review, review-batch, T-3549, T-2206), and `bin/fw vendor self --check --task T-5215` is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
