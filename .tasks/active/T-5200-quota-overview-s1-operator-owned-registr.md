@@ -286,6 +286,10 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5200_subscriptions.py -q > /tmp/.t5200 2>&1 && grep -q passed /tmp/.t5200
+python3 lib/subscriptions.py audit > /tmp/.t5200a 2>&1 && grep -q "^PASS" /tmp/.t5200a
+bin/fw test invariants > /tmp/.t5200i 2>&1 && ! grep -q "^not ok" /tmp/.t5200i
+bin/fw vendor self --check --task T-5200
 
 ## RCA
 
