@@ -56193,3 +56193,21 @@ scan_id: R-a5d4dc37
 task_id: T-5200
 payload:
   task_file: .tasks/active/T-5200-quota-overview-s1-operator-owned-registr.md
+---
+kind: scan_emitted
+timestamp: '2026-11-17T09:52:15Z'
+scan_id: R-a6813f9e
+task_id: T-5205
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-17T09:52:15Z'
+scan_id: R-a6813f9e
+task_id: T-5205
+payload:
+  task_file: .tasks/active/T-5205-text-gate-refuses-read-only---help-on-op.md

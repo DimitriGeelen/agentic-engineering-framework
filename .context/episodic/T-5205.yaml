@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5205: Text gate refuses read-only --help on operator verbs (delegation widen/grant/revoke --help, accept-miss --help, quota subscription --help) as a provenance write; let --help/-h through (010 field report bb92576a)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-17T09:52:36Z
+# ============================================================================
+
+task_id: T-5205
+task_name: "Text gate refuses read-only --help on operator verbs (delegation widen/grant/revoke --help, accept-miss --help, quota subscription --help) as a provenance write; let --help/-h through (010 field report bb92576a)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-17T09:14:54Z
+completed: 2026-11-17T09:51:57Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-17T10:16:01+01:00
+last_commit: 2026-11-17T10:50:05+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  field verdicts from 010 on be.54 (T-5170 WORKS, T-5180 widen recording WORKS); T-5205 (--help refused) and T-5206 (delegate dry-run ignores widenings) filed. --help/-h on operator verbs passes the text gate (any other option still refused); Write/Edit and Bash guards now cover accepted-misses.jsonl, policy/subscriptions.yaml and subscription-changes.jsonl (010 field report bb92576a; gaps from T-5181/T-5200); 26 tests, 18 fail on the old guards
+
+# Key outcomes
+outcomes:
+  - '`delegation widen|grant|revoke --help`, `accept --help`/`fw task accept-miss --help` and `fw quota subscription add --help` pass the text gate. The same verbs with any real argument besides the help flag are still refused (test).'
+  - '(Added 2026-11-17, found while closing T-5200.) The Write/Edit guard in agents/context/check-human-ac-tick.py also refuses agent writes to `accepted-misses.jsonl` (T-5181, previously guarded only against Bash) and to `policy/subscriptions.yaml` plus its change log `subscription-changes.jsonl` (T-5200). The Bash scanner treats those two as guarded paths too. Test for each.'
+  - 'Existing shell_write_scan tests pass; invariants pass; `bin/fw vendor self --check --task T-5205` is clean.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-17 — help-only, and the two guard lists'
+    chose: 'add the new records to both existing lists (Bash scanner and Write/Edit hook) in this task, with tests on both legs. - **Not done here:** merging the two lists into one shared definition, or adding a parity test between them. That is the structural fix for the "added to one leg only" class. It touches the hook''s import path, so it is left as its own small task if the class recurs.'
+  # 1 decision(s) below are recorded in the register (.context/project/decisions.yaml) for this task but absent from the task file's Decisions section (T-4193).
+  - decision: 'D-999'
+    chose: '`--help`/`-h` passes only when it is the only option on the command. argparse exits on `-h` before acting, but restricting to help-only keeps the rule obvious and leaves every real call refused.'
+    rationale: 'Auto-captured from task file on completion'
+    id: 'D-999'
+    source: register
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-human-ac-tick.py'
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - '.tasks/active/T-5205-text-gate-refuses-read-only---help-on-op.md'
+  - '.tasks/active/T-5206-fw-task-delegate---dry-run-ignores-opera.md'
+  - 'agents/context/check-human-ac-tick.py'
+  - 'docs/reports/field-test-v1.8.16-results.md'
+  - 'lib/shell_write_scan.py'
+  - 'tests/unit/test_t5205_operator_records_guard.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-17T10:16:01'
+    action: 'T-5205: field verdicts from 010 on be.54 (T-5170 WORKS, T-5180 widen recording WORKS); T-5205 (--help refused) and T-5206 (delegate dry-run ignores widenings) filed'
+  - time: '2026-11-17T10:50:05'
+    action: 'T-5205: --help/-h on operator verbs passes the text gate (any other option still refused); Write/Edit and Bash guards now cover accepted-misses.jsonl, policy/subscriptions.yaml and subscription-changes.jsonl (010 field report bb92576a; gaps from T-5181/T-5200); 26 tests, 18 fail on the old guards'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 37 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 37
+  commits: 3
+  files_changed: 11
+  lines_added: 1054
+  lines_removed: 26
+  footprint_refreshed_at: '2026-11-17T09:53:13Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5205-text-gate-refuses-read-only---help-on-op.md
+generated_by: context-agent-hybrid

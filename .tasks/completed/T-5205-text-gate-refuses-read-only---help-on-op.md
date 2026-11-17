@@ -8,12 +8,12 @@ description: >
   delegation widen --help is refused from an agent shell as 'records a Human-tick
   provenance row'. --help prints usage and writes nothing.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug]
-components: []
+components: [agents/context/check-human-ac-tick.py, lib/shell_write_scan.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-17T09:14:54Z
-last_update: '2026-11-17T09:30:33Z'
-date_finished:
+last_update: 2026-11-17T09:51:57Z
+date_finished: 2026-11-17T09:51:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -100,9 +100,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `delegation widen|grant|revoke --help`, `accept --help`/`fw task accept-miss --help` and `fw quota subscription add --help` pass the text gate. The same verbs with any real argument besides the help flag are still refused (test).
-- [ ] (Added 2026-11-17, found while closing T-5200.) The Write/Edit guard in agents/context/check-human-ac-tick.py also refuses agent writes to `accepted-misses.jsonl` (T-5181, previously guarded only against Bash) and to `policy/subscriptions.yaml` plus its change log `subscription-changes.jsonl` (T-5200). The Bash scanner treats those two as guarded paths too. Test for each.
-- [ ] Existing shell_write_scan tests pass; invariants pass; `bin/fw vendor self --check --task T-5205` is clean.
+- [x] `delegation widen|grant|revoke --help`, `accept --help`/`fw task accept-miss --help` and `fw quota subscription add --help` pass the text gate. The same verbs with any real argument besides the help flag are still refused (test).
+- [x] (Added 2026-11-17, found while closing T-5200.) The Write/Edit guard in agents/context/check-human-ac-tick.py also refuses agent writes to `accepted-misses.jsonl` (T-5181, previously guarded only against Bash) and to `policy/subscriptions.yaml` plus its change log `subscription-changes.jsonl` (T-5200). The Bash scanner treats those two as guarded paths too. Test for each.
+- [x] Existing shell_write_scan tests pass; invariants pass; `bin/fw vendor self --check --task T-5205` is clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,9 +288,22 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q -p no:cacheprovider tests/unit/test_t5205_operator_records_guard.py > /tmp/.t5205 2>&1 && grep -q passed /tmp/.t5205
+bin/fw vendor self --check --task T-5205
 
 ## RCA
 
+**Symptom:**
+- (1) An agent could not read an operator verb's usage: `delegation widen --help` was refused as if it recorded a provenance row (010 field report).
+- (2) An agent could still write the accepted-miss ledger with the Edit/Write tool, and both the subscription registry and its change log with any tool.
+
+**Root cause:**
+- (1) The operator-verb rules in lib/shell_write_scan.py match on the verb words alone, so a help-only call looks like the act.
+- (2) Each new operator-only record was added to one guard leg at a time: T-5181 added accepted-misses.jsonl to the Bash scanner but not to the Write/Edit hook, and T-5200 added verb refusals but no path guard.
+
+**Why structurally allowed:** The guarded files are listed in two places (the Bash scanner's LEDGER_NAMES/MENTION_RE and a literal tuple in agents/context/check-human-ac-tick.py), with nothing tying them together. Each new record needs both edits, and nothing fails when one is missed.
+
+**Prevention:** Tests cover every operator-only record on both legs (Write/Edit and Bash) and help-only vs real-argument calls. The two lists are still separate; a parity test or a single shared list is the structural follow-up, noted in Decisions.
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -360,6 +373,11 @@ cost_estimate_proposed:
 
 ## Decisions
 
+### 2026-11-17 — help-only, and the two guard lists
+- **Chose:** `--help`/`-h` passes only when it is the only option on the command. argparse exits on `-h` before acting, but restricting to help-only keeps the rule obvious and leaves every real call refused.
+- **Chose:** add the new records to both existing lists (Bash scanner and Write/Edit hook) in this task, with tests on both legs.
+- **Not done here:** merging the two lists into one shared definition, or adding a parity test between them. That is the structural fix for the "added to one leg only" class. It touches the hook's import path, so it is left as its own small task if the class recurs.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -388,3 +406,21 @@ cost_estimate_proposed:
 
 ### 2026-11-17T09:15:00Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-17T09:51:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a6813f9e
+- **Timestamp:** 2026-11-17T09:52:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — (Added 2026-11-17, found while closing T-5200.) The Write/Edit guard in agents/context/check-human-ac-tick.py also refuses agent writes to `accepted-misses.jsonl` (T-5181, previously guarded only agai
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/context/check-human-ac-tick.py in: (Added 2026-11-17, found while closing T-5200.) The Write/Edit guard in agents/context/check-human-ac-tick.py also refuses agent writes to `accepted-m`
