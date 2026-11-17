@@ -7,12 +7,12 @@ description: >
   Follow-up to T-5186 slices A/B/C (cold approvals ~27 s after them). Measured remaining
   costs in .tasks/completed/T-5196-*.md ## Measurements.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [web/shared.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-17T08:43:15Z
-last_update: '2026-11-17T08:45:23Z'
-date_finished:
+last_update: 2026-11-17T10:28:08Z
+date_finished: 2026-11-17T10:28:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -113,7 +113,7 @@ Out of scope here: the ledger's `git log` walks (they decide verdicts and need t
 - [x] `inception_handoff_blockers` no longer runs a subprocess per inception on a warm cache, and its cached answer is invalidated by every input it reads. Equivalence test: cached == uncached after editing each input.
 - [x] Frontmatter parsing re-parses only files whose (mtime_ns, size) changed, plus added or removed files. Equivalence test against a full parse after adds, edits and deletes.
 - [x] Measured in-process: cold approvals page and the subprocess census before/after, recorded here.
-- [ ] Existing approvals/readiness/tasks tests pass, invariants pass, `bin/fw vendor self --check --task T-5198` is clean, and Watchtower is restarted and current.
+- [x] Existing approvals/readiness/tasks tests pass, invariants pass, `bin/fw vendor self --check --task T-5198` is clean, and Watchtower is restarted and current. (Run by the parent after the worker hit its timeout: 837 passed / 2 skipped across 59 files, invariants 0 failures, vendor check clean, Watchtower current.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -445,3 +445,16 @@ spaceless `workflow_type`, comment-wrapped verdicts, repeated headings, markers 
 
 ### 2026-11-17T08:43:20Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-17T10:28:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-75b98bd7
+- **Timestamp:** 2026-11-17T10:29:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
