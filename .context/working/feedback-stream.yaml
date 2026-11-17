@@ -56149,3 +56149,29 @@ scan_id: R-097f8bc2
 task_id: T-5193
 payload:
   task_file: .tasks/active/T-5193-runtime-projection-v2-report-the-edges-a.md
+---
+kind: scan_emitted
+timestamp: '2026-11-17T08:57:24Z'
+scan_id: R-2c005fdc
+task_id: T-5190
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-17T08:57:24Z'
+scan_id: R-2c005fdc
+task_id: T-5190
+payload:
+  task_file: .tasks/active/T-5190-cross-project-subscription-quota-overvie.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-11-17T08:57:24Z'
+scan_id: RC-e8466f9d
+task_id: T-5190
+payload:
+  overall: CONFIRMED
+  claim_count: 1
