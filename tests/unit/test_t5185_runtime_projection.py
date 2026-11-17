@@ -5,6 +5,11 @@ validate against docs/research/executable-workflow/contracts/v2/runtime-projecti
 runtime-projection.schema.json, through the schema's own x-responses table. The
 controls prove the schema bites: a captured response with a required field removed
 (or an enum value changed) must fail validation.
+
+T-5193: the endpoints now serve runtime projection v2 (pinned by
+test_t5193_runtime_projection_v2.py). v1 stays frozen, and this file keeps pinning it
+on the v1-compatible projection of each v2 body (_to_v1): drop the v2-only fields and
+read `unplaced` back as v1 `refusals`. So every v1 field is still served, unchanged.
 """
 
 import copy
@@ -94,9 +99,26 @@ def _validator(path, status):
     return Draft202012Validator({"$ref": SCHEMA["$id"] + ref}, registry=registry)
 
 
+def _to_v1(body):
+    """The v1-compatible view of a v2 200 body (T-5193); error bodies are unchanged."""
+    body = dict(body)
+    body.pop("runtime_projection_version", None)
+    if "unplaced" in body:
+        body["refusals"] = body.pop("unplaced")
+    if "instances" in body:
+        body["instances"] = [{k: v for k, v in i.items() if k not in ("traversed", "unmapped")}
+                             for i in body["instances"]]
+    return body
+
+
+def _get(resp):
+    body = json.loads(resp.get_data(as_text=True))
+    return _to_v1(body) if resp.status_code == 200 else body
+
+
 def _check(resp, path):
     assert resp.mimetype == "application/json"
-    body = json.loads(resp.get_data(as_text=True))
+    body = _get(resp)
     errors = list(_validator(path, resp.status_code).iter_errors(body))
     assert not errors, [e.message for e in errors]
     return body
@@ -182,9 +204,9 @@ def test_overlay_errors(project):
 def _captured(project):
     c, root = project
     _populate(root)
-    inst = json.loads(c.get("/api/instances?template=aef-task-lifecycle").get_data(as_text=True))
-    ovl = json.loads(c.get("/api/overlay?id=aef-task-lifecycle").get_data(as_text=True))
-    err = json.loads(c.get("/api/instances?template=nope").get_data(as_text=True))
+    inst = _get(c.get("/api/instances?template=aef-task-lifecycle"))
+    ovl = _get(c.get("/api/overlay?id=aef-task-lifecycle"))
+    err = _get(c.get("/api/instances?template=nope"))
     return inst, ovl, err
 
 

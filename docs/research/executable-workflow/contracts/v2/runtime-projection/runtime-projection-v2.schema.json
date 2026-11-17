@@ -1,0 +1,400 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aef.geelenandcompany.com/ewcr/contracts/v2/runtime-projection/runtime-projection-v2.schema.json",
+  "title": "EWCR runtime projection v2 — read-only live state served to the Designer",
+  "runtime_projection_version": 2,
+  "description": "Runtime projection v2 (T-5193). Supersedes runtime-projection.schema.json (v1, T-5185, frozen) for the same two endpoints: GET /api/instances (web/blueprints/designer_api.py) and GET /api/overlay (web/blueprints/designer.py + tools/corpus_overlay.py). Changes from v1: both 200 bodies carry runtime_projection_version: 2 on the wire; each instance carries `traversed` (the aef-task-lifecycle edge uids its recorded status history maps onto) and `unmapped` (recorded changes that map onto no single edge chain); v1's `refusals` (unparseable task files) is renamed `unplaced`, and `refusals` is reserved for transition refusals and is always empty until AEF has an instance runtime that records them. A field marked \"x-internal\": true is diagnostic or raw AEF vocabulary; the Designer must not branch on it, and AEF may change it without bumping runtime_projection_version. Any other change bumps runtime_projection_version and is announced to 832. Both endpoints are unauthenticated GETs. Select the shape for a response with x-responses (path + HTTP status -> $defs entry).",
+  "x-responses": {
+    "GET /api/instances": {
+      "200": "#/$defs/instances_response",
+      "400": "#/$defs/error_response",
+      "404": "#/$defs/error_response"
+    },
+    "GET /api/overlay": {
+      "200": "#/$defs/overlay_response",
+      "404": "#/$defs/error_response"
+    }
+  },
+  "anyOf": [
+    {
+      "$ref": "#/$defs/instances_response"
+    },
+    {
+      "$ref": "#/$defs/overlay_response"
+    },
+    {
+      "$ref": "#/$defs/error_response"
+    }
+  ],
+  "$defs": {
+    "map_id": {
+      "type": "string",
+      "description": "Designer map (template) id: the directory name under .context/designer/projects/. /api/instances accepts ^[a-z0-9][a-z0-9_-]*$; /api/overlay accepts ^[a-z0-9-]{1,64}$ (no underscore, max 64). The two guards differ in the code today; this pattern is their union.",
+      "pattern": "^[a-z0-9_-]+$"
+    },
+    "epoch_seconds": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Server time the response was built, integer Unix seconds (int(time.time())). Not a version or change marker: it differs on every call."
+    },
+    "lifecycle_node": {
+      "description": "A state-carrier uid on the aef-task-lifecycle map. tl_archive is never produced by /api/instances (it reads .tasks/active/ only).",
+      "enum": [
+        "tl_create",
+        "tl_parked",
+        "tl_work",
+        "tl_heal",
+        "tl_human_review"
+      ]
+    },
+    "instance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task",
+        "state",
+        "node",
+        "status",
+        "owner",
+        "traversed",
+        "unmapped"
+      ],
+      "description": "One active task file placed (or not) on the map.",
+      "properties": {
+        "task": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Task id from the frontmatter id: field (e.g. T-4831); when the file has no id: field, the first two dash-separated parts of the file name."
+        },
+        "state": {
+          "enum": [
+            "NODE",
+            "STALE",
+            "NO-POSITION"
+          ],
+          "description": "NODE: the task maps to `node` and that uid exists in the map's latest version. STALE: it maps to `node` but the map no longer carries that uid (or the map version is unreadable, in which case every mapped task is STALE). NO-POSITION: the status/horizon pair has no node; `node` is null."
+        },
+        "node": {
+          "description": "The lifecycle uid the task sits on, from the status+horizon table in designer_api._LIFECYCLE_NODES (captured+now/next -> tl_create, captured+later -> tl_parked, started-work -> tl_work, issues -> tl_heal, work-completed in active/ -> tl_human_review). Missing horizon counts as now. null exactly when state is NO-POSITION.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/lifecycle_node"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "type": "string",
+          "x-internal": true,
+          "description": "Raw frontmatter status: value, quotes stripped; empty string when absent. Not validated: any string the file holds is passed through. Render `node`/`state`, not this."
+        },
+        "owner": {
+          "type": "string",
+          "description": "Raw frontmatter owner: value, quotes stripped; empty string when absent. In practice \"agent\" or \"human\"; not enumerated by the code."
+        },
+        "traversed": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/edge_uid"
+          },
+          "description": "Edge uids the task's recorded history traversed, in order. Source: the task file's own Updates entries (\"- **Change:** status: A → B\" and \"horizon: A → B\", written by update-task.sh); no git. Each change that moves the task from node A to node B (same status+horizon table as `node`; the horizon in force is reconstructed backwards from the current frontmatter) contributes the one chain of edges from A to B whose intermediate nodes are not state carriers (gateways, tl_start, tl_verify, ...). A change with no such chain, or with more than one, goes to `unmapped`. Empty when the file records no node-moving change."
+        },
+        "unmapped": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/unmapped_transition"
+          },
+          "description": "Recorded changes that could not be placed on an edge chain, in recorded order. Empty when every change mapped or there is no history."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "NO-POSITION"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "node": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "node": {
+                "$ref": "#/$defs/lifecycle_node"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "instances_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime_projection_version",
+        "template",
+        "generated",
+        "state",
+        "examined",
+        "instances",
+        "unplaced",
+        "refusals"
+      ],
+      "description": "GET /api/instances?template=<map_id>, HTTP 200. Only aef-task-lifecycle has instances; any other known map returns NO-INSTANCES with examined 0 and empty lists.",
+      "properties": {
+        "runtime_projection_version": {
+          "$ref": "#/$defs/projection_version"
+        },
+        "template": {
+          "$ref": "#/$defs/map_id",
+          "description": "Echo of the template query parameter."
+        },
+        "generated": {
+          "$ref": "#/$defs/epoch_seconds"
+        },
+        "state": {
+          "enum": [
+            "INSTANCES",
+            "NO-INSTANCES"
+          ],
+          "description": "INSTANCES when `instances` is non-empty, else NO-INSTANCES. Unplaced files do not count: a corpus whose every file was unplaced is NO-INSTANCES with unplaced present."
+        },
+        "examined": {
+          "type": "integer",
+          "minimum": 0,
+          "x-internal": true,
+          "description": "Number of active task files read (= len(instances) + len(unplaced)). Diagnostic."
+        },
+        "instances": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/instance"
+          },
+          "description": "Placed tasks, in file-name order of .tasks/active/."
+        },
+        "unplaced": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/instance_unplaced"
+          },
+          "description": "Files examined but not placed (v1 `refusals`)."
+        },
+        "refusals": {
+          "type": "array",
+          "maxItems": 0,
+          "items": {
+            "$ref": "#/$defs/transition_refusal"
+          },
+          "description": "Transition refusals. Always [] in v2: AEF has no instance runtime that records them. The Designer keeps its refusal marker hidden while this is empty."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "INSTANCES"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "instances": {
+                "minItems": 1
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "instances": {
+                "maxItems": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    "overlay_node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "uid",
+        "badge",
+        "severity",
+        "text"
+      ],
+      "description": "One badge on one map node: a count of the tasks in that node's bucket. Only non-empty buckets whose uid exists in the map's latest version are emitted.",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Map node uid (aef:uid). aef-task-lifecycle: tl_create, tl_parked, tl_work, tl_heal, tl_human_review, tl_archive. aef-inception-flow: if_file, if_inception, if_gw_outcome, if_done_go, if_done_closed. Not enumerated here: the set is per-map and comes from tools/corpus_overlay.py PROFILES."
+        },
+        "badge": {
+          "type": "string",
+          "maxLength": 48,
+          "pattern": "^[1-9][0-9]*$",
+          "description": "Task count in the bucket, as a decimal string (never 0: empty buckets are omitted). Clamped at 48 chars."
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warn",
+            "alert"
+          ],
+          "description": "From the oldest task's last_update age in the bucket: info, warn >7 days, alert >30 days. Terminal buckets (tl_archive, if_done_*) are always info; the operator queue (if_gw_outcome) is warn, alert when its oldest waiter is >7 days. Thresholds are v0 defaults and may move without a version bump; the enum may not."
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 200,
+          "x-internal": true,
+          "description": "Human-readable tooltip, e.g. \"3 task(s), 1 stuck >7d (oldest 12d) — focus: T-42\". Display only; its wording is not a contract. Clamped at 200 chars."
+        }
+      }
+    },
+    "overlay_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime_projection_version",
+        "type",
+        "map",
+        "generated",
+        "nodes"
+      ],
+      "description": "GET /api/overlay?id=<map_id>, HTTP 200: the wire-canonical aef:annotate payload, forwarded verbatim to the Designer by the /designer/overlay wrapper on every aef:ready. A known map with no projection profile, or an unreadable latest version, returns an empty `nodes` list, not an error.",
+      "properties": {
+        "runtime_projection_version": {
+          "$ref": "#/$defs/projection_version"
+        },
+        "type": {
+          "const": "aef:annotate",
+          "description": "Message type for the Designer's postMessage intake."
+        },
+        "map": {
+          "$ref": "#/$defs/map_id",
+          "description": "Echo of the id query parameter. The intake ignores it."
+        },
+        "generated": {
+          "$ref": "#/$defs/epoch_seconds"
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/overlay_node"
+          },
+          "description": "Badges, at most one per uid. Order is not significant."
+        }
+      }
+    },
+    "error_response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "error"
+      ],
+      "description": "Error body for both endpoints. /api/instances: 400 \"bad template id\" (missing or malformed template parameter), 404 \"unknown template\" (no meta.json for it). /api/overlay: 404 \"not found\" for a malformed id AND for an unknown map (it has no 400). Branch on the HTTP status, not the text.",
+      "properties": {
+        "ok": {
+          "const": false,
+          "description": "Always false on an error body."
+        },
+        "error": {
+          "type": "string",
+          "minLength": 1,
+          "x-internal": true,
+          "description": "Short reason. Display only; wording may change."
+        }
+      }
+    },
+    "projection_version": {
+      "const": 2,
+      "description": "runtime_projection_version on the wire: 2 for this schema. A consumer that reads a value it does not know must not guess the shape."
+    },
+    "edge_uid": {
+      "type": "string",
+      "minLength": 1,
+      "description": "aef:uid of a sequenceFlow in the aef-task-lifecycle map's latest version (e.g. tl_e14). Per-map, not enumerated: a map edit can add or retire uids without a version bump."
+    },
+    "unmapped_transition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from",
+        "to",
+        "at"
+      ],
+      "description": "A recorded change that moved the task's node but maps onto no single edge chain: no chain exists, more than one does (ambiguous), or one side has no lifecycle node. Reported, never forced onto an edge.",
+      "properties": {
+        "from": {
+          "description": "Lifecycle node before the change; null when the recorded status/horizon has no node.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/lifecycle_node"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "to": {
+          "description": "Lifecycle node after the change; null when the recorded status/horizon has no node.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/lifecycle_node"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "at": {
+          "description": "Timestamp of the Updates entry that recorded the change, as written (ISO 8601 UTC, e.g. 2026-11-17T00:47:10Z); null when the change line has no dated entry above it.",
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "instance_unplaced": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "task",
+        "reason"
+      ],
+      "description": "An active task file that was examined but could not be placed (v1 called this a refusal). Reported, never silently dropped.",
+      "properties": {
+        "task": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The task FILE name (e.g. T-9-bad.md), not a task id: the file could not be parsed for one."
+        },
+        "reason": {
+          "type": "string",
+          "x-internal": true,
+          "description": "Free-text cause (today \"no frontmatter\" or \"unreadable: <OSError>\"). Display only."
+        }
+      }
+    },
+    "transition_refusal": {
+      "not": {},
+      "description": "Reserved: a refused lifecycle transition (task id, node, reason_code, target) per contracts v2 refusal.schema.json. AEF records none yet, so no item validates and `refusals` is always []. Its shape is defined when a runtime records them, under a bumped runtime_projection_version."
+    }
+  }
+}

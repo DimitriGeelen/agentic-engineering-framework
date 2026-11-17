@@ -114,7 +114,8 @@ def test_malformed_task_is_refused_not_dropped(env):
     (root / ".tasks" / "active" / "T-9-bad.md").write_text("no frontmatter\n")
     j = c.get("/api/instances?template=aef-task-lifecycle").get_json()
     assert j["examined"] == 1 and j["instances"] == []
-    assert j["refusals"][0]["task"] == "T-9-bad.md"
+    assert j["unplaced"][0]["task"] == "T-9-bad.md"  # T-5193: v1 `refusals` is `unplaced`
+    assert j["refusals"] == []
 
 
 def test_table_nodes_exist_in_real_lifecycle_map():

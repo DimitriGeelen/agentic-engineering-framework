@@ -71,3 +71,42 @@ version does not define their shape and the Designer must not expect them:
   projection endpoints either.
 
 Each arrives as a new `$defs` entry under a bumped `runtime_projection_version`.
+
+## v2 changes (T-5193)
+
+Schema: [`runtime-projection-v2.schema.json`](runtime-projection-v2.schema.json)
+(`runtime_projection_version: 2`). The v1 file above stays frozen; the live
+endpoints now serve v2. Pinned by `tests/unit/test_t5193_runtime_projection_v2.py`.
+Asked for by 832: Q11 (msg ccdef9f3) and msg 4fe08e05.
+
+| Change | Where | Why |
+|---|---|---|
+| `runtime_projection_version: 2` on the wire | both 200 bodies | v1 carried the version in the schema file only |
+| `instances[].traversed`: ordered edge uids | `/api/instances` | the overlay can draw the path the task took instead of a derived shortest path (Q11) |
+| `instances[].unmapped`: `{from, to, at}` | `/api/instances` | recorded changes that fit no single edge chain are reported, never forced |
+| `refusals` → `unplaced` (same items) | `/api/instances` | the old list held unparseable task *files*; the Designer reads `refusals` as *transition* refusals |
+| `refusals` is always `[]` | `/api/instances` | reserved for transition refusals until AEF has a runtime that records them; keep the marker hidden while empty |
+
+**Where `traversed` comes from.** The task file only, no git: the `## Updates`
+entries that `agents/task-create/update-task.sh` writes
+(`- **Change:** status: A → B`, `- **Change:** horizon: A → B`, under a dated
+`### <ts> — …` header). Each entry is turned into a from-node and a to-node
+with the same status+horizon table that gives `node`. A status line records
+its own from-status but not the horizon in force, so the horizon is
+reconstructed backwards from the current frontmatter. An entry that does not
+move the node (e.g. `horizon: next → now` on a started task) adds nothing.
+
+**Mapping a change to edges.** A change from node A to node B maps to the one
+chain of map edges from A to B whose intermediate nodes are not state carriers
+(gateways, `tl_start`, `tl_verify`, …). Example: `captured → started-work`
+from `tl_create` is `tl_e2, tl_e14, tl_e3`. No chain, more than one chain, or
+a side with no node → the change goes to `unmapped` with `at` set to the
+entry's timestamp. Known unmapped classes on this repo today: `tl_work →
+tl_create` and `tl_parked → tl_create` (no edge back to create in the map),
+and `tl_heal → tl_work` (two chains: the direct "resolved — back to work" edge
+and the detour through the completion gates; it is not guessed).
+
+**Limits.** History written by hand or by older tooling in another format is not
+read; a task whose file records nothing has both lists empty. `traversed`
+reflects the map's latest version: edge uids are per-map and may change with a
+map edit without a version bump.

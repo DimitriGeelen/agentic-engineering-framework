@@ -285,8 +285,98 @@ def _lifecycle_node(status, horizon):
     return _LIFECYCLE_NODES.get((status, horizon)) or _LIFECYCLE_NODES.get((status, None))
 
 
+# T-5193 (runtime projection v2): the edges a task actually traversed, from the status
+# history update-task.sh records in the task file ("### <ts> — ..." headers followed by
+# "- **Change:** status: A → B" / "horizon: A → B" lines). No git calls.
+RUNTIME_PROJECTION_VERSION = 2
+_CARRIERS = frozenset(_LIFECYCLE_NODES.values()) | {"tl_archive"}
+_HISTORY = re.compile(
+    r"^(?:### (\d{4}-\d\d-\d\dT[0-9:]+Z?)\b|- \*\*Change:\*\* (status|horizon): (\S+) → (\S+))",
+    re.M)
+
+
+def _lifecycle_graph(overlay):
+    """{from_uid: [(edge_uid, to_uid)]} for the map's latest version; {} when unreadable.
+    A flow without an aef:uid cannot be reported, so it is not walked."""
+    d = PROJECT_ROOT / ".context" / "designer" / "projects" / _LIFECYCLE_MAP
+    try:
+        meta = json.loads((d / "meta.json").read_text())
+        spec = overlay.corpus_spec.parse_map((d / f"v{meta['latest']}.bpmn").read_text())
+    except (Exception, SystemExit):  # unreadable map: every change is unmapped
+        return {}
+    uid = {n["id"]: n.get("uid") for n in spec.get("nodes", [])}
+    graph = {}
+    for f in spec.get("flows", []):
+        a, b = uid.get(f.get("from")), uid.get(f.get("to"))
+        if a and b and f.get("uid"):
+            graph.setdefault(a, []).append((f["uid"], b))
+    return graph
+
+
+def _edge_path(graph, a, b, memo):
+    """The one chain of edge uids from carrier a to carrier b whose intermediate nodes
+    are not state carriers (gateways, tl_start, tl_verify ...). None when there is no
+    such chain or more than one: an ambiguous change is unmapped, never forced."""
+    key = (a, b)
+    if key not in memo:
+        found = []
+
+        def walk(node, edges, seen):
+            for e, nxt in graph.get(node, ()):
+                if len(found) > 1:
+                    return
+                if nxt == b:
+                    found.append(edges + [e])
+                elif nxt not in _CARRIERS and nxt not in seen:
+                    walk(nxt, edges + [e], seen | {nxt})
+
+        if a != b:
+            walk(a, [], {a})
+        memo[key] = found[0] if len(found) == 1 else None
+    return memo[key]
+
+
+def _status_history(text, status, horizon):
+    """[(at, from_node, to_node)] for every recorded change that moves the task's node.
+    Horizon at each point is reconstructed backwards from the current frontmatter (a
+    status line records its own from-status; the horizon in force is not)."""
+    start = text.find("**Change:**")
+    if start < 0:
+        return []
+    start = max(0, text.rfind("\n### ", 0, start))  # the block holding the first change
+    blocks = []
+    for m in _HISTORY.finditer(text, start):
+        if m.group(1):
+            blocks.append([m.group(1), {}])
+            continue
+        if not blocks:
+            blocks.append([None, {}])
+        blocks[-1][1][m.group(2)] = (m.group(3), m.group(4))
+    out, s, h = [], status, horizon
+    for at, ch in reversed([b for b in blocks if b[1]]):
+        s_to, h_to = ch.get("status", (None, s))[1], ch.get("horizon", (None, h))[1]
+        s = ch["status"][0] if "status" in ch else s_to
+        h = ch["horizon"][0] if "horizon" in ch else h_to
+        frm, to = _lifecycle_node(s, h or "now"), _lifecycle_node(s_to, h_to or "now")
+        if frm is None or to is None or frm != to:
+            out.append((at, frm, to))
+    out.reverse()
+    return out
+
+
+def _traversal(text, status, horizon, graph, memo):
+    traversed, unmapped = [], []
+    for at, frm, to in _status_history(text, status, horizon):
+        path = _edge_path(graph, frm, to, memo) if frm and to else None
+        if path is None:
+            unmapped.append({"from": frm, "to": to, "at": at})
+        else:
+            traversed.extend(path)
+    return traversed, unmapped
+
+
 def _lifecycle_instances():
-    """(instances, examined, refusals) for the active tasks under PROJECT_ROOT."""
+    """(instances, examined, unplaced) for the active tasks under PROJECT_ROOT."""
     import importlib.util
 
     spec = importlib.util.spec_from_file_location(
@@ -294,14 +384,16 @@ def _lifecycle_instances():
     overlay = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(overlay)
     present = overlay.carriers(PROJECT_ROOT, _LIFECYCLE_MAP)
+    graph, memo = _lifecycle_graph(overlay), {}
     instances, refusals, examined = [], [], 0
     for p in sorted((PROJECT_ROOT / ".tasks" / "active").glob("T-*.md")):
         examined += 1
         try:
-            head = re.match(r"^---\n(.*?)\n---", p.read_text(errors="replace"), re.S)
+            text = p.read_text(errors="replace")
         except OSError as e:
             refusals.append({"task": p.name, "reason": f"unreadable: {e}"})
             continue
+        head = re.match(r"^---\n(.*?)\n---", text, re.S)
         if not head:
             refusals.append({"task": p.name, "reason": "no frontmatter"})
             continue
@@ -313,9 +405,12 @@ def _lifecycle_instances():
             state = "NO-POSITION"
         else:
             state = "NODE" if node in present else "STALE"
+        traversed, unmapped = _traversal(
+            text[head.end():], status, fm.get("horizon") or "now", graph, memo)
         instances.append({
             "task": task, "state": state, "node": node,
             "status": status, "owner": fm.get("owner", ""),
+            "traversed": traversed, "unmapped": unmapped,
         })
     return instances, examined, refusals
 
@@ -327,16 +422,20 @@ def instances():
         return _err("bad template id", 400)
     if _read_meta(template) is None:
         return _err("unknown template", 404)
-    insts, examined, refusals = [], 0, []
+    insts, examined, unplaced = [], 0, []
     if template == _LIFECYCLE_MAP:
-        insts, examined, refusals = _lifecycle_instances()
+        insts, examined, unplaced = _lifecycle_instances()
+    # T-5193: v1's `refusals` (unparseable files) is `unplaced`; `refusals` is reserved for
+    # transition refusals and stays empty until AEF has a runtime that records them.
     return jsonify({
+        "runtime_projection_version": RUNTIME_PROJECTION_VERSION,
         "template": template,
         "generated": int(time.time()),
         "state": "INSTANCES" if insts else "NO-INSTANCES",
         "examined": examined,
         "instances": insts,
-        "refusals": refusals,
+        "unplaced": unplaced,
+        "refusals": [],
     })
 
 
