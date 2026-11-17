@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5200: Quota overview S1: operator-owned registry of neutral subscription ids (never account data), beside policy/review-backends.yaml (T-5190 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-17T09:37:19Z
+# ============================================================================
+
+task_id: T-5200
+task_name: "Quota overview S1: operator-owned registry of neutral subscription ids (never account data), beside policy/review-backends.yaml (T-5190 GO)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-17T09:08:41Z
+completed: 2026-11-17T09:34:40Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-17T10:09:51+01:00
+last_commit: 2026-11-17T10:33:27+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  S1 context, criteria; T-5201..T-5204 (S2-S5) captured (T-5190 GO). subscription registry (S1) — policy/subscriptions.yaml (schema, no entries), lib/subscriptions.py load/validate/resolve, fw quota subscription list|show|add|assign|remove (changes operator-only, refused under CLAUDECODE/AI_AGENT even with --i-am-human), account-value refusal, audit + doctor check, Bash text gate refuses the change verbs. vendored policy/subscriptions.yaml; criteria ticked (49 T-5200 tests, invariants 166/166, vendor check clean); Verification lines. Verification lines
+
+# Key outcomes
+outcomes:
+  - 'policy/subscriptions.yaml exists with a documented schema and no entries. lib/subscriptions.py loads and validates it, and `resolve()` returns the assigned id or "unassigned" (host-specific assignment wins over kind-only).'
+  - '`fw quota subscription add|assign|remove` are refused under CLAUDECODE/AI_AGENT, `--i-am-human` included, and `list|show` work for anyone. Tests cover both.'
+  - 'Validation refuses account-looking values (e-mail, long hex/base64, known token prefixes), duplicate ids, unknown harnesses, and assignments to undefined ids. `fw audit` and `fw doctor` report an invalid registry. Tests cover each.'
+  - 'Tests in tests/unit/test_t5200_*.py; invariants pass; `bin/fw vendor self --check --task T-5200` is clean.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - '.agentic-framework/lib/subscriptions.py'
+  - '.agentic-framework/policy/subscriptions.yaml'
+  - '.tasks/active/T-5200-quota-overview-s1-operator-owned-registr.md'
+  - '.tasks/active/T-5201-quota-overview-s2-fw-termlink-dispatch-a.md'
+  - '.tasks/active/T-5202-quota-overview-s3-machine-wide-append-on.md'
+  - '.tasks/active/T-5203-quota-overview-s4-per-harness-limit-mess.md'
+  - '.tasks/active/T-5204-quota-overview-s5-fw-quota-status---need.md'
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - 'lib/shell_write_scan.py'
+  - 'lib/subscriptions.py'
+  - 'policy/subscriptions.yaml'
+  - 'tests/unit/test_t5200_subscriptions.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-17T10:09:51'
+    action: 'T-5200: S1 context, criteria; T-5201..T-5204 (S2-S5) captured (T-5190 GO)'
+  - time: '2026-11-17T10:30:42'
+    action: 'T-5200: subscription registry (S1) — policy/subscriptions.yaml (schema, no entries), lib/subscriptions.py load/validate/resolve, fw quota subscription list|show|add|assign|remove (changes operator-only, refused under CLAUDECODE/AI_AGENT even with --i-am-human), account-value refusal, audit + doctor check, Bash text gate refuses the change verbs'
+  - time: '2026-11-17T10:33:13'
+    action: 'T-5200: vendored policy/subscriptions.yaml; criteria ticked (49 T-5200 tests, invariants 166/166, vendor check clean); Verification lines'
+  - time: '2026-11-17T10:33:27'
+    action: 'T-5200: Verification lines'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 25 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 25
+  commits: 5
+  files_changed: 19
+  lines_added: 3156
+  lines_removed: 9
+  footprint_refreshed_at: '2026-11-17T09:37:30Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5200-quota-overview-s1-operator-owned-registr.md
+generated_by: context-agent-hybrid
