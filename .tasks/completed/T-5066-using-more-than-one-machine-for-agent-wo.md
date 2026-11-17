@@ -6,16 +6,16 @@ description: >
   Inception: Using more than one machine for agent work: pattern from 1409's node1
   write-up (remote nodes via TermLink pool topics)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-11-08T19:47:48Z
-last_update: '2026-11-08T20:00:27Z'
-date_finished:
+last_update: 2026-11-17T23:17:14Z
+date_finished: 2026-11-17T23:17:14Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -107,15 +107,15 @@ On 2026-11-08 the operator asked 1409-sprind for "a write-up to 999 how we can u
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -173,7 +173,22 @@ The need is measured (node1 idle under 1 % a day for 12 days while this host was
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO (narrow scope)
+
+Rationale:
+
+The need is measured (node1 idle under 1 % a day for 12 days while this host was overloaded) and every loss was in the control plane, which is framework territory. Two of 1409's lessons are live bugs in AEF itself. But only one project uses remote capacity so far, and it already has a working client. So: GO now on (a) a framework pattern document "remote capacity" (roles, contract, the nine rules), (b) fixing AEF's 24 pid-only temp names, (c) making the dispatch default timeout fit long builders or say clearly when it kills one. Lift 1409's client into `fw pool` and a Watchtower node view only when a second project asks for remote capacity.
+
+Evidence:
+
+- Write-up, all 3 parts plus addendum, addresses masked: docs/reports/T-5066-remote-nodes-writeup.md (assessment at the end)
+- Trust boundary already decided by the operator: node1 and Ring20 are trusted (2026-10-27, write-up section 5.1)
+- 24 pid-only temp names in lib/ agents/ bin/ web/ (grep for `$$`/`os.getpid()` tmp names); `TERMLINK_WORKER_TIMEOUT` default 600 s at agents/termlink/termlink.sh:72
+- Proposed answers to 1409's three questions (entry registry on the node; trust per project in config with operator approval; controller limits stay node config) in the assessment
+
+**Date**: 2026-11-17T23:17:12Z
 
 ## Updates
 
@@ -182,3 +197,41 @@ The need is measured (node1 idle under 1 % a day for 12 days while this host was
 
 ### 2026-11-08T19:48:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-17T23:17:12Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO (narrow scope)
+
+Rationale:
+
+The need is measured (node1 idle under 1 % a day for 12 days while this host was overloaded) and every loss was in the control plane, which is framework territory. Two of 1409's lessons are live bugs in AEF itself. But only one project uses remote capacity so far, and it already has a working client. So: GO now on (a) a framework pattern document "remote capacity" (roles, contract, the nine rules), (b) fixing AEF's 24 pid-only temp names, (c) making the dispatch default timeout fit long builders or say clearly when it kills one. Lift 1409's client into `fw pool` and a Watchtower node view only when a second project asks for remote capacity.
+
+Evidence:
+
+- Write-up, all 3 parts plus addendum, addresses masked: docs/reports/T-5066-remote-nodes-writeup.md (assessment at the end)
+- Trust boundary already decided by the operator: node1 and Ring20 are trusted (2026-10-27, write-up section 5.1)
+- 24 pid-only temp names in lib/ agents/ bin/ web/ (grep for `$$`/`os.getpid()` tmp names); `TERMLINK_WORKER_TIMEOUT` default 600 s at agents/termlink/termlink.sh:72
+- Proposed answers to 1409's three questions (entry registry on the node; trust per project in config with operator approval; controller limits stay node config) in the assessment
+
+### 2026-11-17T23:17:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8a5acba0
+- **Timestamp:** 2026-11-17T23:17:16Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-8d13c1b8
+- **Timestamp:** 2026-11-17T23:17:16Z
+- **Overall:** UNVERIFIED
+- **Claims:** 0
+- No verifiable claims found in ## Recommendation
