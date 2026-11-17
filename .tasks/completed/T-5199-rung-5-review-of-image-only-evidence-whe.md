@@ -8,16 +8,16 @@ description: >
   images, the panel is always incomplete and escalates to the operator even after
   a vision-capable green (832 field report, be.54)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-11-17T08:44:57Z
-last_update: '2026-11-17T15:15:24Z'
-date_finished:
+last_update: 2026-11-17T16:04:08Z
+date_finished: 2026-11-17T16:04:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -116,15 +116,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -183,7 +183,11 @@ Keep the two-vendor bar for image evidence. Fix what is actually wrong: the plan
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Keep the two-vendor bar for image evidence. Fix what is actually wrong: the planner still seats reviewers that cannot read images when a criterion's evidence is an image but not a page, and it never excludes kinds whose vision is undeclared. When a host cannot field two vision vendors, the criterion keeps escalating to the operator, but the refusal says how many vision kinds the host has and how to add one. The operator agreed on 2026-11-17 ("Proceed as suggested" to yes / yes / (a)).
+
+**Date**: 2026-11-17T16:04:08Z
 
 ## Updates
 
@@ -196,3 +200,40 @@ Keep the two-vendor bar for image evidence. Fix what is actually wrong: the plan
 ### 2026-11-17T15:05:19Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-17T16:04:08Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Keep the two-vendor bar for image evidence. Fix what is actually wrong: the planner still seats reviewers that cannot read images when a criterion's evidence is an image but not a page, and it never excludes kinds whose vision is undeclared. When a host cannot field two vision vendors, the criterion keeps escalating to the operator, but the refusal says how many vision kinds the host has and how to add one. The operator agreed on 2026-11-17 ("Proceed as suggested" to yes / yes / (a)).
+
+### 2026-11-17T16:04:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e3fa94e2
+- **Timestamp:** 2026-11-17T16:04:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-51f4e851
+- **Timestamp:** 2026-11-17T16:04:10Z
+- **Overall:** CONFIRMED
+- **Claims:** 1
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-893` | task | ✓ pass |
