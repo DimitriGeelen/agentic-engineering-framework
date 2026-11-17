@@ -56355,3 +56355,29 @@ scan_id: R-88bcf60d
 task_id: T-5206
 payload:
   task_file: .tasks/active/T-5206-fw-task-delegate---dry-run-ignores-opera.md
+---
+kind: scan_emitted
+timestamp: '2026-11-17T16:04:10Z'
+scan_id: R-e3fa94e2
+task_id: T-5199
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-17T16:04:10Z'
+scan_id: R-e3fa94e2
+task_id: T-5199
+payload:
+  task_file: .tasks/active/T-5199-rung-5-review-of-image-only-evidence-whe.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-11-17T16:04:10Z'
+scan_id: RC-51f4e851
+task_id: T-5199
+payload:
+  overall: CONFIRMED
+  claim_count: 1
