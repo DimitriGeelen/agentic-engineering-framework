@@ -80,6 +80,182 @@ _inception_already_decided() {
     python3 "${FRAMEWORK_ROOT:-.}/lib/operator_pending.py" decided "$1" 2>/dev/null
 }
 
+# _inception_handoff_readiness <task_id> <task_file> [caller]
+#
+#   T-5215 (G-133): the ONE inception handoff-readiness decision, shared by
+#   emit_review (single task) and emit_review_batch (chat handoff table). It
+#   was inline in emit_review (T-3279, T-3549, T-3641, T-4949) and the batch
+#   path never ran it, so the path CLAUDE.md prescribes for 2+ tasks handed
+#   the operator decide links for unready inceptions (T-5211, T-5212).
+#   Producer/consumer parity class (L-399): keep every path that emits an
+#   /inception/ link on THIS function, never on a copy.
+#
+#   Messages go to stderr. Returns 1 when the handoff must be refused (no
+#   link), 0 otherwise — including the FW_ALLOW_UNREADY_HANDOFF=1 bypass,
+#   which is logged Tier-2 with <caller> (default emit_review).
+#   Sets _FW_HANDOFF_UNDERDISPOSED to the under-disposed question list (empty
+#   when none) so a caller that emits under the bypass can say so.
+_inception_handoff_readiness() {
+    local task_id="${1:-}"
+    local task_file="${2:-}"
+    local caller="${3:-emit_review}"
+    _FW_HANDOFF_UNDERDISPOSED=""
+    # T-3279 (G-102): decision-readiness warning at the INVITATION surface.
+    # The review handoff invites a go/no-go; if the T-2190 disposition gate
+    # would refuse the completion that decision triggers, say so NOW — to the
+    # agent emitting the handoff — instead of letting the human discover it
+    # as a half-failed decide (T-3278 origin incident). Warn-only: dialogue
+    # on the review page is a legitimate way to reach dispositions, so
+    # emission is not blocked.
+    source "$FRAMEWORK_ROOT/lib/inception-readiness.sh" 2>/dev/null || true
+    if command -v inception_underdisposed_questions >/dev/null 2>&1; then
+        local _underdisposed
+        # `|| true` is load-bearing (T-3539). This function returns 1 to mean
+        # "I FOUND under-disposed questions" — a finding signal, not an error —
+        # and emit_review's callers run under `set -euo pipefail`. Without the
+        # guard the assignment propagates that 1 and kills the command HERE,
+        # before the warning below can print: `fw task review T-3532` exited 1
+        # with zero output, and Watchtower rendered the resulting empty stderr
+        # as "Unknown error from fw inception decide". The diagnostic destroyed
+        # the thing it was diagnosing. Only the OUTPUT is used below; the return
+        # code is never read, so discarding it loses nothing.
+        #
+        # T-3641: `|| true` also swallowed a CRASHED predicate (rc>1, or
+        # rc!=0 with no report), which then read as "ready". Capture the rc
+        # and say so. Warn-only here; the decide preflight and close gate
+        # refuse on the same condition.
+        local _ud_rc=0
+        _underdisposed=$(inception_underdisposed_questions "$task_file") || _ud_rc=$?
+        if [ "$_ud_rc" -gt 1 ] || { [ "$_ud_rc" -ne 0 ] && [ -z "$_underdisposed" ]; }; then
+            echo "" >&2
+            echo "WARNING: decision-readiness could NOT be checked — inception_underdisposed_questions" >&2
+            echo "  failed (rc=$_ud_rc) without a report. fw inception decide will refuse until it works." >&2
+        fi
+
+        # T-3549: auto-adjust SHAPE first, then ask the ONE handoff predicate.
+        # Repair is bounded to structure (a missing ## Recommendation
+        # scaffold); it never supplies a disposition value or a verdict,
+        # because auto-filling those manufactures readiness — the failure
+        # class this refusal exists to remove.
+        local _repairs="" _blockers=""
+        source "$FRAMEWORK_ROOT/lib/task-audit.sh" 2>/dev/null || true
+        if command -v inception_repair_shape >/dev/null 2>&1; then
+            _repairs=$(inception_repair_shape "$task_file") || true
+            [ -n "$_repairs" ] && printf '  auto-adjusted: %s\n' "$_repairs" >&2
+        fi
+        if command -v inception_handoff_blockers >/dev/null 2>&1; then
+            # Safe unguarded: this predicate ALWAYS returns 0 and carries its
+            # finding in stdout (OBS-566's own recommendation), unlike its
+            # sibling above which needs the `|| true`.
+            _blockers=$(inception_handoff_blockers "$task_file")
+        fi
+        # T-4949 (L-399 parity): FW_ALLOW_EMPTY_RECOMMENDATION=1 is the documented bypass
+        # for an empty Recommendation (T-2206). Leave that one finding to the T-2206 gate
+        # below, which honours and logs it; every other finding still needs
+        # FW_ALLOW_UNREADY_HANDOFF.
+        if [ "${FW_ALLOW_EMPTY_RECOMMENDATION:-}" = "1" ] && [ -n "$_blockers" ]; then
+            _blockers=$(printf '%s\n' "$_blockers" | awk -F'\t' '$1 != "empty-recommendation"')
+        fi
+
+        if [ -z "$_underdisposed" ] && [ -n "$_blockers" ]; then
+            echo "" >&2
+            echo "BLOCKED: this inception is not handoff-ready:" >&2
+            printf '%s\n' "$_blockers" | awk -F'\t' '{printf "    - [%s] %s\n      fix: %s\n", $1, $2, $3}' >&2
+            echo "" >&2
+            echo "  No handoff link has been emitted." >&2
+            echo "  Bypass: FW_ALLOW_UNREADY_HANDOFF=1 (logged Tier-2)" >&2
+            echo "" >&2
+            if [ "${FW_ALLOW_UNREADY_HANDOFF:-0}" != "1" ]; then
+                _FW_HANDOFF_UNDERDISPOSED="${_underdisposed:-}"
+                return 1
+            fi
+        fi
+
+        if [ -n "$_underdisposed" ]; then
+            # ── T-3549: REFUSE. This was a WARN from T-3279 through T-3540. ──
+            #
+            # Both reasons the WARN was kept are falsified by observation, and
+            # they were this file's own reasons, so they are corrected here
+            # rather than left standing:
+            #
+            #  1. "Refusing would strand a task whose only problem is that
+            #     nobody has answered its questions yet" — FALSE. `deferred`
+            #     is ALWAYS an available disposition, so no question is ever
+            #     undisposable and nothing can be stranded by requiring one.
+            #     The stranded task that justified the WARN cannot exist.
+            #
+            #  2. "The blocker travels WITH the handoff, so an agent pasting
+            #     this output cannot hand the decision over unaware" — TRUE
+            #     AND IRRELEVANT. On T-3548 the agent read this warning and
+            #     relayed it to the operator with a justification attached
+            #     ("disposing them IS the discussion"). Awareness was never
+            #     the failure mode. A WARN that still permits the action is
+            #     an invitation to explain the action.
+            #
+            # Third operator-facing instance (T-3532, T-3535, T-3548), the
+            # second after an explicit escalation. The decide-time gate
+            # (T-2190) stays exactly as it is — it worked correctly every
+            # time; the defect was that it fired AFTER the handoff, so the
+            # operator was the one who discovered it.
+            echo "" >&2
+            echo "BLOCKED: this inception is NOT decision-ready — $(printf '%s\n' "$_underdisposed" | grep -c .) Open Question(s) lack disposition/rationale:" >&2
+            printf '%s\n' "$_underdisposed" | sed 's/^/    - /' >&2
+            echo "" >&2
+            echo "  No handoff link has been emitted. A go/no-go recorded now would be" >&2
+            echo "  refused by the disposition gate (T-2190), so this would be a handoff" >&2
+            echo "  artefact that CANNOT become a decision — it looks like a decision" >&2
+            echo "  request and is not one." >&2
+            echo "" >&2
+            echo "  Fix: give every IW-N a disposition and a one-line rationale in" >&2
+            echo "  $task_file" >&2
+            echo "" >&2
+            echo "    disposition: answered | deferred | dissolved" >&2
+            echo "" >&2
+            echo "  'deferred' is ALWAYS available and is a real disposition, not an" >&2
+            echo "  evasion — a question you are deliberately not answering yet is" >&2
+            echo "  disposed by saying so and saying why. There is no question that" >&2
+            echo "  cannot be disposed, which is why refusing here strands nothing." >&2
+            echo "" >&2
+            echo "  Bypass: FW_ALLOW_UNREADY_HANDOFF=1 (logged Tier-2)" >&2
+            echo "" >&2
+            if [ "${FW_ALLOW_UNREADY_HANDOFF:-0}" = "1" ]; then
+                # Written inline rather than via log_gate_bypass(), which is
+                # defined in agents/task-create/update-task.sh and is NOT in
+                # this file's scope — calling it here with `|| true` would
+                # have skipped the Tier-2 record silently, which is the same
+                # silent-failure class this task exists to remove. Shape
+                # matches lib/inception.sh:139's sibling logger.
+                local _bp_log="${PROJECT_ROOT}/.context/working/.gate-bypass-log.yaml"
+                local _bp_ts
+                _bp_ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+                mkdir -p "$(dirname "$_bp_log")" 2>/dev/null || true
+                {
+                    echo "- timestamp: '$_bp_ts'"
+                    echo "  task: '${task_id//\'/\'\'}'"
+                    echo "  flag: 'FW_ALLOW_UNREADY_HANDOFF'"
+                    echo "  caller: '${caller//\'/\'\'}'"
+                    echo "  reason: 'decision handoff emitted with under-disposed Open Questions (T-3549)'"
+                } >> "$_bp_log"
+                echo "  FW_ALLOW_UNREADY_HANDOFF=1 — emitting anyway, logged Tier-2." >&2
+                echo "" >&2
+            else
+                _FW_HANDOFF_UNDERDISPOSED="${_underdisposed:-}"
+                return 1
+            fi
+        fi
+    else
+        # T-3641 (055 P-001): the library did not load, or did not define
+        # the predicate. Warn-only at this invitation surface — the decide
+        # preflight and the close gate refuse on the same condition.
+        echo "" >&2
+        echo "WARNING: decision-readiness could NOT be checked — $FRAMEWORK_ROOT/lib/inception-readiness.sh" >&2
+        echo "  did not load or did not define inception_underdisposed_questions." >&2
+        echo "  fw inception decide will refuse until it does." >&2
+    fi
+    _FW_HANDOFF_UNDERDISPOSED="${_underdisposed:-}"
+    return 0
+}
+
 emit_review() {
     local task_id="${1:-}"
     local task_file="${2:-}"
@@ -146,156 +322,12 @@ emit_review() {
         [ -n "$review_url" ] || review_url="${base_url}/inception/${task_id}"
         review_label="Inception Review"
 
-        # T-3279 (G-102): decision-readiness warning at the INVITATION surface.
-        # The review handoff invites a go/no-go; if the T-2190 disposition gate
-        # would refuse the completion that decision triggers, say so NOW — to the
-        # agent emitting the handoff — instead of letting the human discover it
-        # as a half-failed decide (T-3278 origin incident). Warn-only: dialogue
-        # on the review page is a legitimate way to reach dispositions, so
-        # emission is not blocked.
-        source "$FRAMEWORK_ROOT/lib/inception-readiness.sh" 2>/dev/null || true
-        if command -v inception_underdisposed_questions >/dev/null 2>&1; then
-            local _underdisposed
-            # `|| true` is load-bearing (T-3539). This function returns 1 to mean
-            # "I FOUND under-disposed questions" — a finding signal, not an error —
-            # and emit_review's callers run under `set -euo pipefail`. Without the
-            # guard the assignment propagates that 1 and kills the command HERE,
-            # before the warning below can print: `fw task review T-3532` exited 1
-            # with zero output, and Watchtower rendered the resulting empty stderr
-            # as "Unknown error from fw inception decide". The diagnostic destroyed
-            # the thing it was diagnosing. Only the OUTPUT is used below; the return
-            # code is never read, so discarding it loses nothing.
-            #
-            # T-3641: `|| true` also swallowed a CRASHED predicate (rc>1, or
-            # rc!=0 with no report), which then read as "ready". Capture the rc
-            # and say so. Warn-only here; the decide preflight and close gate
-            # refuse on the same condition.
-            local _ud_rc=0
-            _underdisposed=$(inception_underdisposed_questions "$task_file") || _ud_rc=$?
-            if [ "$_ud_rc" -gt 1 ] || { [ "$_ud_rc" -ne 0 ] && [ -z "$_underdisposed" ]; }; then
-                echo "" >&2
-                echo "WARNING: decision-readiness could NOT be checked — inception_underdisposed_questions" >&2
-                echo "  failed (rc=$_ud_rc) without a report. fw inception decide will refuse until it works." >&2
-            fi
-
-            # T-3549: auto-adjust SHAPE first, then ask the ONE handoff predicate.
-            # Repair is bounded to structure (a missing ## Recommendation
-            # scaffold); it never supplies a disposition value or a verdict,
-            # because auto-filling those manufactures readiness — the failure
-            # class this refusal exists to remove.
-            local _repairs="" _blockers=""
-            source "$FRAMEWORK_ROOT/lib/task-audit.sh" 2>/dev/null || true
-            if command -v inception_repair_shape >/dev/null 2>&1; then
-                _repairs=$(inception_repair_shape "$task_file") || true
-                [ -n "$_repairs" ] && printf '  auto-adjusted: %s\n' "$_repairs" >&2
-            fi
-            if command -v inception_handoff_blockers >/dev/null 2>&1; then
-                # Safe unguarded: this predicate ALWAYS returns 0 and carries its
-                # finding in stdout (OBS-566's own recommendation), unlike its
-                # sibling above which needs the `|| true`.
-                _blockers=$(inception_handoff_blockers "$task_file")
-            fi
-            # T-4949 (L-399 parity): FW_ALLOW_EMPTY_RECOMMENDATION=1 is the documented bypass
-            # for an empty Recommendation (T-2206). Leave that one finding to the T-2206 gate
-            # below, which honours and logs it; every other finding still needs
-            # FW_ALLOW_UNREADY_HANDOFF.
-            if [ "${FW_ALLOW_EMPTY_RECOMMENDATION:-}" = "1" ] && [ -n "$_blockers" ]; then
-                _blockers=$(printf '%s\n' "$_blockers" | awk -F'\t' '$1 != "empty-recommendation"')
-            fi
-
-            if [ -z "$_underdisposed" ] && [ -n "$_blockers" ]; then
-                echo "" >&2
-                echo "BLOCKED: this inception is not handoff-ready:" >&2
-                printf '%s\n' "$_blockers" | awk -F'\t' '{printf "    - [%s] %s\n      fix: %s\n", $1, $2, $3}' >&2
-                echo "" >&2
-                echo "  No handoff link has been emitted." >&2
-                echo "  Bypass: FW_ALLOW_UNREADY_HANDOFF=1 (logged Tier-2)" >&2
-                echo "" >&2
-                if [ "${FW_ALLOW_UNREADY_HANDOFF:-0}" != "1" ]; then
-                    return 1
-                fi
-            fi
-
-            if [ -n "$_underdisposed" ]; then
-                # ── T-3549: REFUSE. This was a WARN from T-3279 through T-3540. ──
-                #
-                # Both reasons the WARN was kept are falsified by observation, and
-                # they were this file's own reasons, so they are corrected here
-                # rather than left standing:
-                #
-                #  1. "Refusing would strand a task whose only problem is that
-                #     nobody has answered its questions yet" — FALSE. `deferred`
-                #     is ALWAYS an available disposition, so no question is ever
-                #     undisposable and nothing can be stranded by requiring one.
-                #     The stranded task that justified the WARN cannot exist.
-                #
-                #  2. "The blocker travels WITH the handoff, so an agent pasting
-                #     this output cannot hand the decision over unaware" — TRUE
-                #     AND IRRELEVANT. On T-3548 the agent read this warning and
-                #     relayed it to the operator with a justification attached
-                #     ("disposing them IS the discussion"). Awareness was never
-                #     the failure mode. A WARN that still permits the action is
-                #     an invitation to explain the action.
-                #
-                # Third operator-facing instance (T-3532, T-3535, T-3548), the
-                # second after an explicit escalation. The decide-time gate
-                # (T-2190) stays exactly as it is — it worked correctly every
-                # time; the defect was that it fired AFTER the handoff, so the
-                # operator was the one who discovered it.
-                echo "" >&2
-                echo "BLOCKED: this inception is NOT decision-ready — $(printf '%s\n' "$_underdisposed" | grep -c .) Open Question(s) lack disposition/rationale:" >&2
-                printf '%s\n' "$_underdisposed" | sed 's/^/    - /' >&2
-                echo "" >&2
-                echo "  No handoff link has been emitted. A go/no-go recorded now would be" >&2
-                echo "  refused by the disposition gate (T-2190), so this would be a handoff" >&2
-                echo "  artefact that CANNOT become a decision — it looks like a decision" >&2
-                echo "  request and is not one." >&2
-                echo "" >&2
-                echo "  Fix: give every IW-N a disposition and a one-line rationale in" >&2
-                echo "  $task_file" >&2
-                echo "" >&2
-                echo "    disposition: answered | deferred | dissolved" >&2
-                echo "" >&2
-                echo "  'deferred' is ALWAYS available and is a real disposition, not an" >&2
-                echo "  evasion — a question you are deliberately not answering yet is" >&2
-                echo "  disposed by saying so and saying why. There is no question that" >&2
-                echo "  cannot be disposed, which is why refusing here strands nothing." >&2
-                echo "" >&2
-                echo "  Bypass: FW_ALLOW_UNREADY_HANDOFF=1 (logged Tier-2)" >&2
-                echo "" >&2
-                if [ "${FW_ALLOW_UNREADY_HANDOFF:-0}" = "1" ]; then
-                    # Written inline rather than via log_gate_bypass(), which is
-                    # defined in agents/task-create/update-task.sh and is NOT in
-                    # this file's scope — calling it here with `|| true` would
-                    # have skipped the Tier-2 record silently, which is the same
-                    # silent-failure class this task exists to remove. Shape
-                    # matches lib/inception.sh:139's sibling logger.
-                    local _bp_log="${PROJECT_ROOT}/.context/working/.gate-bypass-log.yaml"
-                    local _bp_ts
-                    _bp_ts=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-                    mkdir -p "$(dirname "$_bp_log")" 2>/dev/null || true
-                    {
-                        echo "- timestamp: '$_bp_ts'"
-                        echo "  task: '${task_id//\'/\'\'}'"
-                        echo "  flag: 'FW_ALLOW_UNREADY_HANDOFF'"
-                        echo "  caller: 'emit_review'"
-                        echo "  reason: 'decision handoff emitted with under-disposed Open Questions (T-3549)'"
-                    } >> "$_bp_log"
-                    echo "  FW_ALLOW_UNREADY_HANDOFF=1 — emitting anyway, logged Tier-2." >&2
-                    echo "" >&2
-                else
-                    return 1
-                fi
-            fi
-        else
-            # T-3641 (055 P-001): the library did not load, or did not define
-            # the predicate. Warn-only at this invitation surface — the decide
-            # preflight and the close gate refuse on the same condition.
-            echo "" >&2
-            echo "WARNING: decision-readiness could NOT be checked — $FRAMEWORK_ROOT/lib/inception-readiness.sh" >&2
-            echo "  did not load or did not define inception_underdisposed_questions." >&2
-            echo "  fw inception decide will refuse until it does." >&2
+        # T-5215: the readiness decision is shared with emit_review_batch.
+        local _underdisposed=""
+        if ! _inception_handoff_readiness "$task_id" "$task_file" "emit_review"; then
+            return 1
         fi
+        _underdisposed="${_FW_HANDOFF_UNDERDISPOSED:-}"
     else
         [ -n "$review_url" ] || review_url="${base_url}/review/${task_id}"
         review_label="Human AC Review"
@@ -695,6 +727,43 @@ emit_review_batch() {
                 return 1
             fi
         fi
+    fi
+
+    # T-5215 (G-133): the handoff-readiness gate, through the SAME function
+    # emit_review uses. Before this the batch checked only an empty
+    # Recommendation, so the multi-task path CLAUDE.md prescribes handed the
+    # operator decide links for inceptions with undisposed questions. One
+    # unready inception refuses the whole table (T-2206's whole-batch shape):
+    # an agent quotes the table verbatim, so a partial table is still a
+    # decision request. Decided inceptions keep their T-4095 handling.
+    local unready="" tid_r
+    for tid_r in "$@"; do
+        local tf_r=""
+        for f in "$PROJECT_ROOT/.tasks/active/$tid_r"*.md "$PROJECT_ROOT/.tasks/completed/$tid_r"*.md; do
+            if [ -f "$f" ]; then
+                tf_r="$f"
+                break
+            fi
+        done
+        [ -z "$tf_r" ] && continue
+        grep -qE '^workflow_type:[[:space:]]*inception' "$tf_r" 2>/dev/null || continue
+        _inception_already_decided "$tf_r" >/dev/null && continue
+        local msg_r rc_r=0
+        msg_r=$(_inception_handoff_readiness "$tid_r" "$tf_r" "emit_review_batch" 2>&1) || rc_r=$?
+        if [ -n "$msg_r" ]; then
+            echo "── ${tid_r} ──" >&2
+            printf '%s\n' "$msg_r" >&2
+        fi
+        if [ "$rc_r" -ne 0 ]; then unready="${unready} ${tid_r}"; fi
+    done
+    if [ -n "$unready" ]; then
+        echo "" >&2
+        echo -e "  ${RED}BLOCKED: batch contains inception(s) that are not handoff-ready:${unready}${NC}" >&2
+        echo "  No link has been emitted for ANY task in this batch. Fix the blockers listed" >&2
+        echo "  above for each task, or re-run without the unready inception(s)." >&2
+        echo "  Bypass: FW_ALLOW_UNREADY_HANDOFF=1 (logged Tier-2)" >&2
+        echo "" >&2
+        return 1
     fi
 
     local base_url

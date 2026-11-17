@@ -104,9 +104,9 @@ The operator rejected both, angrily and with reason. This keeps happening, and o
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `emit_review_batch` runs the same readiness predicates as `emit_review` for every undecided inception in the batch, through one shared function rather than a copy. For an unready inception it prints no link and names the blockers, under the same FW_ALLOW_UNREADY_HANDOFF bypass.
-- [ ] A test: review-batch over an inception with undisposed IW questions prints no `/inception/` link and exits non-zero. With all questions disposed and a Recommendation, it prints the link. Build tasks in the same batch are unaffected.
-- [ ] A test pins parity: for the same task file, the single and batch paths agree on ready or not ready
+- [x] `emit_review_batch` runs the same readiness predicates as `emit_review` for every undecided inception in the batch, through one shared function rather than a copy. For an unready inception it prints no link and names the blockers, under the same FW_ALLOW_UNREADY_HANDOFF bypass.
+- [x] A test: review-batch over an inception with undisposed IW questions prints no `/inception/` link and exits non-zero. With all questions disposed and a Recommendation, it prints the link. Build tasks in the same batch are unaffected.
+- [x] A test pins parity: for the same task file, the single and batch paths agree on ready or not ready
 - [ ] The existing review-handoff suites pass (grep tests/ for emit_review, review-batch, T-3549, T-2206), and `bin/fw vendor self --check --task T-5215` is clean
 
 ### Human
@@ -293,6 +293,10 @@ The operator rejected both, angrily and with reason. This keeps happening, and o
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t5215_review_batch_readiness.bats > /tmp/.t5215.out 2>&1 && ! grep -q "^not ok" /tmp/.t5215.out
+test "$(grep -c '# skip' /tmp/.t5215.out)" -eq 0
+timeout 600 bats tests/unit/t3549_inception_handoff_refusal.bats tests/unit/review_batch.bats tests/unit/t3279_decision_readiness_parity.bats tests/unit/t3641_readiness_fail_closed.bats tests/unit/lib_review.bats > /tmp/.t5215b.out 2>&1 && ! grep -q "^not ok" /tmp/.t5215b.out
+bin/fw vendor self --check --task T-5215
 
 ## RCA
 
