@@ -8,16 +8,16 @@ description: >
   call, create an arc with its tasks from a template in one call, with a reservation
   ledger (1409 request)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-11-17T21:15:57Z
-last_update: '2026-11-17T21:30:32Z'
-date_finished:
+last_update: 2026-11-17T23:17:24Z
+date_finished: 2026-11-17T23:17:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -124,15 +124,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -193,7 +193,21 @@ cost_estimate_proposed:
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+1409 measured 52 s per municipality (14 create calls at about 3.7 s, mostly the union scan of 24 worktrees in generate_id). A framework verb keeps one writer of task files (reliability, auditability); a reservation ledger with reconciliation makes it foolproof; the quarantine-gap rule must read the ledger so a large block never pushes later ids into quarantine. 1409 prototyped it in a copy, and every safety check passed. On a full-size replica (about 50k task files, 24 views), the time per unit (arc plus 13 tasks) fell from 95.2 s to 2.6 s, and a wave of 50 units takes 3.3 minutes. All IW questions were answered with the operator on 2026-11-18. Build slices if GO:
+1. A single authoritative counter, block reservation and a ledger tracked in git, with reconciliation and the quarantine rule reading the ledger. objectives-seed routes through it (T-5213), and doctor and upgrade assert one allocator.
+2. `fw task create-batch` with one writer of task files shared with create-task, and `fw arc instantiate` on top of it.
+
+1409's checks become the acceptance tests. Research: docs/reports/T-5212-batch-task-creation.md.
+
+Evidence:
+
+**Date**: 2026-11-17T23:17:22Z
 
 ## Updates
 
@@ -202,3 +216,52 @@ cost_estimate_proposed:
 
 ### 2026-11-17T21:16:29Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-17T23:17:22Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+1409 measured 52 s per municipality (14 create calls at about 3.7 s, mostly the union scan of 24 worktrees in generate_id). A framework verb keeps one writer of task files (reliability, auditability); a reservation ledger with reconciliation makes it foolproof; the quarantine-gap rule must read the ledger so a large block never pushes later ids into quarantine. 1409 prototyped it in a copy, and every safety check passed. On a full-size replica (about 50k task files, 24 views), the time per unit (arc plus 13 tasks) fell from 95.2 s to 2.6 s, and a wave of 50 units takes 3.3 minutes. All IW questions were answered with the operator on 2026-11-18. Build slices if GO:
+1. A single authoritative counter, block reservation and a ledger tracked in git, with reconciliation and the quarantine rule reading the ledger. objectives-seed routes through it (T-5213), and doctor and upgrade assert one allocator.
+2. `fw task create-batch` with one writer of task files shared with create-task, and `fw arc instantiate` on top of it.
+
+1409's checks become the acceptance tests. Research: docs/reports/T-5212-batch-task-creation.md.
+
+Evidence:
+
+### 2026-11-17T23:17:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3b692be4
+- **Timestamp:** 2026-11-17T23:17:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-1e2063f0
+- **Timestamp:** 2026-11-17T23:17:27Z
+- **Overall:** CONFIRMED
+- **Claims:** 1
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-5213` | task | ✓ pass |
