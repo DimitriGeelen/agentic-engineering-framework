@@ -56319,3 +56319,21 @@ scan_id: R-14f282da
 task_id: T-5204
 payload:
   task_file: .tasks/active/T-5204-quota-overview-s5-fw-quota-status---need.md
+---
+kind: scan_emitted
+timestamp: '2026-11-17T14:59:28Z'
+scan_id: R-b7ac012f
+task_id: T-5207
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-17T14:59:28Z'
+scan_id: R-b7ac012f
+task_id: T-5207
+payload:
+  task_file: .tasks/active/T-5207-fw-termlink-prune-usage-omits--h-and---q.md
