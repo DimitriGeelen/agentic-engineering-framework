@@ -9,17 +9,17 @@ description: >
   from human shells; (4) dispatch asks the hub for a host-wide slot instead of count-then-spawn.
   Part (1) is the bug filed alongside.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: null
 tags: [termlink, dispatch, worker-lifecycle]
 components: []
 related_tasks: []
 origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "af547837"}
 created: 2026-10-21T15:41:52Z
-last_update: '2026-10-22T07:46:13Z'
-date_finished:
+last_update: 2026-11-17T23:16:45Z
+date_finished: 2026-11-17T23:16:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -105,15 +105,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -162,9 +162,52 @@ bvp_scores_proposed:
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: 055 observed 182 finished worker sessions left open on one host (1409, 2026-10-21, pre-T-4152). Parts 2-3 are within AEF (a periodic own-project sweep of finished workers; passing --worker-binding dispatch:attempt, which TermLink wc/0.3 already accepts and our worker contract names as the T4 key). Part 4 (host-wide slot from the hub) depends on TermLink accepting the hub side; decide it with them.
+
+**Date**: 2026-11-17T23:16:40Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-11-17T23:16:40Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: 055 observed 182 finished worker sessions left open on one host (1409, 2026-10-21, pre-T-4152). Parts 2-3 are within AEF (a periodic own-project sweep of finished workers; passing --worker-binding dispatch:attempt, which TermLink wc/0.3 already accepts and our worker contract names as the T4 key). Part 4 (host-wide slot from the hub) depends on TermLink accepting the hub side; decide it with them.
+
+### 2026-11-17T23:16:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** Inception decision in progress
+
+### 2026-11-17T23:16:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-616999d0
+- **Timestamp:** 2026-11-17T23:16:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-7de43c9a
+- **Timestamp:** 2026-11-17T23:16:47Z
+- **Overall:** CONFIRMED
+- **Claims:** 1
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-4152` | task | ✓ pass |
