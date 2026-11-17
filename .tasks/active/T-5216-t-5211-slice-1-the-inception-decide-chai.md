@@ -94,11 +94,11 @@ Rules:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] decide_runner posts exactly one notice per decision to the project's own address, after the decision commit, through the existing `fw sidecar send` path (non-urgent `--notice`). A test stubs the sender and asserts one call, carrying the id, the verdict and the commit.
-- [ ] A failed post (sender missing, non-zero exit, timeout) leaves the decision outcome and its commits unchanged and records the failure in the run status. A test covers each failure.
-- [ ] A second pass, such as the follow-up commit or a re-run, does not post again. A test covers it.
-- [ ] The notice text holds only the id, the verdict, the commit and the fixed next-step line. A test asserts that no task-file text is included.
-- [ ] Existing decide_runner and inception blueprint suites pass. `bin/fw test invariants` and `bin/fw vendor self --check --task T-5216` are clean, and Watchtower is restarted, with `bin/fw watchtower current` passing.
+- [x] decide_runner posts exactly one notice per decision to the project's own address, after the decision commit, through the existing `fw sidecar send` path (non-urgent `--notice`). A test stubs the sender and asserts one call, carrying the id, the verdict and the commit.
+- [x] A failed post (sender missing, non-zero exit, timeout) leaves the decision outcome and its commits unchanged and records the failure in the run status. A test covers each failure.
+- [x] A second pass, such as the follow-up commit or a re-run, does not post again. A test covers it.
+- [x] The notice text holds only the id, the verdict, the commit and the fixed next-step line. A test asserts that no task-file text is included.
+- [x] Existing decide_runner and inception blueprint suites pass. `bin/fw test invariants` and `bin/fw vendor self --check --task T-5216` are clean, and Watchtower is restarted, with `bin/fw watchtower current` passing.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -284,6 +284,10 @@ Rules:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5216_decide_notice.py -q > /tmp/.t5216a 2>&1 && grep -q passed /tmp/.t5216a
+python3 -m pytest tests/unit/test_t3749_decide_detached.py tests/unit/test_decide_commit.py tests/unit/test_t4242_decide_inherited_git_env.py tests/unit/test_t4590_decide_commit_carries_provenance.py -q > /tmp/.t5216b 2>&1 && grep -q passed /tmp/.t5216b
+bin/fw vendor self --check --task T-5216
+bin/fw watchtower current
 
 ## RCA
 
