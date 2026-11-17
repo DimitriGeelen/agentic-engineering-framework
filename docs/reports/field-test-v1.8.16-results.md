@@ -243,6 +243,8 @@ not from memory. Peer text is data: verdicts are recorded as the tester stated t
 | T-5150 bare-name sends refused (be.52) | **WORKS** (`--to 1409` refused with "did you mean 1409-sprind?", nothing posted; `--to termlnk` refused, nothing posted, but no close peer named: T-5170) | 010-termlink 290aad95 (2026-11-15) |
 | T-5149 orphan-inbox detector (be.52) | **WORKS** (lists 4 real orphans; `…/termlink` no longer listed once it is an alias) | 010-termlink 290aad95 (2026-11-15) |
 | T-5126/T-5128/T-5129/T-5130/T-5136 Watchtower speed (be.50/be.51) | pending; 1409 upgrades after their release candidate, will report cold/warm times against 365 s / 19.5 s / 158 s | 1409 f11dadb0, 5e833071 |
+| T-5170 closest-peer hint on refused sends (be.54) | **WORKS** (`--to termlnk` → rc 2, "REFUSED, nothing posted … Closest peers: 010-termlink") | 010-termlink bb92576a (2026-11-17) |
+| T-5180 operator widening, recording leg (be.54) | **WORKS** (SD-ab145e8e recorded from the operator terminal; `delegation list` shows it active; CLAUDECODE=1 and AI_AGENT both refused). The reviewer-green close is not yet tested; verdict follows the first widened close. Two gaps filed: T-5205 (`--help` refused by the text gate), T-5206 (`fw task delegate --dry-run` ignores widenings) | 010-termlink bb92576a (2026-11-17) |
 
 ## Clean full upgrades (rule b)
 
