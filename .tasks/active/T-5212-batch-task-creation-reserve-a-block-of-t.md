@@ -84,10 +84,25 @@ cost_estimate_proposed:
 -->
 
 - **IW-1: Reservation: can one call reserve a contiguous block of task ids plus an arc id (one scan, one lock) with a ledger (range, purpose, time, reserved -> created/complete) that reconciliation reads, so a reserved id without a file is reported as an incomplete arc and never reissued?**
+  confidence: 3
+  disposition: answered
+  rationale: Operator, 2026-11-18 ("all yes" to proposal 4). Yes: one call reserves a block of at most 100 ids under the existing lock, and an append-only ledger records each reservation. Reconciliation reports a reserved id without a file and never reissues it. Proven in 1409's prototype (2,020 concurrent allocations, 0 duplicates; kill -9 mid-block, no reuse). No arc-id reservation: 1409's arc ids are fixed names.
 - **IW-2: Quarantine trap: generate_id stops at the first gap > FW_ID_QUARANTINE_GAP (1000). How does the rule read the ledger so that a large, partly unused block never pushes later ids into quarantine?**
+  confidence: 3
+  disposition: answered
+  rationale: Operator, 2026-11-18 ("all yes" to proposal 5). Ledger ids count as used in the gap walk, blocks are at most 100, and the walk starts from the counter. 1409's check 2f (12 aborted 100-blocks) passed, and a 101-block is refused.
 - **IW-3: Creation: one verb that creates an arc and its tasks from a template plus parameters, producing files identical to what create-task makes one by one. Which per-call side effects (fabric, episodic, focus, cap warnings, hooks) run once per batch, and which must still run per task?**
+  confidence: 3
+  disposition: answered
+  rationale: Operator, 2026-11-18 ("all yes" to proposal 6). `fw arc instantiate` sits on top of a create-batch path, with one writer of task files shared with create-task, so the files are identical (1409 check 3a: 0 differences). Per-batch side effects run once. Focus/--start and inception tasks are refused in a batch.
 - **IW-4: Scan cost: can the union scan across many worktrees be cached per view (invalidated on change) without weakening the duplicate-id guard, as a separate, smaller fix?**
+  confidence: 2
+  disposition: deferred
+  rationale: Operator, 2026-11-18 ("all yes" to proposal 7). Not needed now: the union scan becomes a check run once per reservation (on by default), and 1409 archived 23 worktrees (2.91 s to 0.51 s per call). Revisit only if a project measures the per-reservation check as too slow.
 - **IW-5: How do 1409's prototype and its six safety checks (20 concurrent processes, crash mid-block, stale view, deleted top id, old outlier band, equality with the single path) become this build's acceptance tests?**
+  confidence: 3
+  disposition: answered
+  rationale: Operator, 2026-11-18 ("all yes" to proposal 8). Each of 1409's checks becomes a test in the build. `fw doctor` and `fw upgrade` assert one allocator per repository (mixed allocators are 1409's measured unsafe case; objectives-seed routes through it, T-5213). The ledger is tracked in git, so reconciliation works in a fresh clone.
 
 ## Exploration Plan
 
@@ -153,7 +168,11 @@ cost_estimate_proposed:
 
 **Rationale:**
 
-1409 measured 52 s per municipality (14 create calls at about 3.7 s, mostly the union scan of 24 worktrees in generate_id). A framework verb keeps one writer of task files (reliability, auditability); a reservation ledger with reconciliation makes it foolproof; the quarantine-gap rule must read the ledger so a large block never pushes later ids into quarantine. 1409 is prototyping in a copy against six safety checks and will send patch, tests and numbers as a proposal.
+1409 measured 52 s per municipality (14 create calls at about 3.7 s, mostly the union scan of 24 worktrees in generate_id). A framework verb keeps one writer of task files (reliability, auditability); a reservation ledger with reconciliation makes it foolproof; the quarantine-gap rule must read the ledger so a large block never pushes later ids into quarantine. 1409 prototyped it in a copy, and every safety check passed. On a full-size replica (about 50k task files, 24 views), the time per unit (arc plus 13 tasks) fell from 95.2 s to 2.6 s, and a wave of 50 units takes 3.3 minutes. All IW questions were answered with the operator on 2026-11-18. Build slices if GO:
+1. A single authoritative counter, block reservation and a ledger tracked in git, with reconciliation and the quarantine rule reading the ledger. objectives-seed routes through it (T-5213), and doctor and upgrade assert one allocator.
+2. `fw task create-batch` with one writer of task files shared with create-task, and `fw arc instantiate` on top of it.
+
+1409's checks become the acceptance tests. Research: docs/reports/T-5212-batch-task-creation.md.
 
 **Evidence:**
 
