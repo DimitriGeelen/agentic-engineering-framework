@@ -56113,3 +56113,21 @@ scan_id: R-46f7e5f9
 task_id: T-5196
 payload:
   task_file: .tasks/active/T-5196-watchtower-approvals-at-volume-slice-a-p.md
+---
+kind: scan_emitted
+timestamp: '2026-11-17T00:43:44Z'
+scan_id: R-73135b87
+task_id: T-5197
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-17T00:43:44Z'
+scan_id: R-73135b87
+task_id: T-5197
+payload:
+  task_file: .tasks/active/T-5197-row-2-mapping-a-humangate-with-exactly-o.md

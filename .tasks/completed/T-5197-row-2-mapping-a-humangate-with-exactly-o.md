@@ -10,10 +10,10 @@ description: >
   still holds because the human records the completion with that label. Update designer-0.43-mapping.md
   2.2/2.4 and Q5 note, and add a test.
 
-status: started-work
+status: work-completed
 workflow_type: design
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T19:40:00Z
-last_update: 2026-11-17T00:36:14Z
-date_finished:
+last_update: 2026-11-17T00:43:42Z
+date_finished: 2026-11-17T00:43:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -102,9 +102,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] designer-0.43-mapping.md states the one-flow rule (key = flow @name, else "done") and the two-or-more refusal, in every place that said `human_decision_map` is required.
-- [ ] tests/unit/test_t5184_designer_mapping.py has a test that a one-entry `human_decision_map` validates against contracts v2 procedure.schema.json, and the existing tests still pass. Contracts v1/v2 checks are clean.
-- [ ] 832 is sent the commit.
+- [x] designer-0.43-mapping.md states the one-flow rule (key = flow @name, else "done") and the two-or-more refusal, in every place that said `human_decision_map` is required.
+- [x] tests/unit/test_t5184_designer_mapping.py has a test that a one-entry `human_decision_map` validates against contracts v2 procedure.schema.json, and the existing tests still pass. Contracts v1/v2 checks are clean.
+- [x] 832 is sent the commit. (aab4e9289, 2026-11-17)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -390,3 +390,21 @@ bvp_scores_proposed:
 
 ### 2026-11-17T00:36:14Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-17T00:43:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-73135b87
+- **Timestamp:** 2026-11-17T00:43:44Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — tests/unit/test_t5184_designer_mapping.py has a test that a one-entry `human_decision_map` validates against contracts v2 procedure.schema.json, and the existing tests still pass. Contracts v1/v2 chec
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/unit/test_t5184_designer_mapping.py in: tests/unit/test_t5184_designer_mapping.py has a test that a one-entry `human_decision_map` validates against contracts v2 procedure.schema.json, and t`
