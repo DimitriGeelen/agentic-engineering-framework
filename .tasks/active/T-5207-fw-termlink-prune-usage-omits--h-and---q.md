@@ -7,10 +7,10 @@ description: >
   (7b457421e^). The usage text of fw termlink prune does not name every option its
   parser accepts.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug]
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-17T11:11:03Z
-last_update: '2026-11-17T11:16:14Z'
+last_update: 2026-11-17T14:57:23Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,20 +87,20 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** tests/unit/t4730_termlink_subcommand_help.bats #4 fails: "options without a usage line: prune:-h prune:--help prune:-q prune:--quiet". Found in the T-5202 regression runs and reproduced on the tree before T-5202.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `cmd_prune` in agents/termlink/termlink.sh parses `-h|--help` and `-q|--quiet` (the background call from dispatch passes `--quiet`), but its usage text names neither.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** The prune usage text names every option its parser accepts.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** t4730 is fully green, and `fw termlink prune --help` tells a reader about `--quiet`.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The `fw termlink prune --help` text names `-q|--quiet` and `-h|--help`
+- [x] tests/unit/t4730_termlink_subcommand_help.bats passes in full
+- [x] The vendored copy is in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -286,6 +286,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bats tests/unit/t4730_termlink_subcommand_help.bats
+bin/fw termlink prune --help | grep -q -- '--quiet'
+bin/fw vendor self --check --task T-5207
 
 ## RCA
 
@@ -383,3 +386,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5207-fw-termlink-prune-usage-omits--h-and---q.md
 - **Context:** Initial task creation
+
+### 2026-11-17T14:57:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

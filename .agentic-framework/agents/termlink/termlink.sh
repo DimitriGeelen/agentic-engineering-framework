@@ -1008,6 +1008,10 @@ cmd_prune() {
             -h|--help)
                 cat <<'USAGE'
 Usage: fw termlink prune [--older-than DAYS] [--uncollected-older-than UDAYS] [--dry-run|-n]
+                         [--quiet|-q] [--help|-h]
+
+  --quiet, -q   print nothing on success (the hourly background run from dispatch uses it)
+  --help, -h    this text
 
 Remove this project's FINISHED dispatch worker dirs whose exit_code is older than DAYS
 (default: TERMLINK_DISPATCH_RETENTION_DAYS, 7). A dir whose result was never collected
