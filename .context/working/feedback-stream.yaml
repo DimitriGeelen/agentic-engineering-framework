@@ -56417,3 +56417,21 @@ scan_id: R-515df833
 task_id: T-5210
 payload:
   task_file: .tasks/active/T-5210-sidecar-replyaddress-drops-a-same-hub-su.md
+---
+kind: scan_emitted
+timestamp: '2026-11-17T22:18:51Z'
+scan_id: R-60ca1ce0
+task_id: T-5215
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-17T22:18:51Z'
+scan_id: R-60ca1ce0
+task_id: T-5215
+payload:
+  task_file: .tasks/active/T-5215-rca-unready-inceptions-handed-to-the-ope.md

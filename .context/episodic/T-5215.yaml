@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5215: RCA: unready inceptions handed to the operator for decision again — fw task review-batch skips the handoff-readiness gate that fw task review enforces (T-3549)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-17T22:19:18Z
+# ============================================================================
+
+task_id: T-5215
+task_name: "RCA: unready inceptions handed to the operator for decision again — fw task review-batch skips the handoff-readiness gate that fw task review enforces (T-3549)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-17T21:39:25Z
+completed: 2026-11-17T22:15:42Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-17T22:41:53+01:00
+last_commit: 2026-11-17T23:11:39+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RCA — review-batch skips the inception handoff-readiness gate (G-133); context, criteria. review-batch applies the inception handoff-readiness gate via shared _inception_handoff_readiness (G-133). tick suites criterion — review-handoff suites green, vendor check clean
+
+# Key outcomes
+outcomes:
+  - '`emit_review_batch` runs the same readiness predicates as `emit_review` for every undecided inception in the batch, through one shared function rather than a copy. For an unready inception it prints no link and names the blockers, under the same FW_ALLOW_UNREADY_HANDOFF bypass.'
+  - 'A test: review-batch over an inception with undisposed IW questions prints no `/inception/` link and exits non-zero. With all questions disposed and a Recommendation, it prints the link. Build tasks in the same batch are unaffected.'
+  - 'A test pins parity: for the same task file, the single and batch paths agree on ready or not ready'
+  - 'The existing review-handoff suites pass (grep tests/ for emit_review, review-batch, T-3549, T-2206), and `bin/fw vendor self --check --task T-5215` is clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/review.sh'
+  - '.context/project/concerns.yaml'
+  - '.tasks/active/T-5215-rca-unready-inceptions-handed-to-the-ope.md'
+  - 'lib/review.sh'
+  - 'tests/unit/t5215_review_batch_readiness.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-17T22:41:53'
+    action: 'T-5215: RCA — review-batch skips the inception handoff-readiness gate (G-133); context, criteria'
+  - time: '2026-11-17T23:06:16'
+    action: 'T-5215: review-batch applies the inception handoff-readiness gate via shared _inception_handoff_readiness (G-133)'
+  - time: '2026-11-17T23:11:39'
+    action: 'T-5215: tick suites criterion — review-handoff suites green, vendor check clean'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 36 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 36
+  commits: 4
+  files_changed: 8
+  lines_added: 1129
+  lines_removed: 307
+  footprint_refreshed_at: '2026-11-17T22:19:51Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5215-rca-unready-inceptions-handed-to-the-ope.md
+generated_by: context-agent-hybrid
