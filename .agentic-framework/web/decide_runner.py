@@ -29,12 +29,18 @@ Shape of the fix:
   LANDED_INTERRUPTED.
 * `surface()` reports, on the inception page, a run that exited non-zero, a
   commit that failed, or a runner that died before finishing.
+* T-5216: once the decision commit has landed, the runner posts ONE non-urgent
+  notice to the project's own sidecar inbox (`fw sidecar send --notice`), so the
+  project's agent learns of the decision at its next idle point. Once per
+  decision (marker in status.json and a per-commit marker beside the runs); a
+  failed post is recorded in status.json and never touches the decision.
 """
 from __future__ import annotations
 
 import fcntl
 import json
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -305,6 +311,115 @@ def _primary_landed(task_id: str, decision: str) -> bool:
     return decision not in ("go", "no-go") or _task_in_completed(task_id)
 
 
+# ------------------------------------------------------- T-5216 decision notice
+
+NOTICE_TIMEOUT = 20  # seconds; the post must never hold up the chain for long
+
+#: The fixed next-step line per verdict. Nothing from the task file goes in.
+NOTICE_NEXT_STEP = {
+    "go": "Read the task's Decision section, then file the build tasks.",
+    "no-go": "Read the task's Decision section; no build tasks to file.",
+    "defer": "Read the task's Decision section for the evidence needed before it is revisited.",
+}
+
+_TASK_ID_RE = re.compile(r"^T-\d+$")
+_SHA_RE = re.compile(r"^[0-9a-f]{7,40}$")
+
+
+def notice_text(task_id: str, decision: str, commit: str) -> str:
+    """The notice body: the id, the verdict, the commit and a fixed next step only."""
+    return (f"Inception {task_id} decided {decision.upper()} by the operator "
+            f"(commit {commit}). {NOTICE_NEXT_STEP[decision]}")
+
+
+def _decision_commit_id(task_id: str, decision: str) -> str:
+    """Short id of the newest decision commit for this task and verdict, or ''."""
+    from web.shared import PROJECT_ROOT
+    pattern = f"^{re.escape(task_id)}: inception decision {re.escape(decision.upper())} "
+    try:
+        r = subprocess.run(["git", "log", "-1", "--format=%h", "-E", f"--grep={pattern}"],
+                           cwd=str(PROJECT_ROOT), capture_output=True, text=True,
+                           timeout=30, env=git_clean_env())
+    except Exception:
+        return ""
+    sha = (r.stdout or "").strip() if r.returncode == 0 else ""
+    return sha if _SHA_RE.match(sha) else ""
+
+
+def _own_address() -> str:
+    """This project's own sidecar id (lib/sidecar/circuit.project_id())."""
+    from lib.sidecar import circuit
+    return circuit.project_id()
+
+
+def _send_notice(fw_bin: str, to: str, body: str):
+    """Post through the existing `fw sidecar send --notice` path. (ok, detail); never raises."""
+    from web.shared import PROJECT_ROOT
+    try:
+        r = subprocess.run([fw_bin, "sidecar", "send", "--to", to, "--notice", "--body", body],
+                           cwd=str(PROJECT_ROOT), stdin=subprocess.DEVNULL,
+                           capture_output=True, text=True, timeout=NOTICE_TIMEOUT,
+                           env=git_clean_env())
+    except subprocess.TimeoutExpired:
+        return False, f"timed out after {NOTICE_TIMEOUT}s"
+    except Exception as e:  # sender missing, not executable
+        return False, f"could not run the sender: {e}"[:300]
+    if r.returncode != 0:
+        why = (r.stderr or r.stdout or "").strip().splitlines()
+        return False, f"exit {r.returncode}: {why[-1] if why else 'no output'}"[:300]
+    return True, "sent"
+
+
+def _notice_marker(project_root, task_id: str, decision: str, commit: str) -> Path:
+    return state_dir(project_root) / f"{task_id}.notified-{decision}-{commit}"
+
+
+def _post_decision_notice(run_dir: Path, fw_bin: str, task_id: str, decision: str) -> None:
+    """Post the one notice for this decision, at most once. Never raises.
+
+    Called after each decision commit that succeeded; the first call that finds
+    the commit posts, every later one (the follow-up commit, a re-run of the same
+    decision) sees a marker and returns. The outcome is recorded in status.json
+    under `notice`; nothing here touches the decision or its commits.
+    """
+    try:
+        if read_status(run_dir).get("notice"):
+            return  # this run already posted (or tried to)
+        from web.shared import PROJECT_ROOT
+        if decision not in NOTICE_NEXT_STEP or not _TASK_ID_RE.match(task_id):
+            _write_status(run_dir, notice={"state": "skipped",
+                                           "reason": "not a task id and verdict a notice can name"})
+            return
+        commit = _decision_commit_id(task_id, decision)
+        if not commit:
+            return  # no decision commit yet; the follow-up commit tries again
+        marker = _notice_marker(PROJECT_ROOT, task_id, decision, commit)
+        if marker.exists():
+            _write_status(run_dir, notice={"state": "skipped", "commit": commit,
+                                           "reason": "already posted for this decision commit"})
+            return
+        try:
+            to = _own_address()
+        except Exception as e:
+            _write_status(run_dir, notice={"state": "failed", "commit": commit, "at": _now(),
+                                           "reason": f"own sidecar address unknown: {e}"[:300]})
+            return
+        ok, detail = _send_notice(fw_bin, to, notice_text(task_id, decision, commit))
+        _write_status(run_dir, notice={"state": "sent" if ok else "failed", "to": to,
+                                       "commit": commit, "at": _now(), "reason": detail})
+        if ok:
+            try:
+                marker.write_text(_now() + "\n")
+            except OSError:
+                pass
+    except Exception as e:  # the notice must never break the chain
+        try:
+            _write_status(run_dir, notice={"state": "failed", "at": _now(),
+                                           "reason": f"notice step error: {e}"[:300]})
+        except Exception:
+            pass
+
+
 def _run(run_dir: Path, fw_bin: str, task_id: str, decision: str, rationale: str) -> int:
     """Run the chain to its end; commit the decision when it lands, and again at the end.
 
@@ -335,6 +450,8 @@ def _run(run_dir: Path, fw_bin: str, task_id: str, decision: str, rationale: str
                 ok, msg = _commit_decision(task_id, decision)
                 _write_status(run_dir, primary_commit_ok=ok, primary_commit_msg=msg)
                 primary_committed = True
+                if ok:
+                    _post_decision_notice(run_dir, fw_bin, task_id, decision)  # T-5216
             time.sleep(0.5)
         rc = proc.returncode
     _write_status(run_dir, state="finished", rc=rc, finished=_now())
@@ -347,6 +464,8 @@ def _run(run_dir: Path, fw_bin: str, task_id: str, decision: str, rationale: str
     commit_ok, commit_msg = True, "decision not recorded; nothing to commit"
     if _decision_recorded_in_task(task_id, decision):
         commit_ok, commit_msg = _commit_decision(task_id, decision, followup=True)
+        if commit_ok:
+            _post_decision_notice(run_dir, fw_bin, task_id, decision)  # T-5216: once only
     _write_status(run_dir, state="done", commit_ok=commit_ok, commit_msg=commit_msg,
                   done=_now())
     return 0
