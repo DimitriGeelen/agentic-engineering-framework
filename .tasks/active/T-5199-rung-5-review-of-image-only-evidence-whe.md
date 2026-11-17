@@ -84,8 +84,17 @@ cost_estimate_proposed:
 -->
 
 - **IW-1: Is "two independent vendors must see it" still the right bar when only one vendor on a host can see images?**
+  confidence: 3
+  disposition: answered
+  rationale: Yes. Operator, 2026-11-17: "Proceed as suggested". Image-only criteria are the hardest to check, so one seat's eyes are not enough (research artifact, Candidate C rejected).
 - **IW-2: Is 832's case really "only one vision kind exists", or is it the planner seating blind kinds on image evidence that is not a page (the vision gate in lib/reviewer/judge_cli.py:1330 only fires for render/page criteria)?**
+  confidence: 2
+  disposition: answered
+  rationale: Both apply. The judge excludes kinds declared `vision: false` only for render/page criteria (judge_cli.py:1326-1336), and undeclared kinds never. 832's host fields one vision kind (their message 4c8a10a0, run-t-893-d519ae5e7a). The build widens the exclusion to any criterion whose evidence is images, and to unknown kinds.
 - **IW-3: When the bar cannot be met on a host, what should happen: escalate as today, close at a lower rung with a STEP-DOWN note, or something else?**
+  confidence: 3
+  disposition: answered
+  rationale: Escalate as today, but the refusal names how many vision kinds the host has and how to add one (`fw reviewer probe-vision`). Operator chose (a), 2026-11-17.
 
 ## Exploration Plan
 
@@ -147,17 +156,19 @@ cost_estimate_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO (candidates A + B; C and D rejected)
 
 **Rationale:**
 
-Evidence gap: the panel assignment and the green-degraded path in lib/reviewer/judge_cli.py and lib/review_policy.py have not been read against this case yet. Two candidate fixes are named by 832: accept a degraded panel of the vision-capable seats for render criteria, or define rung 5 for image-only evidence as a panel of vision-capable seats only. Which one is safe depends on how many vision-capable kinds a project can field (AEF: claude-code and antigravity since T-5175; 832 apparently one) and on whether a one-seat outcome may count at all. Read the code and the review-strength policy, then recommend.
+Keep the two-vendor bar for image evidence. Fix what is actually wrong: the planner still seats reviewers that cannot read images when a criterion's evidence is an image but not a page, and it never excludes kinds whose vision is undeclared. When a host cannot field two vision vendors, the criterion keeps escalating to the operator, but the refusal says how many vision kinds the host has and how to add one. The operator agreed on 2026-11-17 ("Proceed as suggested" to yes / yes / (a)).
 
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- `MIN_EVALUATING_SEATS = 2` at lib/verdict_ledger.py:205; a `not-evaluated` seat neither blocks nor counts (lines 3580-3650).
+- The vision exclusion fires only for render/page criteria, and only for `vision: false` (lib/reviewer/judge_cli.py:1326-1336).
+- Vision kinds on AEF's host are claude, codex and antigravity (policy/review-backends.yaml), so a full vision panel is possible here.
+- 832's host fields one vision kind (sidecar 4c8a10a0; their T-893 AC1, run-t-893-d519ae5e7a).
+- Research: docs/reports/T-5199-image-only-rung5-evidence.md
 
 ## Decisions
 

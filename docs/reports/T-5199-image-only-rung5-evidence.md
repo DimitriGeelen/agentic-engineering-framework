@@ -36,4 +36,18 @@ after the one seat that could look said green.
 ## Dialogue Log
 
 - 2026-11-17: the operator opened the conversation ("let's have that conversation"). Questions
-  IW-1..IW-3 put to the operator.
+  IW-1..IW-3 put to the operator, with the recommendation yes / yes / (a).
+- 2026-11-17: 832 asked for the ruling (their operator would rather not judge T-893's screenshots
+  himself). They were told the recommendation and its consequence: T-893 AC1 closes through the
+  panel only once their host has a second vision kind.
+- 2026-11-17: the operator, after hearing that option (b) (a lower-rung close) would unblock 832
+  sooner: "Proceed as suggested and you see fit best." Outcome: keep the bar (IW-1 yes), exclude
+  blind and unknown kinds from any image-evidence panel (IW-2), escalate with a how-to-add-one
+  message when the bar cannot be met (IW-3 a). Candidates C and D rejected.
+
+## Recommendation
+
+GO on A + B. Build slice: the judge treats any criterion whose evidence includes images like a
+render/page criterion for seat planning, excludes kinds whose vision is `false` or undeclared, and
+when fewer than two vision vendors remain, the refusal names the count and `fw reviewer
+probe-vision` as the way to add one.
