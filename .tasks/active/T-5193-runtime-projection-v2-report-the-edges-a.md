@@ -14,10 +14,10 @@ description: >
   map. Rename ours to `unplaced`; serve transition refusals under `refusals` only once
   AEF has an instance runtime that records them (refusal.schema.json v2 reason_code).
 
-status: captured
+status: started-work
 workflow_type: design
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T16:44:10Z
-last_update: '2026-11-16T16:45:48Z'
+last_update: 2026-11-17T00:48:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,20 +94,27 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Two asks from 832 on shared contract 4 (runtime projection, frozen as v1 in T-5185 at docs/research/executable-workflow/contracts/v2/runtime-projection/):
+- Q11 (msg ccdef9f3): the designer overlay's "completed path" is derived (the shortest path from start), because nothing records which edges a task actually took.
+- msg 4fe08e05: `/api/instances` `refusals` lists unplaceable task FILES `{task: file name, reason}`, while the designer reads `refusals` as transition refusals `{task id, node, rule/reason_code, target}`. So the designer's refusal marker can never draw under AEF. 832 now hides that marker under AEF until we serve real ones.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The live projection gives the designer no record of the path taken, and the field named `refusals` means something else in AEF.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Runtime projection v2:
+- (a) For each instance, report the lifecycle edges the task actually traversed, derived from the task's own recorded status history (its `## Updates` status-change entries, and git history if that is the recorded source) mapped onto the `aef-task-lifecycle` map's edges, keyed by the edge `aef:uid`. A transition that maps to no edge is listed as unmapped, never forced onto an edge.
+- (b) Rename the current `refusals` list to `unplaced`. `refusals` stays present and empty, meaning "no transition refusals are recorded", until AEF has a runtime that records them.
+- (c) Add `runtime_projection_version: 2` to the responses (v1 had it in the schema only).
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A v2 schema next to v1 (v1 stays frozen), a test that pins the live responses to it, and 832 told, so they can show the real path and keep the refusal marker hidden until `refusals` is non-empty.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `/api/instances` returns `runtime_projection_version: 2`, `unplaced` (the former list), an empty `refusals`, and, per instance, `traversed` (ordered edge uids) plus `unmapped` transitions. The v1 schema file is unchanged; a v2 schema file is added and documented.
+- [ ] Traversed edges come only from recorded status history and real map edges. A test on fixture tasks covers a normal path, a task with a transition that has no edge (listed as unmapped), and a task with no history (empty).
+- [ ] A test validates live responses from both endpoints against the v2 schema; existing endpoint tests are updated and pass. Contracts v1/v2 checks stay clean.
+- [ ] Invariants pass, `bin/fw vendor self --check --task T-5193` is clean, Watchtower is restarted and current, and 832 is sent the change.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -390,3 +397,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5193-runtime-projection-v2-report-the-edges-a.md
 - **Context:** Initial task creation
+
+### 2026-11-17T00:47:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
