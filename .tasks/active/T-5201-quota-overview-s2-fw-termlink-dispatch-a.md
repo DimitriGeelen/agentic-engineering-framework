@@ -5,10 +5,10 @@ name: "Quota overview S2: fw termlink dispatch and the review cost ledger record
 description: >
   Build slice of inception T-5190 (GO 2026-11-17). Design: docs/reports/T-5190-subscription-quota-overview.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -39,7 +39,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-17T09:08:42Z
-last_update: '2026-11-17T09:16:04Z'
+last_update: 2026-11-17T09:57:33Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,20 +85,26 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Inception T-5190 (GO 2026-11-17), slice S2; design docs/reports/T-5190-subscription-quota-overview.md. S1 (T-5200) built the operator-owned registry `policy/subscriptions.yaml` and `lib/subscriptions.py: resolve(worker_kind, host=None) -> id | "unassigned"`. 1409 asked (their 3.1.1, 3.3.3) that every dispatch name its subscription; they are waiting for this slice.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** A TermLink dispatch's `meta.json` records model, worker binary and version, but no subscription. Token use appears only in the worker's result output. The review cost ledger (`.context/costs/reviews.jsonl`) records backend and metering, but no subscription. So no record says which subscription carried which load.
 
-**Goal:** <what we are trying to achieve>
+**Goal:**
+- `fw termlink dispatch` writes `subscription` (from `resolve(worker_kind, this host)`, or `"unassigned"`) into `meta.json` at launch.
+- At completion it writes the token counts the result reports (input, output, cache-create, cache-read, as present; absent values stay absent, never 0) into `meta.json`.
+- Every row the review cost ledger writes carries `subscription` the same way.
+- A registry that cannot be read never blocks a dispatch: it records `"unknown"` and warns once.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Every new dispatch and review row names its subscription and, for dispatches, its tokens. S3 can sum them per machine.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A new dispatch's meta.json has `subscription` (the assigned id, "unassigned" or "unknown"), and after completion a `tokens` object with only the counts the result reported. Tested with a fixture registry and a stub worker result.
+- [ ] Review cost ledger rows written from now on carry `subscription`, and existing rows are untouched. The ledger's append-only check and its readers still pass.
+- [ ] An unreadable or invalid registry makes dispatch record "unknown" and continue (test). No account-like value can appear (the field comes only from registry ids, which S1 validates).
+- [ ] Existing termlink dispatch and review-cost tests pass, invariants pass, and `bin/fw vendor self --check --task T-5201` is clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -381,3 +387,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5201-quota-overview-s2-fw-termlink-dispatch-a.md
 - **Context:** Initial task creation
+
+### 2026-11-17T09:56:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
