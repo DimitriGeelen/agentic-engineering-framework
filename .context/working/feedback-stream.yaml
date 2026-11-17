@@ -56131,3 +56131,21 @@ scan_id: R-73135b87
 task_id: T-5197
 payload:
   task_file: .tasks/active/T-5197-row-2-mapping-a-humangate-with-exactly-o.md
+---
+kind: scan_emitted
+timestamp: '2026-11-17T01:16:11Z'
+scan_id: R-097f8bc2
+task_id: T-5193
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-17T01:16:11Z'
+scan_id: R-097f8bc2
+task_id: T-5193
+payload:
+  task_file: .tasks/active/T-5193-runtime-projection-v2-report-the-edges-a.md

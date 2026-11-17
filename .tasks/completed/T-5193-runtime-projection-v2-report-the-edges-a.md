@@ -14,12 +14,12 @@ description: >
   map. Rename ours to `unplaced`; serve transition refusals under `refusals` only once
   AEF has an instance runtime that records them (refusal.schema.json v2 reason_code).
 
-status: started-work
+status: work-completed
 workflow_type: design
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [web/blueprints/designer.py, web/blueprints/designer_api.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -48,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-16T16:44:10Z
-last_update: 2026-11-17T00:48:09Z
-date_finished:
+last_update: 2026-11-17T01:15:56Z
+date_finished: 2026-11-17T01:15:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -114,7 +114,7 @@ bvp_scores_proposed:
 - [x] `/api/instances` returns `runtime_projection_version: 2`, `unplaced` (the former list), an empty `refusals`, and, per instance, `traversed` (ordered edge uids) plus `unmapped` transitions. The v1 schema file is unchanged; a v2 schema file is added and documented.
 - [x] Traversed edges come only from recorded status history and real map edges. A test on fixture tasks covers a normal path, a task with a transition that has no edge (listed as unmapped), and a task with no history (empty).
 - [x] A test validates live responses from both endpoints against the v2 schema; existing endpoint tests are updated and pass. Contracts v1/v2 checks stay clean.
-- [ ] Invariants pass, `bin/fw vendor self --check --task T-5193` is clean, Watchtower is restarted and current, and 832 is sent the change.
+- [x] Invariants pass, `bin/fw vendor self --check --task T-5193` is clean, Watchtower is restarted and current, and 832 is sent the change. (832 told 2026-11-17 on 832-ewcr-progress, incl. the map gap: 39 reopen-to-captured transitions have no lifecycle edge.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -412,3 +412,16 @@ bin/fw watchtower current
 ### 2026-11-17T00:47:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-17T01:15:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-097f8bc2
+- **Timestamp:** 2026-11-17T01:16:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
