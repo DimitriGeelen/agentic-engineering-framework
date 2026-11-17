@@ -1741,6 +1741,13 @@ $prompt"
   "status": "running"
 }
 METAEOF
+    # T-5202 (T-5190 S3): run.sh starts from an env allow-list, so the machine quota ledger's
+    # path (FW_QUOTA_LEDGER > XDG_STATE_HOME > ~/.local/state) is resolved HERE, in the caller's
+    # environment, and handed to the runtime as a file. Best-effort: no file means no row.
+    if [ -f "$FRAMEWORK_ROOT/lib/quota_ledger.py" ]; then
+        python3 "$FRAMEWORK_ROOT/lib/quota_ledger.py" path > "$wdir/quota_ledger.path" 2>/dev/null \
+            || rm -f "$wdir/quota_ledger.path"
+    fi
 
     # T-3581: a review dispatch is registered (HMAC-signed) so a verdict row can prove
     # which dispatch produced it. `$name` is the dispatch id. Only task-type review is
@@ -2341,6 +2348,13 @@ if command -v jq >/dev/null 2>&1 && [ -f "$WDIR/meta.json" ] && [ -f "$FRAMEWORK
             && mv "$WDIR/meta.json.tmp" "$WDIR/meta.json" \
             || rm -f "$WDIR/meta.json.tmp"
     fi
+fi
+# T-5202 (T-5190 S3): one row in the machine-wide quota ledger — ids and reported counts only,
+# read from meta.json just written. A failed append warns once and never changes the outcome.
+if [ -s "$WDIR/quota_ledger.path" ] && [ -f "$WDIR/meta.json" ] && [ -f "$FRAMEWORK_ROOT/lib/quota_ledger.py" ]; then
+    FW_QUOTA_LEDGER="$(head -1 "$WDIR/quota_ledger.path")" python3 "$FRAMEWORK_ROOT/lib/quota_ledger.py" \
+        append-dispatch --meta "$WDIR/meta.json" --worker-kind "${WORKER_KIND:-claude}" \
+        2>> "$WDIR/stderr.log" || true
 fi
 
 # --- T-3440 close-state check (start) ---

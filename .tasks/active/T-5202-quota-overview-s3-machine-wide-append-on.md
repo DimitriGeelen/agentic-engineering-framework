@@ -101,10 +101,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A completed dispatch and a written review cost row each append one row to the machine ledger with the fields above. Two projects writing concurrently produce whole lines only (test with parallel writers).
-- [ ] The ledger path honours FW_QUOTA_LEDGER and XDG_STATE_HOME. A missing directory is created; an unwritable ledger warns once and never fails the dispatch or review (test).
-- [ ] The reader skips torn lines and filters by time and subscription. Rotation at the size bound keeps one previous file (test).
-- [ ] No row contains a prompt, host name or account-like value (test using S1's account-value patterns on every written row).
+- [x] A completed dispatch and a written review cost row each append one row to the machine ledger with the fields above. Two projects writing concurrently produce whole lines only (test with parallel writers).
+- [x] The ledger path honours FW_QUOTA_LEDGER and XDG_STATE_HOME. A missing directory is created; an unwritable ledger warns once and never fails the dispatch or review (test).
+- [x] The reader skips torn lines and filters by time and subscription. Rotation at the size bound keeps one previous file (test).
+- [x] No row contains a prompt, host name or account-like value (test using S1's account-value patterns on every written row).
 - [ ] Existing dispatch, review-cost and runtime tests pass, invariants pass, and `bin/fw vendor self --check --task T-5202` is clean.
 
 ### Human
@@ -291,6 +291,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5202_quota_ledger.py tests/unit/test_t5201_subscription_tokens.py -q > /tmp/.t5202.out 2>&1 && grep -q passed /tmp/.t5202.out
+python3 -c "import ast; ast.parse(open('lib/quota_ledger.py').read())"
+bin/fw vendor self --check --task T-5202
 
 ## RCA
 

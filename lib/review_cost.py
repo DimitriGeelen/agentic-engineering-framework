@@ -488,7 +488,26 @@ def _log_cost_locked(b: dict, *, task: str, backend: str, purpose: str, tokens: 
            "proposal_id": proposal_id, "evidence": evidence,
            "subscription": _subscription_for(b)}
     _append(ledger("reviews.jsonl"), rec)
+    _quota_append(rec, b)
     return rec
+
+
+def _quota_append(rec: dict, b: dict) -> None:
+    """T-5202 (T-5190 S3): one row in the machine-wide quota ledger for this cost row — ids and
+    the reported token count only. Never raises; a failure warns once and the row stands."""
+    try:
+        here = str(Path(__file__).resolve().parent)
+        if here not in sys.path:
+            sys.path.insert(0, here)
+        import quota_ledger  # noqa: E402  (sibling module)
+        tokens = rec.get("tokens")
+        quota_ledger.append(quota_ledger.make_row(
+            event="review", project=_roots()[0], task=rec.get("task"),
+            review_id=quota_ledger.review_id_for(rec), worker_kind=b.get("worker_kind"),
+            subscription=rec.get("subscription"),
+            tokens={"total": tokens} if isinstance(tokens, int) else None, ts=rec.get("ts")))
+    except Exception as e:  # noqa: BLE001 - e.g. an old vendored copy without the module
+        print(f"WARNING: quota ledger not written ({type(e).__name__})", file=sys.stderr)
 
 
 def _subscription_for(b: dict) -> str:

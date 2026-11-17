@@ -305,3 +305,14 @@ def _restore_replaced_modules():
 # ---------------------------------------------------------------------------
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from _hermetic import hermetic  # noqa: E402,F401
+
+
+@pytest.fixture(autouse=True)
+def _tests_cannot_write_the_real_quota_ledger(monkeypatch, tmp_path_factory):
+    """T-5202: lib/quota_ledger.py appends to a MACHINE-wide file outside the repo
+    (~/.local/state/aef/quota-ledger.jsonl). Any test that completes a dispatch or logs a
+    review cost would otherwise add rows to this user's real ledger. Point every test at a
+    temp ledger unless it set one itself."""
+    if not os.environ.get("FW_QUOTA_LEDGER", "").startswith(str(tmp_path_factory.getbasetemp())):
+        monkeypatch.setenv("FW_QUOTA_LEDGER",
+                           str(tmp_path_factory.mktemp("quota") / "quota-ledger.jsonl"))
