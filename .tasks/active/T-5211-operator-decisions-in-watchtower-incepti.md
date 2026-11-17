@@ -83,6 +83,9 @@ The operator, 2026-11-17: when an inception gets a GO, the agent should get a tr
 
 - **IW-1: Which operator actions in Watchtower should notify the agent: inception decisions only, or also review approvals (human criteria ticked), approved paid-review proposals, accepted restatements and Tier 0 approvals?**
 - **IW-2: Can a project post to its own sidecar inbox today, and does the receiver deliver it to its own session when idle (lib/sidecar/addressing.py treats the own inbox specially, line 604)?**
+  confidence: 3
+  disposition: answered
+  rationale: Yes, verified 2026-11-17 21:47Z. `fw sidecar send --to 999-Agentic-Engineering-Framework --notice` was stored as RECEIVED by this project's receiver (msg 254f3e5a) and surfaced in this session's prompt at the next idle point, between turns, not mid-interaction.
 - **IW-3: The prompt hook frames all sidecar mail as untrusted peer data. Is that right for a notice from the project's own Watchtower? (Proposal: yes. The notice is only a trigger, and the agent reads the decision from the task file, which is the source of truth.)**
 - **IW-4: With no session running, does the notice wait for the next session's start alerts, and is anything lost if Watchtower restarts mid-chain?**
 
