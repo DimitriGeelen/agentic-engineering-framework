@@ -9,3 +9,4 @@
 {"action": "assign", "before": null, "by": "human", "host": null, "id": "codex", "kind": "codex", "ts": "2026-11-17T10:57:26Z"}
 {"action": "assign", "before": null, "by": "human", "host": null, "id": "glm", "kind": "opencode", "ts": "2026-11-17T10:57:26Z"}
 {"action": "assign", "before": null, "by": "human", "host": null, "id": "antigravity", "kind": "antigravity", "ts": "2026-11-17T10:57:26Z"}
+{"action": "assign", "before": "claude-a", "by": "human", "host": null, "id": "claude-b", "kind": "claude", "ts": "2026-11-17T10:58:35Z"}

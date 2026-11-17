@@ -55,11 +55,11 @@ subscriptions:
   harness: openrouter
   description: OpenRouter pay-per-use (approval per request)
 assignments:
-- kind: claude
-  subscription: claude-a
 - kind: codex
   subscription: codex
 - kind: opencode
   subscription: glm
 - kind: antigravity
   subscription: antigravity
+- kind: claude
+  subscription: claude-b
