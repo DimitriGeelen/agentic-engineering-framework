@@ -5817,3 +5817,36 @@ concerns:
   blast_radius: any session where an agent reads an outside file through a sed script; read side only
   detection_gap: _read_words looks at word shape only; sed script commands that open files (r, R, w, W, e) are not parsed
   what_remains: Parse sed scripts for r/R/w/W file arguments in the read scan (or name sed in the documented "not seen" list). Close when `sed '1r <outside>' f` is refused or the limit is documented where the gate's scope is stated.
+
+- id: G-132
+  type: gap
+  title: "TermLink hub 'laptop-141' (192.168.10.141:9100) has been failing fleet-doctor with tofu-violation for 13+ consecutive runs over >24h"
+  description: "Auto-registered by T-1053 under G-019 (framework-blind-to-persistent-failure guard). Hub has failed fleet-doctor with error class 'tofu-violation' for 13 consecutive runs since 2026-11-15T16:21:40Z (first observed). This indicates either a genuinely broken hub auth state OR stale client credentials that were not refreshed after a hub rotation. Per T-1051 Option D, the heal path is: 1) confirm the hub is intended to be up (termlink remote ping 192.168.10.141:9100 from a trusted anchor), 2) if yes, refresh the client secret (termlink fleet reauth laptop-141 when T-1054 lands, or manually copy /var/lib/termlink/hub.secret via an out-of-band channel for now)."
+  spec_reference: "T-1051 inception, T-1053 implementation, .context/working/.fleet-failure-state.json"
+  severity: high
+  trigger_fired: true
+  trigger_event: "2026-11-17T00:38:29Z: 13 consecutive fleet-doctor failures on laptop-141 (192.168.10.141:9100) with class tofu-violation, first observed 2026-11-15T16:21:40Z"
+  detection_lag_days: "1"
+  what_works_now: "Fleet doctor correctly classifies the error and emits a hint. T-1052 has already recorded an isolated learning. This concern escalates the sustained pattern to Watchtower visibility."
+  what_remains: "Operator must refresh the client's cached secret for this hub. Long-term fix: T-1054 (termlink fleet reauth) lands a one-command heal."
+  mitigation_candidate: "Ship T-1054 (fleet reauth Tier-1) and T-1055 (fleet reauth --bootstrap-from, Tier-2)."
+  status: watching
+  created: 2026-11-17
+  last_reviewed: 2026-11-17
+  related_tasks: [T-1051, T-1052, T-1053, T-1054, T-1055]
+- id: G-133
+  type: gap
+  title: "Unready inceptions still reach the operator for decision: fw task review-batch skips the handoff-readiness gate that fw task review enforces"
+  description: "2026-11-17: the agent handed T-5211 (IW-1..4 undisposed, one an open check) and T-5212 (IW-1..5 undisposed, 'initial view, not a decision') to the operator with GO links. Operator: 'how often do we talk about it ... all your other brothers do it too'. Measured: `fw task review T-5212` refuses (rc 1, no link; T-3549 gate), `fw task review-batch T-5211 T-5212` prints both links, because emit_review_batch (lib/review.sh:629) checks only for an empty Recommendation (T-2206), not inception_underdisposed_questions / inception_handoff_blockers. CLAUDE.md tells agents to use review-batch for 2+ tasks, so the sanctioned multi-task path bypasses the gate. Prior instances of the same class: T-3278, T-3532, T-3535, T-3548 (T-3549 turned the single-path WARN into a refusal but did not reach the batch path)."
+  spec_reference: "T-5215 RCA; lib/review.sh emit_review vs emit_review_batch; CLAUDE.md §Presenting Work for Human Review"
+  severity: high
+  trigger_fired: true
+  trigger_event: "2026-11-17: operator rejected two unready inception handoffs (T-5211, T-5212)"
+  detection_lag_days: "unknown (since review-batch existed beside T-3549, 2026-09)"
+  what_works_now: "The single-task path refuses; the decide preflight and close gate refuse an under-disposed inception at click time."
+  what_remains: "Batch path parity (T-5215); the agent composing decision asks in chat from its own judgement instead of the gate's verdict."
+  mitigation_candidate: "emit_review_batch calls the same handoff predicate per inception and emits no link for an unready one (T-5215)."
+  status: watching
+  created: 2026-11-17
+  last_reviewed: 2026-11-17
+  related_tasks: [T-5215, T-3549, T-3279, T-2206, T-5211, T-5212]
