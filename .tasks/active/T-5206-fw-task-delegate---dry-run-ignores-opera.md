@@ -8,10 +8,10 @@ description: >
   say they are reviewer-judgeable under SD-xxxx once a Measured block is present,
   and name the missing Measured block otherwise.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-17T09:14:55Z
-last_update: '2026-11-17T09:31:13Z'
+last_update: 2026-11-17T15:01:05Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,19 +88,30 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 010's field report (sidecar message bb92576a). They recorded the operator widening SD-ab145e8e for T-1632, T-2258 and T-3685. Afterwards, `fw task delegate --dry-run` still reported those tasks' act-in-the-world criteria as OPERATOR-ONLY.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The widening is honoured where verdicts are recorded and applied (lib/verdict_ledger.py calls `delegation_widening.active_widening`, from T-5180). The delegate report in lib/delegation_cli.py never consults it. So the one command an agent runs to ask "who closes this?" gives the pre-widening answer.
 
-**Goal:** <what we are trying to achieve>
+**Goal:**
+- For an OPERATOR-ONLY criterion of a widenable class, the delegate report calls the same `active_widening()` the verdict ledger uses.
+- When that returns a widening, the report shows "reviewer-judged under SD-xxxx (ruling …)".
+- When a widening covers the criterion but it has no Measured block, the report keeps it OPERATOR-ONLY and prints the reason, which names the missing block and its format.
+- When the project records no widenings at all, the output is byte-identical to today's.
+- The report still converts nothing.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** 010, or any project with a widening, sees in the dry run the same answer that the close path will give.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
+- [ ] The delegate report (dry run and real run) uses `delegation_widening.active_widening` for OPERATOR-ONLY criteria of widenable classes. There is one decision point, with no second copy of the scope, expiry, revocation or pattern rules.
+- [ ] Tests cover each case:
+  - An active widening plus a Measured block shows the criterion as reviewer-judged and names the SD id.
+  - An active widening without a Measured block stays operator-only, and the reason names the missing block.
+  - An expired, revoked or agent-override widening, or a task outside its list, stays operator-only.
+  - With no widenings recorded, the output is unchanged (byte-compare).
+- [ ] The summary counts (`converted / reviewer-judged / left human`) agree with the per-criterion lines
+- [ ] The existing delegation, widening (t5180) and verdict-ledger suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5206`
 - [ ] [Second criterion]
 
 ### Human
@@ -384,3 +395,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5206-fw-task-delegate---dry-run-ignores-opera.md
 - **Context:** Initial task creation
+
+### 2026-11-17T15:01:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
