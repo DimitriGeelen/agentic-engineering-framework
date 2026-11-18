@@ -72,6 +72,9 @@ class DeliveryResult:
     state: str
     delivered: bool
     reason: str = ""
+    # T-5142: detail that does not change the verdict (a delivered post whose
+    # weaker reachability probe failed). Printed beneath the verdict line.
+    note: str = ""
 
 
 def _message_path(client_msg_id: str):
@@ -196,7 +199,7 @@ def deliver(client_msg_id: str, transport, probe=always_ok_probe, *,
     else:
         _record(state)
     _consume_flag(client_msg_id)
-    return DeliveryResult(client_msg_id, state, True)
+    return DeliveryResult(client_msg_id, state, True, note=getattr(verdict, "note", "") or "")
 
 
 def _consume_flag(client_msg_id: str) -> None:

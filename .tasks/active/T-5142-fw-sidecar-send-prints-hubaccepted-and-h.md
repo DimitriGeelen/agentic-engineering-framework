@@ -99,9 +99,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Every `fw sidecar send` outcome ends with ONE verdict line, either `delivered: …` or `NOT delivered: …`. A probe failure or any other state appears as detail under that line, never as a competing verdict. Tests cover: accepted with a failed probe, refused, no receiver, and the cross-hub route.
-- [ ] A post the hub accepted is reported as delivered even when the reachability probe failed (the 010/1409 case). A test reproduces it with a stubbed probe.
-- [ ] `--json` output carries the same single verdict field, and the existing sidecar send / receipts suites pass, as does `bin/fw vendor self --check --task T-5142`
+- [x] Every `fw sidecar send` outcome ends with ONE verdict line, either `delivered: …` or `NOT delivered: …`. A probe failure or any other state appears as detail under that line, never as a competing verdict. Tests cover: accepted with a failed probe, refused, no receiver, and the cross-hub route.
+- [x] A post the hub accepted is reported as delivered even when the reachability probe failed (the 010/1409 case). A test reproduces it with a stubbed probe.
+- [x] `--json` output carries the same single verdict field, and the existing sidecar send / receipts suites pass, as does `bin/fw vendor self --check --task T-5142`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,6 +287,9 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_t5142_send_verdict.py
+python3 -m pytest -q tests/unit/test_sidecar_no_receiver_t3762.py tests/unit/test_sidecar_cross_hub_t3855.py tests/unit/test_sidecar_send_state_t4560.py tests/unit/test_sidecar_receipts_t3684.py tests/unit/test_sidecar_delivery.py
+bin/fw vendor self --check --task T-5142
 
 ## RCA
 
@@ -303,6 +306,14 @@ cost_estimate_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** one `fw sidecar send` (010 T-3797, 1409-sprind) showed both `HUB_ACCEPTED` and `hub-refused: … TLS handshake failed`. The sender could not tell whether the consult had arrived and re-sent it six times; it had arrived (a later retry by the project's watcher posted it).
+
+**Root cause:** `_cmd_send` printed the verdict line and then free-standing state lines of equal weight. On a hub-path send with no registered receiver, the `receiver:` line always said "HUB_ACCEPTED is the last state…", even when the verdict was `NOT delivered: STORED` with `reason: hub-refused`. Two states read as two answers. Separately, `deliver()` never posts after a failed probe, so a probe that failed on its weak (unauthenticated) rung blocked a send the hub would have taken.
+
+**Why structurally allowed:** the T-3762 test pinned the receiver line's text only on the DELIVERED path; nothing tested the output of a refused send as a whole, or asserted that exactly one line carries a verdict.
+
+**Prevention:** `print_verdict()` is now the one place a send's text output is formed: one verdict line first, then `label: value` detail, and the receiver line names HUB_ACCEPTED only when delivered. `tests/unit/test_t5142_send_verdict.py` asserts exactly one verdict line, first, for accepted-with-failed-probe, refused, credential-refused, no-receiver, cross-hub and direct sends, and a single `verdict` field in `--json`. A probe that failed only its weak rung now passes with a `note` (T-5141), which the send prints as `probe note:` under `delivered:`.
 
 ## Evolution
 
@@ -367,6 +378,12 @@ cost_estimate_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-18 — where the verdict sits and how detail is shaped
+- **Chose:** the verdict is the FIRST stdout line (existing `delivered: STATE  ->  …` shape kept); detail stays as unindented `label: value` lines beneath it; a NOT-delivered state says what happens next (`(kept in the outbox; retried)` / `(final; not retried)`).
+- **Why:** existing tests and readers key on `delivered: RECEIVED`, `NOT delivered: REJECTED` and `receiver:` at line start; keeping those shapes changes no consumer, and "one verdict, first" is what a reader scans.
+- **Rejected:** indenting detail lines (breaks `receiver:` consumers for no gain); putting the verdict last (the reader of a long reason block would hit competing text first).
+- Pre-post refusals (empty body, unresolvable or unread circuit) keep their single stderr line `send: REFUSED, nothing posted — …` (T-3855 pins that stdout says nothing about delivery); their `--json` now carries `verdict: "NOT delivered"` too.
 
 ## Decision
 

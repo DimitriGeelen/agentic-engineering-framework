@@ -89,15 +89,30 @@ def _send_direct(args, entry: dict) -> int:
     payload = {"client_msg_id": row["client_msg_id"], "state": row["state"],
                "delivered": ok, "reason": row.get("error"), "path": "direct",
                "url": entry.get("url"), "handover_deadline": row.get("deadline")}
+    payload["verdict"] = verdict_word(ok)
     if args.json:
         print(json.dumps(payload))
     else:
-        print(f"{'delivered' if ok else 'NOT delivered'}: {row['state']}  ->  "
-              f"{args.to} receiver {entry.get('url')}")
-        print(f"client_msg_id: {row['client_msg_id']}")
-        if row.get("error"):
-            print(f"reason: {row['error']}")
+        print_verdict(ok, row["state"], f"{args.to} receiver {entry.get('url')}",
+                      [("client_msg_id", row["client_msg_id"]),
+                       ("reason", row.get("error"))])
     return 0 if ok else 1
+
+
+def verdict_word(delivered: bool) -> str:
+    """T-5142: the one verdict a send reports — text line and --json alike."""
+    return "delivered" if delivered else "NOT delivered"
+
+
+def print_verdict(delivered: bool, state: str, where: str, details) -> None:
+    """T-5142: ONE verdict line, then every other state as `label: value` detail
+    beneath it. 010/1409 read `HUB_ACCEPTED` and `hub-refused` as two equal
+    answers and re-sent a delivered consult six times; nothing printed here may
+    start with a verdict word, so the first line is the only answer."""
+    print(f"{verdict_word(delivered)}: {state}  ->  {where}")
+    for label, value in details:
+        if value:
+            print(f"{label}: {value}")
 
 
 def _replied_receipt(args) -> None:
@@ -134,7 +149,7 @@ def cmd_send(args) -> int:
     if not (args.body or "").strip():
         reason = "empty --body (nothing to send)"
         if args.json:
-            print(json.dumps({"delivered": False, "state": "REFUSED", "reason": reason}))
+            print(json.dumps({"verdict": "NOT delivered", "delivered": False, "state": "REFUSED", "reason": reason}))
         print(f"send: REFUSED, nothing posted — {reason}", file=sys.stderr)
         return 2
     _warn_long_body(args)
@@ -168,7 +183,7 @@ def _explicit_circuit_ok(args, target: str, hub) -> bool:
         print(f"send: WARNING {why} — sending anyway (--force)", file=sys.stderr)
         return True
     if args.json:
-        print(json.dumps({"delivered": False, "state": "REFUSED", "reason": why,
+        print(json.dumps({"verdict": "NOT delivered", "delivered": False, "state": "REFUSED", "reason": why,
                           "candidates": ev["candidates"]}))
     print(f"send: REFUSED, nothing posted — {why}. Address one of those, or pass --force "
           f"if this circuit is right (T-4418)", file=sys.stderr)
@@ -199,7 +214,7 @@ def _cmd_send(args) -> int:
         where = addressing.resolve(args.to, hub=args.hub, level=args.level)
     except circuit.CircuitError as exc:
         if args.json:
-            print(json.dumps({"delivered": False, "state": "REFUSED", "reason": str(exc)}))
+            print(json.dumps({"verdict": "NOT delivered", "delivered": False, "state": "REFUSED", "reason": str(exc)}))
         print(f"send: REFUSED, nothing posted — {exc}", file=sys.stderr)
         return 2
     target, hub = where["circuit"], where["hub"]
@@ -216,11 +231,14 @@ def _cmd_send(args) -> int:
     result = delivery.deliver(client_msg_id, transport.termlink_transport,
                               transport.probe_hub)
 
+    note = getattr(result, "note", "") or ""
     payload = {
+        "verdict": verdict_word(result.delivered),
         "client_msg_id": result.client_msg_id,
         "state": result.state,
         "delivered": result.delivered,
         "reason": result.reason,
+        "note": note or None,
         "topic": circuit.topic_for_circuit(target),
         "hub": hub or "local",
         "addressed_by": where["how"],
@@ -229,16 +247,25 @@ def _cmd_send(args) -> int:
     if args.json:
         print(json.dumps(payload))
     else:
-        verdict = "delivered" if result.delivered else "NOT delivered"
-        print(f"{verdict}: {result.state}  ->  {payload['topic']}  on hub {payload['hub']}")
-        print(f"addressed by: {where['how']}")
-        if receiver_seen:
-            print(f"receiver: no receiver registered for {args.to} on this host — sent via "
-                  f"the hub, so HUB_ACCEPTED is the last state until {args.to} takes it off "
-                  f"the topic and sends a receipt (fw sidecar receipts)")
-        print(f"client_msg_id: {result.client_msg_id}")
-        if result.reason:
-            print(f"reason: {result.reason}")
+        state = result.state
+        if not result.delivered:
+            # T-5142: say what happens next, so NOT delivered is not read as lost.
+            state += (" (kept in the outbox; retried)" if result.state == outbox.STORED
+                      else " (final; not retried)")
+        receiver_line = None
+        if receiver_seen and result.delivered:
+            receiver_line = (f"no receiver registered for {args.to} on this host — sent via "
+                             f"the hub, so HUB_ACCEPTED is the last state until {args.to} takes "
+                             f"it off the topic and sends a receipt (fw sidecar receipts)")
+        elif receiver_seen:
+            receiver_line = (f"no receiver registered for {args.to} on this host — the hub "
+                             f"path was tried")
+        print_verdict(result.delivered, state, f"{payload['topic']}  on hub {payload['hub']}",
+                      [("addressed by", where["how"]),
+                       ("receiver", receiver_line),
+                       ("client_msg_id", result.client_msg_id),
+                       ("reason", result.reason),
+                       ("probe note", note)])
     # A refused hub or a failed post is a real failure, and the exit code
     # says so — the message stays retryable in the outbox either way.
     return 0 if result.delivered else 1
