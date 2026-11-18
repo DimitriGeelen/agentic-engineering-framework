@@ -133,6 +133,19 @@ what was tried, what was decided and the next step?
 
 **Implication:** the arc journal must be the single place where *any* actor's decision about the unit lands, or resume fails whatever the model. Together with the first measurement, this answers IW-1 toward option B (a fresh agent per event, plus a journal) on evidence. IW-2..IW-4 remain to be answered with the operator.
 
+## Received 2026-11-18 20:51Z (1409, sidecar fb6c390d)
+
+**Load test, repeated after the decision lines were written at the unit:** fresh agents named the right next step in 10/10 and 9/10 units, with 0 wrong actions. Before, it was 7/10 and 6/10, with 3 wrong actions in each set. The independent review found 3 back-filled entries with a wrong time; a repair is running.
+
+**New need 1 — later runs of the same unit.** 167 of 315 units had more than one run. A closed task cannot be reopened: `work-on`, `--status started-work` and `--status issues` all exit 1 on work-completed. 1409's operator decided on 2026-11-18:
+- A later run gets NEW instances of every step in the SAME arc, built from the template valid at that time.
+- Findings, information and insights carry over. Assumptions carry over marked as assumptions.
+- Judgement is formed again, and old check results are not inherited.
+
+AEF today: `fw arc instantiate` (T-5221) always creates a new arc through arc_create. A second instantiation into an existing arc, per-run instances, a predecessor link, and the template version recorded on the instance are all missing. "Arc complete" is defined per arc, not per run.
+
+**New need 2 — scale.** One task per step is about 142,000 task files for one full pass over 10,953 units, and more with each refresh. 1409 is measuring fw command times at 10k, 50k and 142k files in a throwaway copy. AEF's own corpus is about 5,200 task files (915 active, 4,307 completed) and has not been measured at that size. Whether a per-unit step task is the right grain at that size is open.
+
 ## Dialogue Log
 
 - 2026-11-18: 1409's message c87d0ee1 received; answers (a)-(d) sent with the facts above;

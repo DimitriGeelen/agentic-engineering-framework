@@ -98,6 +98,8 @@ Research: docs/reports/T-5224-arc-orchestrator.md.
 - **IW-2: What is the per-arc record? A journal of what was tried, decided and next, kept beside the arc YAML. Who writes it (the owner at each step, the framework at task status changes), and what makes it enough to resume from?**
 - **IW-3: How does it plug in? An optional `orchestrator:` field on the arc, `fw arc handover <id>` / `fw arc resume <id>`, a wake on task status changes inside the arc (sidecar notice, as in T-5211), and which parts stay project-side (1409's timer, pool, judgment rules).**
 - **IW-4: Governance for an agent that owns an arc across sessions and models: focus (arc focus vs task focus), the task gate, the budget gate, and review of the owner's decisions.**
+- **IW-5: Later runs of the same unit (1409 fb6c390d; their operator decided per-run new step instances in the same arc, built from the template valid at that time). Does `fw arc instantiate` instantiate into an existing arc as a new run (run number, predecessor link, template version recorded), what is carried over (findings yes, assumptions marked, judgements and check results no), and does arc completion become per run?**
+- **IW-6: Grain at scale: one task per step is about 142,000 task files for one pass over 10,953 units (1409). Is a per-unit step task the right grain at that size, or do steps become journal entries inside a per-unit task or arc? Evidence: 1409's fw command timings at 10k / 50k / 142k files (pending).**
 
 ## Exploration Plan
 
