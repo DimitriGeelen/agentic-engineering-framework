@@ -1,0 +1,108 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5235: delegation.classify: a command merely named inside a question or example list ('git push' in a list of once-refused commands) makes a ruling criterion act-in-the-world / OPERATOR-ONLY (832 e106c38e, their T-676)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-18T18:37:35Z
+# ============================================================================
+
+task_id: T-5235
+task_name: "delegation.classify: a command merely named inside a question or example list ('git push' in a list of once-refused commands) makes a ruling criterion act-in-the-world / OPERATOR-ONLY (832 e106c38e, their T-676)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-18T13:39:51Z
+completed: 2026-11-18T18:35:45Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-18T14:40:14+01:00
+last_commit: 2026-11-18T19:26:24+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — delegation.classify reads a command named in a question as act-in-the-world (832 e106c38e). context, criteria — operator ruling (question 6, option A): a recorded operator ruling makes the criterion reviewer-judgeable. recorded operator ruling lifts an act-in-the-world / operator-marked criterion to reviewer-judged. vendor self, fabric cards for recorded_ruling and its tests. Agent criteria ticked with suite evidence; verification lines
+
+# Key outcomes
+outcomes:
+  - '`fw reviewer ruling record` writes an append-only, digest-bound ledger row, and is refused under agent control including with --i-am-human. Agent Bash and Write/Edit to the ledger are refused by the existing guards (tests).'
+  - 'With a valid recorded ruling, an act-in-the-world or operator-marked criterion is reported reviewer-judged ("ruling recorded"). Without one, or with a ruling whose digest no longer matches the criterion text, it stays OPERATOR-ONLY (tests). tier0-or-bypass and sovereignty criteria stay OPERATOR-ONLY even with a ruling (test).'
+  - 'The verdict ledger accepts a green on such a criterion only while the ruling is valid, and the reviewer brief carries the recorded ruling text and the instruction to check the box against it (tests)'
+  - '832''s case reproduces: a T-676-like fixture classes OPERATOR-ONLY before the ruling and reviewer-judged after it (test)'
+  - 'Existing delegation, verdict-ledger, judge, restatement and T-5205 guard suites pass. CLAUDE.md §Delegation states the rule in one paragraph. `bin/fw test invariants` and `bin/fw vendor self --check --task T-5235` are clean.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-human-ac-tick.py'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/delegation_cli.py'
+  - '.agentic-framework/lib/delegation_widening.py'
+  - '.agentic-framework/lib/recorded_ruling.py'
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.fabric/components/lib-recorded_ruling.yaml'
+  - '.fabric/components/tests-unit-test_t5235_recorded_ruling.yaml'
+  - '.tasks/active/T-5235-delegationclassify-a-command-merely-name.md'
+  - 'CLAUDE.md'
+  - 'agents/context/check-human-ac-tick.py'
+  - 'bin/fw'
+  - 'lib/delegation_cli.py'
+  - 'lib/delegation_widening.py'
+  - 'lib/recorded_ruling.py'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/shell_write_scan.py'
+  - 'lib/verdict_ledger.py'
+  - 'tests/unit/test_t5235_recorded_ruling.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-18T14:40:14'
+    action: 'T-5235: capture — delegation.classify reads a command named in a question as act-in-the-world (832 e106c38e)'
+  - time: '2026-11-18T18:12:21'
+    action: 'T-5235: context, criteria — operator ruling (question 6, option A): a recorded operator ruling makes the criterion reviewer-judgeable'
+  - time: '2026-11-18T18:27:58'
+    action: 'T-5235: recorded operator ruling lifts an act-in-the-world / operator-marked criterion to reviewer-judged'
+  - time: '2026-11-18T18:29:44'
+    action: 'T-5235: vendor self, fabric cards for recorded_ruling and its tests'
+  - time: '2026-11-18T19:26:24'
+    action: 'T-5235: Agent criteria ticked with suite evidence; verification lines'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 295 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 295
+  commits: 6
+  files_changed: 24
+  lines_added: 1534
+  lines_removed: 48
+  footprint_refreshed_at: '2026-11-18T18:37:58Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5235-delegationclassify-a-command-merely-name.md
+generated_by: context-agent-hybrid

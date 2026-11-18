@@ -56915,3 +56915,21 @@ scan_id: R-090b0f48
 task_id: T-5223
 payload:
   task_file: .tasks/active/T-5223-22-task-files-carry-an-out-of-enum-owner.md
+---
+kind: scan_emitted
+timestamp: '2026-11-18T18:37:00Z'
+scan_id: R-5564b89b
+task_id: T-5235
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-18T18:37:00Z'
+scan_id: R-5564b89b
+task_id: T-5235
+payload:
+  task_file: .tasks/active/T-5235-delegationclassify-a-command-merely-name.md

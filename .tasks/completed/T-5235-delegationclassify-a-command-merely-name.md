@@ -20,12 +20,12 @@ description: >
   be to class a criterion whose recorded ruling is already present as ruling-recorded
   rather than relaxing act-in-the-world.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/check-human-ac-tick.py, bin/fw, lib/delegation_cli.py, lib/recorded_ruling.py, lib/shell_write_scan.py, lib/verdict_ledger.py, tests/unit/test_t5235_recorded_ruling.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -54,8 +54,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-18T13:39:51Z
-last_update: 2026-11-18T17:11:02Z
-date_finished:
+last_update: 2026-11-18T18:35:45Z
+date_finished: 2026-11-18T18:35:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -414,3 +414,16 @@ bin/fw vendor self --check --task T-5235
 ### 2026-11-18T17:11:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-18T18:35:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5564b89b
+- **Timestamp:** 2026-11-18T18:37:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
