@@ -22,7 +22,7 @@ revisit_at: 2026-11-25
 waiting_on: operator
 arc_id: value-prioritisation
 created: 2026-05-28T14:30:00Z
-last_update: 2026-11-18T22:23:02Z
+last_update: '2026-11-18T22:30:10Z'
 date_finished: 2026-05-28T18:00:00Z
 cost_estimate_proposed:
   - ts: '2026-05-28T12:45:02Z'
@@ -42,6 +42,15 @@ cost_estimate_proposed:
       effort: 7
     rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
       (workflow:inception); effort=7 (lines=149,acs=5)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-11-18T22:30:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 8
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=8 (lines=153,acs=5)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-05-28T13:00:02Z'

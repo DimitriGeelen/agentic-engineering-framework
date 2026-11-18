@@ -1,8 +1,16 @@
 ---
 id: T-5030
-name: "Weigh moving the GitHub repo into an organisation so AEF gets its own triage-only account instead of the operator's personal login"
+name: "Weigh moving the GitHub repo into an organisation so AEF gets its own triage-only
+  account instead of the operator's personal login"
 description: >
-  Operator 2026-11-02 (T-5006 step 1, 12.4): deferred, 'not looking forward to big changes, but if it needs, it needs'. Today fw issues labels and closes issues with the operator's full-power GitHub login stored on the AEF host; a compromised host exposes the whole account. A GitHub organisation (free for public repos) would allow a triage-only account for AEF. Cost: repo URL change (GitHub redirects), upgrade source, OneDev mirror, docs and consumers' fw upgrade remote, branch protection and secrets redone; about half a day plus a be-tag and peer testing. Not needed for outside contributors (fork + PR) or trusted peers (T-5006 Q-5 option 1).
+  Operator 2026-11-02 (T-5006 step 1, 12.4): deferred, 'not looking forward to big
+  changes, but if it needs, it needs'. Today fw issues labels and closes issues with
+  the operator's full-power GitHub login stored on the AEF host; a compromised host
+  exposes the whole account. A GitHub organisation (free for public repos) would allow
+  a triage-only account for AEF. Cost: repo URL change (GitHub redirects), upgrade
+  source, OneDev mirror, docs and consumers' fw upgrade remote, branch protection
+  and secrets redone; about half a day plus a be-tag and peer testing. Not needed
+  for outside contributors (fork + PR) or trusted peers (T-5006 Q-5 option 1).
 
 status: captured
 workflow_type: inception
@@ -15,8 +23,8 @@ step_entered_at: '2026-11-18T22:21:49Z'
 revisit_at: 2026-11-25
 waiting_on: operator
 created: 2026-11-02T19:25:23Z
-last_update: 2026-11-18T22:21:49Z
-date_finished: null
+last_update: '2026-11-18T22:30:39Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -25,6 +33,16 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-11-18T22:30:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=116,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5030: Weigh moving the GitHub repo into an organisation so AEF gets its own triage-only account instead of the operator's personal login
