@@ -64,17 +64,49 @@ def _now(now: datetime | None = None) -> str:
 
 # ── the fix text ──────────────────────────────────────────────────────────────
 
-def missing_fix(hub: str, home: str | None = None) -> str:
+#: T-5236 (review amber, codex): where another user's hubs.toml may already name the hub's
+#: address. Addresses are not secrets; secret files are never opened.
+_HUBS_TOML_GLOBS = ("/root/.termlink/hubs.toml", "/home/*/.termlink/hubs.toml")
+
+
+def known_address(hub: str, globs=_HUBS_TOML_GLOBS) -> tuple[str, str] | None:
+    """(address, source path) for `hub` from any readable hubs.toml on this host that has a
+    profile of that name with an address; None when no readable file names it."""
+    import glob
+    import tomllib
+    for pattern in globs:
+        for p in sorted(glob.glob(pattern)):
+            try:
+                data = tomllib.loads(Path(p).read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                continue
+            prof = (data.get("hubs") or {}).get(hub)
+            if isinstance(prof, dict) and isinstance(prof.get("address"), str) and prof["address"].strip():
+                return prof["address"].strip(), p
+    return None
+
+
+def missing_fix(hub: str, home: str | None = None, globs=_HUBS_TOML_GLOBS) -> str:
     """The hubs.toml lines to add for a hub this user has no profile for."""
     home = home or str(Path.home())
+    note = ""
     if _ADDR.match(hub):
         name, address = re.sub(r"[^A-Za-z0-9_-]", "-", hub), hub
     else:
-        name, address = hub, f"<host:port of hub {hub}>"
+        name = hub
+        found = known_address(hub, globs)
+        if found:
+            address = found[0]
+            note = f"(address taken from {found[1]})\n"
+        else:
+            address = f"<host:port of hub {hub}>"
+            note = (f"(no hubs.toml on this host names hub {hub}; on the hub's own host, "
+                    f"`termlink hub status` prints its address)\n")
     return (f"add to {home}/.termlink/hubs.toml:\n"
             f"[hubs.{name}]\n"
             f"address = \"{address}\"\n"
             f"secret_file = \"{home}/.termlink/secrets/{name}.hex\"\n"
+            f"{note}"
             f"then place hub {hub}'s secret (hex) in that secret_file — the operator's step; "
             f"agents never write credentials")
 

@@ -254,6 +254,25 @@ def test_delivery_resolves_the_notice(env):
     assert len(rows) == 1 and rows[0]["resolved_at"]
 
 
+def test_missing_fix_fills_the_address_from_another_hubs_toml(env, tmp_path):
+    other = tmp_path / "home" / "bob" / ".termlink"
+    other.mkdir(parents=True)
+    (other / "hubs.toml").write_text('[hubs.ring20-management]\naddress = "192.0.2.7:9100"\n'
+                                     'secret_file = "/home/bob/.termlink/secrets/r.hex"\n')
+    fix = env["pn"].missing_fix("ring20-management", "/root",
+                                globs=(str(tmp_path / "home" / "*" / ".termlink" / "hubs.toml"),))
+    assert 'address = "192.0.2.7:9100"' in fix
+    assert f"address taken from {other / 'hubs.toml'}" in fix
+    assert "r.hex" not in fix, "only the address is copied, never another user's secret path"
+
+
+def test_missing_fix_says_where_to_find_an_unknown_address(env, tmp_path):
+    fix = env["pn"].missing_fix("ring20-management", "/root",
+                                globs=(str(tmp_path / "nowhere" / "hubs.toml"),))
+    assert '<host:port of hub ring20-management>' in fix
+    assert "termlink hub status" in fix
+
+
 def _real_runme_row(env, user="alice", hub="dash"):
     """A notice row whose runme was really prepared (not the stub), for the withdraw tests."""
     importlib.reload(env["pn"])
