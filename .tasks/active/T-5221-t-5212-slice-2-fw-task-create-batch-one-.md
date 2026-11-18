@@ -108,11 +108,11 @@ All verb and flag names are in English.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Task-file rendering lives in one module, used by both create-task and create-batch. A byte-compare test shows create-task's output unchanged apart from id and timestamp.
-- [ ] `fw task create-batch` validates every entry before reserving, makes exactly one reservation per batch, writes files that are byte-identical to single creates apart from id and timestamp (test with 13 entries), and refuses inception, --start and --origin entries
-- [ ] A batch killed mid-write leaves no partial file and no reissued id, and `fw task id reconcile` reports the incomplete reservation (test)
-- [ ] `fw arc instantiate` creates an arc and its tasks from a template plus parameters in one call. --dry-run writes nothing. The created arc and tasks pass `fw audit` structure checks (test in a tmp repo).
-- [ ] Measured in a tmp repo with 24 worktrees: one arc plus 13 tasks takes under 3 s per unit (numbers recorded in the task)
+- [x] Task-file rendering lives in one module, used by both create-task and create-batch. A byte-compare test shows create-task's output unchanged apart from id and timestamp.
+- [x] `fw task create-batch` validates every entry before reserving, makes exactly one reservation per batch, writes files that are byte-identical to single creates apart from id and timestamp (test with 13 entries), and refuses inception, --start and --origin entries
+- [x] A batch killed mid-write leaves no partial file and no reissued id, and `fw task id reconcile` reports the incomplete reservation (test)
+- [x] `fw arc instantiate` creates an arc and its tasks from a template plus parameters in one call. --dry-run writes nothing. The created arc and tasks pass `fw audit` structure checks (test in a tmp repo).
+- [x] Measured in a tmp repo with 24 worktrees: one arc plus 13 tasks takes under 3 s per unit (numbers recorded in the task)
 - [ ] Existing create-task, arc, T-5217 allocator, upgrade_fresh_machine_simulation and audit suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5221`. Also grep tests/ for tests that depend on create-task's inline rendering.
 
 ### Human
@@ -299,6 +299,12 @@ All verb and flag names are in English.
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 bats tests/unit/t5221_create_batch.bats > /tmp/.t5221.out 2>&1 && ! grep -q "^not ok" /tmp/.t5221.out
+test "$(grep -c '# skip' /tmp/.t5221.out)" -eq 0
+timeout 900 bats tests/unit/create_task.bats tests/unit/t5217_id_allocator.bats tests/unit/arc_create_start_flag.bats > /tmp/.t5221b.out 2>&1 && ! grep -q "^not ok" /tmp/.t5221b.out
+timeout 900 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t5221c.out 2>&1 && ! grep -q "^not ok" /tmp/.t5221c.out
+python3 -m pytest -q tests/unit/test_task_create_description_yaml.py > /tmp/.t5221d.out 2>&1 && grep -q passed /tmp/.t5221d.out
+bin/fw vendor self --check --task T-5221
 
 ## RCA
 
@@ -379,6 +385,38 @@ All verb and flag names are in English.
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-18 — one writer: lib/render_task.py, validation in lib/task-create-rules.sh
+- **Chose:** lift create-task's three inline writers (inception template, default template, inline heredoc fallback) verbatim into `lib/render_task.py` (`write-one` for create-task, `write-batch` for create-batch); lift the name/type/horizon/owner/recursion checks into `lib/task-create-rules.sh` (functions return 1 instead of exiting, messages byte-identical). Every file is written to `<tasks>/.writing/<pid>-<rand>.<name>` and hard-linked into `active/`: link(2) is exclusive and atomic, so a kill leaves only complete files. Pinned by goldens written by the pre-change create-task (commit 7ef993ddc): `tests/fixtures/t5221/golden/` (default, refactor+start, inception, inline fallback; frozen templates in `tests/fixtures/t5221/templates/`, generator `gen.sh`).
+- **Why:** one writer of task files, the same rule as one allocator. Shell rules stay shell so create-task's messages and exit codes do not move.
+- **Rejected:** re-implementing validation in Python for the batch (two rule sets that drift); a plain `open(path, 'w')` in the batch (a kill leaves a half file).
+
+### 2026-11-18 — create-batch: arc membership and what runs once
+- **Chose:** spec keys name, description, type, owner (required), horizon, tags, related, arc_id. `arc_id` is the only addition over create-task and adds one `arc_id:` line after `related_tasks:` (T-1849 membership); entries without it are byte-identical to create-task. Refused: inception type, keys start/status/focus/origin/recommendation/rationale/id, flags --start/--origin. Once per batch: library loading, the lock and the union-scan check (one `fw_id_allocate N`), template reads, one python start for rendering, one ledger append of the created rows (`fw_id_ledger_created` now takes several ids). Max 100 entries (FW_ID_BLOCK_MAX).
+- **Why:** create-task has no per-task side effects a batch needs (origin, recommendation block and --start focus are all refused), so the per-call cost was process start-up and the scan.
+- **Rejected:** arc membership by `arc:<slug>` tag (legacy form, T-1850 migrates away from it).
+
+### 2026-11-18 — template arc format (fw arc instantiate)
+- **Chose:** a YAML file, `.context/arcs/templates/<name>.yaml` or any path (arc readers glob `arcs/*.yaml`, so the subdirectory is never read as an arc):
+  ```yaml
+  template: municipality-scan          # informational
+  params: {municipality: null, region: west}   # or a list (all required); null = required
+  arc:
+    id: "scan-{municipality}"          # the arc slug; a fixed name from a parameter is fine
+    name: "Municipality scan: {municipality}"
+    description: "..."
+    headline_mechanic: "An analyst runs the scan for {municipality} and sees ..."
+    start: true                        # optional: created in-progress
+    anchor: 1                          # optional: 1-based task index -> anchor_task
+  tasks:                               # create-batch entries (same keys, same rules; no arc_id)
+    - {name: "Collect sources for {municipality}", description: "...", type: build, owner: agent, horizon: next, tags: [scan, "{region}"]}
+  ```
+  `{name}` placeholders in any string or list item; `{{`/`}}` are literal braces. An undeclared placeholder, a missing required parameter and an unknown `--param` are all errors, listed together. Order: expand and validate everything (arc id free, headline mechanic, every task via `create-batch --dry-run --new-arc`) → `arc_create` → one `create-batch` (purpose `arc:<slug>`) → `anchor_task`. If no task got written the arc file is removed again. Fixture: `tests/fixtures/t5221/municipality-scan.yaml` (13 tasks).
+- **Why:** smallest shape that covers 1409's class-file + template-arc case; arcs and tasks still go through their one writer each.
+- **Rejected:** `create-batch --arc-spec` (operator answer (2) in T-5212 chose `fw arc instantiate`); Python `str.format` (any brace in a description would break).
+
+### 2026-11-18 — measured
+- tmp repo, 30 seed tasks, 24 worktrees (25 views), FW_ID_CHECK on: `fw arc instantiate` of one arc plus 13 tasks took 931 ms, 950 ms and 991 ms over three runs (bats `timing` case and smoke runs) — under 1 s per unit against 29.7-52 s before and 1409's 2.6 s. create-batch alone, 13 tasks, one view: 0.33 s.
 
 ## Decision
 
