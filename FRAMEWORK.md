@@ -206,6 +206,15 @@ written); and the environment forms when a hook-running git command follows. It 
 label an include that is already in a config file, another repository's own configuration,
 `sudo`, or git aliases. Server-side branch and tag protection remains the stronger control.
 
+**Agent-to-agent messages go over TermLink only (T-5225).** Operator rule 2026-11-17, confirmed
+2026-11-18: an agent never messages another session or project through its harness's own
+messaging tools (in Claude Code: `SendMessage`, `SendToProject`, `SendToProjectContext`).
+Those bypass TermLink's observability, delivery receipts, untrusted-data framing and
+idle-aware delivery. Use `fw sidecar send --to <peer> --body "..."`; read with
+`fw sidecar inbox`. In Claude Code a PreToolUse hook (`block-cross-session-messages`,
+delivered by `fw init` and `fw upgrade`) refuses those tools with exit 2, beside the
+built-in task tool ban (`block-task-tools`).
+
 ## Working with Tasks
 
 When starting work (**BEFORE reading code, editing files, or invoking external workflows**):

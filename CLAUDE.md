@@ -1444,6 +1444,14 @@ Use `bin/fw task create --name "task name"` for more options.
 
 If you need a scratchpad during complex multi-step work, use conversation text or write notes to `.context/working/` — never use Claude Code's built-in todo system.
 
+## Cross-Session Messaging Ban — TermLink Only (T-5225)
+
+**Agent-to-agent messages go over TermLink. Never use Claude Code's own cross-session messaging tools: `SendMessage`, `SendToProject`, `SendToProjectContext`.** Operator rule, 2026-11-17 ("You should always use Termlink. It's forbidden."), confirmed 2026-11-18. Those tools deliver to another session or project outside TermLink's observability, delivery receipts, untrusted-data framing and idle-aware delivery.
+
+- **Send:** `fw sidecar send --to <peer> --body "..."` (add `--conversation <id>` to reply on a thread). **Read:** `fw sidecar inbox`.
+- **Structural enforcement:** PreToolUse hook `block-cross-session-messages` (matcher `SendMessage|SendToProject|SendToProjectContext`) refuses each with exit 2 and names the TermLink route. It fails closed on an unreadable payload and allows every other tool. `fw init` writes it and `fw upgrade` delivers it.
+- Sibling bans: the built-in task tools (`block-task-tools`) and the harness Agent tool (`FW_DISPATCH_LIMIT=0`, `fw termlink dispatch`).
+
 ## Release-Train Branch Model (T-3185, keystone — supersedes T-100196)
 
 **Development runs on `bleeding-edge`. `master` is the release train: it receives
