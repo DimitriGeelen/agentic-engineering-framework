@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5238: Tests that point fw at another framework tree on purpose fail since T-5214 (t3254 A9 first): add FW_FRAMEWORK_ROOT_HANDOFF=1, and sweep the whole suite for the same pattern
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-18T20:18:10Z
+# ============================================================================
+
+task_id: T-5238
+task_name: "Tests that point fw at another framework tree on purpose fail since T-5214 (t3254 A9 first): add FW_FRAMEWORK_ROOT_HANDOFF=1, and sweep the whole suite for the same pattern"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-18T18:28:28Z
+completed: 2026-11-18T20:17:09Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-18T19:35:04+01:00
+last_commit: 2026-11-18T21:17:05+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t3254 A9 declares its intentional FRAMEWORK_ROOT handoff (T-5214 contract); T-5239 captured (832 restatement length). sweep done — no other test relies on the old FRAMEWORK_ROOT rule (fast tier 0 failures; slow tier failures classified: new ones pass alone, 2 files pre-existing); RCA
+
+# Key outcomes
+outcomes:
+  - 't3254 A9 sets FW_FRAMEWORK_ROOT_HANDOFF=1 and passes'
+  - 'Fast tier: 0 failures. Slow tier: no failure output contains the T-5214 warning (searched in the failure logs of both runs, 2026-11-18).'
+  - 'Each slow-tier failure is classified as new since the previous slow run or already failing before, and any new one caused by today''s work is fixed or filed. The files new since the 02:06 run (fw_mode_detection, test_doctor_scope_tags, test_doctor_litellm_ollama, t4119, t3660, t4337, t4460) all pass when rerun alone (load or timing under the parallel run). Already failing in the 2026-11-17 and 2026-11-18 02:06 runs: t4689 (1) and doctor_hook_counters (3; since 4ba274039, T-5054). None comes from today''s work.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5238-tests-that-point-fw-at-another-framework.md'
+  - '.tasks/active/T-5239-a-reviewer-can-propose-a-restatement-lon.md'
+  - 'tests/unit/t3254_driver_refusals.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-18T19:35:04'
+    action: 'T-5238: t3254 A9 declares its intentional FRAMEWORK_ROOT handoff (T-5214 contract); T-5239 captured (832 restatement length)'
+  - time: '2026-11-18T21:17:05'
+    action: 'T-5238: sweep done — no other test relies on the old FRAMEWORK_ROOT rule (fast tier 0 failures; slow tier failures classified: new ones pass alone, 2 files pre-existing); RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 108 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 108
+  commits: 3
+  files_changed: 6
+  lines_added: 850
+  lines_removed: 15
+  footprint_refreshed_at: '2026-11-18T20:18:32Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5238-tests-that-point-fw-at-another-framework.md
+generated_by: context-agent-hybrid

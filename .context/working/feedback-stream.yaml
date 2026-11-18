@@ -56933,3 +56933,21 @@ scan_id: R-5564b89b
 task_id: T-5235
 payload:
   task_file: .tasks/active/T-5235-delegationclassify-a-command-merely-name.md
+---
+kind: scan_emitted
+timestamp: '2026-11-18T20:17:15Z'
+scan_id: R-3938f188
+task_id: T-5238
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-18T20:17:15Z'
+scan_id: R-3938f188
+task_id: T-5238
+payload:
+  task_file: .tasks/active/T-5238-tests-that-point-fw-at-another-framework.md
