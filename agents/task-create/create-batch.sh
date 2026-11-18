@@ -41,7 +41,7 @@ source "$FRAMEWORK_ROOT/lib/idalloc.sh"
 
 usage() {
     cat <<'EOF'
-Usage: fw task create-batch --spec F.jsonl --purpose <text> [--dry-run]
+Usage: fw task create-batch --spec F.jsonl --purpose <text> [--dry-run] [--new-arc SLUG]
 
 Create every task in F.jsonl with one id reservation and one writer (T-5221).
 
@@ -49,13 +49,15 @@ Create every task in F.jsonl with one id reservation and one writer (T-5221).
                     horizon (default now), tags, related, arc_id
   --purpose TEXT    recorded on the reservation in the id ledger (e.g. "arc:oslo-scan")
   --dry-run         validate and list what would be created; reserve and write nothing
+  --new-arc SLUG    entries may name arc SLUG although it does not exist yet (fw arc
+                    instantiate validates the tasks before it creates the arc)
 
 Refused in a batch: inception tasks, start/focus, origin, recommendation. Use
 fw task create / fw inception start for those. At most FW_ID_BLOCK_MAX (100) entries.
 EOF
 }
 
-SPEC="" PURPOSE="" DRY_RUN=false
+SPEC="" PURPOSE="" DRY_RUN=false NEW_ARC=""
 while [ $# -gt 0 ]; do
     case "$1" in
         --spec) SPEC="${2:-}"; shift 2 ;;
@@ -63,6 +65,7 @@ while [ $# -gt 0 ]; do
         --purpose) PURPOSE="${2:-}"; shift 2 ;;
         --purpose=*) PURPOSE="${1#*=}"; shift ;;
         --dry-run) DRY_RUN=true; shift ;;
+        --new-arc) NEW_ARC="${2:-}"; shift 2 ;;
         --start|--origin|--origin=*|--recommendation|--rationale|--i-am-human)
             echo "create-batch: $1 is refused in a batch (no start/focus, origin or inception options; T-5212)" >&2
             exit 2 ;;
@@ -77,6 +80,7 @@ done
 ARCS_DIR="${PROJECT_ROOT}/.context/arcs"
 _arc_known() {
     local a="$1"
+    [ -n "$NEW_ARC" ] && [ "$a" = "$NEW_ARC" ] && return 0
     [ -f "$ARCS_DIR/$a.yaml" ] && return 0
     [[ "$a" =~ ^arc-[0-9]+$ ]] && grep -lqx "id: $a" "$ARCS_DIR"/*.yaml 2>/dev/null && return 0
     return 1
