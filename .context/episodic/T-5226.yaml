@@ -1,0 +1,194 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5226: Inception EXPLORING state (slice 1): a new inception's recommendation is 'EXPLORING, not ready for decision' until every IW question is disposed; filing gates, the review handoff, the retrofit cron and Watchtower accept it; workflow docs aligned (050-Inceptions.md, CLAUDE.md, FRAMEWORK.md, inception template)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-18T13:32:26Z
+# ============================================================================
+
+task_id: T-5226
+task_name: "Inception EXPLORING state (slice 1): a new inception's recommendation is 'EXPLORING, not ready for decision' until every IW question is disposed; filing gates, the review handoff, the retrofit cron and Watchtower accept it; workflow docs aligned (050-Inceptions.md, CLAUDE.md, FRAMEWORK.md, inception template)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-18T12:14:14Z
+completed: 2026-11-18T13:19:05Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-18T13:15:18+01:00
+last_commit: 2026-11-18T14:18:36+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context, criteria (operator ruling on question 2); T-5227/T-5228 filed (inception map, triage). EXPLORING recommendation — filing paths default to it, retrofit stubs it, review/decide/page refuse it, audit and handover report 'ready for a recommendation'. docs — EXPLORING replaces GO/NO-GO/DEFER-at-filing (050-Inceptions.md lifecycle, CLAUDE.md inception discipline + gate table + DEFER rule + review presentation, FRAMEWORK.md, README, consumer CLAUDE.md template). tests — filing paths, retrofit, review/batch/decide refusal, audit C-006b and handover (bats); page + shell/Python parity (pytest). vendor self — EXPLORING gates, retrofit, readiness predicate, page, docs template. criteria ticked, verification lines, decisions. [REVIEW] criterion for the not-ready inception page. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (antigravity seat antigravity, recorded by the runtime). not-ready box says owed questions in plain words (raw shell form kept in 'raw'); T-5198/T-3896 tests follow; Visual Verification for the page
+
+# Key outcomes
+outcomes:
+  - 'All four filing paths accept EXPLORING and default to it for agent filings, with a rationale still required. Tests cover each path.'
+  - '`inception-retrofit-rec-hourly` writes EXPLORING stubs (test), and the cron registry stays in sync (`fw doctor` verification line per CLAUDE.md)'
+  - '`fw task review`, `fw task review-batch` and `fw inception decide` refuse an EXPLORING inception and emit no decide link, and the Watchtower inception page shows EXPLORING with no decision buttons. Tests cover all three commands; the page is checked with the Flask test client.'
+  - 'An inception with every IW question disposed but still at EXPLORING is reported as "ready for a recommendation" by audit and in the handover (test)'
+  - '050-Inceptions.md, CLAUDE.md, FRAMEWORK.md and the inception template describe EXPLORING, when it ends and who writes the real recommendation. The old "must file with GO/NO-GO/DEFER" text is replaced, not left beside the new text.'
+  - 'Existing inception, review-handoff, T-2204..T-2208, T-3549, T-5215 and upgrade_fresh_machine_simulation suites pass. `bin/fw test invariants` and `bin/fw vendor self --check --task T-5226` are clean, and Watchtower is restarted, with `bin/fw watchtower current` passing.'
+  - '[REVIEW] An inception that is not ready reads plainly as not ready, with no way to decide it'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-18 — where the EXPLORING rule lives, and its bypass'
+    chose: 'two new kinds in the one shared predicate `inception_handoff_blockers` (`exploring`, `ready-for-recommendation`), transcribed into `web/shared.py` (digest updated). Review, review-batch, decide, audit C-006b, the handover and the page all read it. EXPLORING has no bypass at the handoff or at decide: the remedy is writing the verdict. Existing bypasses (`--i-am-human`, `FW_ALLOW_EMPTY_RECOMMENDATION`, `FW_INCEPTION_PRE_GATED`, `FW_ALLOW_UNREADY_HANDOFF` for the other blockers) are unchanged and still logged.'
+    rationale: 'one rule, one definition (L-399). A bypass on EXPLORING would hand the operator a page with no verdict, which is the failure this task removes.'
+    alternatives_rejected: ['a separate EXPLORING check per surface (five copies of one rule); letting `FW_ALLOW_UNREADY_HANDOFF` open an EXPLORING inception.']
+  - decision: '2026-11-18 — EXPLORING with zero questions'
+    chose: 'an `## Open Questions` section with no IW entries reads "not ready, no Open Questions filed yet"; an inception with no section at all (grandfathered, T-2190) reads "ready for a recommendation".'
+    rationale: 'a fresh inception has filed nothing yet and is not ready; a grandfathered one has nothing to dispose, so the only thing owed is the verdict.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/.tasks/templates/inception.md'
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/context/check-inception-recommendation.py'
+  - '.agentic-framework/agents/handover/handover.sh'
+  - '.agentic-framework/agents/task-create/create-task.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/inception-readiness.sh'
+  - '.agentic-framework/lib/inception.sh'
+  - '.agentic-framework/lib/inception_recommendation.sh'
+  - '.agentic-framework/lib/review.sh'
+  - '.agentic-framework/lib/templates/claude-project.md'
+  - '.agentic-framework/lib/upgrade_template_shipped.py'
+  - '.agentic-framework/web/blueprints/inception.py'
+  - '.agentic-framework/web/shared.py'
+  - '.agentic-framework/web/templates/inception.html'
+  - '.agentic-framework/web/templates/inception_detail.html'
+  - '.context/cron-registry.yaml'
+  - '.context/reviews/applied.jsonl'
+  - '.context/reviews/evidence/T-5226/01-inception-t-5224-judge-t-5226-r5-antigravity-85a2696c390b.png'
+  - '.context/reviews/evidence/T-5226/01-inception-t-5224-judge-t-5226-r5-claude-code-2d14570bc53a.png'
+  - '.context/reviews/evidence/T-5226/01-inception-t-5224-judge-t-5226-r5-claude-code-8128f243acaa.png'
+  - '.context/reviews/evidence/T-5226/01-inception-t-5224-judge-t-5226-r5-codex-dab0ffcba5e0.png'
+  - '.context/reviews/evidence/T-5226/02-inception-judge-t-5226-r5-antigravity-85a2696c390b.png'
+  - '.context/reviews/evidence/T-5226/02-inception-judge-t-5226-r5-claude-code-2d14570bc53a.png'
+  - '.context/reviews/evidence/T-5226/02-inception-judge-t-5226-r5-claude-code-8128f243acaa.png'
+  - '.context/reviews/evidence/T-5226/02-inception-judge-t-5226-r5-codex-dab0ffcba5e0.png'
+  - '.context/reviews/evidence/T-5226/03-assumptions-judge-t-5226-r5-antigravity-85a2696c390b.png'
+  - '.context/reviews/evidence/T-5226/03-assumptions-judge-t-5226-r5-claude-code-2d14570bc53a.png'
+  - '.context/reviews/evidence/T-5226/03-assumptions-judge-t-5226-r5-claude-code-8128f243acaa.png'
+  - '.context/reviews/evidence/T-5226/03-assumptions-judge-t-5226-r5-codex-dab0ffcba5e0.png'
+  - '.context/reviews/evidence/T-5226/AC1-judge-t-5226-r5-antigravity-85a2696c390b.md'
+  - '.context/reviews/evidence/T-5226/AC1-judge-t-5226-r5-antigravity-b1e4014195b6.md'
+  - '.context/reviews/evidence/T-5226/AC1-judge-t-5226-r5-claude-code-2d14570bc53a.md'
+  - '.context/reviews/evidence/T-5226/AC1-judge-t-5226-r5-claude-code-8128f243acaa.md'
+  - '.context/reviews/evidence/T-5226/AC1-judge-t-5226-r5-codex-798c6f10c5b4.md'
+  - '.context/reviews/evidence/T-5226/AC1-judge-t-5226-r5-codex-dab0ffcba5e0.md'
+  - '.context/reviews/evidence/T-5226/not-ready@1024-judge-t-5226-r5-antigravity-85a2696c390b.png'
+  - '.context/reviews/evidence/T-5226/not-ready@1024-judge-t-5226-r5-claude-code-2d14570bc53a.png'
+  - '.context/reviews/evidence/T-5226/not-ready@1024-judge-t-5226-r5-codex-dab0ffcba5e0.png'
+  - '.context/reviews/evidence/T-5226/not-ready@1440-judge-t-5226-r5-antigravity-85a2696c390b.png'
+  - '.context/reviews/evidence/T-5226/not-ready@1440-judge-t-5226-r5-claude-code-2d14570bc53a.png'
+  - '.context/reviews/evidence/T-5226/not-ready@1440-judge-t-5226-r5-codex-dab0ffcba5e0.png'
+  - '.context/reviews/evidence/T-5226/not-ready@1920-judge-t-5226-r5-antigravity-85a2696c390b.png'
+  - '.context/reviews/evidence/T-5226/not-ready@1920-judge-t-5226-r5-claude-code-2d14570bc53a.png'
+  - '.context/reviews/evidence/T-5226/not-ready@1920-judge-t-5226-r5-codex-dab0ffcba5e0.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-5226-inception-exploring-state-slice-1-a-new-.md'
+  - '.tasks/active/T-5227-inception-lifecycle-map-slice-2-an-aef-i.md'
+  - '.tasks/active/T-5228-inception-triage-slice-3-place-each-of-t.md'
+  - '.tasks/templates/inception.md'
+  - '050-Inceptions.md'
+  - 'CLAUDE.md'
+  - 'FRAMEWORK.md'
+  - 'README.md'
+  - 'agents/audit/audit.sh'
+  - 'agents/context/check-inception-recommendation.py'
+  - 'agents/handover/handover.sh'
+  - 'agents/task-create/create-task.sh'
+  - 'bin/fw'
+  - 'lib/inception-readiness.sh'
+  - 'lib/inception.sh'
+  - 'lib/inception_recommendation.sh'
+  - 'lib/review.sh'
+  - 'lib/templates/claude-project.md'
+  - 'lib/upgrade_template_shipped.py'
+  - 'tests/unit/create_task_inception_recommendation_gate.bats'
+  - 'tests/unit/inception_retrofit_rec.bats'
+  - 'tests/unit/inception_start_recommendation_gate.bats'
+  - 'tests/unit/t5226_inception_exploring.bats'
+  - 'tests/unit/test_t5198_handoff_blockers.py'
+  - 'tests/unit/test_t5226_inception_exploring.py'
+  - 'tests/web/test_t3896_inception_readiness.py'
+  - 'web/blueprints/inception.py'
+  - 'web/shared.py'
+  - 'web/templates/inception.html'
+  - 'web/templates/inception_detail.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-18T13:15:18'
+    action: 'T-5226: context, criteria (operator ruling on question 2); T-5227/T-5228 filed (inception map, triage)'
+  - time: '2026-11-18T13:32:07'
+    action: 'T-5226: EXPLORING recommendation — filing paths default to it, retrofit stubs it, review/decide/page refuse it, audit and handover report ''ready for a recommendation'''
+  - time: '2026-11-18T13:32:14'
+    action: 'T-5226: docs — EXPLORING replaces GO/NO-GO/DEFER-at-filing (050-Inceptions.md lifecycle, CLAUDE.md inception discipline + gate table + DEFER rule + review presentation, FRAMEWORK.md, README, consumer CLAUDE.md template)'
+  - time: '2026-11-18T13:34:38'
+    action: 'T-5226: tests — filing paths, retrofit, review/batch/decide refusal, audit C-006b and handover (bats); page + shell/Python parity (pytest)'
+  - time: '2026-11-18T13:48:16'
+    action: 'T-5226: vendor self — EXPLORING gates, retrofit, readiness predicate, page, docs template'
+  - time: '2026-11-18T13:53:32'
+    action: 'T-5226: criteria ticked, verification lines, decisions'
+  - time: '2026-11-18T13:55:13'
+    action: 'T-5226: [REVIEW] criterion for the not-ready inception page'
+  - time: '2026-11-18T13:56:27'
+    action: 'T-5226: reviewer verdict'
+  - time: '2026-11-18T13:57:18'
+    action: 'T-5226: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-18T13:59:02'
+    action: 'T-5226: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-18T14:12:39'
+    action: 'T-5226: not-ready box says owed questions in plain words (raw shell form kept in ''raw''); T-5198/T-3896 tests follow; Visual Verification for the page'
+  - time: '2026-11-18T14:14:10'
+    action: 'T-5226: reviewer verdict'
+  - time: '2026-11-18T14:15:52'
+    action: 'T-5226: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-18T14:18:36'
+    action: 'T-5226: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 14 commit(s), 64 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 64
+  commits: 15
+  files_changed: 84
+  lines_added: 2808
+  lines_removed: 150
+  footprint_refreshed_at: '2026-11-18T13:33:08Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5226-inception-exploring-state-slice-1-a-new-.md
+generated_by: context-agent-hybrid
