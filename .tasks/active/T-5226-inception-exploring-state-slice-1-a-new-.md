@@ -112,6 +112,13 @@ cost_estimate_proposed:
 - [x] Existing inception, review-handoff, T-2204..T-2208, T-3549, T-5215 and upgrade_fresh_machine_simulation suites pass. `bin/fw test invariants` and `bin/fw vendor self --check --task T-5226` are clean, and Watchtower is restarted, with `bin/fw watchtower current` passing.
 
 ### Human
+- [ ] [REVIEW] An inception that is not ready reads plainly as not ready, with no way to decide it
+  **Steps:**
+  1. Open http://192.168.10.107:3000/inception/T-5224 (an inception with open questions).
+  2. Open http://192.168.10.107:3000/inception (the inception list).
+  **Expected:** The T-5224 page says plainly that it is not ready for a decision and what is still owed, and shows no GO / NO-GO / DEFER buttons. In the list, an EXPLORING inception is told apart from one awaiting a decision.
+  **If not:** Note which page and what read wrongly (missing line, buttons shown, unclear wording) on this task.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
