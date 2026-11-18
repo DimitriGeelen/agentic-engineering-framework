@@ -107,11 +107,11 @@ The same rules as slice 1 apply. A failed post never changes the action's result
 ## Acceptance Criteria
 
 ### Agent
-- [ ] A shared notifier module exists, and web/decide_runner.py uses it with unchanged behaviour (the T-5216 tests still pass)
-- [ ] toggle-ac posts one notice when a Human criterion becomes ticked, with a distinct "all ticked" text when it was the last one, and none on untick. Tests use a stubbed sender.
-- [ ] Restatement accept and reject each post one notice naming the task and the verdict id; paid-review approve posts one naming the proposal and the task (tests, stubbed sender)
-- [ ] A failed post never changes the action's result or exit status, in any of the three (tests). No notice carries criterion text or other task-file text (test).
-- [ ] The existing toggle-ac, restatement, review cost and decide-runner suites pass. `bin/fw test invariants` and `bin/fw vendor self --check --task T-5222` are clean, and Watchtower is restarted, with `bin/fw watchtower current` passing.
+- [x] A shared notifier module exists, and web/decide_runner.py uses it with unchanged behaviour (the T-5216 tests still pass)
+- [x] toggle-ac posts one notice when a Human criterion becomes ticked, with a distinct "all ticked" text when it was the last one, and none on untick. Tests use a stubbed sender.
+- [x] Restatement accept and reject each post one notice naming the task and the verdict id; paid-review approve posts one naming the proposal and the task (tests, stubbed sender)
+- [x] A failed post never changes the action's result or exit status, in any of the three (tests). No notice carries criterion text or other task-file text (test).
+- [x] The existing toggle-ac, restatement, review cost and decide-runner suites pass. `bin/fw test invariants` and `bin/fw vendor self --check --task T-5222` are clean, and Watchtower is restarted, with `bin/fw watchtower current` passing.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -297,6 +297,12 @@ The same rules as slice 1 apply. A failed post never changes the action's result
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5222_action_notices.py tests/unit/test_t5216_decide_notice.py -q -p no:cacheprovider > /tmp/.t5222a 2>&1 && grep -q passed /tmp/.t5222a
+python3 -m pytest tests/unit/test_t4930_restatement.py tests/web/test_t4070_watchtower_tick_provenance.py tests/web/test_t5081_owner_handback.py tests/unit/test_t3749_decide_detached.py tests/unit/test_t4242_decide_inherited_git_env.py -q -p no:cacheprovider > /tmp/.t5222b 2>&1 && grep -q passed /tmp/.t5222b
+timeout 600 bats tests/unit/t3586_review_cost.bats > /tmp/.t5222c 2>&1 && ! grep -q "^not ok" /tmp/.t5222c
+test "$(grep -c '# skip' /tmp/.t5222c)" -eq 0
+bin/fw vendor self --check --task T-5222
+bin/fw watchtower current
 
 ## RCA
 
@@ -368,6 +374,15 @@ The same rules as slice 1 apply. A failed post never changes the action's result
 -->
 
 ## Decisions
+
+### 2026-11-18 — test runs never send for real
+- **Chose:** `lib/agent_notice.post()` skips (logged "skipped") under pytest or bats unless `FW_AGENT_NOTICES=1`; `FW_AGENT_NOTICES=0` switches notices off anywhere. The decide chain keeps its own flow and only shares the sender.
+- **Why:** existing suites (review cost bats, restatement, toggle-ac web tests) drive these actions in temp roots; without a guard each would send a real sidecar notice.
+- **Rejected:** a conftest autouse stub (does not reach bats subprocesses).
+
+### 2026-11-18 — CLI actions post synchronously, Watchtower in the background
+- **Chose:** toggle-ac posts on a daemon thread (`wait=False`); restatement and paid-review approve post inline with a 10 s timeout.
+- **Why:** the web request must never wait; a daemon thread in a CLI dies with the process before the post lands.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
