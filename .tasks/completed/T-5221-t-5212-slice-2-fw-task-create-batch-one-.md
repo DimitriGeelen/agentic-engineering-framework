@@ -7,12 +7,12 @@ description: >
   Build slice 2 of inception T-5212 (GO 2026-11-18), from 1409's prototype; slice
   1 was T-5217.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/task-create/create-batch.sh, agents/task-create/create-task.sh, bin/fw, lib/arc.sh, lib/arc_instantiate.py, lib/idalloc.sh, lib/render_task.py, lib/task-create-rules.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-18T07:26:01Z
-last_update: '2026-11-18T07:30:24Z'
-date_finished:
+last_update: 2026-11-18T08:37:24Z
+date_finished: 2026-11-18T08:37:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -449,3 +449,16 @@ bin/fw vendor self --check --task T-5221
 
 ### 2026-11-18T07:26:07Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-18T08:37:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b94c9665
+- **Timestamp:** 2026-11-18T08:44:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

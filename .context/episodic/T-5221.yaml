@@ -1,0 +1,168 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5221: T-5212 slice 2: fw task create-batch (one writer shared with create-task) and fw arc instantiate (an arc plus its tasks from a template and parameters, in one call)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-18T08:45:17Z
+# ============================================================================
+
+task_id: T-5221
+task_name: "T-5212 slice 2: fw task create-batch (one writer shared with create-task) and fw arc instantiate (an arc plus its tasks from a template and parameters, in one call)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-18T07:26:01Z
+completed: 2026-11-18T08:37:24Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-18T08:27:13+01:00
+last_commit: 2026-11-18T09:33:50+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context, criteria (T-5212 slice 2). one task-file writer (lib/render_task.py) shared by create-task and fw task create-batch. fw arc instantiate — an arc plus its tasks from a template arc and parameters. tests — create-batch, one writer, kill mid-write, arc instantiate, timing (13 cases). vendor the writer, create-batch and instantiate; fabric cards for the new files. writer temp name not keyed on the pid alone (T-5067 lint). temp name in the form the T-5067 lint accepts (pid-urandom). criteria, verification, decisions (writer, batch, template format, timing). vendor the current render_task.py (the T-5067 temp-name fix). last criterion — suites, invariants and vendor check green. independent review — AMBER (4 AMBER, 8 NOTE), report. review fix 4, 11 — portable checked anchor write; rolled-back arc ids stay retired. review fix 1, 2, 3, 7, 10 — link fallback, YAML-safe tags, no rmdir, ignored .writing, arc_id slug. review fixes — vendor render_task.py, arc.sh, create-batch.sh. review fixes — Decisions: what was fixed, why NOTEs 5, 6, 8, 9, 12 stay
+
+# Key outcomes
+outcomes:
+  - 'Task-file rendering lives in one module, used by both create-task and create-batch. A byte-compare test shows create-task''s output unchanged apart from id and timestamp.'
+  - '`fw task create-batch` validates every entry before reserving, makes exactly one reservation per batch, writes files that are byte-identical to single creates apart from id and timestamp (test with 13 entries), and refuses inception, --start and --origin entries'
+  - 'A batch killed mid-write leaves no partial file and no reissued id, and `fw task id reconcile` reports the incomplete reservation (test)'
+  - '`fw arc instantiate` creates an arc and its tasks from a template plus parameters in one call. --dry-run writes nothing. The created arc and tasks pass `fw audit` structure checks (test in a tmp repo).'
+  - 'Measured in a tmp repo with 24 worktrees: one arc plus 13 tasks takes under 3 s per unit (numbers recorded in the task)'
+  - 'Existing create-task, arc, T-5217 allocator, upgrade_fresh_machine_simulation and audit suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5221`. Also grep tests/ for tests that depend on create-task''s inline rendering.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'review fixes — Decisions: what was fixed, why NOTEs 5, 6, 8, 9, 12 stay'
+    source: git-mined
+  - description: 'review fixes — vendor render_task.py, arc.sh, create-batch.sh'
+    source: git-mined
+  - description: 'review fix 1, 2, 3, 7, 10 — link fallback, YAML-safe tags, no rmdir, ignored .writing, arc_id slug'
+    source: git-mined
+  - description: 'review fix 4, 11 — portable checked anchor write; rolled-back arc ids stay retired'
+    source: git-mined
+  - description: 'vendor the current render_task.py (the T-5067 temp-name fix)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-18 — one writer: lib/render_task.py, validation in lib/task-create-rules.sh'
+    chose: 'lift create-task''s three inline writers (inception template, default template, inline heredoc fallback) verbatim into `lib/render_task.py` (`write-one` for create-task, `write-batch` for create-batch); lift the name/type/horizon/owner/recursion checks into `lib/task-create-rules.sh` (functions return 1 instead of exiting, messages byte-identical). Every file is written to `<tasks>/.writing/<pid>-<rand>.<name>` and hard-linked into `active/`: link(2) is exclusive and atomic, so a kill leaves only complete files. Pinned by goldens written by the pre-change create-task (commit 7ef993ddc): `tests/fixtures/t5221/golden/` (default, refactor+start, inception, inline fallback; frozen templates in `tests/fixtures/t5221/templates/`, generator `gen.sh`).'
+    rationale: 'one writer of task files, the same rule as one allocator. Shell rules stay shell so create-task''s messages and exit codes do not move.'
+    alternatives_rejected: ['re-implementing validation in Python for the batch (two rule sets that drift); a plain `open(path, ''w'')` in the batch (a kill leaves a half file).']
+  - decision: '2026-11-18 — create-batch: arc membership and what runs once'
+    chose: 'spec keys name, description, type, owner (required), horizon, tags, related, arc_id. `arc_id` is the only addition over create-task and adds one `arc_id:` line after `related_tasks:` (T-1849 membership); entries without it are byte-identical to create-task. Refused: inception type, keys start/status/focus/origin/recommendation/rationale/id, flags --start/--origin. Once per batch: library loading, the lock and the union-scan check (one `fw_id_allocate N`), template reads, one python start for rendering, one ledger append of the created rows (`fw_id_ledger_created` now takes several ids). Max 100 entries (FW_ID_BLOCK_MAX).'
+    rationale: 'create-task has no per-task side effects a batch needs (origin, recommendation block and --start focus are all refused), so the per-call cost was process start-up and the scan.'
+    alternatives_rejected: ['arc membership by `arc:<slug>` tag (legacy form, T-1850 migrates away from it).']
+  - decision: '2026-11-18 — template arc format (fw arc instantiate)'
+    chose: 'a YAML file, `.context/arcs/templates/<name>.yaml` or any path (arc readers glob `arcs/*.yaml`, so the subdirectory is never read as an arc): ```yaml template: municipality-scan # informational params: {municipality: null, region: west} # or a list (all required); null = required arc: id: "scan-{municipality}" # the arc slug; a fixed name from a parameter is fine name: "Municipality scan: {municipality}" description: "..." headline_mechanic: "An analyst runs the scan for {municipality} and sees ..." start: true # optional: created in-progress anchor: 1 # optional: 1-based task index -> anchor_task tasks: # create-batch entries (same keys, same rules; no arc_id) - {name: "Collect sources for {municipality}", description: "...", type: build, owner: agent, horizon: next, tags: [scan, "{region}"]} ``` `{name}` placeholders in any string or list item; `{{`/`}}` are literal braces. An undeclared placeholder, a missing required parameter and an unknown `--param` are all errors, listed together. Order: expand and validate everything (arc id free, headline mechanic, every task via `create-batch --dry-run --new-arc`) → `arc_create` → one `create-batch` (purpose `arc:<slug>`) → `anchor_task`. If no task got written the arc file is removed again. Fixture: `tests/fixtures/t5221/municipality-scan.yaml` (13 tasks).'
+    rationale: 'smallest shape that covers 1409''s class-file + template-arc case; arcs and tasks still go through their one writer each.'
+    alternatives_rejected: ['`create-batch --arc-spec` (operator answer (2) in T-5212 chose `fw arc instantiate`); Python `str.format` (any brace in a description would break).']
+  - decision: '2026-11-18 — measured'
+  - decision: '2026-11-18 — suites run before report'
+  - decision: '2026-11-18 — independent review (docs/reports/T-5221-independent-review.md): fixed and left'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/create-batch.sh'
+  - '.agentic-framework/agents/task-create/create-task.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/arc.sh'
+  - '.agentic-framework/lib/arc_instantiate.py'
+  - '.agentic-framework/lib/idalloc.sh'
+  - '.agentic-framework/lib/render_task.py'
+  - '.agentic-framework/lib/task-create-rules.sh'
+  - '.fabric/components/agents-task-create-create-batch.yaml'
+  - '.fabric/components/lib-arc_instantiate.yaml'
+  - '.fabric/components/lib-render_task.yaml'
+  - '.fabric/components/lib-task-create-rules.yaml'
+  - '.gitignore'
+  - '.tasks/active/T-5221-t-5212-slice-2-fw-task-create-batch-one-.md'
+  - 'agents/task-create/create-batch.sh'
+  - 'agents/task-create/create-task.sh'
+  - 'bin/fw'
+  - 'docs/reports/T-5221-independent-review.md'
+  - 'lib/arc.sh'
+  - 'lib/arc_instantiate.py'
+  - 'lib/idalloc.sh'
+  - 'lib/render_task.py'
+  - 'lib/task-create-rules.sh'
+  - 'tests/fixtures/t5221/gen.sh'
+  - 'tests/fixtures/t5221/golden/build.md'
+  - 'tests/fixtures/t5221/golden/build.name'
+  - 'tests/fixtures/t5221/golden/fallback.md'
+  - 'tests/fixtures/t5221/golden/fallback.name'
+  - 'tests/fixtures/t5221/golden/inception.md'
+  - 'tests/fixtures/t5221/golden/inception.name'
+  - 'tests/fixtures/t5221/golden/refactor.md'
+  - 'tests/fixtures/t5221/golden/refactor.name'
+  - 'tests/fixtures/t5221/municipality-scan.yaml'
+  - 'tests/fixtures/t5221/norm.py'
+  - 'tests/fixtures/t5221/templates/default.md'
+  - 'tests/fixtures/t5221/templates/inception.md'
+  - 'tests/unit/t5221_create_batch.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-18T08:27:13'
+    action: 'T-5221: context, criteria (T-5212 slice 2)'
+  - time: '2026-11-18T08:36:51'
+    action: 'T-5221: one task-file writer (lib/render_task.py) shared by create-task and fw task create-batch'
+  - time: '2026-11-18T08:39:49'
+    action: 'T-5221: fw arc instantiate — an arc plus its tasks from a template arc and parameters'
+  - time: '2026-11-18T08:42:27'
+    action: 'T-5221: tests — create-batch, one writer, kill mid-write, arc instantiate, timing (13 cases)'
+  - time: '2026-11-18T08:43:01'
+    action: 'T-5221: vendor the writer, create-batch and instantiate; fabric cards for the new files'
+  - time: '2026-11-18T08:44:07'
+    action: 'T-5221: writer temp name not keyed on the pid alone (T-5067 lint)'
+  - time: '2026-11-18T08:44:29'
+    action: 'T-5221: temp name in the form the T-5067 lint accepts (pid-urandom)'
+  - time: '2026-11-18T08:45:14'
+    action: 'T-5221: criteria, verification, decisions (writer, batch, template format, timing)'
+  - time: '2026-11-18T09:09:19'
+    action: 'T-5221: vendor the current render_task.py (the T-5067 temp-name fix)'
+  - time: '2026-11-18T09:09:35'
+    action: 'T-5221: last criterion — suites, invariants and vendor check green'
+  - time: '2026-11-18T09:18:34'
+    action: 'T-5221: independent review — AMBER (4 AMBER, 8 NOTE), report'
+  - time: '2026-11-18T09:33:05'
+    action: 'T-5221: review fix 4, 11 — portable checked anchor write; rolled-back arc ids stay retired'
+  - time: '2026-11-18T09:33:06'
+    action: 'T-5221: review fix 1, 2, 3, 7, 10 — link fallback, YAML-safe tags, no rmdir, ignored .writing, arc_id slug'
+  - time: '2026-11-18T09:33:16'
+    action: 'T-5221: review fixes — vendor render_task.py, arc.sh, create-batch.sh'
+  - time: '2026-11-18T09:33:50'
+    action: 'T-5221: review fixes — Decisions: what was fixed, why NOTEs 5, 6, 8, 9, 12 stay'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 15 commit(s), 71 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 71
+  commits: 16
+  files_changed: 40
+  lines_added: 5463
+  lines_removed: 566
+  footprint_refreshed_at: '2026-11-18T08:45:44Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5221-t-5212-slice-2-fw-task-create-batch-one-.md
+generated_by: context-agent-hybrid
