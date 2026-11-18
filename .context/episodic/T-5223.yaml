@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5223: 22 task files carry an out-of-enum owner (empty or 'claude'); t2924's test skips on it instead of failing, so the drift is invisible
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-18T16:49:51Z
+# ============================================================================
+
+task_id: T-5223
+task_name: "22 task files carry an out-of-enum owner (empty or 'claude'); t2924's test skips on it instead of failing, so the drift is invisible"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-18T08:59:57Z
+completed: 2026-11-18T16:49:30Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-18T17:49:28+01:00
+last_commit: 2026-11-18T17:49:28+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  active tasks T-3568, T-3699 get owner agent; t2924 checks active tasks only and fails instead of skipping (operator ruling, question 5 option 1); closed records left as history
+
+# Key outcomes
+outcomes:
+  - 'T-3568 and T-3699 have `owner: agent`, set through `fw task update --owner`'
+  - 't2924 #6 evaluates .tasks/active only and fails (no skip) on an out-of-enum owner, and passes on the current tree. A test with a planted bad active owner shows it red.'
+  - 'No closed task file is changed (`git diff --stat` touches no .tasks/completed/ file)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3568-adopt-832s-stale-ownership-predicate-own.md'
+  - '.tasks/active/T-3699-fw-task-create-clobbers-owner-when-the-t.md'
+  - '.tasks/active/T-5223-22-task-files-carry-an-out-of-enum-owner.md'
+  - 'tests/unit/t2924_update_task_owner_gate.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-18T17:49:28'
+    action: 'T-5223: active tasks T-3568, T-3699 get owner agent; t2924 checks active tasks only and fails instead of skipping (operator ruling, question 5 option 1); closed records left as history'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 469 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 469
+  commits: 2
+  files_changed: 7
+  lines_added: 171
+  lines_removed: 29
+  footprint_refreshed_at: '2026-11-18T16:50:16Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5223-22-task-files-carry-an-out-of-enum-owner.md
+generated_by: context-agent-hybrid
