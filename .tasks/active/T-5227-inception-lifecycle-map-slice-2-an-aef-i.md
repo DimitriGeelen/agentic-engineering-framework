@@ -130,13 +130,6 @@ Slice 1 (T-5226) shipped the EXPLORING state. The task lifecycle already has thi
 - [x] 050-Inceptions.md is updated. Existing designer, instances, runtime-projection, inception and approvals suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5227`. Watchtower is restarted and `bin/fw watchtower current` passes.
 
 ### Human
-- [ ] [REVIEW] The inception map in the designer shows inceptions on their steps clearly
-  **Steps:**
-  1. Open http://192.168.10.107:3000/designer and choose the aef-inception-lifecycle map with instances shown.
-  **Expected:** Each step shows how many inceptions are on it, an overdue one stands out, and the waiting-on-agent / peer / operator steps read as different steps.
-  **If not:** Note which step or marker is unclear on this task.
-
-### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -423,6 +416,11 @@ inception chosen (`.context/visual/T-5227/instance-picked.png`, Playwright `sele
 - Screenshots: .context/visual/T-5227/
 
 ## Decisions
+
+### 2026-11-18 — the visual check moves to T-5240 (operator choice A1)
+- **Chose:** Close T-5227 with the agent criteria met, and move its [REVIEW] criterion to T-5240.
+- **Why:** The designer's per-step counts and overdue markers need 832's overlay rendering (832 T-1438). The approvals section "Questions waiting for you" lists only operator-owned EXPLORING inceptions whose revisit date has passed, and none exists until T-5228's dates come due. Neither surface can be judged on real data today. The operator chose this route (A1) over keeping T-5227 open (A2).
+- **Rejected:** A demo inception seeded only for screenshots. It would judge a page state the operator never sees.
 
 ### 2026-11-18 — where entered_at and revisit_at are served
 - **Chose:** `/api/instances` keeps the v2 instance shape. Only the `lifecycle_node` enum gains the seven inception uids. The dates come from `fw inception lifecycle --json` and the overlay tooltip.
