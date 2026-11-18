@@ -1300,6 +1300,15 @@ generate_claude_code_config() {
         ]
       },
       {
+        "matcher": "SendMessage|SendToProject|SendToProjectContext",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$fw_prefix hook block-cross-session-messages"
+          }
+        ]
+      },
+      {
         "matcher": "mcp__termlink__termlink_channel_post",
         "hooks": [
           {
