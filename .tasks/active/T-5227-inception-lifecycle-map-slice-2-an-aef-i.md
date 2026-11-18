@@ -1,8 +1,12 @@
 ---
 id: T-5227
-name: "Inception lifecycle map (slice 2): an aef-inception-lifecycle designer map; each inception an instance with current step and entered_at; waiting steps (agent / peer / operator) carry revisit dates that drive a daily routing (handover, peer reminder, fw operator pending + Watchtower approvals); time-in-step measured"
+name: "Inception lifecycle map (slice 2): an aef-inception-lifecycle designer map;
+  each inception an instance with current step and entered_at; waiting steps (agent
+  / peer / operator) carry revisit dates that drive a daily routing (handover, peer
+  reminder, fw operator pending + Watchtower approvals); time-in-step measured"
 description: >
-  Operator rulings 2026-11-18 on question 2 (EXPLORING; options A and 1; follow-up option 1: inception map with instances). See fw decisions.
+  Operator rulings 2026-11-18 on question 2 (EXPLORING; options A and 1; follow-up
+  option 1: inception map with instances). See fw decisions.
 
 status: captured
 workflow_type: build
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-18T12:14:14Z
-last_update: 2026-11-18T12:14:14Z
-date_finished: null
+last_update: '2026-11-18T12:30:40Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-18T12:30:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5227: Inception lifecycle map (slice 2): an aef-inception-lifecycle designer map; each inception an instance with current step and entered_at; waiting steps (agent / peer / operator) carry revisit dates that drive a daily routing (handover, peer reminder, fw operator pending + Watchtower approvals); time-in-step measured

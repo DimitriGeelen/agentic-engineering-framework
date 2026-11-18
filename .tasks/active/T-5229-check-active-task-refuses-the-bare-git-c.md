@@ -1,8 +1,18 @@
 ---
 id: T-5229
-name: "check-active-task refuses the bare 'git commit -- <close files>' right after fw task update --status work-completed when focus still names the closed task (832 701cd66d)"
+name: "check-active-task refuses the bare 'git commit -- <close files>' right after
+  fw task update --status work-completed when focus still names the closed task (832
+  701cd66d)"
 description: >
-  832 (sidecar 701cd66d, 2026-11-18; their T-353, T-368): after 'fw task update T-X --status work-completed' (task moved to completed/, or partial-complete with focus on it), the next bare 'git commit -- <T-X close files>' is refused ('Task T-X is not active' / 'has status work-completed'), and so is the update when piped or redirected. Only exit without bypass: focus an unrelated active task first. T-2054 already allows a just-closed task's commit with NO focus; the gap is focus still pointing at the closed task. Suggested: allow committing exactly the set the close staged ('close staged in index') under the closed task's own id. AEF saw the same family on 2026-11-18 (commits refused until focus changed).
+  832 (sidecar 701cd66d, 2026-11-18; their T-353, T-368): after 'fw task update T-X
+  --status work-completed' (task moved to completed/, or partial-complete with focus
+  on it), the next bare 'git commit -- <T-X close files>' is refused ('Task T-X is
+  not active' / 'has status work-completed'), and so is the update when piped or redirected.
+  Only exit without bypass: focus an unrelated active task first. T-2054 already allows
+  a just-closed task's commit with NO focus; the gap is focus still pointing at the
+  closed task. Suggested: allow committing exactly the set the close staged ('close
+  staged in index') under the closed task's own id. AEF saw the same family on 2026-11-18
+  (commits refused until focus changed).
 
 status: captured
 workflow_type: build
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-18T12:17:46Z
-last_update: 2026-11-18T12:17:46Z
-date_finished: null
+last_update: '2026-11-18T12:30:40Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-18T12:30:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5229: check-active-task refuses the bare 'git commit -- <close files>' right after fw task update --status work-completed when focus still names the closed task (832 701cd66d)
