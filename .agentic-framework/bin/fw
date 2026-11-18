@@ -5917,6 +5917,10 @@ route_task() {
         create)
             exec "$AGENTS_DIR/task-create/create-task.sh" "$@"
             ;;
+        create-batch)
+            # T-5221 (slice 2 of T-5212): many tasks, one reservation, one writer.
+            exec "$AGENTS_DIR/task-create/create-batch.sh" "$@"
+            ;;
         update)
             exec "$AGENTS_DIR/task-create/update-task.sh" "$@"
             ;;
@@ -6594,6 +6598,7 @@ PYTASK_VERIFY
             echo ""
             echo "Subcommands:"
             echo "  create    Create a new task"
+            echo "  create-batch  Create many tasks from a JSONL spec, one id reservation (T-5221)"
             echo "  update    Update task status (auto-triggers healing/episodic)"
             echo "  list      List all tasks (filterable)"
             echo "  show      Show task detail with episodic summary"

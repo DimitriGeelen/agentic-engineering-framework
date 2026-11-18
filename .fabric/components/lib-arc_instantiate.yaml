@@ -1,0 +1,21 @@
+id: lib/arc_instantiate.py
+name: arc_instantiate
+type: script
+subsystem: framework-core
+location: lib/arc_instantiate.py
+tags: []
+
+purpose: "Expand a template arc into an arc plus a create-batch spec (T-5221, slice 2 of T-5212)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-18
+created_by: unknown
