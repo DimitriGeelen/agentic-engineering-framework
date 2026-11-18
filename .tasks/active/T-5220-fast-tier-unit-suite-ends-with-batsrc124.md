@@ -12,10 +12,10 @@ description: >
   designed, or files silently not run; establish which. If files go unjudged, the
   ratchet's 'no new red' is weaker than it reads.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-18T02:57:47Z
-last_update: '2026-11-18T03:01:03Z'
+last_update: 2026-11-18T08:58:16Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,20 +92,24 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Seen on 2026-11-18 while clearing the pre-push ratchet. Every night's fast-tier unit run ends `bats_rc=124 pytest_rc=124` after 3-6 minutes, with failed_count 0 and 7 files listed as not determined.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis (investigated 2026-11-18):** It is not a timeout. In agents/audit/unit-suite.sh, `_leg_rc` returns 124 whenever any file has no verdict. In the fast tier a file with a skipped test is classed `not-determined` (line 332, T-4377: a skip measured nothing and must not read as a pass). The 7 files are files with skips:
+- 2 environmental: `gh` is installed (lib_upstream); another audit held the lock (t3062).
+- 4 teeth checks that only run against a pre-fix parent (note_capture_guard, note_exit_status, revisit_undated_signal, and t3045 via a helper).
+- 1 that hides real data: t2924_update_task_owner_gate skips with "legacy drift not yet reconciled" whenever any task file has an `owner:` value outside the allowed set.
 
-**Goal:** <what we are trying to achieve>
+So the ratchet sees every file, and the 124 is the designed "not everything was measured" signal. Only the t2924 skip masks a real condition.
 
-**Expected outcome:** <what will be different when this is done>
+**Goal:** Record the explanation, and turn the one masking skip into its own follow-up, so drift in owner values is fixed or surfaced rather than hidden as a skip.
+
+**Expected outcome:** Nobody reads rc 124 as a hang again, and the owner-value drift is tracked by a task of its own.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The explanation (rc 124 = a not-determined file, not a timeout; the 7 skips classified) is recorded here, with file:line evidence in agents/audit/unit-suite.sh (lines 326-332 classify a fast-tier skip as not-determined; lines 435-449 `_leg_rc` returns 124 for any not-determined file)
+- [x] The t2924 owner-value drift behind its skip is filed as its own task: T-5223, with 22 of 5205 task files out-of-enum (measured 2026-11-18)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,6 +295,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+grep -q 'st=not-determined' agents/audit/unit-suite.sh
+test -n "$(ls .tasks/active/T-5223-*.md .tasks/completed/T-5223-*.md 2>/dev/null)"
 
 ## RCA
 
@@ -388,3 +394,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5220-fast-tier-unit-suite-ends-with-batsrc124.md
 - **Context:** Initial task creation
+
+### 2026-11-18T08:58:16Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
