@@ -98,8 +98,14 @@ def fix_detail(g: dict, user: str | None = None, host: str | None = None) -> str
     if g["kind"] == BROKEN:
         return (f"{who} has a broken hubs.toml profile {g['profile']} for hub {g['hub']}; "
                 f"fix: `{g['fix']}`")
-    return (f"{who} has no hubs.toml profile for hub {g['hub']}; fix: "
-            + " / ".join(ln for ln in g["fix"].splitlines() if ln.strip()))
+    return f"{who} has no hubs.toml profile for hub {g['hub']}; fix: {one_line(g['fix'])}"
+
+
+def one_line(fix: str) -> str:
+    """A multi-line fix on one line: `add to X: [hubs.n] / address = … / …`."""
+    head, _, rest = str(fix or "").partition(":\n")
+    lines = [ln for ln in (rest if rest else head).splitlines() if ln.strip()]
+    return (f"{head}: " if rest else "") + " / ".join(lines)
 
 
 # ── ledger ────────────────────────────────────────────────────────────────────
@@ -237,7 +243,7 @@ def summary(r: dict) -> str:
             else f"has a broken hubs.toml profile ({r.get('profile')})")
     n = int(r.get("messages_waiting") or 0)
     fix = (f"run {r['runme']}" if r.get("runme")
-           else " / ".join(ln for ln in str(r.get("fix") or "").splitlines() if ln.strip()))
+           else one_line(r.get("fix")))
     extra = f" (+{r['messages_final']} refused, resend after the fix)" if r.get("messages_final") else ""
     return (f"user {r.get('user')} on host {r.get('host')} {what} for hub {r.get('hub')}; "
             f"{n} message{'' if n == 1 else 's'} waiting{extra}; fix: {fix}")
