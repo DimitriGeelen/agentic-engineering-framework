@@ -104,6 +104,35 @@ what was tried, what was decided and the next step?
 - a truly fresh-agent test;
 - the operator dialogue on IW-2..IW-4 (who writes the journal, the plug-in points, governance).
 
+## Evidence received: truly fresh-agent load test (1409 sidecar 7a8a3e1c, 2026-11-18 10:40Z)
+
+**Setup:**
+- A frozen fixture, with the truth for 20 units committed before any handover was generated.
+- A deterministic script wrote one handover per unit, from the unit's own records only.
+- 7 rounds, 210 fresh agents: 3 per unit (sonnet, opus, opus). Each got only the handover plus a class excerpt and was asked to NAME the next step, not act.
+
+**Results:**
+
+| Condition | Main set: right next step | Main set: units with a wrong action | Confirmation set: right next step | Confirmation set: units with a wrong action |
+|---|---|---|---|---|
+| Real records | 7/10 | 3 | 6/10 | 3 |
+| With decision lines at the unit, prompt v2 | 10/10 | 0 | 9/10 | 0 |
+
+**Cause of every wrong action:** a decision taken by someone other than the unit's own run (a wave worker deferring a step, or a submission filed centrally) is not recorded at the unit. So every fresh agent re-runs the class's default step.
+
+**Neither fix alone was enough.** Both were needed:
+- a "decision" line at the unit, carrying the next step, owner and deadline;
+- a prompt that says a recorded decision overrides the class default.
+
+**Other observations:** the three agents agreed on 8-10 of 10 units, so the errors are systematic, not model noise. Read cost was about 18K tokens per unit.
+
+**Limits:**
+- The truth was set by the test's builder.
+- 7 hand corrections of the scorer, each logged.
+- It measured naming the step, not executing it.
+
+**Implication:** the arc journal must be the single place where *any* actor's decision about the unit lands, or resume fails whatever the model. Together with the first measurement, this answers IW-1 toward option B (a fresh agent per event, plus a journal) on evidence. IW-2..IW-4 remain to be answered with the operator.
+
 ## Dialogue Log
 
 - 2026-11-18: 1409's message c87d0ee1 received; answers (a)-(d) sent with the facts above;
