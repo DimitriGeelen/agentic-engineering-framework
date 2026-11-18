@@ -461,12 +461,17 @@ def test_live_corpus_all_versions_census():
     T-4677 baseline move (47 -> 48 versions, flagged held at 14), 2026-10-23.
     One ADD: `aef-task-lifecycle@v4` (plain-language names for the business
     lens; ids moved to aef:endpoint). It lints clean, so the flagged set is the
-    same 14 names."""
+    same 14 names.
+
+    T-5227 baseline move (48 -> 49 versions, flagged held at 14), 2026-11-18.
+    One ADD: `aef-inception-lifecycle@v1` (the inception lifecycle map with
+    instances). It lints clean (checked: lint_map returns no findings), so the
+    flagged set is the same 14 names."""
     store = REPO_ROOT / ".context" / "designer" / "projects"
     idx = corpus_lint.store_index(store)
     ghosts = corpus_lint._registry_ghost_uuids(store)
     targets = corpus_lint.collect_all_versions(store)
-    assert len(targets) == 48, [n for n, _ in targets]
+    assert len(targets) == 49, [n for n, _ in targets]
 
     findings, typed = [], []
     for name, xml_text in targets:
