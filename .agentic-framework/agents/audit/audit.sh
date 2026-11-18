@@ -6963,6 +6963,36 @@ if command -v inception_handoff_blockers >/dev/null 2>&1; then
 fi
 unset _c6b_f _c6b_kind _c6b_id
 
+# C-006c (T-5227): the daily inception routing. An inception whose revisit date has
+# passed on a step someone owns is listed under that owner: agent (handover next
+# actions), peer (a reminder the agent sends), operator (fw operator pending and the
+# approvals page). One reader: lib/inception_lifecycle.py overdue_by_owner.
+_c6c_out=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/inception_lifecycle.py" \
+    --overdue 2>/dev/null) || _c6c_out="__error__"
+if [ "$_c6c_out" = "__error__" ]; then
+    warn "C-006c: inception lifecycle check could not run" \
+         "lib/inception_lifecycle.py --overdue failed" \
+         "Run: bin/fw inception lifecycle --overdue"
+elif [ -n "$_c6c_out" ]; then
+    for _c6c_owner in agent peer operator; do
+        _c6c_n=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/inception_lifecycle.py" \
+            --overdue --json --owner "$_c6c_owner" 2>/dev/null \
+            | python3 -c 'import json,sys; d=json.load(sys.stdin); print(sum(len(v) for v in d.values()))' 2>/dev/null || echo 0)
+        [ "${_c6c_n:-0}" -gt 0 ] || continue
+        case "$_c6c_owner" in
+            agent)    _c6c_route="handover next actions" ;;
+            peer)     _c6c_route="the agent reminds the peer (fw sidecar send)" ;;
+            operator) _c6c_route="fw operator pending and the approvals page" ;;
+        esac
+        warn "C-006c: $_c6c_n overdue inception(s) waiting on the $_c6c_owner" \
+             "Revisit date passed (T-5227); routed to: $_c6c_route" \
+             "List them: bin/fw inception lifecycle --overdue --owner $_c6c_owner"
+    done
+else
+    pass "C-006c: No inception is past its revisit date"
+fi
+unset _c6c_out _c6c_owner _c6c_n _c6c_route
+
 echo ""
 fi # end oe-research
 

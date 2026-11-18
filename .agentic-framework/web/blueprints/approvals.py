@@ -1108,6 +1108,24 @@ def approval_summary() -> dict:
     )
 
 
+def _load_inception_questions() -> list[dict]:
+    """T-5227: overdue inceptions waiting on the operator (waiting_on: operator, revisit date
+    passed) — the same list as `fw operator pending` "Questions waiting for you". These are
+    questions, not decisions: the page links the task, never a decide action."""
+    import importlib.util
+
+    try:
+        spec = importlib.util.spec_from_file_location(
+            "inception_lifecycle", FRAMEWORK_ROOT / "lib" / "inception_lifecycle.py")
+        il = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(il)
+        rows = il.overdue_by_owner(PROJECT_ROOT)["operator"]
+    except Exception:  # a broken reader must not blank the approvals page
+        return []
+    return [{"task_id": r["task"], "name": r["name"], "revisit_at": r["revisit_at"],
+             "days_in_step": r["days_in_step"]} for r in rows]
+
+
 def _build_approvals_context(expand_overflow: bool = False):
     """Build template context for approvals page.
 
@@ -1138,6 +1156,7 @@ def _build_approvals_context(expand_overflow: bool = False):
     bvp_proposals = _load_proposals()
     waiting = _load_waiting_messages()  # T-3782
     hub_profile_notices = _load_hub_profile_notices()  # T-5236
+    inception_questions = _load_inception_questions()  # T-5227
 
     counts = _approval_counts(pending_tier0, pending_go, len(pending_acs),
                               paused_dispatches, arcs_close_ready, bvp_proposals,
@@ -1190,6 +1209,7 @@ def _build_approvals_context(expand_overflow: bool = False):
         waiting_error=waiting["error"],     # T-3782
         waiting_warn_hours=waiting["warn_hours"],
         hub_profile_notices=hub_profile_notices,  # T-5236
+        inception_questions=inception_questions,  # T-5227
         refreshing_count=len(_stale_ids()),  # T-5195
     )
 

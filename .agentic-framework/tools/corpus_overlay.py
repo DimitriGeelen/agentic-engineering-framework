@@ -27,6 +27,10 @@ aef-task-lifecycle (T-2629):
     tl_human_review  work-completed still in .tasks/active/ (partial-complete)
     tl_archive       work-completed in .tasks/completed/, 7-day window
 
+aef-inception-lifecycle (T-5227): one badge per open-inception node, placed by
+lib/inception_lifecycle.py NODES (the one table); age is days in the step; any
+inception whose revisit date passed on a routed step raises the badge to alert.
+
 aef-inception-flow (T-2634 — inception tasks only, keyed to the map's
 existing uids):
 
@@ -182,16 +186,38 @@ def _inception_flow_buckets(root: Path, now: float) -> dict:
     return buckets
 
 
+def _inception_lifecycle_buckets(root: Path, now: float) -> dict:
+    """T-5227: aef-inception-lifecycle. Placement is lib/inception_lifecycle.py NODES (the one
+    table); each item carries ``_overdue`` (revisit date passed on a routed step), which
+    raises the badge to alert so an overdue inception stands out."""
+    import importlib.util
+    from datetime import datetime, timezone
+
+    spec = importlib.util.spec_from_file_location(
+        "inception_lifecycle", Path(__file__).resolve().parents[1] / "lib" / "inception_lifecycle.py")
+    il = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(il)
+    today = datetime.fromtimestamp(now, timezone.utc).date()
+    rows, _, _ = il.instances(root, today)
+    buckets = {u: [] for u in il.NODE_ORDER if u != "il_closed"}
+    for r in rows:
+        if r["node"] in buckets:
+            buckets[r["node"]].append({"id": r["task"], "last_update": r["entered_at"] or "",
+                                       "_overdue": r["overdue"]})
+    return buckets
+
+
 PROFILES = {
     "aef-task-lifecycle": _task_lifecycle_buckets,
     "aef-inception-flow": _inception_flow_buckets,
+    "aef-inception-lifecycle": _inception_lifecycle_buckets,
 }
 
 # Terminal buckets: settled history, never escalates past info.
 _TERMINAL_UIDS = {"tl_archive", "if_done_go", "if_done_closed"}
 # Operator-queue buckets: non-empty = action request. Warn floor, alert when
 # the oldest waiter exceeds WARN_DAYS.
-_QUEUE_UIDS = {"if_gw_outcome"}
+_QUEUE_UIDS = {"if_gw_outcome", "il_awaiting_decision"}
 
 
 def build_payload(root: Path, map_id: str, now: float | None = None) -> dict:
@@ -217,9 +243,17 @@ def build_payload(root: Path, map_id: str, now: float | None = None) -> dict:
         else:
             severity = ("alert" if oldest > ALERT_DAYS
                         else "warn" if oldest > WARN_DAYS else "info")
-        title = f"{len(tasks)} task(s)"
-        if stuck and uid not in _TERMINAL_UIDS:
-            title += f", {stuck} stuck >{WARN_DAYS}d (oldest {oldest:.0f}d)"
+        noun = "inception(s)" if map_id == "aef-inception-lifecycle" else "task(s)"
+        title = f"{len(tasks)} {noun}"
+        overdue = sum(1 for t in tasks if t.get("_overdue"))
+        if overdue:  # T-5227: a passed revisit date is an action request for its owner
+            severity = "alert"
+            title += f", {overdue} overdue (revisit date passed)"
+        else:
+            if noun == "inception(s)" and severity == "alert":
+                severity = "warn"  # alert is kept for overdue, so an overdue step stands out
+            if stuck and uid not in _TERMINAL_UIDS:
+                title += f", {stuck} stuck >{WARN_DAYS}d (oldest {oldest:.0f}d)"
         if focus and any(t.get("id") == focus for t in tasks):
             title += f" — focus: {focus}"
         payload["nodes"].append(

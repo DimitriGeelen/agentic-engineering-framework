@@ -415,6 +415,42 @@ def _lifecycle_instances():
     return instances, examined, refusals
 
 
+# T-5227: the second template with instances. Placement is lib/inception_lifecycle.py NODES,
+# the one table for inception state -> node (like _LIFECYCLE_NODES above). Instances are the
+# open inceptions (active task files, plus a completed GO inception while a build task naming
+# it is open); il_closed is never served, as tl_archive is not. The contract is unchanged:
+# same instance fields, the node is an inception-map uid. Status history does not record
+# the recommendation or waiting_on that place an inception, so traversed/unmapped stay [].
+_INCEPTION_MAP = "aef-inception-lifecycle"
+
+
+def _load_module(name, rel):
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(name, FRAMEWORK_ROOT / rel)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def _inception_instances():
+    """(instances, examined, unplaced) for the open inceptions under PROJECT_ROOT."""
+    il = _load_module("inception_lifecycle", "lib/inception_lifecycle.py")
+    overlay = _load_module("corpus_overlay", "tools/corpus_overlay.py")
+    present = overlay.carriers(PROJECT_ROOT, _INCEPTION_MAP)
+    rows, examined, unplaced = il.instances(PROJECT_ROOT)
+    out = []
+    for r in rows:
+        node = r["node"]
+        if node is None:
+            state = "NO-POSITION"
+        else:
+            state = "NODE" if node in present else "STALE"
+        out.append({"task": r["task"], "state": state, "node": node, "status": r["status"],
+                    "owner": r["owner"], "traversed": [], "unmapped": []})
+    return out, examined, unplaced
+
+
 @bp.route("/api/instances")
 def instances():
     template = request.args.get("template", "")
@@ -425,6 +461,8 @@ def instances():
     insts, examined, unplaced = [], 0, []
     if template == _LIFECYCLE_MAP:
         insts, examined, unplaced = _lifecycle_instances()
+    elif template == _INCEPTION_MAP:
+        insts, examined, unplaced = _inception_instances()
     # T-5193: v1's `refusals` (unparseable files) is `unplaced`; `refusals` is reserved for
     # transition refusals and stays empty until AEF has a runtime that records them.
     return jsonify({

@@ -36,6 +36,13 @@
         <span class="stat-breakdown">Pending drivers</span>
     </a>
     {% endif %}
+    {% if inception_questions %}
+    <a href="#section-inception-questions" class="approval-stat approval-stat-group decisions-active" style="text-decoration:none; color:inherit;">
+        <span class="stat-value">{{ inception_questions|length }}</span>
+        <span class="stat-label">Questions</span>
+        <span class="stat-breakdown">Inceptions waiting for you</span>
+    </a>
+    {% endif %}
     <a href="#section-verifications" class="approval-stat approval-stat-group {{ 'ac-active' if ac_count else '' }}" style="text-decoration:none; color:inherit;">
         <span class="stat-value">{{ ac_count }}</span>
         <span class="stat-label">Verifications</span>
@@ -46,6 +53,22 @@
         <span class="stat-label">Total</span>
     </div>
 </div>
+
+<!-- T-5227: overdue inception questions whose next step is the operator's. A question,
+     not a decision: each links the task page; there is no decide link here. -->
+{% if inception_questions %}
+<h2 id="section-inception-questions" class="approvals-group-heading">Questions waiting for you</h2>
+<p style="font-size:0.85rem; color:var(--pico-muted-color); margin:0 0 0.5rem;">
+    Inceptions still exploring that wait on your answer; their revisit date has passed.
+    Answer on the task; the agent then continues the exploration.
+</p>
+<ul class="inception-questions">
+{% for q in inception_questions %}
+    <li><a href="/tasks/{{ q.task_id }}">{{ q.task_id }}</a> — {{ q.name }}
+        <small style="color:var(--wt-danger);">overdue since {{ q.revisit_at }}</small></li>
+{% endfor %}
+</ul>
+{% endif %}
 
 <!-- T-1416 (T-1388 B6 / F5): Decisions group (Section A + B) -->
 {% if pending_tier0 or pending_go %}

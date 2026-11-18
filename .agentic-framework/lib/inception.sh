@@ -32,6 +32,13 @@ do_inception() {
         retrofit-rec|retrofit-recommendations)
             do_inception_retrofit_recommendations "$@"
             ;;
+        lifecycle)
+            # T-5227: per step count, median days in step, overdue; --overdue = the routing
+            PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/inception_lifecycle.py" "$@"
+            ;;
+        wait)
+            do_inception_wait "$@"
+            ;;
         ""|-h|--help)
             show_inception_help
             ;;
@@ -54,6 +61,12 @@ show_inception_help() {
     echo "                                    Re-record a mistaken decision, also on a"
     echo "                                    completed inception (operator-only, logged, T-4324);"
     echo "                                    defer reopens it, parked in active/ (T-4918)"
+    echo "  lifecycle [--json] [--overdue]    Inception lifecycle map (T-5227): per step the"
+    echo "                                    count, median days in step and overdue count;"
+    echo "                                    --overdue lists overdue inceptions by owner"
+    echo "  wait <T-XXX> agent|peer|operator [--revisit YYYY-MM-DD]"
+    echo "                                    Record who holds the next step (default revisit"
+    echo "                                    today + 7); stamps step_entered_at (T-5227)"
     echo "  sweep [--dry-run]                 Retroactively finalize inceptions with"
     echo "                                    recorded decisions but unchecked Human ACs"
     echo "  retrofit-rec [--apply]            T-1716 retrofit: scan active inceptions"
@@ -67,6 +80,8 @@ show_inception_help() {
     echo "                                    for decision) until every IW question is disposed (T-5226)"
     echo "  start --rationale '<reason>'      Required under \$CLAUDECODE=1 (T-1715)"
     echo "  start --i-am-human                Bypass filing-time gate (logged)"
+    echo "  start --waiting-on agent|peer|operator  Who holds the next step (default agent, T-5227)"
+    echo "  start --revisit-at YYYY-MM-DD     When it comes back (default filing date + 7)"
     echo "  decide --rationale '<reason>'     Required: explain the decision"
     echo ""
     echo -e "${BOLD}Examples:${NC}"
@@ -74,6 +89,30 @@ show_inception_help() {
     echo "    --rationale 'Why this is worth exploring (evidence)'"
     echo "  fw inception status"
     echo "  fw inception decide T-085 go --rationale 'All assumptions validated'"
+}
+
+do_inception_wait() {
+    # T-5227: set waiting_on / revisit_at / step_entered_at on an open inception.
+    local task_id="${1:-}" on="${2:-}" revisit=""
+    shift 2 2>/dev/null || true
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            --revisit|--revisit-at) revisit="$2"; shift 2 ;;
+            *) echo -e "${RED}Unknown option: $1${NC}" >&2; return 1 ;;
+        esac
+    done
+    if [ -z "$task_id" ] || [ -z "$on" ]; then
+        echo "Usage: fw inception wait T-XXX agent|peer|operator [--revisit YYYY-MM-DD]" >&2
+        return 1
+    fi
+    local task_file
+    task_file=$(find_task_file "$task_id" active)
+    if [ -z "$task_file" ] || [ ! -f "$task_file" ]; then
+        echo -e "${RED}No active task $task_id${NC}" >&2
+        return 1
+    fi
+    python3 "$FRAMEWORK_ROOT/lib/inception_lifecycle.py" --set-wait "$task_file" "$on" \
+        ${revisit:+--revisit "$revisit"}
 }
 
 do_inception_start() {
@@ -92,9 +131,12 @@ do_inception_start() {
     local rationale=""
     local i_am_human=false
     local origin=""   # T-3897
+    local waiting_on="" revisit_at=""   # T-5227
     while [[ $# -gt 0 ]]; do
         case $1 in
             --owner) owner="$2"; shift 2 ;;
+            --waiting-on) waiting_on="$2"; shift 2 ;;
+            --revisit-at) revisit_at="$2"; shift 2 ;;
             --recommendation) recommendation="$2"; shift 2 ;;
             --rationale) rationale="$2"; shift 2 ;;
             --i-am-human) i_am_human=true; shift ;;
@@ -172,7 +214,8 @@ do_inception_start() {
         --name "$name" \
         --description "Inception: $name" \
         --type inception \
-        --owner "$owner" ${origin:+--origin "$origin"} 2>&1) || rc=$?
+        --owner "$owner" ${origin:+--origin "$origin"} \
+        ${waiting_on:+--waiting-on "$waiting_on"} ${revisit_at:+--revisit-at "$revisit_at"} 2>&1) || rc=$?
 
     echo "$output"
     if [ "$rc" -ne 0 ]; then

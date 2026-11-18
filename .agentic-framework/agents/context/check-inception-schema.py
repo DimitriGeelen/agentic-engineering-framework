@@ -125,6 +125,29 @@ def _validate(fm: dict) -> list[str]:
     return errors
 
 
+_WAIT_KEYS = ("waiting_on", "revisit_at")
+
+
+def _lifecycle_errors(before: dict, after: dict | None) -> list[str]:
+    """T-5227: problems with waiting_on / revisit_at after the edit, when the edit touches
+    them or the workflow type. One rule: lib/inception_lifecycle.validate_fields."""
+    if after is None:
+        return []
+    def _v(fm, k):
+        return (fm.get(k) or "").strip().strip("\"'")
+    if not any(_v(after, k) for k in _WAIT_KEYS):
+        return []
+    keys = _WAIT_KEYS + ("workflow_type",)
+    if all(_v(before, k) == _v(after, k) for k in keys):
+        return []
+    try:
+        from lib.inception_lifecycle import validate_fields  # noqa: PLC0415
+    except Exception:  # noqa: BLE001 — never block on a missing module
+        return []
+    return validate_fields(_v(after, "workflow_type"), _v(after, "waiting_on") or None,
+                           _v(after, "revisit_at") or None)
+
+
 def _log_bypass(target: str, reason: str) -> None:
     """Append Tier-2 entry to .gate-bypass-log.yaml. Best-effort, never blocks."""
     log_path = PROJECT_ROOT / ".context" / "working" / ".gate-bypass-log.yaml"
@@ -166,9 +189,6 @@ def main() -> int:
     if fm is None:
         return 0  # No frontmatter — task creation or non-task file, let through
 
-    if fm.get("workflow_type", "").strip() != "inception":
-        return 0  # Not an inception, schema doesn't apply
-
     # T-3948 / T-3979: judge the RESULT of the edit, in both directions. T-3948 let a
     # repairing edit through but still returned early whenever the file on disk was
     # valid, so an edit that DELETED voi_score from a valid inception passed
@@ -177,6 +197,21 @@ def main() -> int:
     before = _read_text(fp) or ""
     after = _post_edit_text(tool_input, before)
     post = _parse_frontmatter(after) if after is not None else None
+
+    # T-5227: waiting_on / revisit_at — inceptions only, fixed shapes, judged on the result
+    # and only when the edit changes them or the workflow type (an unrelated edit is never
+    # held). No bypass: the fix is always to correct the value.
+    wait_errs = _lifecycle_errors(fm, post)
+    if wait_errs:
+        print("\nBLOCKED — inception lifecycle fields (T-5227):\n"
+              + "".join(f"  - {e}\n" for e in wait_errs)
+              + "  waiting_on: agent|peer|operator and revisit_at: YYYY-MM-DD belong to inceptions\n"
+                "  only. Set them with: bin/fw inception wait T-XXX <owner> [--revisit YYYY-MM-DD]\n",
+              file=sys.stderr)
+        return 2
+
+    if fm.get("workflow_type", "").strip() != "inception":
+        return 0  # Not an inception, schema doesn't apply
     if post is not None:
         if post.get("workflow_type", "").strip() != "inception":
             return 0  # the edit makes it something else; the schema no longer applies
