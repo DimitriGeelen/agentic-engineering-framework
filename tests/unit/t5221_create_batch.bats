@@ -120,7 +120,8 @@ EOF
     [ "$status" -eq 1 ]
     [[ "$output" == *"already exists"* ]]
     [ "$(cat "$T/ex/.tasks/active/T-005-same-name.md")" = keep ]
-    [ -z "$(ls -A "$T/ex/.tasks/.writing" 2>/dev/null)" ]
+    # no temp file left (.writing/ itself stays, holding only its own .gitignore)
+    [ -z "$(ls -A "$T/ex/.tasks/.writing" 2>/dev/null | grep -vx '.gitignore')" ]
 }
 
 # ── create-batch ───────────────────────────────────────────────────────────────────────
@@ -234,7 +235,8 @@ EOF
     printf '%s\n' '{"name":"Sweeper task","description":"d","type":"build","owner":"agent"}' > "$T/one.jsonl"
     run bash "$CREATE_BATCH" --spec "$T/one.jsonl" --purpose sweep
     [ "$status" -eq 0 ]
-    [ ! -d "$T/k/.tasks/.writing" ] || [ -z "$(ls -A "$T/k/.tasks/.writing")" ]
+    # (.writing/ stays — review 3 — holding only its own .gitignore)
+    [ -z "$(ls -A "$T/k/.tasks/.writing" | grep -vx '.gitignore')" ]
 }
 
 @test "create-batch: arc_id must resolve to an arc; --dry-run reserves and writes nothing" {
@@ -338,4 +340,154 @@ EOF
     [ "$(ls "$T/p/.tasks/active/" | grep -c '^T-0[34]')" -eq 13 ]
     [ "$ms" -lt 3000 ]
     for i in $(seq 1 24); do git -C "$T/p" worktree remove --force "$T/p-wt$i" 2>/dev/null || true; done
+}
+
+# ── independent review fixes (docs/reports/T-5221-independent-review.md) ───────────────
+
+@test "review 1: exclusive write falls back when link() is unsupported (EPERM/ENOTSUP/EXDEV/EMLINK/ENOSYS), still never overwrites" {
+    run python3 - "$FRAMEWORK_ROOT/lib" "$T" <<'EOF'
+import errno, os, sys
+sys.path.insert(0, sys.argv[1])
+import render_task as rt
+d = sys.argv[2]
+real_link = os.link
+for code in sorted({errno.EPERM, errno.ENOTSUP, errno.EOPNOTSUPP, errno.EXDEV, errno.EMLINK, errno.ENOSYS}):
+    def nolink(a, b, code=code):
+        raise OSError(code, os.strerror(code))
+    os.link = nolink
+    p = os.path.join(d, f'T-{code}-x.md')
+    rt.write_exclusive(p, 'body\n', os.path.join(d, '.writing'))
+    assert open(p).read() == 'body\n', code
+    try:
+        rt.write_exclusive(p, 'other\n', os.path.join(d, '.writing'))
+        raise SystemExit(f'overwrote under errno {code}')
+    except FileExistsError:
+        pass
+    assert open(p).read() == 'body\n', code
+# a write error in the fallback leaves no file under the final name
+os.link = lambda a, b: (_ for _ in ()).throw(OSError(errno.EPERM, 'no links'))
+class Boom:
+    def __init__(self, fd): self.fd = fd
+    def __enter__(self): return self
+    def __exit__(self, *a): os.close(self.fd)
+    def write(self, s): raise OSError(errno.ENOSPC, 'disk full')
+rt.os.fdopen = lambda fd, *a, **k: Boom(fd)
+p = os.path.join(d, 'T-999-full.md')
+try:
+    rt.write_exclusive(p, 'x' * 10, os.path.join(d, '.writing'))
+    raise SystemExit('no error raised')
+except OSError as exc:
+    assert exc.errno == errno.ENOSPC, exc
+assert not os.path.exists(p), 'partial file left under the final name'
+os.link = real_link
+print('OK')
+EOF
+    echo "$output"
+    [ "$status" -eq 0 ]; [[ "$output" == *OK* ]]
+}
+
+@test "review 2: parameter values that are not plain YAML are quoted, a comma does not split a tag, frontmatter always parses" {
+    _repo q; _use q
+    run "$FW" arc instantiate municipality-scan --param municipality=oslo --param "region=west], a, b # c: 'd"
+    echo "$output"
+    [ "$status" -eq 0 ]
+    mapfile -t F < <(ls "$T/q/.tasks/active/"T-*.md)
+    [ "${#F[@]}" -eq 13 ]
+    python3 - "${F[@]}" <<'EOF'
+import sys, yaml
+for f in sys.argv[1:]:
+    fm = open(f).read().split('---\n')[1]
+    d = yaml.safe_load(fm)
+    assert d['tags'] == ['scan', "west], a, b # c: 'd"], (f, d['tags'])
+EOF
+    # create-batch: list items keep their commas; a string stays a comma list (create-task's form)
+    printf '%s\n' '{"name":"List tag","description":"d","type":"build","owner":"agent","tags":["k: v","a, b","@x","#h"]}' \
+                  '{"name":"String tags","description":"d","type":"build","owner":"agent","tags":"a, b"}' > "$T/q.jsonl"
+    run bash "$CREATE_BATCH" --spec "$T/q.jsonl" --purpose p
+    echo "$output"
+    [ "$status" -eq 0 ]
+    python3 - "$T/q/.tasks/active" <<'EOF'
+import glob, sys, yaml
+got = {}
+for f in glob.glob(sys.argv[1] + '/T-*.md'):
+    d = yaml.safe_load(open(f).read().split('---\n')[1])
+    got[d['name']] = d['tags']
+assert got['List tag'] == ['k: v', 'a, b', '@x', '#h'], got['List tag']
+assert got['String tags'] == ['a', 'b'], got['String tags']
+EOF
+}
+
+@test "review 2: the writer refuses to report success for a file whose frontmatter does not parse" {
+    _repo y
+    printf -- '---\nid: T-XXX\nname: x\nstatus: captured\nworkflow_type: build\nowner: agent\nhorizon: now\ntags: []\nrelated_tasks: []\nbroken: [unclosed\ncreated: x\nlast_update: x\ndescription: x\n---\n\n# T-XXX: [Task Name]\n' > "$T/y/.tasks/templates/default.md"
+    run python3 "$RENDER" write-one --tasks-dir "$T/y/.tasks" --framework-root "$T/y" \
+        --id T-007 --name "Bad template" --description d --type build --owner agent --horizon now --status captured
+    echo "$output"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"frontmatter"* ]]
+    [ -z "$(ls "$T/y/.tasks/active/" | grep '^T-007')" ]
+}
+
+@test "review 3: the writer never removes .tasks/.writing/ (no rmdir racing a concurrent makedirs)" {
+    _repo w
+    run python3 - "$FRAMEWORK_ROOT/lib" "$T/w/.tasks" <<'EOF'
+import os, sys
+sys.path.insert(0, sys.argv[1])
+import render_task as rt
+def no_rmdir(p, *a, **k):
+    raise AssertionError(f'rmdir({p}) called')
+rt.os.rmdir = no_rmdir
+rt.write_entries([{'id': 'T-001', 'name': 'n', 'description': 'd', 'type': 'build', 'owner': 'agent',
+                   'horizon': 'now', 'status': 'captured', 'tags': '', 'related': ''}],
+                 sys.argv[2], sys.argv[2])
+assert os.path.isdir(os.path.join(sys.argv[2], '.writing'))
+print('OK')
+EOF
+    echo "$output"
+    [ "$status" -eq 0 ]; [[ "$output" == *OK* ]]
+}
+
+@test "review 4: the anchor is set without GNU sed -i, and reported only when set" {
+    _repo s; _use s
+    mkdir -p "$T/bin"
+    # A sed that refuses -i, as BSD sed effectively does for GNU's form.
+    printf '#!/bin/bash\nfor a in "$@"; do case "$a" in -i|-i*) echo "sed: -i refused (BSD)" >&2; exit 1;; esac; done\nexec %s "$@"\n' "$(command -v sed)" > "$T/bin/sed"
+    chmod +x "$T/bin/sed"
+    PATH="$T/bin:$PATH" run "$FW" arc instantiate municipality-scan --param municipality=oslo
+    echo "$output"
+    [ "$status" -eq 0 ]
+    python3 -c "import yaml,sys; a=yaml.safe_load(open(sys.argv[1])); assert a['anchor_task']=='T-001', a['anchor_task']" "$T/s/.context/arcs/scan-oslo.yaml"
+    [[ "$output" == *"anchor_task: T-001"* ]]
+}
+
+@test "review 7: .tasks/.writing/ is gitignored" {
+    git -C "$FRAMEWORK_ROOT" check-ignore -q .tasks/.writing/123-abcd.T-1-x.md
+}
+
+@test "review 10: create-batch refuses an arc_id with a path component" {
+    _repo pc; _use pc
+    local up=".."
+    for a in templates/municipality-scan "$up/arcs/templates/municipality-scan"; do
+        printf '{"name":"Path arc","description":"d","type":"build","owner":"agent","arc_id":"%s"}\n' "$a" > "$T/pc.jsonl"
+        run bash "$CREATE_BATCH" --spec "$T/pc.jsonl" --purpose p
+        echo "$output"
+        [ "$status" -eq 1 ]
+        [[ "$output" == *"does not resolve"* ]]
+    done
+    [ -z "$(ls "$T/pc/.tasks/active/" | grep '^T-')" ]
+}
+
+@test "review 11: an arc rolled back by instantiate does not free its arc-NNN for reuse" {
+    _repo rb; _use rb
+    : > "$T/rb/.tasks/.writing"   # a file where the writer's temp dir goes: every write fails
+    run "$FW" arc instantiate municipality-scan --param municipality=oslo
+    echo "$output"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"removed again"* ]]
+    [ ! -e "$T/rb/.context/arcs/scan-oslo.yaml" ]
+    rm -f "$T/rb/.tasks/.writing"
+    run "$FW" arc instantiate municipality-scan --param municipality=bergen
+    echo "$output"
+    [ "$status" -eq 0 ]
+    python3 -c "import yaml,sys; a=yaml.safe_load(open(sys.argv[1])); assert a['id']=='arc-002', a['id']" "$T/rb/.context/arcs/scan-bergen.yaml"
 }

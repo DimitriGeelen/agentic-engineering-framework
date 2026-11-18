@@ -178,6 +178,11 @@ docs/reports/T-3239-continuous-loop-demo/.livefire-run-copy.sh
 # .context/working/.obs-highwater. Every worktree's mark is read at allocation.
 .tasks/.id-highwater
 
+# T-5221 review 7: the task writer's temp directory (lib/render_task.py). A killed
+# writer's leftover sits here until the next write sweeps it; it must never be
+# committed. The directory also writes its own `*` .gitignore, for consumer projects.
+.tasks/.writing/
+
 # T-4695: per-host output of scheduled jobs (declared as ignore_paths on each job
 # in .context/cron-registry.yaml; `python3 lib/cron_commit.py check` fails when
 # one is tracked again). Read from disk by audit/Watchtower, never from git.

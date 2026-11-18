@@ -14,7 +14,12 @@ tests/fixtures/t5221/golden/, checked by tests/unit/t5221_create_batch.bats.
 Writing: every file is rendered to a temp file under <tasks>/.writing/ and then hard-linked
 to its final name. link(2) fails when the name exists (an exclusive open) and is atomic, so a
 process killed mid-batch leaves only complete task files; the temp file it leaves behind is
-not named T-*.md and is swept by the next write.
+not named T-*.md and is swept by the next write. Where the filesystem has no hard links
+(EPERM/ENOTSUP/EXDEV/EMLINK/ENOSYS) the file is opened O_CREAT|O_EXCL on its final name
+instead: still never overwrites, and a write error removes it, but a kill mid-write can
+leave a partial file there (review finding 1). .writing/ is never removed (finding 3) and
+holds its own `*` .gitignore (finding 7). Every rendered file's frontmatter is parsed
+before anything is written; one that does not parse is refused (finding 2).
 
 CLI (ids are allocated by the caller through lib/idalloc.sh, never here):
   render_task.py write-one --tasks-dir D --framework-root R --id T-N --name N
@@ -37,6 +42,7 @@ Exit: 0 written, 1 a write failed (files before it stay complete), 2 usage / bad
 from __future__ import annotations
 
 import argparse
+import errno
 import json
 import os
 import re
@@ -60,9 +66,48 @@ def set_key(fm, key, value):
     return re.sub('^' + re.escape(key) + ':.*$', lambda m: key + ': ' + value, fm, count=1, flags=re.M)
 
 
+def _yaml():
+    try:
+        import yaml  # noqa: PLC0415 — optional: the writer must still run without PyYAML
+        return yaml
+    except ImportError:
+        return None
+
+
+_PLAIN_SAFE = re.compile(r'^[A-Za-z0-9_][A-Za-z0-9_./+=:-]*$')
+_item_cache = {}
+
+
+def yaml_flow_item(item):
+    """One item of a YAML flow sequence. Emitted bare when YAML reads it back as that one
+    scalar (every ordinary tag, so create-task's bytes do not move); otherwise double-quoted
+    (json escaping is valid YAML), so ']' '#' ',' ': ' quotes and the like cannot break the
+    frontmatter, turn a tag into a mapping or split it in two (T-5221 review finding 2).
+    A bare scalar that YAML types as a number or boolean (`2026`, `yes`) stays bare, as it
+    always was."""
+    if item in _item_cache:
+        return _item_cache[item]
+    yaml = _yaml()
+    if yaml is not None:
+        try:
+            got = yaml.safe_load('[' + item + ']')
+            bare = (isinstance(got, list) and len(got) == 1 and got[0] is not None
+                    and not isinstance(got[0], (list, dict))
+                    and (not isinstance(got[0], str) or got[0] == item))
+        except yaml.YAMLError:
+            bare = False
+    else:
+        bare = bool(_PLAIN_SAFE.match(item))
+    out = item if bare else json.dumps(item, ensure_ascii=False)
+    _item_cache[item] = out
+    return out
+
+
 def format_yaml_array(raw):
     """create-task's format_yaml_array: comma list -> "[a, b]". Items are trimmed and inner
-    whitespace collapsed (what `xargs` did to each item); empty items are dropped."""
+    whitespace collapsed (what `xargs` did to each item); empty items are dropped. A list
+    keeps its items whole: a comma inside a list item does not split it. Items that are not
+    plain YAML are quoted (yaml_flow_item)."""
     if raw is None:
         return '[]'
     if isinstance(raw, (list, tuple)):
@@ -70,7 +115,7 @@ def format_yaml_array(raw):
     else:
         items = str(raw).split(',')
     items = [' '.join(i.split()) for i in items]
-    items = [i for i in items if i]
+    items = [yaml_flow_item(i) for i in items if i]
     return '[' + ', '.join(items) + ']'
 
 
@@ -234,6 +279,30 @@ def render(entry, templates, tasks_dir, timestamp):
     return e['filepath'], text
 
 
+class FrontmatterError(Exception):
+    pass
+
+
+def check_frontmatter(path, text):
+    """Refuse a rendered file whose frontmatter does not read back as a mapping holding this
+    task's id (T-5221 review finding 2): the writer never reports success for a task file
+    the framework cannot parse. Skipped only when PyYAML is not installed."""
+    yaml = _yaml()
+    if yaml is None:
+        return
+    m = re.match(r'---\n(.*?\n)---\n', text, re.S)
+    if not m:
+        raise FrontmatterError(f'{path}: no frontmatter block')
+    try:
+        fm = yaml.safe_load(m.group(1))
+    except yaml.YAMLError as exc:
+        raise FrontmatterError(f'{path}: frontmatter does not parse: {exc}') from None
+    want = re.match(r'(T-\d+)', os.path.basename(path))
+    if not isinstance(fm, dict) or (want and fm.get('id') != want.group(1)):
+        got = fm.get('id') if isinstance(fm, dict) else fm
+        raise FrontmatterError(f'{path}: frontmatter does not read back as this task (id {got!r})')
+
+
 # ── writing ─────────────────────────────────────────────────────────────────────────────
 
 
@@ -261,9 +330,45 @@ def _sweep(tmpdir):
             pass
 
 
+# link(2) errors that mean "no hard link here" (vboxsf, FAT/exFAT, some CIFS/FUSE mounts,
+# or the active directory on another filesystem than .writing/). T-5221 review finding 1.
+_NO_LINK = {errno.EPERM, errno.EOPNOTSUPP, errno.ENOTSUP, errno.EXDEV, errno.EMLINK, errno.ENOSYS}
+
+
+def _ensure_tmpdir(tmpdir):
+    """The temp directory stays once made: removing it would race a concurrent writer's
+    makedirs+open (review finding 3). It ignores itself in git, so a killed writer's
+    leftover is never committed, in consumer projects too (review finding 7)."""
+    os.makedirs(tmpdir, exist_ok=True)
+    gi = os.path.join(tmpdir, '.gitignore')
+    if not os.path.exists(gi):
+        try:
+            with open(gi, 'x') as fh:
+                fh.write('*\n')
+        except FileExistsError:
+            pass
+
+
+def _write_excl_direct(path, text):
+    """Fallback without link(2): O_CREAT|O_EXCL on the final name (still never overwrites),
+    write, fsync; a write error removes the file. Loses only atomicity against a kill."""
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666)
+    try:
+        with os.fdopen(fd, 'w') as fh:
+            fh.write(text)
+            fh.flush()
+            os.fsync(fh.fileno())
+    except BaseException:
+        try:
+            os.unlink(path)
+        except OSError:
+            pass
+        raise
+
+
 def write_exclusive(path, text, tmpdir):
     """Write text to path atomically, refusing when path exists."""
-    os.makedirs(tmpdir, exist_ok=True)
+    _ensure_tmpdir(tmpdir)
     # Leading pid lets _sweep find a dead writer's leftovers; the random part keeps the name
     # unique when pids are reused (T-5067).
     tmp = os.path.join(tmpdir, f'{os.getpid()}-{os.urandom(4).hex()}.{os.path.basename(path)}')
@@ -271,8 +376,15 @@ def write_exclusive(path, text, tmpdir):
         fh.write(text)
     try:
         os.link(tmp, path)  # exclusive + atomic: EEXIST when the name is taken
-    finally:
+    except OSError as exc:
+        if exc.errno not in _NO_LINK:
+            raise
         os.unlink(tmp)
+        tmp = None
+        _write_excl_direct(path, text)
+    finally:
+        if tmp is not None:
+            os.unlink(tmp)
 
 
 def write_entries(entries, tasks_dir, framework_root, timestamp=None):
@@ -282,6 +394,10 @@ def write_entries(entries, tasks_dir, framework_root, timestamp=None):
     _sweep(tmpdir)
     os.makedirs(os.path.join(tasks_dir, 'active'), exist_ok=True)
     rendered = [render(e, templates, tasks_dir, timestamp) for e in entries]
+    # Every file's frontmatter is parsed before the first is written. These are the exact
+    # bytes that land, so a file that would not parse is never written nor reported.
+    for path, text in rendered:
+        check_frontmatter(path, text)
     written = []
     delay = float(os.environ.get('FW_RENDER_TEST_DELAY', '0') or 0)  # test hook: kill mid-batch
     for path, text in rendered:
@@ -290,10 +406,6 @@ def write_entries(entries, tasks_dir, framework_root, timestamp=None):
         print(path, flush=True)
         if delay:
             time.sleep(delay)
-    try:
-        os.rmdir(tmpdir)
-    except OSError:
-        pass
     return written
 
 
@@ -310,7 +422,7 @@ def _as_list_text(v, key, n):
     if isinstance(v, str):
         return v
     if isinstance(v, list) and all(isinstance(x, str) for x in v):
-        return ','.join(v)
+        return list(v)  # kept a list: a comma inside an item must not split it (review 2)
     raise ValueError(f'entry {n}: "{key}" must be a string or a list of strings')
 
 
@@ -359,7 +471,7 @@ def parse_spec(path):
             errors.append(f'entry {n} (line {lineno}): {", ".join(bad)} must be strings')
             continue
         for k, v in e.items():
-            if '\0' in v:
+            if any('\0' in x for x in (v if isinstance(v, list) else [v])):
                 errors.append(f'entry {n} (line {lineno}): {k} contains a NUL byte')
         entries.append(e)
     if errors:
@@ -390,6 +502,8 @@ def main(argv=None):
     sl.add_argument('name')
     ps = sub.add_parser('parse-spec')
     ps.add_argument('spec')
+    ps.add_argument('--tasks-dir', default='')
+    ps.add_argument('--framework-root', default='')
     a = ap.parse_args(argv)
 
     if a.cmd == 'slug':
@@ -401,10 +515,27 @@ def main(argv=None):
         except (ValueError, OSError) as exc:
             print(f'create-batch: invalid spec {a.spec}:\n{exc}', file=sys.stderr)
             return 2
+        if a.tasks_dir:
+            # Render every entry under a placeholder id and parse its frontmatter, so an
+            # entry that cannot be represented is refused before any id is reserved.
+            templates = Templates(a.tasks_dir, a.framework_root or a.tasks_dir)
+            bad = []
+            for n, e in enumerate(entries, 1):
+                probe = dict(e, id='T-0', status='captured')
+                try:
+                    check_frontmatter(*render(probe, templates, a.tasks_dir, '1970-01-01T00:00:00Z'))
+                except FrontmatterError as exc:
+                    bad.append(f'entry {n}: {exc}')
+            if bad:
+                print(f'create-batch: invalid spec {a.spec}:\n' + '\n'.join(bad), file=sys.stderr)
+                return 2
         out = sys.stdout.buffer
         for e in entries:
             for k in ('name', 'description', 'type', 'owner', 'horizon', 'tags', 'related', 'arc_id'):
-                out.write(e[k].encode('utf-8', 'surrogateescape') + b'\0')
+                v = e[k]
+                if isinstance(v, list):
+                    v = ','.join(v)
+                out.write(v.encode('utf-8', 'surrogateescape') + b'\0')
         return 0
     try:
         if a.cmd == 'write-one':
@@ -421,6 +552,9 @@ def main(argv=None):
                 e['id'], e['status'] = tid, 'captured'
 
         write_entries(entries, a.tasks_dir, a.framework_root, a.timestamp or None)
+    except FrontmatterError as exc:
+        print(f'render_task: refused — {exc}; nothing written', file=sys.stderr)
+        return 1
     except FileExistsError as exc:
         print(f'render_task: refused — {exc.filename2 or exc.filename} already exists '
               '(an id was issued twice; run fw task id reconcile)', file=sys.stderr)

@@ -80,6 +80,8 @@ done
 ARCS_DIR="${PROJECT_ROOT}/.context/arcs"
 _arc_known() {
     local a="$1"
+    # A slug or arc-NNN only: no path component (T-5221 review 10; check-arc-id's rule).
+    [[ "$a" =~ ^[a-z][a-z0-9-]{1,63}$ ]] || return 1
     [ -n "$NEW_ARC" ] && [ "$a" = "$NEW_ARC" ] && return 0
     [ -f "$ARCS_DIR/$a.yaml" ] && return 0
     [[ "$a" =~ ^arc-[0-9]+$ ]] && grep -lqx "id: $a" "$ARCS_DIR"/*.yaml 2>/dev/null && return 0
@@ -89,7 +91,10 @@ _arc_known() {
 # 1. Parse (python, one start) and validate every entry (shared rules) before reserving.
 _TMP="$(mktemp -d "${TMPDIR:-/tmp}/fw-create-batch.XXXXXX")"
 trap 'rm -rf "$_TMP"' EXIT
-python3 "$FRAMEWORK_ROOT/lib/render_task.py" parse-spec "$SPEC" > "$_TMP/fields" || exit 2
+# --tasks-dir: every entry is also rendered under a placeholder id and its frontmatter
+# parsed, so an entry that cannot be represented refuses here, before the reservation.
+python3 "$FRAMEWORK_ROOT/lib/render_task.py" parse-spec "$SPEC" \
+    --tasks-dir "$TASKS_DIR" --framework-root "$FRAMEWORK_ROOT" > "$_TMP/fields" || exit 2
 declare -a F=()
 while IFS= read -r -d '' _f; do F+=("$_f"); done < "$_TMP/fields"
 N=$(( ${#F[@]} / 8 ))
