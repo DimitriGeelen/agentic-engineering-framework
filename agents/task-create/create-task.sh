@@ -44,6 +44,9 @@ RECOMMENDATION=""
 RATIONALE=""
 I_AM_HUMAN=false
 ORIGIN=""
+# T-5227: inception lifecycle fields — who holds the next step, and when it comes back.
+WAITING_ON=""
+REVISIT_AT=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -57,6 +60,8 @@ while [[ $# -gt 0 ]]; do
         --start) START_WORK=true; shift ;;
         --recommendation) RECOMMENDATION="$2"; shift 2 ;;
         --rationale) RATIONALE="$2"; shift 2 ;;
+        --waiting-on) WAITING_ON="$2"; shift 2 ;;
+        --revisit-at) REVISIT_AT="$2"; shift 2 ;;
         --i-am-human) I_AM_HUMAN=true; shift ;;
         # T-3897: where this task came from (operator | agent | peer | pickup |
         # proposal)[:source[:ref]] — shown as a badge on the approvals queue.
@@ -82,6 +87,8 @@ while [[ $# -gt 0 ]]; do
             echo "  --start            Set status to started-work instead of captured"
             echo "  --recommendation   EXPLORING|GO|NO-GO|DEFER — inception; agent filings default to EXPLORING (T-5226)"
             echo "  --rationale        Evidence-cited reason — required for inception under \$CLAUDECODE=1"
+            echo "  --waiting-on       agent|peer|operator — inception only; who holds the next step (default agent, T-5227)"
+            echo "  --revisit-at       YYYY-MM-DD — inception only; when it comes back (default filing date + 7)"
             echo "  --i-am-human       Bypass agent gate (scripts/tests/Watchtower) — logged Tier-2"
             echo "  --origin           Where the task came from: operator|agent|peer|pickup|proposal[:source[:ref]]"
             echo "                     (T-3897; e.g. peer:ring20-dashboard:7881482d — shown on /approvals)"
@@ -101,6 +108,16 @@ if [ -n "$RECOMMENDATION" ]; then
             exit 1
             ;;
     esac
+fi
+
+# T-5227: waiting_on / revisit_at belong to inceptions only, and take fixed shapes.
+# One rule, lib/inception_lifecycle.py validate_fields (also the Write/Edit hook's).
+if [ -n "$WAITING_ON" ] || [ -n "$REVISIT_AT" ]; then
+    if ! python3 "$FRAMEWORK_ROOT/lib/inception_lifecycle.py" --validate \
+            "${WORKFLOW_TYPE:--}" "${WAITING_ON:--}" "${REVISIT_AT:--}"; then
+        echo -e "${RED}Refused: --waiting-on/--revisit-at (T-5227, see above)${NC}" >&2
+        exit 1
+    fi
 fi
 
 # T-2543: gate-level enforcement for promote-origin creates (Dimitri sovereignty bar,
@@ -381,7 +398,8 @@ FILEPATH=$(
         --tasks-dir "$TASKS_DIR" --framework-root "$FRAMEWORK_ROOT" \
         --id="$TASK_ID" --name="$NAME" --description="$DESCRIPTION" \
         --type="$WORKFLOW_TYPE" --owner="$OWNER" --horizon="$HORIZON" --status="$STATUS" \
-        --tags="$TAGS" --related="$RELATED" --timestamp="$TIMESTAMP"
+        --tags="$TAGS" --related="$RELATED" --timestamp="$TIMESTAMP" \
+        --waiting-on="$WAITING_ON" --revisit-at="$REVISIT_AT"
 ) || { echo -e "${RED}ERROR: Task file could not be written for $TASK_ID${NC}" >&2; exit 1; }
 # T-4841: id persisted (.id-highwater) and the file written — release now, so
 # nothing after this point (origin, recommendation, --start focus) holds it.

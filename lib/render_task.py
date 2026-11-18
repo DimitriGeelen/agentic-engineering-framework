@@ -42,6 +42,7 @@ Exit: 0 written, 1 a write failed (files before it stay complete), 2 usage / bad
 from __future__ import annotations
 
 import argparse
+import datetime
 import errno
 import json
 import os
@@ -276,7 +277,28 @@ def render(entry, templates, tasks_dir, timestamp):
         text = render_default(default, e) if default is not None else render_fallback(e)
     if e.get('arc_id'):
         text = set_arc_id(text, e['arc_id'])
+    if e['type'] == 'inception':
+        text = set_inception_wait(text, e.get('waiting_on'), e.get('revisit_at'), timestamp)
     return e['filepath'], text
+
+
+def set_inception_wait(text, waiting_on, revisit_at, timestamp):
+    """T-5227: an inception names who holds its next step (waiting_on, default agent) and
+    when it comes back (revisit_at, default filing date + 7). Written after related_tasks:,
+    or before the frontmatter close when the template has none. Values are validated by the
+    caller (create-task.sh, lib/inception_lifecycle.py validate_fields)."""
+    if not revisit_at:
+        try:
+            filed = datetime.datetime.strptime((timestamp or '')[:10], '%Y-%m-%d').date()
+        except ValueError:
+            filed = datetime.datetime.now(datetime.timezone.utc).date()
+        revisit_at = (filed + datetime.timedelta(days=7)).isoformat()
+    lines = 'waiting_on: ' + (waiting_on or 'agent') + '\nrevisit_at: ' + revisit_at
+    text, n = re.subn(r'(?m)^(related_tasks:.*)$', lambda m: m.group(1) + '\n' + lines, text, count=1)
+    if not n:
+        text = re.sub(r'\A(---\n.*?\n)(---\n)', lambda m: m.group(1) + lines + '\n' + m.group(2),
+                      text, count=1, flags=re.S)
+    return text
 
 
 class FrontmatterError(Exception):
@@ -490,7 +512,7 @@ def main(argv=None):
     one = sub.add_parser('write-one')
     for k in ('tasks-dir', 'framework-root', 'id', 'name', 'description', 'type', 'owner', 'horizon', 'status'):
         one.add_argument('--' + k, required=True)
-    for k in ('tags', 'related', 'arc-id', 'timestamp'):
+    for k in ('tags', 'related', 'arc-id', 'timestamp', 'waiting-on', 'revisit-at'):
         one.add_argument('--' + k, default='')
     bat = sub.add_parser('write-batch')
     bat.add_argument('--tasks-dir', required=True)
@@ -541,7 +563,8 @@ def main(argv=None):
         if a.cmd == 'write-one':
             entries = [{'id': a.id, 'name': a.name, 'description': a.description, 'type': a.type,
                         'owner': a.owner, 'horizon': a.horizon, 'status': a.status,
-                        'tags': a.tags, 'related': a.related, 'arc_id': a.arc_id}]
+                        'tags': a.tags, 'related': a.related, 'arc_id': a.arc_id,
+                        'waiting_on': a.waiting_on, 'revisit_at': a.revisit_at}]
         else:
             entries = parse_spec(a.spec)
             ids = [i for i in a.ids.split(',') if i]

@@ -1061,6 +1061,16 @@ if [ -s "$UNDATED_FILE" ]; then
     done < "$UNDATED_FILE"
     echo ""
 fi
+
+# T-5227: the daily inception routing — overdue inceptions whose next step is the
+# agent's (next actions) or a peer's (the agent sends the reminder; no cron does).
+# Operator-owned ones go to fw operator pending and the approvals page instead.
+_il_out=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/inception_lifecycle.py" \
+    --handover 2>/dev/null || true)
+if [ -n "$_il_out" ]; then
+    echo "$_il_out"
+    echo ""
+fi
 )
 ## Work in Progress
 

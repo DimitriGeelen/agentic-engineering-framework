@@ -16,6 +16,8 @@ horizon: now
 tags: [x]
 components: []
 related_tasks: []
+waiting_on: agent
+revisit_at: TS+7
 created: TS
 last_update: TS
 date_finished: null

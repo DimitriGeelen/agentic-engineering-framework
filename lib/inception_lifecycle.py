@@ -383,6 +383,49 @@ def summary(root, today=None):
             "overdue": sum(1 for r in rows if r["overdue"])}
 
 
+# ── fw inception wait: record who holds the next step ──────────────────────────────────
+
+
+def _set_fm_key(fm_text, key, value):
+    line = f"{key}: {value}"
+    new, n = re.subn(rf"(?m)^{re.escape(key)}:.*$", lambda m: line, fm_text, count=1)
+    if n:
+        return new
+    new, n = re.subn(r"(?m)^(related_tasks:.*)$", lambda m: m.group(1) + "\n" + line, fm_text, count=1)
+    return new if n else fm_text.rstrip("\n") + "\n" + line
+
+
+def set_wait(path, on, revisit=None, now=None):
+    """Set waiting_on / revisit_at (default today + 7) / step_entered_at on one inception
+    and record the change under ## Updates. Returns the new revisit date; raises ValueError
+    with the problems when the values or the task do not qualify."""
+    path = Path(path)
+    text = path.read_text()
+    m = re.match(r"^---\n(.*?)\n---", text, re.S)
+    if not m:
+        raise ValueError(f"{path.name}: no frontmatter")
+    fm, _ = _frontmatter(text)
+    now = now or datetime.now(timezone.utc)
+    revisit = revisit or default_revisit(now.date())
+    errs = validate_fields(fm.get("workflow_type"), on, revisit)
+    if errs:
+        raise ValueError("; ".join(errs))
+    before = fm.get("waiting_on") or "agent"
+    stamp = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+    head = m.group(1)
+    for k, v in (("waiting_on", on), ("revisit_at", revisit), ("step_entered_at", f"'{stamp}'"),
+                 ("last_update", stamp)):
+        head = _set_fm_key(head, k, v)
+    text = "---\n" + head + "\n---" + text[m.end():]
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from task_updates import insert_entry  # noqa: PLC0415
+    text = insert_entry(text, f"### {stamp} — inception-wait [inception-lifecycle]\n"
+                              f"- **Change:** waiting_on: {before} → {on}\n"
+                              f"- **Revisit:** {revisit}")
+    path.write_text(text)
+    return revisit
+
+
 # ── CLI ────────────────────────────────────────────────────────────────────────────────
 
 
@@ -414,6 +457,40 @@ def _print_overdue(by, owner=None, limit=0):
             print(f"  ... and {len(rows) - limit} more (fw inception lifecycle --overdue)")
 
 
+HANDOVER_LIMIT = 15
+
+
+def handover_md(root, today=None, limit=HANDOVER_LIMIT):
+    """Markdown for the handover: overdue inceptions the agent owns (next actions) and the
+    peer reminders the agent sends. Empty string when none are overdue."""
+    by = overdue_by_owner(root, today)
+    out = []
+    if by["agent"]:
+        out += ["## Overdue Inceptions — Next Actions for the Agent", "",
+                "Their revisit date has passed and the next step is the agent's "
+                "(T-5227). Move each one on, or record who it now waits for: "
+                "`fw inception wait T-XXX agent|peer|operator [--revisit YYYY-MM-DD]`.", ""]
+        out += [f"- {r['task']}: {r['name']} — {LABELS[r['node']]}, revisit {r['revisit_at']}"
+                for r in by["agent"][:limit]]
+        if len(by["agent"]) > limit:
+            out.append(f"- ... and {len(by['agent']) - limit} more: `fw inception lifecycle --overdue`")
+        out.append("")
+    if by["peer"]:
+        out += ["## Overdue Inceptions — Remind the Peer", "",
+                "These wait on another agent and their revisit date has passed. The agent "
+                "sends the reminder (`fw sidecar send --to <peer> --body \"...\"`, the peer is "
+                "named in the task), then sets a new date with `fw inception wait T-XXX peer "
+                "--revisit YYYY-MM-DD`.", ""]
+        out += [f"- {r['task']}: {r['name']} — revisit {r['revisit_at']}" for r in by["peer"][:limit]]
+        if len(by["peer"]) > limit:
+            out.append(f"- ... and {len(by['peer']) - limit} more: `fw inception lifecycle --overdue --owner peer`")
+        out.append("")
+    if by["operator"]:
+        out += [f"{len(by['operator'])} overdue inception question(s) wait for the operator: "
+                "listed by `fw operator pending` and on the approvals page.", ""]
+    return "\n".join(out).rstrip("\n")
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="fw inception lifecycle", description=(
         "Inception lifecycle: per step the count, the median days in step and the overdue "
@@ -426,7 +503,25 @@ def main(argv=None):
     ap.add_argument("--today", default=None, help=argparse.SUPPRESS)
     ap.add_argument("--validate", nargs=3, metavar=("WORKFLOW_TYPE", "WAITING_ON", "REVISIT_AT"),
                     help="check field values; exit 1 with the problems on stderr")
+    ap.add_argument("--set-wait", nargs=2, metavar=("TASK_FILE", "WAITING_ON"), help=argparse.SUPPRESS)
+    ap.add_argument("--revisit", default=None, help=argparse.SUPPRESS)
+    ap.add_argument("--handover", action="store_true", help=argparse.SUPPRESS)
     a = ap.parse_args(argv)
+    if a.handover:
+        import os
+        md = handover_md(Path(a.root or os.environ.get("PROJECT_ROOT") or "."),
+                         date.fromisoformat(a.today) if a.today else None)
+        if md:
+            print(md)
+        return 0
+    if a.set_wait:
+        try:
+            when = set_wait(a.set_wait[0], a.set_wait[1], a.revisit)
+        except (ValueError, OSError) as e:
+            print(f"Refused: {e}", file=sys.stderr)
+            return 1
+        print(f"waiting_on: {a.set_wait[1]}, revisit_at: {when}")
+        return 0
     if a.validate:
         errs = validate_fields(*(v if v not in ("-", "") else None for v in a.validate))
         for e in errs:

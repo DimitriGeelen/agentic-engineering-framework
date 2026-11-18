@@ -115,6 +115,23 @@ def _recommendation(text: str) -> str:
     return m.group(1) if m else "none written"
 
 
+def _exploring(text: str) -> bool:
+    return bool(re.search(r"^\s*[-*]?\s*\*\*Recommendation:?\*\*:?\s*\**EXPLORING\b", text, re.M))
+
+
+def inception_questions() -> list[dict]:
+    """T-5227: overdue inceptions whose next step is the operator's (waiting_on: operator,
+    revisit date passed). A question, not a decision: no decide link."""
+    try:
+        sys.path.insert(0, str(FW / "lib"))
+        import inception_lifecycle as il  # noqa: PLC0415
+    except Exception:  # noqa: BLE001
+        return []
+    return [{"id": r["task"], "name": r["name"], "revisit_at": r["revisit_at"],
+             "path": f"/tasks/{r['task']}"}
+            for r in il.overdue_by_owner(PROJECT)["operator"]]
+
+
 def _active_tasks() -> list[Path]:
     return sorted((PROJECT / ".tasks" / "active").glob("T-*.md"))
 
@@ -127,6 +144,8 @@ def undecided_inceptions() -> list[dict]:
         if fm.get("workflow_type") != "inception" or fm.get("status") in ("captured",):
             continue
         if inception_decision(p):
+            continue
+        if _exploring(text):  # T-5226: not ready for decision; T-5227 routes it by waiting_on
             continue
         out.append({"id": fm.get("id", p.name[:6]), "name": fm.get("name", ""),
                     "recommendation": _recommendation(text), "path": f"/inception/{fm.get('id')}"})
@@ -222,10 +241,15 @@ def collect() -> dict:
     except Exception:  # a broken ledger must not blank the operator's whole list
         replies = []
     try:
+        questions = inception_questions()
+    except Exception:  # same rule: a broken check must not blank the list
+        questions = []
+    try:
         outside = outside_commit_alarms()
     except Exception:  # same rule: a broken check must not blank the list (audit FAILs it)
         outside = []
-    return {"hub_profiles": profiles, "outside_commits": outside, "issue_replies": replies, "inceptions": undecided_inceptions(), "reviews": ready, "runmes": unrun_runmes(),
+    return {"hub_profiles": profiles, "outside_commits": outside, "issue_replies": replies, "inceptions": undecided_inceptions(),
+            "inception_questions": questions, "reviews": ready, "runmes": unrun_runmes(),
             "paid_proposals": pending_proposals(), "waiting_on_agent": len(waiting)}
 
 
@@ -240,6 +264,12 @@ def render(data: dict) -> str:
             lines.append(f"- {i['id']} — {i['name']} — recommendation: {i['recommendation']} — {link(i['path'])}")
         lines.append("")
         n += len(data["inceptions"])
+    if data.get("inception_questions"):
+        lines.append("## Questions waiting for you (inceptions; answer on the task, no decision yet)")
+        for q in data["inception_questions"]:
+            lines.append(f"- {q['id']} — {q['name']} — revisit date {q['revisit_at']} passed — {link(q['path'])}")
+        lines.append("")
+        n += len(data["inception_questions"])
     if data["reviews"]:
         lines.append("## Human checks (ready)")
         for r in data["reviews"]:

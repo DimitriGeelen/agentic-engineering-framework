@@ -125,6 +125,13 @@ for f in "$TASKS_DIR"/*.md; do
 
     [ -z "$id" ] && continue
 
+    # T-5227: an undecided inception carrying waiting_on is routed by the inception
+    # lifecycle check (fw inception lifecycle --overdue: handover / peer reminder /
+    # operator pending), not here — listing it twice would read as two signals.
+    if grep -qE '^waiting_on:[[:space:]]*[a-z]' "$f" && ! _t2865_records_defer "$f"; then
+        continue
+    fi
+
     if [ -n "$revisit_at" ] && [[ "$revisit_at" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
         # Dated: report only when ripe. Lexicographic compare on ISO dates is correct.
         if [[ "$revisit_at" > "$TODAY" ]]; then
