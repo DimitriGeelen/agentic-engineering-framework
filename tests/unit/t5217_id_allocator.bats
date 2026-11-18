@@ -280,7 +280,11 @@ assert r["missing"]==["T-16..T-23"], r' "$output"
     done
     norm() { sed -E 's/T-00[12]\b/T-ID/g; s/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z/TS/g; s/[0-9]{4}-[0-9]{2}-[0-9]{2}/DATE/g' "$1" | sed "s#$2#ROOT#g"; }
     diff <(norm "$T/a/.tasks/active/T-001-golden-probe.md" "$T/a") <(norm "$T/b/.tasks/active/T-001-golden-probe.md" "$T/b")
-    diff <(norm "$T/a/.tasks/active/T-002-golden-inception.md" "$T/a") <(norm "$T/b/.tasks/active/T-002-golden-inception.md" "$T/b")
+    # T-5227 added waiting_on / revisit_at to every new inception on purpose; the comparison
+    # with the pre-T-5217 writer drops exactly those two lines, and the next line pins them.
+    diff <(norm "$T/a/.tasks/active/T-002-golden-inception.md" "$T/a") \
+         <(norm "$T/b/.tasks/active/T-002-golden-inception.md" "$T/b" | grep -vE '^(waiting_on: agent|revisit_at: DATE)$')
+    [ "$(norm "$T/b/.tasks/active/T-002-golden-inception.md" "$T/b" | grep -cE '^(waiting_on: agent|revisit_at: DATE)$')" -eq 2 ]
     # both paths really produced files (an empty diff of two missing files proves nothing)
     [ "$(wc -l < "$T/b/.tasks/active/T-001-golden-probe.md")" -gt 50 ]
     [ "$(wc -l < "$T/b/.tasks/active/T-002-golden-inception.md")" -gt 50 ]
