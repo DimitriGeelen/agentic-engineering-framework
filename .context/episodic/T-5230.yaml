@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5230: Sidecar backlog triage: review the 59 unhandled inbound messages, answer what is still open, then prepare one operator runme dropping entries older than 7 days that are not live
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-18T14:37:21Z
+# ============================================================================
+
+task_id: T-5230
+task_name: "Sidecar backlog triage: review the 59 unhandled inbound messages, answer what is still open, then prepare one operator runme dropping entries older than 7 days that are not live"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-18T12:21:21Z
+completed: 2026-11-18T14:36:23Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-18T13:22:59+01:00
+last_commit: 2026-11-18T15:36:19+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context, criteria (operator ruling on question 3). still-open backlog items handled — T-5232 (adapter EPERM, 055), T-5233 (stash@{1} decision), T-5234 (T-5016 review suggestions, 1409); ship-notifications owed recorded on T-5102 (010) and T-5103 (1409). backlog triaged — 5 open messages answered or filed, 196 entries dropped by the operator, 31 live remain
+
+# Key outcomes
+outcomes:
+  - 'Every unhandled inbound entry has a one-line summary and a class in .context/scratch/t5230/sidecar-backlog-review.md (gitignored, because it holds peer text)'
+  - 'Every "still open" entry is either answered over the sidecar or filed as a task: 2a579c23 → T-5232 (055 told), d0ef5cd9 → T-5233 (055 told), 4c77be4a → T-5234 (1409 told), f4eb9aa0 → recorded on T-5102 (010 told), b7529aff → recorded on T-5103 (1409 told)'
+  - 'One runme drops the entries older than 7 days that are not live, each with a reason naming T-5230. The operator ran `bash /opt/999-Agentic-Engineering-Framework/.context/runme/t5230-drop-backlog/runme.sh` (192 dropped; 2 failed because nudge copies need their `-nudge-N` suffix), then `bash /opt/999-Agentic-Engineering-Framework/.context/runme/t5230-drop-backlog-b/runme.sh` (4 nudge copies dropped). The waiting list went from 241 to 31 live entries (2026-11-18). The agent ran neither.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5102-accept-a-mailhub-key-in-frameworkyaml-01.md'
+  - '.tasks/active/T-5103-per-session-focus-for-interactive-claude.md'
+  - '.tasks/active/T-5230-sidecar-backlog-triage-review-the-59-unh.md'
+  - '.tasks/active/T-5232-libsidecaradapterpy-pidalive-treats-a-pr.md'
+  - '.tasks/active/T-5233-decide-what-happens-to-stash1-the-operat.md'
+  - '.tasks/active/T-5234-answer-1409s-review-of-the-t-5016-focus-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-18T13:22:59'
+    action: 'T-5230: context, criteria (operator ruling on question 3)'
+  - time: '2026-11-18T13:40:47'
+    action: 'T-5230: still-open backlog items handled — T-5232 (adapter EPERM, 055), T-5233 (stash@{1} decision), T-5234 (T-5016 review suggestions, 1409); ship-notifications owed recorded on T-5102 (010) and T-5103 (1409)'
+  - time: '2026-11-18T15:36:19'
+    action: 'T-5230: backlog triaged — 5 open messages answered or filed, 196 entries dropped by the operator, 31 live remain'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 135 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 135
+  commits: 4
+  files_changed: 9
+  lines_added: 1592
+  lines_removed: 9
+  footprint_refreshed_at: '2026-11-18T14:37:40Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5230-sidecar-backlog-triage-review-the-59-unh.md
+generated_by: context-agent-hybrid
