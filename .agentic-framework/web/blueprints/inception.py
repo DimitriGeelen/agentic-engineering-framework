@@ -285,6 +285,9 @@ def inception_list():
             # Extract recommendation type (GO/NO-GO/DEFER)
             rec_type = ""
             for line in rec_lines[:3]:
+                if re_mod.search(r"\bEXPLORING\b", line):  # T-5226: not ready for decision
+                    rec_type = "EXPLORING"
+                    break
                 if re_mod.search(r"\bGO\b", line) and not re_mod.search(r"\bNO-GO\b", line):
                     rec_type = "GO"
                     break

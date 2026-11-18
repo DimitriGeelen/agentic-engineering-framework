@@ -149,6 +149,29 @@ _inception_handoff_readiness() {
             # sibling above which needs the `|| true`.
             _blockers=$(inception_handoff_blockers "$task_file")
         fi
+        # T-5226: an EXPLORING recommendation is "not ready for decision". No
+        # handoff link, and no bypass: the remedy is the agent writing GO,
+        # NO-GO or DEFER once the questions are disposed.
+        local _exploring
+        _exploring=$(printf '%s\n' "$_blockers" | awk -F'\t' '$1 == "exploring" || $1 == "ready-for-recommendation"' | head -1)
+        if [ -n "$_exploring" ]; then
+            local _ex_kind _ex_detail _ex_fix
+            IFS=$'\t' read -r _ex_kind _ex_detail _ex_fix <<< "$_exploring"
+            echo "" >&2
+            if [ "$_ex_kind" = "exploring" ]; then
+                echo "NOT READY: $task_id is EXPLORING, not ready for decision." >&2
+            else
+                echo "READY FOR A RECOMMENDATION: $task_id is still EXPLORING." >&2
+            fi
+            echo "  $_ex_detail" >&2
+            echo "  Next: $_ex_fix" >&2
+            echo "" >&2
+            echo "  No handoff link has been emitted. The operator only sees an inception" >&2
+            echo "  once its recommendation is GO, NO-GO or DEFER (T-5226)." >&2
+            echo "" >&2
+            _FW_HANDOFF_UNDERDISPOSED="${_underdisposed:-}"
+            return 1
+        fi
         # T-4949 (L-399 parity): FW_ALLOW_EMPTY_RECOMMENDATION=1 is the documented bypass
         # for an empty Recommendation (T-2206). Leave that one finding to the T-2206 gate
         # below, which honours and logs it; every other finding still needs

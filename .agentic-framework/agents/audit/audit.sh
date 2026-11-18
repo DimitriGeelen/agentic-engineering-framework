@@ -6900,7 +6900,7 @@ while IFS= read -r task_id; do
     [ -z "$task_id" ] && continue
     warn "C-006: Inception $task_id has template-only Recommendation block" \
          "T-679 rule decay (T-1715 family); agent filed without recommendation" \
-         "Retrofit: fill in **Recommendation:** GO|NO-GO|DEFER + rationale + evidence; OR re-file via 'fw inception start --recommendation X --rationale ...' (T-1716 gate)"
+         "Retrofit: write **Recommendation:** EXPLORING (still exploring, T-5226) or GO|NO-GO|DEFER + rationale + evidence; OR re-file via 'fw inception start --rationale ...' (T-1716 gate)"
     c006_missing=$((c006_missing + 1))
 done < <(find_inceptions_without_recommendation "$PROJECT_ROOT/.tasks/active" 2>/dev/null)
 
@@ -6911,6 +6911,33 @@ if [ "$c006_missing" -eq 0 ]; then
          "" "No active task declares workflow_type: inception — the Recommendation rail covered nothing this run"
     unset _c006_pop
 fi
+
+# C-006b (T-5226): an inception still at EXPLORING after every IW question is
+# disposed is ready for a recommendation — the agent owes GO, NO-GO or DEFER.
+# Same predicate as the review handoff and decide (inception_handoff_blockers).
+source "$FRAMEWORK_ROOT/lib/inception-readiness.sh" 2>/dev/null || true
+c006b_ready=0
+c006b_exploring=0
+if command -v inception_handoff_blockers >/dev/null 2>&1; then
+    while IFS= read -r _c6b_f; do
+        [ -n "$_c6b_f" ] || continue
+        _c6b_kind=$(inception_handoff_blockers "$_c6b_f" | awk -F'\t' '$1 == "exploring" || $1 == "ready-for-recommendation" {print $1; exit}')
+        _c6b_id=$(basename "$_c6b_f" | grep -oE '^T-[0-9]+')
+        if [ "$_c6b_kind" = "ready-for-recommendation" ]; then
+            warn "C-006b: Inception $_c6b_id is ready for a recommendation" \
+                 "Every IW question is disposed but ## Recommendation still reads EXPLORING (T-5226)" \
+                 "Replace EXPLORING with GO, NO-GO or DEFER plus a rationale in $_c6b_f"
+            c006b_ready=$((c006b_ready + 1))
+        elif [ "$_c6b_kind" = "exploring" ]; then
+            c006b_exploring=$((c006b_exploring + 1))
+        fi
+    done < <(grep -lE '^workflow_type:[[:space:]]*inception' "$PROJECT_ROOT/.tasks/active"/T-*.md 2>/dev/null \
+             | xargs -r grep -lE '\*\*Recommendation:\*\*[[:space:]]*\**EXPLORING' 2>/dev/null)
+    if [ "$c006b_ready" -eq 0 ]; then
+        pass "C-006b: No EXPLORING inception is waiting on a recommendation ($c006b_exploring still exploring)"
+    fi
+fi
+unset _c6b_f _c6b_kind _c6b_id
 
 echo ""
 fi # end oe-research

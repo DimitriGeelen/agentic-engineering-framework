@@ -80,7 +80,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --related          Comma-separated related task IDs (e.g. \"T-084,T-085\")"
             echo "  --horizon          Priority horizon: now (default), next, later"
             echo "  --start            Set status to started-work instead of captured"
-            echo "  --recommendation   GO|NO-GO|DEFER — required for inception under \$CLAUDECODE=1 (T-1716, T-2207)"
+            echo "  --recommendation   EXPLORING|GO|NO-GO|DEFER — inception; agent filings default to EXPLORING (T-5226)"
             echo "  --rationale        Evidence-cited reason — required for inception under \$CLAUDECODE=1"
             echo "  --i-am-human       Bypass agent gate (scripts/tests/Watchtower) — logged Tier-2"
             echo "  --origin           Where the task came from: operator|agent|peer|pickup|proposal[:source[:ref]]"
@@ -95,9 +95,9 @@ done
 # T-2207: validate --recommendation value if provided (parity with do_inception_start)
 if [ -n "$RECOMMENDATION" ]; then
     case "$RECOMMENDATION" in
-        GO|NO-GO|DEFER) ;;
+        EXPLORING|GO|NO-GO|DEFER) ;;
         *)
-            echo -e "${RED}Invalid --recommendation: '$RECOMMENDATION' (must be GO, NO-GO, or DEFER)${NC}" >&2
+            echo -e "${RED}Invalid --recommendation: '$RECOMMENDATION' (must be EXPLORING, GO, NO-GO, or DEFER)${NC}" >&2
             exit 1
             ;;
     esac
@@ -288,6 +288,11 @@ if [ "$WORKFLOW_TYPE" = "inception" ] \
    && [ "${CLAUDECODE:-}" = "1" ] \
    && [ "$I_AM_HUMAN" != "true" ] \
    && [ "${FW_INCEPTION_PRE_GATED:-}" != "1" ]; then
+    # T-5226: the recommendation defaults to EXPLORING (not ready for decision);
+    # the rationale is still required.
+    if [ -z "$RECOMMENDATION" ] && [ -n "$RATIONALE" ]; then
+        RECOMMENDATION="EXPLORING"
+    fi
     if [ -z "$RECOMMENDATION" ] || [ -z "$RATIONALE" ]; then
         if [ "${FW_ALLOW_EMPTY_RECOMMENDATION:-}" = "1" ]; then
             _log_recommendation_bypass "FW_ALLOW_EMPTY_RECOMMENDATION" \
@@ -300,7 +305,7 @@ if [ "$WORKFLOW_TYPE" = "inception" ] \
             echo "" >&2
             echo -e "  ${RED}══════════════════════════════════════════${NC}" >&2
             echo -e "  ${RED}BLOCKED: filing inception under \$CLAUDECODE=1 requires${NC}" >&2
-            echo -e "  ${RED}         --recommendation GO|NO-GO|DEFER + --rationale${NC}" >&2
+            echo -e "  ${RED}         --rationale (recommendation defaults to EXPLORING)${NC}" >&2
             echo -e "  ${RED}══════════════════════════════════════════${NC}" >&2
             echo "" >&2
             echo -e "  Origin: T-679 (governance rule — agent advisory at filing time)," >&2
@@ -311,9 +316,10 @@ if [ "$WORKFLOW_TYPE" = "inception" ] \
             echo "" >&2
             echo -e "    1. Refile with the recommendation flags:" >&2
             echo -e "         fw task create --type inception --name '$NAME' \\" >&2
-            echo -e "           --recommendation GO|NO-GO|DEFER \\" >&2
             echo -e "           --rationale '<one-paragraph reason citing evidence>'" >&2
-            echo -e "       (or use the canonical: fw inception start '$NAME' --recommendation ... --rationale ...)" >&2
+            echo -e "       (or use the canonical: fw inception start '$NAME' --rationale ...)" >&2
+            echo -e "       The recommendation starts as EXPLORING (not ready for decision);" >&2
+            echo -e "       write GO, NO-GO or DEFER once every IW question is disposed (T-5226)." >&2
             echo "" >&2
             echo -e "    2. Override for scripts/tests/Watchtower:" >&2
             echo -e "         --i-am-human   (logged Tier 2)" >&2

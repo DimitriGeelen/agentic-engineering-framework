@@ -28,7 +28,7 @@ Behavior:
        apply substitution to existing file content).
     2. Parse YAML frontmatter; if workflow_type != 'inception', pass through.
     3. Inspect the `## Recommendation` body. If it contains a non-template
-       `**Recommendation:** GO|NO-GO|DEFER` line, pass through.
+       `**Recommendation:** EXPLORING|GO|NO-GO|DEFER` line, pass through.
     4. If under agent control ($CLAUDECODE=1 or $AI_AGENT non-empty) AND
        block is template-only:
          - If FW_ALLOW_EMPTY_RECOMMENDATION=1: log Tier-2 bypass + pass.
@@ -72,7 +72,7 @@ _REC_HEADING_RE = re.compile(
 # `Recommendation:`, and `**Recommendation**:` all parse identically
 # (T-1580 extractor parity).
 _REC_VERDICT_RE = re.compile(
-    r"^\s*Recommendation:\s*(GO|NO[- ]?GO|DEFER)\b",
+    r"^\s*Recommendation:\s*(EXPLORING|GO|NO[- ]?GO|DEFER)\b",
     re.MULTILINE | re.IGNORECASE,
 )
 
@@ -97,7 +97,8 @@ def has_populated_recommendation(text: str) -> bool:
     """True iff `## Recommendation` body contains a real verdict line.
 
     Template-only blocks (HTML comment, empty body) return False.
-    A `**Recommendation:** GO|NO-GO|DEFER` line returns True.
+    A `**Recommendation:** EXPLORING|GO|NO-GO|DEFER` line returns True
+    (T-5226: EXPLORING = not ready for decision, the default at filing).
     """
     if not text:
         return False
@@ -244,7 +245,7 @@ def main() -> int:
     sys.stderr.write(f"  Task:    {task_id}\n")
     sys.stderr.write(f"  File:    {file_path}\n")
     sys.stderr.write("  Status:  workflow_type: inception, ## Recommendation block\n")
-    sys.stderr.write("           is empty or template-only (no GO|NO-GO|DEFER verdict).\n")
+    sys.stderr.write("           is empty or template-only (no EXPLORING|GO|NO-GO|DEFER line).\n")
     sys.stderr.write("\n")
     sys.stderr.write("  The framework's §'Presenting Work for Human Review' (T-679)\n")
     sys.stderr.write("  rule: the agent always writes the advisory before the human\n")
@@ -255,15 +256,16 @@ def main() -> int:
     sys.stderr.write("\n")
     sys.stderr.write("    1. Canonical filing path — re-file via:\n")
     sys.stderr.write("         bin/fw inception start \"<name>\" \\\n")
-    sys.stderr.write("             --recommendation GO|NO-GO|DEFER \\\n")
     sys.stderr.write("             --rationale '<reason>'\n")
     sys.stderr.write("       (the inception body is generated with Recommendation populated)\n")
     sys.stderr.write("\n")
     sys.stderr.write("    2. Add the Recommendation block to this file as part of\n")
     sys.stderr.write("       your current edit. Required shape:\n")
     sys.stderr.write("         ## Recommendation\n")
-    sys.stderr.write("         **Recommendation:** GO | NO-GO | DEFER\n")
-    sys.stderr.write("         **Rationale:** <evidence-cited reasoning>\n")
+    sys.stderr.write("         **Recommendation:** EXPLORING\n")
+    sys.stderr.write("         **Rationale:** <why this is worth exploring>\n")
+    sys.stderr.write("       EXPLORING means not ready for decision. Replace it with\n")
+    sys.stderr.write("       GO, NO-GO or DEFER once every IW question is disposed (T-5226).\n")
     sys.stderr.write("\n")
     sys.stderr.write("    3. Override (logged Tier 2):\n")
     sys.stderr.write("         FW_ALLOW_EMPTY_RECOMMENDATION=1 <command>\n")

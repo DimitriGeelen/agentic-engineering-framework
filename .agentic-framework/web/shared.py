@@ -1343,7 +1343,7 @@ def _classify_rec_marker(label: str) -> str:
 # label ("Recommendation:") and leaves any inline emphasis on the value itself
 # in the body span.
 _REC_VERDICT_RE = re_mod.compile(
-    r"\s*\*{0,2}(KEEP-OPEN|NO[-_]GO|CLOSE|GO|DEFER)\b\*{0,2}",
+    r"\s*\*{0,2}(KEEP-OPEN|NO[-_]GO|CLOSE|GO|DEFER|EXPLORING)\b\*{0,2}",
     re_mod.IGNORECASE,
 )
 
@@ -1603,6 +1603,11 @@ _HB_RATIONALE_RE = re_mod.compile(r"rationale:" + _SP + r"*.+")
 _HB_REC_HEAD_RE = re_mod.compile(r"^## Recommendation" + _SP + r"*$")
 _HB_REC_LINE_RE = re_mod.compile(
     r"^" + _SP + r"*[-*]?" + _SP + r"*\*\*Recommendation:\*\*" + _SP + r"*\*{0,2}[A-Za-z]")
+# T-5226: the verdict word after the bold label (awk sub() + match()).
+_HB_REC_PREFIX_RE = re_mod.compile(
+    r"^" + _SP + r"*[-*]?" + _SP + r"*\*\*Recommendation:\*\*")
+_HB_REC_STRIP_RE = re_mod.compile(
+    r"^" + _SP + r"*[-*]?" + _SP + r"*\*\*Recommendation:\*\*" + _SP + r"*\**")
 _HB_UNDISPOSED_FIX = ("Give it `disposition: answered|deferred|dissolved` plus a one-line "
                       "rationale. `deferred` is ALWAYS available.")
 _HB_EMPTY_REC = {
@@ -1693,6 +1698,52 @@ def _handoff_blockers_from_text(text: str) -> list[dict]:
             in_c = False
     if not substantive:
         out.append(dict(_HB_EMPTY_REC))
+
+    # T-5226: the EXPLORING leg — first verdict word of the first non-comment
+    # **Recommendation:** line in the section (the shell's awk).
+    verdict, in_c = "", False
+    for ln in section:
+        if "<!--" in ln:
+            in_c = True
+        if not in_c and _HB_REC_PREFIX_RE.search(ln):
+            rest = _HB_REC_STRIP_RE.sub("", ln, count=1)
+            m = re_mod.match(r"[A-Za-z-]+", rest)
+            verdict = m.group(0).upper() if m else ""
+            break
+        if "-->" in ln:
+            in_c = False
+    if verdict == "EXPLORING":
+        open_n = sum(1 for b in out if b["kind"] == "undisposed-question")
+        if any(ln.startswith("## Open Questions") for ln in lines):
+            oq_all, flag = [], False
+            for ln in lines:
+                if ln.startswith("## Open Questions"):
+                    flag = True
+                    continue
+                if ln.startswith("## "):
+                    flag = False
+                if flag:
+                    oq_all.append(ln)
+            total = sum(1 for ln in oq_all if _HB_Q_MARKER_RE.search(ln))
+            if open_n > 0:
+                out.append({"kind": "exploring",
+                            "detail": ("Recommendation is EXPLORING: not ready for decision, "
+                                       f"{open_n} question(s) open"),
+                            "fix": ("Dispose every IW question, then write GO, NO-GO or DEFER "
+                                    "with a rationale.")})
+                return out
+            if total == 0:
+                out.append({"kind": "exploring",
+                            "detail": ("Recommendation is EXPLORING: not ready for decision, "
+                                       "no Open Questions filed yet"),
+                            "fix": ("File the IW questions, dispose them, then write GO, NO-GO "
+                                    "or DEFER with a rationale.")})
+                return out
+        out.append({"kind": "ready-for-recommendation",
+                    "detail": ("Recommendation is EXPLORING and every question is disposed: "
+                               "ready for a recommendation"),
+                    "fix": ("The agent replaces EXPLORING with GO, NO-GO or DEFER and a "
+                            "rationale.")})
     return out
 
 
@@ -1707,7 +1758,7 @@ _HB_SHELL_FUNCTIONS = (
     ("lib/inception-readiness.sh", "inception_handoff_blockers"),
     ("lib/task-audit.sh", "audit_inception_recommendation"),
 )
-_HB_TRANSCRIBED_DIGEST = "bb1901d8e7ec9062c65153de0beb75d612addbb93ad4bada33e9c959404abf7d"
+_HB_TRANSCRIBED_DIGEST = "5f9827f4bb8313b11b47b0e4a381425eeefb668349463f30ad8b3fcfb0bb0747"
 _HB_RULE_STATE: dict = {}  # (root, stats) -> True (transcription current) | False
 
 

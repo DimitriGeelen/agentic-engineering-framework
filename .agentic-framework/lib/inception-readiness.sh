@@ -155,6 +155,39 @@ inception_handoff_blockers() {
         fi
     fi
 
+    # T-5226: EXPLORING means "not ready for decision". It stays a blocker until
+    # the agent replaces it with GO, NO-GO or DEFER. Once every question is
+    # disposed it is reported as ready for a recommendation instead.
+    local _verdict
+    _verdict=$(awk '
+        /^## Recommendation[[:space:]]*$/ { in_rec=1; next }
+        in_rec && /^#{2,} / { exit }
+        in_rec && /<!--/ { in_c=1 }
+        in_rec && !in_c && /^[[:space:]]*[-*]?[[:space:]]*\*\*Recommendation:\*\*/ {
+            sub(/^[[:space:]]*[-*]?[[:space:]]*\*\*Recommendation:\*\*[[:space:]]*\**/, "")
+            match($0, /^[A-Za-z-]+/)
+            print toupper(substr($0, RSTART, RLENGTH)); exit
+        }
+        in_rec && /-->/ { in_c=0 }
+    ' "$task_file" 2>/dev/null)
+    if [ "$_verdict" = "EXPLORING" ]; then
+        local _open=0 _total=0
+        [ -n "$_ud" ] && _open=$(printf '%s\n' "$_ud" | grep -c .)
+        if grep -qE '^## Open Questions' "$task_file"; then
+            _total=$(awk '/^## Open Questions/{flag=1;next} /^## /{flag=0} flag' "$task_file" \
+                | grep -cE '(^[[:space:]]*-[[:space:]]*\*?\*?IW-[0-9]+|^###[[:space:]]+IW-[0-9]+|^[[:space:]]*-[[:space:]]*Q-?[0-9]+)' || true)
+            if [ "$_open" -gt 0 ]; then
+                printf 'exploring\tRecommendation is EXPLORING: not ready for decision, %s question(s) open\tDispose every IW question, then write GO, NO-GO or DEFER with a rationale.\n' "$_open"
+                return 0
+            fi
+            if [ "$_total" -eq 0 ]; then
+                printf 'exploring\tRecommendation is EXPLORING: not ready for decision, no Open Questions filed yet\tFile the IW questions, dispose them, then write GO, NO-GO or DEFER with a rationale.\n'
+                return 0
+            fi
+        fi
+        printf 'ready-for-recommendation\tRecommendation is EXPLORING and every question is disposed: ready for a recommendation\tThe agent replaces EXPLORING with GO, NO-GO or DEFER and a rationale.\n'
+    fi
+
     return 0
 }
 
