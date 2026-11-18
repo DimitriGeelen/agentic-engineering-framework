@@ -1,8 +1,16 @@
 ---
 id: T-5241
-name: "inception readiness predicate counts the template's commented-out IW-1 example as a filed question, so inceptions with no real questions read 'ready for a recommendation' (24 found by T-5228)"
+name: "inception readiness predicate counts the template's commented-out IW-1 example
+  as a filed question, so inceptions with no real questions read 'ready for a recommendation'
+  (24 found by T-5228)"
 description: >
-  Found by the T-5228 triage 2026-11-18: inception_handoff_blockers / inception_underdisposed_questions treat the inception template's commented example '- **IW-1: <question text>**' inside the HTML comment as a real Open Question. 24 inceptions with no real questions land on il_ready, and 29 of the 31 'ready' among the 43 were ready only because no real question was filed. One predicate in shell (lib/task-audit.sh / lib/inception-readiness.sh) and its Python copy (web/shared.py) must both skip HTML comments; parity tests (T-5198, T-3279) must cover it.
+  Found by the T-5228 triage 2026-11-18: inception_handoff_blockers / inception_underdisposed_questions
+  treat the inception template's commented example '- **IW-1: <question text>**' inside
+  the HTML comment as a real Open Question. 24 inceptions with no real questions land
+  on il_ready, and 29 of the 31 'ready' among the 43 were ready only because no real
+  question was filed. One predicate in shell (lib/task-audit.sh / lib/inception-readiness.sh)
+  and its Python copy (web/shared.py) must both skip HTML comments; parity tests (T-5198,
+  T-3279) must cover it.
 
 status: captured
 workflow_type: build
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-18T22:28:53Z
-last_update: 2026-11-18T22:28:53Z
-date_finished: null
+last_update: '2026-11-18T22:45:29Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-18T22:45:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5241: inception readiness predicate counts the template's commented-out IW-1 example as a filed question, so inceptions with no real questions read 'ready for a recommendation' (24 found by T-5228)
