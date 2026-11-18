@@ -122,12 +122,12 @@ Slice 1 (T-5226) shipped the EXPLORING state. The task lifecycle already has thi
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The map `aef-inception-lifecycle` exists under .context/designer/projects/, validates with the corpus validator, and its node set matches the Goal
-- [ ] `waiting_on` / `revisit_at` are accepted on inceptions (filing paths default revisit_at to +7 days; invalid values refused) and rejected on non-inceptions (tests)
-- [ ] `/api/instances?template=aef-inception-lifecycle` places fixture inceptions in each node, gives NO-POSITION for an unplaceable one, and conforms to runtime-projection v2 (tests reuse the T-5185/T-5193 schema checks)
-- [ ] The daily check lists overdue inceptions by owner: agent → handover; peer → reminder item for the agent; operator → `fw operator pending` and the approvals page, with no decide link (tests)
-- [ ] `fw inception lifecycle --json` gives per-node counts, the median days in step and overdue counts (test with fixtures)
-- [ ] 050-Inceptions.md is updated. Existing designer, instances, runtime-projection, inception and approvals suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5227`. Watchtower is restarted and `bin/fw watchtower current` passes.
+- [x] The map `aef-inception-lifecycle` exists under .context/designer/projects/, validates with the corpus validator, and its node set matches the Goal
+- [x] `waiting_on` / `revisit_at` are accepted on inceptions (filing paths default revisit_at to +7 days; invalid values refused) and rejected on non-inceptions (tests)
+- [x] `/api/instances?template=aef-inception-lifecycle` places fixture inceptions in each node, gives NO-POSITION for an unplaceable one, and conforms to runtime-projection v2 (tests reuse the T-5185/T-5193 schema checks)
+- [x] The daily check lists overdue inceptions by owner: agent → handover; peer → reminder item for the agent; operator → `fw operator pending` and the approvals page, with no decide link (tests)
+- [x] `fw inception lifecycle --json` gives per-node counts, the median days in step and overdue counts (test with fixtures)
+- [x] 050-Inceptions.md is updated. Existing designer, instances, runtime-projection, inception and approvals suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5227`. Watchtower is restarted and `bin/fw watchtower current` passes.
 
 ### Human
 - [ ] [REVIEW] The inception map in the designer shows inceptions on their steps clearly
@@ -320,6 +320,27 @@ Slice 1 (T-5226) shipped the EXPLORING state. The task lifecycle already has thi
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5227_inception_lifecycle.py -q > /tmp/.t5227.out 2>&1 && grep -q passed /tmp/.t5227.out
+python3 -m pytest tests/unit/test_t5193_runtime_projection_v2.py tests/unit/test_t5185_runtime_projection.py tests/unit/test_corpus_overlay.py tests/unit/t4095_operator_pending_test.py -q > /tmp/.t5227b.out 2>&1 && grep -q passed /tmp/.t5227b.out
+bin/fw corpus validate aef-inception-lifecycle
+timeout 600 bats tests/unit/t5221_create_batch.bats > /tmp/.t5227c.out 2>&1 && ! grep -q "^not ok" /tmp/.t5227c.out
+test "$(grep -c '# skip' /tmp/.t5227c.out)" -eq 0
+bin/fw inception lifecycle --json > /tmp/.t5227d.out 2>&1 && grep -q '"median_days_in_step"' /tmp/.t5227d.out
+bin/fw vendor self --check --task T-5227
+bin/fw watchtower current
+
+## Visual Verification
+
+Shots: `fw ux shots T-5227 inception-map=http://192.168.10.107:3000/designer/overlay?id=aef-inception-lifecycle`
+(`.context/visual/T-5227/inception-map@{1024,1440,1920}.png`), plus the instance picker with one
+inception chosen (`.context/visual/T-5227/instance-picked.png`, Playwright `selectOption`, which
+`fw ux shots` steps cannot do).
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| inception-map | map steps and lanes (agent / peer / operator) | ok | ok | ok | the three waiting steps sit in three lanes |
+| inception-map | instance picker (`instances:` dropdown) | ok | ok | ok | lists 129 inceptions as "T-XXXX · node · status"; one is placed at a time |
+| inception-map | per-step count badges / overdue alert | hidden | hidden | hidden | the overlay payload is served (GET /api/overlay, overdue = alert) but the pinned 832 bundle does not emit aef:ready yet, so badges do not render (832 T-258) |
 
 ## RCA
 
@@ -390,7 +411,27 @@ Slice 1 (T-5226) shipped the EXPLORING state. The task lifecycle already has thi
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** Every Agent criterion is met and tested. The map, the instances, the routing and the measurement work on fixtures and on the live corpus. The one gap is in the designer, and it is 832's: the pinned bundle lists inceptions one at a time in its instance picker, but it does not yet render the per-step count badges (`aef:ready`, 832 T-258). So the operator cannot yet see counts or an overdue marker on the steps themselves. The badges are already served (`GET /api/overlay?id=aef-inception-lifecycle`, overdue = alert) and will appear when the bundle is re-pinned.
+
+**Evidence:**
+- tests/unit/test_t5227_inception_lifecycle.py: 36 passed
+- 1,358 Python tests on the touched surfaces pass. The one failure was the corpus census pin (48 → 49 versions); the pin was moved and the new map lints clean.
+- 37 bats suites pass, including upgrade_fresh_machine_simulation (19/19). fw_inception.bats fails only under CLAUDECODE=1, because it files without `--rationale`; it passes 5/5 outside an agent and was already like that before this task.
+- `bin/fw test invariants` passes. `bin/fw vendor self --check --task T-5227` passes. `bin/fw watchtower current` passes after a restart.
+- Screenshots: .context/visual/T-5227/
+
 ## Decisions
+
+### 2026-11-18 — where entered_at and revisit_at are served
+- **Chose:** `/api/instances` keeps the v2 instance shape. Only the `lifecycle_node` enum gains the seven inception uids. The dates come from `fw inception lifecycle --json` and the overlay tooltip.
+- **Why:** The brief says no new fields in the projection shared with 832. The instance object is `additionalProperties: false`, so adding the dates would have been a contract change.
+- **Rejected:** Adding x-internal `entered_at` / `revisit_at` instance fields. The schema allows x-internal changes without a version bump, but that is still a new field.
+
+### 2026-11-18 — inceptions with no waiting_on
+- **Chose:** No `waiting_on` means agent, and no `revisit_at` means created + 7. The ~71 existing inceptions are therefore placed now and are not NO-POSITION. T-5228 still writes the values into the files.
+- **Rejected:** NO-POSITION until T-5228 runs. That would leave the map empty of exploring inceptions.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
