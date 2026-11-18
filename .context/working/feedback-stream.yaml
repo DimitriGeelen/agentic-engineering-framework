@@ -56681,3 +56681,21 @@ scan_id: R-74964b19
 task_id: T-5142
 payload:
   task_file: .tasks/active/T-5142-fw-sidecar-send-prints-hubaccepted-and-h.md
+---
+kind: scan_emitted
+timestamp: '2026-11-18T02:01:23Z'
+scan_id: R-badd3daa
+task_id: T-5218
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-18T02:01:23Z'
+scan_id: R-badd3daa
+task_id: T-5218
+payload:
+  task_file: .tasks/active/T-5218-libidallocsh-crashes-under-set--u-when-c.md
