@@ -1,0 +1,143 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5227: Inception lifecycle map (slice 2): an aef-inception-lifecycle designer map; each inception an instance with current step and entered_at; waiting steps (agent / peer / operator) carry revisit dates that drive a daily routing (handover, peer reminder, fw operator pending + Watchtower approvals); time-in-step measured
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-18T22:14:08Z
+# ============================================================================
+
+task_id: T-5227
+task_name: "Inception lifecycle map (slice 2): an aef-inception-lifecycle designer map; each inception an instance with current step and entered_at; waiting steps (agent / peer / operator) carry revisit dates that drive a daily routing (handover, peer reminder, fw operator pending + Watchtower approvals); time-in-step measured"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-18T12:14:14Z
+completed: 2026-11-18T22:10:21Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-18T21:50:56+01:00
+last_commit: 2026-11-18T23:10:12+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context, criteria (inception lifecycle map with instances; operator rulings on question 2). aef-inception-lifecycle map; lib/inception_lifecycle.py (one state->node table, entered_at, revisit, overdue); /api/instances serves the inception template; overlay badges (overdue = alert); schema node enum gains the inception uids (no new fields). waiting_on/revisit_at on inception filing (defaults agent, +7d; refused on non-inceptions and bad values: create-task, inception start, Write/Edit schema hook); fw inception lifecycle / wait; daily routing (audit C-006c, handover, operator pending + approvals 'questions waiting for you', no decide link); tests. 050-Inceptions.md — the inception lifecycle map, the waiting_on/revisit_at fields and the daily routing. vendor self — sync the inception lifecycle changes. corpus census pin 48 -> 49 versions (aef-inception-lifecycle@v1 lints clean; flagged set held at 14). t5217 golden comparison excludes the two new inception lines, and pins them. criteria ticked, verification, visual verification, recommendation, decisions. visual check moved to T-5240 (operator choice A1: designer counts wait on 832 T-1438; the approvals section has no real overdue items until T-5228's dates come due)
+
+# Key outcomes
+outcomes:
+  - 'The map `aef-inception-lifecycle` exists under .context/designer/projects/, validates with the corpus validator, and its node set matches the Goal'
+  - '`waiting_on` / `revisit_at` are accepted on inceptions (filing paths default revisit_at to +7 days; invalid values refused) and rejected on non-inceptions (tests)'
+  - '`/api/instances?template=aef-inception-lifecycle` places fixture inceptions in each node, gives NO-POSITION for an unplaceable one, and conforms to runtime-projection v2 (tests reuse the T-5185/T-5193 schema checks)'
+  - 'The daily check lists overdue inceptions by owner: agent → handover; peer → reminder item for the agent; operator → `fw operator pending` and the approvals page, with no decide link (tests)'
+  - '`fw inception lifecycle --json` gives per-node counts, the median days in step and overdue counts (test with fixtures)'
+  - '050-Inceptions.md is updated. Existing designer, instances, runtime-projection, inception and approvals suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5227`. Watchtower is restarted and `bin/fw watchtower current` passes.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-18 — the visual check moves to T-5240 (operator choice A1)'
+    chose: 'Close T-5227 with the agent criteria met, and move its [REVIEW] criterion to T-5240.'
+    rationale: 'The designer''s per-step counts and overdue markers need 832''s overlay rendering (832 T-1438). The approvals section "Questions waiting for you" lists only operator-owned EXPLORING inceptions whose revisit date has passed, and none exists until T-5228''s dates come due. Neither surface can be judged on real data today. The operator chose this route (A1) over keeping T-5227 open (A2).'
+    alternatives_rejected: ['A demo inception seeded only for screenshots. It would judge a page state the operator never sees.']
+  - decision: '2026-11-18 — where entered_at and revisit_at are served'
+    chose: '`/api/instances` keeps the v2 instance shape. Only the `lifecycle_node` enum gains the seven inception uids. The dates come from `fw inception lifecycle --json` and the overlay tooltip.'
+    rationale: 'The brief says no new fields in the projection shared with 832. The instance object is `additionalProperties: false`, so adding the dates would have been a contract change.'
+    alternatives_rejected: ['Adding x-internal `entered_at` / `revisit_at` instance fields. The schema allows x-internal changes without a version bump, but that is still a new field.']
+  - decision: '2026-11-18 — inceptions with no waiting_on'
+    chose: 'No `waiting_on` means agent, and no `revisit_at` means created + 7. The ~71 existing inceptions are therefore placed now and are not NO-POSITION. T-5228 still writes the values into the files.'
+    alternatives_rejected: ['NO-POSITION until T-5228 runs. That would leave the map empty of exploring inceptions.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/context/check-inception-schema.py'
+  - '.agentic-framework/agents/context/revisit-due-scan.sh'
+  - '.agentic-framework/agents/handover/handover.sh'
+  - '.agentic-framework/agents/task-create/create-task.sh'
+  - '.agentic-framework/lib/inception.sh'
+  - '.agentic-framework/lib/inception_lifecycle.py'
+  - '.agentic-framework/lib/operator_pending.py'
+  - '.agentic-framework/lib/render_task.py'
+  - '.agentic-framework/tools/corpus_overlay.py'
+  - '.agentic-framework/web/blueprints/approvals.py'
+  - '.agentic-framework/web/blueprints/designer_api.py'
+  - '.agentic-framework/web/templates/_approvals_content.html'
+  - '.context/designer/projects/aef-inception-lifecycle/meta.json'
+  - '.context/designer/projects/aef-inception-lifecycle/v1.bpmn'
+  - '.tasks/active/T-5227-inception-lifecycle-map-slice-2-an-aef-i.md'
+  - '.tasks/active/T-5240-inception-map-visual-check-approvals-que.md'
+  - '050-Inceptions.md'
+  - 'agents/audit/audit.sh'
+  - 'agents/context/check-inception-schema.py'
+  - 'agents/context/revisit-due-scan.sh'
+  - 'agents/handover/handover.sh'
+  - 'agents/task-create/create-task.sh'
+  - 'docs/research/executable-workflow/contracts/v2/runtime-projection/runtime-projection-v2.schema.json'
+  - 'lib/inception.sh'
+  - 'lib/inception_lifecycle.py'
+  - 'lib/operator_pending.py'
+  - 'lib/render_task.py'
+  - 'tests/fixtures/t5221/golden/inception.md'
+  - 'tests/fixtures/t5221/norm.py'
+  - 'tests/unit/t5217_id_allocator.bats'
+  - 'tests/unit/test_corpus_lint.py'
+  - 'tests/unit/test_t5227_inception_lifecycle.py'
+  - 'tools/corpus_overlay.py'
+  - 'web/blueprints/approvals.py'
+  - 'web/blueprints/designer_api.py'
+  - 'web/templates/_approvals_content.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-18T21:50:56'
+    action: 'T-5227: context, criteria (inception lifecycle map with instances; operator rulings on question 2)'
+  - time: '2026-11-18T21:59:15'
+    action: 'T-5227: aef-inception-lifecycle map; lib/inception_lifecycle.py (one state->node table, entered_at, revisit, overdue); /api/instances serves the inception template; overlay badges (overdue = alert); schema node enum gains the inception uids (no new fields)'
+  - time: '2026-11-18T22:10:19'
+    action: 'T-5227: waiting_on/revisit_at on inception filing (defaults agent, +7d; refused on non-inceptions and bad values: create-task, inception start, Write/Edit schema hook); fw inception lifecycle / wait; daily routing (audit C-006c, handover, operator pending + approvals ''questions waiting for you'', no decide link); tests'
+  - time: '2026-11-18T22:11:11'
+    action: 'T-5227: 050-Inceptions.md — the inception lifecycle map, the waiting_on/revisit_at fields and the daily routing'
+  - time: '2026-11-18T22:15:07'
+    action: 'T-5227: vendor self — sync the inception lifecycle changes'
+  - time: '2026-11-18T22:27:18'
+    action: 'T-5227: corpus census pin 48 -> 49 versions (aef-inception-lifecycle@v1 lints clean; flagged set held at 14)'
+  - time: '2026-11-18T22:27:56'
+    action: 'T-5227: t5217 golden comparison excludes the two new inception lines, and pins them'
+  - time: '2026-11-18T22:35:04'
+    action: 'T-5227: criteria ticked, verification, visual verification, recommendation, decisions'
+  - time: '2026-11-18T23:10:12'
+    action: 'T-5227: visual check moved to T-5240 (operator choice A1: designer counts wait on 832 T-1438; the approvals section has no real overdue items until T-5228''s dates come due)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 9 commit(s), 596 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 596
+  commits: 10
+  files_changed: 40
+  lines_added: 3193
+  lines_removed: 61
+  footprint_refreshed_at: '2026-11-18T22:14:44Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5227-inception-lifecycle-map-slice-2-an-aef-i.md
+generated_by: context-agent-hybrid
