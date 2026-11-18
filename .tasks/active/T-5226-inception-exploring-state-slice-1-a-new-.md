@@ -104,12 +104,12 @@ cost_estimate_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] All four filing paths accept EXPLORING and default to it for agent filings, with a rationale still required. Tests cover each path.
-- [ ] `inception-retrofit-rec-hourly` writes EXPLORING stubs (test), and the cron registry stays in sync (`fw doctor` verification line per CLAUDE.md)
-- [ ] `fw task review`, `fw task review-batch` and `fw inception decide` refuse an EXPLORING inception and emit no decide link, and the Watchtower inception page shows EXPLORING with no decision buttons. Tests cover all three commands; the page is checked with the Flask test client.
-- [ ] An inception with every IW question disposed but still at EXPLORING is reported as "ready for a recommendation" by audit and in the handover (test)
-- [ ] 050-Inceptions.md, CLAUDE.md, FRAMEWORK.md and the inception template describe EXPLORING, when it ends and who writes the real recommendation. The old "must file with GO/NO-GO/DEFER" text is replaced, not left beside the new text.
-- [ ] Existing inception, review-handoff, T-2204..T-2208, T-3549, T-5215 and upgrade_fresh_machine_simulation suites pass. `bin/fw test invariants` and `bin/fw vendor self --check --task T-5226` are clean, and Watchtower is restarted, with `bin/fw watchtower current` passing.
+- [x] All four filing paths accept EXPLORING and default to it for agent filings, with a rationale still required. Tests cover each path.
+- [x] `inception-retrofit-rec-hourly` writes EXPLORING stubs (test), and the cron registry stays in sync (`fw doctor` verification line per CLAUDE.md)
+- [x] `fw task review`, `fw task review-batch` and `fw inception decide` refuse an EXPLORING inception and emit no decide link, and the Watchtower inception page shows EXPLORING with no decision buttons. Tests cover all three commands; the page is checked with the Flask test client.
+- [x] An inception with every IW question disposed but still at EXPLORING is reported as "ready for a recommendation" by audit and in the handover (test)
+- [x] 050-Inceptions.md, CLAUDE.md, FRAMEWORK.md and the inception template describe EXPLORING, when it ends and who writes the real recommendation. The old "must file with GO/NO-GO/DEFER" text is replaced, not left beside the new text.
+- [x] Existing inception, review-handoff, T-2204..T-2208, T-3549, T-5215 and upgrade_fresh_machine_simulation suites pass. `bin/fw test invariants` and `bin/fw vendor self --check --task T-5226` are clean, and Watchtower is restarted, with `bin/fw watchtower current` passing.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -295,6 +295,14 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 bats tests/unit/t5226_inception_exploring.bats > /tmp/.t5226-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t5226-a.out
+test "$(grep -c '# skip' /tmp/.t5226-a.out)" -eq 0
+python3 -m pytest tests/unit/test_t5226_inception_exploring.py -q > /tmp/.t5226-b.out 2>&1 && grep -q passed /tmp/.t5226-b.out
+env -u CLAUDECODE timeout 900 bats tests/unit/create_task_inception_recommendation_gate.bats tests/unit/inception_start_recommendation_gate.bats tests/unit/inception_retrofit_rec.bats tests/unit/check_inception_recommendation.bats tests/unit/t3549_inception_handoff_refusal.bats tests/unit/t5215_review_batch_readiness.bats tests/unit/review_batch.bats > /tmp/.t5226-c.out 2>&1 && ! grep -q "^not ok" /tmp/.t5226-c.out
+python3 -m pytest tests/unit/test_t5198_handoff_blockers.py -q > /tmp/.t5226-d.out 2>&1 && grep -q passed /tmp/.t5226-d.out
+out=$(bin/fw doctor 2>&1); grep -q "Cron registry in sync" <<<"$out" && ! grep -q "Cron registry edited but not generated" <<<"$out"
+bin/fw vendor self --check --task T-5226
+bin/fw watchtower current
 
 ## RCA
 
@@ -375,6 +383,15 @@ cost_estimate_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-18 — where the EXPLORING rule lives, and its bypass
+- **Chose:** two new kinds in the one shared predicate `inception_handoff_blockers` (`exploring`, `ready-for-recommendation`), transcribed into `web/shared.py` (digest updated). Review, review-batch, decide, audit C-006b, the handover and the page all read it. EXPLORING has no bypass at the handoff or at decide: the remedy is writing the verdict. Existing bypasses (`--i-am-human`, `FW_ALLOW_EMPTY_RECOMMENDATION`, `FW_INCEPTION_PRE_GATED`, `FW_ALLOW_UNREADY_HANDOFF` for the other blockers) are unchanged and still logged.
+- **Why:** one rule, one definition (L-399). A bypass on EXPLORING would hand the operator a page with no verdict, which is the failure this task removes.
+- **Rejected:** a separate EXPLORING check per surface (five copies of one rule); letting `FW_ALLOW_UNREADY_HANDOFF` open an EXPLORING inception.
+
+### 2026-11-18 — EXPLORING with zero questions
+- **Chose:** an `## Open Questions` section with no IW entries reads "not ready, no Open Questions filed yet"; an inception with no section at all (grandfathered, T-2190) reads "ready for a recommendation".
+- **Why:** a fresh inception has filed nothing yet and is not ready; a grandfathered one has nothing to dispose, so the only thing owed is the verdict.
 
 ## Decision
 
