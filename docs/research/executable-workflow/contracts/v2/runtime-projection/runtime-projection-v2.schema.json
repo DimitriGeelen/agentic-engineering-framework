@@ -38,13 +38,20 @@
       "description": "Server time the response was built, integer Unix seconds (int(time.time())). Not a version or change marker: it differs on every call."
     },
     "lifecycle_node": {
-      "description": "A state-carrier uid on the aef-task-lifecycle map. tl_archive is never produced by /api/instances (it reads .tasks/active/ only).",
+      "description": "A state-carrier uid on the template's map. aef-task-lifecycle: tl_create, tl_parked, tl_work, tl_heal, tl_human_review (tl_archive is never produced: /api/instances reads .tasks/active/ only). aef-inception-lifecycle (T-5227): il_wait_agent, il_wait_peer, il_wait_operator, il_ready, il_awaiting_decision, il_go_building, il_decided (il_closed is never produced). The uids of one template never appear in the other's response.",
       "enum": [
         "tl_create",
         "tl_parked",
         "tl_work",
         "tl_heal",
-        "tl_human_review"
+        "tl_human_review",
+        "il_wait_agent",
+        "il_wait_peer",
+        "il_wait_operator",
+        "il_ready",
+        "il_awaiting_decision",
+        "il_go_building",
+        "il_decided"
       ]
     },
     "instance": {
@@ -75,7 +82,7 @@
           "description": "NODE: the task maps to `node` and that uid exists in the map's latest version. STALE: it maps to `node` but the map no longer carries that uid (or the map version is unreadable, in which case every mapped task is STALE). NO-POSITION: the status/horizon pair has no node; `node` is null."
         },
         "node": {
-          "description": "The lifecycle uid the task sits on, from the status+horizon table in designer_api._LIFECYCLE_NODES (captured+now/next -> tl_create, captured+later -> tl_parked, started-work -> tl_work, issues -> tl_heal, work-completed in active/ -> tl_human_review). Missing horizon counts as now. null exactly when state is NO-POSITION.",
+          "description": "The lifecycle uid the task sits on, from the status+horizon table in designer_api._LIFECYCLE_NODES (captured+now/next -> tl_create, captured+later -> tl_parked, started-work -> tl_work, issues -> tl_heal, work-completed in active/ -> tl_human_review). Missing horizon counts as now. For template aef-inception-lifecycle (T-5227) the node comes from the one table lib/inception_lifecycle.py NODES (phase from the Recommendation, the **Decision** and waiting_on; see that module). null exactly when state is NO-POSITION.",
           "anyOf": [
             {
               "$ref": "#/$defs/lifecycle_node"
@@ -99,7 +106,7 @@
           "items": {
             "$ref": "#/$defs/edge_uid"
           },
-          "description": "Edge uids the task's recorded history traversed, in order. Source: the task file's own Updates entries (\"- **Change:** status: A → B\" and \"horizon: A → B\", written by update-task.sh); no git. Each change that moves the task from node A to node B (same status+horizon table as `node`; the horizon in force is reconstructed backwards from the current frontmatter) contributes the one chain of edges from A to B whose intermediate nodes are not state carriers (gateways, tl_start, tl_verify, ...). A change with no such chain, or with more than one, goes to `unmapped`. Empty when the file records no node-moving change."
+          "description": "Edge uids the task's recorded history traversed, in order. Source: the task file's own Updates entries (\"- **Change:** status: A → B\" and \"horizon: A → B\", written by update-task.sh); no git. Each change that moves the task from node A to node B (same status+horizon table as `node`; the horizon in force is reconstructed backwards from the current frontmatter) contributes the one chain of edges from A to B whose intermediate nodes are not state carriers (gateways, tl_start, tl_verify, ...). A change with no such chain, or with more than one, goes to `unmapped`. Empty when the file records no node-moving change. Always [] for aef-inception-lifecycle: the status history does not record the recommendation or waiting_on that place an inception."
         },
         "unmapped": {
           "type": "array",

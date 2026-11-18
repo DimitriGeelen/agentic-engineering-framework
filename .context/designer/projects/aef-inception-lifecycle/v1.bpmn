@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:aef="http://anchorpoint.framework/aef/extensions"
+                  id="Definitions_aef-inception-lifecycle"
+                  targetNamespace="https://aef.anchorpoint.dev/workflows">
+
+  <!-- T-5227 (operator rulings 2026-11-18, question 2): the inception lifecycle as a class,
+       each open inception an instance on one of its state-carrier nodes. Same style as
+       aef-task-lifecycle (v4): plain-language names and notes for the business lens, ids,
+       fields and commands in aef:endpoint for the technical lens.
+       Placement is ONE table, lib/inception_lifecycle.py NODES; GET /api/instances
+       ?template=aef-inception-lifecycle reads it. Fields: waiting_on (agent|peer|operator)
+       and revisit_at (YYYY-MM-DD, default filing date + 7) on inception frontmatter. -->
+
+  <bpmn:collaboration id="Collaboration_aef-inception-lifecycle">
+    <bpmn:participant id="Pool_inception_lifecycle" name="AEF inception lifecycle" processRef="Process_aef-inception-lifecycle"/>
+  </bpmn:collaboration>
+
+  <bpmn:process id="Process_aef-inception-lifecycle" isExecutable="true">
+    <bpmn:extensionElements>
+      <aef:workflowMeta id="aef-inception-lifecycle" version="1" schemaVersion="2" title="AEF inception lifecycle (exploring → recommended → decided → closed)" tier_default="1"/>
+    </bpmn:extensionElements>
+    <bpmn:laneSet id="LaneSet_il">
+      <bpmn:lane id="agent" name="Agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="agt" authority="initiative" height="340"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>agt_start_question</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_explore</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_gw_next</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_ready</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_building</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_decided</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_5_closed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_end_question</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="peer" name="Peer agent · Initiative">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="peer" authority="initiative" height="140"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>peer_1_wait</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="human" name="Human · Sovereignty">
+        <bpmn:extensionElements>
+          <aef:laneMeta abbr="hum" authority="sovereignty" height="160"/>
+        </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_1_wait</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_2_decide</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_gw_decision</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+
+    <bpmn:startEvent id="agt_start_question" name="question filed">
+      <bpmn:extensionElements>
+        <aef:uid value="il_filed"/>
+        <aef:position x="102.0" y="128.5"/>
+        <aef:meta triggeredBy="operator question, agent discovery, or a pickup that needs scoping"/>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>il_flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:serviceTask id="agt_1_explore" name="exploring — waiting on the agent">
+      <bpmn:extensionElements>
+        <aef:uid value="il_wait_agent"/>
+        <aef:position x="185.0" y="114.5"/>
+        <aef:meta state="exploring" note="the agent explores the question and owns the next step; it comes back to the agent when its revisit date passes"/>
+        <aef:endpoint>workflow_type: inception, Recommendation EXPLORING, waiting_on: agent (also when absent). revisit_at defaults to filing date + 7. Overdue → handover next actions (fw inception lifecycle --overdue).</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>il_flow_1</bpmn:incoming>
+      <bpmn:incoming>il_flow_6</bpmn:incoming>
+      <bpmn:incoming>il_flow_7</bpmn:incoming>
+      <bpmn:incoming>il_flow_14</bpmn:incoming>
+      <bpmn:outgoing>il_flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="agt_gw_next" name="who holds the next step?">
+      <bpmn:extensionElements>
+        <aef:uid value="il_gw_next"/>
+        <aef:position x="370.0" y="122.5"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>il_flow_2</bpmn:incoming>
+      <bpmn:outgoing>il_flow_3</bpmn:outgoing>
+      <bpmn:outgoing>il_flow_4</bpmn:outgoing>
+      <bpmn:outgoing>il_flow_5</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="peer_1_wait" name="exploring — waiting on a peer">
+      <bpmn:extensionElements>
+        <aef:uid value="il_wait_peer"/>
+        <aef:position x="470.0" y="370.0"/>
+        <aef:meta state="exploring" note="the question waits for another agent's answer; when the revisit date passes the agent reminds that peer"/>
+        <aef:endpoint>waiting_on: peer. Overdue → a reminder item for the agent (the agent sends it: fw sidecar send --to &lt;peer&gt;); no cron sends it.</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>il_flow_3</bpmn:incoming>
+      <bpmn:outgoing>il_flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="hum_1_wait" name="exploring — waiting on the operator">
+      <bpmn:extensionElements>
+        <aef:uid value="il_wait_operator"/>
+        <aef:position x="470.0" y="520.0"/>
+        <aef:meta state="exploring" note="the question waits for the operator's answer; when the revisit date passes it is listed for the operator as a question waiting for them"/>
+        <aef:endpoint>waiting_on: operator. Overdue → fw operator pending and the Watchtower approvals page ("questions waiting for you", no decide link).</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>il_flow_4</bpmn:incoming>
+      <bpmn:outgoing>il_flow_7</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:serviceTask id="agt_2_ready" name="ready for a recommendation">
+      <bpmn:extensionElements>
+        <aef:uid value="il_ready"/>
+        <aef:position x="640.0" y="114.5"/>
+        <aef:meta state="exploring" note="every question is answered; the agent writes its recommendation"/>
+        <aef:endpoint>Recommendation EXPLORING and every IW question disposed (T-5226 ready-for-recommendation). Owner: agent.</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>il_flow_5</bpmn:incoming>
+      <bpmn:outgoing>il_flow_8</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:userTask id="hum_2_decide" name="awaiting the operator's decision">
+      <bpmn:extensionElements>
+        <aef:uid value="il_awaiting_decision"/>
+        <aef:position x="800.0" y="520.0"/>
+        <aef:meta state="recommended" note="the agent recommended GO, NO-GO or DEFER; the operator decides on the inception page"/>
+        <aef:endpoint>Recommendation GO|NO-GO|DEFER, no **Decision** recorded. Handoff: fw task review T-XXX → /inception/T-XXX; listed by fw operator pending.</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>il_flow_8</bpmn:incoming>
+      <bpmn:outgoing>il_flow_9</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="hum_gw_decision" name="decision?">
+      <bpmn:extensionElements>
+        <aef:uid value="il_gw_decision"/>
+        <aef:position x="980.0" y="528.0"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>il_flow_9</bpmn:incoming>
+      <bpmn:outgoing>il_flow_10</bpmn:outgoing>
+      <bpmn:outgoing>il_flow_11</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="agt_3_building" name="decided GO — build tasks open">
+      <bpmn:extensionElements>
+        <aef:uid value="il_go_building"/>
+        <aef:position x="1080.0" y="114.5"/>
+        <aef:meta state="decided-go" note="the operator said GO; the build work it authorised is still open"/>
+        <aef:endpoint>**Decision**: GO, and an open task names the inception (unlocks_inception_decision, related_tasks or its name), or the inception itself is still in .tasks/active/.</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>il_flow_10</bpmn:incoming>
+      <bpmn:outgoing>il_flow_12</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_4_decided" name="decided NO-GO or DEFER">
+      <bpmn:extensionElements>
+        <aef:uid value="il_decided"/>
+        <aef:position x="1080.0" y="240.0"/>
+        <aef:meta state="decided-closed" note="the operator said NO-GO or DEFER; a deferred question comes back on its revisit date"/>
+        <aef:endpoint>**Decision**: NO-GO or DEFER, still in .tasks/active/ (DEFER parks it at horizon later; revisit_at drives the G-053 revisit scan).</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>il_flow_11</bpmn:incoming>
+      <bpmn:outgoing>il_flow_13</bpmn:outgoing>
+      <bpmn:outgoing>il_flow_14</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:serviceTask id="agt_5_closed" name="closed">
+      <bpmn:extensionElements>
+        <aef:uid value="il_closed"/>
+        <aef:position x="1290.0" y="114.5"/>
+        <aef:meta state="closed" note="the question is settled and its work is done"/>
+        <aef:endpoint>inception in .tasks/completed/ with no open build task. Not served by /api/instances (like tl_archive); counted by fw inception lifecycle.</aef:endpoint>
+      </bpmn:extensionElements>
+      <bpmn:incoming>il_flow_12</bpmn:incoming>
+      <bpmn:incoming>il_flow_13</bpmn:incoming>
+      <bpmn:outgoing>il_flow_15</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:endEvent id="agt_end_question" name="question settled">
+      <bpmn:extensionElements>
+        <aef:uid value="il_done"/>
+        <aef:position x="1460.0" y="128.5"/>
+        <aef:meta terminalKind="success"/>
+      </bpmn:extensionElements>
+      <bpmn:incoming>il_flow_15</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="il_flow_1" sourceRef="agt_start_question" targetRef="agt_1_explore">
+      <bpmn:extensionElements><aef:uid value="il_e1"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="il_flow_2" sourceRef="agt_1_explore" targetRef="agt_gw_next">
+      <bpmn:extensionElements><aef:uid value="il_e2"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="il_flow_3" name="asks a peer" sourceRef="agt_gw_next" targetRef="peer_1_wait">
+      <bpmn:extensionElements><aef:uid value="il_e3"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="il_flow_4" name="asks the operator" sourceRef="agt_gw_next" targetRef="hum_1_wait">
+      <bpmn:extensionElements><aef:uid value="il_e4"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="il_flow_5" name="every question answered" sourceRef="agt_gw_next" targetRef="agt_2_ready">
+      <bpmn:extensionElements><aef:uid value="il_e5"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="il_flow_6" name="peer answered" sourceRef="peer_1_wait" targetRef="agt_1_explore">
+      <bpmn:extensionElements><aef:uid value="il_e6"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="il_flow_7" name="operator answered" sourceRef="hum_1_wait" targetRef="agt_1_explore">
+      <bpmn:extensionElements><aef:uid value="il_e7"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="il_flow_8" name="recommendation written" sourceRef="agt_2_ready" targetRef="hum_2_decide">
+      <bpmn:extensionElements><aef:uid value="il_e8"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="il_flow_9" sourceRef="hum_2_decide" targetRef="hum_gw_decision">
+      <bpmn:extensionElements><aef:uid value="il_e9"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="il_flow_10" name="GO" sourceRef="hum_gw_decision" targetRef="agt_3_building">
+      <bpmn:extensionElements><aef:uid value="il_e10"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="il_flow_11" name="NO-GO or DEFER" sourceRef="hum_gw_decision" targetRef="agt_4_decided">
+      <bpmn:extensionElements><aef:uid value="il_e11"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="il_flow_12" name="build work done" sourceRef="agt_3_building" targetRef="agt_5_closed">
+      <bpmn:extensionElements><aef:uid value="il_e12"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="il_flow_13" name="closed" sourceRef="agt_4_decided" targetRef="agt_5_closed">
+      <bpmn:extensionElements><aef:uid value="il_e13"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="il_flow_14" name="deferred — reopened on its revisit date" sourceRef="agt_4_decided" targetRef="agt_1_explore">
+      <bpmn:extensionElements><aef:uid value="il_e14"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="il_flow_15" sourceRef="agt_5_closed" targetRef="agt_end_question">
+      <bpmn:extensionElements><aef:uid value="il_e15"/></bpmn:extensionElements>
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+</bpmn:definitions>

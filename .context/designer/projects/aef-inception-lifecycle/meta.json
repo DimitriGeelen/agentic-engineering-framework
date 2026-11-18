@@ -1,0 +1,14 @@
+{
+  "id": "aef-inception-lifecycle",
+  "title": "aef-inception-lifecycle",
+  "versions": [
+    {
+      "v": 1,
+      "note": "T-5227: inception lifecycle map with instances (operator rulings 2026-11-18, question 2); state carriers il_wait_agent, il_wait_peer, il_wait_operator, il_ready, il_awaiting_decision, il_go_building, il_decided, il_closed",
+      "ts": 1795526400
+    }
+  ],
+  "latest": 1,
+  "updated": 1795526400,
+  "uuid": "abe367a8-9a0d-4ee9-92b5-bd5e2f62a433"
+}
