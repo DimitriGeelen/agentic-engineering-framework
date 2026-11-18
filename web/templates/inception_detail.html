@@ -387,7 +387,16 @@
     {% if dec == 'pending' %}
         {# Pending: Recommendation is the human's primary input — show prominently. #}
         <article class="section-card">
+            {% if rec_stance == 'exploring' %}
+            {# T-5226: EXPLORING = not ready for decision; said plainly, no verdict implied. #}
+            <header data-testid="inception-exploring">Agent Recommendation: <strong>EXPLORING</strong>
+                <span style="font-weight: 400; color: var(--pico-muted-color); font-size: 0.85rem;">
+                    — not ready for decision
+                </span>
+            </header>
+            {% else %}
             <header>Agent Recommendation</header>
+            {% endif %}
             <div class="section-content">{{ sections.recommendation }}</div>
         </article>
     {% elif decision_matches_recommendation %}
@@ -581,8 +590,13 @@
         <ul style="margin:0.3rem 0 0 1.1rem; font-size:0.9rem;">
             {% for b in handoff_blockers %}<li>{{ b.detail }}</li>{% endfor %}
         </ul>
+        {% if rec_stance == 'exploring' %}
+        <small class="muted">The agent is still exploring. This page offers no decision until the agent
+            has disposed every open question and replaced EXPLORING with GO, NO-GO or DEFER.</small>
+        {% else %}
         <small class="muted">This is agent work, not yours: each open question needs a recorded answer
             (answered / deferred / dissolved) with a reason before a GO or NO-GO can be recorded.</small>
+        {% endif %}
     </div>
     {% else %}
     <form action="/inception/{{ task_id }}/decide" method="post" class="decision-form">

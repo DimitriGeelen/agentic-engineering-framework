@@ -155,7 +155,7 @@
         <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
             <strong style="font-size: 0.8rem;">Recommendation:</strong>
             {% if t._rec_type %}
-            <span class="decision-badge decision-{% if t._rec_type == 'GO' %}go{% elif t._rec_type == 'NO-GO' %}no-go{% else %}defer{% endif %}">{{ t._rec_type }}</span>
+            <span class="decision-badge decision-{% if t._rec_type == 'GO' %}go{% elif t._rec_type == 'NO-GO' %}no-go{% elif t._rec_type == 'EXPLORING' %}pending{% else %}defer{% endif %}">{{ t._rec_type }}</span>
             {% endif %}
             {% if t._has_artifact %}
             <a href="/file/{{ t._artifact_path }}" style="font-size: 0.75rem;" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">Research artifact</a>

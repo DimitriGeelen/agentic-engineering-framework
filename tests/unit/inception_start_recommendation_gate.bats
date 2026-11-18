@@ -1,5 +1,6 @@
 #!/usr/bin/env bats
 # T-1716: filing-time --recommendation/--rationale gate on fw inception start
+# T-5226: the rationale stays required; the recommendation defaults to EXPLORING.
 #
 # Tests:
 #   A1: under $CLAUDECODE=1 with neither flag → exit 1 with required-flag message
@@ -46,15 +47,16 @@ teardown() {
 @test "inception start: under \$CLAUDECODE=1 + no flags → exit 1" {
     CLAUDECODE=1 run do_inception_start "test inception name"
     [ "$status" -eq 1 ]
-    [[ "$output" == *"--recommendation and --rationale required"* ]]
+    [[ "$output" == *"--rationale required"* ]]
     [[ "$output" == *"T-1715"* ]]
 }
 
 @test "inception start: error message includes example invocation" {
     CLAUDECODE=1 run do_inception_start "test inception name"
     [ "$status" -eq 1 ]
-    [[ "$output" == *"--recommendation GO|NO-GO|DEFER"* ]]
+    [[ "$output" == *"fw inception start 'test inception name'"* ]]
     [[ "$output" == *"--rationale"* ]]
+    [[ "$output" == *"EXPLORING"* ]]
 }
 
 # ---------- A2: real Recommendation injected when both flags provided ----------
@@ -157,18 +159,18 @@ teardown() {
     [[ "$output" == *"Injected Recommendation: GO"* ]]
 }
 
-# ---------- A6: half-pair fails ----------
+# ---------- A6: the rationale is required; the recommendation defaults (T-5226) ----------
 
 @test "inception start: --recommendation alone (no --rationale) fails" {
     CLAUDECODE=1 run do_inception_start "test" --recommendation GO
     [ "$status" -eq 1 ]
-    [[ "$output" == *"--recommendation and --rationale required"* ]]
+    [[ "$output" == *"--rationale required"* ]]
 }
 
-@test "inception start: --rationale alone (no --recommendation) fails" {
+@test "inception start: --rationale alone defaults the recommendation to EXPLORING (T-5226)" {
     CLAUDECODE=1 run do_inception_start "test" --rationale "without rec"
-    [ "$status" -eq 1 ]
-    [[ "$output" == *"--recommendation and --rationale required"* ]]
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Injected Recommendation: EXPLORING"* ]]
 }
 
 # ---------- A7: help text mentions new flags ----------

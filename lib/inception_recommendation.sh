@@ -9,7 +9,8 @@
 # Public functions:
 #   has_real_recommendation <task_file>
 #       Returns 0 if file's `## Recommendation` body contains a real
-#       `**Recommendation:** GO|NO-GO|DEFER` line; 1 otherwise.
+#       `**Recommendation:** EXPLORING|GO|NO-GO|DEFER` line; 1 otherwise
+#       (T-5226: EXPLORING counts as present, so the retrofit never re-stubs it).
 #
 #   find_inceptions_without_recommendation <active_dir>
 #       Prints, one per line, the task IDs (T-XXX) of inception tasks in
@@ -39,7 +40,7 @@ body = re.sub(r'<!--.*?-->', '', m.group(1), flags=re.DOTALL)
 # T-1746: tolerate inner emphasis on the verdict (`**GO**`, `*GO*`, plain).
 # Without `\*{0,2}` this rejected T-1744's `**Recommendation:** **GO**` which
 # was the trigger for the RC1 silent-failure (see T-1745 RCA).
-if re.search(r'(?m)^[\-\*\s]*\*\*Recommendation:\*\*\s+\*{0,2}(GO|NO-GO|DEFER)\b', body):
+if re.search(r'(?m)^[\-\*\s]*\*\*Recommendation:\*\*\s+\*{0,2}(EXPLORING|GO|NO-GO|DEFER)\b', body):
     sys.exit(0)
 sys.exit(1)
 PYHASRE

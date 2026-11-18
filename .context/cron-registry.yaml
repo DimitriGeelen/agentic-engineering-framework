@@ -409,7 +409,7 @@ jobs:
     \ flips, and the window before an operator wires the T-2205 hook into .claude/settings.json.\
     \ Calls `fw inception retrofit-recommendations --apply` (lib/inception.sh do_inception_retrofit_recommendations,\
     \ T-1716 Stream C) \u2014 idempotent and side-effect-free on already-clean state;\
-    \ injects DEFER stubs with self-retrofit attribution when an active inception's\
+    \ injects EXPLORING stubs (T-5226: not ready for decision) with self-retrofit attribution when an active inception's\
     \ ## Recommendation block is empty or template-only AND no `**Recommendation:**`\
     \ line exists."
 - id: resolver-loop-autonomous

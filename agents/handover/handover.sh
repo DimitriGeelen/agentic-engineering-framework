@@ -1068,6 +1068,7 @@ EOF
 
 # Add active tasks sorted by horizon (now > next > later)
 TASKS_DIR_PY="$TASKS_DIR" WT_URL_PY="$WT_URL" PROJECT_ROOT_PY="$PROJECT_ROOT" \
+FRAMEWORK_ROOT_PY="$FRAMEWORK_ROOT" \
 HANDOVER_DIGEST="$HANDOVER_DIGEST" DIGEST_TOP_N="$DIGEST_TOP_N" python3 << 'PYEOF' >> "$HANDOVER_FILE"
 # T-1825: heredoc delimiter quoted ('PYEOF') so shellcheck doesn't lint Python
 # `==` as bash (SC2284 false-positive). Shell vars now come in via env; no \$
@@ -1327,6 +1328,60 @@ for _, tid, tname, tstatus, h, _verdict, wf, dec, _lu, _bug in tasks:
     elif dec == 'DEFER':
         inception_deferred.append((tid, tname))
     # GO/NO-GO: in-flight close — sweep handles the move; skip both lists.
+
+# T-5226: a pending inception whose Recommendation is EXPLORING is not awaiting
+# a decision. Ask the shared predicate (lib/inception-readiness.sh
+# inception_handoff_blockers) which of the two EXPLORING states it is in.
+def _exploring_state(tid):
+    import subprocess
+    paths = glob.glob(os.path.join(tasks_dir, f'{tid}-*.md'))
+    if not paths:
+        return ''
+    try:
+        with open(paths[0]) as fh:
+            if not re.search(r'\*\*Recommendation:\*\*\s*\**EXPLORING', fh.read()):
+                return ''
+        r = subprocess.run(
+            ['bash', '-c', '. "$1/lib/inception-readiness.sh" && inception_handoff_blockers "$2"',
+             '_', os.environ.get('FRAMEWORK_ROOT_PY', '.'), paths[0]],
+            capture_output=True, text=True, timeout=20)
+    except (OSError, subprocess.SubprocessError):
+        return ''
+    for line in r.stdout.splitlines():
+        kind = line.split('\t', 1)[0]
+        if kind in ('exploring', 'ready-for-recommendation'):
+            return kind
+    return ''
+
+inception_ready_for_rec = []
+inception_exploring = []
+_still_pending = []
+for ip_tid, ip_name in inception_pending:
+    _st = _exploring_state(ip_tid)
+    if _st == 'ready-for-recommendation':
+        inception_ready_for_rec.append((ip_tid, ip_name))
+    elif _st == 'exploring':
+        inception_exploring.append((ip_tid, ip_name))
+    else:
+        _still_pending.append((ip_tid, ip_name))
+inception_pending = _still_pending
+
+if inception_ready_for_rec:
+    print('### Inceptions Ready for a Recommendation')
+    print()
+    print('Every IW question is disposed but the Recommendation still reads EXPLORING.')
+    print('The agent writes GO, NO-GO or DEFER before the operator sees these (T-5226).')
+    print()
+    for ip_tid, ip_name in inception_ready_for_rec:
+        print(f'- {ip_tid}: {ip_name} — ready for a recommendation')
+    print()
+
+if inception_exploring:
+    print('### Inceptions Exploring — Not Ready for Decision')
+    print()
+    for ip_tid, ip_name in inception_exploring:
+        print(f'- {ip_tid}: {ip_name}')
+    print()
 
 if inception_pending:
     print('### Inception Phases — Awaiting Decision')

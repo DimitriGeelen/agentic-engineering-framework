@@ -3,7 +3,7 @@
 #
 # Tests:
 #   - read-only by default (no file mutation)
-#   - --apply mutates files; injects DEFER stub
+#   - --apply mutates files; injects EXPLORING stub (T-5226; was DEFER)
 #   - real-Recommendation tasks left alone
 #   - non-inception tasks left alone
 #   - clean repo (no stale inceptions) — no-op exit 0
@@ -112,12 +112,13 @@ EOF
     [ "$before" = "$after" ]
 }
 
-@test "retrofit-rec --apply: injects DEFER stub" {
+@test "retrofit-rec --apply: injects EXPLORING stub (T-5226)" {
     _make_template_only T-9001
     run do_inception_retrofit_recommendations --apply
     [ "$status" -eq 0 ]
-    [[ "$output" == *"WROTE: DEFER stub"* ]] || [[ "$output" == *"Retrofit applied"* ]]
-    grep -q "^\*\*Recommendation:\*\* DEFER" "$TEST_TEMP_DIR/.tasks/active/T-9001-stub.md"
+    [[ "$output" == *"WROTE: EXPLORING stub"* ]] || [[ "$output" == *"Retrofit applied"* ]]
+    grep -q "^\*\*Recommendation:\*\* EXPLORING" "$TEST_TEMP_DIR/.tasks/active/T-9001-stub.md"
+    ! grep -q "^\*\*Recommendation:\*\* DEFER" "$TEST_TEMP_DIR/.tasks/active/T-9001-stub.md" || false
     if grep -q "REQUIRED before fw inception decide" "$TEST_TEMP_DIR/.tasks/active/T-9001-stub.md"; then false; fi
     grep -q "T-1716" "$TEST_TEMP_DIR/.tasks/active/T-9001-stub.md"
 }
@@ -180,9 +181,9 @@ EOF
     [[ "$output" == *"T-9001"* ]]
 }
 
-@test "retrofit-rec --apply: rationale mentions pre-T-1716 gate" {
+@test "retrofit-rec --apply: rationale says EXPLORING is not ready for decision (T-5226)" {
     _make_template_only T-9001
     run do_inception_retrofit_recommendations --apply
     [ "$status" -eq 0 ]
-    grep -q "pre-T-1716 gate" "$TEST_TEMP_DIR/.tasks/active/T-9001-stub.md"
+    grep -q "not ready for decision" "$TEST_TEMP_DIR/.tasks/active/T-9001-stub.md"
 }

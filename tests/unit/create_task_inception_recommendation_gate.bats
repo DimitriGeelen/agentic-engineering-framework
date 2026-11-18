@@ -58,12 +58,14 @@ run_create() {
     [[ "$output" != *"BLOCKED: filing inception"* ]]
 }
 
-@test "inception under \$CLAUDECODE=1 without --recommendation BLOCKS" {
+# T-5226: the recommendation defaults to EXPLORING; the rationale is still required.
+@test "inception under \$CLAUDECODE=1 without --rationale BLOCKS" {
     export CLAUDECODE=1
     run_create --name "Explore something" --type inception --description "test" --owner human
     [ "$status" -eq 1 ]
     [[ "$output" == *"BLOCKED: filing inception"* ]]
-    [[ "$output" == *"--recommendation"* ]]
+    [[ "$output" == *"--rationale"* ]]
+    [[ "$output" == *"EXPLORING"* ]]
     [[ "$output" == *"FW_ALLOW_EMPTY_RECOMMENDATION=1"* ]]
     [[ "$output" == *"--i-am-human"* ]]
     # Origin cross-refs must be present
@@ -173,10 +175,11 @@ run_create() {
     source "$FRAMEWORK_ROOT/lib/paths.sh"
     source "$FRAMEWORK_ROOT/lib/inception.sh"
 
-    # No flags → blocked upstream by T-1716 (not by my new gate).
+    # No flags → blocked upstream by T-1716 (not by my new gate). T-5226: only
+    # the rationale is required; the recommendation defaults to EXPLORING.
     run do_inception_start "Upstream blocked" --owner human
     [ "$status" -eq 1 ]
-    [[ "$output" == *"--recommendation and --rationale required"* ]]
+    [[ "$output" == *"--rationale required"* ]]
 }
 
 @test "do_inception_start: with flags injects Recommendation via upstream — gate does NOT double-fire" {

@@ -113,8 +113,15 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 <!-- REQUIRED before fw inception decide. Write your recommendation here (T-974).
      Watchtower reads this section — if it's empty, the human sees nothing.
+
+     While you explore, it reads EXPLORING (not ready for decision). Agent
+     filings start there (T-5226). The review handoff, `fw inception decide`
+     and the Watchtower page refuse an EXPLORING inception. Once every IW
+     question is disposed, the agent replaces EXPLORING with GO, NO-GO or DEFER.
+     Only then does the operator see it.
+
      Format:
-     **Recommendation:** GO / NO-GO / DEFER
+     **Recommendation:** EXPLORING | GO | NO-GO | DEFER
      **Rationale:** Why (cite evidence from exploration)
      **Evidence:**
      - Finding 1
