@@ -233,6 +233,15 @@ def _append(root: Path, rec: dict) -> None:
         fh.write(json.dumps(rec, sort_keys=True) + "\n")
 
 
+def _notify(root: Path, rec: dict) -> None:
+    """T-5222: one notice to the project's agent after the decision is recorded. Never raises."""
+    try:
+        from lib import agent_notice
+        agent_notice.notify_restatement(rec["task"], rec["verdict_id"], rec["decision"], root=root)
+    except Exception:  # noqa: BLE001 - the decision stands whatever the notice does
+        pass
+
+
 def accept(root: Path, verdict_id: str, *, dry_run: bool = False, i_am_human: bool = False,
            text_override: str | None = None) -> dict:
     """`text_override` (T-4939): the operator's own wording. Reviewers often write their
@@ -255,6 +264,7 @@ def accept(root: Path, verdict_id: str, *, dry_run: bool = False, i_am_human: bo
     rec["by"] = _who(i_am_human, "accepting")
     _write_atomic(path, "\n".join(out))
     _append(root, rec)
+    _notify(root, rec)
     return {**rec, "file": str(path.relative_to(root))}
 
 
@@ -270,6 +280,7 @@ def reject(root: Path, verdict_id: str, reason: str, *, dry_run: bool = False,
         return {**rec, "dry_run": True}
     rec["by"] = _who(i_am_human, "rejecting")
     _append(root, rec)
+    _notify(root, rec)
     return rec
 
 

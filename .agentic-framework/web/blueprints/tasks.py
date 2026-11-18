@@ -1335,6 +1335,13 @@ def toggle_ac(task_id):
     if ok:
         checked_attr = "checked" if new_state else ""
         note = _owner_after_human_tick(task_file, old_text)
+        if new_state:  # T-5222: tell the agent; never on untick, never blocks or fails the request
+            try:
+                from lib import agent_notice
+                agent_notice.notify_criterion_ticked(task_id, old_text, task_file.read_text(),
+                                                     root=PROJECT_ROOT, wait=False)
+            except Exception:  # noqa: BLE001 - the tick stands whatever the notice does
+                pass
         return (f'<input type="checkbox" {checked_attr} onchange="this.form.requestSubmit()" style="margin:0;">'
                 + (f' <small>{_escape(note)}</small>' if note else ""))
     return f'<p style="color: var(--pico-del-color);">Error: {err}</p>', 500

@@ -1,0 +1,21 @@
+id: lib/agent_notice.py
+name: agent_notice
+type: script
+subsystem: framework-core
+location: lib/agent_notice.py
+tags: []
+
+purpose: "One non-urgent notice to this project's own agent after an operator action (T-5211)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-18
+created_by: unknown
