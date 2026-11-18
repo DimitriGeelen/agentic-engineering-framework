@@ -476,8 +476,10 @@ In one short message, tell me:
   before its first edit. You will hit gates if you skip this.
 - [ASK] Which way I want to begin:
   - **Explore first:**
-    `fw inception start "<what we build>" --recommendation GO|NO-GO|DEFER --rationale "<evidence>"`
-    Both flags are required when an agent files under Claude Code. Then, in this order:
+    `fw inception start "<what we build>" --rationale "<evidence>"`
+    The rationale is required when an agent files under Claude Code. The recommendation starts as
+    `EXPLORING` (not ready for decision); write GO, NO-GO or DEFER once every question is disposed.
+    Then, in this order:
     - `fw work-on T-XXX`: `inception start` sets focus but not `started-work`, and the task gate blocks the first
       edit without it;
     - add at least one open question `**IW-1: …**` to the task file (gate G-067);

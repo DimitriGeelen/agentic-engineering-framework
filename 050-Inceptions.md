@@ -35,6 +35,40 @@ two structural rails specific to exploration:
 | `started-work` | Exploration in progress — research artifact open, dialogue happening | Two-commit exploration budget (see "Commit budget" below); ends with a decision |
 | `work-completed` | Decision recorded (GO / NO-GO / DEFER), constituent build tasks filed if GO | Set via `fw inception decide T-XXX go|no-go|defer --rationale "..."` then `fw task update --status work-completed` |
 
+### Recommendation: EXPLORING until the questions are disposed (T-5226)
+
+The `## Recommendation` block has four values. Three are verdicts; one is not:
+
+| Value | Meaning | Who writes it, when |
+|-------|---------|---------------------|
+| `EXPLORING` | Not ready for decision | The default when an agent files an inception. It stays until every IW question is disposed. |
+| `GO` / `NO-GO` / `DEFER` | The agent's advice to the operator | The agent, once every IW question is disposed. The operator may also file with a verdict (`--i-am-human`). |
+
+An agent files with a rationale (why this is worth exploring) and no verdict:
+
+```
+fw inception start "<question>" --rationale "<why, with evidence>"
+```
+
+The recommendation reads `EXPLORING`. While it does:
+
+- `fw task review`, `fw task review-batch` and `fw inception decide` refuse
+  the inception and emit no decide link. The message names how many
+  questions are still open.
+- The Watchtower page `/inception/<id>` shows `EXPLORING — not ready for
+  decision` and offers no decision buttons.
+
+When every IW question is disposed and the recommendation still reads
+`EXPLORING`, `fw audit` (C-006b) and the handover report the inception as
+**ready for a recommendation**. The agent then replaces `EXPLORING` with GO,
+NO-GO or DEFER plus a rationale, and hands it off with `fw task review`. The
+operator only ever sees a verdict the agent wrote after the questions were
+answered.
+
+Why: a verdict forced at filing time made a fresh inception read "GO" before
+anything was explored. It looked finished, to the agent too, and T-5211 and
+T-5212 reached the operator too early that way (T-5215, G-133).
+
 ### Research artifact (C-001)
 
 The first commit in an inception **must** create the research artifact:
@@ -284,6 +318,10 @@ not when they *can't*. If the artifact contains a complete Step-0, candidate
 matrix, and dialogue log, you have the evidence to recommend GO or NO-GO —
 DEFER is wrong.
 
+DEFER is also not "still exploring". While questions are open the
+recommendation reads `EXPLORING`; DEFER is a verdict written after they are
+disposed.
+
 Use DEFER **only** when:
 
 - A spike is needed that the inception couldn't run (env access, external
@@ -306,17 +344,19 @@ Cross-ref CLAUDE.md §"DEFER is for evidence gaps, NOT confidence gaps"
 A canonical end-to-end inception, with the same shape every inception
 should follow:
 
-1. **File.** `fw task create --type inception --name "Recalibrate inception
-   workflow"` — creates `T-XXX` in `captured`. Body has Problem Statement,
-   Open Questions (`IW-1..IW-7`), Scope Fence, Assumptions.
+1. **File.** `fw inception start "Recalibrate inception workflow" --rationale
+   "<why>"` — creates `T-XXX` in `captured` with the recommendation
+   `EXPLORING`. Body has Problem Statement, Open Questions (`IW-1..IW-7`),
+   Scope Fence, Assumptions.
 2. **Promote.** `fw work-on T-XXX` — status → `started-work`, focus set.
 3. **Step 0.** Discovery against actual framework code. Refute or confirm
    the inception's working conclusions before treating them as fact. Commit
    findings.
 4. **Dispositions.** Walk each Open Question. Each gets answered / dissolved
    / deferred with cited evidence. Commit.
-5. **Recommendation.** Write `## Recommendation` in the task body — GO,
-   NO-GO, or DEFER, with rationale and concrete evidence list. Commit.
+5. **Recommendation.** Once every question is disposed, replace `EXPLORING`
+   in `## Recommendation` with GO, NO-GO, or DEFER, with rationale and
+   concrete evidence list. Commit.
 6. **Hand off.** `fw task review T-XXX` — emits the class-correct Watchtower
    URL (`/inception/<id>`). Stop. Do **not** run `fw inception decide`.
 7. **Human decides** via Watchtower. The `/inception/<id>` POST is
