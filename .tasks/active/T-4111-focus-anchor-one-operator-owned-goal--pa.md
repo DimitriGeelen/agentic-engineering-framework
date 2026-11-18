@@ -15,8 +15,11 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:44Z'
+revisit_at: 2026-11-25
+waiting_on: agent
 created: 2026-10-12T13:03:37Z
-last_update: '2026-10-12T13:16:09Z'
+last_update: 2026-11-18T22:21:44Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -143,7 +146,10 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (no IW questions filed). Waiting on: agent — compare 1409's proposal with AEF's existing focus and arc mechanisms.
 
 **Rationale:**
 
@@ -174,3 +180,7 @@ Pickup from 1409 (proposal, not a build instruction): measured re-proposal of pa
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-11-18T22:21:44Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → agent
+- **Revisit:** 2026-11-25

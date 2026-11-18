@@ -20,8 +20,11 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:45Z'
+revisit_at: 2026-11-25
+waiting_on: peer
 created: 2026-10-19T14:10:31Z
-last_update: 2026-10-19T14:36:31Z
+last_update: 2026-11-18T22:21:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -161,7 +164,10 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (3 IW questions not disposed). Waiting on: peer (TermLink) — the August pickup text and their T-3476 ID-allocation design.
 
 **Rationale:** Evidence gap: the August pickup text is not in this repo and termlink's T-3476 design (which may allocate IDs centrally) does not exist yet; decide after both are in hand.
 
@@ -188,3 +194,7 @@ bvp_scores_proposed:
 ### 2026-10-19T14:36:31Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-18T22:21:45Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → peer
+- **Revisit:** 2026-11-25

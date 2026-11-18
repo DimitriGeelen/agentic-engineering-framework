@@ -14,8 +14,11 @@ horizon: later
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:40Z'
+revisit_at: 2026-11-25
+waiting_on: agent
 created: 2026-09-07T07:08:36Z
-last_update: '2026-09-07T07:15:17Z'
+last_update: 2026-11-18T22:21:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -142,7 +145,10 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (no IW questions filed). Waiting on: agent — identify the creating process.
 
 **Rationale:** Evidence gap: the creating process is unidentified; attribution first, then decide whether creation surfaces should refuse started-work-with-template-ACs.
 
@@ -168,3 +174,7 @@ bvp_scores_proposed:
 
 ### 2026-09-07T07:09:26Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
+
+### 2026-11-18T22:21:40Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → agent
+- **Revisit:** 2026-11-25

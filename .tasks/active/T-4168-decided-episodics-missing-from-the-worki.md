@@ -19,8 +19,11 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:44Z'
+revisit_at: 2026-11-25
+waiting_on: peer
 created: 2026-10-13T15:50:47Z
-last_update: '2026-10-13T16:00:22Z'
+last_update: 2026-11-18T22:21:44Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -171,7 +174,10 @@ their session transcripts after 2026-10-11 14:16Z for `git stash`, and `.git/log
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (2 IW questions not disposed). Waiting on: peer (ring20) — their file timestamps and reflog.
 
 **Rationale:** Evidence gap: no AEF code path found yet that touches the worktree this way; needs ring20's file timestamps / reflog and a reproduction on a decide in a vendored consumer before a cause can be named.
 
@@ -197,3 +203,7 @@ their session transcripts after 2026-10-11 14:16Z for `git stash`, and `.git/log
 
 ### 2026-10-13T15:57:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-18T22:21:44Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → peer
+- **Revisit:** 2026-11-25

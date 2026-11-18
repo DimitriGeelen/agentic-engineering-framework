@@ -13,10 +13,12 @@ horizon: next
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:39Z'
+waiting_on: agent
 created: 2026-09-04T15:05:33Z
-last_update: '2026-09-04T15:15:17Z'
+last_update: 2026-11-18T22:21:39Z
 date_finished:
-revisit_at: 2026-09-18
+revisit_at: 2026-11-25
 revisit_evidence_needed: "Either (a) a TermLink response to T-3256 giving a fix or
   a timeline for `inject`/`pty inject` against ink-based raw-mode TUIs, or (b) T-3275
   closed, which converts an undelivered tick from a false 'injected' ledger entry
@@ -145,7 +147,10 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (no IW questions filed). Waiting on: agent — the revisit condition below is met (T-3275 and T-3256 are both completed), so the agent re-assesses.
 
 **Rationale:** Genuine external dependency, not a confidence hedge: the fix for G-097 is homed at TermLink (Gap Homing, T-1333) and T-3256 — the product-feedback task that would elicit their answer — is still 'captured' and owner:human, so no upstream signal exists yet to decide against. The local evidence is already complete and points AWAY from urgency rather than toward it: tmux send-keys is a measured-working transport into a claude TUI (T-3255 control, succeeded 2/2 where termlink failed 2/2), so a fallback is known-feasible; and once T-3275 lands delivery confirmation, an undelivered tick becomes a loud refusal rather than a false 'injected' ledger entry, which removes the harm that made this urgent. Revisit when either TermLink responds to T-3256 or T-3275 closes — whichever first.
 
@@ -168,3 +173,7 @@ bvp_scores_proposed:
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-11-18T22:21:39Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → agent
+- **Revisit:** 2026-11-25

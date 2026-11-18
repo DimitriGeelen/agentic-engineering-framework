@@ -17,8 +17,11 @@ horizon: next
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:48Z'
+revisit_at: 2026-11-25
+waiting_on: agent
 created: 2026-11-02T00:09:44Z
-last_update: '2026-11-02T00:16:19Z'
+last_update: 2026-11-18T22:21:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -145,7 +148,10 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (no IW questions filed). Waiting on: agent — design read of how the claude review worker is confined.
 
 **Rationale:** Design question with a trade-off (the claude seat reads .context evidence from the live project); needs a design read of how the claude review worker is confined before any change.
 
@@ -168,3 +174,7 @@ bvp_scores_proposed:
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-11-18T22:21:48Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → agent
+- **Revisit:** 2026-11-25

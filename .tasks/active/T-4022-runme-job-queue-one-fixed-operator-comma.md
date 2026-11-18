@@ -13,8 +13,11 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:43Z'
+revisit_at: 2026-11-25
+waiting_on: peer
 created: 2026-10-09T23:37:54Z
-last_update: '2026-10-09T23:45:57Z'
+last_update: 2026-11-18T22:21:43Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -150,7 +153,10 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (2 IW questions not disposed). Waiting on: peer (832) — their job-queue MANIFEST and files, not yet read.
 
 **Rationale:**
 
@@ -181,3 +187,7 @@ Evidence gap: 832's pickup describes a new subsystem (numbered job folders, a la
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-11-18T22:21:43Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → peer
+- **Revisit:** 2026-11-25

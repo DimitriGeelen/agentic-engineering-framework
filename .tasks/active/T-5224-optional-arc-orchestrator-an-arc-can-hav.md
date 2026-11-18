@@ -15,8 +15,11 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:49Z'
+revisit_at: 2026-11-25
+waiting_on: peer
 created: 2026-11-18T09:15:42Z
-last_update: '2026-11-18T09:30:25Z'
+last_update: 2026-11-18T22:21:49Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -161,7 +164,10 @@ Research: docs/reports/T-5224-arc-orchestrator.md.
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (6 IW questions not disposed). Waiting on: peer (1409) — their measurements, especially the five-unit load test.
 
 **Rationale:**
 
@@ -195,3 +201,7 @@ Evidence gap, not a hedge: 1409 is measuring (1) how many units hit judgment out
 
 ### 2026-11-18T09:16:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-18T22:21:49Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → peer
+- **Revisit:** 2026-11-25

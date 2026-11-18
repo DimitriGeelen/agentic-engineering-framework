@@ -14,6 +14,9 @@ horizon: now
 tags: [sidecar, audit, design-conformance, arc-020]
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:41Z'
+revisit_at: 2026-11-25
+waiting_on: agent
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -41,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T22:51:19Z
-last_update: '2026-10-02T01:19:13Z'
+last_update: 2026-11-18T22:21:41Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -356,3 +359,7 @@ Filed pre-T-1716 gate without Recommendation. Promotion criterion: re-surface wh
 
 ### 2026-10-01T22:53:34Z — status-update [task-update-agent]
 - **Change:** workflow_type: build → inception
+
+### 2026-11-18T22:21:41Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → agent
+- **Revisit:** 2026-11-25

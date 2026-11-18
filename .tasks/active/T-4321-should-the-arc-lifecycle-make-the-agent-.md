@@ -19,9 +19,12 @@ horizon: next
 tags: [arc, close, lifecycle]
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:45Z'
+revisit_at: 2026-11-25
+waiting_on: agent
 origin: {kind: "peer", source: "1023-portable-encrypted-chromium-vault"}
 created: 2026-10-18T18:28:38Z
-last_update: '2026-10-18T18:31:48Z'
+last_update: 2026-11-18T22:21:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -151,7 +154,10 @@ The T-3843 close_task mechanism exists and is almost never used.
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (no IW questions filed). Waiting on: agent — count the in-progress arcs whose tasks are all done.
 
 **Rationale:** Evidence gap: whether to scaffold a close task at arc create, add an audit/handover nudge when every arc task is done, and add fw arc propose-close, depends on how many in-progress arcs today lack close_task and how the fix in the sibling bug task behaves; measure first.
 
@@ -174,3 +180,7 @@ The T-3843 close_task mechanism exists and is almost never used.
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-11-18T22:21:45Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → agent
+- **Revisit:** 2026-11-25

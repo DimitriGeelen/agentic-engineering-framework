@@ -16,9 +16,12 @@ tags: [config, high-value, arc-candidate, termlink, designer, litellm,
       version-monitoring]
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:41Z'
+revisit_at: 2026-11-25
+waiting_on: agent
 origin: {kind: "operator", source: "", ref: "operator request 2026-10-02"}
 created: 2026-10-02T14:55:03Z
-last_update: '2026-10-02T15:00:41Z'
+last_update: 2026-11-18T22:21:41Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -154,7 +157,10 @@ bvp_scores_stamp:
 
 ## Recommendation
 
-**Recommendation:** GO
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): GO — rationale kept below.
+Back to EXPLORING by T-5228 triage (4 IW questions not disposed). Waiting on: agent — dispose IW-1..IW-4.
 
 **Rationale:**
 
@@ -185,3 +191,7 @@ Operator request 2026-10-02, high value. Today: a hand-maintained registry (lib/
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-11-18T22:21:41Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → agent
+- **Revisit:** 2026-11-25

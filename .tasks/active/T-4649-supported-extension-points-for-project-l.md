@@ -16,9 +16,12 @@ horizon: later
 tags: [consumer, upgrade, extension-points, post-freeze]
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:46Z'
+revisit_at: 2026-11-25
+waiting_on: operator
 origin: {kind: "peer", source: "proxmox-ring20-management", ref: "83c8790d"}
 created: 2026-10-22T14:14:29Z
-last_update: 2026-10-28T11:08:37Z
+last_update: 2026-11-18T22:21:46Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -199,3 +202,7 @@ cost_estimate_proposed:
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
 - **Change:** tags: +post-freeze
+
+### 2026-11-18T22:21:46Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → operator
+- **Revisit:** 2026-11-25

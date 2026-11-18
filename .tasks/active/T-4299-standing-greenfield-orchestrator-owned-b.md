@@ -15,8 +15,11 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:45Z'
+revisit_at: 2026-11-25
+waiting_on: agent
 created: 2026-10-18T10:02:59Z
-last_update: '2026-10-18T10:15:37Z'
+last_update: 2026-11-18T22:21:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -156,7 +159,10 @@ cost_estimate_proposed:
 
 ## Recommendation
 
-**Recommendation:** GO
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): GO — rationale kept below.
+Back to EXPLORING by T-5228 triage (3 IW questions not disposed). Waiting on: agent — dispose IW-1..IW-3.
 
 **Rationale:**
 
@@ -190,3 +196,7 @@ Evidence: greenfield runs 3 and 4 (dimitri-mint-dev) found 49 and 46 findings, i
 
 ### 2026-10-18T10:04:30Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-18T22:21:45Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → agent
+- **Revisit:** 2026-11-25

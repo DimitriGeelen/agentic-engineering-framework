@@ -12,8 +12,11 @@ tags: []
 arc_id: github-contributions
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:48Z'
+revisit_at: 2026-11-25
+waiting_on: operator
 created: 2026-11-02T07:55:22Z
-last_update: 2026-11-12T19:33:26Z
+last_update: 2026-11-18T22:21:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -174,7 +177,10 @@ Mehdi (GitHub contributor, author of issues #98, #104, #106) wants to send pull 
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (6 IW questions open). Waiting on: operator — the operator's T-5021 requirements sign-off, the first step of the role chain the operator set on 2026-11-12.
 
 **Rationale:**
 
@@ -223,3 +229,7 @@ Mehdi (GitHub contributor, author of issues #98, #104, #106) wants to send pull 
 
 ### 2026-11-02T07:56:33Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-18T22:21:48Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → operator
+- **Revisit:** 2026-11-25

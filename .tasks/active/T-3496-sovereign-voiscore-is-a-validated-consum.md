@@ -23,9 +23,12 @@ horizon: now
 tags: [arc:value-prioritisation]
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:40Z'
+revisit_at: 2026-11-25
+waiting_on: operator
 arc_id: value-prioritisation
 created: 2026-09-26T00:12:26Z
-last_update: '2026-09-26T00:15:25Z'
+last_update: 2026-11-18T22:21:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -178,3 +181,7 @@ bvp_scores_proposed:
 
 ### 2026-09-26T00:13:11Z — status-update [task-update-agent]
 - **Change:** tags: +arc:value-prioritisation
+
+### 2026-11-18T22:21:40Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → operator
+- **Revisit:** 2026-11-25

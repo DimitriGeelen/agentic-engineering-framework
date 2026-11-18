@@ -24,6 +24,9 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:46Z'
+revisit_at: 2026-11-25
+waiting_on: agent
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -51,7 +54,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T15:30:32Z
-last_update: '2026-10-28T15:45:34Z'
+last_update: 2026-11-18T22:21:46Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -354,7 +357,10 @@ AEF's Worktree Policy (CLAUDE.md §Worktree Policy, operator directive 2026-08-2
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (the readiness check passes, but the DEFER below waits on agent work). Waiting on: agent — T-4833 has shipped; review 055's hook against AEF's gates, then write GO or NO-GO.
 
 **Rationale:** The evidence for a gate is real: 055's 27 uninstructed worktree branches in 8 days show that the behavioural rule alone did not hold there. But in 055's case the policy never reached it (T-4833), so it is not yet known whether delivering the policy is enough. 055's design also has to be reviewed before it is proposed for AEF, in particular how the grant is given and how it fits AEF's existing gates. DEFER until T-4833 has shipped and the hook has been reviewed against AEF; the recommendation then becomes GO or NO-GO.
 
@@ -418,3 +424,7 @@ AEF's Worktree Policy (CLAUDE.md §Worktree Policy, operator directive 2026-08-2
 
 ### 2026-10-27T15:34:20Z — status-update [task-update-agent]
 - **Change:** workflow_type: build → inception
+
+### 2026-11-18T22:21:46Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → agent
+- **Revisit:** 2026-11-25

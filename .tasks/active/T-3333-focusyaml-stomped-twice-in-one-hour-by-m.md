@@ -13,8 +13,11 @@ horizon: later
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:40Z'
+revisit_at: 2026-11-25
+waiting_on: agent
 created: 2026-09-07T07:08:23Z
-last_update: '2026-09-07T07:15:17Z'
+last_update: 2026-11-18T22:21:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -141,7 +144,10 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (no IW questions filed). Waiting on: agent — attribute the stale-replay writer.
 
 **Rationale:** Evidence gap: writer not yet attributed; T-3030 umbrella exists but this specific stale-replay writer needs its own attribution before a fix can be scoped.
 
@@ -167,3 +173,7 @@ bvp_scores_proposed:
 
 ### 2026-09-07T07:09:25Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
+
+### 2026-11-18T22:21:40Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → agent
+- **Revisit:** 2026-11-25

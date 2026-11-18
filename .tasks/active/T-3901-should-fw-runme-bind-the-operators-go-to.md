@@ -15,9 +15,12 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:42Z'
+revisit_at: 2026-11-25
+waiting_on: peer
 origin: {kind: "peer", source: "832-Workflow-designer", ref: "msg 8d8b2ecc (runme-wake-link)"}
 created: 2026-10-05T21:08:25Z
-last_update: '2026-10-05T21:15:47Z'
+last_update: 2026-11-18T22:21:42Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -144,7 +147,10 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (no IW questions filed). Waiting on: peer (832) — their tools/runme-launcher.sh and 12-leg test, offered but not yet seen.
 
 **Rationale:**
 
@@ -175,3 +181,7 @@ Evidence gap, not a confidence gap: 832 offered the files (tools/runme-launcher.
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-11-18T22:21:42Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → peer
+- **Revisit:** 2026-11-25

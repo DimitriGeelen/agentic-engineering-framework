@@ -13,8 +13,11 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:43Z'
+revisit_at: 2026-11-25
+waiting_on: operator
 created: 2026-10-09T07:30:43Z
-last_update: '2026-10-09T07:45:23Z'
+last_update: 2026-11-18T22:21:43Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -156,7 +159,10 @@ cost_estimate_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (7 IW questions not disposed). Waiting on: operator — the design questions (rung timing, escalate-to-operator-first, direct PTY inject, dead-letter) need the operator's input in dialogue.
 
 **Rationale:**
 
@@ -190,3 +196,7 @@ Evidence gap, not a confidence gap: the design questions (rung timing, escalate-
 
 ### 2026-10-09T07:31:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-18T22:21:43Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → operator
+- **Revisit:** 2026-11-25

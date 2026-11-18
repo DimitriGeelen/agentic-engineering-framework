@@ -13,8 +13,11 @@ horizon: later
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:42Z'
+revisit_at: 2026-11-25
+waiting_on: operator
 created: 2026-10-06T09:48:00Z
-last_update: '2026-10-06T10:01:04Z'
+last_update: 2026-11-18T22:21:42Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -141,7 +144,10 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (no IW questions filed). Waiting on: operator — input on whether a review-round cap is wanted and where it should live (it also depends on the unbuilt T-3555).
 
 **Rationale:** Pickup from the ring20 orchestration review (T-3930 F11). Where the cap lives and whether the operator wants it need dialogue; it also depends on the unbuilt refusal ledger T-3555, so there is no evidence yet to recommend GO or NO-GO.
 
@@ -164,3 +170,7 @@ bvp_scores_proposed:
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-11-18T22:21:42Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → operator
+- **Revisit:** 2026-11-25

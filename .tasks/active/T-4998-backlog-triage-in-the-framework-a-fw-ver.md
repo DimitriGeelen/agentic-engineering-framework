@@ -21,8 +21,11 @@ horizon: next
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:48Z'
+revisit_at: 2026-11-25
+waiting_on: peer
 created: 2026-11-01T23:39:30Z
-last_update: '2026-11-01T23:45:49Z'
+last_update: 2026-11-18T22:21:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -166,7 +169,10 @@ Backlogs only grow: capturing a task has an owner and a moment, pruning has neit
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (no IW questions filed). Waiting on: peer (055, 010) — the results of their backlog-triage builds.
 
 **Rationale:** Proposal with evidence from two projects (010 triage of 343 tasks, 055 building a check and page); the operator decides whether AEF owns a backlog-triage surface, and 055/010's result should be seen first.
 
@@ -189,3 +195,7 @@ Backlogs only grow: capturing a task has an owner and a moment, pruning has neit
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-11-18T22:21:48Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → peer
+- **Revisit:** 2026-11-25

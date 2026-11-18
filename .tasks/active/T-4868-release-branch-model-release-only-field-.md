@@ -13,8 +13,11 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:46Z'
+revisit_at: 2026-11-25
+waiting_on: agent
 created: 2026-10-28T10:55:42Z
-last_update: '2026-10-28T11:00:22Z'
+last_update: 2026-11-18T22:21:46Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -150,7 +153,10 @@ cost_estimate_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (2 IW questions not disposed). Waiting on: agent — do the release-branch research the operator asked for on 2026-10-28.
 
 **Rationale:**
 
@@ -184,3 +190,7 @@ Evidence gap, not confidence: the research (how the cherry-pick/release-branch m
 
 ### 2026-10-28T10:56:03Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-18T22:21:46Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → agent
+- **Revisit:** 2026-11-25

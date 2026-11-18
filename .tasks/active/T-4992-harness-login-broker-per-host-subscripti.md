@@ -23,8 +23,11 @@ horizon: next
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:47Z'
+revisit_at: 2026-11-25
+waiting_on: operator
 created: 2026-11-01T22:11:28Z
-last_update: '2026-11-01T22:15:35Z'
+last_update: 2026-11-18T22:21:47Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -192,3 +195,7 @@ Agents on other hosts need their own subscription login per harness. Copying a d
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-11-18T22:21:47Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → operator
+- **Revisit:** 2026-11-25

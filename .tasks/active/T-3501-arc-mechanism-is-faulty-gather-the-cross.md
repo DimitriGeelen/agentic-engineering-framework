@@ -13,9 +13,12 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:41Z'
+revisit_at: 2026-11-25
+waiting_on: agent
 origin: {kind: "proposal", source: "cross-agent arc proposals", ref: "relayed by the operator"}
 created: 2026-09-26T09:13:48Z
-last_update: 2026-10-05T20:07:58Z
+last_update: 2026-11-18T22:21:41Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -232,7 +235,10 @@ disagree with themselves.
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (4 IW questions not disposed). Waiting on: agent — gather and read the cross-agent proposals.
 
 **Rationale:**
 
@@ -266,3 +272,7 @@ Filed before reading the proposals, which is a real evidence gap and not a hedge
 
 ### 2026-09-26T09:15:04Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-18T22:21:41Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → agent
+- **Revisit:** 2026-11-25

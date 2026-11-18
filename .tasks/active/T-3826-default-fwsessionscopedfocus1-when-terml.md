@@ -16,8 +16,11 @@ horizon: next
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:41Z'
+revisit_at: 2026-11-25
+waiting_on: agent
 created: 2026-10-04T14:35:35Z
-last_update: '2026-10-04T14:45:43Z'
+last_update: 2026-11-18T22:21:41Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -144,7 +147,10 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (no IW questions filed). Waiting on: agent — take the usage count from the dispatch ledger.
 
 **Rationale:** fw termlink dispatch already sets FW_SESSION_SCOPED_FOCUS=1 per worker (termlink.sh ~1008, T-3038/T-3422), so sanctioned dispatches are covered. The open case is a session launched by raw termlink spawn or dispatch with TERMLINK_SESSION set but no flag. We have no evidence of how often this happens outside 1409, so DEFER until a second consumer reports it or a usage count from the dispatch ledger is in.
 
@@ -167,3 +173,7 @@ bvp_scores_proposed:
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-11-18T22:21:41Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → agent
+- **Revisit:** 2026-11-25

@@ -19,8 +19,11 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:21:30Z'
+revisit_at: 2026-11-25
+waiting_on: agent
 created: 2026-08-13T07:31:08Z
-last_update: '2026-08-13T07:45:12Z'
+last_update: 2026-11-18T22:21:30Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -147,7 +150,10 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
+
+Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
+Back to EXPLORING by T-5228 triage (no IW questions filed). Waiting on: agent — measure what our own importer does with an unknown extension.
 
 **Rationale:** Evidence gap by construction: 832 measured their side (23/23 dropped across unknown aef element, foreign-namespace element, unknown attribute on known element; control 23/23 preserved) and explicitly declined to propose a fix because the choice — preserve-everything catch-all, version gate, or accepted-and-documented limitation — is a two-party seam decision. Our side has not yet measured what our own importer does with an unknown extension, so the option space cannot be costed. This is a genuine knowledge gap, not a confidence hedge.
 
@@ -170,3 +176,7 @@ bvp_scores_proposed:
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-11-18T22:21:30Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → agent
+- **Revisit:** 2026-11-25
