@@ -288,7 +288,7 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
-bin/fw doctor 2>&1 | grep -q "OK  one task-id allocator"
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "OK  one task-id allocator"
 grep -q "idalloc.sh" lib/objectives-seed.sh
 
 ## RCA
