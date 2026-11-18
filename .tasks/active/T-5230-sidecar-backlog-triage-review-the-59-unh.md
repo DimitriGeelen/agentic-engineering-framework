@@ -102,9 +102,9 @@ Open ones are answered or filed as tasks. Then one operator runme drops every en
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Every unhandled inbound entry has a one-line summary and a class in .context/scratch/t5230/sidecar-backlog-review.md (gitignored, because it holds peer text)
-- [ ] Every "still open" entry is either answered over the sidecar or filed as a task, and the ids are recorded in the review file
-- [ ] One runme drops the entries older than 7 days that are not live, each with a reason naming T-5230. Its line is recorded here, and it is not run by the agent.
+- [x] Every unhandled inbound entry has a one-line summary and a class in .context/scratch/t5230/sidecar-backlog-review.md (gitignored, because it holds peer text)
+- [x] Every "still open" entry is either answered over the sidecar or filed as a task: 2a579c23 → T-5232 (055 told), d0ef5cd9 → T-5233 (055 told), 4c77be4a → T-5234 (1409 told), f4eb9aa0 → recorded on T-5102 (010 told), b7529aff → recorded on T-5103 (1409 told)
+- [x] One runme drops the entries older than 7 days that are not live, each with a reason naming T-5230. The operator ran `bash /opt/999-Agentic-Engineering-Framework/.context/runme/t5230-drop-backlog/runme.sh` (192 dropped; 2 failed because nudge copies need their `-nudge-N` suffix), then `bash /opt/999-Agentic-Engineering-Framework/.context/runme/t5230-drop-backlog-b/runme.sh` (4 nudge copies dropped). The waiting list went from 241 to 31 live entries (2026-11-18). The agent ran neither.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,6 +290,9 @@ Open ones are answered or filed as tasks. Then one operator runme drops every en
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+grep -q "RUNME EXIT 0" .context/runme/t5230-drop-backlog/run.log
+grep -q "RUNME EXIT 0" .context/runme/t5230-drop-backlog-b/run.log
+test -n "$(ls .tasks/active/T-5232-*.md .tasks/completed/T-5232-*.md 2>/dev/null)"
 
 ## RCA
 
