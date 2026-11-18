@@ -308,12 +308,18 @@ bin/fw watchtower current
 
 ## Visual Verification
 
-Shots: `bin/fw ux shots T-5236 "hub-profiles=http://192.168.10.107:3000/approvals#section-hub-profiles"` with two temporary demo notices seeded in the ledger (removed afterwards). Section checked at each width in a cropped view.
+Shots retaken on 2026-11-18 after review amber V (claude-code): the full-page captures of the ~45,000 px /approvals page were unreliable at 1440 and 1920 (blank areas; the 1920 shot never reached the section). The new shots use a steps file that crops to the section band (T-4958 `crop`):
+
+    - goto: http://192.168.10.107:3000/approvals
+    - wait-for: "#section-hub-profiles"
+    - crop: {from: "#section-hub-profiles", to: "#section-verifications"}
+
+`bin/fw ux shots T-5236 hub-profiles=@<that steps file>` produced 1024x562, 1440x500 and 1920x500. Two demo notices were recorded through `lib/sidecar/profile_notices.record()`: demo-ring20-hub (missing) and demo-lab-hub (broken, profile demo-lab). They are removed after the review.
 
 | state | control | 1024 | 1440 | 1920 | note |
 |-------|---------|------|------|------|------|
-| hub-profiles | missing-profile card (hubs.toml lines) | ok | ok | ok | long last line wraps at 1024 |
-| hub-profiles | broken-profile card (prepared runme line) | ok | ok | ok | |
+| hub-profiles | missing-profile card (hubs.toml lines) | ok | ok | ok | last fix line wraps at 1024 |
+| hub-profiles | broken-profile card (prepared runme line + the command it runs) | ok | ok | ok | the "since" timestamp wraps mid-date at 1024 (cosmetic) |
 
 ## RCA
 
