@@ -96,17 +96,34 @@ import yaml; print(' '.join(yaml.safe_load(open('$ENUMS'))['owners']))")
     # file does (T-2577), and counting it would be the mention-vs-instance
     # error this task exists to correct.
     #
-    # This leg is expected to be RED until the 10 legacy files are reconciled;
-    # it is written now so the reconciliation has a finish line rather than an
-    # opinion. Skips rather than fails so it reports without blocking, and
-    # names the count either way — a verdict must never print without its
-    # denominator (T-2916).
-    run python3 - "$FRAMEWORK_ROOT" <<'PY'
+    # T-5223 (operator ruling 2026-11-18, question 5 option 1): ACTIVE tasks only, and a
+    # bad owner FAILS. The owner of an active task decides who may close it; closed
+    # records are history (20 legacy out-of-enum values there are left as they are).
+    # The old skip hid the drift: a skip in the fast tier is not-determined, never red.
+    # It still names the count — a verdict must never print without its denominator
+    # (T-2916).
+    run _owner_scan "$FRAMEWORK_ROOT/.tasks/active"
+    [ "$status" -eq 0 ] || { echo "$output"; return 1; }
+}
+
+@test "t2924: the active-owner check turns red on a planted bad owner (control leg)" {
+    local d="$BATS_TEST_TMPDIR/active"
+    mkdir -p "$d"
+    printf -- '---\nid: T-9001\nowner: agent\n---\n' > "$d/T-9001-ok.md"
+    printf -- '---\nid: T-9002\nowner: claude\n---\n' > "$d/T-9002-bad.md"
+    run _owner_scan "$d"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"T-9002-bad.md"* ]]
+    [[ "$output" == *"evaluated 2 task file(s), 1 out-of-enum"* ]]
+}
+
+_owner_scan() {  # _owner_scan <dir of T-*.md>
+    python3 - "$1" <<'PY'
 import glob, os, re, sys
 root = sys.argv[1]
 valid = {'human', 'agent', 'claude-code'}
 bad, total = [], 0
-for p in glob.glob(os.path.join(root, '.tasks/*/T-*.md')):
+for p in glob.glob(os.path.join(root, 'T-*.md')):
     s = open(p, encoding='utf-8', errors='replace').read()
     if not s.startswith('---'):
         continue
@@ -123,7 +140,4 @@ for f, v in bad:
     print("  %-52s %s" % (f, v))
 raise SystemExit(1 if bad else 0)
 PY
-    if [ "$status" -ne 0 ]; then
-        skip "legacy drift not yet reconciled — $output"
-    fi
 }

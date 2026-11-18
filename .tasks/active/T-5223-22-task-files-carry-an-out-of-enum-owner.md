@@ -11,10 +11,10 @@ description: >
   at the task), then make the test fail instead of skip. Ownership changes away from
   human are the operator's call; none of these 22 is 'human' today.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-18T08:59:57Z
-last_update: '2026-11-18T09:15:51Z'
+last_update: 2026-11-18T16:47:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,20 +91,23 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Found under T-5220 on 2026-11-18. tests/unit/t2924_update_task_owner_gate.bats #6 skips with "legacy drift not yet reconciled — 22 out-of-enum". In the fast tier a skip counts as not-determined, so the drift never reads as red. Operator ruling 2026-11-18 (question 5 of 6, option 1): fix the active ones, leave closed records as history, and make the test check active tasks only and fail instead of skipping.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** 22 task files have an owner outside agent/human. 20 are closed records (10 empty, 6 'claude', 4 other) and 2 are active: T-3568 and T-3699, both with an empty owner. T-3699 is itself the report of create-task clobbering the owner, so its own empty owner is likely that bug's evidence. For active tasks the owner decides who may close them, so a bad value there matters. For closed records it does not.
 
-**Goal:** <what we are trying to achieve>
+**Goal:**
+- T-3568 and T-3699 get owner `agent`. Both are captured build tasks with no Human criteria.
+- t2924 #6 checks `.tasks/active/` only, and FAILS on an out-of-enum owner instead of skipping.
+- The 20 closed records are left unchanged.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** The test is green now, and any future active task with a bad owner turns it red the same night.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] T-3568 and T-3699 have `owner: agent`, set through `fw task update --owner`
+- [x] t2924 #6 evaluates .tasks/active only and fails (no skip) on an out-of-enum owner, and passes on the current tree. A test with a planted bad active owner shows it red.
+- [x] No closed task file is changed (`git diff --stat` touches no .tasks/completed/ file)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,6 +293,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bats tests/unit/t2924_update_task_owner_gate.bats
+grep -q "^owner: agent" .tasks/active/T-3568-adopt-832s-stale-ownership-predicate-own.md
+grep -q "^owner: agent" .tasks/active/T-3699-fw-task-create-clobbers-owner-when-the-t.md
 
 ## RCA
 
@@ -387,3 +393,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5223-22-task-files-carry-an-out-of-enum-owner.md
 - **Context:** Initial task creation
+
+### 2026-11-18T16:47:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
