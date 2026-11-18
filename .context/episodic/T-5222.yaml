@@ -1,0 +1,105 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5222: T-5211 slice 2: review ticks, restatement accept/reject and paid-review approval notify the project's agent (one shared notifier with the decide chain)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-18T09:10:47Z
+# ============================================================================
+
+task_id: T-5222
+task_name: "T-5211 slice 2: review ticks, restatement accept/reject and paid-review approval notify the project's agent (one shared notifier with the decide chain)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-18T08:56:57Z
+completed: 2026-11-18T09:09:43Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-18T09:58:03+01:00
+last_commit: 2026-11-18T10:07:24+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context, criteria (T-5211 slice 2). shared notifier lib/agent_notice.py; toggle-ac, restatement accept/reject, paid-review approve notify the agent. vendor lib/agent_notice.py and the three notifying call sites; fabric card. criteria ticked, verification lines, decisions (test-run guard, sync CLI / async web posts)
+
+# Key outcomes
+outcomes:
+  - 'A shared notifier module exists, and web/decide_runner.py uses it with unchanged behaviour (the T-5216 tests still pass)'
+  - 'toggle-ac posts one notice when a Human criterion becomes ticked, with a distinct "all ticked" text when it was the last one, and none on untick. Tests use a stubbed sender.'
+  - 'Restatement accept and reject each post one notice naming the task and the verdict id; paid-review approve posts one naming the proposal and the task (tests, stubbed sender)'
+  - 'A failed post never changes the action''s result or exit status, in any of the three (tests). No notice carries criterion text or other task-file text (test).'
+  - 'The existing toggle-ac, restatement, review cost and decide-runner suites pass. `bin/fw test invariants` and `bin/fw vendor self --check --task T-5222` are clean, and Watchtower is restarted, with `bin/fw watchtower current` passing.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-18 — test runs never send for real'
+    chose: '`lib/agent_notice.post()` skips (logged "skipped") under pytest or bats unless `FW_AGENT_NOTICES=1`; `FW_AGENT_NOTICES=0` switches notices off anywhere. The decide chain keeps its own flow and only shares the sender.'
+    rationale: 'existing suites (review cost bats, restatement, toggle-ac web tests) drive these actions in temp roots; without a guard each would send a real sidecar notice.'
+    alternatives_rejected: ['a conftest autouse stub (does not reach bats subprocesses).']
+  - decision: '2026-11-18 — CLI actions post synchronously, Watchtower in the background'
+    chose: 'toggle-ac posts on a daemon thread (`wait=False`); restatement and paid-review approve post inline with a 10 s timeout.'
+    rationale: 'the web request must never wait; a daemon thread in a CLI dies with the process before the post lands.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/agent_notice.py'
+  - '.agentic-framework/lib/review_cost.py'
+  - '.agentic-framework/lib/reviewer/restatement_cli.py'
+  - '.agentic-framework/web/blueprints/tasks.py'
+  - '.agentic-framework/web/decide_runner.py'
+  - '.context/working/.gitignore'
+  - '.fabric/components/lib-agent_notice.yaml'
+  - '.tasks/active/T-5222-t-5211-slice-2-review-ticks-restatement-.md'
+  - 'lib/agent_notice.py'
+  - 'lib/review_cost.py'
+  - 'lib/reviewer/restatement_cli.py'
+  - 'tests/unit/test_t5222_action_notices.py'
+  - 'web/blueprints/tasks.py'
+  - 'web/decide_runner.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-18T09:58:03'
+    action: 'T-5222: context, criteria (T-5211 slice 2)'
+  - time: '2026-11-18T10:04:38'
+    action: 'T-5222: shared notifier lib/agent_notice.py; toggle-ac, restatement accept/reject, paid-review approve notify the agent'
+  - time: '2026-11-18T10:04:57'
+    action: 'T-5222: vendor lib/agent_notice.py and the three notifying call sites; fabric card'
+  - time: '2026-11-18T10:07:24'
+    action: 'T-5222: criteria ticked, verification lines, decisions (test-run guard, sync CLI / async web posts)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 12 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 12
+  commits: 5
+  files_changed: 17
+  lines_added: 1444
+  lines_removed: 44
+  footprint_refreshed_at: '2026-11-18T09:11:05Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5222-t-5211-slice-2-review-ticks-restatement-.md
+generated_by: context-agent-hybrid

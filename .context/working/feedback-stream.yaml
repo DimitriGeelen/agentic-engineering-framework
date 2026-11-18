@@ -56771,3 +56771,21 @@ scan_id: R-a64149c2
 task_id: T-5220
 payload:
   task_file: .tasks/active/T-5220-fast-tier-unit-suite-ends-with-batsrc124.md
+---
+kind: scan_emitted
+timestamp: '2026-11-18T09:10:34Z'
+scan_id: R-d0e24fb3
+task_id: T-5222
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-18T09:10:34Z'
+scan_id: R-d0e24fb3
+task_id: T-5222
+payload:
+  task_file: .tasks/active/T-5222-t-5211-slice-2-review-ticks-restatement-.md

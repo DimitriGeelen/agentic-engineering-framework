@@ -5,12 +5,12 @@ name: "T-5211 slice 2: review ticks, restatement accept/reject and paid-review a
 description: >
   Build slice 2 of inception T-5211 (GO 2026-11-18); slice 1 was T-5216.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/agent_notice.py, lib/review_cost.py, lib/reviewer/restatement_cli.py, web/blueprints/tasks.py, web/decide_runner.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -39,8 +39,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-18T08:56:57Z
-last_update: '2026-11-18T09:00:33Z'
-date_finished:
+last_update: 2026-11-18T09:09:43Z
+date_finished: 2026-11-18T09:09:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -412,3 +412,21 @@ bin/fw watchtower current
 
 ### 2026-11-18T08:57:13Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-18T09:09:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d0e24fb3
+- **Timestamp:** 2026-11-18T09:10:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — A shared notifier module exists, and web/decide_runner.py uses it with unchanged behaviour (the T-5216 tests still pass)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/decide_runner.py in: A shared notifier module exists, and web/decide_runner.py uses it with unchanged behaviour (the T-5216 tests still pass)`
