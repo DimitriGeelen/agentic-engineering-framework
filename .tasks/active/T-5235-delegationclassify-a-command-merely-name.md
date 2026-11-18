@@ -20,10 +20,10 @@ description: >
   be to class a criterion whose recorded ruling is already present as ruling-recorded
   rather than relaxing act-in-the-world.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -54,7 +54,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-18T13:39:51Z
-last_update: '2026-11-18T13:46:17Z'
+last_update: 2026-11-18T17:11:02Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,20 +100,29 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 832 (sidecar e106c38e, 2026-11-18). Their T-676 Human AC1 is a ruling question ("Should P-002 exempt read-only Bash when …? GO / NO-GO / DEFER") whose body lists once-refused commands, including `git push`. `fw task delegate --dry-run` classes it act-in-the-world, OPERATOR-ONLY. Their operator had already ruled "a", so the box only records that ruling, and the operator is asked to rubber-stamp it.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+Operator ruling 2026-11-18 (question 6 of 6, option A; see `fw decisions`): a criterion whose operator ruling is recorded becomes reviewer-judgeable. Criteria with no recorded ruling stay as strict as before. Option B, relaxing act-in-the-world detection, was declined.
 
-**Goal:** <what we are trying to achieve>
+**Problem / hypothesis:** lib/delegation.py `classify` decides the class from the criterion text alone. It has no notion of "the operator already decided this; the box records it". Free text cannot carry that notion safely: an agent could write "Ruling: a" under a criterion itself.
 
-**Expected outcome:** <what will be different when this is done>
+**Goal:** A recorded ruling with operator provenance turns an OPERATOR-ONLY criterion into a reviewer-judged one, and nothing else does.
+- `fw reviewer ruling record T-XXX --ac N --ruling "<the ruling, verbatim>" --ref "<where it was given>"` is operator-only: refused under CLAUDECODE/AI_AGENT, even with --i-am-human, like restatement accept (T-4930).
+- It appends to an append-only ledger under .context/reviews/ and is digest-bound to the criterion's current text, so a later edit to the criterion voids it.
+- `classify` (or the delegate report and the verdict ledger, through one decision point) reports such a criterion as reviewer-judged, "ruling recorded (RL-…)". The reviewer's brief tells it to check that the box matches the recorded ruling, not to make the ruling.
+- The Bash text gate and the Write/Edit guard refuse agent writes to the new ledger, as they do for the other operator ledgers (T-5205).
+- tier0-or-bypass and sovereignty criteria are NOT covered. They stay operator-only even with a recorded ruling; only act-in-the-world and operator-marked are in scope.
+
+**Expected outcome:** 832's operator records "a" for T-676 AC1 once. A reviewer then confirms the box and the task closes, and no criterion leaves the operator's hands without the operator's own recorded ruling.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw reviewer ruling record` writes an append-only, digest-bound ledger row, and is refused under agent control including with --i-am-human. Agent Bash and Write/Edit to the ledger are refused by the existing guards (tests).
+- [ ] With a valid recorded ruling, an act-in-the-world or operator-marked criterion is reported reviewer-judged ("ruling recorded"). Without one, or with a ruling whose digest no longer matches the criterion text, it stays OPERATOR-ONLY (tests). tier0-or-bypass and sovereignty criteria stay OPERATOR-ONLY even with a ruling (test).
+- [ ] The verdict ledger accepts a green on such a criterion only while the ruling is valid, and the reviewer brief carries the recorded ruling text and the instruction to check the box against it (tests)
+- [ ] 832's case reproduces: a T-676-like fixture classes OPERATOR-ONLY before the ruling and reviewer-judged after it (test)
+- [ ] Existing delegation, verdict-ledger, judge, restatement and T-5205 guard suites pass. CLAUDE.md §Delegation states the rule in one paragraph. `bin/fw test invariants` and `bin/fw vendor self --check --task T-5235` are clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -396,3 +405,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5235-delegationclassify-a-command-merely-name.md
 - **Context:** Initial task creation
+
+### 2026-11-18T17:11:02Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
