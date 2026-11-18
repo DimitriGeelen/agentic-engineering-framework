@@ -1,0 +1,21 @@
+id: agents/context/block-cross-session-messages.sh
+name: block-cross-session-messages
+type: script
+subsystem: context-fabric
+location: agents/context/block-cross-session-messages.sh
+tags: []
+
+purpose: "Block Claude Code's built-in cross-session messaging tools — TermLink only (T-5225)"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-18
+created_by: unknown
