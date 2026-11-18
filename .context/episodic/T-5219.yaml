@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5219: fw_version_output.bats #4 fails since T-5214: the test points fw at another framework tree via inherited FRAMEWORK_ROOT without the handoff marker
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-18T02:14:17Z
+# ============================================================================
+
+task_id: T-5219
+task_name: "fw_version_output.bats #4 fails since T-5214: the test points fw at another framework tree via inherited FRAMEWORK_ROOT without the handoff marker"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-18T02:11:57Z
+completed: 2026-11-18T02:13:54Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-18T03:13:51+01:00
+last_commit: 2026-11-18T03:13:51+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw_version_output.bats #4 declares its intentional FRAMEWORK_ROOT handoff (T-5214 contract)
+
+# Key outcomes
+outcomes:
+  - 'fw_version_output.bats #4 sets FW_FRAMEWORK_ROOT_HANDOFF=1 alongside FRAMEWORK_ROOT, and the whole file passes (9/9)'
+  - 'No other test under tests/ points bin/fw at a different framework tree through an inherited FRAMEWORK_ROOT without the marker. The grep for FRAMEWORK_ROOT set to a temp tree near an fw call found 5 more files: lib_build 7/7, self_vendor_version 8/8, t4041 11/11, t4908 9/9 and t4928 3/3, all green. t5214_inherited_framework_root.bats still passes.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5219-fwversionoutputbats-4-fails-since-t-5214.md'
+  - 'tests/unit/fw_version_output.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-18T03:13:51'
+    action: 'T-5219: fw_version_output.bats #4 declares its intentional FRAMEWORK_ROOT handoff (T-5214 contract)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 5
+  lines_added: 478
+  lines_removed: 5
+  footprint_refreshed_at: '2026-11-18T02:14:31Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5219-fwversionoutputbats-4-fails-since-t-5214.md
+generated_by: context-agent-hybrid
