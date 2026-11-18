@@ -9,10 +9,10 @@ description: >
   variable over the invoked fw's own location, and whether that is intended (shared
   tooling mode) or a hazard for copies, tests and consumers.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-17T21:23:35Z
-last_update: '2026-11-17T21:31:14Z'
+last_update: 2026-11-18T00:38:23Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,20 +89,26 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 1409 reported this (sidecar a8eb045c, 2026-11-17) while prototyping T-6848 in a copy of their project. With FRAMEWORK_ROOT exported by their session, running the copy's bin/fw executed their main project's vendored framework code, not the copy's.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis (localised by reading bin/fw, 2026-11-18):** bin/fw:1565-1612 honours any inherited FRAMEWORK_ROOT that is a real framework tree (has lib/ and agents/). That is deliberate: it is the T-2099 fork-bomb fix, so the `fw upgrade` handoff to a freshly cloned framework keeps using the clone. Three narrow exceptions drop the inherited value:
+- T-4248: the value is not a framework tree.
+- T-4369: the value is the repo's own vendored self-copy.
+- T-4362/T-4680: during `upgrade`, the value is the project's vendored copy.
 
-**Goal:** <what we are trying to achieve>
+There is no exception for the general case: a user who runs a DIFFERENT copy's bin/fw on purpose, while their shell exports another tree's FRAMEWORK_ROOT, silently runs the other tree's code. bin/fw:458-462 already documents the trap ("the authority politely loads the replica's libraries — output byte-identical to having changed nothing", T-2845). The rule cannot tell an intended handoff from a leaked export.
 
-**Expected outcome:** <what will be different when this is done>
+**Goal:** An inherited FRAMEWORK_ROOT is honoured only when it was passed on purpose: the T-2099 upgrade handoff, or the worktree re-exec. Those two paths set an explicit marker, and only they are trusted. Otherwise, when the invoked bin/fw lives in a real framework tree that differs from the inherited root, fw uses its own tree and warns once per shell.
+
+**Expected outcome:** Running a copy's bin/fw runs that copy's code. `fw upgrade`'s clone handoff and the worktree re-exec behave exactly as before.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The T-2099 handoff (lib/upgrade.sh) and the worktree re-exec in bin/fw pass an explicit marker with FRAMEWORK_ROOT, and bin/fw honours an inherited FRAMEWORK_ROOT that points at another real framework tree only when that marker is present
+- [ ] Without the marker, a bin/fw in framework tree A, run with FRAMEWORK_ROOT exported to tree B, uses A and warns once per shell. A bats test uses two minimal framework trees.
+- [ ] The existing upgrade, fork-bomb (T-2099), T-4248, T-4362, T-4369, T-4680 and worktree re-exec suites pass, and `tests/unit/upgrade_fresh_machine_simulation.bats` stays green
+- [ ] `bin/fw vendor self --check --task T-5214` is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -385,3 +391,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5214-an-exported-frameworkroot-makes-fw-of-an.md
 - **Context:** Initial task creation
+
+### 2026-11-18T00:38:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
