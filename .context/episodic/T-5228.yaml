@@ -1,0 +1,160 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5228: Inception triage (slice 3): place each of the ~71 open inceptions on the inception lifecycle map with its waiting state and revisit date
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-18T22:31:17Z
+# ============================================================================
+
+task_id: T-5228
+task_name: "Inception triage (slice 3): place each of the ~71 open inceptions on the inception lifecycle map with its waiting state and revisit date"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-18T12:14:15Z
+completed: 2026-11-18T22:30:24Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-18T23:16:14+01:00
+last_commit: 2026-11-18T23:30:17+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context, criteria (operator choice B1: readiness triage of the 43 awaiting decision). triage the 43 awaiting decision — 36 back to EXPLORING with owner and reason, all 43 get waiting_on and revisit 2026-11-25. waiting_on and revisit 2026-11-25 on the 23 open GO-building / NO-GO / DEFER inceptions (fields only, nothing re-judged). triage report (short list of 6 truly ready, 43-row table, step-4 table, lifecycle before/after, findings), Agent ACs 1/3/4/5 ticked, verification. triage done (operator queue 43 -> 7, 6 truly ready); follow-ups T-5241 (readiness predicate reads the commented template question, G-133->G-134), T-5242, T-5243, T-5244 (T-3682)
+
+# Key outcomes
+outcomes:
+  - 'Each of the 43 is classified ready or not ready by `inception_handoff_blockers`, with the result recorded in docs/reports/T-5228-inception-triage.md (one row each: id, verdict before, ready?, blockers, waiting_on, why)'
+  - 'Every not-ready one now reads EXPLORING, with its earlier verdict kept as a note, a `waiting_on` with a reason and a `revisit_at`. Every ready one keeps its verdict and has a `revisit_at`. One exception, named and filed: T-3682 cannot be edited until its target_blast_radius and voi_score exist (inception-schema gate), so it stays DEFER in the queue untouched; T-5244 computes those fields and then places it.'
+  - 'Every other open inception (GO with builds, NO-GO/DEFER) has `waiting_on` and `revisit_at`. No decision was recorded and no task changed status (git diff shows only frontmatter and recommendation edits on inception files).'
+  - '`fw inception lifecycle` after the triage is recorded in the report, before and after'
+  - 'The short list of truly ready inceptions is at the top of the report'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/concerns.yaml'
+  - '.tasks/active/T-1265-export-docs-section-as-pdfdocxother-form.md'
+  - '.tasks/active/T-1271-cross-agent-peer-learning--15-min-termli.md'
+  - '.tasks/active/T-1309-ship-watchtowerservice-systemd-template-.md'
+  - '.tasks/active/T-1611-replace-local-flask-dev-watchtower-with-.md'
+  - '.tasks/active/T-1685-fw-audit-refactor--first-real-consumer-o.md'
+  - '.tasks/active/T-2062-watchtower-review-t-xxx-404-on-completed.md'
+  - '.tasks/active/T-2063-watchtower-complete-button-silent-fail.md'
+  - '.tasks/active/T-2064-task-surfaced-for-review-despite-zero-human-acs.md'
+  - '.tasks/active/T-2065-arc-driver-approve-no-member-bvp-recalc.md'
+  - '.tasks/active/T-2066-inception-detail-template-silently-drops.md'
+  - '.tasks/active/T-2137-multi-option-ac-pattern--choice-spawns-c.md'
+  - '.tasks/active/T-2321-pickup-aeftermlink-first-contact-t-2303-.md'
+  - '.tasks/active/T-2323-aef-ic-1-yield-point-granularity-substra.md'
+  - '.tasks/active/T-2428-governance-by-payload-mediation.md'
+  - '.tasks/active/T-2770-should-a-read-only-fw-query-auto-init-an.md'
+  - '.tasks/active/T-2963-seam-design-a-pinned-designer-drops-ever.md'
+  - '.tasks/active/T-3240-the-stop-hook-loop-caps-at-one-continuat.md'
+  - '.tasks/active/T-3276-should-continuous-driver-carry-a-non-ter.md'
+  - '.tasks/active/T-3331-external-writer-mutated-an-active-task-s.md'
+  - '.tasks/active/T-3332-filing-a-task-is-indistinguishable-from-.md'
+  - '.tasks/active/T-3333-focusyaml-stomped-twice-in-one-hour-by-m.md'
+  - '.tasks/active/T-3334-which-process-auto-created-t-3215-in-sta.md'
+  - '.tasks/active/T-3496-sovereign-voiscore-is-a-validated-consum.md'
+  - '.tasks/active/T-3501-arc-mechanism-is-faulty-gather-the-cross.md'
+  - '.tasks/active/T-3682-sidecar-design-conformance-audit-t-3396t.md'
+  - '.tasks/active/T-3731-revise-the-configuration-engine-auto-dis.md'
+  - '.tasks/active/T-3796-visual-decision-briefs-an-options-at-a-g.md'
+  - '.tasks/active/T-3826-default-fwsessionscopedfocus1-when-terml.md'
+  - '.tasks/active/T-3829-optional-dialogue-log-artefact-for-decis.md'
+  - '.tasks/active/T-3895-continuous-run-arc-does-the-loop-actuall.md'
+  - '.tasks/active/T-3901-should-fw-runme-bind-the-operators-go-to.md'
+  - '.tasks/active/T-3932-cap-on-review-rounds-per-task-ring20-t-2.md'
+  - '.tasks/active/T-3935-adopt-ring20-managers-inception-protocol.md'
+  - '.tasks/active/T-3945-pickup-delivery-telemetry-goal-accumulat.md'
+  - '.tasks/active/T-3961-tier-0-holds-one-pending-action-slot-tha.md'
+  - '.tasks/active/T-4012-urgent-message-ladder-how-an-urgent-peer.md'
+  - '.tasks/active/T-4022-runme-job-queue-one-fixed-operator-comma.md'
+  - '.tasks/active/T-4027-1409-pickup-t-1815-no-waiting-without-a-.md'
+  - '.tasks/active/T-4111-focus-anchor-one-operator-owned-goal--pa.md'
+  - '.tasks/active/T-4168-decided-episodics-missing-from-the-worki.md'
+  - '.tasks/active/T-4201-external-tool-termlink-fleet-doctor-t-10.md'
+  - '.tasks/active/T-4299-standing-greenfield-orchestrator-owned-b.md'
+  - '.tasks/active/T-4321-should-the-arc-lifecycle-make-the-agent-.md'
+  - '.tasks/active/T-4371-task-owner-decided-by-a-creation-time-ri.md'
+  - '.tasks/active/T-4393-cross-branch-task-id-collisions-termlink.md'
+  - '.tasks/active/T-4649-supported-extension-points-for-project-l.md'
+  - '.tasks/active/T-4810-budget-ladder-in-unattended-runs-measure.md'
+  - '.tasks/active/T-4834-decide-gate-worktree-creation-behind-an-.md'
+  - '.tasks/active/T-4868-release-branch-model-release-only-field-.md'
+  - '.tasks/active/T-4877-worker-credentials-provision-preflight-e.md'
+  - '.tasks/active/T-4982-bvp-scoring-findings-from-the-estate-055.md'
+  - '.tasks/active/T-4991-workflow-design-vocabulary-for-maps-832-.md'
+  - '.tasks/active/T-4992-harness-login-broker-per-host-subscripti.md'
+  - '.tasks/active/T-4998-backlog-triage-in-the-framework-a-fw-ver.md'
+  - '.tasks/active/T-5000-the-claude-review-seat-runs-with-the-liv.md'
+  - '.tasks/active/T-5006-outside-contributions-through-github-pul.md'
+  - '.tasks/active/T-5007-move-cross-project-pickup-requests-from-.md'
+  - '.tasks/active/T-5030-weigh-moving-the-github-repo-into-an-org.md'
+  - '.tasks/active/T-5037-batch-verification-and-review-verify-eng.md'
+  - '.tasks/active/T-5224-optional-arc-orchestrator-an-arc-can-hav.md'
+  - '.tasks/active/T-5228-inception-triage-slice-3-place-each-of-t.md'
+  - '.tasks/active/T-5241-inception-readiness-predicate-counts-the.md'
+  - '.tasks/active/T-5242-fw-inception-lifecycle-prints-a-negative.md'
+  - '.tasks/active/T-5243-fw-inception-wait-rejects---switch-focus.md'
+  - '.tasks/active/T-5244-t-3682-cannot-be-edited-the-inception-sc.md'
+  - '.tasks/active/T-550-composition-based-adapter-pattern--evalu.md'
+  - '.tasks/active/T-558-build-task-risk-signal-detection--pretoo.md'
+  - '.tasks/active/T-682-termlink-product-feedback----working-dir.md'
+  - '.tasks/active/T-704-dag-federation-for-cross-machine-knowled.md'
+  - '.tasks/active/T-705-kcp-integration--knowledgeyaml-generatio.md'
+  - '.tasks/active/T-844-ssd-evaluation--simple-self-distillation.md'
+  - 'docs/reports/T-5228-inception-triage.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-18T23:16:14'
+    action: 'T-5228: context, criteria (operator choice B1: readiness triage of the 43 awaiting decision)'
+  - time: '2026-11-18T23:22:12'
+    action: 'T-5228: triage the 43 awaiting decision — 36 back to EXPLORING with owner and reason, all 43 get waiting_on and revisit 2026-11-25'
+  - time: '2026-11-18T23:23:36'
+    action: 'T-5228: waiting_on and revisit 2026-11-25 on the 23 open GO-building / NO-GO / DEFER inceptions (fields only, nothing re-judged)'
+  - time: '2026-11-18T23:27:24'
+    action: 'T-5228: triage report (short list of 6 truly ready, 43-row table, step-4 table, lifecycle before/after, findings), Agent ACs 1/3/4/5 ticked, verification'
+  - time: '2026-11-18T23:30:17'
+    action: 'T-5228: triage done (operator queue 43 -> 7, 6 truly ready); follow-ups T-5241 (readiness predicate reads the commented template question, G-133->G-134), T-5242, T-5243, T-5244 (T-3682)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 616 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 616
+  commits: 6
+  files_changed: 76
+  lines_added: 2920
+  lines_removed: 116
+  footprint_refreshed_at: '2026-11-18T22:31:45Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5228-inception-triage-slice-3-place-each-of-t.md
+generated_by: context-agent-hybrid
