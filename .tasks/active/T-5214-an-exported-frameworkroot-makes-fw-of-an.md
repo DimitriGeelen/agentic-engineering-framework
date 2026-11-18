@@ -107,7 +107,7 @@ There is no exception for the general case: a user who runs a DIFFERENT copy's b
 ### Agent
 - [x] The T-2099 handoff (lib/upgrade.sh) and the worktree re-exec in bin/fw pass an explicit marker with FRAMEWORK_ROOT, and bin/fw honours an inherited FRAMEWORK_ROOT that points at another real framework tree only when that marker is present
 - [x] Without the marker, a bin/fw in framework tree A, run with FRAMEWORK_ROOT exported to tree B, uses A and warns once per shell. A bats test uses two minimal framework trees.
-- [ ] The existing upgrade, fork-bomb (T-2099), T-4248, T-4362, T-4369, T-4680 and worktree re-exec suites pass, and `tests/unit/upgrade_fresh_machine_simulation.bats` stays green
+- [x] The existing upgrade, fork-bomb (T-2099), T-4248, T-4362, T-4369, T-4680 and worktree re-exec suites pass, and `tests/unit/upgrade_fresh_machine_simulation.bats` stays green (19/19 after T-5218 fixed the unrelated T-3636 failure from T-5217)
 - [x] `bin/fw vendor self --check --task T-5214` is clean
 
 ### Human
