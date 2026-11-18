@@ -111,7 +111,7 @@ The retry behaviour itself does not change, and agents never write credentials.
 - [x] The retry behaviour is unchanged (existing T-5141/T-5142 and sidecar suites pass), no code writes credentials or hubs.toml, `bin/fw test invariants` and `bin/fw vendor self --check --task T-5236` are clean, and Watchtower is restarted, with `bin/fw watchtower current` passing
 
 ### Human
-- [ ] [REVIEW] The "Hub profiles to fix" cards on the approvals page tell you who, which hub, how many messages wait, and the fix, at a glance
+- [x] [REVIEW] The "Hub profiles to fix" cards on the approvals page tell you who, which hub, how many messages wait, and the fix, at a glance
   **Steps:**
   1. Open the screenshots hub-profiles@1024.png, hub-profiles@1440.png and hub-profiles@1920.png in the task's visual folder (.context/visual/T-5236, relative to the project root). Each is cropped to the "Hub profiles to fix" section of the approvals page. They were taken with two temporary demo notices, demo-ring20-hub (missing) and demo-lab-hub (broken, profile demo-lab), which are removed after the review. The live page shows the section only when a real notice exists.
   2. Read each card: the missing-profile card shows the hubs.toml lines; the broken-profile card shows the prepared `bash …/runme.sh` line and the command it runs.
@@ -161,6 +161,7 @@ The retry behaviour itself does not change, and agents never write credentials.
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261118-faa5b3ef — reviewer-judge-t-5236-r5-antigravity-15b9f00772d9:antigravity (rung rung-5-panel:antigravity), digest 1c955a66062c; dispatch judge-t-5236-r5-antigravity-15b9f00772d9; evidence: .context/reviews/evidence/T-5236/AC1-judge-t-5236-r5-antigravity-15b9f00772d9.md, .context/reviews/evidence/T-5236/01-approvals-judge-t-5236-r5-antigravity-15b9f00772d9.png, .context/reviews/evidence/T-5236/02-approvals-content-judge-t-5236-r5-antigravity-15b9f00772d9.png, .context/reviews/evidence/T-5236/03-approvals-continuous-state-judge-t-5236-r5-antigravity-15b9f00772d9.png, .context/reviews/evidence/T-5236/hub-profiles@1024-judge-t-5236-r5-antigravity-15b9f00772d9.png, .context/reviews/evidence/T-5236/hub-profiles@1440-judge-t-5236-r5-antigravity-15b9f00772d9.png, .context/reviews/evidence/T-5236/hub-profiles@1920-judge-t-5236-r5-antigravity-15b9f00772d9.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
@@ -336,6 +337,21 @@ Shots retaken on 2026-11-18 after review amber V (claude-code): the full-page ca
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** A send to a hub the sender has no hubs.toml profile for retried silently. Nobody was told what fixes it, and the fix (adding a profile and secret) is the operator's, but nothing reached the operator. Found with 1409's design session and ring20 (010 T-3797).
+
+**Root cause:** The retry path treated "no profile" as a delivery state, not as a missing prerequisite with an owner. T-5141 made the reason legible to the sender, but it still went to the sender only.
+
+**Why structurally allowed:** The sidecar had no channel from a delivery failure to the operator's queue. `fw operator pending` and the approvals page listed decisions and runmes, never infrastructure gaps.
+
+**Prevention:**
+- One notice per (user, hub) reaches `fw operator pending` and the approvals page.
+- A prepared runme comes with it where one command fixes it.
+- The notice resolves itself on delivery and withdraws its runme.
+- `fw audit` warns after 7 days.
+
+**Found during review:**
+- A resolved notice's prepared runme stayed in the operator's pending list. It is now withdrawn via a WITHDRAWN marker.
+- A missing-profile fix showed only an address placeholder. The address is now taken from another hubs.toml on the host when one names the hub (addresses only, never secrets).
 
 ## Evolution
 
