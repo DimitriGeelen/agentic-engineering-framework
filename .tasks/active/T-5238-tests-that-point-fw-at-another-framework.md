@@ -1,8 +1,16 @@
 ---
 id: T-5238
-name: "Tests that point fw at another framework tree on purpose fail since T-5214 (t3254 A9 first): add FW_FRAMEWORK_ROOT_HANDOFF=1, and sweep the whole suite for the same pattern"
+name: "Tests that point fw at another framework tree on purpose fail since T-5214
+  (t3254 A9 first): add FW_FRAMEWORK_ROOT_HANDOFF=1, and sweep the whole suite for
+  the same pattern"
 description: >
-  Found by the T-5235 worker 2026-11-18: tests/unit/t3254_driver_refusals.bats A9 builds a fake framework root and runs fw with FRAMEWORK_ROOT pointing at it; since T-5214 that needs the handoff marker, and fw's warning ('is another framework tree than this fw's') lands in the JSON the test parses. T-5219's grep (FRAMEWORK_ROOT set to TEST_TEMP_DIR/BATS/tmp vars) missed it because the path was a sandbox variable. Fix A9; run the full fast tier and search every failure for the warning to find any others.
+  Found by the T-5235 worker 2026-11-18: tests/unit/t3254_driver_refusals.bats A9
+  builds a fake framework root and runs fw with FRAMEWORK_ROOT pointing at it; since
+  T-5214 that needs the handoff marker, and fw's warning ('is another framework tree
+  than this fw's') lands in the JSON the test parses. T-5219's grep (FRAMEWORK_ROOT
+  set to TEST_TEMP_DIR/BATS/tmp vars) missed it because the path was a sandbox variable.
+  Fix A9; run the full fast tier and search every failure for the warning to find
+  any others.
 
 status: captured
 workflow_type: build
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-18T18:28:28Z
-last_update: 2026-11-18T18:28:28Z
-date_finished: null
+last_update: '2026-11-18T18:45:26Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-18T18:45:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5238: Tests that point fw at another framework tree on purpose fail since T-5214 (t3254 A9 first): add FW_FRAMEWORK_ROOT_HANDOFF=1, and sweep the whole suite for the same pattern
