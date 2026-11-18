@@ -212,7 +212,8 @@ Y
     ln -sf "$REPO/bin" "$SB/fakefw/bin"
     [ ! -e "$SB/fakefw/agents/context/inject-next-directive.py" ]
 
-    run env PROJECT_ROOT="$SB" FRAMEWORK_ROOT="$SB/fakefw" "$FW" continuous status --json
+    # T-5214/T-5238: pointing fw at another framework tree on purpose is a handoff.
+    run env PROJECT_ROOT="$SB" FRAMEWORK_ROOT="$SB/fakefw" FW_FRAMEWORK_ROOT_HANDOFF=1 "$FW" continuous status --json
     # The fixture must be accepted as the framework root. A re-resolve notice on
     # stderr (run merges it into $output) means the premise of this test is gone.
     [[ "$output" != *"re-resolving"* ]]
