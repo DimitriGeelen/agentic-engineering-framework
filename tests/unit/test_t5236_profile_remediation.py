@@ -254,6 +254,43 @@ def test_delivery_resolves_the_notice(env):
     assert len(rows) == 1 and rows[0]["resolved_at"]
 
 
+def _real_runme_row(env, user="alice", hub="dash"):
+    """A notice row whose runme was really prepared (not the stub), for the withdraw tests."""
+    importlib.reload(env["pn"])
+    pn = env["pn"]
+    line = pn._prepare_runme(user, hub, f"termlink fleet reauth {hub}")
+    path = pn.ledger_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    pn._write(path, [{"user": user, "host": "h", "hub": hub, "kind": pn.BROKEN, "profile": hub,
+                      "fix": "x", "first_seen": "2026-11-18T00:00:00Z", "last_seen": "2026-11-18T00:00:00Z",
+                      "messages_waiting": 1, "messages_final": 0, "waiting_ids": [], "runme": line,
+                      "resolved_at": None}])
+    return pn, Path(line.split(" ", 1)[1]).parent
+
+
+def test_resolve_withdraws_the_prepared_runme(env):
+    pn, d = _real_runme_row(env)
+    assert pn.resolve("dash", user="alice") == 1
+    assert (d / "WITHDRAWN").is_file() and "no longer needed" in (d / "WITHDRAWN").read_text()
+    assert not (d / "run.log").exists(), "withdrawing never fakes a run record"
+
+
+def test_resolve_leaves_a_runme_that_already_ran(env):
+    pn, d = _real_runme_row(env)
+    (d / "run.log").write_text("RUNME START\nRUNME EXIT 0\n")
+    pn.resolve("dash", user="alice")
+    assert not (d / "WITHDRAWN").exists()
+
+
+def test_withdrawn_runme_leaves_operator_pending(env, monkeypatch):
+    pn, d = _real_runme_row(env)
+    import lib.operator_pending as op
+    monkeypatch.setattr(op, "PROJECT", env["proj"])
+    assert any(r["name"] == d.name for r in op.unrun_runmes())
+    pn.resolve("dash", user="alice")
+    assert not any(r["name"] == d.name for r in op.unrun_runmes())
+
+
 def test_resolve_leaves_other_hubs_alone(env):
     env["hubs"].write_text("")
     probe = _probe(env, _runner())

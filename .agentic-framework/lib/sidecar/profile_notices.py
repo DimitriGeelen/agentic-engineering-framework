@@ -199,6 +199,25 @@ def record(g: dict, client_msg_id: str | None, *, final: bool = False,
         return dict(row)
 
 
+def _withdraw_runme(line: str | None, why: str) -> None:
+    """T-5236: a resolved notice's prepared fix is withdrawn, never left pending for the
+    operator. Writes WITHDRAWN beside the runme (lib/operator_pending.py skips such a dir);
+    the run log is left untouched, so nothing reads as having run. Best effort."""
+    m = re.match(r"^bash (\S+/runme\.sh)$", str(line or "").strip())
+    if not m:
+        return
+    d = Path(m.group(1)).parent
+    if not d.is_dir():
+        return
+    log = d / "run.log"
+    try:
+        if log.is_file() and "RUNME EXIT" in log.read_text(errors="replace"):
+            return   # it ran; its record stands
+        (d / "WITHDRAWN").write_text(why + "\n")
+    except OSError:
+        pass
+
+
 def resolve(hub: str | None, client_msg_id: str | None = None, *, user: str | None = None,
             now: datetime | None = None) -> int:
     """A send to `hub` was delivered: resolve this user's notice for it, and any notice
@@ -214,6 +233,8 @@ def resolve(hub: str | None, client_msg_id: str | None = None, *, user: str | No
                 continue
             if r.get("user") == user or (client_msg_id and client_msg_id in r.get("waiting_ids", [])):
                 r["resolved_at"] = _now(now)
+                _withdraw_runme(r.get("runme"), f"{r['resolved_at']} notice resolved: a send to "
+                                                f"hub {hub} was delivered; this fix is no longer needed")
                 n += 1
         if n:
             _write(path, rows)

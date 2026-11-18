@@ -162,6 +162,10 @@ def unrun_runmes() -> list[dict]:
     for d in sorted(root.iterdir()):
         if not (d / "runme.sh").is_file() or d.stat().st_mtime < cutoff:
             continue
+        # T-5236: a prepared fix whose cause was resolved without running it is withdrawn,
+        # not run; WITHDRAWN (one line: when and why) says so, and the run log stays honest.
+        if (d / "WITHDRAWN").is_file():
+            continue
         log = d / "run.log"
         text = log.read_text(errors="replace") if log.is_file() else ""
         if "RUNME EXIT" in text:
