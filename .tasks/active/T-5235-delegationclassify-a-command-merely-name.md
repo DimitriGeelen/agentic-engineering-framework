@@ -118,11 +118,12 @@ Operator ruling 2026-11-18 (question 6 of 6, option A; see `fw decisions`): a cr
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw reviewer ruling record` writes an append-only, digest-bound ledger row, and is refused under agent control including with --i-am-human. Agent Bash and Write/Edit to the ledger are refused by the existing guards (tests).
-- [ ] With a valid recorded ruling, an act-in-the-world or operator-marked criterion is reported reviewer-judged ("ruling recorded"). Without one, or with a ruling whose digest no longer matches the criterion text, it stays OPERATOR-ONLY (tests). tier0-or-bypass and sovereignty criteria stay OPERATOR-ONLY even with a ruling (test).
-- [ ] The verdict ledger accepts a green on such a criterion only while the ruling is valid, and the reviewer brief carries the recorded ruling text and the instruction to check the box against it (tests)
-- [ ] 832's case reproduces: a T-676-like fixture classes OPERATOR-ONLY before the ruling and reviewer-judged after it (test)
-- [ ] Existing delegation, verdict-ledger, judge, restatement and T-5205 guard suites pass. CLAUDE.md §Delegation states the rule in one paragraph. `bin/fw test invariants` and `bin/fw vendor self --check --task T-5235` are clean.
+- [x] `fw reviewer ruling record` writes an append-only, digest-bound ledger row, and is refused under agent control including with --i-am-human. Agent Bash and Write/Edit to the ledger are refused by the existing guards (tests).
+- [x] With a valid recorded ruling, an act-in-the-world or operator-marked criterion is reported reviewer-judged ("ruling recorded"). Without one, or with a ruling whose digest no longer matches the criterion text, it stays OPERATOR-ONLY (tests). tier0-or-bypass and sovereignty criteria stay OPERATOR-ONLY even with a ruling (test).
+- [x] The verdict ledger accepts a green on such a criterion only while the ruling is valid, and the reviewer brief carries the recorded ruling text and the instruction to check the box against it (tests)
+- [x] 832's case reproduces: a T-676-like fixture classes OPERATOR-ONLY before the ruling and reviewer-judged after it (test)
+- [x] Existing delegation, verdict-ledger, judge, restatement and T-5205 guard suites pass. CLAUDE.md §Delegation states the rule in one paragraph. `bin/fw test invariants` and `bin/fw vendor self --check --task T-5235` are clean.
+  Evidence (2026-11-18): 1356 pytest passed across every suite touching these modules; 1809+1641 bats ok. Failures were environmental to this dispatched worker and pass with FW_DISPATCHED_WORKER / FW_SESSION_SCOPED_FOCUS unset (t3225 ×3, t3212 ×2, t4879 t3). The exception is t3254 A9, which still fails with those unset: bin/fw prints an inherited-FRAMEWORK_ROOT stderr notice into JSON the test parses, and this task's bin/fw diff only adds the `reviewer ruling` route. upgrade_fresh_machine_simulation 19/19 standalone. Invariants 166 ok, 0 not ok.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -308,6 +309,10 @@ Operator ruling 2026-11-18 (question 6 of 6, option A; see `fw decisions`): a cr
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5235_recorded_ruling.py -q > /tmp/.t5235 2>&1 && grep -q passed /tmp/.t5235
+python3 -m pytest tests/unit/test_t5180_widening.py tests/unit/test_t5206_delegate_widening.py tests/unit/test_t5205_operator_records_guard.py tests/unit/test_t4930_restatement.py tests/unit/test_delegation_classifier.py tests/unit/test_t4359_operator_marker.py -q > /tmp/.t5235b 2>&1 && grep -q passed /tmp/.t5235b
+grep -q "recorded-rulings.jsonl" CLAUDE.md
+bin/fw vendor self --check --task T-5235
 
 ## RCA
 
