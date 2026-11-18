@@ -56627,3 +56627,21 @@ scan_id: R-42b21c85
 task_id: T-5217
 payload:
   task_file: .tasks/active/T-5217-t-5212-slice-1-one-authoritative-task-id.md
+---
+kind: scan_emitted
+timestamp: '2026-11-18T01:05:37Z'
+scan_id: R-795c022d
+task_id: T-5213
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-18T01:05:37Z'
+scan_id: R-795c022d
+task_id: T-5213
+payload:
+  task_file: .tasks/active/T-5213-libobjectives-seedsh-mints-task-ids-with.md
