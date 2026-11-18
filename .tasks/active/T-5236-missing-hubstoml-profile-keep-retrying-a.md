@@ -113,7 +113,7 @@ The retry behaviour itself does not change, and agents never write credentials.
 ### Human
 - [ ] [REVIEW] The "Hub profiles to fix" cards on the approvals page tell you who, which hub, how many messages wait, and the fix, at a glance
   **Steps:**
-  1. Open the screenshots in `/opt/999-Agentic-Engineering-Framework/.context/visual/T-5236/` (hub-profiles@1024.png, @1440.png, @1920.png; the section sits near the bottom, above "Ready for you"). They were taken with two temporary demo notices (`demo-hub-t5236` missing, `demo-dash-t5236` broken), removed afterwards, so the live page shows the section only when a real notice exists.
+  1. Open the screenshots hub-profiles@1024.png, hub-profiles@1440.png and hub-profiles@1920.png in the task's visual folder (.context/visual/T-5236, relative to the project root). Each is cropped to the "Hub profiles to fix" section of the approvals page. They were taken with two temporary demo notices, demo-ring20-hub (missing) and demo-lab-hub (broken, profile demo-lab), which are removed after the review. The live page shows the section only when a real notice exists.
   2. Read each card: the missing-profile card shows the hubs.toml lines; the broken-profile card shows the prepared `bash …/runme.sh` line and the command it runs.
   **Expected:** Each card reads as "user X on host Y has no/broken profile for hub Z — N waiting — fix: …" and the fix can be acted on without opening anything else.
   **If not:** Note which card or wording is unclear; the template block is in web/templates/_approvals_content.html under the T-5236 comment.
