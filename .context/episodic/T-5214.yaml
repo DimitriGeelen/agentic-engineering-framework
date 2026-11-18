@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5214: An exported FRAMEWORK_ROOT makes fw of another copy run the exporting project's framework code (1409 a8eb045c)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-18T02:05:27Z
+# ============================================================================
+
+task_id: T-5214
+task_name: "An exported FRAMEWORK_ROOT makes fw of another copy run the exporting project's framework code (1409 a8eb045c)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-17T21:23:35Z
+completed: 2026-11-18T02:02:30Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-18T01:40:24+01:00
+last_commit: 2026-11-18T03:02:29+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  localised — bin/fw honours any inherited FRAMEWORK_ROOT that is a framework tree (T-2099 handoff rule) and cannot tell a handoff from a leaked export; context, criteria. honour a foreign inherited FRAMEWORK_ROOT only with FW_FRAMEWORK_ROOT_HANDOFF=1. criterion 3 met (upgrade simulation 19/19 after T-5218)
+
+# Key outcomes
+outcomes:
+  - 'The T-2099 handoff (lib/upgrade.sh) and the worktree re-exec in bin/fw pass an explicit marker with FRAMEWORK_ROOT, and bin/fw honours an inherited FRAMEWORK_ROOT that points at another real framework tree only when that marker is present'
+  - 'Without the marker, a bin/fw in framework tree A, run with FRAMEWORK_ROOT exported to tree B, uses A and warns once per shell. A bats test uses two minimal framework trees.'
+  - 'The existing upgrade, fork-bomb (T-2099), T-4248, T-4362, T-4369, T-4680 and worktree re-exec suites pass, and `tests/unit/upgrade_fresh_machine_simulation.bats` stays green (19/19 after T-5218 fixed the unrelated T-3636 failure from T-5217)'
+  - '`bin/fw vendor self --check --task T-5214` is clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-18 — what "uses its own tree" means when the foreign root is dropped'
+    chose: 'drop the inherited value and resolve exactly as in a clean environment (T-4453 for `upgrade`, then resolve_framework); warn only when that changes which tree runs. Marker name `FW_FRAMEWORK_ROOT_HANDOFF=1`, taken and unset at the top of bin/fw (before any child process), so it never leaks.'
+    rationale: 'forcing `$FW_BIN_DIR/..` would override T-498 (a global CLI run in a consumer must still load the consumer''s vendored copy) and pre-empt T-4453''s upgrade-source rule. Re-resolving keeps every existing rule and changes only the leaked-export case.'
+    alternatives_rejected: ['forcing the binary''s own tree (breaks T-498/T-4453); clearing the marker at the decision point (~line 1630) — measured: git children spawned earlier in bin/fw still saw it. - **Test evidence (2026-11-18):** t5214 7/7; t3111 16/16, t4248 inherited-env 3/3 + init-failure 3/3, t4362 4/4, t4369 5/5, t4661 5/5, t4680 6/6, t4822 5/5, t3113 14/14. upgrade_fresh_machine_simulation 18/19: test 11 (T-3636, expects `T-005-define-project-objectives.md`) fails the same with this task''s four files reverted to HEAD, so it predates this change (likely T-5217''s allocator); criterion 3 stays open on it. - **Known limit:** if PROJECT_ROOT is ALSO leaked to the other project, T-498 can still pick that project''s vendored copy; inherited PROJECT_ROOT is T-2391/T-3285''s subject, not this task''s.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.tasks/active/T-5214-an-exported-frameworkroot-makes-fw-of-an.md'
+  - 'bin/fw'
+  - 'lib/upgrade.sh'
+  - 'tests/unit/t5214_inherited_framework_root.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-18T01:40:24'
+    action: 'T-5214: localised — bin/fw honours any inherited FRAMEWORK_ROOT that is a framework tree (T-2099 handoff rule) and cannot tell a handoff from a leaked export; context, criteria'
+  - time: '2026-11-18T02:35:47'
+    action: 'T-5214: honour a foreign inherited FRAMEWORK_ROOT only with FW_FRAMEWORK_ROOT_HANDOFF=1'
+  - time: '2026-11-18T03:02:29'
+    action: 'T-5214: criterion 3 met (upgrade simulation 19/19 after T-5218)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 278 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 278
+  commits: 4
+  files_changed: 9
+  lines_added: 363
+  lines_removed: 22
+  footprint_refreshed_at: '2026-11-18T02:05:41Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5214-an-exported-frameworkroot-makes-fw-of-an.md
+generated_by: context-agent-hybrid
