@@ -1,0 +1,105 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5225: TermLink-only rule: agent-to-agent messages go over TermLink (fw sidecar send); Claude Code's cross-session SendMessage is refused by a PreToolUse hook, and the rule is in the guidance every project receives
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-18T11:11:50Z
+# ============================================================================
+
+task_id: T-5225
+task_name: "TermLink-only rule: agent-to-agent messages go over TermLink (fw sidecar send); Claude Code's cross-session SendMessage is refused by a PreToolUse hook, and the rule is in the guidance every project receives"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-18T10:42:15Z
+completed: 2026-11-18T11:08:52Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-18T11:43:15+01:00
+last_commit: 2026-11-18T12:05:46+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context, criteria — operator ruling 2026-11-18 (option 1): TermLink-only, with a blocking hook. block-cross-session-messages PreToolUse hook (SendMessage|SendToProject|SendToProjectContext), init template entry, rule in CLAUDE.md/FRAMEWORK.md/consumer template. tests (11) for the TermLink-only hook incl. fw init + fw upgrade delivery; fabric cards. vendor self — hook, init template, consumer CLAUDE.md template. decisions (tool list + evidence, fail-closed, wiring), runme line, verification; criteria ticked
+
+# Key outcomes
+outcomes:
+  - 'A hook script refuses each listed tool with exit 2 and a message naming the operator''s rule and `fw sidecar send`, and allows every other tool. Tests cover each tool name, a non-matching tool, and a malformed payload (fail closed or open, stated and tested).'
+  - 'The hook is registered as an `fw hook` subcommand, and the consumer settings template / `fw upgrade` delivers its PreToolUse entry (test: the upgrade simulation shows the matcher in the consumer''s settings).'
+  - 'FRAMEWORK.md and CLAUDE.md state the rule in plain words, with the operator''s ruling and date, beside the existing tool bans'
+  - 'One runme is prepared for the operator to wire this repo''s .claude/settings.json (agents do not rewire hooks), and its command line is recorded in this task'
+  - 'Existing hook, settings-parity and upgrade_fresh_machine_simulation suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5225`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-18 — which tools to refuse'
+    chose: '`SendMessage`, `SendToProject`, `SendToProjectContext` (matcher `SendMessage|SendToProject|SendToProjectContext`, hook `block-cross-session-messages`). - **Evidence** (Claude Code binary `~/.local/share/claude/versions/2.1.327`, grepped for tool-name literals): - `SendMessage` — `var Ln="SendMessage"`, input keys `to` + `message`/`notify_when_idle`, schema fields `recipient`, `recipient_kind`, `content`: delivers a message to another session or teammate. Also in this session''s deferred tool list. - `SendToProject` — `cne="SendToProject"`, description "Send this session''s work to a Claude Project": delivers this session''s content to another project. - `SendToProjectContext` — `$xt="SendToProjectContext"`: by its own description it "sends nothing"; it reads the target folder''s context and exists only as the required first step of `SendToProject`. Refused because the Goal names it and it has no other use. - **Rejected (not message delivery to another session/project):** `SendUserMessage` (alias `Brief`, messages the user), `ListAgents` (alias `ListPeers`, read-only listing), `TeamCreate`/`TeamDelete` (create/delete teammates; messaging them is `SendMessage`, already refused; spawning is governed by the Agent-tool gate), `RemoteTrigger` (runs a scheduled cloud routine — dispatch, not a peer message), `PushNotification` (notifies the user).'
+  - decision: '2026-11-18 — malformed payload'
+    chose: 'fail CLOSED (exit 2). The settings matcher routes only the three tools to this hook, so an unreadable payload here is almost certainly one of them; a parseable payload naming any other tool exits 0 (so the hook is safe under a broader matcher too).'
+    alternatives_rejected: ['unconditional block like `block-task-tools.sh` — the Goal asks that every other tool be allowed.']
+  - decision: '2026-11-18 — wiring this repo'
+    chose: 'runme around `bin/fw hook-enable` (the existing idempotent verb for this repo''s settings.json; T-2911 parity test keys on hook name) plus `bin/fw enforcement baseline` (L-398). - **Note for delivery:** `fw init` writes the entry immediately (template). `fw upgrade` regenerates an existing consumer''s hooks when that consumer lacks a hook present in the *framework''s own* `.claude/settings.json` (`lib/upgrade.sh` `_t2912_hook_gap`), so existing consumers receive it after the operator runs the runme below. Test 9 proves this path end-to-end.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/block-cross-session-messages.sh'
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/templates/claude-project.md'
+  - '.fabric/components/agents-context-block-cross-session-messages.yaml'
+  - '.fabric/components/tests-unit-t5225_termlink_only_hook.yaml'
+  - '.tasks/active/T-5225-termlink-only-rule-agent-to-agent-messag.md'
+  - 'CLAUDE.md'
+  - 'FRAMEWORK.md'
+  - 'agents/context/block-cross-session-messages.sh'
+  - 'lib/init.sh'
+  - 'lib/templates/claude-project.md'
+  - 'tests/unit/t5225_termlink_only_hook.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-18T11:43:15'
+    action: 'T-5225: context, criteria — operator ruling 2026-11-18 (option 1): TermLink-only, with a blocking hook'
+  - time: '2026-11-18T11:46:14'
+    action: 'T-5225: block-cross-session-messages PreToolUse hook (SendMessage|SendToProject|SendToProjectContext), init template entry, rule in CLAUDE.md/FRAMEWORK.md/consumer template'
+  - time: '2026-11-18T11:51:41'
+    action: 'T-5225: tests (11) for the TermLink-only hook incl. fw init + fw upgrade delivery; fabric cards'
+  - time: '2026-11-18T11:52:21'
+    action: 'T-5225: vendor self — hook, init template, consumer CLAUDE.md template'
+  - time: '2026-11-18T12:05:46'
+    action: 'T-5225: decisions (tool list + evidence, fail-closed, wiring), runme line, verification; criteria ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 26
+  commits: 6
+  files_changed: 15
+  lines_added: 941
+  lines_removed: 10
+  footprint_refreshed_at: '2026-11-18T11:12:01Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5225-termlink-only-rule-agent-to-agent-messag.md
+generated_by: context-agent-hybrid

@@ -56789,3 +56789,21 @@ scan_id: R-d0e24fb3
 task_id: T-5222
 payload:
   task_file: .tasks/active/T-5222-t-5211-slice-2-review-ticks-restatement-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-18T11:11:35Z'
+scan_id: R-8883b8bb
+task_id: T-5225
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-18T11:11:35Z'
+scan_id: R-8883b8bb
+task_id: T-5225
+payload:
+  task_file: .tasks/active/T-5225-termlink-only-rule-agent-to-agent-messag.md

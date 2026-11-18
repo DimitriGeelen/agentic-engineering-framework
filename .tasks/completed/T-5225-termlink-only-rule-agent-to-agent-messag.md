@@ -8,12 +8,12 @@ description: >
   9e8e560a, operator 2026-11-17: 'Anthropic internal messages should be blocked. You
   should always use Termlink. It's forbidden. 999 AEF agents should know that.').
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/block-cross-session-messages.sh, lib/init.sh, tests/unit/t5225_termlink_only_hook.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-18T10:42:15Z
-last_update: '2026-11-18T10:45:23Z'
-date_finished:
+last_update: 2026-11-18T11:08:52Z
+date_finished: 2026-11-18T11:08:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -421,3 +421,21 @@ bin/fw vendor self --check --task T-5225
 
 ### 2026-11-18T10:42:23Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-18T11:08:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8883b8bb
+- **Timestamp:** 2026-11-18T11:11:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — One runme is prepared for the operator to wire this repo's .claude/settings.json (agents do not rewire hooks), and its command line is recorded in this task
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: One runme is prepared for the operator to wire this repo's .claude/settings.json (agents do not rewire hooks), and its command line is recorded in thi`
