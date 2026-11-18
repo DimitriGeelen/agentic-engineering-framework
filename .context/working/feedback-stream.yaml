@@ -56753,3 +56753,21 @@ scan_id: R-b94c9665
 task_id: T-5221
 payload:
   task_file: .tasks/active/T-5221-t-5212-slice-2-fw-task-create-batch-one-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-18T09:00:46Z'
+scan_id: R-a64149c2
+task_id: T-5220
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-18T09:00:46Z'
+scan_id: R-a64149c2
+task_id: T-5220
+payload:
+  task_file: .tasks/active/T-5220-fast-tier-unit-suite-ends-with-batsrc124.md
