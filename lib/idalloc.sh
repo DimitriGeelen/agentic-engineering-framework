@@ -157,7 +157,14 @@ fw_id_allocate() {
     # Lock: reuse the caller's hold (create-task keeps it across the file write), else take it
     # at the main worktree like create-task does.
     local own_lock=false
-    if [ -z "${_KEYLOCK_FDS[task-id-allocation]:-}" ]; then
+    # T-5218: test for an existing hold only once _KEYLOCK_FDS is an associative array. Before
+    # keylock.sh is sourced, bash reads the subscript as arithmetic (task - id - allocation) and
+    # `set -u` aborts on the unset `task` — every cold caller (objectives-seed) crashed here.
+    local _held=""
+    if declare -p _KEYLOCK_FDS 2>/dev/null | grep -q '^declare -A'; then
+        _held="${_KEYLOCK_FDS[task-id-allocation]:-}"
+    fi
+    if [ -z "$_held" ]; then
         if ! declare -F keylock_acquire >/dev/null 2>&1; then
             # shellcheck source=lib/keylock.sh
             source "$_FW_IDALLOC_LIB/keylock.sh" || return 1
