@@ -69,6 +69,66 @@ Why: a verdict forced at filing time made a fresh inception read "GO" before
 anything was explored. It looked finished, to the agent too, and T-5211 and
 T-5212 reached the operator too early that way (T-5215, G-133).
 
+### The inception lifecycle map: every inception an instance (T-5227)
+
+The lifecycle above is drawn as a designer map, `aef-inception-lifecycle`
+(Watchtower `/designer`). The map is the class; each inception is an
+instance sitting on one step. The steps:
+
+| Step (map node) | An inception is here when | Next step owned by |
+|---|---|---|
+| exploring, waiting on the agent (`il_wait_agent`) | EXPLORING, `waiting_on: agent` (or no `waiting_on`) | agent |
+| exploring, waiting on a peer (`il_wait_peer`) | EXPLORING, `waiting_on: peer` | peer (the agent reminds them) |
+| exploring, waiting on the operator (`il_wait_operator`) | EXPLORING, `waiting_on: operator` | operator |
+| ready for a recommendation (`il_ready`) | EXPLORING and every IW question disposed | agent |
+| awaiting the operator's decision (`il_awaiting_decision`) | GO / NO-GO / DEFER written, no decision yet | operator (decide link) |
+| decided GO, build tasks open (`il_go_building`) | Decision GO, and still in `active/` or an open task names it (`unlocks_inception_decision`, `related_tasks` or its name) | — |
+| decided NO-GO or DEFER (`il_decided`) | Decision NO-GO or DEFER, still in `active/` | — |
+| closed (`il_closed`) | In `completed/` with no open build task | — |
+
+An inception whose status is not a lifecycle status, or whose `waiting_on`
+is not one of the three values, has no step: it shows as NO-POSITION, as a
+task does on the task map. The placement rules live in one table,
+`lib/inception_lifecycle.py` `NODES`; every reader below uses it.
+
+**Two fields, inceptions only.** In the frontmatter:
+
+- `waiting_on: agent|peer|operator` — who holds the next step. Default `agent`.
+- `revisit_at: YYYY-MM-DD` — when the inception comes back to its owner.
+  Default: filing date + 7 days.
+
+`fw inception start` and `fw task create --type inception` write both
+(`--waiting-on`, `--revisit-at` to choose). Change them with
+`fw inception wait T-XXX agent|peer|operator [--revisit YYYY-MM-DD]`, which
+also records when the step was entered (`step_entered_at`) and an Updates
+line. Invalid values, and either field on a non-inception, are refused by
+the filing commands and by the Write/Edit gate (`check-inception-schema`).
+The time a step was entered is `step_entered_at` when recorded, else the
+newest dated status change or decision in `## Updates`, else `created`.
+
+**Daily routing.** Once a day `fw audit` (C-006c) lists every inception
+whose revisit date has passed on a step someone owns, under that owner:
+
+- **agent** — in the handover, "Overdue Inceptions — Next Actions for the Agent".
+- **peer** — in the handover, "Remind the Peer": the agent sends the
+  reminder (`fw sidecar send --to <peer>`); no cron sends it.
+- **operator** — in `fw operator pending` and on the Watchtower approvals
+  page under "Questions waiting for you". These are questions, not decisions:
+  they link the task and never a decide button.
+
+**Measurement.** `fw inception lifecycle [--json]` prints, per step, how
+many inceptions are on it, the median days they have been there and how
+many are overdue. `fw inception lifecycle --overdue [--owner X]` lists the
+overdue ones by owner. The designer shows the same counts as badges on the
+map (`GET /api/overlay?id=aef-inception-lifecycle`); a step holding an
+overdue inception is marked alert. `GET /api/instances?template=aef-inception-lifecycle`
+returns each open inception on its step, in the runtime-projection v2 shape
+shared with the task map (no new fields; dates come from the CLI).
+
+Origin: operator rulings 2026-11-18 on question 2 (the follow-up, option 1:
+an inception lifecycle map with instances, the dates as triggers and
+measurements).
+
 ### Research artifact (C-001)
 
 The first commit in an inception **must** create the research artifact:
