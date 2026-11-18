@@ -218,7 +218,7 @@ one is `designer 0.43.0 → contracts v2 (procedure.schema.json schema_version 1
 - **Designer version D maps to contracts v2 only if a mapping document names D.** AEF refuses an
   export whose designer build has no mapping document. The build is identified by
   `exporter="aef-workflow-designer"` plus the artifact sha256 of the delivered build
-  (`policy/designer-pin.yaml`), because 0.43.0 writes no version number into the XML. *Q15: agreed; 832 will emit `exporterVersion` on `bpmn:definitions` from its next release, once its operator agrees. Until then the sha256 pin stands.*
+  (`policy/designer-pin.yaml`), because 0.43.0 writes no version number into the XML. *Q15: declined by 832's operator 2026-11-18; the sha256 pin is the permanent identifier (no `exporterVersion` on `bpmn:definitions`).*
 - **Designer bump (0.43.0 → 0.44.0 or later).** 832 states whether the export changed: elements,
   attributes, `metaKeys`, `NODE_AEF_READ`, carriage, the flow keep rules. If nothing in §2
   changed, AEF adds a one-line row naming the new version and sha256 and re-runs the example. If
@@ -276,9 +276,9 @@ are authoritative for this document and are applied in §2–§6.
 - **Q13 (content_hash): answered.** AEF computes it alone.
 - **Q14 (start/end): answered.** Keep them as pass-through nodes; their `aef:uid`s anchor the
   overlay.
-- **Q15 (exporterVersion): agreed, waiting on 832's operator.** 832 will emit `exporterVersion`
-  from its next release once its operator agrees. Until then the build is identified by sha256
-  (§6).
+- **Q15 (exporterVersion): declined by 832's operator 2026-11-18; the sha256 pin is the permanent
+  identifier.** The designer writes no `exporterVersion`; the build is identified by
+  `exporter="aef-workflow-designer"` plus the artifact sha256 in `policy/designer-pin.yaml` (§6).
 
 ## 8. Worked example
 
