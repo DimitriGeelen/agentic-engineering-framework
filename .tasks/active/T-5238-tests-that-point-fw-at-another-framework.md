@@ -12,7 +12,7 @@ description: >
   Fix A9; run the full fast tier and search every failure for the warning to find
   any others.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-18T18:28:28Z
-last_update: '2026-11-18T18:45:58Z'
+last_update: 2026-11-18T19:59:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,20 +92,20 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** The T-5235 worker (2026-11-18) found tests/unit/t3254_driver_refusals.bats A9 failing. It builds a fake framework root and runs fw with FRAMEWORK_ROOT pointing at it. Since T-5214 that needs FW_FRAMEWORK_ROOT_HANDOFF=1, and fw's warning ("is another framework tree than this fw's") lands in the JSON the test parses. T-5219's grep missed it because the path came from a sandbox variable.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Other tests may depend on the old "inherited FRAMEWORK_ROOT always wins" rule. A pattern grep cannot find them reliably. The failure output of a full run can.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Fix A9. Run the fast and slow unit tiers, search every failure's output for the T-5214 warning, and fix any match. Before the release, separate failures that are new since the previous slow run from ones that were already there.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** No test fails because of T-5214, and the release question is answered from evidence: new failures fixed, older ones named.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] t3254 A9 sets FW_FRAMEWORK_ROOT_HANDOFF=1 and passes
+- [x] Fast tier: 0 failures. Slow tier: no failure output contains the T-5214 warning (searched in the failure logs of both runs, 2026-11-18).
+- [x] Each slow-tier failure is classified as new since the previous slow run or already failing before, and any new one caused by today's work is fixed or filed. The files new since the 02:06 run (fw_mode_detection, test_doctor_scope_tags, test_doctor_litellm_ollama, t4119, t3660, t4337, t4460) all pass when rerun alone (load or timing under the parallel run). Already failing in the 2026-11-17 and 2026-11-18 02:06 runs: t4689 (1) and doctor_hook_counters (3; since 4ba274039, T-5054). None comes from today's work.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,6 +291,7 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bats -f "A9" tests/unit/t3254_driver_refusals.bats
 
 ## RCA
 
@@ -307,6 +308,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** t3254 A9 failed after T-5214. fw's new warning landed in the JSON the test parses.
+
+**Root cause:** T-5214 narrowed a contract (an inherited foreign FRAMEWORK_ROOT now needs the handoff marker). Tests relying on the old contract were searched for by a text pattern (T-5219), and that pattern missed a sandbox-variable path.
+
+**Why structurally allowed:** A grep for how a test spells a path is not a search for the behaviour it relies on. Only a full run shows that, and the full run is nightly.
+
+**Prevention:** This task searched the failure output of both full tiers for the warning text itself. The T-5219 learning now also says to run the suite and search the failures for the new message, not only to grep sources.
 
 ## Evolution
 
@@ -388,3 +396,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5238-tests-that-point-fw-at-another-framework.md
 - **Context:** Initial task creation
+
+### 2026-11-18T19:59:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
