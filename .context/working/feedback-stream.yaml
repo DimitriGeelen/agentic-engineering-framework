@@ -56807,3 +56807,21 @@ scan_id: R-8883b8bb
 task_id: T-5225
 payload:
   task_file: .tasks/active/T-5225-termlink-only-rule-agent-to-agent-messag.md
+---
+kind: scan_emitted
+timestamp: '2026-11-18T12:38:30Z'
+scan_id: R-8ccddcfb
+task_id: T-5231
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-18T12:38:30Z'
+scan_id: R-8ccddcfb
+task_id: T-5231
+payload:
+  task_file: .tasks/active/T-5231-block-cross-session-messages-add-a-fixed.md

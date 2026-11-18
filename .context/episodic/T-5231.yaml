@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5231: block-cross-session-messages: add a fixed machine marker line to the refusal so peers' provers can match it (010 55c155df)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-18T12:38:48Z
+# ============================================================================
+
+task_id: T-5231
+task_name: "block-cross-session-messages: add a fixed machine marker line to the refusal so peers' provers can match it (010 55c155df)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-18T12:25:20Z
+completed: 2026-11-18T12:35:10Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-18T13:35:06+01:00
+last_commit: 2026-11-18T13:35:06+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  refusal carries the stable marker 'FW-DENY: cross-session-messaging (T-5225)' for peers' provers (010 55c155df); T-5225 test 9 tolerates an already-wired HEAD
+
+# Key outcomes
+outcomes:
+  - 'Every refusal from block-cross-session-messages prints the exact line `FW-DENY: cross-session-messaging (T-5225)` on stderr. A comment in the script marks it as a stable contract, and the T-5225 tests assert it for each blocked tool.'
+  - 't5225_termlink_only_hook.bats passes and the vendored copy is in sync. Test 9 needed `--allow-empty`, because since the operator wired this repo (fed4e3d48) the cloned HEAD already carries the entry, so re-adding it leaves nothing to commit.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/block-cross-session-messages.sh'
+  - '.tasks/active/T-5231-block-cross-session-messages-add-a-fixed.md'
+  - 'agents/context/block-cross-session-messages.sh'
+  - 'tests/unit/t5225_termlink_only_hook.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-18T13:35:06'
+    action: 'T-5231: refusal carries the stable marker ''FW-DENY: cross-session-messaging (T-5225)'' for peers'' provers (010 55c155df); T-5225 test 9 tolerates an already-wired HEAD'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 9
+  commits: 2
+  files_changed: 7
+  lines_added: 483
+  lines_removed: 6
+  footprint_refreshed_at: '2026-11-18T12:39:12Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5231-block-cross-session-messages-add-a-fixed.md
+generated_by: context-agent-hybrid
