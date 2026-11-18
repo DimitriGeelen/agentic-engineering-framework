@@ -1,0 +1,21 @@
+id: lib/recorded_ruling.py
+name: recorded_ruling
+type: script
+subsystem: framework-core
+location: lib/recorded_ruling.py
+tags: []
+
+purpose: "Recorded operator rulings (T-5235; operator ruling 2026-11-18, question 6, option A)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-18
+created_by: unknown

@@ -45,6 +45,8 @@ from pathlib import Path
 
 DELEGATIONS = ".context/reviews/standing-delegations.jsonl"
 WIDENABLE_CLASSES = ("act-in-the-world",)
+# T-5235: the classes a recorded operator ruling can lift (lib/recorded_ruling.py)
+LIFTABLE_CLASSES = ("act-in-the-world", "operator-marked")
 MEASURED_RE = re.compile(r"^\s*\*\*Measured:\*\*\s*(.*?)\s*$")
 _FENCE_RE = re.compile(r"^\s*(```+|~~~+)")
 MEASURED_FORMAT = ("a `**Measured:** <command>` line followed by a fenced block (```) "
@@ -118,19 +120,32 @@ def active_widening(root: Path, task_id: str, task_text: str, criterion,
                     today: str | None = None) -> tuple[dict | None, str]:
     """(widening row, "") when an operator widening makes `criterion` reviewer-judgeable,
     else (None, why not). (None, "") when the project records no widening at all — the
-    caller's behaviour must then be exactly what it was before widening existed."""
-    ws = widenings(root)
-    if not ws:
-        return None, ""
+    caller's behaviour must then be exactly what it was before widening existed.
+
+    T-5235: a recorded operator ruling (lib/recorded_ruling.py) is asked FIRST. It lifts an
+    act-in-the-world or operator-marked criterion whose digest it was recorded for; the row
+    comes back in widening shape (`kind: ruling`, id RL-…) and needs no Measured block."""
     try:
+        from lib import recorded_ruling  # noqa: PLC0415
         from lib.delegation import classify  # noqa: PLC0415
     except ImportError:
         import sys  # noqa: PLC0415
         sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+        from lib import recorded_ruling  # noqa: PLC0415
         from lib.delegation import classify  # noqa: PLC0415
+    ruled, rwhy = None, ""
+    if (Path(root) / recorded_ruling.RULINGS).is_file():
+        rcls = classify(criterion, workflow_type=_workflow(task_text)).cls
+        ruled, rwhy = recorded_ruling.active_ruling(root, task_id, criterion, rcls)
+        if ruled is not None:
+            return recorded_ruling.as_widening(ruled), ""
+    ws = widenings(root)
+    if not ws:
+        return None, rwhy
     cls = classify(criterion, workflow_type=_workflow(task_text)).cls
     if cls not in WIDENABLE_CLASSES:
-        return None, f"criterion class {cls} is never widened (only {', '.join(WIDENABLE_CLASSES)})"
+        return None, (f"criterion class {cls} is never widened (only {', '.join(WIDENABLE_CLASSES)})"
+                      + (f"; {rwhy}" if rwhy else ""))
     today = today or datetime.now(timezone.utc).strftime("%Y-%m-%d")
     title = re.sub(r"\s+", " ", criterion.title).strip()
     why: list[str] = []
@@ -165,6 +180,8 @@ def active_widening(root: Path, task_id: str, task_text: str, criterion,
             continue
         hit = w
         break
+    if rwhy:
+        why.insert(0, rwhy)
     if hit is None:
         return None, "no active widening covers it: " + "; ".join(why)
     if measured_block(list(criterion.lines)) is None:
@@ -174,5 +191,7 @@ def active_widening(root: Path, task_id: str, task_text: str, criterion,
 
 
 def widened_note(w: dict) -> str:
-    """The phrase every widened tick and verdict carries."""
+    """The phrase every widened tick and verdict carries (T-5235: a recorded ruling's own)."""
+    if w.get("kind") == "ruling":
+        return f"ruling recorded ({w['id']})"
     return f"widened by {w['id']} (ruling {w.get('ruling')})"

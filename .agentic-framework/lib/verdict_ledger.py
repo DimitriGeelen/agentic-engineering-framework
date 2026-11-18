@@ -4057,7 +4057,8 @@ def apply(task_id: str, root: Path | None = None) -> dict:
             wide = _widening_of(ctx, c)
             wnote = delegation_widening.widened_note(wide) if wide else ""
             if r["id"] != ann[1] or (f"{GREEN_DEGRADED}:" in lines[ann[0]]) != bool(deg) \
-                    or bool(wnote) != ("; widened by SD-" in lines[ann[0]]) \
+                    or bool(wnote) != ("; widened by SD-" in lines[ann[0]]
+                                       or "; ruling recorded (RL-" in lines[ann[0]]) \
                     or (wnote and wnote not in lines[ann[0]]):
                 lines[ann[0]] = _cite(r, root, deg, wide)
                 result["recited"].append({"ac": c.index, "verdict_id": r["id"],

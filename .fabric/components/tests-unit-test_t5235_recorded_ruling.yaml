@@ -1,0 +1,21 @@
+id: tests/unit/test_t5235_recorded_ruling.py
+name: test_t5235_recorded_ruling
+type: script
+subsystem: tests
+location: tests/unit/test_t5235_recorded_ruling.py
+tags: []
+
+purpose: "T-5235 — a recorded operator ruling makes an act-in-the-world or operator-marked criterion reviewer-judgeable (operator ruling 2026-11-18, question 6, option A). One test group per Agent criterion of T-5235."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-18
+created_by: unknown
