@@ -6,7 +6,7 @@ description: >
   Operator rulings 2026-11-18 on question 2 (EXPLORING; options A and 1; follow-up
   option 1: inception map with instances). See fw decisions.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-18T12:14:15Z
-last_update: '2026-11-18T12:31:14Z'
+last_update: 2026-11-18T22:15:03Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,20 +86,40 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** On 2026-11-18, `fw inception lifecycle` (T-5227) placed the 129 open inceptions:
+- 43 awaiting the operator's decision, median 36.5 days;
+- 68 decided GO with build tasks open;
+- 18 decided NO-GO or DEFER;
+- 0 exploring.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+All of them were filed before the EXPLORING rule (T-5226), so a filing-time GO/NO-GO/DEFER puts an inception in the operator's queue even when questions are still open. Operator choice the same day (B1): check all 43 for readiness; move the ones not ready back to EXPLORING with an owner; keep only the truly ready ones in the operator's queue, each with a revisit date; give the operator a short list.
 
-**Goal:** <what we are trying to achieve>
+**Problem / hypothesis:** The operator's decision queue holds items that are not ready, which is the T-5215 failure class at scale. Nothing moves them forward.
 
-**Expected outcome:** <what will be different when this is done>
+**Goal:** Only truly ready inceptions remain in the operator's queue, and every other open inception has an owner and a date.
+- For each of the 43, run the one readiness predicate (`inception_handoff_blockers`, shared with `fw task review` since T-5215/T-5226).
+- **Not ready:** the recommendation becomes EXPLORING (keep the old verdict and rationale as a note under it, never discarding it). Set `waiting_on`:
+  - `agent` by default;
+  - `peer` when the open question waits on another project, naming it;
+  - `operator` only when the open question itself needs the operator's input, not a decision.
+
+  Set `revisit_at` to today + 7, through `fw inception wait`.
+- **Ready:** keep the verdict, and set `revisit_at` today + 7 (`waiting_on: operator`).
+- The 68 GO-with-builds and 18 NO-GO/DEFER are not re-judged. Only the fields are added.
+- No decision is recorded and no task is closed.
+
+**Expected outcome:**
+- `fw inception lifecycle` shows a much smaller "awaiting decision" count, with the rest placed on exploring steps with owners and dates.
+- The operator receives one short list (task id, title, recommendation, one line) of the inceptions truly ready for a decision.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Each of the 43 is classified ready or not ready by `inception_handoff_blockers`, with the result recorded in docs/reports/T-5228-inception-triage.md (one row each: id, verdict before, ready?, blockers, waiting_on, why)
+- [ ] Every not-ready one now reads EXPLORING, with its earlier verdict kept as a note, a `waiting_on` with a reason and a `revisit_at`. Every ready one keeps its verdict and has a `revisit_at`.
+- [ ] Every other open inception (GO with builds, NO-GO/DEFER) has `waiting_on` and `revisit_at`. No decision was recorded and no task changed status (git diff shows only frontmatter and recommendation edits on inception files).
+- [ ] `fw inception lifecycle` after the triage is recorded in the report, before and after
+- [ ] The short list of truly ready inceptions is at the top of the report
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -382,3 +402,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5228-inception-triage-slice-3-place-each-of-t.md
 - **Context:** Initial task creation
+
+### 2026-11-18T22:15:03Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
