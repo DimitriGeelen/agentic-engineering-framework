@@ -8,7 +8,7 @@ description: >
   Operator rulings 2026-11-18 on question 2 (EXPLORING; options A and 1; follow-up
   option 1: inception map with instances). See fw decisions.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-18T12:14:14Z
-last_update: '2026-11-18T12:31:14Z'
+last_update: 2026-11-18T20:48:42Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,20 +88,53 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Operator rulings 2026-11-18 on question 2 (see `fw decisions`):
+- EXPLORING inceptions name what they wait for (agent / peer / operator) and a revisit date (default 7 days).
+- A daily check routes overdue ones.
+- The follow-up ruling (option 1): build this as an inception lifecycle map (the class) with each inception as an instance, using the dates as triggers and measurements.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+Slice 1 (T-5226) shipped the EXPLORING state. The task lifecycle already has this model: the designer map `.context/designer/projects/aef-task-lifecycle/`, and `GET /api/instances` (web/blueprints/designer_api.py, T-4831, with one status→node table and runtime projection v2 in T-5193).
 
-**Goal:** <what we are trying to achieve>
+**Problem / hypothesis:** About 71 open inceptions have no recorded "waiting on whom / until when". Nothing moves an undecided one forward, and nothing measures how long inceptions sit in each step.
 
-**Expected outcome:** <what will be different when this is done>
+**Goal:** Every open inception is an instance on an inception lifecycle map, with an owner for its next step and a date.
+- **Map.** A designer map `aef-inception-lifecycle` with these state nodes:
+  - exploring, waiting on the agent;
+  - exploring, waiting on a peer;
+  - exploring, waiting on the operator;
+  - ready for a recommendation;
+  - awaiting the operator's decision;
+  - decided GO, with build tasks open;
+  - decided NO-GO or DEFER;
+  - closed.
+  It validates with the existing corpus validator and follows the shared contract with 832 (contracts v2; no new contract fields).
+- **Instance fields** (frontmatter, inceptions only): `waiting_on: agent|peer|operator` and `revisit_at: YYYY-MM-DD` (default filing date + 7). The entered-at time of each step comes from the status/recommendation history already in the task file, or a recorded `step_entered_at`.
+- **Instances.** `GET /api/instances?template=aef-inception-lifecycle` returns each open inception on its node, with entered_at and revisit_at, through one table like the task map's. An inception that cannot be placed comes back as NO-POSITION, the same as for tasks.
+- **Daily routing.** A daily check (audit section plus handover) lists each overdue inception under its owner:
+  - agent: in the handover's next actions;
+  - peer: an item for the agent to remind that peer (the agent sends it, not a cron);
+  - operator: in `fw operator pending` and on the approvals page as "questions waiting for you" (no decide link).
+- **Measurement.** `fw inception lifecycle [--json]` prints, per node, the count, the median days in step and the overdue count.
+- **Docs.** The lifecycle section of 050-Inceptions.md describes the map, the fields and the routing.
+
+**Expected outcome:** Every open inception has a visible place on the map, an owner for the next step and a date. Overdue ones come back to whoever owns them, and time-in-step is measurable.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The map `aef-inception-lifecycle` exists under .context/designer/projects/, validates with the corpus validator, and its node set matches the Goal
+- [ ] `waiting_on` / `revisit_at` are accepted on inceptions (filing paths default revisit_at to +7 days; invalid values refused) and rejected on non-inceptions (tests)
+- [ ] `/api/instances?template=aef-inception-lifecycle` places fixture inceptions in each node, gives NO-POSITION for an unplaceable one, and conforms to runtime-projection v2 (tests reuse the T-5185/T-5193 schema checks)
+- [ ] The daily check lists overdue inceptions by owner: agent → handover; peer → reminder item for the agent; operator → `fw operator pending` and the approvals page, with no decide link (tests)
+- [ ] `fw inception lifecycle --json` gives per-node counts, the median days in step and overdue counts (test with fixtures)
+- [ ] 050-Inceptions.md is updated. Existing designer, instances, runtime-projection, inception and approvals suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5227`. Watchtower is restarted and `bin/fw watchtower current` passes.
+
+### Human
+- [ ] [REVIEW] The inception map in the designer shows inceptions on their steps clearly
+  **Steps:**
+  1. Open http://192.168.10.107:3000/designer and choose the aef-inception-lifecycle map with instances shown.
+  **Expected:** Each step shows how many inceptions are on it, an overdue one stands out, and the waiting-on-agent / peer / operator steps read as different steps.
+  **If not:** Note which step or marker is unclear on this task.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -384,3 +417,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5227-inception-lifecycle-map-slice-2-an-aef-i.md
 - **Context:** Initial task creation
+
+### 2026-11-18T20:48:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
