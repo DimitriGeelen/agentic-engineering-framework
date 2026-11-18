@@ -96,17 +96,17 @@ Verb and flag names are in English. The batch writer and `fw arc instantiate` ar
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw_id_allocate N` reserves a contiguous block under the existing lock, records it in the ledger before raising the counter, and refuses N > 100. create-task and objectives-seed allocate only through it (T-5213 closes with this).
-- [ ] 1409's checks pass as tests in tmp repos with several worktrees:
+- [x] `fw_id_allocate N` reserves a contiguous block under the existing lock, records it in the ledger before raising the counter, and refuses N > 100. create-task and objectives-seed allocate only through it (T-5213 closes with this).
+- [x] 1409's checks pass as tests in tmp repos with several worktrees:
   - 20 concurrent processes mixing singles and 13-blocks: 0 duplicates, 0 overlaps.
   - kill -9 after a reservation, and mid-block: no reuse, and reconcile reports the incomplete reservation.
   - A stale view; a counter that is missing, too low or too high.
   - A deleted top file with the counter deleted: the id is not reissued.
   - The outlier band (T-99971 / T-100202 shape): ids stay in the main range.
   - 12 aborted 100-blocks against the quarantine gap: correct next id.
-- [ ] Single-task creation produces the same task file as before this change, apart from the id and timestamp (byte-compare test)
-- [ ] `fw task id reconcile` reports each listed ERROR, WARN and INFO case (tests), and `--heal` only raises the counter
-- [ ] `fw doctor` reports one allocator (and WARNs on a planted second one). Existing create-task, id-allocation (T-4189, T-100202, T-1279), objectives-seed and doctor suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5217`.
+- [x] Single-task creation produces the same task file as before this change, apart from the id and timestamp (byte-compare test)
+- [x] `fw task id reconcile` reports each listed ERROR, WARN and INFO case (tests), and `--heal` only raises the counter
+- [x] `fw doctor` reports one allocator (and WARNs on a planted second one). Existing create-task, id-allocation (T-4189, T-100202, T-1279), objectives-seed and doctor suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5217`.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -379,6 +379,22 @@ bin/fw vendor self --check --task T-5217
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-18 — allocator language
+- **Chose:** shell (`lib/idalloc.sh`) for allocation; Python (`lib/idalloc_reconcile.py`) for reconcile.
+- **Why:** the allocation hot path is a lock, a counter read and two appends; a python3 start per id would cost more than the work (measured 0.10 s per id with the check off). Reconcile parses the whole ledger and reports, where Python is clearer.
+- **Rejected:** all-Python (fork cost per id); all-shell reconcile (JSON parsing in awk).
+
+### 2026-11-18 — counter pointing into the quarantine band
+- **Chose:** the check walks from the bottom over files, every view's mark and ledger ranges; a counter the walk cannot reach (more than the gap above everything the ledger and files explain) is treated like the band and reset, with a `heal` row `counter-in-quarantine`.
+- **Why:** keeps the T-4189 rule ("a mark beyond the quarantine gap is ignored") that its suite pins; every reservation is in the walk, so a legitimate counter is always reachable.
+- **Rejected:** walking up only from the counter (would follow a corrupted 99971 counter into the band).
+
+**T-5213** (objectives-seed second allocator) is fixed by this task: `_fw_objectives_next_id` now calls `fw_id_allocate 1 objectives-seed` and records a created row (tests 16-17 in t5217_id_allocator.bats).
+
+**Suites run 2026-11-18:** 56 create-task/doctor bats files; the four reds are not this change: doctor_hook_counters 2-4 (the fixture links only bin/, while .claude/settings.json since 4ba274039 calls agents/context/stop-driver.sh directly) and test_doctor_litellm_ollama 6 (needs a whole live `fw doctor` to exit 0). The new doctor line prints only OK/WARN.
+
+**Measured** (tmp repo, 24 worktrees + main, 52,500 task files): old generate_id 2.40 s per id; fw_id_allocate 1 with the check 0.65 s; with FW_ID_CHECK=0 0.10 s; a 100-block 0.004 s per id.
 
 ## Decision
 

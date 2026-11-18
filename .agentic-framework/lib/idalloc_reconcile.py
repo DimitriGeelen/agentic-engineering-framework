@@ -224,7 +224,7 @@ def heal(report):
     row = {"event": "heal", "from": counter, "to": target, "reason": "reconcile", "by": "reconcile", "ts": ts}
     with open(ledger, "a", encoding="utf-8") as fh:
         fh.write(json.dumps(row, separators=(",", ":")) + "\n")
-    tmp = f"{path}.tmp.{os.getpid()}.{os.urandom(4).hex()}"
+    tmp = f"{path}.tmp.{os.getpid()}-{os.urandom(4).hex()}"
     with open(tmp, "w", encoding="utf-8") as fh:
         fh.write(f"{target}\n")
     os.replace(tmp, path)
