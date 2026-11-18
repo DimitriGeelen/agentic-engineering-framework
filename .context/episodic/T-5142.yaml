@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5142: fw sidecar send prints HUB_ACCEPTED and hub-refused for the same send; the sender cannot tell whether it was delivered (010 T-3797 point 2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-18T01:11:23Z
+# ============================================================================
+
+task_id: T-5142
+task_name: "fw sidecar send prints HUB_ACCEPTED and hub-refused for the same send; the sender cannot tell whether it was delivered (010 T-3797 point 2)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-15T13:56:48Z
+completed: 2026-11-18T01:10:07Z
+duration_days: 3
+updates_count: 3
+first_commit: 2026-11-15T15:14:38+01:00
+last_commit: 2026-11-18T01:56:38+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture with context (010 T-3797). every sidecar send ends with one verdict line; accepted post with a failed probe reads delivered
+
+# Key outcomes
+outcomes:
+  - 'Every `fw sidecar send` outcome ends with ONE verdict line, either `delivered: …` or `NOT delivered: …`. A probe failure or any other state appears as detail under that line, never as a competing verdict. Tests cover: accepted with a failed probe, refused, no receiver, and the cross-hub route.'
+  - 'A post the hub accepted is reported as delivered even when the reachability probe failed (the 010/1409 case). A test reproduces it with a stubbed probe.'
+  - '`--json` output carries the same single verdict field, and the existing sidecar send / receipts suites pass, as does `bin/fw vendor self --check --task T-5142`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-18 — where the verdict sits and how detail is shaped'
+    chose: 'the verdict is the FIRST stdout line (existing `delivered: STATE -> …` shape kept); detail stays as unindented `label: value` lines beneath it; a NOT-delivered state says what happens next (`(kept in the outbox; retried)` / `(final; not retried)`).'
+    rationale: 'existing tests and readers key on `delivered: RECEIVED`, `NOT delivered: REJECTED` and `receiver:` at line start; keeping those shapes changes no consumer, and "one verdict, first" is what a reader scans.'
+    alternatives_rejected: ['indenting detail lines (breaks `receiver:` consumers for no gain); putting the verdict last (the reader of a long reason block would hit competing text first). - Pre-post refusals (empty body, unresolvable or unread circuit) keep their single stderr line `send: REFUSED, nothing posted — …` (T-3855 pins that stdout says nothing about delivery); their `--json` now carries `verdict: "NOT delivered"` too.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/delivery.py'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.tasks/active/T-5142-fw-sidecar-send-prints-hubaccepted-and-h.md'
+  - 'lib/sidecar/delivery.py'
+  - 'lib/sidecar_cli.py'
+  - 'tests/unit/test_t5142_send_verdict.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-15T15:14:38'
+    action: 'T-5142: capture with context (010 T-3797)'
+  - time: '2026-11-18T01:56:38'
+    action: 'T-5142: every sidecar send ends with one verdict line; accepted post with a failed probe reads delivered'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3553 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3553
+  commits: 3
+  files_changed: 11
+  lines_added: 947
+  lines_removed: 51
+  footprint_refreshed_at: '2026-11-18T01:12:01Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5142-fw-sidecar-send-prints-hubaccepted-and-h.md
+generated_by: context-agent-hybrid

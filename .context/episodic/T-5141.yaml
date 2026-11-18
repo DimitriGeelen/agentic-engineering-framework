@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5141: sidecar probe_hub reports every failed 'termlink hub probe' as 'TLS handshake failed', even when the sender has no hubs.toml profile for the hub (010 T-3797)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-18T01:09:36Z
+# ============================================================================
+
+task_id: T-5141
+task_name: "sidecar probe_hub reports every failed 'termlink hub probe' as 'TLS handshake failed', even when the sender has no hubs.toml profile for the hub (010 T-3797)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-15T13:56:47Z
+completed: 2026-11-18T01:08:37Z
+duration_days: 3
+updates_count: 3
+first_commit: 2026-11-15T15:14:18+01:00
+last_commit: 2026-11-18T01:47:37+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture with context (010 T-3797). criteria (T-5142 likewise) — probe names its real reason; send ends with one verdict line. probe_hub names its real reason — missing hubs.toml profile, or termlink's own stderr
+
+# Key outcomes
+outcomes:
+  - 'With no hubs.toml profile naming the hub, `probe_hub` returns a reason that says so ("no hubs.toml profile for <hub>: no address or credential for this user"), not "TLS handshake failed". A test uses a tmp hubs.toml.'
+  - 'A non-zero `termlink hub probe` exit returns a reason carrying termlink''s own stderr (trimmed to one line), never a fixed TLS phrase. A test uses a stubbed runner.'
+  - 'The existing termlink_transport, sidecar send and T-3806 suites pass, and `bin/fw vendor self --check --task T-5141` is clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-18 — finality of the no-profile + failed-probe refusal'
+    chose: 'keep it non-final (stored, retryable), as that path always was.'
+    rationale: 'the Goal is the reason text; changing who may later deliver it is a separate decision.'
+    alternatives_rejected: ['marking it `credential_refused` (final) like the reachable-address no-profile path (T-3905). Consistent with G-109, but it would stop the watcher re-posting these messages (how 010''s posts actually arrived), so it belongs to its own task and the operator''s call.']
+  - decision: '2026-11-18 — a failed reachability probe with a profile'
+    chose: 'run the authenticated version read anyway; when it clears the floor the hub is a valid target and the probe failure travels as `ProbeResult.note`.'
+    rationale: 'the unauthenticated `hub probe` is the weaker rung (T-2415); the authenticated read is the gate Amendment 5 requires, so the floor gate is unchanged. This also gives T-5142 a real "accepted with a failed probe" path.'
+    alternatives_rejected: ['posting regardless of the probe (would bypass the version-floor gate).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/delivery.py'
+  - '.agentic-framework/lib/sidecar/termlink_transport.py'
+  - '.tasks/active/T-5141-sidecar-probehub-reports-every-failed-te.md'
+  - '.tasks/active/T-5142-fw-sidecar-send-prints-hubaccepted-and-h.md'
+  - 'lib/sidecar/delivery.py'
+  - 'lib/sidecar/termlink_transport.py'
+  - 'tests/unit/test_t5141_probe_reason.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-15T15:14:18'
+    action: 'T-5141: capture with context (010 T-3797)'
+  - time: '2026-11-18T01:38:00'
+    action: 'T-5141: criteria (T-5142 likewise) — probe names its real reason; send ends with one verdict line'
+  - time: '2026-11-18T01:47:37'
+    action: 'T-5141: probe_hub names its real reason — missing hubs.toml profile, or termlink''s own stderr'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 3551 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3551
+  commits: 4
+  files_changed: 12
+  lines_added: 873
+  lines_removed: 41
+  footprint_refreshed_at: '2026-11-18T01:12:01Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5141-sidecar-probehub-reports-every-failed-te.md
+generated_by: context-agent-hybrid

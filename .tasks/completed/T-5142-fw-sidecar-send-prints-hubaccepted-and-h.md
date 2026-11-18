@@ -1,23 +1,18 @@
 ---
-id: T-5141
-name: "sidecar probe_hub reports every failed 'termlink hub probe' as 'TLS handshake
-  failed', even when the sender has no hubs.toml profile for the hub (010 T-3797)"
+id: T-5142
+name: "fw sidecar send prints HUB_ACCEPTED and hub-refused for the same send; the
+  sender cannot tell whether it was delivered (010 T-3797 point 2)"
 description: >
-  010-termlink msg 3b0e9a30 (2026-11-15, found by 1409-sprind's design session): lib/sidecar/termlink_transport.py
-  probe_hub resolves the hub name through the sender's hubs.toml and falls back to
-  the bare name; any non-zero probe exit becomes 'hub X unreachable: TLS handshake
-  failed'. Live case: user dimitri-mint-dev (non-root) has only a local-hub profile;
-  a send to proxmox-ring20-management reported a TLS failure while .122's TLS and
-  pin were fine, and 1409 debugged TLS for hours. Fix: say 'no hubs.toml profile for
-  <hub> (no address or credential for this user)' when no profile matches, and keep
-  the probe's own stderr when it fails.
+  010-termlink msg 3b0e9a30 (2026-11-15): one send's output showed both HUB_ACCEPTED
+  and a hub refusal. Fix: one final verdict line (delivered / not delivered), with
+  the other state named as detail.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/sidecar/delivery.py, lib/sidecar_cli.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,9 +40,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-11-15T13:56:47Z
-last_update: '2026-11-18T00:46:29Z'
-date_finished:
+created: 2026-11-15T13:56:48Z
+last_update: 2026-11-18T01:10:07Z
+date_finished: 2026-11-18T01:10:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -59,7 +54,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-11-15T14:14:02Z'
+  - ts: '2026-11-15T14:14:22Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 0
@@ -75,10 +70,10 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-  - ts: '2026-11-18T00:46:29Z'
+  - ts: '2026-11-18T01:01:19Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
-      D1: 2
+      D1: 1
       D2: 0
       D3: 0
       D4: 0
@@ -87,9 +82,9 @@ bvp_scores_proposed:
       F3: 0
       F1: 0
       F2: 0
-    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=0
-      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-11-15T14:15:20Z'
@@ -103,26 +98,26 @@ cost_estimate_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-5141: sidecar probe_hub reports every failed 'termlink hub probe' as 'TLS handshake failed', even when the sender has no hubs.toml profile for the hub (010 T-3797)
+# T-5142: fw sidecar send prints HUB_ACCEPTED and hub-refused for the same send; the sender cannot tell whether it was delivered (010 T-3797 point 2)
 
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** 010-termlink msg 3b0e9a30, corrected by cdcf5a64 (2026-11-15, their T-3797, found by 1409-sprind's design session). User dimitri-mint-dev (non-root) has only a local-hub profile in hubs.toml. Their sends to proxmox-ring20-management showed "hub-refused: hub ring20-management unreachable: TLS handshake failed", yet 010 measured on .122 that the posts WERE delivered (10:03Z, 10:23Z, repeats to 12:18Z; topic read up to date). The false refusal sent 1409 debugging TLS for hours and drove six re-sends of the same consult (06b8278a).
+**Background / trigger:** 010-termlink msgs 3b0e9a30 and cdcf5a64 (2026-11-15, their T-3797, from 1409-sprind's design session). One `fw sidecar send` printed both `HUB_ACCEPTED` and `hub-refused: … TLS handshake failed`. The posts were in fact delivered, but the sender could not tell, and re-sent the same consult six times (06b8278a).
 
-**Problem / hypothesis:** `lib/sidecar/termlink_transport.py` `probe_hub` resolves the hub name through the sender's hubs.toml and falls back to the bare name. Any non-zero `termlink hub probe` exit becomes "TLS handshake failed". So a probe that fails for lack of a profile is reported as a refusal of a delivery that in fact succeeded by another route: a false negative.
+**Problem / hypothesis:** the send output reports the delivery state and the reachability probe's result side by side, with no final verdict, so two contradictory states read as equal. (The false probe failure itself is T-5141.)
 
-**Goal:** a probe failure never reads as a delivery refusal when the post was accepted, and it names its real reason.
+**Goal:** every send ends with one verdict line, delivered or not delivered, with any other state named as detail beneath it.
 
-**Expected outcome:** with no matching hubs.toml profile, the message says so ("no hubs.toml profile for <hub>: no address or credential for this user"). A failed probe keeps termlink's own stderr. An accepted post is reported as delivered, with the probe failure as a note.
+**Expected outcome:** a sender reads one line to know whether the message arrived, and does not re-send a delivered message.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] With no hubs.toml profile naming the hub, `probe_hub` returns a reason that says so ("no hubs.toml profile for <hub>: no address or credential for this user"), not "TLS handshake failed". A test uses a tmp hubs.toml.
-- [x] A non-zero `termlink hub probe` exit returns a reason carrying termlink's own stderr (trimmed to one line), never a fixed TLS phrase. A test uses a stubbed runner.
-- [x] The existing termlink_transport, sidecar send and T-3806 suites pass, and `bin/fw vendor self --check --task T-5141` is clean
+- [x] Every `fw sidecar send` outcome ends with ONE verdict line, either `delivered: …` or `NOT delivered: …`. A probe failure or any other state appears as detail under that line, never as a competing verdict. Tests cover: accepted with a failed probe, refused, no receiver, and the cross-hub route.
+- [x] A post the hub accepted is reported as delivered even when the reachability probe failed (the 010/1409 case). A test reproduces it with a stubbed probe.
+- [x] `--json` output carries the same single verdict field, and the existing sidecar send / receipts suites pass, as does `bin/fw vendor self --check --task T-5142`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -308,19 +303,11 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
-python3 -m pytest -q tests/unit/test_t5141_probe_reason.py
-python3 -m pytest -q tests/unit/test_sidecar_termlink_transport.py tests/unit/test_sidecar_remote_probe_t3806.py tests/unit/test_sidecar_credential_refused_t3905.py tests/unit/test_sidecar_delivery.py
-bin/fw vendor self --check --task T-5141
+python3 -m pytest -q tests/unit/test_t5142_send_verdict.py
+python3 -m pytest -q tests/unit/test_sidecar_no_receiver_t3762.py tests/unit/test_sidecar_cross_hub_t3855.py tests/unit/test_sidecar_send_state_t4560.py tests/unit/test_sidecar_receipts_t3684.py tests/unit/test_sidecar_delivery.py
+bin/fw vendor self --check --task T-5142
 
 ## RCA
-
-**Symptom:** a sender with no hubs.toml profile for a remote hub (010 T-3797, user dimitri-mint-dev, only a local-hub profile) saw `hub-refused: hub ring20-management unreachable: TLS handshake failed`. The hub's TLS and pin were fine; 1409-sprind debugged TLS for hours.
-
-**Root cause:** `probe_hub` fell back to the bare hub name as the `termlink hub probe` address when no profile matched, then mapped every non-zero exit to one fixed phrase, "TLS handshake failed". It discarded termlink's own stderr, so the real cause (no profile: no address and no credential for this user) was never visible.
-
-**Why structurally allowed:** the T-3806 tests covered "no profile" only with a probe that SUCCEEDED (a reachable literal address), and "unreachable" only with a profile present. The combination in the field (no profile AND a name that is not an address) had no test, and the fixed phrase looked like a diagnosis, so nothing flagged it.
-
-**Prevention:** `tests/unit/test_t5141_probe_reason.py` pins both missing combinations: no profile + failed probe names the missing profile; any failed probe carries termlink's own stderr (one line) and never the fixed TLS phrase. A shared `no_profile_reason()` is now the one wording for the missing-profile case on both the reachable and unreachable paths.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -335,6 +322,14 @@ bin/fw vendor self --check --task T-5141
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** one `fw sidecar send` (010 T-3797, 1409-sprind) showed both `HUB_ACCEPTED` and `hub-refused: … TLS handshake failed`. The sender could not tell whether the consult had arrived and re-sent it six times; it had arrived (a later retry by the project's watcher posted it).
+
+**Root cause:** `_cmd_send` printed the verdict line and then free-standing state lines of equal weight. On a hub-path send with no registered receiver, the `receiver:` line always said "HUB_ACCEPTED is the last state…", even when the verdict was `NOT delivered: STORED` with `reason: hub-refused`. Two states read as two answers. Separately, `deliver()` never posts after a failed probe, so a probe that failed on its weak (unauthenticated) rung blocked a send the hub would have taken.
+
+**Why structurally allowed:** the T-3762 test pinned the receiver line's text only on the DELIVERED path; nothing tested the output of a refused send as a whole, or asserted that exactly one line carries a verdict.
+
+**Prevention:** `print_verdict()` is now the one place a send's text output is formed: one verdict line first, then `label: value` detail, and the receiver line names HUB_ACCEPTED only when delivered. `tests/unit/test_t5142_send_verdict.py` asserts exactly one verdict line, first, for accepted-with-failed-probe, refused, credential-refused, no-receiver, cross-hub and direct sends, and a single `verdict` field in `--json`. A probe that failed only its weak rung now passes with a `note` (T-5141), which the send prints as `probe note:` under `delivered:`.
 
 ## Evolution
 
@@ -400,15 +395,11 @@ bin/fw vendor self --check --task T-5141
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-11-18 — finality of the no-profile + failed-probe refusal
-- **Chose:** keep it non-final (stored, retryable), as that path always was.
-- **Why:** the Goal is the reason text; changing who may later deliver it is a separate decision.
-- **Rejected:** marking it `credential_refused` (final) like the reachable-address no-profile path (T-3905). Consistent with G-109, but it would stop the watcher re-posting these messages (how 010's posts actually arrived), so it belongs to its own task and the operator's call.
-
-### 2026-11-18 — a failed reachability probe with a profile
-- **Chose:** run the authenticated version read anyway; when it clears the floor the hub is a valid target and the probe failure travels as `ProbeResult.note`.
-- **Why:** the unauthenticated `hub probe` is the weaker rung (T-2415); the authenticated read is the gate Amendment 5 requires, so the floor gate is unchanged. This also gives T-5142 a real "accepted with a failed probe" path.
-- **Rejected:** posting regardless of the probe (would bypass the version-floor gate).
+### 2026-11-18 — where the verdict sits and how detail is shaped
+- **Chose:** the verdict is the FIRST stdout line (existing `delivered: STATE  ->  …` shape kept); detail stays as unindented `label: value` lines beneath it; a NOT-delivered state says what happens next (`(kept in the outbox; retried)` / `(final; not retried)`).
+- **Why:** existing tests and readers key on `delivered: RECEIVED`, `NOT delivered: REJECTED` and `receiver:` at line start; keeping those shapes changes no consumer, and "one verdict, first" is what a reader scans.
+- **Rejected:** indenting detail lines (breaks `receiver:` consumers for no gain); putting the verdict last (the reader of a long reason block would hit competing text first).
+- Pre-post refusals (empty body, unresolvable or unread circuit) keep their single stderr line `send: REFUSED, nothing posted — …` (T-3855 pins that stdout says nothing about delivery); their `--json` now carries `verdict: "NOT delivered"` too.
 
 ## Decision
 
@@ -422,10 +413,23 @@ bin/fw vendor self --check --task T-5141
 
 ## Updates
 
-### 2026-11-15T13:56:47Z — task-created [task-create-agent]
+### 2026-11-15T13:56:48Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5141-sidecar-probehub-reports-every-failed-te.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5142-fw-sidecar-send-prints-hubaccepted-and-h.md
 - **Context:** Initial task creation
 
-### 2026-11-15T14:14:00Z — status-update [task-update-agent]
+### 2026-11-15T14:14:20Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-18T01:10:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-74964b19
+- **Timestamp:** 2026-11-18T01:10:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

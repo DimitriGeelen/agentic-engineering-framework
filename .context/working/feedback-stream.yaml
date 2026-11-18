@@ -56645,3 +56645,39 @@ scan_id: R-795c022d
 task_id: T-5213
 payload:
   task_file: .tasks/active/T-5213-libobjectives-seedsh-mints-task-ids-with.md
+---
+kind: scan_emitted
+timestamp: '2026-11-18T01:09:02Z'
+scan_id: R-436915ac
+task_id: T-5141
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-18T01:09:02Z'
+scan_id: R-436915ac
+task_id: T-5141
+payload:
+  task_file: .tasks/active/T-5141-sidecar-probehub-reports-every-failed-te.md
+---
+kind: scan_emitted
+timestamp: '2026-11-18T01:10:53Z'
+scan_id: R-74964b19
+task_id: T-5142
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-18T01:10:53Z'
+scan_id: R-74964b19
+task_id: T-5142
+payload:
+  task_file: .tasks/active/T-5142-fw-sidecar-send-prints-hubaccepted-and-h.md
