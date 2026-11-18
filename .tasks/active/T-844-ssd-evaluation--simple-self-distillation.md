@@ -12,8 +12,11 @@ horizon: next
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:23:06Z'
+revisit_at: 2026-11-25
+waiting_on: agent
 created: 2026-04-04T13:27:15Z
-last_update: '2026-07-07T10:45:09Z'
+last_update: 2026-11-18T22:23:06Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:46Z'
@@ -287,3 +290,7 @@ OUT: Reproducing the paper's experiments, fine-tuning models, building SSD pipel
 
 ### 2026-04-28T16:09:26Z — status-update [task-update-agent]
 - **Change:** horizon: next → next
+
+### 2026-11-18T22:23:06Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → agent
+- **Revisit:** 2026-11-25

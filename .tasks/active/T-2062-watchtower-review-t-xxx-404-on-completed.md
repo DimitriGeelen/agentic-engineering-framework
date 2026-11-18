@@ -15,9 +15,12 @@ horizon: now
 tags: [bug, watchtower, review-surface, hand-off, render-fidelity]
 components: [web/blueprints/review.py, web/templates/review.html]
 related_tasks: [T-2059, T-2061, T-2056, T-2060, T-679]
+step_entered_at: '2026-11-18T22:23:00Z'
+revisit_at: 2026-11-25
+waiting_on: operator
 arc_id: watchtower-redesign
 created: 2026-05-28T14:30:00Z
-last_update: '2026-09-29T08:24:23Z'
+last_update: 2026-11-18T22:23:00Z
 date_finished: 2026-05-28T17:59:23Z
 cost_estimate_proposed:
   - ts: '2026-05-28T12:45:02Z'
@@ -258,6 +261,10 @@ Evidence:
 - Class precedent: this is the same shape as T-1469 (the original components-block regex) — a writer-side bug that masquerades as a renderer-side bug.
 
 If the human wants the original (a) shape anyway — render completed tasks read-only on `/review/T-XXX` instead of relying on `/tasks/T-XXX` — that is a separate UX call (extending the hand-off surface beyond decision time) and should be re-scoped as a fresh inception with that framing, not bundled under T-2062's "404 bug" framing.
+
+### 2026-11-18T22:23:00Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → operator
+- **Revisit:** 2026-11-25
 
 ## Reviewer Verdict (v1.5)
 

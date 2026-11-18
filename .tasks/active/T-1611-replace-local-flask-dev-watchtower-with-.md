@@ -21,8 +21,11 @@ components: [agents/audit/audit.sh, agents/handover/handover.sh,
   lib/inception_recommendation.sh, lib/inception.sh, 
       tests/unit/inception_defer_park.bats, web/app.py]
 related_tasks: [T-1122, T-1309]
+step_entered_at: '2026-11-18T22:23:00Z'
+revisit_at: 2026-11-25
+waiting_on: operator
 created: 2026-04-30T07:25:07Z
-last_update: '2026-09-29T08:24:17Z'
+last_update: 2026-11-18T22:23:00Z
 date_finished: 2026-09-20T13:20:53Z
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -380,6 +383,10 @@ up in this window's data.
 ### 2026-09-20T13:20:03Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-11-18T22:23:00Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → operator
+- **Revisit:** 2026-11-25
 
 ## Reviewer Verdict (v1.5)
 

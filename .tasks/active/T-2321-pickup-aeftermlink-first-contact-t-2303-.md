@@ -13,8 +13,11 @@ horizon: later
 tags: [pickup, feature-proposal]
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:23:03Z'
+revisit_at: 2026-11-25
+waiting_on: agent
 created: 2026-06-10T19:48:02Z
-last_update: '2026-07-07T10:45:07Z'
+last_update: 2026-11-18T22:23:03Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -242,3 +245,7 @@ Evidence:
 ### 2026-06-10T22:40:52Z — status-update [task-update-agent]
 - **Change:** horizon: next → later
 - **Reason:** Inception decision: DEFER — parking task
+
+### 2026-11-18T22:23:03Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → agent
+- **Revisit:** 2026-11-25

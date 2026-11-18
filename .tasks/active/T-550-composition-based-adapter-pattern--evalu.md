@@ -16,8 +16,11 @@ horizon: next
 tags: []
 components: []
 related_tasks: [T-549]
+step_entered_at: '2026-11-18T22:23:05Z'
+revisit_at: 2026-11-25
+waiting_on: agent
 created: 2026-03-23T15:49:01Z
-last_update: '2026-07-07T10:45:08Z'
+last_update: 2026-11-18T22:23:05Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:46Z'
@@ -343,3 +346,7 @@ Evidence:
 
 ### 2026-04-28T16:09:25Z — status-update [task-update-agent]
 - **Change:** horizon: next → next
+
+### 2026-11-18T22:23:05Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → agent
+- **Revisit:** 2026-11-25

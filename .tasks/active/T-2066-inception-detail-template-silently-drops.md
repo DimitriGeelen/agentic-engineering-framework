@@ -16,9 +16,12 @@ horizon: now
 tags: [bug, watchtower, inception, template, silent-drop, render-fidelity]
 components: [web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: [T-2062, T-2063, T-2064, T-2065, T-1177, T-1391, T-1585]
+step_entered_at: '2026-11-18T22:23:02Z'
+revisit_at: 2026-11-25
+waiting_on: operator
 arc_id: watchtower-redesign
 created: 2026-05-28T13:38:00Z
-last_update: '2026-09-29T08:24:23Z'
+last_update: 2026-11-18T22:23:02Z
 date_finished: 2026-05-28T18:00:17Z
 cost_estimate_proposed:
   - ts: '2026-05-28T13:45:02Z'
@@ -265,6 +268,10 @@ Evidence:
 - The fix surface is bounded — one Python file, one template.
 - Author-side friction observed in this very session: I filed 4 inceptions with bug-class headings because the RCA shape matched the user's request ("RCA + remediate"). The render-side accommodation closes the gap structurally instead of asking every author to remember the schema mismatch.
 - Adjacent precedent: T-1177 / T-1391 / T-1585 each added structural rendering for specific section classes; T-2066 continues that pattern for the 5 dropped headings.
+
+### 2026-11-18T22:23:02Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → operator
+- **Revisit:** 2026-11-25
 
 ## Reviewer Verdict (v1.5)
 

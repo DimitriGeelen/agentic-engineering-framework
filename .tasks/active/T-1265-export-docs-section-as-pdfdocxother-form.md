@@ -11,8 +11,11 @@ horizon: later
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:22:59Z'
+revisit_at: 2026-11-25
+waiting_on: agent
 created: 2026-04-15T17:53:15Z
-last_update: '2026-07-07T10:45:01Z'
+last_update: 2026-11-18T22:22:59Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -324,3 +327,7 @@ Evidence:
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
 - **Reason:** T-1865 sweep: DEFER limbo recovery
+
+### 2026-11-18T22:22:59Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → agent
+- **Revisit:** 2026-11-25

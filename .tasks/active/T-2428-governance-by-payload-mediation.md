@@ -18,8 +18,11 @@ voi_score: 0.85
 tags: [governance, proxy, payload-mediation, portability, livefire, lock-1, 
       autonomy]
 related_tasks: [T-2389]
+step_entered_at: '2026-11-18T22:23:03Z'
+revisit_at: 2026-11-25
+waiting_on: operator
 created: 2026-06-18T19:50:00Z
-last_update: '2026-09-29T08:24:26Z'
+last_update: 2026-11-18T22:23:03Z
 date_finished: 2026-06-18T11:31:47Z
 bvp_scores_proposed:
   - ts: '2026-08-16T22:24:09Z'
@@ -331,3 +334,7 @@ parsing, tool_use/tool_result coherence, per-protocol normalization) is
 
 ### 2026-07-07 — audit remediation (T-2512)
 - **Action:** Added `## Updates` section header (audit WARN — the inception-decision entries above pre-existed but lacked the section header).
+
+### 2026-11-18T22:23:03Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → operator
+- **Revisit:** 2026-11-25

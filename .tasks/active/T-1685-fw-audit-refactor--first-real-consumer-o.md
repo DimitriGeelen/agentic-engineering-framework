@@ -13,8 +13,11 @@ horizon: later
 tags: []
 components: []
 related_tasks: []
+step_entered_at: '2026-11-18T22:23:00Z'
+revisit_at: 2026-11-25
+waiting_on: agent
 created: 2026-05-02T18:50:52Z
-last_update: '2026-07-07T10:45:03Z'
+last_update: 2026-11-18T22:23:00Z
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -329,3 +332,7 @@ Implications: This NO-GO is structural confirmation of G-064 — the framework's
 - **Change:** status: started-work → captured
 - **Change:** horizon: later → later
 - **Reason:** T-1865 sweep: DEFER limbo recovery
+
+### 2026-11-18T22:23:00Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → agent
+- **Revisit:** 2026-11-25

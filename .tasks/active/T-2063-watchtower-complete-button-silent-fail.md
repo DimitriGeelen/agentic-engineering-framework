@@ -17,9 +17,12 @@ tags: [bug, watchtower, htmx, csrf, silent-fail, render-fidelity]
 components: [web/app.py, web/static/csrf-htmx.js, web/templates/_review_acs.html,
   web/blueprints/tasks.py]
 related_tasks: [T-1302, T-1306, T-1453, T-2060]
+step_entered_at: '2026-11-18T22:23:01Z'
+revisit_at: 2026-11-25
+waiting_on: operator
 arc_id: watchtower-redesign
 created: 2026-05-28T14:30:00Z
-last_update: '2026-09-29T08:24:23Z'
+last_update: 2026-11-18T22:23:01Z
 date_finished: 2026-05-28T17:59:34Z
 cost_estimate_proposed:
   - ts: '2026-05-28T12:45:02Z'
@@ -276,6 +279,10 @@ Evidence:
 - `web/templates/base.html:970-978` contains the toast handlers that should fire on non-2xx but don't reach /review.
 - `<meta name="csrf-token">` IS rendered on /review/T-2058 (curl confirmed: `content="49b417aa…"`) — so the wiring SHOULD work for a fresh-session browser; the 403 the user hit is a different layer.
 - Class precedent: T-2060 itself was a render-fidelity silent class (htmx polling chrome destruction). T-2063 extends the same lesson to error-handling silent class. T-1453 extracted the CSRF shim; this extracts the toast handler with the same shape.
+
+### 2026-11-18T22:23:01Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → operator
+- **Revisit:** 2026-11-25
 
 ## Reviewer Verdict (v1.5)
 

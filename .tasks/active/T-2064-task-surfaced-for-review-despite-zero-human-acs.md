@@ -16,9 +16,12 @@ tags: [bug, watchtower, review-queue, filter-gap, sovereignty]
 components: [web/blueprints/review.py, web/blueprints/approvals.py, bin/fw, 
       agents/task-create/update-task.sh]
 related_tasks: [T-2056, T-2061, T-679, T-372, T-373]
+step_entered_at: '2026-11-18T22:23:01Z'
+revisit_at: 2026-11-25
+waiting_on: operator
 arc_id: watchtower-redesign
 created: 2026-05-28T14:30:00Z
-last_update: '2026-09-29T08:24:23Z'
+last_update: 2026-11-18T22:23:01Z
 date_finished: 2026-05-28T17:59:50Z
 cost_estimate_proposed:
   - ts: '2026-05-28T12:45:02Z'
@@ -237,6 +240,10 @@ Evidence:
 - The CLAUDE.md rule "NEVER check a `### Human` AC" (sovereignty boundary) rules out candidate (c).
 - T-1985's auto-tick already exists for `[REVIEWER]`-prefixed ACs but explicitly stops at sovereignty for `[REVIEW]` — the auto-tick mechanism is not the right place to filter visibility.
 - `fw review-queue` and `/approvals` and `/review/` are three surfaces; one helper de-duplicates the predicate.
+
+### 2026-11-18T22:23:01Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → operator
+- **Revisit:** 2026-11-25
 
 ## Reviewer Verdict (v1.5)
 

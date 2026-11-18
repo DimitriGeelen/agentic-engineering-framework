@@ -17,9 +17,12 @@ tags: [bug, arc, bvp, estimator, automation-gap, value-prioritisation]
 components: [bin/fw, lib/arc.sh, agents/termlink/bvp-estimator/bvp-estimator.sh, 
       .context/arcs/*.yaml]
 related_tasks: [T-1918, T-1922, T-1925, T-1926, T-1930, T-1934, T-1935]
+step_entered_at: '2026-11-18T22:23:02Z'
+revisit_at: 2026-11-25
+waiting_on: operator
 arc_id: value-prioritisation
 created: 2026-05-28T14:30:00Z
-last_update: '2026-09-29T08:24:23Z'
+last_update: 2026-11-18T22:23:02Z
 date_finished: 2026-05-28T18:00:00Z
 cost_estimate_proposed:
   - ts: '2026-05-28T12:45:02Z'
@@ -234,6 +237,10 @@ Evidence:
 - Benchmark target (A3): 46 tasks × 10ms ≈ 500ms — well under interactive latency budget.
 - The sovereignty boundary is preserved: human authorises the driver; the rescore runs as a deterministic consequence of that authorisation (not a separate decision).
 - Same pattern shape as T-1922 (estimator-on-task-create) — adding the dual hook at "driver-set change" is symmetric and easy to reason about.
+
+### 2026-11-18T22:23:02Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: agent → operator
+- **Revisit:** 2026-11-25
 
 ## Reviewer Verdict (v1.5)
 
