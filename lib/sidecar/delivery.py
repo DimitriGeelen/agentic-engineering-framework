@@ -50,6 +50,9 @@ class ProbeResult:
     # usable secret, or the hub rejected it. Final: a retry runs as whoever
     # next runs the project's watcher, which is not the principal who sent.
     credential_refused: bool = False
+    # T-5141/T-5142: a passing probe can still carry a failure of a weaker rung
+    # (the unauthenticated reachability probe). Detail, never a verdict.
+    note: str = ""
 
 
 _AUTH_FAILURE = re.compile(
