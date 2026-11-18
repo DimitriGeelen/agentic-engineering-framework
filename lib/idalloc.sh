@@ -38,7 +38,7 @@
 #
 # Public:
 #   fw_id_allocate N [purpose]   prints N ids (T-NNN), one per line, contiguous. N <= FW_ID_BLOCK_MAX.
-#   fw_id_ledger_created ID      appends a created row (call after the task file is written).
+#   fw_id_ledger_created ID..    appends a created row per id (call after the task files are written).
 #   fw_id_main_view              prints <main worktree>/.tasks (the counter's directory).
 #   fw_id_other_allocators DIR.. prints files under DIR.. that mint task ids outside this file.
 
@@ -229,11 +229,17 @@ fw_id_allocate() {
 # Record that task ID now has a file. Best effort: a missing created row is reported by
 # reconcile as an incomplete reservation, it never breaks a create.
 fw_id_ledger_created() {
-    local id="${1#T-}" view ts
-    [[ "$id" =~ ^[0-9]+$ ]] || return 0
-    view="$(fw_id_main_view)"
+    # T-5221: several ids in one append (create-batch marks its reservation created at the end).
+    local view ts rows="" a id
     ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-    _fw_idalloc_append "$view/.id-ledger.jsonl" "{\"event\":\"created\",\"id\":$((10#$id)),\"ts\":\"$ts\"}" 2>/dev/null || true
+    for a in "$@"; do
+        id="${a#T-}"
+        [[ "$id" =~ ^[0-9]+$ ]] || continue
+        rows+="{\"event\":\"created\",\"id\":$((10#$id)),\"ts\":\"$ts\"}"$'\n'
+    done
+    [ -n "$rows" ] || return 0
+    view="$(fw_id_main_view)"
+    printf '%s' "$rows" >> "$view/.id-ledger.jsonl" 2>/dev/null || true
 }
 
 # Files under the given roots that mint a task id themselves: they format "T-%03d"-style ids

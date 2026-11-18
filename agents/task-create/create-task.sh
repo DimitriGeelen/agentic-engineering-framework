@@ -11,6 +11,8 @@ source "$FRAMEWORK_ROOT/lib/paths.sh"
 # Source enumerations (single source of truth)
 # Note: lib/errors.sh already sourced via lib/paths.sh (die, warn, error, info, success)
 source "$FRAMEWORK_ROOT/lib/enums.sh"
+# T-5221: the rules a new task must pass, shared with fw task create-batch.
+source "$FRAMEWORK_ROOT/lib/task-create-rules.sh"
 
 # T-1279/T-1424: serialize ID allocation to prevent concurrent invocations from
 # colliding on the same T-NNNN. Without this, 4+ parallel `fw work-on`
@@ -148,22 +150,8 @@ if [ -z "$NAME" ]; then
     read -r NAME
 fi
 
-# T-555: Reject template placeholder names
-_name_lower=$(echo "$NAME" | tr '[:upper:]' '[:lower:]' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-case "$_name_lower" in
-    "task name"|"name"|"description"|"first criterion"|"second criterion"|\
-    "task"|"my task"|"new task"|"test task"|"todo"|"fix bug"|"implement feature"|\
-    "criterion"|"placeholder"|"example task"|"untitled")
-        echo "ERROR: '$NAME' looks like a template placeholder, not a real task name." >&2
-        echo "" >&2
-        echo "  Provide a specific, descriptive name. Examples:" >&2
-        echo "    --name \"Fix login timeout on slow connections\"" >&2
-        echo "    --name \"Add retry logic to API client\"" >&2
-        echo "    --name \"Inception: Evaluate caching strategy\"" >&2
-        echo "" >&2
-        exit 1
-        ;;
-esac
+# T-555: Reject template placeholder names (rule lives in lib/task-create-rules.sh, T-5221)
+task_rule_name "$NAME" || exit 1
 
 if [ -z "$DESCRIPTION" ]; then
     echo -e "${YELLOW}Task description:${NC}"
@@ -194,44 +182,9 @@ if [ -n "$ORIGIN" ]; then
     esac
 fi
 
-# Validate workflow type
-if ! is_valid_type "$WORKFLOW_TYPE"; then
-    error "Invalid workflow type '$WORKFLOW_TYPE'"
-    die "Valid types: $VALID_TYPES"
-fi
-
-# Validate horizon
-# T-2160 (arc-009 Slice 1): explicit guard against --horizon past at creation too.
-if [ "$HORIZON" = "past" ]; then
-    error "'--horizon past' rejected — past is a derived render-time value, not settable"
-    error "  Past is computed from file location: .tasks/completed/ → renders as past."
-    die "  Storage enum is now/next/later. Per T-2159 Q1=(b); arc-009."
-fi
-if ! is_valid_horizon "$HORIZON"; then
-    error "Invalid horizon '$HORIZON'"
-    die "Valid horizons: $VALID_HORIZONS"
-fi
-
-# Validate owner (T-2674, closes the residual G-040 creation-side hole: the
-# predicate existed since T-1180 but was never called here — any --owner string
-# was written verbatim while Watchtower's dropdowns whitelist the enum).
-if ! is_valid_owner "$OWNER"; then
-    error "Invalid owner '$OWNER'"
-    die "Valid owners: $VALID_OWNERS (enum source: status-transitions.yaml)"
-fi
-
-# T-100202 AC4 (recursion guard): refuse names carrying the self-feeding
-# audit-emitter signature — a WARN task named after another WARN task, e.g.
-# "Audit WARN — Task T-2488-audit-warn--task-t-2462-…". The emitter itself is
-# removed from HEAD (audit emits observations via `fw note`, hash-deduped),
-# but this gate makes the recursion class structurally impossible for ANY
-# future emitter path, not just the removed one.
-if printf '%s' "$NAME" | grep -qiE 'audit[ -]?warn.*audit[ -]?warn'; then
-    error "Recursive audit-warn task name refused (T-100202)"
-    error "  A task about an audit-warn task re-audits its own emission and inflates"
-    error "  the ID space unboundedly (origin: T-99971 seed, 2026-07-03)."
-    die   "  Capture the finding as an observation instead: fw note \"<finding>\" (hash-deduped, no ID minted)"
-fi
+# Validate workflow type, horizon (T-2160), owner (T-2674) and recursive audit-warn names
+# (T-100202). T-5221: the rules live in lib/task-create-rules.sh, shared with create-batch.
+task_rule_fields "$NAME" "$WORKFLOW_TYPE" "$HORIZON" "$OWNER" || exit 1
 
 # Generate next task ID.
 #
@@ -275,11 +228,6 @@ source "$FRAMEWORK_ROOT/lib/idalloc.sh"
 
 generate_id() {
     fw_id_allocate 1 "create-task"
-}
-
-# Generate slug from name
-generate_slug() {
-    echo "$1" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd 'a-z0-9-' | cut -c1-40
 }
 
 # Generate timestamp
@@ -393,12 +341,9 @@ fi
 # timeout left children blocking every later create). Children run in
 # subshells that close the fd first (keylock_subshell_close_cmd, T-1493); the
 # EXIT trap covers an early exit, the explicit release below the normal path.
-SLUG=$(generate_slug "$NAME")
 keylock_acquire "task-id-allocation"
 trap 'keylock_release "task-id-allocation" 2>/dev/null' EXIT
 TASK_ID=$(eval "$(keylock_subshell_close_cmd)"; generate_id)
-FILENAME="$TASK_ID-$SLUG.md"
-FILEPATH="$TASKS_DIR/active/$FILENAME"
 
 # Determine initial status
 if [ "$START_WORK" = true ]; then
@@ -418,195 +363,20 @@ if ! is_valid_status "$STATUS"; then
     die "Valid statuses: $VALID_STATUSES (enum source: status-transitions.yaml)"
 fi
 
-# Format tags and related_tasks as YAML arrays
-format_yaml_array() {
-    local input="$1"
-    if [ -z "$input" ]; then
-        echo "[]"
-        return
-    fi
-    local result="["
-    local first=true
-    IFS=',' read -ra items <<< "$input"
-    for item in "${items[@]}"; do
-        item=$(echo "$item" | xargs)  # trim whitespace
-        [ -z "$item" ] && continue
-        if [ "$first" = true ]; then
-            result="${result}${item}"
-            first=false
-        else
-            result="${result}, ${item}"
-        fi
-    done
-    echo "${result}]"
-}
-
-TAGS_YAML=$(format_yaml_array "$TAGS")
-RELATED_YAML=$(format_yaml_array "$RELATED")
-
-# T-4597: a project without .tasks/templates/ (one fw init never seeded, or a test
-# fixture) uses the framework's own copy. Without this an inception fell through to
-# the inline fallback below, which has no ## Recommendation / ## Decision, and the
-# T-1263 check refused every `fw inception start` in such a project.
-_template_path() {
-    if [ -f "$TASKS_DIR/templates/$1" ]; then
-        echo "$TASKS_DIR/templates/$1"
-    elif [ -f "$FRAMEWORK_ROOT/.tasks/templates/$1" ]; then
-        echo "$FRAMEWORK_ROOT/.tasks/templates/$1"
-    fi
-}
-INCEPTION_TEMPLATE=$(_template_path inception.md)
-DEFAULT_TEMPLATE=$(_template_path default.md)
-
-# Select template content based on workflow type
-# All vars passed via env to avoid shell interpolation into Python source (T-595)
-# T-4841: subshell with the lock fd closed, so the writers never inherit it.
-(
-eval "$(keylock_subshell_close_cmd)"
-if [ "$WORKFLOW_TYPE" = "inception" ] && [ -n "$INCEPTION_TEMPLATE" ]; then
-    TC_TEMPLATE="$INCEPTION_TEMPLATE" \
-    TC_TASK_ID="$TASK_ID" TC_STATUS="$STATUS" TC_HORIZON="$HORIZON" \
-    TC_OWNER="$OWNER" TC_TAGS_YAML="$TAGS_YAML" TC_RELATED_YAML="$RELATED_YAML" \
-    TC_TIMESTAMP="$TIMESTAMP" TC_FILEPATH="$FILEPATH" \
-    python3 -c "
-import sys, os, re, json  # T-4787: json.dumps is a valid YAML double-quoted scalar (escapes \ as well as \")
-e = os.environ
-with open(e['TC_TEMPLATE']) as f:
-    t = f.read()
-name, desc = sys.argv[1], sys.argv[2]
-def indent_block(s):
-    # T-2778: 'description: >' is a folded scalar, so EVERY line of the value must be
-    # indented, not just the first. Indenting only the first line ends the scalar at the
-    # first newline; YAML then reads the next paragraph as frontmatter. That fails two
-    # different ways, and the loud one is the lucky one: a paragraph containing 'word: word'
-    # parses as a junk top-level key and SILENTLY truncates description to its first line
-    # (no error, audit sees valid YAML), while a paragraph without a colon raises
-    # ScannerError and is caught. Found 5 corpus instances -- 1 loud, 4 silent.
-    # Blank lines are emitted bare: whitespace-only lines inside a block scalar are
-    # separators, and padding them to the indent width leaves trailing spaces.
-    return '\n'.join(('  ' + ln) if ln.strip() else '' for ln in s.split('\n'))
-def set_key(fm, key, value):
-    # T-4863: replace the key's own line, anchored at line start, once. A plain
-    # str.replace hit 'owner:' inside the name, and with no count rewrote every
-    # 'status: captured' / 'horizon: now' in the description. A key the template
-    # lacks is left alone, as the old replace did.
-    return re.sub('^' + re.escape(key) + ':.*\$', lambda m: key + ': ' + value, fm, count=1, flags=re.M)
-m = re.match(r'(---\n)(.*?\n)(---\n.*)', t, re.S)
-pre, fm, body = m.groups() if m else ('', '', t)
-fm = set_key(fm, 'id', e['TC_TASK_ID'])
-fm = set_key(fm, 'status', e['TC_STATUS'])
-fm = set_key(fm, 'horizon', e['TC_HORIZON'])
-fm = set_key(fm, 'owner', e['TC_OWNER'])
-fm = set_key(fm, 'tags', e['TC_TAGS_YAML'])
-fm = set_key(fm, 'related_tasks', e['TC_RELATED_YAML'])
-fm = set_key(fm, 'created', e['TC_TIMESTAMP'])
-fm = set_key(fm, 'last_update', e['TC_TIMESTAMP'])
-fm = set_key(fm, 'name', json.dumps(name, ensure_ascii=False))
-fm = set_key(fm, 'description', '>\n' + indent_block(desc))
-body = body.replace('# T-XXX: [Inception Name]', '# ' + e['TC_TASK_ID'] + ': ' + name)
-body = body.replace('[Chronological log', '### ' + e['TC_TIMESTAMP'] + ' — task-created [task-create-agent]\n- **Action:** Created inception task\n- **Output:** ' + e['TC_FILEPATH'] + '\n- **Context:** Initial task creation\n\n[Chronological log')
-t = pre + fm + body
-with open(e['TC_FILEPATH'], 'w') as f:
-    f.write(t)
-" "$NAME" "$DESCRIPTION"
-elif [ -n "$DEFAULT_TEMPLATE" ]; then
-    TC_TEMPLATE="$DEFAULT_TEMPLATE" \
-    TC_TASK_ID="$TASK_ID" TC_STATUS="$STATUS" TC_WORKFLOW_TYPE="$WORKFLOW_TYPE" \
-    TC_HORIZON="$HORIZON" TC_OWNER="$OWNER" TC_TAGS_YAML="$TAGS_YAML" \
-    TC_RELATED_YAML="$RELATED_YAML" TC_TIMESTAMP="$TIMESTAMP" TC_FILEPATH="$FILEPATH" \
-    python3 -c "
-import sys, os, re, json  # T-4787: json.dumps is a valid YAML double-quoted scalar (escapes \ as well as \")
-e = os.environ
-with open(e['TC_TEMPLATE']) as f:
-    t = f.read()
-name, desc = sys.argv[1], sys.argv[2]
-def indent_block(s):
-    # T-2778: 'description: >' is a folded scalar, so EVERY line of the value must be
-    # indented, not just the first. Indenting only the first line ends the scalar at the
-    # first newline; YAML then reads the next paragraph as frontmatter. That fails two
-    # different ways, and the loud one is the lucky one: a paragraph containing 'word: word'
-    # parses as a junk top-level key and SILENTLY truncates description to its first line
-    # (no error, audit sees valid YAML), while a paragraph without a colon raises
-    # ScannerError and is caught. Found 5 corpus instances -- 1 loud, 4 silent.
-    # Blank lines are emitted bare: whitespace-only lines inside a block scalar are
-    # separators, and padding them to the indent width leaves trailing spaces.
-    return '\n'.join(('  ' + ln) if ln.strip() else '' for ln in s.split('\n'))
-def set_key(fm, key, value):
-    # T-4863: replace the key's own line, anchored at line start, once. A plain
-    # str.replace hit 'owner:' inside the name, and with no count rewrote every
-    # 'status: captured' / 'horizon: now' in the description. A key the template
-    # lacks is left alone, as the old replace did.
-    return re.sub('^' + re.escape(key) + ':.*\$', lambda m: key + ': ' + value, fm, count=1, flags=re.M)
-m = re.match(r'(---\n)(.*?\n)(---\n.*)', t, re.S)
-pre, fm, body = m.groups() if m else ('', '', t)
-fm = set_key(fm, 'id', e['TC_TASK_ID'])
-fm = set_key(fm, 'status', e['TC_STATUS'])
-fm = set_key(fm, 'workflow_type', e['TC_WORKFLOW_TYPE'])
-fm = set_key(fm, 'owner', e['TC_OWNER'])
-fm = set_key(fm, 'horizon', e['TC_HORIZON'])
-fm = set_key(fm, 'tags', e['TC_TAGS_YAML'])
-fm = set_key(fm, 'related_tasks', e['TC_RELATED_YAML'])
-fm = set_key(fm, 'created', e['TC_TIMESTAMP'])
-fm = set_key(fm, 'last_update', e['TC_TIMESTAMP'])
-fm = set_key(fm, 'name', json.dumps(name, ensure_ascii=False))
-fm = set_key(fm, 'description', '>\n' + indent_block(desc))
-body = body.replace('# T-XXX: [Task Name]', '# ' + e['TC_TASK_ID'] + ': ' + name)
-body = body.replace('<!-- Auto-populated by git mining at task completion.\\n     Manual entries optional during execution. -->', '### ' + e['TC_TIMESTAMP'] + ' — task-created [task-create-agent]\n- **Action:** Created task via task-create agent\n- **Output:** ' + e['TC_FILEPATH'] + '\n- **Context:** Initial task creation')
-t = pre + fm + body
-with open(e['TC_FILEPATH'], 'w') as f:
-    f.write(t)
-" "$NAME" "$DESCRIPTION"
-else
-    # Fallback: minimal inline template (only if default.md missing)
-    # T-2778: indent every line of the description, not just the first — see indent_block()
-    # above for why the single-indent form corrupts multi-paragraph descriptions.
-    DESCRIPTION_INDENTED=$(printf '%s\n' "$DESCRIPTION" | awk '{ if (length($0)) print "  " $0; else print "" }')
-    # T-4787: quote the name as JSON (a valid YAML double-quoted scalar), not raw.
-    NAME_YAML=$(python3 -c 'import json, sys; print(json.dumps(sys.argv[1], ensure_ascii=False))' "$NAME")
-    cat > "$FILEPATH" << EOF
----
-id: $TASK_ID
-name: $NAME_YAML
-description: >
-$DESCRIPTION_INDENTED
-status: $STATUS
-workflow_type: $WORKFLOW_TYPE
-horizon: $HORIZON
-owner: $OWNER
-tags: $TAGS_YAML
-related_tasks: $RELATED_YAML
-created: $TIMESTAMP
-last_update: $TIMESTAMP
-date_finished: null
----
-
-# $TASK_ID: $NAME
-
-## Context
-
-**Background / trigger:** <what happened, who reported it, evidence>
-
-**Problem / hypothesis:** <what we think is wrong and why>
-
-**Goal:** <what we are trying to achieve>
-
-**Expected outcome:** <what will be different when this is done>
-
-## Acceptance Criteria
-
-- [ ] [Criterion]
-
-## Verification
-
-## Updates
-
-### $TIMESTAMP — task-created [task-create-agent]
-- **Action:** Created task via task-create agent
-- **Output:** $FILEPATH
-- **Context:** Initial task creation
-EOF
-fi
-)
+# Render and write the task file (T-5221): lib/render_task.py is the one task-file writer,
+# shared with fw task create-batch. It picks the template (project templates/, then the
+# framework's copy, T-4597; an inline fallback when neither exists), renders it exactly as
+# the three inline writers here did (T-2778, T-4787, T-4863), and links the file into place
+# exclusively. Values pass as argv, never interpolated into source (T-595).
+# T-4841: subshell with the lock fd closed, so the writer never inherits it.
+FILEPATH=$(
+    eval "$(keylock_subshell_close_cmd)"
+    python3 "$FRAMEWORK_ROOT/lib/render_task.py" write-one \
+        --tasks-dir "$TASKS_DIR" --framework-root "$FRAMEWORK_ROOT" \
+        --id="$TASK_ID" --name="$NAME" --description="$DESCRIPTION" \
+        --type="$WORKFLOW_TYPE" --owner="$OWNER" --horizon="$HORIZON" --status="$STATUS" \
+        --tags="$TAGS" --related="$RELATED" --timestamp="$TIMESTAMP"
+) || { echo -e "${RED}ERROR: Task file could not be written for $TASK_ID${NC}" >&2; exit 1; }
 # T-4841: id persisted (.id-highwater) and the file written — release now, so
 # nothing after this point (origin, recommendation, --start focus) holds it.
 # T-5217: the ledger's created row first, still under the lock.
