@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5217: T-5212 slice 1: one authoritative task-id counter, block reservation (max 100), reservation ledger tracked in git, reconciliation, quarantine rule reads the ledger
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-18T00:52:55Z
+# ============================================================================
+
+task_id: T-5217
+task_name: "T-5212 slice 1: one authoritative task-id counter, block reservation (max 100), reservation ledger tracked in git, reconciliation, quarantine rule reads the ledger"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-17T23:18:48Z
+completed: 2026-11-18T00:50:22Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-18T00:40:38+01:00
+last_commit: 2026-11-18T01:15:06+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  one task-id allocator — lib/idalloc.sh, reservation ledger, reconcile, doctor check. lint fixes (temp name, dead negation), criteria ticked, measurements and decisions recorded
+
+# Key outcomes
+outcomes:
+  - '`fw_id_allocate N` reserves a contiguous block under the existing lock, records it in the ledger before raising the counter, and refuses N > 100. create-task and objectives-seed allocate only through it (T-5213 closes with this).'
+  - '1409''s checks pass as tests in tmp repos with several worktrees:'
+  - 'Single-task creation produces the same task file as before this change, apart from the id and timestamp (byte-compare test)'
+  - '`fw task id reconcile` reports each listed ERROR, WARN and INFO case (tests), and `--heal` only raises the counter'
+  - '`fw doctor` reports one allocator (and WARNs on a planted second one). Existing create-task, id-allocation (T-4189, T-100202, T-1279), objectives-seed and doctor suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5217`.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'lint fixes (temp name, dead negation), criteria ticked, measurements and decisions recorded'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-18 — allocator language'
+    chose: 'shell (`lib/idalloc.sh`) for allocation; Python (`lib/idalloc_reconcile.py`) for reconcile.'
+    rationale: 'the allocation hot path is a lock, a counter read and two appends; a python3 start per id would cost more than the work (measured 0.10 s per id with the check off). Reconcile parses the whole ledger and reports, where Python is clearer.'
+    alternatives_rejected: ['all-Python (fork cost per id); all-shell reconcile (JSON parsing in awk).']
+  - decision: '2026-11-18 — counter pointing into the quarantine band'
+    chose: 'the check walks from the bottom over files, every view''s mark and ledger ranges; a counter the walk cannot reach (more than the gap above everything the ledger and files explain) is treated like the band and reset, with a `heal` row `counter-in-quarantine`.'
+    rationale: 'keeps the T-4189 rule ("a mark beyond the quarantine gap is ignored") that its suite pins; every reservation is in the walk, so a legitimate counter is always reachable.'
+    alternatives_rejected: ['walking up only from the counter (would follow a corrupted 99971 counter into the band).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/create-task.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/idalloc.sh'
+  - '.agentic-framework/lib/idalloc_reconcile.py'
+  - '.agentic-framework/lib/objectives-seed.sh'
+  - '.fabric/components/lib-idalloc.yaml'
+  - '.fabric/components/lib-idalloc_reconcile.yaml'
+  - '.tasks/active/T-5217-t-5212-slice-1-one-authoritative-task-id.md'
+  - 'agents/task-create/create-task.sh'
+  - 'bin/fw'
+  - 'lib/idalloc.sh'
+  - 'lib/idalloc_reconcile.py'
+  - 'lib/objectives-seed.sh'
+  - 'tests/unit/t5217_id_allocator.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-18T00:40:38'
+    action: 'T-5217: one task-id allocator — lib/idalloc.sh, reservation ledger, reconcile, doctor check'
+  - time: '2026-11-18T01:15:06'
+    action: 'T-5217: lint fixes (temp name, dead negation), criteria ticked, measurements and decisions recorded'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 91 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 91
+  commits: 3
+  files_changed: 19
+  lines_added: 1965
+  lines_removed: 164
+  footprint_refreshed_at: '2026-11-18T00:53:29Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5217-t-5212-slice-1-one-authoritative-task-id.md
+generated_by: context-agent-hybrid

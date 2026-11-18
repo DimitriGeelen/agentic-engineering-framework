@@ -56591,3 +56591,39 @@ task_id: T-5016
 payload:
   overall: CONFIRMED
   claim_count: 4
+---
+kind: scan_emitted
+timestamp: '2026-11-18T00:49:32Z'
+scan_id: R-cfc00920
+task_id: T-5216
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-18T00:49:32Z'
+scan_id: R-cfc00920
+task_id: T-5216
+payload:
+  task_file: .tasks/active/T-5216-t-5211-slice-1-the-inception-decide-chai.md
+---
+kind: scan_emitted
+timestamp: '2026-11-18T00:52:36Z'
+scan_id: R-42b21c85
+task_id: T-5217
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-18T00:52:36Z'
+scan_id: R-42b21c85
+task_id: T-5217
+payload:
+  task_file: .tasks/active/T-5217-t-5212-slice-1-one-authoritative-task-id.md

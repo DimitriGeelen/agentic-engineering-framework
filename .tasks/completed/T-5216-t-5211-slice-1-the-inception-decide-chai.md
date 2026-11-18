@@ -1,16 +1,16 @@
 ---
-id: T-5217
-name: "T-5212 slice 1: one authoritative task-id counter, block reservation (max 100),
-  reservation ledger tracked in git, reconciliation, quarantine rule reads the ledger"
+id: T-5216
+name: "T-5211 slice 1: the inception decide chain posts one non-urgent notice to the
+  project's own sidecar inbox after the decision commit lands"
 description: >
-  Build slice 1 of inception T-5212 (GO 2026-11-18), from 1409's prototype.
+  Build slice 1 of inception T-5211 (GO 2026-11-18).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [web/decide_runner.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,9 +38,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-11-17T23:18:48Z
-last_update: '2026-11-18T00:30:39Z'
-date_finished:
+created: 2026-11-17T23:18:47Z
+last_update: 2026-11-18T00:48:43Z
+date_finished: 2026-11-18T00:48:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -52,11 +52,11 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-11-17T23:20:25Z'
+  - ts: '2026-11-17T23:20:19Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 0
-      D2: 2
+      D2: 0
       D3: 0
       D4: 0
       F-RECALL: 2
@@ -64,59 +64,51 @@ bvp_scores_proposed:
       F3: 0
       F1: 0
       F2: 0
-    rationale: D1=0 (no-signal); D2=2 (body:telemetry-or-audit-entry); D3=0 
-      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
-      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
-      (no-signal)
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal);
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
-  - ts: '2026-11-18T00:30:39Z'
+  - ts: '2026-11-17T23:30:43Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=345,acs=7)
+      (workflow:build); effort=8 (lines=319,acs=7)
     rubric_sha: e4a00f38e801
 ---
 
-# T-5217: T-5212 slice 1: one authoritative task-id counter, block reservation (max 100), reservation ledger tracked in git, reconciliation, quarantine rule reads the ledger
+# T-5216: T-5211 slice 1: the inception decide chain posts one non-urgent notice to the project's own sidecar inbox after the decision commit lands
 
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** This is build slice 1 of inception T-5212 (GO 2026-11-18; research docs/reports/T-5212-batch-task-creation.md), from 1409's prototype (their T-6848, sidecar f2f55019). 1409 measured 2-4 s per id, because `generate_id` (agents/task-create/create-task.sh:266) union-scans every worktree's `.tasks/` on every create.
+**Background / trigger:** This is build slice 1 of inception T-5211 (GO 2026-11-18; research docs/reports/T-5211-decision-notice-to-agent.md). When the operator records an inception decision in Watchtower, the project's agent is not told. This session learned of the T-5199, T-5211 and T-5212 GOs only by looking for them.
 
-**Problem / hypothesis:** Each id costs a full scan, and nothing can reserve a block of ids. A second allocator in lib/objectives-seed.sh (T-5213) has no lock, no views and no high-water mark. 1409 measured that mixing allocators is unsafe once aborted reservations exceed the quarantine gap.
+**Problem / hypothesis:** web/decide_runner.py runs `fw inception decide` detached and commits the decision, then a follow-up commit, and notifies no one. Idle-aware delivery already works for a self-addressed notice: T-5211 IW-2 showed msg 254f3e5a surfacing at the next idle point.
 
-**Goal:** build 1409's design, as recorded in the research artifact:
-- **Counter:** `<main worktree>/.tasks/.id-highwater` becomes the one authoritative counter. It is read and raised only under the existing allocation lock, written tmp+rename, and only moves up.
-- **Allocation:** `fw_id_allocate N` (N at most FW_ID_BLOCK_MAX = 100) raises the counter by N; a single id is N=1.
-- **Ledger:** `.tasks/.id-ledger.jsonl` (append-only, tracked in git) records reserve (range, purpose, ts, pid, view), created and heal rows. It is written before the counter.
-- **Check:** the union scan becomes the check, run once per reservation (on by default; FW_ID_CHECK=0 skips it). It reads the files, every view's mark and the ledger, walks up from the counter in steps no larger than the gap, and may only raise the counter.
-- **Quarantine:** ledger ids count as used in the gap walk.
-- **Reconcile:** `fw task id reconcile [--heal] [--json]` reports ERROR (duplicate, file above counter, counter below ledger, overlapping reservations, missing counter), WARN (incomplete reservation, file without reservation) and INFO (deleted after creation, quarantine band).
-- **One allocator:** create-task's generate_id and lib/objectives-seed.sh (T-5213) both allocate through fw_id_allocate. `fw doctor` WARNs when any other allocator path remains.
+**Goal:** After the decide chain's decision commit lands, post ONE non-urgent notice to the project's own sidecar inbox. Contents:
+- the task id and the decision (GO / NO-GO / DEFER);
+- the commit id;
+- a fixed next step: "read the task's Decision section, then file build tasks", or a matching line for NO-GO and DEFER.
 
-Verb and flag names are in English. The batch writer and `fw arc instantiate` are slice 2, not here.
+Rules:
+- At most once per decision, even if the runner's follow-up commit also runs.
+- If posting fails (no sidecar, no receiver, error), the decision still stands, nothing raises, and the failure is written to the run's log/status.
+- No peer content and no task text beyond the id and the verdict.
 
-**Expected outcome:** One id costs one counter read and raise, plus a once-per-reservation check. A block of up to 100 ids is reserved in one call. Ids are never reissued, and every gap is explained by the ledger.
+**Expected outcome:** At its next idle point after a GO, the agent sees "T-XXXX decided GO by the operator (commit …)" as a sidecar line and acts on it.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `fw_id_allocate N` reserves a contiguous block under the existing lock, records it in the ledger before raising the counter, and refuses N > 100. create-task and objectives-seed allocate only through it (T-5213 closes with this).
-- [x] 1409's checks pass as tests in tmp repos with several worktrees:
-  - 20 concurrent processes mixing singles and 13-blocks: 0 duplicates, 0 overlaps.
-  - kill -9 after a reservation, and mid-block: no reuse, and reconcile reports the incomplete reservation.
-  - A stale view; a counter that is missing, too low or too high.
-  - A deleted top file with the counter deleted: the id is not reissued.
-  - The outlier band (T-99971 / T-100202 shape): ids stay in the main range.
-  - 12 aborted 100-blocks against the quarantine gap: correct next id.
-- [x] Single-task creation produces the same task file as before this change, apart from the id and timestamp (byte-compare test)
-- [x] `fw task id reconcile` reports each listed ERROR, WARN and INFO case (tests), and `--heal` only raises the counter
-- [x] `fw doctor` reports one allocator (and WARNs on a planted second one). Existing create-task, id-allocation (T-4189, T-100202, T-1279), objectives-seed and doctor suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5217`.
+- [x] decide_runner posts exactly one notice per decision to the project's own address, after the decision commit, through the existing `fw sidecar send` path (non-urgent `--notice`). A test stubs the sender and asserts one call, carrying the id, the verdict and the commit.
+- [x] A failed post (sender missing, non-zero exit, timeout) leaves the decision outcome and its commits unchanged and records the failure in the run status. A test covers each failure.
+- [x] A second pass, such as the follow-up commit or a re-run, does not post again. A test covers it.
+- [x] The notice text holds only the id, the verdict, the commit and the fixed next-step line. A test asserts that no task-file text is included.
+- [x] Existing decide_runner and inception blueprint suites pass. `bin/fw test invariants` and `bin/fw vendor self --check --task T-5216` are clean, and Watchtower is restarted, with `bin/fw watchtower current` passing.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -302,13 +294,10 @@ Verb and flag names are in English. The batch writer and `fw arc instantiate` ar
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
-timeout 900 bats tests/unit/t5217_id_allocator.bats > /tmp/.t5217-out 2>&1 && ! grep -q "^not ok" /tmp/.t5217-out
-test "$(grep -c '# skip' /tmp/.t5217-out)" -eq 0
-timeout 900 bats tests/unit/t4189_task_id_highwater.bats tests/unit/t100202_id_quarantine.bats tests/unit/task_id_race.bats tests/unit/t3636_objectives_seed.bats tests/unit/t4841_create_lock_on_abort.bats tests/unit/t3104_task_corpus_views.bats tests/unit/create_task.bats > /tmp/.t5217-ex 2>&1 && ! grep -q "^not ok" /tmp/.t5217-ex
-bash -n lib/idalloc.sh && python3 -m py_compile lib/idalloc_reconcile.py
-out=$(bin/fw task id reconcile --json 2>&1); python3 -c 'import json,sys; d=json.loads(sys.argv[1]); assert "findings" in d' "$out"
-bash -c 'source lib/idalloc.sh && fw_id_doctor_line "$PWD" "$PWD"' > /tmp/.t5217-doc 2>&1 && grep -q "^OK one task-id allocator" /tmp/.t5217-doc
-bin/fw vendor self --check --task T-5217
+python3 -m pytest tests/unit/test_t5216_decide_notice.py -q > /tmp/.t5216a 2>&1 && grep -q passed /tmp/.t5216a
+python3 -m pytest tests/unit/test_t3749_decide_detached.py tests/unit/test_decide_commit.py tests/unit/test_t4242_decide_inherited_git_env.py tests/unit/test_t4590_decide_commit_carries_provenance.py -q > /tmp/.t5216b 2>&1 && grep -q passed /tmp/.t5216b
+bin/fw vendor self --check --task T-5216
+bin/fw watchtower current
 
 ## RCA
 
@@ -390,22 +379,6 @@ bin/fw vendor self --check --task T-5217
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-11-18 — allocator language
-- **Chose:** shell (`lib/idalloc.sh`) for allocation; Python (`lib/idalloc_reconcile.py`) for reconcile.
-- **Why:** the allocation hot path is a lock, a counter read and two appends; a python3 start per id would cost more than the work (measured 0.10 s per id with the check off). Reconcile parses the whole ledger and reports, where Python is clearer.
-- **Rejected:** all-Python (fork cost per id); all-shell reconcile (JSON parsing in awk).
-
-### 2026-11-18 — counter pointing into the quarantine band
-- **Chose:** the check walks from the bottom over files, every view's mark and ledger ranges; a counter the walk cannot reach (more than the gap above everything the ledger and files explain) is treated like the band and reset, with a `heal` row `counter-in-quarantine`.
-- **Why:** keeps the T-4189 rule ("a mark beyond the quarantine gap is ignored") that its suite pins; every reservation is in the walk, so a legitimate counter is always reachable.
-- **Rejected:** walking up only from the counter (would follow a corrupted 99971 counter into the band).
-
-**T-5213** (objectives-seed second allocator) is fixed by this task: `_fw_objectives_next_id` now calls `fw_id_allocate 1 objectives-seed` and records a created row (tests 16-17 in t5217_id_allocator.bats).
-
-**Suites run 2026-11-18:** 56 create-task/doctor bats files; the four reds are not this change: doctor_hook_counters 2-4 (the fixture links only bin/, while .claude/settings.json since 4ba274039 calls agents/context/stop-driver.sh directly) and test_doctor_litellm_ollama 6 (needs a whole live `fw doctor` to exit 0). The new doctor line prints only OK/WARN.
-
-**Measured** (tmp repo, 24 worktrees + main, 52,500 task files): old generate_id 2.40 s per id; fw_id_allocate 1 with the check 0.65 s; with FW_ID_CHECK=0 0.10 s; a 100-block 0.004 s per id.
-
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -418,10 +391,23 @@ bin/fw vendor self --check --task T-5217
 
 ## Updates
 
-### 2026-11-17T23:18:48Z — task-created [task-create-agent]
+### 2026-11-17T23:18:47Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5217-t-5212-slice-1-one-authoritative-task-id.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5216-t-5211-slice-1-the-inception-decide-chai.md
 - **Context:** Initial task creation
 
-### 2026-11-17T23:20:20Z — status-update [task-update-agent]
+### 2026-11-17T23:20:14Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-18T00:48:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cfc00920
+- **Timestamp:** 2026-11-18T00:49:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
