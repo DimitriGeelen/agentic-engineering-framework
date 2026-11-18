@@ -87,7 +87,7 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 010 asked for this (sidecar f4eb9aa0, conversation termlink-arc011-p46-mail-hub). mail_hub must be nested in .framework.yaml, with a shape-only check. **Owed: tell 010 on that conversation when this ships in a be-tag** (found open by the T-5230 backlog review, 2026-11-18).
 
 **Problem / hypothesis:** <what we think is wrong and why>
 

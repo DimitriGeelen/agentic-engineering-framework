@@ -91,7 +91,7 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 1409 uses the per-session focus workaround meanwhile (sidecar b7529aff, conversation fokus-je-sitzung). **Owed: tell 1409 on that conversation when this ships in a be-tag** (found open by the T-5230 backlog review, 2026-11-18).
 
 **Problem / hypothesis:** <what we think is wrong and why>
 
