@@ -421,6 +421,15 @@ bin/fw vendor self --check --task T-5221
 ### 2026-11-18 — suites run before report
 - 130 bats files matching arc|audit|create_task|t5217|t4189|t4841|t100202|work_on|upgrade_fresh_machine_simulation (incl. _vendored)|t5221 plus 308 pytest (arc/audit/task_create): all green, no skips. `bin/fw test invariants`: 166/166 after fixing the T-5067 temp-name finding in render_task.py. `bin/fw vendor self --check --task T-5221`: in sync. tests/ grep for create-task's inline rendering (TC_TEMPLATE, indent_block, set_key, generate_slug, format_yaml_array): no test depends on it; test_task_create_description_yaml.py drives the script and passes.
 
+### 2026-11-18 — independent review (docs/reports/T-5221-independent-review.md): fixed and left
+- **Fixed, each with a test seen failing first** (t5221_create_batch.bats "review N"): 1 link() fallback to O_CREAT|O_EXCL+fsync on EPERM/ENOTSUP/EXDEV/EMLINK/ENOSYS (exclusive kept; only atomicity against a kill is lost there); 2 flow items quoted when YAML would not read them back as themselves, list items never comma-split, frontmatter parsed before any write and per entry before the reservation; 3 no rmdir of `.writing/`; 4 portable checked anchor write; 7 `.writing/` gitignored (repo + a self-written `*` .gitignore for consumers); 10 arc_id must be a slug/arc-NNN; 11 rolled-back arc-NNN recorded in `.context/arcs/.retired-ids` and never reissued.
+- **Fix 2 choice:** quote only what does not round-trip, rather than quoting every item. Ordinary tags keep create-task's bytes (goldens unchanged). A bare scalar YAML types as int/bool (`2026`, `yes`) stays bare, as it always was; changing that would move create-task output and is not part of this finding.
+- **5 (format_yaml_array vs old xargs):** left. The differences are improvements; the one regression it names (a leading quote producing unparseable frontmatter) is now covered by fix 2.
+- **6 (newline in a name injects body):** left. Pre-existing in create-task; refusing control characters is a create-task rule change for its own task, not a slice-2 regression.
+- **8 (_sweep across PID namespaces):** left. Needs a shared bind mount across containers plus a sweep inside the write window; rare, and an age guard is a design choice better made with evidence.
+- **9 (multi-row ledger append can tear):** left. Low probability (>4 KB append racing another writer); the reconcile pass reads the ledger and reports what it cannot parse.
+- **12 (minor: INCEPTION_TEMPLATE hint path, `shift 2` with no value, spec re-read between validate and write):** left. Cosmetic or operator-self-inflicted; none corrupts a task file.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
