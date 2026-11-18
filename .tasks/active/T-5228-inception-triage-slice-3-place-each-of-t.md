@@ -115,11 +115,12 @@ All of them were filed before the EXPLORING rule (T-5226), so a filing-time GO/N
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Each of the 43 is classified ready or not ready by `inception_handoff_blockers`, with the result recorded in docs/reports/T-5228-inception-triage.md (one row each: id, verdict before, ready?, blockers, waiting_on, why)
+- [x] Each of the 43 is classified ready or not ready by `inception_handoff_blockers`, with the result recorded in docs/reports/T-5228-inception-triage.md (one row each: id, verdict before, ready?, blockers, waiting_on, why)
 - [ ] Every not-ready one now reads EXPLORING, with its earlier verdict kept as a note, a `waiting_on` with a reason and a `revisit_at`. Every ready one keeps its verdict and has a `revisit_at`.
-- [ ] Every other open inception (GO with builds, NO-GO/DEFER) has `waiting_on` and `revisit_at`. No decision was recorded and no task changed status (git diff shows only frontmatter and recommendation edits on inception files).
-- [ ] `fw inception lifecycle` after the triage is recorded in the report, before and after
-- [ ] The short list of truly ready inceptions is at the top of the report
+  <!-- 36 of 37 done (bc6dc4d40). T-3682 still reads DEFER: the inception-schema gate refuses the Edit until target_blast_radius/voi_score are scored (report, Exceptions 1). -->
+- [x] Every other open inception (GO with builds, NO-GO/DEFER) has `waiting_on` and `revisit_at`. No decision was recorded and no task changed status (git diff shows only frontmatter and recommendation edits on inception files).
+- [x] `fw inception lifecycle` after the triage is recorded in the report, before and after
+- [x] The short list of truly ready inceptions is at the top of the report
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -305,6 +306,9 @@ All of them were filed before the EXPLORING rule (T-5226), so a filing-time GO/N
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+test -f docs/reports/T-5228-inception-triage.md && grep -q "Truly ready for the operator's decision" docs/reports/T-5228-inception-triage.md
+test "$(awk '/^## Results — the 43 awaiting decision/{x=1;next} /^## /{x=0} x' docs/reports/T-5228-inception-triage.md | grep -cE '^\| T-[0-9]+ ')" -eq 43
+grep -q "^After:" docs/reports/T-5228-inception-triage.md && grep -q "^Before" docs/reports/T-5228-inception-triage.md
 
 ## RCA
 
