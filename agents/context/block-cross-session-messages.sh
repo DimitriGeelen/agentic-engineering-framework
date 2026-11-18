@@ -45,6 +45,9 @@ else
     shown="(unreadable hook payload — refused, fail closed)"
 fi
 
+# T-5231: STABLE CONTRACT. Peers (010's session-message prover) match this exact marker line.
+# The prose below may change; this line must not.
+echo "FW-DENY: cross-session-messaging (T-5225)" >&2
 echo "BLOCKED: $shown — Claude Code's own cross-session messaging is forbidden in this project." >&2
 echo "Operator rule (2026-11-17, confirmed 2026-11-18): agent-to-agent messages always go over TermLink." >&2
 echo "Refused tools: $BLOCKED_TOOLS." >&2

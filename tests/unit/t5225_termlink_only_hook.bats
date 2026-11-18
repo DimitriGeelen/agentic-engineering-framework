@@ -22,6 +22,8 @@ teardown() {
 _feed() { printf '%s' "$1" | bash "$HOOK"; }
 
 _assert_refusal_text() {
+    # T-5231: the stable marker peers match on (010's prover) — exact line.
+    printf '%s\n' "$output" | grep -qx 'FW-DENY: cross-session-messaging (T-5225)'
     [[ "$output" == *"BLOCKED"* ]]
     [[ "$output" == *"TermLink"* ]]
     [[ "$output" == *"2026-11-17"* ]]
@@ -130,7 +132,9 @@ json.dump(d, open(sys.argv[2], "w"), indent=2)
 PY
     PROJECT_ROOT="$work" bash "$FRAMEWORK_ROOT/bin/hook-enable.sh" --name block-cross-session-messages \
         --matcher "$MATCHER" --event PreToolUse --file "$work/.claude/settings.json"
-    (cd "$work" && git -c user.email=t@t -c user.name=t commit -qam "operator wires T-5225 hook")
+    # T-5231: since the operator wired this repo (2026-11-18) HEAD already carries the entry,
+    # so re-adding it can leave nothing to commit; the upstream is correct either way.
+    (cd "$work" && git -c user.email=t@t -c user.name=t commit -qa --allow-empty -m "operator wires T-5225 hook")
     git clone --quiet --bare "$work" "$bare" 2>/dev/null
 
     mkdir -p "$proj/.claude"
