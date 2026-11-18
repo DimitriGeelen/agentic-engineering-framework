@@ -115,9 +115,8 @@ cost_estimate_proposed:
 - [ ] [REVIEW] An inception that is not ready reads plainly as not ready, with no way to decide it
   **Steps:**
   1. Open http://192.168.10.107:3000/inception/T-5224 (an inception with open questions).
-  2. Open http://192.168.10.107:3000/inception (the inception list).
-  **Expected:** The T-5224 page says plainly that it is not ready for a decision and what is still owed, and shows no GO / NO-GO / DEFER buttons. In the list, an EXPLORING inception is told apart from one awaiting a decision.
-  **If not:** Note which page and what read wrongly (missing line, buttons shown, unclear wording) on this task.
+  **Expected:** The page says plainly that it is not ready for a decision and what is still owed, and shows no GO / NO-GO / DEFER buttons. (The EXPLORING badge in the inception list is covered by tests/unit/test_t5226_inception_exploring.py through the Flask test client, because no live inception is EXPLORING yet.)
+  **If not:** Note what read wrongly (missing line, buttons shown, unclear wording) on this task.
 
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
@@ -310,6 +309,15 @@ python3 -m pytest tests/unit/test_t5198_handoff_blockers.py -q > /tmp/.t5226-d.o
 out=$(bin/fw doctor 2>&1); grep -q "Cron registry in sync" <<<"$out" && ! grep -q "Cron registry edited but not generated" <<<"$out"
 bin/fw vendor self --check --task T-5226
 bin/fw watchtower current
+python3 -m pytest tests/web/test_t3896_inception_readiness.py -q > /tmp/.t5226-e.out 2>&1 && grep -q passed /tmp/.t5226-e.out
+
+## Visual Verification
+
+Not-ready inception page, shot with `fw ux shots T-5226 not-ready=http://192.168.10.107:3000/inception/T-5224` (2026-11-18). The owed list was reworded from the raw `IW-1 disposition=false rationale=false` to plain words (`IW-1: no answer recorded yet`), the shell form kept in `raw` (web/shared.py `_blocker_in_words`).
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| not-ready | Record Decision box | ok | ok | ok | owed questions in plain words; no GO/NO-GO/DEFER controls |
 
 ## RCA
 

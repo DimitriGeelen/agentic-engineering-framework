@@ -74,7 +74,9 @@ def test_shared_predicate_reports_the_undisposed_question(proj):
     assert inception_handoff_blockers(proj["ready"]) == []
     b = inception_handoff_blockers(proj["blocked"])
     assert [x["kind"] for x in b] == ["undisposed-question"]
-    assert b[0]["detail"].startswith("IW-1 disposition=false")
+    # T-5226: plain words for the operator; the shell predicate's form stays in `raw`.
+    assert b[0]["detail"] == "IW-1: a reason is written, but no answer (answered / deferred / dissolved)"
+    assert b[0]["raw"].startswith("IW-1 disposition=false")
 
 
 def test_a_broken_predicate_fails_closed(proj, monkeypatch):
@@ -97,7 +99,8 @@ def client(proj):
 def test_inception_page_offers_no_decision_form_when_not_ready(client):
     page = client.get("/inception/T-9902").get_data(as_text=True)
     assert 'data-testid="inception-not-ready"' in page
-    assert "IW-1 disposition=false" in page
+    assert "IW-1: a reason is written, but no answer" in page
+    assert "disposition=false" not in page
     assert 'class="decision-form"' not in page
 
 

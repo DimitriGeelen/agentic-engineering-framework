@@ -128,8 +128,8 @@ def test_every_inception_in_the_corpus_matches_the_shell():
 
 
 def test_missing_and_directory_paths_are_not_inceptions(tmp_path):
-    assert shared.inception_handoff_blockers(tmp_path / "nope.md") == []
-    assert shared.inception_handoff_blockers(tmp_path) == []
+    assert shared._inception_handoff_blockers_raw(tmp_path / "nope.md") == []
+    assert shared._inception_handoff_blockers_raw(tmp_path) == []
 
 
 def test_unreadable_file_fails_closed(tmp_path, monkeypatch):
@@ -140,7 +140,7 @@ def test_unreadable_file_fails_closed(tmp_path, monkeypatch):
     def _boom(self):
         raise PermissionError("denied")
     monkeypatch.setattr(Path, "read_bytes", _boom)
-    out = shared.inception_handoff_blockers(p)
+    out = shared._inception_handoff_blockers_raw(p)
     assert [b["kind"] for b in out] == ["check-failed"]
 
 
@@ -157,9 +157,9 @@ def test_no_subprocess_and_warm_call_does_not_reread(fixtures, monkeypatch):
     real_read = Path.read_bytes
     monkeypatch.setattr(Path, "read_bytes", lambda self: reads.append(self) or real_read(self))
 
-    first = {n: shared.inception_handoff_blockers(p) for n, p in fixtures.items()}
+    first = {n: shared._inception_handoff_blockers_raw(p) for n, p in fixtures.items()}
     cold_reads = len(reads)
-    again = {n: shared.inception_handoff_blockers(p) for n, p in fixtures.items()}
+    again = {n: shared._inception_handoff_blockers_raw(p) for n, p in fixtures.items()}
     assert spawned == []
     assert cold_reads == len(fixtures)
     assert len(reads) == cold_reads          # warm: nothing re-read
@@ -169,7 +169,7 @@ def test_no_subprocess_and_warm_call_does_not_reread(fixtures, monkeypatch):
 def test_cached_equals_uncached_after_each_edit(fixtures):
     shared._HANDOFF_BLOCKERS_CACHE.clear()
     p = fixtures["undisposed-mixed"]
-    shared.inception_handoff_blockers(p)      # warm the cache
+    shared._inception_handoff_blockers_raw(p)      # warm the cache
     edits = [
         lambda t: t.replace("- Q-4 legacy\n", "- Q-4 legacy\n  disposition: answered\n  rationale: z\n"),
         lambda t: t.replace("**Recommendation:** GO", "**Recommendation:**"),
@@ -182,17 +182,17 @@ def test_cached_equals_uncached_after_each_edit(fixtures):
         if i == 0:
             # same mtime, different size: the size half of the key must catch it
             os.utime(p, ns=(st.st_atime_ns, st.st_mtime_ns))
-        cached = shared.inception_handoff_blockers(p)
+        cached = shared._inception_handoff_blockers_raw(p)
         assert cached == _py(p) == _shell([p])[str(p)], i
 
 
 def test_returned_lists_are_copies(fixtures):
     shared._HANDOFF_BLOCKERS_CACHE.clear()
     p = fixtures["no-rec-section"]
-    a = shared.inception_handoff_blockers(p)
+    a = shared._inception_handoff_blockers_raw(p)
     a[0]["kind"] = "mutated"
     a.append({})
-    assert shared.inception_handoff_blockers(p) == _py(p)
+    assert shared._inception_handoff_blockers_raw(p) == _py(p)
 
 
 def test_transcription_digest_is_current():
@@ -212,7 +212,7 @@ def test_a_changed_shell_rule_falls_back_to_the_shell(fixtures, monkeypatch):
     monkeypatch.setattr(shared, "_handoff_blockers_via_shell",
                         lambda p: calls.append(p) or real(p))
     p = fixtures["undisposed-mixed"]
-    assert shared.inception_handoff_blockers(p) == _shell([p])[str(p)]
+    assert shared._inception_handoff_blockers_raw(p) == _shell([p])[str(p)]
     assert calls == [p]
     shared._HB_RULE_STATE.clear()
     shared._HANDOFF_BLOCKERS_CACHE.clear()
@@ -221,6 +221,6 @@ def test_a_changed_shell_rule_falls_back_to_the_shell(fixtures, monkeypatch):
 def test_missing_shell_rule_fails_closed(fixtures, monkeypatch, tmp_path):
     monkeypatch.setattr(shared, "FRAMEWORK_ROOT", tmp_path / "nowhere")
     shared._HANDOFF_BLOCKERS_CACHE.clear()
-    out = shared.inception_handoff_blockers(fixtures["ready"])
+    out = shared._inception_handoff_blockers_raw(fixtures["ready"])
     assert [b["kind"] for b in out] == ["check-failed"]
     assert fixtures["ready"].as_posix() not in shared._HANDOFF_BLOCKERS_CACHE

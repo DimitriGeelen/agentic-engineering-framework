@@ -1829,7 +1829,33 @@ def _handoff_blockers_via_shell(fp: Path) -> list[dict]:
     return out
 
 
+_HB_RAW_Q_RE = re_mod.compile(r"^(?P<q>\S+) disposition=(?P<d>true|false) rationale=(?P<r>true|false)$")
+
+
+def _blocker_in_words(b: dict) -> dict:
+    """T-5226: the operator reads these on the inception and approvals pages. An
+    undisposed-question detail comes from the shell predicate as
+    'IW-1 disposition=false rationale=false'; say it in words and keep that form
+    in `raw`. Every other blocker is returned unchanged."""
+    m = _HB_RAW_Q_RE.match(str(b.get("detail") or "")) if b.get("kind") == "undisposed-question" else None
+    if not m:
+        return b
+    q, d, r = m.group("q"), m.group("d") == "true", m.group("r") == "true"
+    if not d and not r:
+        plain = f"{q}: no answer recorded yet"
+    elif d:
+        plain = f"{q}: answered, but no reason given"
+    else:
+        plain = f"{q}: a reason is written, but no answer (answered / deferred / dissolved)"
+    return {**b, "detail": plain, "raw": b["detail"]}
+
+
 def inception_handoff_blockers(path) -> list[dict]:
+    """T-5226: the blockers below, with undisposed questions worded for the operator."""
+    return [_blocker_in_words(b) for b in _inception_handoff_blockers_raw(path)]
+
+
+def _inception_handoff_blockers_raw(path) -> list[dict]:
     """T-3896 (G-108): what still blocks this inception from a decision, as the
     decide gate sees it — [] when decision-ready. Each item: {kind, detail, fix}.
 
