@@ -113,7 +113,7 @@ All verb and flag names are in English.
 - [x] A batch killed mid-write leaves no partial file and no reissued id, and `fw task id reconcile` reports the incomplete reservation (test)
 - [x] `fw arc instantiate` creates an arc and its tasks from a template plus parameters in one call. --dry-run writes nothing. The created arc and tasks pass `fw audit` structure checks (test in a tmp repo).
 - [x] Measured in a tmp repo with 24 worktrees: one arc plus 13 tasks takes under 3 s per unit (numbers recorded in the task)
-- [ ] Existing create-task, arc, T-5217 allocator, upgrade_fresh_machine_simulation and audit suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5221`. Also grep tests/ for tests that depend on create-task's inline rendering.
+- [x] Existing create-task, arc, T-5217 allocator, upgrade_fresh_machine_simulation and audit suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5221`. Also grep tests/ for tests that depend on create-task's inline rendering.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -417,6 +417,9 @@ bin/fw vendor self --check --task T-5221
 
 ### 2026-11-18 — measured
 - tmp repo, 30 seed tasks, 24 worktrees (25 views), FW_ID_CHECK on: `fw arc instantiate` of one arc plus 13 tasks took 931 ms, 950 ms and 991 ms over three runs (bats `timing` case and smoke runs) — under 1 s per unit against 29.7-52 s before and 1409's 2.6 s. create-batch alone, 13 tasks, one view: 0.33 s.
+
+### 2026-11-18 — suites run before report
+- 130 bats files matching arc|audit|create_task|t5217|t4189|t4841|t100202|work_on|upgrade_fresh_machine_simulation (incl. _vendored)|t5221 plus 308 pytest (arc/audit/task_create): all green, no skips. `bin/fw test invariants`: 166/166 after fixing the T-5067 temp-name finding in render_task.py. `bin/fw vendor self --check --task T-5221`: in sync. tests/ grep for create-task's inline rendering (TC_TEMPLATE, indent_block, set_key, generate_slug, format_yaml_array): no test depends on it; test_task_create_description_yaml.py drives the script and passes.
 
 ## Decision
 
