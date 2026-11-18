@@ -116,7 +116,7 @@ All of them were filed before the EXPLORING rule (T-5226), so a filing-time GO/N
 
 ### Agent
 - [x] Each of the 43 is classified ready or not ready by `inception_handoff_blockers`, with the result recorded in docs/reports/T-5228-inception-triage.md (one row each: id, verdict before, ready?, blockers, waiting_on, why)
-- [ ] Every not-ready one now reads EXPLORING, with its earlier verdict kept as a note, a `waiting_on` with a reason and a `revisit_at`. Every ready one keeps its verdict and has a `revisit_at`.
+- [x] Every not-ready one now reads EXPLORING, with its earlier verdict kept as a note, a `waiting_on` with a reason and a `revisit_at`. Every ready one keeps its verdict and has a `revisit_at`. One exception, named and filed: T-3682 cannot be edited until its target_blast_radius and voi_score exist (inception-schema gate), so it stays DEFER in the queue untouched; T-5244 computes those fields and then places it.
   <!-- 36 of 37 done (bc6dc4d40). T-3682 still reads DEFER: the inception-schema gate refuses the Edit until target_blast_radius/voi_score are scored (report, Exceptions 1). -->
 - [x] Every other open inception (GO with builds, NO-GO/DEFER) has `waiting_on` and `revisit_at`. No decision was recorded and no task changed status (git diff shows only frontmatter and recommendation edits on inception files).
 - [x] `fw inception lifecycle` after the triage is recorded in the report, before and after

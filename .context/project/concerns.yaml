@@ -5850,3 +5850,19 @@ concerns:
   created: 2026-11-17
   last_reviewed: 2026-11-17
   related_tasks: [T-5215, T-3549, T-3279, T-2206, T-5211, T-5212]
+- id: G-134
+  type: gap
+  title: "The inception readiness predicate counts the template's commented-out example question as a real one"
+  description: "Found by the T-5228 triage 2026-11-18. inception_handoff_blockers / inception_underdisposed_questions (shell, and the web/shared.py copy) read the inception template's example '- **IW-1: <question text>**' inside an HTML comment as a filed Open Question. Effect in both directions: an inception with no real questions can be classed by the commented example, and 29 of the 31 inceptions the triage found 'ready' passed only because no real question was filed at all. The predicate is the gate that keeps unready inceptions out of the operator's decision queue (T-5215, T-5226, T-5227), so a wrong answer reaches the operator."
+  spec_reference: "T-5241; lib/task-audit.sh, lib/inception-readiness.sh, web/shared.py _handoff_blockers_from_text"
+  severity: high
+  trigger_fired: true
+  trigger_event: "2026-11-18: T-5228 triage found 24 inceptions on il_ready with no real questions"
+  detection_lag_days: "unknown"
+  what_works_now: "Inceptions with real undisposed questions are refused at handoff."
+  what_remains: "Skip HTML comments in both copies of the predicate; an inception with no real question must not read as ready (T-5241)."
+  mitigation_candidate: "Both predicate copies strip HTML comments before reading Open Questions; parity tests cover a template-only inception."
+  status: watching
+  created: 2026-11-18
+  last_reviewed: 2026-11-18
+  related_tasks: [T-5241, T-5228, T-5226, T-5215]
