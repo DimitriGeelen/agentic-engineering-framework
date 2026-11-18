@@ -272,14 +272,16 @@ def main() -> int:
     # T-5205: the other operator-only records. accepted-misses.jsonl (T-5181) was guarded against
     # Bash only; the subscription registry and its change log (T-5200) were not guarded at all.
     _p = file_path.replace("\\", "/")
-    if (os.path.basename(_p) in ("accepted-misses.jsonl", "subscription-changes.jsonl")
+    if (os.path.basename(_p) in ("accepted-misses.jsonl", "subscription-changes.jsonl",
+                                 "recorded-rulings.jsonl")   # T-5235
             or _p == "policy/subscriptions.yaml" or _p.endswith("/policy/subscriptions.yaml")) \
             and _under_agent_control() \
             and os.environ.get("FW_ALLOW_HUMAN_AC_TICK") != "1":
         sys.stderr.write(
             f"\nBLOCKED: {os.path.basename(_p)} is an operator-only record. Only the operator\n"
             "changes it, from their own terminal: `fw task accept-miss` (accepted misses) or\n"
-            "`fw quota subscription add|assign|remove` (subscription registry).\n"
+            "`fw quota subscription add|assign|remove` (subscription registry),\n"
+            "`fw reviewer ruling record` (recorded rulings, T-5235).\n"
             "Policy: T-5205 (operator records guard; T-5181, T-5200)\n\n")
         return 2
 

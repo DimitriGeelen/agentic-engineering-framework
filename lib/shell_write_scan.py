@@ -72,7 +72,9 @@ LEDGER_NAME = "human-ac-ticks.jsonl"
 # T-5181 review 3 #3: the operator's accepted misses too
 LEDGER_NAMES = (LEDGER_NAME, "standing-delegations.jsonl", "accepted-misses.jsonl",
                 # T-5205: the operator's subscription registry change log (T-5200)
-                "subscription-changes.jsonl")
+                "subscription-changes.jsonl",
+                # T-5235: the operator's recorded rulings
+                "recorded-rulings.jsonl")
 # T-5205: the subscription registry itself (T-5200) is matched by path, since its basename
 # `subscriptions.yaml` is too generic to guard everywhere.
 OPERATOR_POLICY_SUFFIXES = ("policy/subscriptions.yaml",)
@@ -87,7 +89,7 @@ def _is_operator_policy(path: str) -> bool:
 MENTION_RE = re.compile(
     r"\.tasks\b|tasks/(?:active|completed|templates)\b|/(?:active|completed)/T-\d"
     r"|human-ac-ticks\.jsonl|standing-delegations\.jsonl|accepted-misses\.jsonl"
-    r"|subscription-changes\.jsonl|policy/subscriptions\.yaml|toggle-ac",
+    r"|subscription-changes\.jsonl|recorded-rulings\.jsonl|policy/subscriptions\.yaml|toggle-ac",
     re.I,
 )
 # T-4159: a task-file NAME (`T-NNNN[-slug].md`) with the path word in front of it. It is
@@ -1253,6 +1255,14 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
         return
     if not ctx.boundary and not help_only and verb == "fw" and ops[:2] == ["task", "accept-miss"]:
         ctx.hits.append(Hit("records an accepted miss (the operator's act)"))
+        return
+    # T-5235: recording a ruling is the operator's act. The module refuses under
+    # CLAUDECODE/AI_AGENT, but `env -u` strips those; the text gate refuses the verb too.
+    if not ctx.boundary and not help_only and "--dry-run" not in _flags and (
+            (verb == "fw" and ops[:3] == ["reviewer", "ruling", "record"])
+            or ("record" in ops and any(os.path.basename(a) in (
+                "recorded_ruling.py", "recorded_ruling", "lib.recorded_ruling") for a in ops[:2]))):
+        ctx.hits.append(Hit("records an operator ruling (the operator's act)"))
         return
     # T-5200: the subscription registry is the operator's. The module refuses under
     # CLAUDECODE/AI_AGENT, but `env -u` strips those; the text gate refuses the verbs too.

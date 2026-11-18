@@ -197,6 +197,8 @@ def _partition(task_data: dict, root: Path, task_id: str,
             wide, why = ctx.widening(crit)
             if wide is not None:
                 item["widened"] = {"id": wide["id"], "ruling": str(wide.get("ruling") or "")}
+                if wide.get("kind") == "ruling":   # T-5235: a recorded operator ruling
+                    item["widened"].update(kind="ruling", ref=str(wide.get("ref") or ""))
                 judged.append(item)
                 continue
             item["reason"] = cl.reason + (f" [widening: {why}]" if why else "")
@@ -793,7 +795,21 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
     lines += ["", "## The criteria", "", f"Task: {task_id}", ""]
     for c in criteria:
         lines += [f"### Criterion {c['index']} (Human AC#{c['ac_index']})", "", c["body"], ""]
-        if c.get("widened"):
+        if c.get("widened", {}).get("kind") == "ruling":
+            lines += [
+                f"**Recorded operator ruling** — {c['widened']['id']} (given: "
+                f"{c['widened'].get('ref', '')}). The operator has already ruled on this "
+                "criterion; the ruling, verbatim:",
+                "",
+                "> " + c["widened"]["ruling"].replace("\n", "\n> "),
+                "",
+                "You do NOT make this ruling and you do not judge whether it is right. Check that "
+                "the box records it: that the criterion's question is the one this ruling answers, "
+                "and that what the task records under the criterion matches the ruling. Return "
+                "green only if it does; if the ruling answers a different question, or the task "
+                "records something else, return red or escalate.",
+                ""]
+        elif c.get("widened"):
             lines += [
                 f"**Widened act-in-the-world criterion** — {c['widened']['id']} (project ruling "
                 f"{c['widened']['ruling']}). This criterion is an act outside the repository that "
