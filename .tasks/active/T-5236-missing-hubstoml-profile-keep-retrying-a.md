@@ -104,13 +104,19 @@ The retry behaviour itself does not change, and agents never write credentials.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The NOT-delivered detail for a missing or broken profile names the hub, the user and the exact fix (reauth vs add-profile). Tests use a tmp hubs.toml and a stubbed termlink.
-- [ ] A missing-profile failure records one notice per (user, hub), deduplicated across retries and senders, shown by `fw operator pending` and on the approvals page (tests; the page through the Flask test client)
-- [ ] When a later send to that hub is delivered, the notice is marked resolved and leaves the pending list (test)
-- [ ] An unresolved notice older than 7 days is reported by the daily check (audit or doctor; test with a back-dated notice)
-- [ ] The retry behaviour is unchanged (existing T-5141/T-5142 and sidecar suites pass), no code writes credentials or hubs.toml, `bin/fw test invariants` and `bin/fw vendor self --check --task T-5236` are clean, and Watchtower is restarted, with `bin/fw watchtower current` passing
+- [x] The NOT-delivered detail for a missing or broken profile names the hub, the user and the exact fix (reauth vs add-profile). Tests use a tmp hubs.toml and a stubbed termlink.
+- [x] A missing-profile failure records one notice per (user, hub), deduplicated across retries and senders, shown by `fw operator pending` and on the approvals page (tests; the page through the Flask test client)
+- [x] When a later send to that hub is delivered, the notice is marked resolved and leaves the pending list (test)
+- [x] An unresolved notice older than 7 days is reported by the daily check (audit or doctor; test with a back-dated notice)
+- [x] The retry behaviour is unchanged (existing T-5141/T-5142 and sidecar suites pass), no code writes credentials or hubs.toml, `bin/fw test invariants` and `bin/fw vendor self --check --task T-5236` are clean, and Watchtower is restarted, with `bin/fw watchtower current` passing
 
 ### Human
+- [ ] [REVIEW] The "Hub profiles to fix" cards on the approvals page tell you who, which hub, how many messages wait, and the fix, at a glance
+  **Steps:**
+  1. Open the screenshots in `/opt/999-Agentic-Engineering-Framework/.context/visual/T-5236/` (hub-profiles@1024.png, @1440.png, @1920.png; the section sits near the bottom, above "Ready for you"). They were taken with two temporary demo notices (`demo-hub-t5236` missing, `demo-dash-t5236` broken), removed afterwards, so the live page shows the section only when a real notice exists.
+  2. Read each card: the missing-profile card shows the hubs.toml lines; the broken-profile card shows the prepared `bash …/runme.sh` line and the command it runs.
+  **Expected:** Each card reads as "user X on host Y has no/broken profile for hub Z — N waiting — fix: …" and the fix can be acted on without opening anything else.
+  **If not:** Note which card or wording is unclear; the template block is in web/templates/_approvals_content.html under the T-5236 comment.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -294,6 +300,20 @@ The retry behaviour itself does not change, and agents never write credentials.
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5236_profile_remediation.py -q > /tmp/.t5236-v1.out 2>&1 && grep -q passed /tmp/.t5236-v1.out
+python3 -m pytest tests/unit/test_t5141_probe_reason.py tests/unit/test_t5142_send_verdict.py tests/unit/test_sidecar_remote_probe_t3806.py tests/unit/test_sidecar_cross_hub_t3855.py tests/unit/test_sidecar_delivery.py tests/unit/test_sidecar_credential_refused_t3905.py tests/unit/t4095_operator_pending_test.py -q > /tmp/.t5236-v2.out 2>&1 && grep -q passed /tmp/.t5236-v2.out
+bash -n agents/audit/audit.sh
+bin/fw vendor self --check --task T-5236
+bin/fw watchtower current
+
+## Visual Verification
+
+Shots: `bin/fw ux shots T-5236 "hub-profiles=http://192.168.10.107:3000/approvals#section-hub-profiles"` with two temporary demo notices seeded in the ledger (removed afterwards). Section checked at each width in a cropped view.
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| hub-profiles | missing-profile card (hubs.toml lines) | ok | ok | ok | long last line wraps at 1024 |
+| hub-profiles | broken-profile card (prepared runme line) | ok | ok | ok | |
 
 ## RCA
 
@@ -374,6 +394,15 @@ The retry behaviour itself does not change, and agents never write credentials.
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-18 — where the notice is recorded
+- **Chose:** the probe attaches a structured `profile_gap` to its ProbeResult; `delivery.deliver` (the one path both `fw sidecar send` and the watcher's retries take) records it and resolves on delivery. Ledger `.context/sidecar/hub-profile-notices.jsonl`, one row per (user, hub), rewritten under a flock; gitignored because it holds user and host names.
+- **Why:** dedupe across retries and senders needs a single writer; the probe already knows missing vs broken, so the classification is not re-derived from reason text. Fake probes carry no gap, so existing tests write nothing.
+- **Rejected:** parsing the reason string in deliver (brittle); a separate append-only event log (needs folding on every read for a list of a few rows).
+
+### 2026-11-18 — which fix gets a runme
+- **Chose:** only the broken-profile case (`termlink fleet reauth <profile>`) gets a prepared runme. A missing profile shows the hubs.toml lines (plus the existing `termlink remote profile add` hint): it needs the hub's secret placed by the operator, so it is never one command.
+- **Why:** the ruling says "where the fix is one command"; writing a secret is the operator's step.
 
 ## Decision
 
