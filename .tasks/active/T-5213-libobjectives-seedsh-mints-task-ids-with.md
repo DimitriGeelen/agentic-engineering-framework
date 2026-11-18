@@ -10,10 +10,10 @@ description: >
   runs, or in a lagging worktree, can mint a duplicate or reissued id. Fix: route
   through the one allocator.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-17T21:23:35Z
-last_update: '2026-11-17T21:31:14Z'
+last_update: 2026-11-18T00:53:37Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,20 +90,19 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 1409 reported it (sidecar a8eb045c, 2026-11-17), and it was confirmed here: `_fw_objectives_next_id` in lib/objectives-seed.sh had its own id scan.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** That second allocator took no allocation lock, scanned only one view, and ignored `.id-highwater`. An `fw upgrade` seeding objectives could mint a duplicate or a reissued id.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** objectives-seed allocates through the one allocator.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** One allocator per repository. The fix shipped in T-5217 (T-5212 slice 1), commit 94046f51a.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] lib/objectives-seed.sh allocates through lib/idalloc.sh (`fw_id_allocate`), with no scan of its own (T-5217, 94046f51a)
+- [x] `fw doctor` reports one task-id allocator on this repo, and tests/unit/t5217_id_allocator.bats (23/23) covers objectives-seed
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,6 +288,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bin/fw doctor 2>&1 | grep -q "OK  one task-id allocator"
+grep -q "idalloc.sh" lib/objectives-seed.sh
 
 ## RCA
 
@@ -305,6 +306,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** A second task-id allocator, in lib/objectives-seed.sh, minted ids without the lock, the worktree views or the high-water mark.
+
+**Root cause:** T-3636 copied the gap-walk rule from generate_id into objectives-seed, rather than calling it. Later hardening of the allocator (T-100202 views, T-1279 lock, T-4189 high-water) landed only in create-task.sh.
+
+**Why structurally allowed:** Nothing asserted that only one code path mints task ids. Each fix hardened the allocator it was looking at.
+
+**Prevention:** `fw doctor` now checks for a single allocator and WARNs on any other file that mints task ids (T-5217). t5217_id_allocator.bats pins objectives-seed to the shared allocator.
 
 ## Evolution
 
@@ -386,3 +394,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5213-libobjectives-seedsh-mints-task-ids-with.md
 - **Context:** Initial task creation
+
+### 2026-11-18T00:53:37Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
