@@ -198,6 +198,14 @@ _arc_next_numeric_id() {
             fi
         done
     fi
+    # T-5221 review 11: ids of arcs removed again (instantiate rollback) are never reissued.
+    if [ -f "${ARCS_DIR}/.retired-ids" ]; then
+        while read -r cur _; do
+            [[ "$cur" =~ ^arc-0*([0-9]+)$ ]] || continue
+            cur=$((10#${BASH_REMATCH[1]}))
+            [ "$cur" -gt "$max" ] && max="$cur"
+        done < "${ARCS_DIR}/.retired-ids"
+    fi
     printf 'arc-%03d\n' $((max + 1))
 }
 
@@ -2694,8 +2702,14 @@ arc_instantiate() {
     printf '%s\n' "$out"
     if [ "$rc" -ne 0 ]; then
         if ! grep -lq "^arc_id: $slug\$" "${TASKS_DIR:-$PROJECT_ROOT/.tasks}"/active/T-*.md 2>/dev/null; then
+            # D-Immutability: an arc-NNN is never reused. Record it before the file goes,
+            # so _arc_next_numeric_id still counts it (T-5221 review 11).
+            local gone_id
+            gone_id="$(awk '/^id:[[:space:]]*arc-[0-9]/ {print $2; exit}' "$(_arc_path "$slug")" 2>/dev/null)"
+            [ -n "$gone_id" ] && printf '%s %s %s instantiate-rollback\n' "$gone_id" "$slug" \
+                "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "${ARCS_DIR}/.retired-ids"
             rm -f "$(_arc_path "$slug")"
-            echo "Error: no task was created; arc '$slug' removed again" >&2
+            echo "Error: no task was created; arc '$slug' removed again (${gone_id:-its id} stays retired)" >&2
         else
             echo "Error: some tasks of arc '$slug' were not created; see fw task id reconcile" >&2
         fi
@@ -2706,8 +2720,25 @@ arc_instantiate() {
         local anchor_id
         anchor_id="$(printf '%s\n' "$out" | grep -oE '^  T-[0-9]+' | sed -n "${anchor}p" | tr -d ' ')"
         if [ -n "$anchor_id" ]; then
-            sed -i "s/^anchor_task:.*/anchor_task: ${anchor_id}/" "$(_arc_path "$slug")"
-            echo "  anchor_task: ${anchor_id}"
+            # Portable rewrite (GNU-only `sed -i` failed silently on BSD/macOS), checked: the
+            # anchor is reported only when the arc file holds it (T-5221 review 4).
+            if python3 - "$(_arc_path "$slug")" "$anchor_id" <<'PY'
+import os, re, sys
+fn, tid = sys.argv[1], sys.argv[2]
+text = open(fn).read()
+new, n = re.subn(r'(?m)^anchor_task:.*$', lambda m: 'anchor_task: ' + tid, text, count=1)
+if not n:
+    sys.exit(1)
+tmp = fn + '.anchor.tmp'
+with open(tmp, 'w') as fh:
+    fh.write(new)
+os.replace(tmp, fn)
+PY
+            then
+                echo "  anchor_task: ${anchor_id}"
+            else
+                echo "Warning: could not set anchor_task: ${anchor_id} in $(_arc_path "$slug") (no anchor_task: line?) — set it with fw arc" >&2
+            fi
         fi
     fi
     echo "arc instantiate: arc '$slug' with $count task(s) from $(basename "$tpath")"
