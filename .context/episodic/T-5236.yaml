@@ -1,0 +1,231 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5236: Missing hubs.toml profile: keep retrying, and remediate — exact fix for the sender, one operator notice per user and hub (pending + approvals, runme where one command fixes it), auto-resolve when the retry delivers, daily report after 7 days
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-18T15:56:21Z
+# ============================================================================
+
+task_id: T-5236
+task_name: "Missing hubs.toml profile: keep retrying, and remediate — exact fix for the sender, one operator notice per user and hub (pending + approvals, runme where one command fixes it), auto-resolve when the retry delivers, daily report after 7 days"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-18T14:38:01Z
+completed: 2026-11-18T15:54:37Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-18T15:39:11+01:00
+last_commit: 2026-11-18T16:54:35+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context, criteria (operator ruling on question 4). one operator notice per (user, hub) for a missing or broken hubs.toml profile. vendor sync. one-line fix rendering keeps 'add to <hubs.toml>:' joined to its lines. criteria, verification, visual verification, decisions. reviewer verdict. section-cropped shots at all three widths (review amber: full-page captures of /approvals were unreliable at 1440/1920). reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (antigravity seat antigravity, recorded by the runtime). criterion step 1 names the screenshot folder relative (an absolute path was captured as a page and 404'd) and the current demo notices. a resolved notice withdraws its prepared fix (WITHDRAWN beside the runme; fw operator pending skips it; the run log is never faked) — found when the review's demo runme stayed pending. missing-profile fix fills the hub's address from another hubs.toml on this host when one names it (addresses only, never secrets), else says where to find it (review amber, codex). RCA
+
+# Key outcomes
+outcomes:
+  - 'The NOT-delivered detail for a missing or broken profile names the hub, the user and the exact fix (reauth vs add-profile). Tests use a tmp hubs.toml and a stubbed termlink.'
+  - 'A missing-profile failure records one notice per (user, hub), deduplicated across retries and senders, shown by `fw operator pending` and on the approvals page (tests; the page through the Flask test client)'
+  - 'When a later send to that hub is delivered, the notice is marked resolved and leaves the pending list (test)'
+  - 'An unresolved notice older than 7 days is reported by the daily check (audit or doctor; test with a back-dated notice)'
+  - 'The retry behaviour is unchanged (existing T-5141/T-5142 and sidecar suites pass), no code writes credentials or hubs.toml, `bin/fw test invariants` and `bin/fw vendor self --check --task T-5236` are clean, and Watchtower is restarted, with `bin/fw watchtower current` passing'
+  - '[REVIEW] The "Hub profiles to fix" cards on the approvals page tell you who, which hub, how many messages wait, and the fix, at a glance'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'missing-profile fix fills the hub''s address from another hubs.toml on this host when one names it (addresses only, never secrets), else says where to find it (review amber, codex)'
+    source: git-mined
+  - description: 'a resolved notice withdraws its prepared fix (WITHDRAWN beside the runme; fw operator pending skips it; the run log is never faked) — found when the review''s demo runme stayed pending'
+    source: git-mined
+  - description: 'one-line fix rendering keeps ''add to <hubs.toml>:'' joined to its lines'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-18 — where the notice is recorded'
+    chose: 'the probe attaches a structured `profile_gap` to its ProbeResult; `delivery.deliver` (the one path both `fw sidecar send` and the watcher''s retries take) records it and resolves on delivery. Ledger `.context/sidecar/hub-profile-notices.jsonl`, one row per (user, hub), rewritten under a flock; gitignored because it holds user and host names.'
+    rationale: 'dedupe across retries and senders needs a single writer; the probe already knows missing vs broken, so the classification is not re-derived from reason text. Fake probes carry no gap, so existing tests write nothing.'
+    alternatives_rejected: ['parsing the reason string in deliver (brittle); a separate append-only event log (needs folding on every read for a list of a few rows).']
+  - decision: '2026-11-18 — which fix gets a runme'
+    chose: 'only the broken-profile case (`termlink fleet reauth <profile>`) gets a prepared runme. A missing profile shows the hubs.toml lines (plus the existing `termlink remote profile add` hint): it needs the hub''s secret placed by the operator, so it is never one command.'
+    rationale: 'the ruling says "where the fix is one command"; writing a secret is the operator''s step.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/operator_pending.py'
+  - '.agentic-framework/lib/sidecar/addressing.py'
+  - '.agentic-framework/lib/sidecar/delivery.py'
+  - '.agentic-framework/lib/sidecar/profile_notices.py'
+  - '.agentic-framework/lib/sidecar/termlink_transport.py'
+  - '.agentic-framework/web/blueprints/approvals.py'
+  - '.agentic-framework/web/templates/_approvals_content.html'
+  - '.context/reviews/applied.jsonl'
+  - '.context/reviews/evidence/T-5236/01-approvals-judge-t-5236-r5-antigravity-15b9f00772d9.png'
+  - '.context/reviews/evidence/T-5236/01-approvals-judge-t-5236-r5-antigravity-d6d24bbfd463.png'
+  - '.context/reviews/evidence/T-5236/01-approvals-judge-t-5236-r5-claude-code-4cd0cd03087d.png'
+  - '.context/reviews/evidence/T-5236/01-approvals-judge-t-5236-r5-claude-code-5ee4c05f57c2.png'
+  - '.context/reviews/evidence/T-5236/01-approvals-judge-t-5236-r5-claude-code-5fab990467e1.png'
+  - '.context/reviews/evidence/T-5236/01-approvals-judge-t-5236-r5-codex-36431050632c.png'
+  - '.context/reviews/evidence/T-5236/01-approvals-judge-t-5236-r5-codex-680c44d408a0.png'
+  - '.context/reviews/evidence/T-5236/02-approvals-content-judge-t-5236-r5-antigravity-15b9f00772d9.png'
+  - '.context/reviews/evidence/T-5236/02-approvals-content-judge-t-5236-r5-antigravity-d6d24bbfd463.png'
+  - '.context/reviews/evidence/T-5236/02-approvals-content-judge-t-5236-r5-claude-code-4cd0cd03087d.png'
+  - '.context/reviews/evidence/T-5236/02-approvals-content-judge-t-5236-r5-claude-code-5ee4c05f57c2.png'
+  - '.context/reviews/evidence/T-5236/02-approvals-content-judge-t-5236-r5-claude-code-5fab990467e1.png'
+  - '.context/reviews/evidence/T-5236/02-approvals-content-judge-t-5236-r5-codex-36431050632c.png'
+  - '.context/reviews/evidence/T-5236/02-approvals-content-judge-t-5236-r5-codex-680c44d408a0.png'
+  - '.context/reviews/evidence/T-5236/02-approvals-judge-t-5236-r5-claude-code-2fe74e8d0d47.png'
+  - '.context/reviews/evidence/T-5236/02-approvals-judge-t-5236-r5-claude-code-6b083ec760e4.png'
+  - '.context/reviews/evidence/T-5236/03-approvals-content-judge-t-5236-r5-claude-code-2fe74e8d0d47.png'
+  - '.context/reviews/evidence/T-5236/03-approvals-content-judge-t-5236-r5-claude-code-6b083ec760e4.png'
+  - '.context/reviews/evidence/T-5236/03-approvals-continuous-state-judge-t-5236-r5-antigravity-15b9f00772d9.png'
+  - '.context/reviews/evidence/T-5236/03-approvals-continuous-state-judge-t-5236-r5-antigravity-d6d24bbfd463.png'
+  - '.context/reviews/evidence/T-5236/03-approvals-continuous-state-judge-t-5236-r5-claude-code-4cd0cd03087d.png'
+  - '.context/reviews/evidence/T-5236/03-approvals-continuous-state-judge-t-5236-r5-claude-code-5ee4c05f57c2.png'
+  - '.context/reviews/evidence/T-5236/03-approvals-continuous-state-judge-t-5236-r5-claude-code-5fab990467e1.png'
+  - '.context/reviews/evidence/T-5236/03-approvals-continuous-state-judge-t-5236-r5-codex-36431050632c.png'
+  - '.context/reviews/evidence/T-5236/03-approvals-continuous-state-judge-t-5236-r5-codex-680c44d408a0.png'
+  - '.context/reviews/evidence/T-5236/04-approvals-continuous-state-judge-t-5236-r5-claude-code-2fe74e8d0d47.png'
+  - '.context/reviews/evidence/T-5236/04-approvals-continuous-state-judge-t-5236-r5-claude-code-6b083ec760e4.png'
+  - '.context/reviews/evidence/T-5236/AC1-judge-t-5236-r5-antigravity-15b9f00772d9.md'
+  - '.context/reviews/evidence/T-5236/AC1-judge-t-5236-r5-antigravity-cf86bac6643a.md'
+  - '.context/reviews/evidence/T-5236/AC1-judge-t-5236-r5-antigravity-d6d24bbfd463.md'
+  - '.context/reviews/evidence/T-5236/AC1-judge-t-5236-r5-claude-code-2fe74e8d0d47.md'
+  - '.context/reviews/evidence/T-5236/AC1-judge-t-5236-r5-claude-code-4cd0cd03087d.md'
+  - '.context/reviews/evidence/T-5236/AC1-judge-t-5236-r5-claude-code-5ee4c05f57c2.md'
+  - '.context/reviews/evidence/T-5236/AC1-judge-t-5236-r5-claude-code-5fab990467e1.md'
+  - '.context/reviews/evidence/T-5236/AC1-judge-t-5236-r5-claude-code-6b083ec760e4.md'
+  - '.context/reviews/evidence/T-5236/AC1-judge-t-5236-r5-codex-282804ad0819.md'
+  - '.context/reviews/evidence/T-5236/AC1-judge-t-5236-r5-codex-36431050632c.md'
+  - '.context/reviews/evidence/T-5236/AC1-judge-t-5236-r5-codex-680c44d408a0.md'
+  - '.context/reviews/evidence/T-5236/AC1-judge-t-5236-r5-codex-6f7426b4512e.md'
+  - '.context/reviews/evidence/T-5236/crop-end-of-content@1920-judge-t-5236-r5-claude-code-2fe74e8d0d47.png'
+  - '.context/reviews/evidence/T-5236/crop-section@1024-judge-t-5236-r5-claude-code-2fe74e8d0d47.png'
+  - '.context/reviews/evidence/T-5236/crop-section@1440-judge-t-5236-r5-claude-code-2fe74e8d0d47.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1024-judge-t-5236-r5-antigravity-15b9f00772d9.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1024-judge-t-5236-r5-antigravity-d6d24bbfd463.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1024-judge-t-5236-r5-claude-code-2fe74e8d0d47.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1024-judge-t-5236-r5-claude-code-4cd0cd03087d.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1024-judge-t-5236-r5-claude-code-5ee4c05f57c2.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1024-judge-t-5236-r5-claude-code-5fab990467e1.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1024-judge-t-5236-r5-claude-code-6b083ec760e4.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1024-judge-t-5236-r5-codex-36431050632c.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1024-judge-t-5236-r5-codex-680c44d408a0.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1440-judge-t-5236-r5-antigravity-15b9f00772d9.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1440-judge-t-5236-r5-antigravity-d6d24bbfd463.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1440-judge-t-5236-r5-claude-code-2fe74e8d0d47.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1440-judge-t-5236-r5-claude-code-4cd0cd03087d.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1440-judge-t-5236-r5-claude-code-5ee4c05f57c2.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1440-judge-t-5236-r5-claude-code-5fab990467e1.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1440-judge-t-5236-r5-claude-code-6b083ec760e4.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1440-judge-t-5236-r5-codex-36431050632c.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1440-judge-t-5236-r5-codex-680c44d408a0.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1920-judge-t-5236-r5-antigravity-15b9f00772d9.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1920-judge-t-5236-r5-antigravity-d6d24bbfd463.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1920-judge-t-5236-r5-claude-code-2fe74e8d0d47.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1920-judge-t-5236-r5-claude-code-4cd0cd03087d.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1920-judge-t-5236-r5-claude-code-5ee4c05f57c2.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1920-judge-t-5236-r5-claude-code-5fab990467e1.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1920-judge-t-5236-r5-claude-code-6b083ec760e4.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1920-judge-t-5236-r5-codex-36431050632c.png'
+  - '.context/reviews/evidence/T-5236/hub-profiles@1920-judge-t-5236-r5-codex-680c44d408a0.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.fabric/components/lib-sidecar-profile_notices.yaml'
+  - '.gitignore'
+  - '.tasks/active/T-5236-missing-hubstoml-profile-keep-retrying-a.md'
+  - 'agents/audit/audit.sh'
+  - 'lib/operator_pending.py'
+  - 'lib/sidecar/addressing.py'
+  - 'lib/sidecar/delivery.py'
+  - 'lib/sidecar/profile_notices.py'
+  - 'lib/sidecar/termlink_transport.py'
+  - 'tests/unit/test_t5236_profile_remediation.py'
+  - 'web/blueprints/approvals.py'
+  - 'web/templates/_approvals_content.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-18T15:39:11'
+    action: 'T-5236: context, criteria (operator ruling on question 4)'
+  - time: '2026-11-18T15:50:13'
+    action: 'T-5236: one operator notice per (user, hub) for a missing or broken hubs.toml profile'
+  - time: '2026-11-18T15:51:12'
+    action: 'T-5236: vendor sync'
+  - time: '2026-11-18T15:55:19'
+    action: 'T-5236: one-line fix rendering keeps ''add to <hubs.toml>:'' joined to its lines'
+  - time: '2026-11-18T15:55:28'
+    action: 'T-5236: vendor sync'
+  - time: '2026-11-18T15:58:04'
+    action: 'T-5236: criteria, verification, visual verification, decisions'
+  - time: '2026-11-18T16:03:38'
+    action: 'T-5236: reviewer verdict'
+  - time: '2026-11-18T16:06:56'
+    action: 'T-5236: section-cropped shots at all three widths (review amber: full-page captures of /approvals were unreliable at 1440/1920)'
+  - time: '2026-11-18T16:09:21'
+    action: 'T-5236: reviewer verdict'
+  - time: '2026-11-18T16:10:20'
+    action: 'T-5236: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-18T16:17:57'
+    action: 'T-5236: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-18T16:18:30'
+    action: 'T-5236: criterion step 1 names the screenshot folder relative (an absolute path was captured as a page and 404''d) and the current demo notices'
+  - time: '2026-11-18T16:20:44'
+    action: 'T-5236: reviewer verdict'
+  - time: '2026-11-18T16:22:05'
+    action: 'T-5236: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-18T16:23:46'
+    action: 'T-5236: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-18T16:31:54'
+    action: 'T-5236: a resolved notice withdraws its prepared fix (WITHDRAWN beside the runme; fw operator pending skips it; the run log is never faked) — found when the review''s demo runme stayed pending'
+  - time: '2026-11-18T16:36:52'
+    action: 'T-5236: reviewer verdict'
+  - time: '2026-11-18T16:38:33'
+    action: 'T-5236: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-18T16:44:11'
+    action: 'T-5236: missing-profile fix fills the hub''s address from another hubs.toml on this host when one names it (addresses only, never secrets), else says where to find it (review amber, codex)'
+  - time: '2026-11-18T16:47:31'
+    action: 'T-5236: reviewer verdict'
+  - time: '2026-11-18T16:49:08'
+    action: 'T-5236: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-18T16:50:58'
+    action: 'T-5236: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-18T16:54:35'
+    action: 'T-5236: RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 23 commit(s), 76 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 76
+  commits: 24
+  files_changed: 99
+  lines_added: 2702
+  lines_removed: 59
+  footprint_refreshed_at: '2026-11-18T15:56:39Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5236-missing-hubstoml-profile-keep-retrying-a.md
+generated_by: context-agent-hybrid

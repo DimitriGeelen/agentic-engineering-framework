@@ -56879,3 +56879,21 @@ scan_id: R-4ff56021
 task_id: T-5237
 payload:
   task_file: .tasks/active/T-5237-designer-043-mappingmd-q15-record-832s-o.md
+---
+kind: scan_emitted
+timestamp: '2026-11-18T15:55:38Z'
+scan_id: R-e048147c
+task_id: T-5236
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-18T15:55:38Z'
+scan_id: R-e048147c
+task_id: T-5236
+payload:
+  task_file: .tasks/active/T-5236-missing-hubstoml-profile-keep-retrying-a.md
