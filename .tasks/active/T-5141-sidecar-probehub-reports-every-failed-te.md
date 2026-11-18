@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-15T13:56:47Z
-last_update: '2026-11-15T14:15:20Z'
+last_update: '2026-11-18T00:46:29Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -72,6 +72,22 @@ bvp_scores_proposed:
       F1: 0
       F2: 0
     rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-11-18T00:46:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=0
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
@@ -292,8 +308,19 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_t5141_probe_reason.py
+python3 -m pytest -q tests/unit/test_sidecar_termlink_transport.py tests/unit/test_sidecar_remote_probe_t3806.py tests/unit/test_sidecar_credential_refused_t3905.py tests/unit/test_sidecar_delivery.py
+bin/fw vendor self --check --task T-5141
 
 ## RCA
+
+**Symptom:** a sender with no hubs.toml profile for a remote hub (010 T-3797, user dimitri-mint-dev, only a local-hub profile) saw `hub-refused: hub ring20-management unreachable: TLS handshake failed`. The hub's TLS and pin were fine; 1409-sprind debugged TLS for hours.
+
+**Root cause:** `probe_hub` fell back to the bare hub name as the `termlink hub probe` address when no profile matched, then mapped every non-zero exit to one fixed phrase, "TLS handshake failed". It discarded termlink's own stderr, so the real cause (no profile: no address and no credential for this user) was never visible.
+
+**Why structurally allowed:** the T-3806 tests covered "no profile" only with a probe that SUCCEEDED (a reachable literal address), and "unreachable" only with a profile present. The combination in the field (no profile AND a name that is not an address) had no test, and the fixed phrase looked like a diagnosis, so nothing flagged it.
+
+**Prevention:** `tests/unit/test_t5141_probe_reason.py` pins both missing combinations: no profile + failed probe names the missing profile; any failed probe carries termlink's own stderr (one line) and never the fixed TLS phrase. A shared `no_profile_reason()` is now the one wording for the missing-profile case on both the reachable and unreachable paths.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -372,6 +399,16 @@ cost_estimate_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-18 — finality of the no-profile + failed-probe refusal
+- **Chose:** keep it non-final (stored, retryable), as that path always was.
+- **Why:** the Goal is the reason text; changing who may later deliver it is a separate decision.
+- **Rejected:** marking it `credential_refused` (final) like the reachable-address no-profile path (T-3905). Consistent with G-109, but it would stop the watcher re-posting these messages (how 010's posts actually arrived), so it belongs to its own task and the operator's call.
+
+### 2026-11-18 — a failed reachability probe with a profile
+- **Chose:** run the authenticated version read anyway; when it clears the floor the hub is a valid target and the probe failure travels as `ProbeResult.note`.
+- **Why:** the unauthenticated `hub probe` is the weaker rung (T-2415); the authenticated read is the gate Amendment 5 requires, so the floor gate is unchanged. This also gives T-5142 a real "accepted with a failed probe" path.
+- **Rejected:** posting regardless of the probe (would bypass the version-floor gate).
 
 ## Decision
 
