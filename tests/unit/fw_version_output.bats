@@ -74,7 +74,8 @@ teardown() {
     # the operator needs told, not hidden behind an absent line.
     # T-4295: a framework root needs lib/ and agents/ to be accepted (T-4248), as a real vendored copy has.
     mkdir -p "$TEST_TEMP_DIR/nogit/lib" "$TEST_TEMP_DIR/nogit/agents"
-    run env -u PROJECT_ROOT FRAMEWORK_ROOT="$TEST_TEMP_DIR/nogit" "$(FW)" --version
+    # T-5219: pointing fw at another framework tree on purpose is a handoff (T-5214).
+    run env -u PROJECT_ROOT FRAMEWORK_ROOT="$TEST_TEMP_DIR/nogit" FW_FRAMEWORK_ROOT_HANDOFF=1 "$(FW)" --version
     [ "$status" -eq 0 ]
     echo "$output" | grep -q '^Commit:.*none'
     echo "$output" | grep -q 'VERSION file is the only identity'
