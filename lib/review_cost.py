@@ -439,6 +439,11 @@ def approve(*, pid: str, i_am_human: bool, reason: str) -> dict:
     rec = {"event": "approved", "id": pid, "ts": _now(), "reason": reason,
            "by": ("human-override" if i_am_human else "agent") if _is_agent() else "human"}
     _append(ledger("proposals.jsonl"), rec)
+    try:  # T-5222: one notice to the project's agent; never changes the approval
+        from lib import agent_notice
+        agent_notice.notify_paid_review_approved(pid, p.get("task", ""), root=_roots()[0])
+    except Exception:  # noqa: BLE001
+        pass
     return rec
 
 

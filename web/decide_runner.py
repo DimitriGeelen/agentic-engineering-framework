@@ -34,6 +34,7 @@ Shape of the fix:
   project's agent learns of the decision at its next idle point. Once per
   decision (marker in status.json and a per-commit marker beside the runs); a
   failed post is recorded in status.json and never touches the decision.
+  T-5222: the sender is the shared lib/agent_notice module.
 """
 from __future__ import annotations
 
@@ -347,27 +348,17 @@ def _decision_commit_id(task_id: str, decision: str) -> str:
 
 
 def _own_address() -> str:
-    """This project's own sidecar id (lib/sidecar/circuit.project_id())."""
-    from lib.sidecar import circuit
-    return circuit.project_id()
+    """This project's own sidecar id (lib/agent_notice.own_address, T-5222)."""
+    from lib import agent_notice
+    return agent_notice.own_address()
 
 
 def _send_notice(fw_bin: str, to: str, body: str):
-    """Post through the existing `fw sidecar send --notice` path. (ok, detail); never raises."""
+    """Post through the shared notifier (lib/agent_notice, T-5222). (ok, detail); never raises."""
+    from lib import agent_notice
     from web.shared import PROJECT_ROOT
-    try:
-        r = subprocess.run([fw_bin, "sidecar", "send", "--to", to, "--notice", "--body", body],
-                           cwd=str(PROJECT_ROOT), stdin=subprocess.DEVNULL,
-                           capture_output=True, text=True, timeout=NOTICE_TIMEOUT,
-                           env=git_clean_env())
-    except subprocess.TimeoutExpired:
-        return False, f"timed out after {NOTICE_TIMEOUT}s"
-    except Exception as e:  # sender missing, not executable
-        return False, f"could not run the sender: {e}"[:300]
-    if r.returncode != 0:
-        why = (r.stderr or r.stdout or "").strip().splitlines()
-        return False, f"exit {r.returncode}: {why[-1] if why else 'no output'}"[:300]
-    return True, "sent"
+    return agent_notice.send_notice(fw_bin, to, body, cwd=PROJECT_ROOT,
+                                    timeout=NOTICE_TIMEOUT, env=git_clean_env())
 
 
 def _notice_marker(project_root, task_id: str, decision: str, commit: str) -> Path:

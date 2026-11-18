@@ -76,3 +76,5 @@ estate-ingest-audit.jsonl
 estate-push-refused.jsonl
 judge-evidence/
 vendor-backup/
+# T-5222: agent-notice outcomes (lib/agent_notice.py)
+agent-notices.jsonl
