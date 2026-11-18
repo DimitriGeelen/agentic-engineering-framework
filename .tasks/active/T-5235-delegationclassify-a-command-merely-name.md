@@ -1,8 +1,24 @@
 ---
 id: T-5235
-name: "delegation.classify: a command merely named inside a question or example list ('git push' in a list of once-refused commands) makes a ruling criterion act-in-the-world / OPERATOR-ONLY (832 e106c38e, their T-676)"
+name: "delegation.classify: a command merely named inside a question or example list
+  ('git push' in a list of once-refused commands) makes a ruling criterion act-in-the-world
+  / OPERATOR-ONLY (832 e106c38e, their T-676)"
 description: >
-  832 (sidecar e106c38e, 2026-11-18, at their operator's request): 832 T-676 Human AC1 is a RULING question ('Should P-002 exempt read-only Bash when focus is absent, captured, or work-completed? ... GO / NO-GO / DEFER'); its body lists commands the gate once refused, including 'git push'. 'fw task delegate T-676 --dry-run --json' classes it act-in-the-world, OPERATOR-ONLY ('the agent cannot perform it and no scan can verify it happened (git push)'). The operator already ruled ('a', recorded under the criterion, their commit b826295ef); the box only records that ruling, which is reviewer-judgeable like their T-353/T-368/T-592/T-736. 832's suggestion: a command named inside a question / example list (backticks, 'e.g.', a list of refused commands) should not by itself make a criterion act-in-the-world; the act class should need an imperative to perform it. NOTE: this NARROWS an operator-only carve-out (CLAUDE.md: tier-0-or-bypass, act-in-the-world and sovereignty stay human), so the rule change needs the AEF operator's yes before it is built; a safer variant may be to class a criterion whose recorded ruling is already present as ruling-recorded rather than relaxing act-in-the-world.
+  832 (sidecar e106c38e, 2026-11-18, at their operator's request): 832 T-676 Human
+  AC1 is a RULING question ('Should P-002 exempt read-only Bash when focus is absent,
+  captured, or work-completed? ... GO / NO-GO / DEFER'); its body lists commands the
+  gate once refused, including 'git push'. 'fw task delegate T-676 --dry-run --json'
+  classes it act-in-the-world, OPERATOR-ONLY ('the agent cannot perform it and no
+  scan can verify it happened (git push)'). The operator already ruled ('a', recorded
+  under the criterion, their commit b826295ef); the box only records that ruling,
+  which is reviewer-judgeable like their T-353/T-368/T-592/T-736. 832's suggestion:
+  a command named inside a question / example list (backticks, 'e.g.', a list of refused
+  commands) should not by itself make a criterion act-in-the-world; the act class
+  should need an imperative to perform it. NOTE: this NARROWS an operator-only carve-out
+  (CLAUDE.md: tier-0-or-bypass, act-in-the-world and sovereignty stay human), so the
+  rule change needs the AEF operator's yes before it is built; a safer variant may
+  be to class a criterion whose recorded ruling is already present as ruling-recorded
+  rather than relaxing act-in-the-world.
 
 status: captured
 workflow_type: build
@@ -38,8 +54,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-18T13:39:51Z
-last_update: 2026-11-18T13:39:51Z
-date_finished: null
+last_update: '2026-11-18T13:45:32Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +66,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-18T13:45:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5235: delegation.classify: a command merely named inside a question or example list ('git push' in a list of once-refused commands) makes a ruling criterion act-in-the-world / OPERATOR-ONLY (832 e106c38e, their T-676)
