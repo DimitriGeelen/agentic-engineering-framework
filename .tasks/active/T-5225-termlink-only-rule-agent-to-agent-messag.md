@@ -105,11 +105,11 @@ cost_estimate_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] A hook script refuses each listed tool with exit 2 and a message naming the operator's rule and `fw sidecar send`, and allows every other tool. Tests cover each tool name, a non-matching tool, and a malformed payload (fail closed or open, stated and tested).
-- [ ] The hook is registered as an `fw hook` subcommand, and the consumer settings template / `fw upgrade` delivers its PreToolUse entry (test: the upgrade simulation shows the matcher in the consumer's settings).
-- [ ] FRAMEWORK.md and CLAUDE.md state the rule in plain words, with the operator's ruling and date, beside the existing tool bans
-- [ ] One runme is prepared for the operator to wire this repo's .claude/settings.json (agents do not rewire hooks), and its command line is recorded in this task
-- [ ] Existing hook, settings-parity and upgrade_fresh_machine_simulation suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5225`
+- [x] A hook script refuses each listed tool with exit 2 and a message naming the operator's rule and `fw sidecar send`, and allows every other tool. Tests cover each tool name, a non-matching tool, and a malformed payload (fail closed or open, stated and tested).
+- [x] The hook is registered as an `fw hook` subcommand, and the consumer settings template / `fw upgrade` delivers its PreToolUse entry (test: the upgrade simulation shows the matcher in the consumer's settings).
+- [x] FRAMEWORK.md and CLAUDE.md state the rule in plain words, with the operator's ruling and date, beside the existing tool bans
+- [x] One runme is prepared for the operator to wire this repo's .claude/settings.json (agents do not rewire hooks), and its command line is recorded in this task
+- [x] Existing hook, settings-parity and upgrade_fresh_machine_simulation suites pass, as do `bin/fw test invariants` and `bin/fw vendor self --check --task T-5225`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -295,6 +295,13 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 bats tests/unit/t5225_termlink_only_hook.bats > /tmp/.t5225.out 2>&1 && ! grep -q "^not ok" /tmp/.t5225.out
+test "$(grep -c '# skip' /tmp/.t5225.out)" -eq 0
+# test_pretooluse_gates empties focus.yaml; under a dispatched worker's session-scoped focus that file is not read, hence env -u
+env -u FW_SESSION_SCOPED_FOCUS -u FW_FOCUS_SESSION_KEY -u FW_DISPATCHED_WORKER timeout 600 bats tests/unit/hook_producer_site_parity.bats tests/unit/block_task_tools.bats tests/governance/test_pretooluse_gates.bats > /tmp/.t5225b.out 2>&1 && ! grep -q "^not ok" /tmp/.t5225b.out
+out=$(printf '%s' '{"tool_name":"SendMessage"}' | bin/fw hook block-cross-session-messages 2>&1); test $? -eq 2 && grep -q "sidecar send" <<<"$out"
+test -f .context/runme/t5225-wire-termlink-only/runme.sh
+bin/fw vendor self --check --task T-5225
 
 ## RCA
 
@@ -375,6 +382,25 @@ cost_estimate_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-18 — which tools to refuse
+- **Chose:** `SendMessage`, `SendToProject`, `SendToProjectContext` (matcher `SendMessage|SendToProject|SendToProjectContext`, hook `block-cross-session-messages`).
+- **Evidence** (Claude Code binary `~/.local/share/claude/versions/2.1.327`, grepped for tool-name literals):
+  - `SendMessage` — `var Ln="SendMessage"`, input keys `to` + `message`/`notify_when_idle`, schema fields `recipient`, `recipient_kind`, `content`: delivers a message to another session or teammate. Also in this session's deferred tool list.
+  - `SendToProject` — `cne="SendToProject"`, description "Send this session's work to a Claude Project": delivers this session's content to another project.
+  - `SendToProjectContext` — `$xt="SendToProjectContext"`: by its own description it "sends nothing"; it reads the target folder's context and exists only as the required first step of `SendToProject`. Refused because the Goal names it and it has no other use.
+- **Rejected (not message delivery to another session/project):** `SendUserMessage` (alias `Brief`, messages the user), `ListAgents` (alias `ListPeers`, read-only listing), `TeamCreate`/`TeamDelete` (create/delete teammates; messaging them is `SendMessage`, already refused; spawning is governed by the Agent-tool gate), `RemoteTrigger` (runs a scheduled cloud routine — dispatch, not a peer message), `PushNotification` (notifies the user).
+
+### 2026-11-18 — malformed payload
+- **Chose:** fail CLOSED (exit 2). The settings matcher routes only the three tools to this hook, so an unreadable payload here is almost certainly one of them; a parseable payload naming any other tool exits 0 (so the hook is safe under a broader matcher too).
+- **Rejected:** unconditional block like `block-task-tools.sh` — the Goal asks that every other tool be allowed.
+
+### 2026-11-18 — wiring this repo
+- **Chose:** runme around `bin/fw hook-enable` (the existing idempotent verb for this repo's settings.json; T-2911 parity test keys on hook name) plus `bin/fw enforcement baseline` (L-398).
+- **Note for delivery:** `fw init` writes the entry immediately (template). `fw upgrade` regenerates an existing consumer's hooks when that consumer lacks a hook present in the *framework's own* `.claude/settings.json` (`lib/upgrade.sh` `_t2912_hook_gap`), so existing consumers receive it after the operator runs the runme below. Test 9 proves this path end-to-end.
+
+**Operator runme (not run by the agent):**
+`bash /opt/999-Agentic-Engineering-Framework/.context/runme/t5225-wire-termlink-only/runme.sh`
 
 ## Decision
 
