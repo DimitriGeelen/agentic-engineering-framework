@@ -5012,6 +5012,30 @@ check_sidecar_ledger() {
 }
 check_sidecar_ledger
 
+# T-5236: a (user, hub) pair whose sends have had no usable hubs.toml profile for
+# 7+ days is reported daily. The sends keep retrying; this is the "nothing is
+# forgotten" leg of the operator ruling. Silent while no notice is that old.
+check_hub_profile_notices() {
+    local _ledger="$PROJECT_ROOT/.context/sidecar/hub-profile-notices.jsonl"
+    [ -f "$_ledger" ] || return 0
+    local _out _rc
+    _out=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/sidecar/profile_notices.py" stale --days 7 2>&1); _rc=$?
+    if [ "$_rc" -ne 0 ]; then
+        warn "Sidecar: hub-profile notice check could not run" \
+             "profile_notices.py stale exit $_rc: $(printf '%s' "$_out" | tail -1)" \
+             "Run: python3 lib/sidecar/profile_notices.py stale --days 7"
+        return 0
+    fi
+    local _line
+    while IFS= read -r _line; do
+        [ -n "$_line" ] || continue
+        warn "Hub profile unfixed for 7+ days: $_line" \
+             "$_ledger" \
+             "Apply the fix named in the notice (bin/fw operator pending); the waiting sends then go out and the notice resolves itself"
+    done <<<"$_out"
+}
+check_hub_profile_notices
+
 # T-3685 (arc-011 S-LIVE, R7/R14/R15). The always-on sidecar watcher: FAIL
 # while it is enabled and NOT live (seq stalled for 2 ticks, or its loopback
 # self-probe failed) — the same verdict fw doctor reads

@@ -1,0 +1,21 @@
+id: lib/sidecar/profile_notices.py
+name: profile_notices
+type: script
+subsystem: framework-core
+location: lib/sidecar/profile_notices.py
+tags: []
+
+purpose: "T-5236 — one operator notice per (user, hub) when a send has no usable hubs.toml profile."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-18
+created_by: unknown

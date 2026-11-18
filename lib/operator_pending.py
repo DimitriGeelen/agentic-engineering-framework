@@ -200,8 +200,19 @@ def outside_commit_alarms() -> list[dict]:
     return outside_commits.open_alarms()
 
 
+def hub_profile_notices() -> list[dict]:
+    """T-5236: one notice per (user, hub) whose sends lack a usable hubs.toml profile."""
+    sys.path.insert(0, str(FW))
+    from lib.sidecar import profile_notices  # noqa: E402
+    return [dict(r, summary=profile_notices.summary(r)) for r in profile_notices.pending(PROJECT)]
+
+
 def collect() -> dict:
     ready, waiting = partial_complete()
+    try:
+        profiles = hub_profile_notices()
+    except Exception:  # a broken ledger must not blank the operator's whole list
+        profiles = []
     try:
         replies = issue_replies()
     except Exception:  # a broken ledger must not blank the operator's whole list
@@ -210,7 +221,7 @@ def collect() -> dict:
         outside = outside_commit_alarms()
     except Exception:  # same rule: a broken check must not blank the list (audit FAILs it)
         outside = []
-    return {"outside_commits": outside, "issue_replies": replies, "inceptions": undecided_inceptions(), "reviews": ready, "runmes": unrun_runmes(),
+    return {"hub_profiles": profiles, "outside_commits": outside, "issue_replies": replies, "inceptions": undecided_inceptions(), "reviews": ready, "runmes": unrun_runmes(),
             "paid_proposals": pending_proposals(), "waiting_on_agent": len(waiting)}
 
 
@@ -257,6 +268,12 @@ def render(data: dict) -> str:
             lines.append(f"- {a['short']} by {a['author']} — \"{a['subject']}\"{pr} — {a['reason']}")
         lines.append("")
         n += len(data["outside_commits"])
+    if data.get("hub_profiles"):
+        lines.append("## Hub profiles missing or broken (sends keep retrying until fixed)")
+        for r in data["hub_profiles"]:
+            lines.append(f"- {r['summary']}")
+        lines.append("")
+        n += len(data["hub_profiles"])
     if n == 0:
         lines.append("Nothing is waiting on the operator.")
     if data["waiting_on_agent"]:

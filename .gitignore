@@ -152,6 +152,10 @@ tests/unit/_bvp_cli_imported*.py
 # the channel worked on a given day, and the T-3423 close gate reads them.
 .context/sidecar/outbox/
 .context/sidecar/awaiting-ack.jsonl
+# T-5236: per-host notice state (user and host names)
+.context/sidecar/hub-profile-notices.jsonl
+.context/sidecar/hub-profile-notices.lock
+.context/sidecar/hub-profile-notices.jsonl.tmp
 .context/sidecar/inbox-state.json
 .context/sidecar/e2e/*-prompt.md
 # T-5054: adapter/2 runtime logs (hook-input key names; the meter's reply fields)
