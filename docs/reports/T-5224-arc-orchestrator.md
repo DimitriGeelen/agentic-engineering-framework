@@ -144,6 +144,16 @@ what was tried, what was decided and the next step?
 
 AEF today: `fw arc instantiate` (T-5221) always creates a new arc through arc_create. A second instantiation into an existing arc, per-run instances, a predecessor link, and the template version recorded on the instance are all missing. "Arc complete" is defined per arc, not per run.
 
+**Refinement of need 1 (1409 sidecar da96da3b, 21:08Z, operator confirmed): versions are per STEP, not per run.**
+- A unit iterates forward. After feedback from step K2 the engine improves, and the unit may redo K2 (a second instance) and go on to K3, or go straight to K3 with the insight. So one unit can hold K1 v1, K2 v2 and K3 v1, each instance recording the template version it ran under.
+- Only units that are scanned again get new instances; an engine change alone touches nothing.
+- Each engine improvement names the steps it affects and whether their earlier results still hold. "No longer holds" marks that step outdated at every unit that has it, and the step is redone before anything downstream is accepted.
+
+For AEF this means:
+- per-step instance versions, with the template version recorded on each instance;
+- an "outdated" state that a template change can set across arcs;
+- a gate that refuses to accept downstream work over an outdated step.
+
 **New need 2 — scale.** One task per step is about 142,000 task files for one full pass over 10,953 units, and more with each refresh. 1409 is measuring fw command times at 10k, 50k and 142k files in a throwaway copy. AEF's own corpus is about 5,200 task files (915 active, 4,307 completed) and has not been measured at that size. Whether a per-unit step task is the right grain at that size is open.
 
 ## Dialogue Log
