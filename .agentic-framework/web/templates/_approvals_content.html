@@ -563,6 +563,32 @@
 {% endfor %}
 {% endif %}
 
+<!-- T-5236: one notice per (user, hub) whose sends lack a usable hubs.toml profile -->
+{% if hub_profile_notices %}
+<h2 id="section-hub-profiles" class="approvals-group-heading">Hub profiles to fix</h2>
+<div class="section-header">
+    <h3>Sends that cannot reach a hub from this host</h3>
+    <small>{{ hub_profile_notices|length }} notice{{ '' if hub_profile_notices|length == 1 else 's' }} — the messages keep retrying; each notice clears itself once a send to that hub is delivered</small>
+</div>
+{% for hp in hub_profile_notices %}
+<div class="approval-card pending" data-testid="hub-profile-notice">
+    <div class="approval-risk">
+        User <strong>{{ hp.user }}</strong> on host <strong>{{ hp.host }}</strong>
+        {% if hp.kind == 'broken-profile' %}has a broken profile <code>{{ hp.profile }}</code>{% else %}has no profile{% endif %}
+        for hub <strong>{{ hp.hub }}</strong>
+        <span style="color:var(--pico-muted-color); font-weight:normal; font-size:0.85rem;">— {{ hp.messages_waiting or 0 }} message{{ '' if (hp.messages_waiting or 0) == 1 else 's' }} waiting{% if hp.messages_final %} · {{ hp.messages_final }} refused, resend after the fix{% endif %} · since {{ (hp.first_seen or '')[:16] }}</span>
+    </div>
+    {% if hp.runme %}
+    <div style="margin:0.4rem 0;">Fix (one command, prepared — run it yourself): <code>{{ hp.runme }}</code></div>
+    <div style="font-size:0.8rem; color:var(--pico-muted-color);">It runs <code>{{ hp.fix }}</code>.</div>
+    {% else %}
+    <div style="margin:0.4rem 0 0.2rem;">Fix:</div>
+    <pre style="white-space:pre-wrap; word-break:break-word; font-size:0.82rem; margin:0 0 0.3rem;">{{ hp.fix }}</pre>
+    {% endif %}
+</div>
+{% endfor %}
+{% endif %}
+
 <!-- T-1416 (T-1388 B6 / F5): Verifications group (Section C) -->
 {% if pending_acs %}
 <h2 id="section-verifications" class="approvals-group-heading">Ready for you</h2>
@@ -849,7 +875,7 @@ function filterACs(filter) {
 {% endif %}
 
 <!-- Empty state -->
-{% if not pending_tier0 and not pending_go and not pending_acs and not waiting_acs and not paused_dispatches and not waiting_messages and not waiting_error %}
+{% if not pending_tier0 and not pending_go and not pending_acs and not waiting_acs and not paused_dispatches and not waiting_messages and not waiting_error and not hub_profile_notices %}
 <div class="empty-state">
     <p>Nothing needs your attention.</p>
     <p><small>Tier 0 gates, inception decisions, and human acceptance criteria will appear here when pending.</small></p>

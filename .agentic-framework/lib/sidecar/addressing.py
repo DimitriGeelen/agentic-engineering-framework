@@ -208,7 +208,7 @@ def remote_hub_id(hub: str, *, runner=subprocess.run, hubs_file: Path | None = N
     if gap:
         raise AddressError(
             f"cannot address a recipient on hub {hub}: no usable credential "
-            f"({gap.split(': ', 1)[-1]})")
+            f"({gap[0].split(': ', 1)[-1]})")
     address = str(next((p.get("address") for p in profiles if p.get("name") == hub and p.get("address")),
                        None) or next((p.get("address") for p in profiles if p.get("address")), hub))
 
