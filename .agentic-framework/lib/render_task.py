@@ -244,7 +244,7 @@ def _sweep(tmpdir):
     except OSError:
         return
     for n in names:
-        m = re.match(r'^(\d+)\.', n)
+        m = re.match(r'^(\d+)-', n)
         if not m:
             continue
         pid = int(m.group(1))
@@ -264,8 +264,10 @@ def _sweep(tmpdir):
 def write_exclusive(path, text, tmpdir):
     """Write text to path atomically, refusing when path exists."""
     os.makedirs(tmpdir, exist_ok=True)
-    tmp = os.path.join(tmpdir, f'{os.getpid()}.{os.path.basename(path)}')
-    with open(tmp, 'w') as fh:
+    # Leading pid lets _sweep find a dead writer's leftovers; the random part keeps the name
+    # unique when pids are reused (T-5067).
+    tmp = os.path.join(tmpdir, f'{os.getpid()}-{os.urandom(4).hex()}.{os.path.basename(path)}')
+    with open(tmp, 'x') as fh:
         fh.write(text)
     try:
         os.link(tmp, path)  # exclusive + atomic: EEXIST when the name is taken
