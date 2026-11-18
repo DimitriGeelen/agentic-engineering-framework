@@ -1781,7 +1781,9 @@ do_upgrade() {
         # T-3886: FW_AUTOCLONE_SOURCE tells the child's origin guard that its
         # FRAMEWORK_ROOT is this temp dir (deleted on exit), so any remedy it prints
         # must not name that path. FW_AUTOCLONE_UPSTREAM is the URL to re-clone from.
-        env FRAMEWORK_ROOT="$_tmpd/fw" PROJECT_ROOT="$target_dir" \
+        # T-5214: FW_FRAMEWORK_ROOT_HANDOFF marks this FRAMEWORK_ROOT as handed over on
+        # purpose; bin/fw honours a foreign inherited root only with it, then clears it.
+        env FRAMEWORK_ROOT="$_tmpd/fw" FW_FRAMEWORK_ROOT_HANDOFF=1 PROJECT_ROOT="$target_dir" \
             FW_AUTOCLONE_SOURCE=1 FW_AUTOCLONE_UPSTREAM="$_upstream_url" \
             "$_tmpd/fw/bin/fw" "${_replay_args[@]}"
         local _rc=$?

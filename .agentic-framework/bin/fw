@@ -82,6 +82,12 @@ fi
 FW_REAL_PATH="$(readlink -f "$0" 2>/dev/null || realpath "$0" 2>/dev/null || echo "$0")"
 FW_BIN_DIR="$(cd "$(dirname "$FW_REAL_PATH")" && pwd)"
 
+# T-5214: take the FRAMEWORK_ROOT handoff marker before any child process starts, so
+# it never reaches one. Read at "T-5214 (1409 a8eb045c)" below; re-set only by
+# _fw_reexec_authority, which execs a new fw that takes it again here.
+_t5214_handoff="${FW_FRAMEWORK_ROOT_HANDOFF:-}"
+unset FW_FRAMEWORK_ROOT_HANDOFF
+
 # --- G-118 / T-4303: `fw hook` must route even when this file does not parse ---
 # bash reads bin/fw one top-level command at a time, so a broken block anywhere below
 # this point (an unclosed block at line 1354 took every hook down) is never reached
@@ -575,6 +581,9 @@ _fw_reexec_authority() {
 
     export FW_REEXEC_DEPTH=1
     export FRAMEWORK_ROOT="$_auth_fw"
+    # T-5214: an intentional handoff, so the authority's fw honours FRAMEWORK_ROOT
+    # even where it differs from its own tree. The receiver clears the marker.
+    export FW_FRAMEWORK_ROOT_HANDOFF=1
     if [ -n "${PROJECT_ROOT:-}" ]; then export PROJECT_ROOT; fi
     exec "$_auth/bin/fw" "$@"
 }
@@ -1614,6 +1623,27 @@ if [ -n "${FRAMEWORK_ROOT:-}" ] && [ "${1:-}" = "upgrade" ] && [ -n "${PROJECT_R
     fi
     unset _t4362_cand _t4362_proj _t4362_fr
 fi
+# T-5214 (1409 a8eb045c): an inherited FRAMEWORK_ROOT naming a DIFFERENT real framework
+# tree than the one this bin/fw lives in is honoured only when it was handed over on
+# purpose: lib/upgrade.sh's T-2099 clone handoff and _fw_reexec_authority set
+# FW_FRAMEWORK_ROOT_HANDOFF=1 next to it. Any other foreign value is a leaked export
+# (claude-fw exports FRAMEWORK_ROOT to the whole session), and honouring it ran
+# another copy's code from this copy's bin/fw. Without the marker the value is dropped
+# and resolved as in a clean environment (T-4453 and resolve_framework below); the
+# warning fires only when that changes which tree runs. The marker was cleared
+# at the top of this file, before any child process starts, so it never reaches one.
+_t5214_inherited=""
+if [ -n "${FRAMEWORK_ROOT:-}" ] && [ -z "$_t5214_handoff" ] \
+    && [ -d "$FW_BIN_DIR/../lib" ] && [ -d "$FW_BIN_DIR/../agents" ]; then
+    _t5214_own="$(cd "$FW_BIN_DIR/.." && pwd -P)"
+    _t5214_fr="$(cd "$FRAMEWORK_ROOT" 2>/dev/null && pwd -P)" || _t5214_fr=""
+    if [ -n "$_t5214_fr" ] && [ "$_t5214_fr" != "$_t5214_own" ]; then
+        _t5214_inherited="$FRAMEWORK_ROOT"
+        FRAMEWORK_ROOT=""
+    fi
+    unset _t5214_own _t5214_fr
+fi
+unset _t5214_handoff
 # T-4453: `fw upgrade` run by a framework checkout's own bin/fw vendors THAT checkout.
 # resolve_framework's T-498 rule picks <PROJECT_ROOT>/.agentic-framework when cwd is a
 # consumer, which made lib/upgrade.sh see bare-from-consumer and vendor upstream_repo
@@ -1640,6 +1670,25 @@ fi
 if [ -z "${FRAMEWORK_ROOT:-}" ]; then
     FRAMEWORK_ROOT=$(resolve_framework) || true
 fi
+# T-5214: settle a dropped foreign FRAMEWORK_ROOT. Same tree after resolution → keep
+# the inherited spelling, say nothing. Nothing resolved → keep the inherited value
+# (the old behaviour; better than "Cannot find framework"). Otherwise warn once per
+# calling shell (T-4298 marker pattern), never from `fw hook`.
+if [ -n "$_t5214_inherited" ]; then
+    _t5214_new="$(cd "${FRAMEWORK_ROOT:-/nonexistent}" 2>/dev/null && pwd -P)" || _t5214_new=""
+    if [ -z "$_t5214_new" ] || [ "$_t5214_new" = "$(cd "$_t5214_inherited" 2>/dev/null && pwd -P)" ]; then
+        FRAMEWORK_ROOT="$_t5214_inherited"
+    else
+        _t5214_marker="${TMPDIR:-/tmp}/fw-foreign-root-warned.$(id -u 2>/dev/null || echo 0).$PPID"
+        if [ "${1:-}" != "hook" ] && [ ! -e "$_t5214_marker" ]; then
+            echo "fw: inherited FRAMEWORK_ROOT=$_t5214_inherited is another framework tree than this fw's; running $FRAMEWORK_ROOT. Set FW_FRAMEWORK_ROOT_HANDOFF=1 to use the inherited tree on purpose (shown once per shell)" >&2
+            : > "$_t5214_marker" 2>/dev/null || true
+        fi
+        unset _t5214_marker
+    fi
+    unset _t5214_new
+fi
+unset _t5214_inherited
 
 # Validate we have what we need
 if [ -z "$FRAMEWORK_ROOT" ]; then

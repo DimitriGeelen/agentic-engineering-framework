@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-17T21:23:35Z
-last_update: 2026-11-18T00:38:23Z
+last_update: 2026-11-18T01:07:27Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -105,10 +105,10 @@ There is no exception for the general case: a user who runs a DIFFERENT copy's b
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The T-2099 handoff (lib/upgrade.sh) and the worktree re-exec in bin/fw pass an explicit marker with FRAMEWORK_ROOT, and bin/fw honours an inherited FRAMEWORK_ROOT that points at another real framework tree only when that marker is present
-- [ ] Without the marker, a bin/fw in framework tree A, run with FRAMEWORK_ROOT exported to tree B, uses A and warns once per shell. A bats test uses two minimal framework trees.
+- [x] The T-2099 handoff (lib/upgrade.sh) and the worktree re-exec in bin/fw pass an explicit marker with FRAMEWORK_ROOT, and bin/fw honours an inherited FRAMEWORK_ROOT that points at another real framework tree only when that marker is present
+- [x] Without the marker, a bin/fw in framework tree A, run with FRAMEWORK_ROOT exported to tree B, uses A and warns once per shell. A bats test uses two minimal framework trees.
 - [ ] The existing upgrade, fork-bomb (T-2099), T-4248, T-4362, T-4369, T-4680 and worktree re-exec suites pass, and `tests/unit/upgrade_fresh_machine_simulation.bats` stays green
-- [ ] `bin/fw vendor self --check --task T-5214` is clean
+- [x] `bin/fw vendor self --check --task T-5214` is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -294,6 +294,11 @@ There is no exception for the general case: a user who runs a DIFFERENT copy's b
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t5214_inherited_framework_root.bats > /tmp/.t5214.out 2>&1 && ! grep -q "^not ok" /tmp/.t5214.out
+test "$(grep -c '# skip' /tmp/.t5214.out)" -eq 0
+timeout 900 bats tests/unit/t4369_inherited_vendored_self_root.bats tests/unit/t4362_clone_fw_full_path_from_consumer.bats tests/unit/t4680_upgrade_clone_inside_consumer.bats tests/unit/t3111_worktree_reexec.bats > /tmp/.t5214-rel.out 2>&1 && ! grep -q "^not ok" /tmp/.t5214-rel.out
+grep -q 'env FRAMEWORK_ROOT="$_tmpd/fw" FW_FRAMEWORK_ROOT_HANDOFF=1' lib/upgrade.sh
+bin/fw vendor self --check --task T-5214
 
 ## RCA
 
@@ -310,6 +315,13 @@ There is no exception for the general case: a user who runs a DIFFERENT copy's b
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** with FRAMEWORK_ROOT exported to framework tree B (claude-fw exports it to every session, T-4218), running tree A's bin/fw executed B's lib/ and agents/. 1409 hit it prototyping in a project copy; `fw version` reported B.
+
+**Root cause:** the T-2099 fork-bomb fix made bin/fw honour any inherited FRAMEWORK_ROOT that is a real framework tree. The variable carried no information about *why* it was set, so an intentional handoff (upgrade's clone handoff, the worktree re-exec) and a leaked session export looked identical. Later rules (T-4248, T-4369, T-4362/T-4680) each carved out one specific leaked shape; the general shape — a different real tree — had none.
+
+**Why structurally allowed:** fixes were added per incident as denylist exceptions to an allow-by-default rule. No test ran one tree's bin/fw with another tree's FRAMEWORK_ROOT exported, and the symptom is silent (output from the other tree's code looks normal).
+
+**Prevention:** the rule is now allow-by-marker: only FW_FRAMEWORK_ROOT_HANDOFF=1, set by the two sanctioned handoffs and cleared at the top of bin/fw before any child starts, lets a foreign root through; everything else is dropped, re-resolved as in a clean env, and warned about. tests/unit/t5214_inherited_framework_root.bats pins both legs, the once-per-shell warning, the hook silence, the no-leak property (fake git child records the marker) and that both handoff sites set the marker.
 
 ## Evolution
 
@@ -374,6 +386,13 @@ There is no exception for the general case: a user who runs a DIFFERENT copy's b
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-18 — what "uses its own tree" means when the foreign root is dropped
+- **Chose:** drop the inherited value and resolve exactly as in a clean environment (T-4453 for `upgrade`, then resolve_framework); warn only when that changes which tree runs. Marker name `FW_FRAMEWORK_ROOT_HANDOFF=1`, taken and unset at the top of bin/fw (before any child process), so it never leaks.
+- **Why:** forcing `$FW_BIN_DIR/..` would override T-498 (a global CLI run in a consumer must still load the consumer's vendored copy) and pre-empt T-4453's upgrade-source rule. Re-resolving keeps every existing rule and changes only the leaked-export case.
+- **Rejected:** forcing the binary's own tree (breaks T-498/T-4453); clearing the marker at the decision point (~line 1630) — measured: git children spawned earlier in bin/fw still saw it.
+- **Test evidence (2026-11-18):** t5214 7/7; t3111 16/16, t4248 inherited-env 3/3 + init-failure 3/3, t4362 4/4, t4369 5/5, t4661 5/5, t4680 6/6, t4822 5/5, t3113 14/14. upgrade_fresh_machine_simulation 18/19: test 11 (T-3636, expects `T-005-define-project-objectives.md`) fails the same with this task's four files reverted to HEAD, so it predates this change (likely T-5217's allocator); criterion 3 stays open on it.
+- **Known limit:** if PROJECT_ROOT is ALSO leaked to the other project, T-498 can still pick that project's vendored copy; inherited PROJECT_ROOT is T-2391/T-3285's subject, not this task's.
 
 ## Decision
 
