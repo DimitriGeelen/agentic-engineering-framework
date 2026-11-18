@@ -104,8 +104,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] With no hubs.toml profile naming the hub, `probe_hub` returns a reason that says so ("no hubs.toml profile for <hub>: no address or credential for this user"), not "TLS handshake failed". A test uses a tmp hubs.toml.
+- [ ] A non-zero `termlink hub probe` exit returns a reason carrying termlink's own stderr (trimmed to one line), never a fixed TLS phrase. A test uses a stubbed runner.
+- [ ] The existing termlink_transport, sidecar send and T-3806 suites pass, and `bin/fw vendor self --check --task T-5141` is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

@@ -99,8 +99,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Every `fw sidecar send` outcome ends with ONE verdict line, either `delivered: …` or `NOT delivered: …`. A probe failure or any other state appears as detail under that line, never as a competing verdict. Tests cover: accepted with a failed probe, refused, no receiver, and the cross-hub route.
+- [ ] A post the hub accepted is reported as delivered even when the reachability probe failed (the 010/1409 case). A test reproduces it with a stubbed probe.
+- [ ] `--json` output carries the same single verdict field, and the existing sidecar send / receipts suites pass, as does `bin/fw vendor self --check --task T-5142`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
