@@ -98,6 +98,12 @@ bvp_scores_proposed:
 Measured 2026-11-19 on AEF: focus 16.7 s → 1.73 s; work-on 16.99 s with briefing → 2.35 s without. Reported to 1409.
 
 ### Human
+- [ ] [REVIEW] The settings page shows the new FOCUS_BRIEFING row like its neighbours
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find the row FOCUS_BRIEFING (next to INDEX_MAX_AGE_HOURS)
+  **Expected:** One row with key FOCUS_BRIEFING, default 0 and its description; the table layout is unchanged (no wrapped or overflowing cells beyond what neighbouring rows show)
+  **If not:** Note what breaks; the row text is in web/blueprints/config.py
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
