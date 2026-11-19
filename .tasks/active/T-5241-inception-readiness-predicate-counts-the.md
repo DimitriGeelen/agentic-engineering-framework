@@ -12,12 +12,12 @@ description: >
   and its Python copy (web/shared.py) must both skip HTML comments; parity tests (T-5198,
   T-3279) must cover it.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [lib/inception-readiness.sh, web/shared.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-18T22:28:53Z
-last_update: 2026-11-19T07:52:33Z
-date_finished:
+last_update: 2026-11-19T08:08:50Z
+date_finished: 2026-11-19T08:08:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -116,9 +116,9 @@ Measured 2026-11-19, `fw inception lifecycle`: ready for a recommendation 24 →
 ### Human
 - [ ] [REVIEW] An inception with no real questions shows as not ready in Watchtower
   **Steps:**
-  1. Open http://192.168.10.107:3000/inception/T-5224 (has six real, open questions)
-  2. Open http://192.168.10.107:3000/inception/T-4834 (one real question, disposed)
-  **Expected:** T-5224 shows the not-ready box with its open questions and no decision buttons; T-4834 shows "ready for a recommendation" (EXPLORING with every question disposed), also with no decision buttons
+  1. Open http://192.168.10.107:3000/inception/T-3331 (only the template's commented example under Open Questions: the case this task fixed)
+  2. Open http://192.168.10.107:3000/inception/T-4992 (four real, open questions)
+  **Expected:** T-3331 shows the not-ready box saying "no Open Questions filed yet" (before the fix it read "ready for a recommendation") and no decision buttons; T-4992 shows the not-ready box with "4 question(s) open" and no decision buttons. (Examples changed 2026-11-19: the original T-5224 and T-4834 were decided since.)
   **If not:** Note which page shows the wrong state; the predicate is lib/inception-readiness.sh and its copy in web/shared.py
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
@@ -311,6 +311,13 @@ python3 -c "import yaml; yaml.safe_load(open('.context/project/concerns.yaml'))"
 bin/fw vendor self --check --task T-5241
 bin/fw watchtower current
 
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| no-questions | not-ready box on /inception/T-3331 | ok | ok | ok | "no Open Questions filed yet"; no decision buttons |
+| open-questions | not-ready box on /inception/T-4992 | ok | ok | ok | "4 question(s) open"; no decision buttons |
+
 ## RCA
 
 **Symptom:** 24 inceptions with no real question showed as "ready for a recommendation" (T-5228 triage, 2026-11-18); they would have been invited for a verdict and then handed to the operator.
@@ -427,3 +434,23 @@ bin/fw watchtower current
 ### 2026-11-19T07:52:33Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-19T08:08:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-13f3862b
+- **Timestamp:** 2026-11-19T08:09:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — web/shared.py `_handoff_blockers_from_text` applies the same rule; the T-5198 corpus parity test passes
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: web/shared.py `_handoff_blockers_from_text` applies the same rule; the T-5198 corpus parity test passes`
+- **AC#1 (Human)** — [REVIEW] An inception with no real questions shows as not ready in Watchtower
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='shows "ready for a recommendation"' in Expected: T-5224 shows the not-ready box with its open questions and no decision buttons; T-4834 shows "ready for a recommendation" (EXPLORING with ev`
