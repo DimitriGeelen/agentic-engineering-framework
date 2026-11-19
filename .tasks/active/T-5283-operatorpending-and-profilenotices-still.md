@@ -1,8 +1,14 @@
 ---
 id: T-5283
-name: "operator_pending and profile_notices still treat any 'RUNME EXIT' as the end of a run, so a nested runme mid-run reads as finished there"
+name: "operator_pending and profile_notices still treat any 'RUNME EXIT' as the end
+  of a run, so a nested runme mid-run reads as finished there"
 description: >
-  Found by the T-5276 worker (2026-11-20): T-5276 bound fw runme watch/pending in lib/runme.sh to the run's own id (run.id, ' id=<run id>' on START/EXIT/STOPPED). lib/operator_pending.py and lib/sidecar/profile_notices.py still test for a bare 'RUNME EXIT', so a runme that runs another runme looks ended at the inner EXIT. Stale logs are already covered by T-5276's rotation. Make both readers accept only the outer run's id when run.id exists (one shared helper rather than a third parser).
+  Found by the T-5276 worker (2026-11-20): T-5276 bound fw runme watch/pending in
+  lib/runme.sh to the run's own id (run.id, ' id=<run id>' on START/EXIT/STOPPED).
+  lib/operator_pending.py and lib/sidecar/profile_notices.py still test for a bare
+  'RUNME EXIT', so a runme that runs another runme looks ended at the inner EXIT.
+  Stale logs are already covered by T-5276's rotation. Make both readers accept only
+  the outer run's id when run.id exists (one shared helper rather than a third parser).
 
 status: captured
 workflow_type: build
@@ -39,8 +45,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T23:09:07Z
-last_update: 2026-11-19T23:09:07Z
-date_finished: null
+last_update: '2026-11-19T23:15:37Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +57,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-19T23:15:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5283: operator_pending and profile_notices still treat any 'RUNME EXIT' as the end of a run, so a nested runme mid-run reads as finished there
