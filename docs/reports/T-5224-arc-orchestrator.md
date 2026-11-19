@@ -175,3 +175,7 @@ For AEF this means:
   authority); work under a task; a per-arc wake limit as the brake; consequential decisions
   need operator approval or a green reviewer verdict, routine ones only a journal entry.
   **Operator, verbatim:** "1" (as proposed).
+- 2026-11-19, IW-5 (later runs). Agent proposed adopting 1409's operator rules as they are:
+  per-step versions, re-render in place if never started (T-5247), new linked task if redone,
+  carry-over rule, outdated mark across arcs with a downstream gate, arc complete when every
+  step's latest instance is done and not outdated. **Operator, verbatim:** "1" (as proposed).
