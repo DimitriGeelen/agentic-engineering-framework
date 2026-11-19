@@ -98,6 +98,7 @@ Under the operator's T-4649 principle, a project's operator chooses its modules 
 - **IW-2: The module contract: what does a channel module implement (send a request with its decision options; return a tap or click as a key), how is it registered per project, and how are one-way alert modules kept apart from two-way deciding ones?**
 - **IW-3: Keys and rules: how are one-time decision keys signed, bound and expired, and how does a project's operator set which decision kinds a channel may decide (for example Tier 0 and irreversible actions only on the page)?**
 - **IW-4: First module and reach: does ring20's ntfy tap-to-approve fit the contract unchanged, how does a phone reach Watchtower (LAN, VPN), and which form-safety exemption does a tap address need?**
+- **IW-5: One operator action for many decisions: when the operator has already decided several sovereign acts in plain words in a session (inception decide, arc close, Human ACs), can the agent queue them as pending decisions, each with the operator's verbatim words, and ONE operator action (one Watchtower "approve these" button or one runme) sign them all, instead of one form per act? Evidence: 0506 proposal P30 (msg 700e9dab, 2026-11-19, "why do I need to rubber stamp?"); AEF's own operator on 2026-11-19 decided T-5224, T-4834 and T-4649 one form at a time, and two of those needed an extra runme. Related: recorded rulings (T-5235).**
 
 ## Exploration Plan
 
