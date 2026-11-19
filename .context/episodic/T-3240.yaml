@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3240: the Stop-hook loop caps at ONE continuation — stop_hook_active is checked before our own caps
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-19T22:40:00Z
+# ============================================================================
+
+task_id: T-3240
+task_name: "the Stop-hook loop caps at ONE continuation — stop_hook_active is checked before our own caps"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-01T07:30:33Z
+completed: 2026-11-19T22:39:30Z
+duration_days: 79
+updates_count: 4
+first_commit: 2026-09-03T10:58:29+02:00
+last_commit: 2026-11-19T23:39:34+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  record Candidate C - drive from outside instead of widening the guard. recommendation NO-GO — outside driver (T-3254) and binding limits (T-3253) landed; keep stop_hook_active as the backstop (operator walkthrough 2026-11-19). inception decision NO-GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/reviews/human-ac-ticks.jsonl'
+  - '.tasks/active/T-3240-the-stop-hook-loop-caps-at-one-continuat.md'
+  - '.tasks/completed/T-3240-the-stop-hook-loop-caps-at-one-continuat.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-03T10:58:29'
+    action: 'T-3240: record Candidate C - drive from outside instead of widening the guard'
+  - time: '2026-11-19T09:27:46'
+    action: 'T-3240: recommendation NO-GO — outside driver (T-3254) and binding limits (T-3253) landed; keep stop_hook_active as the backstop (operator walkthrough 2026-11-19)'
+  - time: '2026-11-19T23:39:34'
+    action: 'T-3240: inception decision NO-GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 114668 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:continuous-run, loop, sovereignty]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 114668
+  commits: 4
+  files_changed: 5
+  lines_added: 222
+  lines_removed: 17
+  footprint_refreshed_at: '2026-11-19T22:40:12Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3240-the-stop-hook-loop-caps-at-one-continuat.md
+generated_by: context-agent-hybrid

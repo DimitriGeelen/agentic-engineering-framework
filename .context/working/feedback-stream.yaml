@@ -57227,3 +57227,29 @@ scan_id: R-64bf9cc7
 task_id: T-5259
 payload:
   task_file: .tasks/active/T-5259-project-extensions-foundation-operator-o.md
+---
+kind: scan_emitted
+timestamp: '2026-11-19T22:39:32Z'
+scan_id: R-30214302
+task_id: T-3240
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-19T22:39:32Z'
+scan_id: R-30214302
+task_id: T-3240
+payload:
+  task_file: .tasks/active/T-3240-the-stop-hook-loop-caps-at-one-continuat.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-11-19T22:39:32Z'
+scan_id: RC-53da6eb7
+task_id: T-3240
+payload:
+  overall: CONFIRMED
+  claim_count: 5
