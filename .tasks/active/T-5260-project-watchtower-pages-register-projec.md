@@ -93,20 +93,32 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-4649 GO (operator, 2026-11-19), point 1, shaped by the consultation (docs/reports/T-4649-ring20-patch-triage.md): ring20 registers 14 blueprints by editing the vendored web/blueprints/__init__.py and keeps 18 templates, 4 static pages and 2 helpers in the vendored tree (their b1); 055 (T-342/T-344), 1409 (/arbeiter) and 832 (/designer/open) did the same. T-5259 (closed) built the operator-decided extension register.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Watchtower only registers blueprints listed in web/blueprints/__init__.py `_BLUEPRINTS`, and looks up templates and static files only in the framework's own folders, so a project page has to live inside the vendored copy, where fw upgrade overwrites it.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A project's own Watchtower pages live in the project and survive every upgrade.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A page registered as a `page` extension (T-5259 register) is loaded from the project folder, with its templates, static files and helper modules found after the framework's own; a broken project page never stops Watchtower. Menu entries are T-5261.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Watchtower loads every blueprint registered as a `page` extension in the project's `.framework-extensions.yaml` (path to a module in the project, e.g. `web_ext/<name>.py` exposing `bp`), after the framework's own blueprints; an unregistered file in that folder is not loaded
+- [ ] Templates and static files of a project page are looked up in the project folder after the framework's own (a project cannot shadow a framework template unless that is itself registered as a vendored-override); project helper modules import from the project folder
+- [ ] A project page that fails to import or collides with a framework route is skipped with one logged line and a `fw doctor` WARN; Watchtower still starts and serves every other page
+- [ ] `fw audit`/`fw doctor` list loaded project pages; the T-5259 audit check covers their paths
+- [ ] Tests (t5260_*): a fixture project with a registered page is served (status 200, its template and static file found); an unregistered page is not; a broken page is skipped and Watchtower still serves `/`; route collision skipped; existing web tests stay green
+- [ ] Watchtower restarted and `bin/fw watchtower current` passes; vendored copies synced
+- [ ] Visual Verification: a fixture project page at the three widths (`fw ux shots`)
+
+### Human
+- [ ] [REVIEW] A project page sits in Watchtower like a framework page
+  **Steps:**
+  1. Open the screenshots in .context/visual/T-5260/ (or the fixture URL named in the Visual Verification table)
+  **Expected:** the project page uses the normal Watchtower header, menu and footer, and its own content renders without layout breaks at 1024, 1440 and 1920 px
+  **If not:** note the width and what breaks
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

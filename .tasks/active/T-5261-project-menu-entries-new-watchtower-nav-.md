@@ -90,20 +90,30 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-4649 GO (operator, 2026-11-19), point 2: ring20 adds one menu group and appends 2 items to an existing group by editing the vendored web/shared.py NAV_GROUPS (their b5); 1409 adds a "Governance" entry. T-5259 (register) and T-5260 (project pages) come first.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The Watchtower menu is a fixed list in web/shared.py (NAV_GROUPS, line ~138), so a project's pages are unreachable from the menu unless the project edits a vendored file.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A project adds menu groups and items without touching framework files.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A `nav` extension in the register adds a new group or appends items to an existing group, pointing at the project's pages; the framework's own entries are never removed or reordered.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A `nav` extension declares items {label, endpoint or path} and either a new group name or the name of an existing group to append to; NAV_GROUPS stays the framework's list and the project's entries are merged at render time
+- [ ] Merging only adds: framework groups and items keep their order; an item pointing at a missing endpoint is dropped with one logged line and a `fw doctor` WARN
+- [ ] Tests (t5261_*): new group shown; items appended to an existing group after the framework's own; missing endpoint dropped; no extension → menu identical to today; existing web tests stay green
+- [ ] Watchtower restarted and `bin/fw watchtower current` passes; vendored copies synced
+- [ ] Visual Verification: the menu with a fixture project group and appended items, at the three widths
+
+### Human
+- [ ] [REVIEW] Project menu entries look like the framework's own
+  **Steps:**
+  1. Open the screenshots in .context/visual/T-5261/
+  **Expected:** the project group and appended items use the same style as framework entries, and the menu still fits at 1024, 1440 and 1920 px
+  **If not:** note the width and what breaks
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

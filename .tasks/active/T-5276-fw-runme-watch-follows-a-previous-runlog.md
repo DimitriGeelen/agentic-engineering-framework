@@ -91,20 +91,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 0506-Voxtype-extention (msg 293168af, 2026-11-19, proposal C). AEF relies on `fw runme watch` to see the operator's runs start and end (CLAUDE.md §Operator Commands Ship as ONE runme.sh Line).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `fw runme watch` follows `.context/runme/<name>/run.log`. After a failed run, a runme rebuilt under the same name is reported "finished (exit 1)" at once from the old log, before the operator has run anything. A runme whose script runs other runmes is reported finished at the first inner `RUNME EXIT`. Both make the agent report a run that has not happened (yet).
 
-**Goal:** <what we are trying to achieve>
+**Goal:** `fw runme watch` reports only the run it is watching, and only its outer end.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A new or rebuilt runme starts its watch from a clean state; an old log cannot satisfy it; nested runmes do not end the outer watch.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw runme new` on an existing name rotates the old run.log (e.g. run.log.<ts>) so a watch never reads a previous run's EXIT; or the watch is bound to a run id written by `new` and echoed in START, and ignores lines from other runs
+- [ ] The watch matches only the outer run's START and EXIT (its own name and run id); an inner runme's `RUNME EXIT` does not end it
+- [ ] Reproduced first: a test that fails on the current code for both cases (stale log, nested runme), then passes
+- [ ] Existing runme tests stay green (tests/unit/*runme*); vendored copies synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
