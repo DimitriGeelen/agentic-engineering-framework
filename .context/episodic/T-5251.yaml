@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5251: Arc owner opt-in and verbs: fw arc journal and fw arc resume (T-5224 slice 2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-19T16:27:29Z
+# ============================================================================
+
+task_id: T-5251
+task_name: "Arc owner opt-in and verbs: fw arc journal and fw arc resume (T-5224 slice 2)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-19T13:39:06Z
+completed: 2026-11-19T16:26:36Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-19T17:16:02+01:00
+last_commit: 2026-11-19T17:26:28+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context and acceptance criteria (fw arc owner/journal/resume, T-5224 slice 2). fw arc owner|journal|resume — owner opt-in, journal verb, resume brief + focus (T-5224 slice 2). fw arc resume moves task focus only when the arc is resumable (a stale next must not steer focus); test and criterion updated
+
+# Key outcomes
+outcomes:
+  - '`fw arc owner <arc> on [--wake notice|worker] | off` sets or clears `journal: true` and an `owner:` block (`wake:` recorded for T-5252, default notice) in the arc YAML without disturbing other fields or comments; `fw arc show` displays it; arcs without it are unchanged'
+  - '`fw arc journal <arc> tried|decided|next|outside ...` writes through lib/arc_journal.py (same fields and validation; `by` defaults to the session/agent id); refuses on an arc that is not switched on, naming `fw arc owner <arc> on`'
+  - '`fw arc resume <arc>` runs the resumability check first and prints a brief: resumable or not with the findings, the latest decided/outside entries (newest first, capped), the next step with owner and deadline, and the arc''s open member tasks; it sets arc focus, and task focus when the next entry names a task that is active AND the arc is resumable (a stale next never moves focus; agent decision 2026-11-19 after the worker flagged it)'
+  - '`fw arc help` and the verb list in lib/arc.sh name the three verbs; no `fw arc handover` verb is added'
+  - 'Tests (t5251_*): owner on/off round trip preserves other YAML content; journal refused when off and written when on; resume on a resumable and a non-resumable fixture arc, including focus setting; existing arc tests stay green'
+  - 'Vendored copies synced (`bin/fw vendor self --check` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-19 — where the owner/brief logic lives'
+    chose: 'new `lib/arc_owner.py` (line-based YAML edit, state, brief); `lib/arc.sh` verbs are thin wrappers; journal writes go through `lib/arc_journal.py append` unchanged.'
+    rationale: 'arc.sh already does its YAML edits with inline python regex; a module keeps the logic testable and reusable by T-5252/T-5253, and leaves slice 1''s module untouched.'
+    alternatives_rejected: ['ruamel (not a dependency); growing arc_journal.py (mixes journal and arc-config concerns).']
+  - decision: '2026-11-19 — `off` disables rather than deletes the owner block'
+    chose: '`off` writes `journal: false` and `role: "off"`, keeping `wake` so a later `on` without `--wake` restores it. `role` is quoted because YAML 1.1 reads bare `on`/`off` as booleans.'
+    alternatives_rejected: ['deleting the block (loses the wake setting and the `since` record).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/arc.sh'
+  - '.agentic-framework/lib/arc_owner.py'
+  - '.fabric/components/lib-arc_owner.yaml'
+  - '.tasks/active/T-5251-arc-owner-opt-in-and-verbs-fw-arc-journa.md'
+  - 'lib/arc.sh'
+  - 'lib/arc_owner.py'
+  - 'tests/unit/t5251_arc_owner_journal_resume.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-19T17:16:02'
+    action: 'T-5251: context and acceptance criteria (fw arc owner/journal/resume, T-5224 slice 2)'
+  - time: '2026-11-19T17:24:42'
+    action: 'T-5251: fw arc owner|journal|resume — owner opt-in, journal verb, resume brief + focus (T-5224 slice 2)'
+  - time: '2026-11-19T17:26:28'
+    action: 'T-5251: fw arc resume moves task focus only when the arc is resumable (a stale next must not steer focus); test and criterion updated'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 167 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-orchestrator]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 167
+  commits: 4
+  files_changed: 10
+  lines_added: 1233
+  lines_removed: 26
+  footprint_refreshed_at: '2026-11-19T16:27:53Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5251-arc-owner-opt-in-and-verbs-fw-arc-journa.md
+generated_by: context-agent-hybrid
