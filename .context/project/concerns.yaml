@@ -5867,3 +5867,19 @@ concerns:
   created: 2026-11-18
   last_reviewed: 2026-11-19
   related_tasks: [T-5241, T-5228, T-5226, T-5215]
+- id: G-135
+  type: gap
+  title: "Pid-file kills check only that a number is alive, not that it is still our process"
+  description: "Reported by 0506-Voxtype-extention (msg b6b05a93, 2026-11-19): long-lived processes on .107 got SIGTERM while framework audit/doctor ran (Watchtower pid 49737 on 2026-11-11; their systemd user units on 2026-11-19 10:09Z and 12:43Z). Verified: the sidecar receiver restart (lib/sidecar_cli.py:997), orphan-watcher replacement (lib/sidecar/watcher.py:922), stop_processes (SIGTERM then SIGKILL) and Watchtower stop (bin/watchtower.sh do_stop, which also signals the pid's children with pkill -P) all trust the pid file after a liveness check only (pid_alive / fw_pid_alive). A reused pid means an unrelated process, and in Watchtower's case its children, is killed. Reachable every minute (sidecar-ensure cron), every 5 minutes (watchtower-ensure cron) and at every session start. Cause of 0506's kills not yet proven."
+  spec_reference: "T-5267; lib/sidecar/lifecycle.py, lib/sidecar/watcher.py, lib/sidecar_cli.py, bin/watchtower.sh, lib/pid-alive.sh"
+  severity: high
+  trigger_fired: true
+  trigger_event: "2026-11-19: 0506 reported SIGTERMs to unrelated processes during audit/doctor runs"
+  detection_lag_days: "unknown"
+  what_works_now: "Zombie and EPERM cases are handled (T-4292, T-4216); stop requests record their caller (T-4315)."
+  what_remains: "Record identity (start time, cmdline marker) with every pid file and refuse a kill whose target no longer matches, in shell and Python (T-5267)."
+  mitigation_candidate: "One shared identity check used by every pid-file kill; tests with a deliberately reused pid."
+  status: watching
+  created: 2026-11-19
+  last_reviewed: 2026-11-19
+  related_tasks: [T-5267]
