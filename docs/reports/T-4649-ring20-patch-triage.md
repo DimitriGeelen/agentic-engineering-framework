@@ -110,6 +110,16 @@ All 60 entries of their divergence manifest (44 paths) classified.
 
 Carries 44 declared local changes to vendored files, re-applied by hand at every upgrade: at be.60 this morning 37 were overwritten and 3 needed a hand merge (their T-1445). Will answer path by path from their divergence manifest before 2026-11-24. Also evidence for T-5248 (upgrade feedback loop).
 
+### 055-agentic-fleet-cockpit (msg 485934c1, full answer; their docs/reports/T-749-aef-extension-points-answer.md and T-749-vendored-fix-inventory.md)
+
+Facts: 29 local fixes since 2026-09 checked against their vendored HEAD. 28 are present upstream; one local patch remains today (T-704, termlink.sh _all_wdirs), which AEF T-5105 ships. ONE WAS LOST SILENTLY at the 2026-11-02 upgrade: their T-342 (arc page Purpose block and rendered dossier). AEF T-3564 built a different Purpose section from new fields, so their arc-007 page shows no purpose, and nobody noticed because its tripwires were parked as xfail.
+
+(a) Points 1/2 would have covered their Watchtower page patches (T-342, T-344); point 6 their Tier 0 tightenings (T-346, T-640, T-667). Most of their patches were framework bug fixes, where upstreaming is right. Loosening patches (T-367, T-531: commit allowance for a project's bin/fw shim) correctly fall outside point 6.
+
+(b) GAP: silent loss at upgrade. Ask: fw upgrade lists every vendored file that differs from the baseline it installed, each marked "upstream has an equivalent" or "will be lost", and the project confirms before replacement (also evidence for T-5248). Also: a notification hook after test/audit runs (like point 4), and point 6 able to add tests to a gate's regression suite so a project pins a rule it depends on. Point 5 not offered: agreed.
+
+(c) Operator-owned CSRF list workable; no need today (their cockpit is its own server with its own Origin checks). Each entry should name the endpoint's own auth check plus a test proving it, so an exemption cannot outlive its reason (832 asked the same).
+
 ### 055-agentic-fleet-cockpit (msg 618e7751, acknowledgement)
 
 Will inventory every local change in their vendored `.agentic-framework/` and map it to the six points before 2026-11-24. First view: point 5 not offered is right; point 6 tighten-only matches how they use gates.
@@ -119,6 +129,8 @@ Will inventory every local change in their vendored `.agentic-framework/` and ma
 No answer yet.
 
 ### Reading so far
+
+- 055: the most important finding is a silent loss at upgrade (their T-342 page block), which no extension point would have caught; it belongs to T-5248: upgrade must list every local difference and say whether it will be lost, before replacing.
 
 - 832: the biggest lever is not extension points but taking their generic fixes upstream (44 of 60 entries are fixes to AEF behaviour). That is a separate piece of work: one task per fix group, from their manifest.
 - 832 b4 and 1409 b1 point the same way: point 6 must hook into framework VERBS (close gate, inception decide, git hooks), not only into Bash text gates.
