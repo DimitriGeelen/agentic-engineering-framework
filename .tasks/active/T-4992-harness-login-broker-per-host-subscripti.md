@@ -16,18 +16,18 @@ description: >
   page. Ask: a framework surface such as fw login <harness> --host <target> with the
   approval page in Watchtower. They will send both scripts and edge cases.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
-step_entered_at: '2026-11-18T22:21:47Z'
-revisit_at: 2026-11-25
-waiting_on: operator
+step_entered_at: '2026-11-19T11:26:31Z'
+revisit_at: 2026-11-26
+waiting_on: agent
 created: 2026-11-01T22:11:28Z
-last_update: 2026-11-18T22:21:47Z
+last_update: 2026-11-19T11:26:31Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -112,6 +112,11 @@ Agents on other hosts need their own subscription login per harness. Copying a d
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
 
+- **IW-1: Is this one question or two: (A) a register and Watchtower view of subscriptions and accounts (owner, harness, host, expiry, limits, where used), metadata only, and (B) the login mechanism (ring20's approve-in-the-browser flow made harness-neutral)? Can (A) ship without (B)?**
+- **IW-2: Accounts belong to a person and a host, but Watchtower runs per project. Where does the one place to see them live, and how do several projects share it?**
+- **IW-3: Several users with their own accounts: what identity does Watchtower need first (today anyone on the LAN can open it), and how are one user's accounts kept apart from another's?**
+- **IW-4: Which facts can be read without ever holding a secret (expiry, weekly limit reached, which account a host is logged into, fingerprint), and how does the dispatcher use them to route around a capped account?**
+
 ## Exploration Plan
 
 <!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
@@ -172,9 +177,11 @@ Agents on other hosts need their own subscription login per harness. Copying a d
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
 
-**Rationale:** Proposal received; touches subscription credentials on remote hosts, so the operator decides whether AEF owns it; ring20 offers two working scripts and edge cases as evidence.
+**Rationale:** Reframed by the operator 2026-11-19 (docs/reports/T-4992-subscription-accounts.md): a mechanism for many projects and users, and one place in AEF to see accounts, subscriptions and expiries, usable by the dispatcher. IW-1..IW-4 open. Waiting on: agent.
+
+Earlier recommendation, kept for the record: DEFER. Proposal received; touches subscription credentials on remote hosts, so the operator decides whether AEF owns it; ring20 offers two working scripts and edge cases as evidence.
 
 ## Decisions
 
@@ -199,3 +206,11 @@ Agents on other hosts need their own subscription login per harness. Copying a d
 ### 2026-11-18T22:21:47Z — inception-wait [inception-lifecycle]
 - **Change:** waiting_on: agent → operator
 - **Revisit:** 2026-11-25
+
+### 2026-11-19T11:25:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-19T11:26:31Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: operator → agent
+- **Revisit:** 2026-11-26
