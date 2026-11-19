@@ -146,6 +146,10 @@ Agent recommended add-only (no replacing; replacing loosens a gate). **Operator,
 
 Reading: the shape is not "add or tighten only". Every extension, loosening and replacing included, is allowed when (1) it is a recorded decision of THAT project's operator (not an agent's, not the AEF operator's), visible in `fw audit`, and (2) an upgrade never breaks it or drops it silently. The framework's job moves from forbidding to recording and protecting. This also bears on choices 2 (where the operator-owned lists live: in the project, owned by its operator) and 4 (the reviewer brief), and on T-5248 (upgrade safety becomes the core guarantee).
 
+### Operator, 2026-11-19: tap-to-approve becomes a module system, filed separately
+
+Agent explained ring20's tap-to-approve. **Operator, verbatim:** "okay what we really need to be careful of all we have other users of of of agentic engineering framework bear in mind so this needs to be optional and those users might not have a notify so you need to be able to find different routes right and plug in different routes so we need to have a module system there does that make sense to you". Agent proposed a core (one record-a-decision function, one-time signed keys, per-decision channel rules) plus optional channel modules, ring20's ntfy version as the first. **Operator:** "yes, file it as its own inception" → T-5258. Not built under T-4649.
+
 ### Reading so far
 
 - 055: the most important finding is a silent loss at upgrade (their T-342 page block), which no extension point would have caught; it belongs to T-5248: upgrade must list every local difference and say whether it will be lost, before replacing.
