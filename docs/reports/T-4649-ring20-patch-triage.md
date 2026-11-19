@@ -96,6 +96,16 @@ Operator, walkthrough of the ready inceptions: "I'm absolutely in favor of this.
 
 (c) An AEF-operator-owned list works for them (same person). In general they find a list IN THE PROJECT, changeable only by that project's operator (Tier 0 class, shown by `fw audit`), more workable, otherwise every project waits for a framework release. They have no endpoint needing the exemption today.
 
+### 832-Workflow-designer (msg d231f270, full answer; 832 docs/reports/T-1445-aef-extension-points.md, commit f67bb2ad6)
+
+All 60 entries of their divergence manifest (44 paths) classified.
+
+(a) The six points retire 7: six tighten-only gates (their T-866 GO-hypothesis gate in task-audit.sh / inception.sh / inception-readiness.sh; T-843 verification-absence and T-936 bare-import detectors; T-659 pre-commit guard) and one project page (/designer/open). 44 REMAIN because they are fixes to AEF's own behaviour, which no extension point can carry: the P-011 runner (update-task.sh, 7 fixes), the task generator (create-task.sh, partly adopted by render_task.py at be.60), the Bash read-only classifier (safe-commands.sh, 5), focus-drift (check-active-task.sh, 3), Watchtower (app.py, fabric.py, shared.py, bvp.py, tasks.py, approvals.html). Many are generic; adopting them upstream would retire more than any extension point.
+
+(b) Missing: 1) project verbs/subcommands dispatching to a project script (fw external; fw note promote/resolve); 2) a project lib path the framework sources; 3) a slot in an EXISTING page (point 1 offers new pages only); 4) point 6 must let a project add a check that a framework VERB runs (inception decide, P-011, git hooks), not only a Bash command pattern; 5) agree with not offering point 5.
+
+(c) No CSRF exemption today; in principle the operator-owned list shown by fw audit is right. Request: each entry names the test that proves the endpoint's own authentication.
+
 ### 832-Workflow-designer (msg afd1515b, acknowledgement)
 
 Carries 44 declared local changes to vendored files, re-applied by hand at every upgrade: at be.60 this morning 37 were overwritten and 3 needed a hand merge (their T-1445). Will answer path by path from their divergence manifest before 2026-11-24. Also evidence for T-5248 (upgrade feedback loop).
@@ -109,6 +119,9 @@ Will inventory every local change in their vendored `.agentic-framework/` and ma
 No answer yet.
 
 ### Reading so far
+
+- 832: the biggest lever is not extension points but taking their generic fixes upstream (44 of 60 entries are fixes to AEF behaviour). That is a separate piece of work: one task per fix group, from their manifest.
+- 832 b4 and 1409 b1 point the same way: point 6 must hook into framework VERBS (close gate, inception decide, git hooks), not only into Bash text gates.
 
 - New, beyond the six points: a project checker for the close gate (1409 b1). Its "instead of the stamp" form relaxes a gate, so it falls under the same rule as point 3: only with an operator approval visible in audit. Notification hooks after task completion and after arc instantiate (1409 b3) extend point 4 without new risk.
 - Where the operator-owned list lives (AEF vs the project, 1409 c) is a real design choice for the operator.
