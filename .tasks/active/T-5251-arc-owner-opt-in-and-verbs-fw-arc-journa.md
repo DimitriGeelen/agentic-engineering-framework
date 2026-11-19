@@ -103,12 +103,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw arc owner <arc> on [--wake notice|worker] | off` sets or clears `journal: true` and an `owner:` block (`wake:` recorded for T-5252, default notice) in the arc YAML without disturbing other fields or comments; `fw arc show` displays it; arcs without it are unchanged
-- [ ] `fw arc journal <arc> tried|decided|next|outside ...` writes through lib/arc_journal.py (same fields and validation; `by` defaults to the session/agent id); refuses on an arc that is not switched on, naming `fw arc owner <arc> on`
-- [ ] `fw arc resume <arc>` runs the resumability check first and prints a brief: resumable or not with the findings, the latest decided/outside entries (newest first, capped), the next step with owner and deadline, and the arc's open member tasks; it sets arc focus, and task focus when the next entry names a task that is active
-- [ ] `fw arc help` and the verb list in lib/arc.sh name the three verbs; no `fw arc handover` verb is added
-- [ ] Tests (t5251_*): owner on/off round trip preserves other YAML content; journal refused when off and written when on; resume on a resumable and a non-resumable fixture arc, including focus setting; existing arc tests stay green
-- [ ] Vendored copies synced (`bin/fw vendor self --check` clean)
+- [x] `fw arc owner <arc> on [--wake notice|worker] | off` sets or clears `journal: true` and an `owner:` block (`wake:` recorded for T-5252, default notice) in the arc YAML without disturbing other fields or comments; `fw arc show` displays it; arcs without it are unchanged
+- [x] `fw arc journal <arc> tried|decided|next|outside ...` writes through lib/arc_journal.py (same fields and validation; `by` defaults to the session/agent id); refuses on an arc that is not switched on, naming `fw arc owner <arc> on`
+- [x] `fw arc resume <arc>` runs the resumability check first and prints a brief: resumable or not with the findings, the latest decided/outside entries (newest first, capped), the next step with owner and deadline, and the arc's open member tasks; it sets arc focus, and task focus when the next entry names a task that is active
+- [x] `fw arc help` and the verb list in lib/arc.sh name the three verbs; no `fw arc handover` verb is added
+- [x] Tests (t5251_*): owner on/off round trip preserves other YAML content; journal refused when off and written when on; resume on a resumable and a non-resumable fixture arc, including focus setting; existing arc tests stay green
+- [x] Vendored copies synced (`bin/fw vendor self --check` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -294,6 +294,12 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t5251_arc_owner_journal_resume.bats > /tmp/.t5251.out 2>&1 && ! grep -q "^not ok" /tmp/.t5251.out
+test "$(grep -c '# skip' /tmp/.t5251.out)" -eq 0
+timeout 300 bats tests/unit/arc_dual_identity_verbs.bats tests/unit/arc_lifecycle_state_machine.bats tests/unit/arc_review_verb.bats tests/unit/t3504_arc_help_canonical_field.bats > /tmp/.t5251b.out 2>&1 && ! grep -q "^not ok" /tmp/.t5251b.out
+python3 -m pytest tests/unit/t5250_arc_journal.py -q > /tmp/.t5250.out 2>&1 && grep -q passed /tmp/.t5250.out
+bash -n lib/arc.sh && python3 -m py_compile lib/arc_owner.py
+bin/fw vendor self --check --task T-5251
 
 ## RCA
 
@@ -374,6 +380,15 @@ bvp_scores_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-19 — where the owner/brief logic lives
+- **Chose:** new `lib/arc_owner.py` (line-based YAML edit, state, brief); `lib/arc.sh` verbs are thin wrappers; journal writes go through `lib/arc_journal.py append` unchanged.
+- **Why:** arc.sh already does its YAML edits with inline python regex; a module keeps the logic testable and reusable by T-5252/T-5253, and leaves slice 1's module untouched.
+- **Rejected:** ruamel (not a dependency); growing arc_journal.py (mixes journal and arc-config concerns).
+
+### 2026-11-19 — `off` disables rather than deletes the owner block
+- **Chose:** `off` writes `journal: false` and `role: "off"`, keeping `wake` so a later `on` without `--wake` restores it. `role` is quoted because YAML 1.1 reads bare `on`/`off` as booleans.
+- **Rejected:** deleting the block (loses the wake setting and the `since` record).
 
 ## Decision
 

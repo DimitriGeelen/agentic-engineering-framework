@@ -58,6 +58,13 @@
 #   tag <slug-or-id> T-XXXX                # link task to arc (bidirectional)
 #   close <slug-or-id> [--decision "..."]  # mark closed
 #   migrate <slug> --anchor T-XXXX         # seed from related_tasks + legacy tags
+#   owner <slug-or-id> on [--wake notice|worker] | off
+#                                          # T-5251: opt the arc into the owner role
+#                                          # (journal: true + owner: block)
+#   journal <slug-or-id> tried|decided|next|outside [--field ...]
+#                                          # T-5251: append to the arc journal
+#   resume <slug-or-id>                    # T-5251: check + brief + set focus
+#   (no handover verb: resume is the takeover, T-5224 IW-3)
 #
 # Source order (PROJECT_ROOT must be set by caller — bin/fw or test harness).
 
@@ -600,6 +607,9 @@ arc_show() {
     current="$(_arc_current_focus)"
 
     cat "$f"
+    echo ""
+    # T-5251: owner role / journal state, read the same way 'fw arc owner' writes it.
+    PROJECT_ROOT="$PROJECT_ROOT" python3 "${_ARC_LIB_DIR}/arc_owner.py" state "$id" 2>/dev/null || true
     echo ""
     echo "─── Tasks tagged arc:${id} ───"
     local found=0
@@ -1210,6 +1220,23 @@ Verbs:
                             Legacy verb: seed constituent_tasks from anchor's
                             related_tasks and legacy from-T-XXXX tags (idempotent).
                             T-1851: prefer task-side arc_id: + 'fw arc tag'.
+  owner <id> on [--wake notice|worker] | off
+                            T-5251: switch the arc's owner role on (journal: true
+                            plus an owner: block; wake defaults to notice) or off
+                            (journal: false; the journal file is kept). Other YAML
+                            fields and comments are left as they were.
+  journal <id> tried|decided|next|outside [fields]
+                            T-5251: append one journal entry (lib/arc_journal.py).
+                            tried: --text --result | decided: --text --reason
+                            [--consequential] | next: --step --owner [--deadline
+                            YYYY-MM-DD] | outside: --text --reason --where.
+                            Any kind: --task T-XXXX, --by WHO (default: this
+                            agent/session id). Refused unless 'fw arc owner <id> on'.
+  resume <id>               T-5251: take over an arc. Runs the resumability check,
+                            prints the brief (findings, latest decisions, next step
+                            with owner and deadline, open member tasks), sets arc
+                            focus, and task focus when the next step names an active
+                            task. Exit 0 resumable, 1 not. There is no handover verb.
 
 Examples:
   fw arc create orchestrator-rethink --name "Orchestrator routing rethink" --anchor T-1641 \\
@@ -1468,6 +1495,112 @@ except ImportError:
     echo ""
 }
 
+# ─── T-5251 (T-5224 slice 2): owner opt-in, journal, resume ────────────────
+# The owner role is opt-in per arc (T-5224 IW-3). The logic lives in
+# lib/arc_owner.py (YAML edit, brief) and lib/arc_journal.py (journal, check);
+# these verbs are thin wrappers so the CLI and any Python caller agree.
+
+# Who writes a journal entry when --by is not given: the sidecar/agent id the
+# session runs under, else the session id, else "agent".
+_arc_journal_author() {
+    if [ -n "${FW_SIDECAR_AGENT_ID:-}" ]; then printf '%s' "$FW_SIDECAR_AGENT_ID"; return; fi
+    if [ -n "${FW_AGENT_ID:-}" ]; then printf '%s' "$FW_AGENT_ID"; return; fi
+    local sf="${PROJECT_ROOT}/.context/working/session.yaml" sid=""
+    [ -f "$sf" ] && sid=$(awk '/^session_id:/ {print $2; exit}' "$sf" | tr -d '"'"'"'')
+    printf '%s' "${sid:-agent}"
+}
+
+arc_owner() {
+    local id="${1:-}" mode="${2:-}"
+    if [ -z "$id" ] || [ -z "$mode" ] || [ "$id" = "--help" ] || [ "$id" = "-h" ]; then
+        echo "Usage: fw arc owner <arc-id> on [--wake notice|worker] | off" >&2
+        return 2
+    fi
+    shift 2
+    case "$mode" in
+        on|off) ;;
+        *) echo "Error: fw arc owner: mode must be 'on' or 'off', got '$mode'" >&2; return 2;;
+    esac
+    local wake=""
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --wake) wake="${2:-}"; shift 2 || { echo "Error: --wake needs notice|worker" >&2; return 2; };;
+            --wake=*) wake="${1#--wake=}"; shift;;
+            *) echo "Error: fw arc owner: unknown argument '$1'" >&2; return 2;;
+        esac
+    done
+    id="$(_arc_normalize_input "$id")"
+    _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
+    local args=(set "$id" "$mode")
+    [ -n "$wake" ] && args+=(--wake "$wake")
+    PROJECT_ROOT="$PROJECT_ROOT" python3 "${_ARC_LIB_DIR}/arc_owner.py" "${args[@]}"
+}
+
+arc_journal() {
+    local id="${1:-}" kind="${2:-}"
+    if [ -z "$id" ] || [ -z "$kind" ] || [ "$id" = "--help" ] || [ "$id" = "-h" ]; then
+        echo "Usage: fw arc journal <arc-id> tried|decided|next|outside [--text ..] [--result ..]" >&2
+        echo "         [--reason ..] [--step ..] [--owner ..] [--deadline YYYY-MM-DD] [--where ..]" >&2
+        echo "         [--task T-XXXX] [--consequential] [--by WHO]" >&2
+        return 2
+    fi
+    shift 2
+    case "$kind" in
+        tried|decided|next|outside) ;;
+        event) echo "Error: 'event' entries are written by update-task.sh on status changes, not by hand." >&2; return 2;;
+        *) echo "Error: fw arc journal: kind must be tried|decided|next|outside, got '$kind'" >&2; return 2;;
+    esac
+    id="$(_arc_normalize_input "$id")"
+    _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
+    local enabled
+    enabled=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "${_ARC_LIB_DIR}/arc_owner.py" state "$id" --json 2>/dev/null \
+        | python3 -c 'import json,sys; print("1" if json.load(sys.stdin).get("journal") else "0")' 2>/dev/null)
+    if [ "$enabled" != "1" ]; then
+        echo "Error: arc '$id' is not switched on for the owner role, so it keeps no journal." >&2
+        echo "       Switch it on first: fw arc owner $id on" >&2
+        return 1
+    fi
+    local by="" args=()
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            --by) by="${2:-}"; shift 2 || { echo "Error: --by needs a value" >&2; return 2; };;
+            --by=*) by="${1#--by=}"; shift;;
+            *) args+=("$1"); shift;;
+        esac
+    done
+    [ -n "$by" ] || by="$(_arc_journal_author)"
+    PROJECT_ROOT="$PROJECT_ROOT" python3 "${_ARC_LIB_DIR}/arc_journal.py" append "$id" "$kind" --by "$by" "${args[@]}"
+}
+
+arc_resume() {
+    local id="${1:-}"
+    if [ -z "$id" ] || [ "$id" = "--help" ] || [ "$id" = "-h" ]; then
+        echo "Usage: fw arc resume <arc-id>" >&2
+        return 2
+    fi
+    id="$(_arc_normalize_input "$id")"
+    _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
+    local json rc
+    json=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "${_ARC_LIB_DIR}/arc_owner.py" brief "$id" --json)
+    rc=$?
+    if [ "$rc" -ne 0 ] && [ "$rc" -ne 1 ]; then
+        return "$rc"
+    fi
+    PROJECT_ROOT="$PROJECT_ROOT" python3 "${_ARC_LIB_DIR}/arc_owner.py" brief "$id" || true
+    echo ""
+    arc_focus "$id" || return 2
+    local focus_task
+    focus_task=$(printf '%s' "$json" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("focus_task") or "")')
+    if [ -n "$focus_task" ]; then
+        if PROJECT_ROOT="$PROJECT_ROOT" "${_ARC_FW_ROOT}/agents/context/context.sh" focus "$focus_task" >/dev/null 2>&1; then
+            echo "Task focus → ${focus_task} (named by the latest next step)"
+        else
+            echo "Warning: could not set task focus to ${focus_task}; run: fw context focus ${focus_task}" >&2
+        fi
+    fi
+    return "$rc"
+}
+
 arc_dispatch() {
     local verb="${1:-help}"
     shift || true
@@ -1491,6 +1624,9 @@ arc_dispatch() {
         set-scoped-weight) arc_set_scoped_weight "$@";; # T-1977 (arc-006)
         show-suggestions) arc_show_suggestions "$@";;   # T-1926 (arc-006)
         rescore)          arc_rescore          "$@";;   # T-2076 (T-2065 GO): re-estimate member BVP
+        owner)            arc_owner            "$@";;   # T-5251 (T-5224 slice 2)
+        journal)          arc_journal          "$@";;   # T-5251
+        resume)           arc_resume           "$@";;   # T-5251
         help|--help|-h) arc_help;;
         *) echo "Unknown verb: $verb" >&2; arc_help; return 2;;
     esac

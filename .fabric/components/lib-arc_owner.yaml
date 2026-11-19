@@ -1,0 +1,21 @@
+id: lib/arc_owner.py
+name: arc_owner
+type: script
+subsystem: framework-core
+location: lib/arc_owner.py
+tags: []
+
+purpose: "Arc owner opt-in and the resume brief (T-5251, T-5224 slice 2)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-19
+created_by: unknown
