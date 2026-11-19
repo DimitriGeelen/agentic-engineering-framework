@@ -21,7 +21,7 @@ revisit_at: 2026-11-24
 waiting_on: peer
 origin: {kind: "peer", source: "proxmox-ring20-management", ref: "83c8790d"}
 created: 2026-10-22T14:14:29Z
-last_update: 2026-11-19T10:58:36Z
+last_update: '2026-11-19T11:00:45Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -57,6 +57,15 @@ cost_estimate_proposed:
       effort: 6
     rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
       (workflow:inception); effort=6 (lines=112,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-11-19T11:00:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=7 (lines=164,acs=4)
     rubric_sha: e4a00f38e801
 ---
 
