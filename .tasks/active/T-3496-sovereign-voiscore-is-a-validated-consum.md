@@ -16,19 +16,19 @@ description: >
   architectural/scope call on a governance gate, so the mandate forbids an autonomous
   agent deciding it to keep momentum.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
 tags: [arc:value-prioritisation]
 components: []
 related_tasks: []
-step_entered_at: '2026-11-18T22:21:40Z'
-revisit_at: 2026-11-25
-waiting_on: operator
+step_entered_at: '2026-11-19T08:44:57Z'
+revisit_at: 2026-11-26
+waiting_on: agent
 arc_id: value-prioritisation
 created: 2026-09-26T00:12:26Z
-last_update: 2026-11-18T22:21:40Z
+last_update: 2026-11-19T08:44:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -73,6 +73,8 @@ bvp_scores_proposed:
 
 <!-- What problem are we exploring? For whom? Why now? -->
 
+**Reframed by the operator, 2026-11-19 (walkthrough of the ready inceptions):** "if I have 100 inceptions ... and we want to choose between which [inception] we do first, how do we do that? ... What would be helpful for that?" The real problem is not the field but the choice it was meant to support: with 100+ open inceptions (129 today), which is worked first? `voi_score` was the intended answer, but it is a hand-guessed number that nobody ever guessed (610 of 617 at the template's 0.5, re-measured 2026-11-19), so today every inception ranks the same. The agent's first recommendation (retire the field) answered "is this number useful?" and dropped the question behind it. Dialogue and reflection: docs/reports/T-3496-choosing-which-inception-first.md.
+
 ## Assumptions
 
 <!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
@@ -94,6 +96,11 @@ bvp_scores_proposed:
      §Disposition Gate. Bypass: --skip-disposition-gate "rationale" (direct) or
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
+
+- **IW-1: Which observable facts tell us what an inception's answer is worth: what it unblocks (build tasks, peers, other inceptions waiting on it), who is waiting and since when, whether something is broken or stuck until it is answered, and what it touches? Which of these can be read from the corpus today, and how often are they present?**
+- **IW-2: What does finishing it cost: how close is it to a decision (questions disposed out of filed), and how much exploration is left?**
+- **IW-3: How do value and cost combine into one explainable order that shows its reasons per inception (a derived value of information, not a guessed number), and where does the agent's own judgement enter, with a written reason?**
+- **IW-4: How does the order learn: record which inception the operator actually takes first and why, compare it with the computed order, and adjust the weights from the difference?**
 
 ## Exploration Plan
 
@@ -155,9 +162,11 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** EXPLORING
 
-**Rationale:** Genuine evidence gap, not a confidence hedge: the three directions differ in what they assume about whether value-of-information is estimable at all, and no evidence in the corpus settles that -- 489 of 496 identical scores means nobody has ever tried to make the judgement, so there is no signal to learn from either way. An agent choosing here would be deciding what the framework believes about its own prioritisation, which is sovereign.
+**Rationale:** Reopened 2026-11-19 after the operator reframed the question (see Problem Statement): the work is to find what makes "which inception first" decidable, IW-1..IW-4. Waiting on: agent.
+
+Earlier recommendation (2026-09), kept for the record: DEFER. Genuine evidence gap, not a confidence hedge: the three directions differ in what they assume about whether value-of-information is estimable at all, and no evidence in the corpus settles that -- 489 of 496 identical scores means nobody has ever tried to make the judgement, so there is no signal to learn from either way. An agent choosing here would be deciding what the framework believes about its own prioritisation, which is sovereign.
 
 ## Decisions
 
@@ -185,3 +194,10 @@ bvp_scores_proposed:
 ### 2026-11-18T22:21:40Z — inception-wait [inception-lifecycle]
 - **Change:** waiting_on: agent → operator
 - **Revisit:** 2026-11-25
+
+### 2026-11-19T08:43:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-11-19T08:44:57Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: operator → agent
+- **Revisit:** 2026-11-26

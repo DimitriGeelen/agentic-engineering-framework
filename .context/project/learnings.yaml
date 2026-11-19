@@ -5230,3 +5230,72 @@ X'` returning empty group."
   task: T-4971
   date: 2026-11-01
   context: Added via context agent
+- id: L-716
+  learning: "A guest that runs work as a second user must keep files root writes root-owned: Debian's fs.protected_regular refuses root an O_CREAT open of another user's file in sticky /tmp, so a chown'd tee target silently gets nothing (first real testhost run lost every phase)"
+  source: P-001
+  task: T-5114
+  date: 2026-11-13
+  context: Added via context agent
+- id: L-717
+  learning: "Before closing a task that edits lib/, agents/, bin/ or web/, run 'fw test invariants' too: the lint invariants are graded at pre-push, not by the unit tests that read the file, so a red (e.g. a $$-only temp name, T-5067) first shows up as a blocked push"
+  source: P-001
+  task: T-5122
+  date: 2026-11-13
+  context: Added via context agent
+- id: L-718
+  learning: "When selecting the tests that read a changed file, grep for its BASENAME (termlink.sh), not its path (termlink/termlink.sh): tests often build the path in pieces (_HERE / 'agents' / 'termlink' / 'termlink.sh'). T-5120's sweep missed t3580_round8, which its prune stamp broke."
+  source: P-001
+  task: T-5119
+  date: 2026-11-13
+  context: Added via context agent
+- id: L-719
+  learning: "Before committing a change to a file another component pins or hashes (policy/review-worker-settings.json is pinned EXACTLY by verdict_ledger._worker_settings), run every test that names that file and its readers. T-5008 committed and pushed a 4-test change to the settings file, deferring the wider sweep; every claude review registration was refused until fe00d59f4."
+  source: P-001
+  task: T-5008
+  date: 2026-11-14
+  context: Added via context agent
+- id: L-720
+  learning: "Every runme handed to the operator gets a background 'fw runme watch' started in the SAME turn, and again after any session restart (a restart ends background jobs). Reusing a runme name makes the watcher read the old run.log and report a stale EXIT: give each hand-off a fresh name, or check run.log's START time. 2026-11-14: the aef-meter restart runme was handed off twice with no watch; the operator caught it."
+  source: P-001
+  task: T-5054
+  date: 2026-11-14
+  context: Added via context agent
+- id: PL-018
+  learning: "Fleet doctor observed tofu-violation on hub 'laptop-141' (192.168.10.141:9100). date_observed=2026-11-15T16:21:40Z hub_fingerprint=sha256:2bde8ad8f81a221cbe211dca722cededb32919bf97e840e54913ee2595aad2ba. T-1051 Option D auto-registration — if a later agent sees a different pinned fingerprint for this hub, this learning is stale and should not be acted on."
+  source: T-1052
+  task: T-1051
+  date: 2026-11-15
+  context: fleet-doctor auto-registered
+  application: "Drift-detection: compare hub_fingerprint in this learning against current KnownHubStore.get(address)"
+- id: PL-019
+  learning: "Fleet doctor observed tofu-violation on hub 'laptop-141' (192.168.10.141:9100). date_observed=2026-11-17T00:38:29Z hub_fingerprint=sha256:2bde8ad8f81a221cbe211dca722cededb32919bf97e840e54913ee2595aad2ba. T-1051 Option D auto-registration — if a later agent sees a different pinned fingerprint for this hub, this learning is stale and should not be acted on."
+  source: T-1052
+  task: T-1051
+  date: 2026-11-17
+  context: fleet-doctor auto-registered
+  application: "Drift-detection: compare hub_fingerprint in this learning against current KnownHubStore.get(address)"
+- id: PL-020
+  learning: "Fleet doctor observed tofu-violation on hub 'laptop-141' (192.168.10.141:9100). date_observed=2026-11-18T00:38:55Z hub_fingerprint=sha256:2bde8ad8f81a221cbe211dca722cededb32919bf97e840e54913ee2595aad2ba. T-1051 Option D auto-registration — if a later agent sees a different pinned fingerprint for this hub, this learning is stale and should not be acted on."
+  source: T-1052
+  task: T-1051
+  date: 2026-11-18
+  context: fleet-doctor auto-registered
+  application: "Drift-detection: compare hub_fingerprint in this learning against current KnownHubStore.get(address)"
+- id: L-721
+  learning: "A change to any allocator, lock or seed reachable from fw upgrade must run tests/unit/upgrade_fresh_machine_simulation.bats before close; a unit suite that sources the code without set -u misses cold-caller crashes (T-5217 -> T-5218)"
+  source: P-001
+  task: T-5218
+  date: 2026-11-18
+  context: Added via context agent
+- id: L-722
+  learning: "When a change narrows how an inherited env variable is honoured (FRAMEWORK_ROOT, PROJECT_ROOT), grep tests/ for the variable itself, not only the related task ids; a test that relies on the old behaviour shows up only in the nightly suite (T-5214 -> T-5219)"
+  source: P-001
+  task: T-5219
+  date: 2026-11-18
+  context: Added via context agent
+- id: L-723
+  learning: "A field that is constant across a corpus is evidence the judgement was never made, not that the need is absent. Before retiring it, find what the field was for and fix the source of the judgement (observed inputs, shown reasons, calibrated on real choices). Origin: T-3496 — agent recommended retiring voi_score (0.5 on 610 of 617 inceptions); operator: 'if I have 100 inceptions ... how do we choose which first?'"
+  source: P-001
+  task: T-3496
+  date: 2026-11-19
+  context: Added via context agent
