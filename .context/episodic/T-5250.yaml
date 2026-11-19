@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5250: Arc journal: append-only per-arc journal plus a resumability check (T-5224 slice 1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-19T16:12:36Z
+# ============================================================================
+
+task_id: T-5250
+task_name: "Arc journal: append-only per-arc journal plus a resumability check (T-5224 slice 1)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-19T13:39:04Z
+completed: 2026-11-19T16:11:49Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-19T17:03:58+01:00
+last_commit: 2026-11-19T17:10:37+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context and acceptance criteria (arc journal + resumability check, T-5224 slice 1). arc journal — append-only per-arc journal, resumability check, update-task.sh event hook for journal: true arcs
+
+# Key outcomes
+outcomes:
+  - 'lib/arc_journal.py: append-only journal at `.context/arcs/<slug>.journal.jsonl` (resolves slug or arc-NNN through lib/arc_membership.py arc_identities); entry kinds tried (text, result), decided (text, reason, consequential flag), next (step, owner, deadline), outside (text, reason, where it was decided), event (task, from, to); every row carries ts and by; appends are locked and never rewrite earlier rows'
+  - 'A resumability check returns findings with plain reasons and exit 0 (resumable) or 1: no next entry; latest next older than a later decided/outside/event entry (stale next); a task event into `issues` with no decided entry after it; latest next''s deadline passed (reported, not a refusal)'
+  - 'Small CLI for now: `python3 lib/arc_journal.py append|show|check <arc> ...` (the `fw arc` verbs are T-5251)'
+  - 'agents/task-create/update-task.sh appends an event entry when a task whose arc_id resolves to an arc with `journal: true` in its YAML changes status; arcs without the field are untouched; a journal failure never blocks the status change'
+  - 'Tests (t5250_*): append and read back; append-only (no rewrite); each check finding and the resumable case; the update-task.sh event for an opted-in arc and none for a non-opted arc; a broken journal does not block a status change. Existing arc tests stay green; `fw audit` arc checks accept the new YAML field'
+  - 'Vendored copies synced (`bin/fw vendor self --check` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-19 — append lock'
+    chose: 'exclusive flock on the journal file''s own O_APPEND descriptor.'
+    rationale: 'serialises writers exactly as well as a sidecar lock file, and leaves no `.lock` file beside the arc YAMLs to ignore or commit. A torn last line gets a newline before the next row, so one crash never corrupts a later entry.'
+    alternatives_rejected: ['sidecar `<slug>.journal.lock` (an extra untracked file per arc, nothing gained).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/arc_journal.py'
+  - '.fabric/components/lib-arc_journal.yaml'
+  - '.tasks/active/T-5250-arc-journal-append-only-per-arc-journal-.md'
+  - 'agents/task-create/update-task.sh'
+  - 'lib/arc_journal.py'
+  - 'tests/unit/t5250_arc_journal.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-19T17:03:58'
+    action: 'T-5250: context and acceptance criteria (arc journal + resumability check, T-5224 slice 1)'
+  - time: '2026-11-19T17:10:37'
+    action: 'T-5250: arc journal — append-only per-arc journal, resumability check, update-task.sh event hook for journal: true arcs'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 152 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-orchestrator]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 152
+  commits: 3
+  files_changed: 10
+  lines_added: 1226
+  lines_removed: 19
+  footprint_refreshed_at: '2026-11-19T16:13:05Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5250-arc-journal-append-only-per-arc-journal-.md
+generated_by: context-agent-hybrid
