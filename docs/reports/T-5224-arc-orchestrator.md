@@ -163,3 +163,7 @@ For AEF this means:
 - 2026-11-19, walkthrough with the operator, IW-1 (owner model). Agent presented A / B / C
   with 1409's load-test evidence and recommended B (owner is a role; a fresh agent per event
   reads and writes the arc's journal). **Operator, verbatim:** "1" (B).
+- 2026-11-19, IW-2 (the journal). Agent proposed: append-only journal per arc; entries tried /
+  decided-with-reason / next (step, owner, deadline) / outside decisions; writers = framework on
+  task status changes, the on-duty agent and any outside decider through one command; a
+  resumability check run first by every woken agent. **Operator, verbatim:** "1" (as proposed).
