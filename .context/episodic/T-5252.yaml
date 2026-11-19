@@ -1,0 +1,114 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5252: Arc owner wake-up and per-arc wake limit (T-5224 slice 3)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-19T18:59:43Z
+# ============================================================================
+
+task_id: T-5252
+task_name: "Arc owner wake-up and per-arc wake limit (T-5224 slice 3)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-19T13:39:08Z
+completed: 2026-11-19T18:55:12Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-19T19:27:13+01:00
+last_commit: 2026-11-19T19:39:43+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context and acceptance criteria (arc owner wake-up, deadline sweep, daily wake limit, T-5224 slice 3). arc owner wake-up — notice|worker wake, daily per-arc wake limit, deadline sweep, update-task trigger. vendor sync — arc wake-up (arc_wake.py, arc.sh, arc_owner.py, operator_pending.py, update-task.sh). tick Agent criteria 1-6, Verification, Decisions (cron install pending operator)
+
+# Key outcomes
+outcomes:
+  - 'A wake module (e.g. lib/arc_wake.py) sends one wake per trigger using the arc''s `owner.wake`: `notice` through lib/agent_notice.py send_notice to this project''s own address, idle-aware like decision notices; `worker` through `fw termlink dispatch` with a prompt that starts with `fw arc resume <arc>`, respecting the worker cap (a refused dispatch is recorded, never retried in a loop)'
+  - 'Trigger 1: after update-task.sh appends a status event for an opted-in arc, it calls the wake (never blocking the status change)'
+  - 'Trigger 2: a scheduled sweep finds opted-in arcs whose latest next-deadline has passed and wakes each once per passed deadline (not again on every sweep); registered in the cron registry and generated'
+  - 'Per-arc daily wake limit (`owner.wake_limit`, default 12): over the limit no wake is sent, the refusal is recorded, and the operator is notified once per arc per day (fw_notify or the operator pending list)'
+  - 'Wakes and refusals are recorded in an append-only per-arc wake ledger beside the journal; `fw arc show` / `fw arc resume` show today''s count and limit'
+  - 'Tests (t5252_*): notice wake on a status change; worker wake builds the right dispatch (stubbed); deadline sweep wakes once per deadline; limit reached → no wake, one operator notice; arcs not switched on never wake; existing t5250/t5251 tests green'
+  - 'Cron chain in sync (operator installed it 2026-11-19 18:50Z, runme t5252-cron-install, doctor "Cron registry in sync"): `out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"`; vendored copies synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-19 — `fw cron install` pending the operator'
+  - decision: '2026-11-19 — cron runs `fw arc wake-sweep`, not `python3 lib/arc_wake.py sweep`'
+    chose: 'a `fw arc wake-sweep` verb wrapping `lib/arc_wake.py sweep`.'
+    rationale: 'consumer projects have no `lib/` at the root (vendored under `.agentic-framework/`); `fw` resolves the path in both.'
+    alternatives_rejected: ['a raw `python3 lib/...` cron command (framework-repo only).']
+  - decision: '2026-11-19 — what counts toward the limit, and deadline dedupe'
+    chose: '`sent`, `dispatch-refused` and `error` count toward `owner.wake_limit`; `refused-limit` and `skipped` (FW_ARC_WAKE=0 / test run) do not. A deadline is used up by any ledger row with its key except `skipped`, so a deadline refused by the limit is not retried the next day (the operator was told).'
+    rationale: 'a failing channel must not let an arc wake endlessly; a switched-off run must not burn a deadline.'
+    alternatives_rejected: ['retrying a limit-refused deadline each day (re-notifies every day for one stale step).']
+  - decision: '2026-11-19 — operator notice over the limit: both channels'
+    chose: 'one `fw_notify` push per arc per UTC day (recorded as `operator_notified` on the first `refused-limit` row) AND a live `fw operator pending` section "Arcs at their daily wake limit", read from today''s ledger rows.'
+    rationale: 'fw_notify is opt-in and may be off; the pending list is the live operator surface (T-4095) and needs no state of its own.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/arc.sh'
+  - '.agentic-framework/lib/arc_owner.py'
+  - '.agentic-framework/lib/arc_wake.py'
+  - '.agentic-framework/lib/operator_pending.py'
+  - '.context/cron-registry.yaml'
+  - '.context/cron/agentic-audit.crontab'
+  - '.fabric/components/lib-arc_wake.yaml'
+  - '.fabric/components/tests-unit-t5252_arc_wake.yaml'
+  - '.tasks/active/T-5252-arc-owner-wake-up-and-per-arc-wake-limit.md'
+  - 'agents/task-create/update-task.sh'
+  - 'lib/arc.sh'
+  - 'lib/arc_owner.py'
+  - 'lib/arc_wake.py'
+  - 'lib/operator_pending.py'
+  - 'tests/unit/t5252_arc_wake.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-19T19:27:13'
+    action: 'T-5252: context and acceptance criteria (arc owner wake-up, deadline sweep, daily wake limit, T-5224 slice 3)'
+  - time: '2026-11-19T19:33:58'
+    action: 'T-5252: arc owner wake-up — notice|worker wake, daily per-arc wake limit, deadline sweep, update-task trigger'
+  - time: '2026-11-19T19:34:26'
+    action: 'T-5252: vendor sync — arc wake-up (arc_wake.py, arc.sh, arc_owner.py, operator_pending.py, update-task.sh)'
+  - time: '2026-11-19T19:39:43'
+    action: 'T-5252: tick Agent criteria 1-6, Verification, Decisions (cron install pending operator)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 316 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-orchestrator]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 316
+  commits: 5
+  files_changed: 19
+  lines_added: 1469
+  lines_removed: 25
+  footprint_refreshed_at: '2026-11-19T19:00:26Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5252-arc-owner-wake-up-and-per-arc-wake-limit.md
+generated_by: context-agent-hybrid

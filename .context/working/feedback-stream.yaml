@@ -57173,3 +57173,21 @@ scan_id: R-cf5631c4
 task_id: T-5271
 payload:
   task_file: .tasks/active/T-5271-ignore-contextinboxfiles-in-every-projec.md
+---
+kind: scan_emitted
+timestamp: '2026-11-19T18:59:26Z'
+scan_id: R-6132f1c0
+task_id: T-5252
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-19T18:59:26Z'
+scan_id: R-6132f1c0
+task_id: T-5252
+payload:
+  task_file: .tasks/active/T-5252-arc-owner-wake-up-and-per-arc-wake-limit.md

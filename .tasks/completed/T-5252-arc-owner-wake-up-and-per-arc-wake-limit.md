@@ -8,12 +8,12 @@ description: >
   a self-waking loop and notifies the operator, like T-3253's continuous-run limits.
   Depends on slices 1-2.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc-orchestrator]
-components: []
+components: [agents/task-create/update-task.sh, lib/arc.sh, lib/arc_owner.py, lib/arc_wake.py, tests/unit/t5252_arc_wake.py]
 related_tasks: [T-5224]
 origin: {kind: "operator", source: "T-5224"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -43,8 +43,8 @@ origin: {kind: "operator", source: "T-5224"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T13:39:08Z
-last_update: 2026-11-19T18:26:37Z
-date_finished:
+last_update: 2026-11-19T18:55:12Z
+date_finished: 2026-11-19T18:55:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -107,7 +107,7 @@ bvp_scores_proposed:
 - [x] Per-arc daily wake limit (`owner.wake_limit`, default 12): over the limit no wake is sent, the refusal is recorded, and the operator is notified once per arc per day (fw_notify or the operator pending list)
 - [x] Wakes and refusals are recorded in an append-only per-arc wake ledger beside the journal; `fw arc show` / `fw arc resume` show today's count and limit
 - [x] Tests (t5252_*): notice wake on a status change; worker wake builds the right dispatch (stubbed); deadline sweep wakes once per deadline; limit reached → no wake, one operator notice; arcs not switched on never wake; existing t5250/t5251 tests green
-- [ ] Cron chain in sync: `out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"`; vendored copies synced
+- [x] Cron chain in sync (operator installed it 2026-11-19 18:50Z, runme t5252-cron-install, doctor "Cron registry in sync"): `out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"`; vendored copies synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -419,3 +419,16 @@ bin/fw vendor self --check --task T-5252
 ### 2026-11-19T18:26:37Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-19T18:55:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6132f1c0
+- **Timestamp:** 2026-11-19T18:59:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
