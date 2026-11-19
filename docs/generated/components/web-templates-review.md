@@ -15,6 +15,7 @@ When agent ACs are complete and human ACs remain:
    - **Rationale:** Why (cite evidence: what was fixed, what was proven, what remains)
    - **Evidence:** Bullet list of concrete proof (test results, file paths, metrics)
    You are the advisory. The human is the decision-maker. Never present a blank decision for them to fill in — always tell them what you recommend and why.
+   For an inception, this is the step that replaces `EXPLOR
 
 *(truncated — see CLAUDE.md for full section)*
 

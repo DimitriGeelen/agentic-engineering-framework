@@ -14,8 +14,8 @@ T-1716 implementation). Used by:
 Public functions:
 has_real_recommendation <task_file>
 Returns 0 if file's `## Recommendation` body contains a real
-`**Recommendation:** GO|NO-GO|DEFER` line; 1 otherwise.
-find_inceptions_without_recommendation <active_dir>
+`**Recommendation:** EXPLORING|GO|NO-GO|DEFER` line; 1 otherwise
+(T-5226: EXPLORING counts as present, so the retrofit never re-stubs it).
 
 ## Used By (5)
 
