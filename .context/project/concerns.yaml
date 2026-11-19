@@ -5862,7 +5862,8 @@ concerns:
   what_works_now: "Inceptions with real undisposed questions are refused at handoff."
   what_remains: "Skip HTML comments in both copies of the predicate; an inception with no real question must not read as ready (T-5241)."
   mitigation_candidate: "Both predicate copies strip HTML comments before reading Open Questions; parity tests cover a template-only inception."
-  status: watching
+  status: resolved
+  resolution: "T-5241 (2026-11-19): _inception_open_questions_text (lib/inception-readiness.sh) and its transcription _hb_open_questions (web/shared.py) drop HTML-comment lines from Open Questions before every count. Prevention: tests/unit/t5241_open_questions_comments.bats and test_t5241_open_questions_comments.py build fixtures from the real template comment (a template edit that reintroduces the shape is caught) and pin shell/Python parity; the T-5198 digest makes a future shell change fall back to the shell. Effect: 'ready for a recommendation' 24 -> 1 (T-4834, one real disposed question)."
   created: 2026-11-18
-  last_reviewed: 2026-11-18
+  last_reviewed: 2026-11-19
   related_tasks: [T-5241, T-5228, T-5226, T-5215]

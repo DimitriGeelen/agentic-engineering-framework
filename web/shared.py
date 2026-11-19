@@ -1618,6 +1618,41 @@ _HB_EMPTY_REC = {
 }
 
 
+_HB_COMMENT_OPEN_RE = re_mod.compile(r"^" + _SP + r"*<!--")
+
+
+def _hb_open_questions(lines: list[str]) -> list[str]:
+    """T-5241 (G-134): `_inception_open_questions_text` in lib/inception-readiness.sh.
+
+    The `## Open Questions` lines with HTML-comment lines dropped, by the same
+    line rule as the awk there: a line starting (after blanks) with `<!--` opens a
+    comment and is dropped, closing at once if `-->` follows on that line; while
+    open every line is dropped and a line containing `-->` closes it; a new
+    `## Open Questions` heading resets the state. Without this the template's
+    commented example question counted as a filed, disposed question.
+    """
+    out, flag, in_c = [], False, False
+    for ln in lines:
+        if ln.startswith("## Open Questions"):
+            flag, in_c = True, False
+            continue
+        if ln.startswith("## "):
+            flag = False
+        if not flag:
+            continue
+        if in_c:
+            if "-->" in ln:
+                in_c = False
+            continue
+        if _HB_COMMENT_OPEN_RE.search(ln):
+            rest = ln[ln.index("<!--") + 4:]
+            if "-->" not in rest:
+                in_c = True
+            continue
+        out.append(ln)
+    return out
+
+
 def _handoff_blockers_from_text(text: str) -> list[dict]:
     """T-5198: `lib/inception-readiness.sh inception_handoff_blockers`, in-process.
 
@@ -1645,15 +1680,7 @@ def _handoff_blockers_from_text(text: str) -> list[dict]:
             wf = fields[1].replace('"', "").replace("'", "") if len(fields) > 1 else ""
             break
     if wf == "inception" and any(ln.startswith("## Open Questions") for ln in lines):
-        oq, flag = [], False
-        for ln in lines:                 # awk '/^## Open Questions/{flag=1;next} /^## /{flag=0} flag'
-            if ln.startswith("## Open Questions"):
-                flag = True
-                continue
-            if ln.startswith("## "):
-                flag = False
-            if flag:
-                oq.append(ln)
+        oq = _hb_open_questions(lines)   # _inception_open_questions_text (T-5241)
         current_q, has_disp, has_rat = "", False, False
 
         def _flush():
@@ -1715,15 +1742,7 @@ def _handoff_blockers_from_text(text: str) -> list[dict]:
     if verdict == "EXPLORING":
         open_n = sum(1 for b in out if b["kind"] == "undisposed-question")
         if any(ln.startswith("## Open Questions") for ln in lines):
-            oq_all, flag = [], False
-            for ln in lines:
-                if ln.startswith("## Open Questions"):
-                    flag = True
-                    continue
-                if ln.startswith("## "):
-                    flag = False
-                if flag:
-                    oq_all.append(ln)
+            oq_all = _hb_open_questions(lines)
             total = sum(1 for ln in oq_all if _HB_Q_MARKER_RE.search(ln))
             if open_n > 0:
                 out.append({"kind": "exploring",
@@ -1754,11 +1773,12 @@ def _handoff_blockers_from_text(text: str) -> list[dict]:
 # disagrees with the gate. tests/unit/test_t5198_handoff_blockers.py fails until the
 # transcription and this digest are brought up to date.
 _HB_SHELL_FUNCTIONS = (
+    ("lib/inception-readiness.sh", "_inception_open_questions_text"),  # T-5241
     ("lib/inception-readiness.sh", "inception_underdisposed_questions"),
     ("lib/inception-readiness.sh", "inception_handoff_blockers"),
     ("lib/task-audit.sh", "audit_inception_recommendation"),
 )
-_HB_TRANSCRIBED_DIGEST = "5f9827f4bb8313b11b47b0e4a381425eeefb668349463f30ad8b3fcfb0bb0747"
+_HB_TRANSCRIBED_DIGEST = "f9592fdcbc76f729c44aee69606d68fb654eeb189cae5389355481de680bcbbb"
 _HB_RULE_STATE: dict = {}  # (root, stats) -> True (transcription current) | False
 
 

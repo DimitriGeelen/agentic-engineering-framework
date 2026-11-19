@@ -53,6 +53,35 @@
 #   Parsing contract is IDENTICAL to the pre-T-3279 check_disposition_gate,
 #   including the T-2218 RC5 anchored-marker fix (an IW-N mention inside prose
 #   must not flush the previous question's verdict).
+# _inception_open_questions_text <task_file>
+#
+#   T-5241 (G-134). The '## Open Questions' section with HTML-comment lines
+#   dropped. The inception template carries a commented EXAMPLE question
+#   ("- **IW-1: <question text>**" plus disposition:/rationale: lines); read raw,
+#   it counted as one filed, disposed question, so an inception with no real
+#   question read "ready for a recommendation". Rule, line based so the Python
+#   copy (web/shared.py _hb_open_questions) can match it exactly:
+#     - a line whose first non-blank text is `<!--` opens a comment and is
+#       dropped; if `-->` follows on the same line, the comment ends there
+#     - while open, every line is dropped; a line containing `-->` closes it
+#     - an unterminated comment ends at the section end (next `## `)
+#   A `<!--` in the middle of prose is quoted text, not a comment (same
+#   discriminator as _strip_html_comments in web/shared.py).
+_inception_open_questions_text() {
+    awk '
+        /^## Open Questions/ { flag=1; in_c=0; next }
+        /^## / { flag=0 }
+        !flag { next }
+        in_c { if (index($0, "-->")) in_c=0; next }
+        /^[[:space:]]*<!--/ {
+            rest = substr($0, index($0, "<!--") + 4)
+            if (!index(rest, "-->")) in_c=1
+            next
+        }
+        { print }
+    ' "$1"
+}
+
 inception_underdisposed_questions() {
     local task_file="$1"
     [ -f "$task_file" ] || return 0
@@ -65,7 +94,7 @@ inception_underdisposed_questions() {
     grep -qE "^## Open Questions" "$task_file" || return 0
 
     local oq
-    oq=$(awk '/^## Open Questions/{flag=1;next} /^## /{flag=0} flag' "$task_file")
+    oq=$(_inception_open_questions_text "$task_file")
 
     local missing=0
     local current_q="" has_disposition=false has_rationale=false
@@ -174,7 +203,7 @@ inception_handoff_blockers() {
         local _open=0 _total=0
         [ -n "$_ud" ] && _open=$(printf '%s\n' "$_ud" | grep -c .)
         if grep -qE '^## Open Questions' "$task_file"; then
-            _total=$(awk '/^## Open Questions/{flag=1;next} /^## /{flag=0} flag' "$task_file" \
+            _total=$(_inception_open_questions_text "$task_file" \
                 | grep -cE '(^[[:space:]]*-[[:space:]]*\*?\*?IW-[0-9]+|^###[[:space:]]+IW-[0-9]+|^[[:space:]]*-[[:space:]]*Q-?[0-9]+)' || true)
             if [ "$_open" -gt 0 ]; then
                 printf 'exploring\tRecommendation is EXPLORING: not ready for decision, %s question(s) open\tDispose every IW question, then write GO, NO-GO or DEFER with a rationale.\n' "$_open"

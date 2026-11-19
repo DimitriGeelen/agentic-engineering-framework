@@ -12,10 +12,10 @@ description: >
   and its Python copy (web/shared.py) must both skip HTML comments; parity tests (T-5198,
   T-3279) must cover it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-18T22:28:53Z
-last_update: '2026-11-18T22:46:08Z'
+last_update: 2026-11-19T07:52:33Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,22 +92,34 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** The T-5228 triage (2026-11-18) found 24 inceptions reported "ready for a recommendation" with no real question filed; 29 of the 31 that passed the readiness check passed only that way. Registered as G-134.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The inception template's `## Open Questions` carries an HTML-commented example question, and that example includes `disposition:` and `rationale:` lines. `inception_underdisposed_questions` and the EXPLORING question count in `inception_handoff_blockers` (lib/inception-readiness.sh) read the section without dropping comments, so the example counts as one filed, disposed question. The Python transcription in web/shared.py (`_handoff_blockers_from_text`, T-5198) copies the same behaviour.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Comment lines in `## Open Questions` never count as questions, dispositions or rationales, in both copies, so an inception with no real question reads "no Open Questions filed yet".
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** These inceptions show as EXPLORING with no questions filed instead of ready for a recommendation, in `fw inception lifecycle`, audit, the handover and Watchtower alike. Shell and Python stay in parity.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] lib/inception-readiness.sh drops HTML-comment lines from `## Open Questions` before parsing (both the disposition scan and the EXPLORING question count)
+- [x] web/shared.py `_handoff_blockers_from_text` applies the same rule; the T-5198 corpus parity test passes
+- [x] Fixture tests in both languages: template-only Open Questions → "no Open Questions filed yet"; a real disposed question beside the commented example → ready-for-recommendation; a real undisposed question → open count 1, not 2
+- [x] Existing readiness tests stay green (t3279, t5215, t5226, disposition_gate, test_t5198_handoff_blockers, test_t5226_inception_exploring)
+- [x] Corpus effect measured with `fw inception lifecycle` before and after, and reported
+- [x] Vendored copies synced; Watchtower restarted and current
+
+Measured 2026-11-19, `fw inception lifecycle`: ready for a recommendation 24 → 1 (T-4834: one real, disposed question); exploring waiting on the agent 5 → 22, on a peer 4 → 9, on the operator 3 → 4. Awaiting decision unchanged at 7. Tests: new bats 7/7 (template-only and control fail on the old code), new pytest 6/6, readiness bats 109/109, related pytest 115/115.
 
 ### Human
+- [ ] [REVIEW] An inception with no real questions shows as not ready in Watchtower
+  **Steps:**
+  1. Open http://192.168.10.107:3000/inception/T-5224 (has six real, open questions)
+  2. Open http://192.168.10.107:3000/inception/T-4834 (one real question, disposed)
+  **Expected:** T-5224 shows the not-ready box with its open questions and no decision buttons; T-4834 shows "ready for a recommendation" (EXPLORING with every question disposed), also with no decision buttons
+  **If not:** Note which page shows the wrong state; the predicate is lib/inception-readiness.sh and its copy in web/shared.py
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -291,8 +303,24 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bats tests/unit/t5241_open_questions_comments.bats
+python3 -m pytest -q tests/unit/test_t5241_open_questions_comments.py
+bats tests/unit/t5226_inception_exploring.bats
+bats tests/unit/t3279_decision_readiness_parity.bats
+python3 -c "import yaml; yaml.safe_load(open('.context/project/concerns.yaml'))"
+bin/fw vendor self --check --task T-5241
+bin/fw watchtower current
 
 ## RCA
+
+**Symptom:** 24 inceptions with no real question showed as "ready for a recommendation" (T-5228 triage, 2026-11-18); they would have been invited for a verdict and then handed to the operator.
+
+**Root cause:** the template's `## Open Questions` holds an HTML-commented example question with `disposition:` and `rationale:` lines. `inception_underdisposed_questions` and the EXPLORING count in `inception_handoff_blockers` read the section raw, so the example counted as one filed, disposed question. The Python copy (T-5198) is a line-for-line transcription and inherited it.
+
+**Why structurally allowed:** the readiness tests built their fixtures by hand, without the template's comment, so no fixture ever had the shape every real inception has. The T-5198 parity test proved shell and Python agree, not that either is right. The `## Recommendation` parser already skipped comments; the Open Questions parser was never given the same rule.
+
+**Prevention:** new fixtures are built from the real template comment (shell and Python), with a template-sanity test, a control for a disposition hidden in a comment, and shell/Python parity per case. Run against the old code, the template-only and control tests fail.
+
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -361,6 +389,13 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** Both copies of the readiness check now ignore comment lines in Open Questions, pinned by fixtures built from the real template and by shell/Python parity. The only rendered effect is which state an inception page shows; the page code itself is unchanged.
+**Evidence:**
+- `fw inception lifecycle`: ready for a recommendation 24 → 1 (T-4834, one real disposed question)
+- Watchtower restarted; http://192.168.10.107:3000/api/instances?template=aef-inception-lifecycle lists only T-4834 at il_ready
+- New tests 7/7 bats and 6/6 pytest; the template-only and control cases fail on the old code; existing readiness tests green
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -388,3 +423,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5241-inception-readiness-predicate-counts-the.md
 - **Context:** Initial task creation
+
+### 2026-11-19T07:52:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
