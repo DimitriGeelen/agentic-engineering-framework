@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3829: Optional dialogue-log artefact for decision walkthroughs, frontmatter-gated at P-011 (1409 proposal)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-19T22:44:43Z
+# ============================================================================
+
+task_id: T-3829
+task_name: "Optional dialogue-log artefact for decision walkthroughs, frontmatter-gated at P-011 (1409 proposal)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T14:37:42Z
+completed: 2026-11-19T22:44:06Z
+duration_days: 46
+updates_count: 4
+first_commit: 2026-11-19T10:57:13+01:00
+last_commit: 2026-11-19T23:44:17+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  GO narrow — enforce the C-001 Dialogue Log (default on for inceptions, opt-in elsewhere); operator ruling '1' 2026-11-19. inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/reviews/human-ac-ticks.jsonl'
+  - '.tasks/active/T-3829-optional-dialogue-log-artefact-for-decis.md'
+  - '.tasks/completed/T-3829-optional-dialogue-log-artefact-for-decis.md'
+  - 'docs/reports/T-3829-dialogue-log-enforcement.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-19T10:57:13'
+    action: 'T-3829: GO narrow — enforce the C-001 Dialogue Log (default on for inceptions, opt-in elsewhere); operator ruling ''1'' 2026-11-19'
+  - time: '2026-11-19T23:44:17'
+    action: 'T-3829: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 66726 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 66726
+  commits: 3
+  files_changed: 6
+  lines_added: 211
+  lines_removed: 14
+  footprint_refreshed_at: '2026-11-19T22:45:05Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3829-optional-dialogue-log-artefact-for-decis.md
+generated_by: context-agent-hybrid

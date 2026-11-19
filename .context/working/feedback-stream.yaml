@@ -57253,3 +57253,29 @@ task_id: T-3240
 payload:
   overall: CONFIRMED
   claim_count: 5
+---
+kind: scan_emitted
+timestamp: '2026-11-19T22:44:10Z'
+scan_id: R-10a8533b
+task_id: T-3829
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-19T22:44:10Z'
+scan_id: R-10a8533b
+task_id: T-3829
+payload:
+  task_file: .tasks/active/T-3829-optional-dialogue-log-artefact-for-decis.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-11-19T22:44:10Z'
+scan_id: RC-05c68c22
+task_id: T-3829
+payload:
+  overall: CONFIRMED
+  claim_count: 3
