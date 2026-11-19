@@ -1,0 +1,21 @@
+id: lib/extensions.py
+name: extensions
+type: script
+subsystem: framework-core
+location: lib/extensions.py
+tags: []
+
+purpose: "Project extensions register (T-5259, T-4649 slice 0)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-19
+created_by: unknown

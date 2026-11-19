@@ -925,6 +925,8 @@ do_vendor() {
         # Run from a private copy: the copy below may replace (or delete) the
         # very lib/ the helper was found in when bin/fw runs from the target.
         cp "$_vp_py" "$_vp_dir/vendor_preserve.py" && _vp_py="$_vp_dir/vendor_preserve.py"
+        # T-5259: the extensions reporter, from the same private copy for the same reason.
+        [ -f "$(dirname "$_vp_cand")/extensions.py" ] && cp "$(dirname "$_vp_cand")/extensions.py" "$_vp_dir/extensions.py"
         printf '%s\n' "${includes[@]}" > "$_vp_dir/includes"
         printf '%s\n' "${excludes[@]}" > "$_vp_dir/excludes"
         local -a _vp_args=(--source "$vendor_source" --target "$target"
@@ -1287,6 +1289,11 @@ UPSTREAM
         # ACTION REQUIRED block mid-log; keep a copy to repeat as the last thing.
         if [ "$_vp_post_rc" -eq 4 ] || [ "$_vp_post_rc" -eq 5 ]; then
             _vp_action=$(python3 "$_vp_py" report --target "$target" 2>&1) || true
+        fi
+        # T-5259: name the registered project extensions this vendor kept. The
+        # register is project-owned (.framework-extensions.yaml, never written here).
+        if [ -f "$target/.framework-extensions.yaml" ] && [ -f "$_vp_dir/extensions.py" ]; then
+            python3 "$_vp_dir/extensions.py" kept --target "$target" || true
         fi
         rm -rf "$_vp_dir"
         if [ "$_vp_post_rc" -ne 0 ] && [ "$_vp_post_rc" -ne 4 ] && [ "$_vp_post_rc" -ne 5 ]; then
@@ -1841,6 +1848,7 @@ show_help() {
     echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project (auto-detects interactive mode)"
     echo -e "  ${GREEN}update${NC}               Update framework (vendored or global) to latest version"
     echo -e "  ${GREEN}vendor${NC}               Copy framework into project .agentic-framework/ (full isolation)"
+    echo -e "  ${GREEN}extension${NC} <cmd>       Project extensions register: add|remove (operator only), list (T-5259)"
     echo -e "  ${GREEN}hook${NC} <name>          Run a framework hook (used by .claude/settings.json)"
     echo -e "  ${GREEN}hook-enable${NC} <args>   Register a hook in .claude/settings.json (idempotent)"
     echo -e "  ${GREEN}upgrade${NC} [dir]        Sync framework improvements to consumer project"
@@ -7310,6 +7318,12 @@ case "$cmd" in
         # so the two verbs cannot drift. `fw focus` (no arg) reports current focus
         # via do_focus's own no-arg branch, never a false-success.
         exec "$AGENTS_DIR/context/context.sh" focus "$@"
+        ;;
+    extension)
+        # T-5259 (T-4649 slice 0): project extensions register .framework-extensions.yaml.
+        # add|remove are the project operator's (refused under CLAUDECODE=1 unless
+        # --i-am-human, logged); list is open. lib/extensions.py holds the logic.
+        exec python3 "$FRAMEWORK_ROOT/lib/extensions.py" --project "$PROJECT_ROOT" "$@"
         ;;
     arc)
         # T-1661: Arc system — first-class workspace grouping tasks by theme.

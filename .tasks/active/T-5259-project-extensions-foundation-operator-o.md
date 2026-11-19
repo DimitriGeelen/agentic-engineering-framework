@@ -107,12 +107,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Register `.framework-extensions.yaml` (project root, project-owned, never written by vendor/upgrade) with entries {id, kind, paths, words, decided_by, date}; kinds include vendored-override (a file or an in-file block under .agentic-framework/) plus the kinds later slices use (page, nav, csrf-exemption, event-hook, reviewer-brief, gate-check), validated by one module (e.g. lib/extensions.py)
-- [ ] `fw extension add <kind> <id> --path P [--path P2] --words "<operator's words>"`, `fw extension remove <id> --words "..."` and `fw extension list [--json]`: add and remove are operator-only (refused under agent control like `fw inception decide`; `--i-am-human` for scripts and tests, logged); list is open to everyone
-- [ ] A vendored-override entry is mirrored into `.fwvendor-preserve.yaml` (the existing `files:` / `in_file:` shapes) by the same command, so the existing vendor/upgrade protection applies; removing the entry removes the mirror; hand-written preserve entries are left untouched
-- [ ] `fw audit` lists the register (INFO) and WARNs: a register path that does not exist; a `.fwvendor-preserve.yaml` entry with no register decision behind it; a vendored file the vendor stamp shows as locally modified with no register decision. `fw upgrade` names the registered extensions it kept
-- [ ] Tests (t5259_*): add/remove/list; agent refusal and --i-am-human logging; mirror into and out of the preserve manifest; a registered override survives `fw vendor` in a fresh-machine-style fixture; the three audit WARNs; existing vendor_preserve tests and tests/unit/upgrade_fresh_machine_simulation.bats stay green
-- [ ] Vendored copies synced (`bin/fw vendor self --check` clean)
+- [x] Register `.framework-extensions.yaml` (project root, project-owned, never written by vendor/upgrade) with entries {id, kind, paths, words, decided_by, date}; kinds include vendored-override (a file or an in-file block under .agentic-framework/) plus the kinds later slices use (page, nav, csrf-exemption, event-hook, reviewer-brief, gate-check), validated by one module (e.g. lib/extensions.py)
+- [x] `fw extension add <kind> <id> --path P [--path P2] --words "<operator's words>"`, `fw extension remove <id> --words "..."` and `fw extension list [--json]`: add and remove are operator-only (refused under agent control like `fw inception decide`; `--i-am-human` for scripts and tests, logged); list is open to everyone
+- [x] A vendored-override entry is mirrored into `.fwvendor-preserve.yaml` (the existing `files:` / `in_file:` shapes) by the same command, so the existing vendor/upgrade protection applies; removing the entry removes the mirror; hand-written preserve entries are left untouched
+- [x] `fw audit` lists the register (INFO) and WARNs: a register path that does not exist; a `.fwvendor-preserve.yaml` entry with no register decision behind it; a vendored file the vendor stamp shows as locally modified with no register decision. `fw upgrade` names the registered extensions it kept
+- [x] Tests (t5259_*): add/remove/list; agent refusal and --i-am-human logging; mirror into and out of the preserve manifest; a registered override survives `fw vendor` in a fresh-machine-style fixture; the three audit WARNs; existing vendor_preserve tests and tests/unit/upgrade_fresh_machine_simulation.bats stay green
+- [x] Vendored copies synced (`bin/fw vendor self --check` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -298,6 +298,13 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -c "import ast; ast.parse(open('lib/extensions.py').read())"
+bash -n bin/fw && bash -n agents/audit/audit.sh
+timeout 300 bats tests/unit/t5259_project_extensions.bats > /tmp/.t5259 2>&1 && ! grep -q "^not ok" /tmp/.t5259 && test "$(grep -c '# skip' /tmp/.t5259)" -eq 0
+timeout 300 bats tests/unit/t3850_vendor_preserve_locals.bats tests/unit/t4870_in_file_patch_lost.bats > /tmp/.t5259b 2>&1 && ! grep -q "^not ok" /tmp/.t5259b
+timeout 900 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t5259c 2>&1 && ! grep -q "^not ok" /tmp/.t5259c  # needs: fixture
+timeout 120 bats tests/lint/help-router-parity.bats > /tmp/.t5259d 2>&1 && ! grep -q "^not ok" /tmp/.t5259d
+bin/fw vendor self --check --task T-5259
 
 ## RCA
 

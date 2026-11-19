@@ -6257,6 +6257,27 @@ if [ -f "$FRAMEWORK_ROOT/lib/approval_queue_age.py" ]; then
     fi
 fi
 
+# T-5259 (T-4649 slice 0): project extensions. Every modification of the framework
+# in a project is the project operator's recorded decision (.framework-extensions.yaml).
+# INFO lists the register; WARN: a registered path that does not exist, a
+# .fwvendor-preserve.yaml entry with no decision behind it, a vendored file the
+# vendor stamp shows locally modified with no decision. Silent with nothing to say.
+if [ -f "$FRAMEWORK_ROOT/lib/extensions.py" ]; then
+    _ext_rows=$(python3 "$FRAMEWORK_ROOT/lib/extensions.py" --project "$PROJECT_ROOT" audit 2>&1) && _ext_rc=0 || _ext_rc=$?
+    if [ "$_ext_rc" -ne 0 ]; then
+        warn "Project extensions check could not run" \
+             "lib/extensions.py audit exited $_ext_rc: $(printf '%s' "$_ext_rows" | head -1)" \
+             "Run: python3 lib/extensions.py --project . audit"
+    elif [ -n "$_ext_rows" ]; then
+        while IFS=$'\t' read -r _ext_lvl _ext_title _ext_ev _ext_mit; do
+            case "$_ext_lvl" in
+                INFO) info "$_ext_title" ;;
+                WARN) warn "$_ext_title" "$_ext_ev" "$_ext_mit" ;;
+            esac
+        done <<< "$_ext_rows"
+    fi
+fi
+
 echo ""
 fi # end enforcement
 
