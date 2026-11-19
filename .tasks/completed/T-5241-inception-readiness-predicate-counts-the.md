@@ -1,19 +1,23 @@
 ---
-id: T-5245
-name: "fw context focus waits 15 s on a task briefing that always times out (ask.py,
-  exit 124)"
+id: T-5241
+name: "inception readiness predicate counts the template's commented-out IW-1 example
+  as a filed question, so inceptions with no real questions read 'ready for a recommendation'
+  (24 found by T-5228)"
 description: >
-  focus.sh runs lib/ask.py with timeout 15 after setting focus; measured 15.06 s,
-  rc 124, empty output, on AEF (918 active tasks). Whole focus 16.7 s here; 1409 measures
-  16.1-16.2 s at 5,956 active. work-on likely pays the same.
+  Found by the T-5228 triage 2026-11-18: inception_handoff_blockers / inception_underdisposed_questions
+  treat the inception template's commented example '- **IW-1: <question text>**' inside
+  the HTML comment as a real Open Question. 24 inceptions with no real questions land
+  on il_ready, and 29 of the 31 'ready' among the 43 were ready only because no real
+  question was filed. One predicate in shell (lib/task-audit.sh / lib/inception-readiness.sh)
+  and its Python copy (web/shared.py) must both skip HTML comments; parity tests (T-5198,
+  T-3279) must cover it.
 
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, performance]
-components: [agents/context/lib/focus.sh, lib/config.sh, 
-      web/blueprints/config.py]
+horizon: null
+tags: []
+components: [lib/inception-readiness.sh, web/shared.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,9 +45,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-11-19T07:38:37Z
-last_update: '2026-11-19T23:00:44Z'
-date_finished: 2026-11-19T07:51:04Z
+created: 2026-11-18T22:28:53Z
+last_update: 2026-11-19T23:58:10Z
+date_finished: 2026-11-19T08:08:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -54,11 +58,30 @@ date_finished: 2026-11-19T07:51:04Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-18T22:45:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-11-19T23:00:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (2-components); tier=2 (workflow:build); effort=8 
+      (lines=368,acs=9)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-11-19T07:40:28Z'
+  - ts: '2026-11-18T22:46:08Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
-      D1: 1
+      D1: 0
       D2: 0
       D3: 0
       D4: 0
@@ -67,54 +90,46 @@ bvp_scores_proposed:
       F3: 0
       F1: 0
       F2: 0
-    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
-      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
-      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-11-19T23:00:44Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 3
-      tier: 2
-      effort: 8
-    rationale: blast_radius=3 (3-components); tier=2 (workflow:build); effort=8 
-      (lines=357,acs=8)
-    rubric_sha: e4a00f38e801
+date_finalised: 2026-11-19T23:58:10Z
 ---
 
-# T-5245: fw context focus waits 15 s on a task briefing that always times out (ask.py, exit 124)
+# T-5241: inception readiness predicate counts the template's commented-out IW-1 example as a filed question, so inceptions with no real questions read 'ready for a recommendation' (24 found by T-5228)
 
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** 1409 measured `fw context focus` at 16.1-16.2 s in their real project (msg bbf3f214, 2026-11-19). On AEF it takes 16.7 s with 918 active tasks. Timing the parts: the memory recall takes 2.0 s; the task briefing (`lib/ask.py`, run under `timeout 15`) takes 15.06 s and exits 124 with no output.
+**Background / trigger:** The T-5228 triage (2026-11-18) found 24 inceptions reported "ready for a recommendation" with no real question filed; 29 of the 31 that passed the readiness check passed only that way. Registered as G-134.
 
-**Problem / hypothesis:** After setting focus, `agents/context/lib/focus.sh` asks a local model for a task briefing with a 15 s limit. On these hosts the call never finishes inside the limit, so every focus waits 15 s and prints nothing. The cost is not file count.
+**Problem / hypothesis:** The inception template's `## Open Questions` carries an HTML-commented example question, and that example includes `disposition:` and `rationale:` lines. `inception_underdisposed_questions` and the EXPLORING question count in `inception_handoff_blockers` (lib/inception-readiness.sh) read the section without dropping comments, so the example counts as one filed, disposed question. The Python transcription in web/shared.py (`_handoff_blockers_from_text`, T-5198) copies the same behaviour.
 
-**Goal:** Setting focus does not wait on a briefing that does not arrive. The briefing stays available to anyone who wants it.
+**Goal:** Comment lines in `## Open Questions` never count as questions, dispositions or rationales, in both copies, so an inception with no real question reads "no Open Questions filed yet".
 
-**Expected outcome:** `fw context focus` takes a few seconds instead of about 16. The briefing runs only when a project switches it on (operator ruling 2026-11-19, "1 yes" — fix it now).
+**Expected outcome:** These inceptions show as EXPLORING with no questions filed instead of ready for a recommendation, in `fw inception lifecycle`, audit, the handover and Watchtower alike. Shell and Python stay in parity.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] focus.sh runs the ask.py briefing only when the config key FOCUS_BRIEFING is 1; default 0
-- [x] FOCUS_BRIEFING is in the config registry with a description; config-registry parity lint passes
-- [x] A bats test pins both legs: briefing not invoked by default, invoked when FOCUS_BRIEFING=1
-- [x] `fw context focus` on AEF measured under 5 s after the fix (before: 16.7 s); `fw work-on` checked for the same cost and the result reported to 1409
-- [x] Vendored copies synced (`bin/fw vendor self --check` clean)
+- [x] lib/inception-readiness.sh drops HTML-comment lines from `## Open Questions` before parsing (both the disposition scan and the EXPLORING question count)
+- [x] web/shared.py `_handoff_blockers_from_text` applies the same rule; the T-5198 corpus parity test passes
+- [x] Fixture tests in both languages: template-only Open Questions → "no Open Questions filed yet"; a real disposed question beside the commented example → ready-for-recommendation; a real undisposed question → open count 1, not 2
+- [x] Existing readiness tests stay green (t3279, t5215, t5226, disposition_gate, test_t5198_handoff_blockers, test_t5226_inception_exploring)
+- [x] Corpus effect measured with `fw inception lifecycle` before and after, and reported
+- [x] Vendored copies synced; Watchtower restarted and current
 
-Measured 2026-11-19 on AEF: focus 16.7 s → 1.73 s; work-on 16.99 s with briefing → 2.35 s without. Reported to 1409.
+Measured 2026-11-19, `fw inception lifecycle`: ready for a recommendation 24 → 1 (T-4834: one real, disposed question); exploring waiting on the agent 5 → 22, on a peer 4 → 9, on the operator 3 → 4. Awaiting decision unchanged at 7. Tests: new bats 7/7 (template-only and control fail on the old code), new pytest 6/6, readiness bats 109/109, related pytest 115/115.
 
 ### Human
-- [x] [REVIEW] The settings page shows the new FOCUS_BRIEFING row like its neighbours
+- [x] [REVIEW] An inception with no real questions shows as not ready in Watchtower
   **Steps:**
-  1. Open http://192.168.10.107:3000/config
-  2. Find the row FOCUS_BRIEFING (next to INDEX_MAX_AGE_HOURS)
-  **Expected:** One row with key FOCUS_BRIEFING, default 0 and its description; the table layout is unchanged (no wrapped or overflowing cells beyond what neighbouring rows show)
-  **If not:** Note what breaks; the row text is in web/blueprints/config.py
+  1. Open http://192.168.10.107:3000/inception/T-3331 (only the template's commented example under Open Questions: the case this task fixed)
+  2. Open http://192.168.10.107:3000/inception/T-4992 (four real, open questions)
+  **Expected:** T-3331 shows the not-ready box saying "no Open Questions filed yet" (before the fix it read "ready for a recommendation") and no decision buttons; T-4992 shows the not-ready box with "4 question(s) open" and no decision buttons. (Examples changed 2026-11-19: the original T-5224 and T-4834 were decided since.)
+  **If not:** Note which page shows the wrong state; the predicate is lib/inception-readiness.sh and its copy in web/shared.py
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -159,7 +174,7 @@ Measured 2026-11-19 on AEF: focus 16.7 s → 1.73 s; work-on 16.99 s with briefi
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
-  **Reviewer verdict:** green V-20261119-d4247e16 — reviewer-judge-t-5245-r3-d9cd0bac0ab3:reviewer (rung rung-3-termlink-single-reviewer), digest 9724364424d9; dispatch judge-t-5245-r3-d9cd0bac0ab3; evidence: .context/reviews/evidence/T-5245/AC1-judge-t-5245-r3-d9cd0bac0ab3.md, .context/reviews/evidence/T-5245/01-config-judge-t-5245-r3-d9cd0bac0ab3.png, .context/reviews/evidence/T-5245/config-row@1024-judge-t-5245-r3-d9cd0bac0ab3.png, .context/reviews/evidence/T-5245/config-row@1440-judge-t-5245-r3-d9cd0bac0ab3.png, .context/reviews/evidence/T-5245/config-row@1920-judge-t-5245-r3-d9cd0bac0ab3.png; ledger .context/reviews/verdicts.jsonl
+  **Reviewer verdict:** green V-20261119-0a23245f — reviewer-judge-t-5241-r3-3e35f913a009:reviewer (rung rung-3-termlink-single-reviewer), digest af2d8931e6e9; dispatch judge-t-5241-r3-3e35f913a009; evidence: .context/reviews/evidence/T-5241/AC1-judge-t-5241-r3-3e35f913a009.md, .context/reviews/evidence/T-5241/01-inception-t-3331-judge-t-5241-r3-3e35f913a009.png, .context/reviews/evidence/T-5241/02-inception-t-4992-judge-t-5241-r3-3e35f913a009.png, .context/reviews/evidence/T-5241/no-questions@1024-judge-t-5241-r3-3e35f913a009.png, .context/reviews/evidence/T-5241/no-questions@1440-judge-t-5241-r3-3e35f913a009.png, .context/reviews/evidence/T-5241/no-questions@1920-judge-t-5241-r3-3e35f913a009.png, .context/reviews/evidence/T-5241/open-questions@1024-judge-t-5241-r3-3e35f913a009.png, .context/reviews/evidence/T-5241/open-questions@1440-judge-t-5241-r3-3e35f913a009.png, .context/reviews/evidence/T-5241/open-questions@1920-judge-t-5241-r3-3e35f913a009.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
@@ -299,28 +314,30 @@ Measured 2026-11-19 on AEF: focus 16.7 s → 1.73 s; work-on 16.99 s with briefi
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
-bats tests/unit/t5245_focus_briefing_optin.bats
-bats tests/unit/context_focus.bats
-bats tests/lint/config-registry-parity.bats
-grep -q 'focus_briefing:-0}" = "1"' agents/context/lib/focus.sh
-bin/fw vendor self --check --task T-5245
+bats tests/unit/t5241_open_questions_comments.bats
+python3 -m pytest -q tests/unit/test_t5241_open_questions_comments.py
+bats tests/unit/t5226_inception_exploring.bats
+bats tests/unit/t3279_decision_readiness_parity.bats
+python3 -c "import yaml; yaml.safe_load(open('.context/project/concerns.yaml'))"
+bin/fw vendor self --check --task T-5241
 bin/fw watchtower current
 
 ## Visual Verification
 
 | state | control | 1024 | 1440 | 1920 | note |
 |-------|---------|------|------|------|------|
-| config-row | FW_FOCUS_BRIEFING row on /config | ok | ok | ok | cropped to the row and its neighbours (the full page is ~13,000 px tall); key wraps like FW_RECALL_USAGE_DAYS above it; steps file .context/visual/T-5245/config-row.steps.yaml |
+| no-questions | not-ready box on /inception/T-3331 | ok | ok | ok | "no Open Questions filed yet"; no decision buttons |
+| open-questions | not-ready box on /inception/T-4992 | ok | ok | ok | "4 question(s) open"; no decision buttons |
 
 ## RCA
 
-**Symptom:** `fw context focus` took about 16 s (AEF 16.7 s at 918 active tasks; 1409 16.1 s at 5,956), and `fw work-on` about 17 s. 1409 read it as a file-count limit.
+**Symptom:** 24 inceptions with no real question showed as "ready for a recommendation" (T-5228 triage, 2026-11-18); they would have been invited for a verdict and then handed to the operator.
 
-**Root cause:** after setting focus, `focus.sh` always asked a local model for a task briefing (`lib/ask.py`, T-270) under `timeout 15`. On these hosts the call never finished inside 15 s (exit 124, no output), so every focus waited the full limit and showed nothing.
+**Root cause:** the template's `## Open Questions` holds an HTML-commented example question with `disposition:` and `rationale:` lines. `inception_underdisposed_questions` and the EXPLORING count in `inception_handoff_blockers` read the section raw, so the example counted as one filed, disposed question. The Python copy (T-5198) is a line-for-line transcription and inherited it.
 
-**Why structurally allowed:** the call ran as `timeout 15 … 2>/dev/null || true`. A timeout looked exactly like "no briefing to show": no message, no log line, no timing anywhere. Nothing measured how long focus takes, so 15 s of dead waiting stayed invisible until a peer timed the command.
+**Why structurally allowed:** the readiness tests built their fixtures by hand, without the template's comment, so no fixture ever had the shape every real inception has. The T-5198 parity test proved shell and Python agree, not that either is right. The `## Recommendation` parser already skipped comments; the Open Questions parser was never given the same rule.
 
-**Prevention:** the briefing is opt-in (`FOCUS_BRIEFING`, default 0), and `tests/unit/t5245_focus_briefing_optin.bats` pins that focus does not invoke it by default (marker-file stub, plus a control leg). A command-timing budget for the run-rhythm verbs belongs with T-5107, where 1409's targets (under 5 s) are recorded.
+**Prevention:** new fixtures are built from the real template comment (shell and Python), with a template-sanity test, a control for a disposition hidden in a comment, and shell/Python parity per case. Run against the old code, the template-only and control tests fail.
 
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -391,11 +408,11 @@ bin/fw watchtower current
 -->
 
 **Recommendation:** GO
-**Rationale:** The only rendered change is one data row in the settings table (http://192.168.10.107:3000/config), in the same tuple format as its neighbours. The behaviour fix is pinned by tests and measured.
+**Rationale:** Both copies of the readiness check now ignore comment lines in Open Questions, pinned by fixtures built from the real template and by shell/Python parity. The only rendered effect is which state an inception page shows; the page code itself is unchanged.
 **Evidence:**
-- Focus 16.7 s → 1.73 s, work-on 16.99 s → 2.35 s (AEF, 2026-11-19)
-- tests/unit/t5245_focus_briefing_optin.bats 4/4, context_focus.bats 19/19, config-registry-parity green
-- Watchtower restarted; `bin/fw watchtower current` OK; http://192.168.10.107:3000/config contains FOCUS_BRIEFING
+- `fw inception lifecycle`: ready for a recommendation 24 → 1 (T-4834, one real disposed question)
+- Watchtower restarted; http://192.168.10.107:3000/api/instances?template=aef-inception-lifecycle lists only T-4834 at il_ready
+- New tests 7/7 bats and 6/6 pytest; the template-only and control cases fail on the old code; existing readiness tests green
 
 ## Decisions
 
@@ -420,23 +437,31 @@ bin/fw watchtower current
 
 ## Updates
 
-### 2026-11-19T07:38:37Z — task-created [task-create-agent]
+### 2026-11-18T22:28:53Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5245-fw-context-focus-waits-15-s-on-a-task-br.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5241-inception-readiness-predicate-counts-the.md
 - **Context:** Initial task creation
 
-### 2026-11-19T07:40:25Z — status-update [task-update-agent]
+### 2026-11-19T07:52:33Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
 
-### 2026-11-19T07:51:04Z — status-update [task-update-agent]
+### 2026-11-19T08:08:50Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-7336cc42
-- **Timestamp:** 2026-11-19T07:51:36Z
+- **Scan ID:** R-13f3862b
+- **Timestamp:** 2026-11-19T08:09:30Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — web/shared.py `_handoff_blockers_from_text` applies the same rule; the T-5198 corpus parity test passes
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/shared.py in: web/shared.py `_handoff_blockers_from_text` applies the same rule; the T-5198 corpus parity test passes`
+- **AC#1 (Human)** — [REVIEW] An inception with no real questions shows as not ready in Watchtower
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='shows "ready for a recommendation"' in Expected: T-5224 shows the not-ready box with its open questions and no decision buttons; T-4834 shows "ready for a recommendation" (EXPLORING with ev`

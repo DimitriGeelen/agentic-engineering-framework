@@ -1,0 +1,119 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5241: inception readiness predicate counts the template's commented-out IW-1 example as a filed question, so inceptions with no real questions read 'ready for a recommendation' (24 found by T-5228)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-19T23:59:17Z
+# ============================================================================
+
+task_id: T-5241
+task_name: "inception readiness predicate counts the template's commented-out IW-1 example as a filed question, so inceptions with no real questions read 'ready for a recommendation' (24 found by T-5228)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-18T22:28:53Z
+completed: 2026-11-19T23:00:44Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-19T09:08:42+01:00
+last_commit: 2026-11-20T00:00:16+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  readiness check ignores comment lines in Open Questions (G-134) — ready-for-recommendation 24 -> 1. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (antigravity seat antigravity, recorded by the runtime). Visual Verification section; render criterion examples updated to current inceptions (T-3331 no questions, T-4992 open questions)
+
+# Key outcomes
+outcomes:
+  - 'lib/inception-readiness.sh drops HTML-comment lines from `## Open Questions` before parsing (both the disposition scan and the EXPLORING question count)'
+  - 'web/shared.py `_handoff_blockers_from_text` applies the same rule; the T-5198 corpus parity test passes'
+  - 'Fixture tests in both languages: template-only Open Questions → "no Open Questions filed yet"; a real disposed question beside the commented example → ready-for-recommendation; a real undisposed question → open count 1, not 2'
+  - 'Existing readiness tests stay green (t3279, t5215, t5226, disposition_gate, test_t5198_handoff_blockers, test_t5226_inception_exploring)'
+  - 'Corpus effect measured with `fw inception lifecycle` before and after, and reported'
+  - 'Vendored copies synced; Watchtower restarted and current'
+  - '[REVIEW] An inception with no real questions shows as not ready in Watchtower'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/inception-readiness.sh'
+  - '.agentic-framework/web/shared.py'
+  - '.context/project/concerns.yaml'
+  - '.context/reviews/evidence/T-5241/01-inception-t-3331-judge-t-5241-r3-3e35f913a009.png'
+  - '.context/reviews/evidence/T-5241/01-inception-t-5224-judge-t-5241-r3-f3b3caa112c0.png'
+  - '.context/reviews/evidence/T-5241/02-inception-t-4834-judge-t-5241-r3-f3b3caa112c0.png'
+  - '.context/reviews/evidence/T-5241/02-inception-t-4992-judge-t-5241-r3-3e35f913a009.png'
+  - '.context/reviews/evidence/T-5241/AC1-judge-t-5241-r3-0f2d749629d6.md'
+  - '.context/reviews/evidence/T-5241/AC1-judge-t-5241-r3-3e35f913a009.md'
+  - '.context/reviews/evidence/T-5241/AC1-judge-t-5241-r3-d23ea8648127.md'
+  - '.context/reviews/evidence/T-5241/AC1-judge-t-5241-r3-f3b3caa112c0.md'
+  - '.context/reviews/evidence/T-5241/no-questions@1024-judge-t-5241-r3-3e35f913a009.png'
+  - '.context/reviews/evidence/T-5241/no-questions@1440-judge-t-5241-r3-3e35f913a009.png'
+  - '.context/reviews/evidence/T-5241/no-questions@1920-judge-t-5241-r3-3e35f913a009.png'
+  - '.context/reviews/evidence/T-5241/open-questions@1024-judge-t-5241-r3-3e35f913a009.png'
+  - '.context/reviews/evidence/T-5241/open-questions@1440-judge-t-5241-r3-3e35f913a009.png'
+  - '.context/reviews/evidence/T-5241/open-questions@1920-judge-t-5241-r3-3e35f913a009.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-5241-inception-readiness-predicate-counts-the.md'
+  - 'lib/inception-readiness.sh'
+  - 'tests/unit/t5241_open_questions_comments.bats'
+  - 'tests/unit/test_t5241_open_questions_comments.py'
+  - 'web/shared.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-19T09:08:42'
+    action: 'T-5241: readiness check ignores comment lines in Open Questions (G-134) — ready-for-recommendation 24 -> 1'
+  - time: '2026-11-19T09:15:31'
+    action: 'T-5241: reviewer verdict'
+  - time: '2026-11-19T09:16:29'
+    action: 'T-5241: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-19T09:19:50'
+    action: 'T-5241: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-19T23:55:26'
+    action: 'T-5241: Visual Verification section; render criterion examples updated to current inceptions (T-3331 no questions, T-4992 open questions)'
+  - time: '2026-11-20T00:00:16'
+    action: 'T-5241: reviewer verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 1471 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1471
+  commits: 8
+  files_changed: 33
+  lines_added: 828
+  lines_removed: 69
+  footprint_refreshed_at: '2026-11-19T23:59:41Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5241-inception-readiness-predicate-counts-the.md
+generated_by: context-agent-hybrid
