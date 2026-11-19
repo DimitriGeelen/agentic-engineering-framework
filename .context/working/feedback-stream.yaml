@@ -57075,3 +57075,29 @@ task_id: T-4834
 payload:
   overall: CONTRADICTED
   claim_count: 5
+---
+kind: scan_emitted
+timestamp: '2026-11-19T15:33:04Z'
+scan_id: R-afae74d4
+task_id: T-4649
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-19T15:33:04Z'
+scan_id: R-afae74d4
+task_id: T-4649
+payload:
+  task_file: .tasks/active/T-4649-supported-extension-points-for-project-l.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-11-19T15:33:04Z'
+scan_id: RC-b359f0a8
+task_id: T-4649
+payload:
+  overall: CONFIRMED
+  claim_count: 7

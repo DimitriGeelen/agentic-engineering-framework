@@ -9,10 +9,10 @@ description: >
   add a refusal, never remove one), .framework.yaml-declared allowlists per gate,
   and which of ring20's 27 patches are general enough to upstream instead.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: [consumer, upgrade, extension-points, post-freeze]
 components: []
 related_tasks: []
@@ -21,8 +21,8 @@ revisit_at: 2026-11-26
 waiting_on: operator
 origin: {kind: "peer", source: "proxmox-ring20-management", ref: "83c8790d"}
 created: 2026-10-22T14:14:29Z
-last_update: 2026-11-19T15:20:39Z
-date_finished:
+last_update: 2026-11-19T15:33:02Z
+date_finished: 2026-11-19T15:33:02Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -259,3 +259,39 @@ History: on 2026-10-28 this inception waited for the v1.8.15 release because of 
 - **Action:** Recorded inception decision
 - **Decision:** GO
 - **Rationale:** ring20 carries 27 in-file patches across 22 vendored files and had to roll back be.2 because upgrade would overwrite them (their G-187). Today's only supported extension points are BOUNDARY_EXTRA_READ_PATHS, .fwvendor-preserve.yaml (whole-file keep) and project hooks in .claude/settings.json (kept by upgrade, T-3833). None of them can add a page or add to a framework gate. On 2026-10-26, 055's local edit of a vendored gate killed every agent on one host for about 6 h. The point-by-point analysis splits what is safe to open from what is not:
+
+### 2026-11-19T15:33:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** T-4535 sweep: decision recorded, closing
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-afae74d4
+- **Timestamp:** 2026-11-19T15:33:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-b359f0a8
+- **Timestamp:** 2026-11-19T15:33:04Z
+- **Overall:** CONFIRMED
+- **Claims:** 7
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-5258` | task | ✓ pass |
+| `T-5248` | task | ✓ pass |
+| `T-3833` | task | ✓ pass |
+| `T-3580` | task | ✓ pass |
+| `T-640` | task | ✓ pass |
+| `T-641` | task | ✓ pass |
+| `T-4782` | task | ✓ pass |

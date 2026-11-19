@@ -1,0 +1,133 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4649: Supported extension points for project-local hook additions so consumers stop patching vendored files (ring20: 27 in-file patches)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-19T15:33:29Z
+# ============================================================================
+
+task_id: T-4649
+task_name: "Supported extension points for project-local hook additions so consumers stop patching vendored files (ring20: 27 in-file patches)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T14:14:29Z
+completed: 2026-11-19T15:33:02Z
+duration_days: 28
+updates_count: 8
+first_commit: 2026-10-22T16:14:58+02:00
+last_commit: 2026-11-19T16:31:09+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception — supported extension points for project-local hook additions (ring20). record ring20 per-patch triage vs be.3 (37 patches: 5 covered, 3 movable, 9 need extension points, 2 relocations, 18 upstream candidates); IW-1/IW-2 filed. file ring20 category-5 upstream bugs as T-4652..T-4658 (fail-open hooks and P-011 partial-complete skip at horizon now). per-point analysis of the 5 proposed extension points + a sixth (project gate patterns); IW-1/IW-2 disposed; recommendation narrowed (GO 1+2, 4, 6; CSRF only as operator allowlist; NO-GO reviewer addendum). post-freeze backlog (release freeze, T-4869). reopened for consultation (IW-3) — operator 'absolutely in favor', consult ring20/055/1409/832 on the shape. consultation answers so far (1409 full first answer; 832 and 055 acknowledged, 832 carries 44 local changes). 832's full consultation answer (6 points retire 7 of 60; 44 are upstreamable fixes; verb-level checks). 055's full consultation answer; T-5248: research artefact with silent-loss (055) and hand re-application (832) evidence. ring20's full consultation answer — all four projects have answered. operator ruling — any project modification allowed when it is that project's operator's recorded decision and upgrades never break or drop it. tap-to-approve moved out to T-5258 (decision channels), operator 2026-11-19. recommendation GO with the shape adjusted to all four consultation answers and the operator's rulings (record and protect, not forbid; review mark). inception decision GO — decide chain finished (via Watchtower). reword the historical DEFER line (it read as a live deferral to closed T-4869 and blocked completion). learning — historical DEFER lines naming a task id block inception close (hit twice today). file build slices T-5259..T-5265 and upstreaming track T-5266 after GO
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: '832''s full consultation answer (6 points retire 7 of 60; 44 are upstreamable fixes; verb-level checks)'
+    source: git-mined
+  - description: 'file ring20 category-5 upstream bugs as T-4652..T-4658 (fail-open hooks and P-011 partial-complete skip at horizon now)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/learnings.yaml'
+  - '.context/reviews/human-ac-ticks.jsonl'
+  - 'docs/reports/T-4649-ring20-patch-triage.md'
+  - 'docs/reports/T-5248-upgrade-feedback-loop.md'
+  - '.tasks/active/T-4649-supported-extension-points-for-project-l.md'
+  - '.tasks/active/T-4652-check-tier0sh-and-check-project-boundary.md'
+  - '.tasks/active/T-4653-partial-complete-finalization-archives-a.md'
+  - '.tasks/active/T-4654-fabric-orphan-check-counts-non-path-loca.md'
+  - '.tasks/active/T-4655-metricssh-id-counters-hardcode-l-d-p--pr.md'
+  - '.tasks/active/T-4656-audit-d12-reads-contextprojectbypass-log.md'
+  - '.tasks/active/T-4657-apiv1health-search-ask-askstream-return-.md'
+  - '.tasks/active/T-4658-routetooperator-writes-multi-line-guidan.md'
+  - '.tasks/active/T-5259-project-extensions-foundation-operator-o.md'
+  - '.tasks/active/T-5260-project-watchtower-pages-register-projec.md'
+  - '.tasks/active/T-5261-project-menu-entries-new-watchtower-nav-.md'
+  - '.tasks/active/T-5262-project-form-safety-csrf-exemption-list-.md'
+  - '.tasks/active/T-5263-project-event-hooks-after-an-approval-de.md'
+  - '.tasks/active/T-5264-project-modified-reviewer-instructions-w.md'
+  - '.tasks/active/T-5265-project-checks-on-framework-commands-add.md'
+  - '.tasks/active/T-5266-take-projects-generic-fixes-into-aef-wor.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T16:14:58'
+    action: 'T-4649: inception — supported extension points for project-local hook additions (ring20)'
+  - time: '2026-10-22T21:29:38'
+    action: 'T-4649: record ring20 per-patch triage vs be.3 (37 patches: 5 covered, 3 movable, 9 need extension points, 2 relocations, 18 upstream candidates); IW-1/IW-2 filed'
+  - time: '2026-10-22T21:34:10'
+    action: 'T-4649: file ring20 category-5 upstream bugs as T-4652..T-4658 (fail-open hooks and P-011 partial-complete skip at horizon now)'
+  - time: '2026-10-27T11:59:40'
+    action: 'T-4649: per-point analysis of the 5 proposed extension points + a sixth (project gate patterns); IW-1/IW-2 disposed; recommendation narrowed (GO 1+2, 4, 6; CSRF only as operator allowlist; NO-GO reviewer addendum)'
+  - time: '2026-10-28T12:08:51'
+    action: 'T-4649: post-freeze backlog (release freeze, T-4869)'
+  - time: '2026-11-19T11:59:21'
+    action: 'T-4649: reopened for consultation (IW-3) — operator ''absolutely in favor'', consult ring20/055/1409/832 on the shape'
+  - time: '2026-11-19T12:09:02'
+    action: 'T-4649: consultation answers so far (1409 full first answer; 832 and 055 acknowledged, 832 carries 44 local changes)'
+  - time: '2026-11-19T13:14:48'
+    action: 'T-4649: 832''s full consultation answer (6 points retire 7 of 60; 44 are upstreamable fixes; verb-level checks)'
+  - time: '2026-11-19T15:24:41'
+    action: 'T-4649: 055''s full consultation answer; T-5248: research artefact with silent-loss (055) and hand re-application (832) evidence'
+  - time: '2026-11-19T15:30:26'
+    action: 'T-4649: ring20''s full consultation answer — all four projects have answered'
+  - time: '2026-11-19T15:37:00'
+    action: 'T-4649: operator ruling — any project modification allowed when it is that project''s operator''s recorded decision and upgrades never break or drop it'
+  - time: '2026-11-19T15:57:50'
+    action: 'T-4649: tap-to-approve moved out to T-5258 (decision channels), operator 2026-11-19'
+  - time: '2026-11-19T16:20:39'
+    action: 'T-4649: recommendation GO with the shape adjusted to all four consultation answers and the operator''s rulings (record and protect, not forbid; review mark)'
+  - time: '2026-11-19T16:29:12'
+    action: 'T-4649: inception decision GO — decide chain finished (via Watchtower)'
+  - time: '2026-11-19T16:30:08'
+    action: 'T-4649: reword the historical DEFER line (it read as a live deferral to closed T-4869 and blocked completion)'
+  - time: '2026-11-19T16:30:25'
+    action: 'T-4649: learning — historical DEFER lines naming a task id block inception close (hit twice today)'
+  - time: '2026-11-19T16:31:09'
+    action: 'T-4649: file build slices T-5259..T-5265 and upstreaming track T-5266 after GO'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 17 commit(s), 40398 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [consumer, upgrade, extension-points, post-freeze]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 40398
+  commits: 18
+  files_changed: 23
+  lines_added: 5962
+  lines_removed: 48
+  footprint_refreshed_at: '2026-11-19T15:34:20Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4649-supported-extension-points-for-project-l.md
+generated_by: context-agent-hybrid
