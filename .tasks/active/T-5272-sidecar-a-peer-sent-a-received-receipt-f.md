@@ -95,7 +95,7 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 2026-11-19: aef-greenfield-test (laptop agent) sent a RECEIVED receipt for AEF's notice b88bf0b8 at 13:04:01Z (after 9 HUB_ACCEPTED attempts), but reports (msg 0fb09dc8) that the body is not in its receiver store. Its version (msg ebbaa8e8): fw v1.8.15+617.g04afc9287, vendored copy; AEF is at 1.8.15+671 or later, so first check whether the receiver code differs between +617 and HEAD before assuming the bug is still present.
 
 **Problem / hypothesis:** <what we think is wrong and why>
 
