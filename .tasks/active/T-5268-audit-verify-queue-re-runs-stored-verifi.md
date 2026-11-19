@@ -1,13 +1,26 @@
 ---
 id: T-5268
-name: "Audit verify-queue re-runs stored Verification lines unattended on the host: let a line declare it needs a fixture (skipped there, still run at close) and keep an append-only run history"
+name: "Audit verify-queue re-runs stored Verification lines unattended on the host:
+  let a line declare it needs a fixture (skipped there, still run at close) and keep
+  an append-only run history"
 description: >
-  0506-Voxtype-extention (msg ac237c0c, 2026-11-19, their proposal P25): the audit's verify-queue (CTL-013b, agents/audit/audit.sh ~7517, lib/verify_queue.py; default 3 tasks per audit run) re-ran stored Verification lines of their old tasks T-008/T-010 unattended; one ran a spike script whose EXIT trap does pkill -f voxtype-review as root, which killed their live services at 16:13:44 and 16:14:01. Their script bug, but the class is ours: any stored Verification line, written for a one-time close, is re-executed later on a live host without anyone watching. Proposal: a line may declare '# needs: fixture' (verify-queue skips it with INFO; the completion gate still runs it); keep an append-only verify-queue history (only the last timestamp per task survives today, so runs cannot be correlated with incidents). Consider also: verify-queue refuses lines with kill/pkill/systemctl stop patterns unless marked safe.
+  0506-Voxtype-extention (msg ac237c0c, 2026-11-19, their proposal P25): the audit's
+  verify-queue (CTL-013b, agents/audit/audit.sh ~7517, lib/verify_queue.py; default
+  3 tasks per audit run) re-ran stored Verification lines of their old tasks T-008/T-010
+  unattended; one ran a spike script whose EXIT trap does pkill -f voxtype-review
+  as root, which killed their live services at 16:13:44 and 16:14:01. Their script
+  bug, but the class is ours: any stored Verification line, written for a one-time
+  close, is re-executed later on a live host without anyone watching. Proposal: a
+  line may declare '# needs: fixture' (verify-queue skips it with INFO; the completion
+  gate still runs it); keep an append-only verify-queue history (only the last timestamp
+  per task survives today, so runs cannot be correlated with incidents). Consider
+  also: verify-queue refuses lines with kill/pkill/systemctl stop patterns unless
+  marked safe.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [safety, audit]
 components: []
 related_tasks: []
@@ -39,8 +52,8 @@ origin: {kind: "peer", source: "0506-Voxtype-extention", ref: "ac237c0c"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T15:41:46Z
-last_update: 2026-11-19T15:41:46Z
-date_finished: null
+last_update: '2026-11-19T15:43:49Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +64,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-19T15:43:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5268: Audit verify-queue re-runs stored Verification lines unattended on the host: let a line declare it needs a fixture (skipped there, still run at close) and keep an append-only run history
@@ -58,20 +88,24 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 0506-Voxtype-extention (msgs b6b05a93, ac237c0c, 2026-11-19): `fw audit`'s verify-queue (CTL-013b, lib/verify_queue.py) re-ran the stored Verification lines of their old tasks T-008/T-010 unattended; a line ran their spike script, whose EXIT trap does `pkill -f voxtype-review`, and their live services got SIGTERM at 16:13:44 and 16:14:01. Their proposal P25. Operator: "yes, start with T-5268".
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Two audit paths re-execute stored Verification lines unattended on a live host: verify-queue (CTL-013b, `_unsafe` with UNSAFE_PATTERNS) and CTL-013 (agents/audit/audit.sh ~7304-7460), which skips only nested `fw audit` and none of verify-queue's patterns (`rm -rf`, `git push`, HTTP writes). Neither knows about process control (kill, pkill, killall, systemctl stop/restart). A text check can never see inside a called script (same boundary as Tier 0, T-2742), so the author must be able to declare a line unsafe to re-run. Only the last run time per task survives, so a run cannot be matched to an incident afterwards.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** One rule, shared by both unattended runners, decides whether a stored line may run outside its close; an author can mark a line; every unattended run leaves a lasting record.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A line marked `# needs: fixture` (trailing comment, so bash and the P-011 close gate still run it) is skipped with an INFO by verify-queue and CTL-013. Process-control lines are skipped by both. Both runners refuse the same patterns. Every unattended execution or skip is appended to a history file that can be correlated with incidents.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] One shared predicate (Python, e.g. lib/unattended_verification.py) says whether a stored line may run unattended and why not; lib/verify_queue.py uses it, and CTL-013 in agents/audit/audit.sh calls it (no second copy of the patterns)
+- [ ] The predicate refuses: the existing UNSAFE_PATTERNS, nested `fw audit`, process control (`kill` with a pid or signal, `pkill`, `killall`, `systemctl ... stop|restart|kill|disable`, `service ... stop|restart`, `shutdown`, `reboot`), and any line carrying the trailing marker `# needs: fixture`; each skip carries its reason and is never counted as a pass
+- [ ] The P-011 close gate still runs a line with the trailing marker (bash treats it as a comment): pinned by a test
+- [ ] Append-only history at .context/audits/verify-queue/history.jsonl: one row per line run or skipped by either runner (ts, runner, task, line sha256, outcome, reason); rotation never rewrites old rows
+- [ ] Tests: marker skip and process-control skip in both runners, the close gate running a marked line, history rows appended by both; existing tests t2765_verify_queue.bats, audit_ctl013_skip_nested_audit.bats and t5132_ctl013_coverage.bats stay green
+- [ ] The task template's Verification guidance and CLAUDE.md §Verification Gate name the marker in one line each; vendored copies synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -354,3 +388,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5268-audit-verify-queue-re-runs-stored-verifi.md
 - **Context:** Initial task creation
+
+### 2026-11-19T15:43:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
