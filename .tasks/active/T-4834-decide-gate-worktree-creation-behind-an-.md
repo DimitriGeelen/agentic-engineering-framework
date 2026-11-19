@@ -133,7 +133,7 @@ AEF's Worktree Policy (CLAUDE.md §Worktree Policy, operator directive 2026-08-2
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Decide whether AEF gates worktree creation behind an operator grant
+- [x] [REVIEW] Decide whether AEF gates worktree creation behind an operator grant
   **Steps:**
   1. Open http://192.168.10.107:3000/inception/T-4834
   2. Read the Recommendation (GO, proposed shape) and docs/reports/T-4834-worktree-gate-review.md
@@ -420,13 +420,14 @@ Earlier recommendation (before 2026-11-19), kept for the record: DEFER until T-4
 
 ## Decision
 
-<!-- Filled at completion of inception tasks via:
-     fw inception decide T-XXX go|no-go|defer --rationale "..."
+**Decision**: GO
 
-     For non-inception tasks this section is ignored. Kept in template
-     so `fw inception decide` (lib/inception.sh) finds the anchor heading
-     without auto-creating; T-1832 added auto-create as fallback for
-     legacy tasks lacking this section. -->
+**Rationale**: Adopt an operator-grant gate on worktree creation in AEF, adapted from 055's T-649 hook, and ship it to consumers like the other refusal hooks. The operator asked for exactly this ("AEF should also have a gate that refuses worktrees without my permission", relayed by 055). A behavioural rule alone did not hold: 055 made 27 uninstructed worktree branches in 8 days, and AEF itself still carries two leftover worktrees from September (`/opt/aef-f21-f24`, `/opt/aef-f25`, both prunable). The gate's footprint in AEF is small: only `fw worktree create` (lib/worktree.sh:347) creates worktrees in framework code; releases and `fw termlink dispatch` do not. Proposed shape, for the build task:
+- refuse `git worktree add` (any spelling the hook can see), `fw worktree create`, Claude Code's EnterWorktree and Agent `isolation: worktree`, unless a live operator grant exists;
+- the grant comes from an operator verb, `fw worktree grant [--hours N]`, refused under agent control (as `fw tier0 approve` and `fw inception decide` are), time-limited, logged; agents cannot write the grant file;
+- CLAUDE.md §Worktree Policy changes from "NOT gated" to "gated by an operator grant"; `fw upgrade` delivers the hook.
+
+**Date**: 2026-11-19T13:43:53Z
 
 ## Updates
 
@@ -444,3 +445,11 @@ Earlier recommendation (before 2026-11-19), kept for the record: DEFER until T-4
 ### 2026-11-18T22:21:46Z — inception-wait [inception-lifecycle]
 - **Change:** waiting_on: agent → agent
 - **Revisit:** 2026-11-25
+
+### 2026-11-19T13:43:53Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Adopt an operator-grant gate on worktree creation in AEF, adapted from 055's T-649 hook, and ship it to consumers like the other refusal hooks. The operator asked for exactly this ("AEF should also have a gate that refuses worktrees without my permission", relayed by 055). A behavioural rule alone did not hold: 055 made 27 uninstructed worktree branches in 8 days, and AEF itself still carries two leftover worktrees from September (`/opt/aef-f21-f24`, `/opt/aef-f25`, both prunable). The gate's footprint in AEF is small: only `fw worktree create` (lib/worktree.sh:347) creates worktrees in framework code; releases and `fw termlink dispatch` do not. Proposed shape, for the build task:
+- refuse `git worktree add` (any spelling the hook can see), `fw worktree create`, Claude Code's EnterWorktree and Agent `isolation: worktree`, unless a live operator grant exists;
+- the grant comes from an operator verb, `fw worktree grant [--hours N]`, refused under agent control (as `fw tier0 approve` and `fw inception decide` are), time-limited, logged; agents cannot write the grant file;
+- CLAUDE.md §Worktree Policy changes from "NOT gated" to "gated by an operator grant"; `fw upgrade` delivers the hook.
