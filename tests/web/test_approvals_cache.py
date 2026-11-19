@@ -39,7 +39,7 @@ def test_pending_go_uses_cache_filter():
         assert "go_nogo_criteria" in r
         # T-1537: verdict field surfaced for top-level badge parity with partial-completes
         assert "verdict" in r, f"verdict field missing from {task_id}"
-        assert r["verdict"] in ("GO", "DEFER", "NO-GO", "?"), \
+        assert r["verdict"] in ("GO", "DEFER", "NO-GO", "EXPLORING", "?"), \
             f"unexpected verdict value for {task_id}: {r['verdict']!r}"
 
 

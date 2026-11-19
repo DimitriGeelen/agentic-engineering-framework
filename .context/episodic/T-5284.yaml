@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5284: tests/web/test_approvals_cache.py rejects the EXPLORING recommendation value (T-5226) as an unexpected verdict
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-19T23:55:54Z
+# ============================================================================
+
+task_id: T-5284
+task_name: "tests/web/test_approvals_cache.py rejects the EXPLORING recommendation value (T-5226) as an unexpected verdict"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-19T23:53:44Z
+completed: 2026-11-19T23:55:05Z
+duration_days: 0
+updates_count: 3
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Found 2026-11-20 while verifying T-5260: test_pending_go_uses_cache_filter asserts r['verdict'] in ('GO','DEFER','NO-GO','?') and fails on T-2963, whose recommendation is EXPLORING, a valid value since T-5226 (2026-11-18). The test predates T-5226. Fix: accept EXPLORING.
+
+# Key outcomes
+outcomes:
+  - 'tests/web/test_approvals_cache.py accepts EXPLORING alongside GO, DEFER, NO-GO and ''?'''
+  - 'The test passes'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, tests]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1
+  commits: 1
+  files_changed: 5
+  lines_added: 853
+  lines_removed: 1
+  footprint_refreshed_at: '2026-11-19T23:56:10Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5284-testswebtestapprovalscachepy-rejects-the.md
+generated_by: context-agent-hybrid
