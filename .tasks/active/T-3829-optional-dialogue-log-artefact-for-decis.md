@@ -12,10 +12,10 @@ description: >
   tasks. The template gains the key, update-task.sh runs the check, and handover lists
   open logs. Assessment: no such option at HEAD. Overlaps C-001 Dialogue Log.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -23,7 +23,7 @@ step_entered_at: '2026-11-18T22:21:42Z'
 revisit_at: 2026-11-25
 waiting_on: operator
 created: 2026-10-04T14:37:42Z
-last_update: 2026-11-18T22:21:42Z
+last_update: 2026-11-19T09:56:32Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,6 +90,11 @@ bvp_scores_proposed:
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
 
+- **IW-1: Should the framework enforce a dialogue log for decision walkthroughs, and in what shape: a new per-walkthrough file with its own check (1409's design), or the existing C-001 Dialogue Log enforced?**
+  confidence: 3
+  disposition: answered
+  rationale: Enforce the existing C-001 Dialogue Log — on by default for inceptions (checked before decide), opt-in frontmatter key for other tasks; the log stays in the research report. Operator ruling 2026-11-19, walkthrough of the ready inceptions: "1" (GO, narrow). Evidence: docs/reports/T-3829-dialogue-log-enforcement.md.
+
 ## Exploration Plan
 
 <!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
@@ -150,9 +155,15 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO
 
-**Rationale:** C-001 already requires a Dialogue Log section in inception research artifacts. The proposal generalises it to decision walkthroughs outside inception, with an opt-in frontmatter key checked at P-011. That is useful, but it overlaps C-001 and the operator wants it on or off by default. The default and the overlap need an operator ruling before any build, so DEFER pending that ruling. The evidence comes from one consumer (two walkthroughs).
+**Rationale:** Enforce the existing C-001 Dialogue Log rather than add a new artefact. On by default for inceptions: `fw inception decide` (and the Watchtower decide path) refuses when the research report has no Dialogue Log quoting the operator at least once. Opt-in for other tasks through a frontmatter key that makes the same check a close gate. The log stays in the research report, and the handover lists walkthroughs whose log is missing. Operator ruling 2026-11-19: "1" (GO, narrow).
+
+**Evidence:**
+- docs/reports/T-3829-dialogue-log-enforcement.md: C-001 is unchecked today (the commit hook only tests that a report exists); 189 of 1,143 reports and 21 completed inceptions carry a Dialogue Log.
+- 2026-11-19 walkthrough: the operator's rulings on T-3240, T-3496 and T-4834 were recorded only by hand.
+
+Earlier recommendation (2026-10), kept for the record: DEFER pending the operator's ruling on default and overlap. C-001 already requires a Dialogue Log section in inception research artifacts. The proposal generalises it to decision walkthroughs outside inception, with an opt-in frontmatter key checked at P-011. That is useful, but it overlaps C-001 and the operator wants it on or off by default. The default and the overlap need an operator ruling before any build, so DEFER pending that ruling. The evidence comes from one consumer (two walkthroughs).
 
 ## Decisions
 
@@ -177,3 +188,7 @@ bvp_scores_proposed:
 ### 2026-11-18T22:21:42Z — inception-wait [inception-lifecycle]
 - **Change:** waiting_on: agent → operator
 - **Revisit:** 2026-11-25
+
+### 2026-11-19T09:56:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
