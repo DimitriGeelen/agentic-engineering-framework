@@ -159,3 +159,7 @@ Agent explained ring20's tap-to-approve. **Operator, verbatim:** "okay what we r
 
 - New, beyond the six points: a project checker for the close gate (1409 b1). Its "instead of the stamp" form relaxes a gate, so it falls under the same rule as point 3: only with an operator approval visible in audit. Notification hooks after task completion and after arc instantiate (1409 b3) extend point 4 without new risk.
 - Where the operator-owned list lives (AEF vs the project, 1409 c) is a real design choice for the operator.
+
+### Operator, 2026-11-19: the review mark
+
+Agent asked whether reviews from a project that changed its reviewer instructions should carry a visible mark (the change itself stays allowed). **Operator, verbatim:** "yes, add the mark". All consultation answers are in; the agent wrote the recommendation GO with the adjusted scope.

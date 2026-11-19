@@ -16,12 +16,12 @@ horizon: now
 tags: [consumer, upgrade, extension-points, post-freeze]
 components: []
 related_tasks: []
-step_entered_at: '2026-11-19T10:58:36Z'
-revisit_at: 2026-11-24
-waiting_on: peer
+step_entered_at: '2026-11-19T15:20:39Z'
+revisit_at: 2026-11-26
+waiting_on: operator
 origin: {kind: "peer", source: "proxmox-ring20-management", ref: "83c8790d"}
 created: 2026-10-22T14:14:29Z
-last_update: '2026-11-19T11:00:45Z'
+last_update: 2026-11-19T15:20:39Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -108,9 +108,9 @@ cost_estimate_proposed:
   rationale: not as a self-declared contract (a blueprint declaring itself exempt is project code weakening a gate). Only as a committed, operator-owned allowlist naming each endpoint, its auth mechanism and a task id, listed by fw audit, with list changes as an operator action. Proposed; the operator rules on it at decide time (ring20 patches #9, #10)
 
 - **IW-3: Does the proposed shape fit the projects that will use it? Consult ring20, 055, 1409 and 832: which of their local changes it would let them remove, what is missing or shaped wrong, and whether an operator-owned form-safety list works in practice.**
-  confidence: 0
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: All four answered in full (1409 bd94a1e0, 832 d231f270, 055 485934c1, ring20 b1961c86; docs/reports/T-4649-ring20-patch-triage.md §Consultation). Shape adjusted to their answers; operator rulings 2026-11-19: any project modification is allowed when it is that project's operator's recorded decision and upgrades never break or drop it; tap-to-approve becomes T-5258 (decision channels); reviews from a project that changed its reviewer instructions carry a visible mark ("yes, add the mark").
 
 ## Exploration Plan
 
@@ -172,9 +172,23 @@ cost_estimate_proposed:
 
 ## Recommendation
 
-**Recommendation:** EXPLORING
+**Recommendation:** GO
 
-Reopened 2026-11-19 for consultation (IW-3). Operator, walkthrough of the ready inceptions: "I'm absolutely in favor of this. I'm just wondering if you should get some consultation on suggestions on how to shape this." Then: "yes, send the consultation and file the inception" (the upgrade feedback loop, filed separately as T-5248). Waiting on: peers (ring20, 055, 1409, 832). The freeze condition of the earlier DEFER has passed (v1.8.15 released 2026-10-29); the agent's verdict after consultation is expected to be GO on points 1, 2, 4, 6, NO-GO on 5, and point 3 as the operator chooses.
+**Principle (operator, 2026-11-19):** "Any modification is completely allowed. We just need to assure that further upgrades don't break, that's the risk ... always it needs to be an operated decision". The framework records and protects; it does not forbid. Every extension below is switched on by a recorded decision of that project's operator (an operator-only command), listed by `fw audit`, and kept intact by `fw upgrade`.
+
+**Scope, adjusted to the four consultation answers:**
+1. **Project pages:** a project registers its own Watchtower blueprints from its own folder, with their templates, static files and helper modules, looked up after the framework's own (ring20 b1).
+2. **Menu:** new menu groups, and items appended to existing groups (ring20 b5); a slot in an existing page as a follow-up (832 b3).
+3. **Form-safety (CSRF) exemptions:** a list in the project, owned by its operator (1409 c). Each entry names an endpoint or a whole blueprint, its own authentication and the test that proves it; Watchtower checks at startup that the endpoint enforces it, and `fw audit` fails on an unproven or stale entry (ring20 c, 832 c, 055 c).
+4. **Hooks after events:** after an approval decision (with the full decision record: request id, decision, actor, channel, time), after a task closes, after `fw arc instantiate`, after test and audit runs. A hook failure is logged and never blocks (ring20 b4, 1409 b3, 055 b).
+5. **Reviewer instructions:** a project's operator may change them, including a remove-only list of fields the brief builder drops (ring20 b3); every verdict from such a project carries a visible mark that its reviewer instructions were changed (operator: "yes, add the mark").
+6. **Project checks on framework gates:** added at the level of framework commands (closing a task, deciding an inception, git hooks), not only Bash text patterns (832 b4, 1409 b1); replacing a check is allowed as a recorded operator decision; a project can pin a rule with its own test in the gate's regression suite (055 b).
+
+**Not built here, each its own track:** tap-to-approve and other decision routes → T-5258 (decision channels); upgrade lists every local difference and never drops one silently → T-5248 (upgrade feedback loop; 055 lost one silently on 2026-11-02, 832 redoes 44 by hand); taking projects' generic fixes into AEF (832: 44 of 60 entries are fixes to AEF behaviour) → a separate piece of work from 832's manifest; project commands and a project lib path (832 b1, b2) → follow-up after this.
+
+**Evidence:** docs/reports/T-4649-ring20-patch-triage.md (per-point analysis 2026-10-27; consultation answers and operator rulings 2026-11-19).
+
+Earlier status, kept for the record: reopened 2026-11-19 for consultation (IW-3). Operator, walkthrough of the ready inceptions: "I'm absolutely in favor of this. I'm just wondering if you should get some consultation on suggestions on how to shape this." Then: "yes, send the consultation and file the inception" (the upgrade feedback loop, filed separately as T-5248). Waiting on: peers (ring20, 055, 1409, 832). The freeze condition of the earlier DEFER has passed (v1.8.15 released 2026-10-29); the agent's verdict after consultation is expected to be GO on points 1, 2, 4, 6, NO-GO on 5, and point 3 as the operator chooses.
 
 Earlier recommendation (2026-10-28), kept for the record: DEFER until v1.8.15 is released: the operator put the project in a release freeze on 2026-10-28 (T-4869, CLAUDE.md §Release Freeze Phase), so no new development starts now. The per-point analysis below stands for after the release. Then, scoped: build extension points 1+2 (blueprints + nav), 6 (tightening-only project gate patterns) and 4 (notification-only post-decision hook). Point 3 (CSRF) only as an operator-owned allowlist, and only if the operator agrees to that shape. NO-GO on 5 (reviewer-brief addendum).
 
@@ -232,3 +246,7 @@ Earlier recommendation (2026-10-28), kept for the record: DEFER until v1.8.15 is
 ### 2026-11-19T10:58:36Z — inception-wait [inception-lifecycle]
 - **Change:** waiting_on: operator → peer
 - **Revisit:** 2026-11-24
+
+### 2026-11-19T15:20:39Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: peer → operator
+- **Revisit:** 2026-11-26
