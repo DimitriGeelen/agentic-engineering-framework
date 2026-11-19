@@ -128,10 +128,18 @@ AEF's Worktree Policy (CLAUDE.md §Worktree Policy, operator directive 2026-08-2
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] 055's hook reviewed against AEF's gates and code paths (docs/reports/T-4834-worktree-gate-review.md)
+- [x] Recommendation written with rationale and evidence
 
 ### Human
+<!-- @auto-tick-on-decide -->
+- [ ] [REVIEW] Decide whether AEF gates worktree creation behind an operator grant
+  **Steps:**
+  1. Open http://192.168.10.107:3000/inception/T-4834
+  2. Read the Recommendation (GO, proposed shape) and docs/reports/T-4834-worktree-gate-review.md
+  3. Record GO, NO-GO or DEFER with the form on that page
+  **Expected:** Decision recorded; on GO a build task is filed for the gate
+  **If not:** Ask the agent about the specific point that is unclear
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
