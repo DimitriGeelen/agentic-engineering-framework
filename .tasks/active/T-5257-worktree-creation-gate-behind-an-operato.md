@@ -1,8 +1,18 @@
 ---
 id: T-5257
-name: "Worktree creation gate behind an operator grant: operator-only fw worktree grant and a hook refusing git worktree add, fw worktree create, EnterWorktree and Agent isolation worktree (T-4834 GO)"
+name: "Worktree creation gate behind an operator grant: operator-only fw worktree
+  grant and a hook refusing git worktree add, fw worktree create, EnterWorktree and
+  Agent isolation worktree (T-4834 GO)"
 description: >
-  T-4834 GO (operator, 2026-11-19). Adapt 055's T-649 hook (docs/reports/T-4834/received-055-worktree-gate.md; review in docs/reports/T-4834-worktree-gate-review.md): refuse every visible spelling of git worktree add, fw worktree create (lib/worktree.sh:347 is the only framework creator), Claude Code's EnterWorktree and Agent isolation worktree unless a live operator grant exists; the grant comes from fw worktree grant with an hours limit, refused under agent control like the operator-only approve verbs, logged; agents cannot write the grant file. Change CLAUDE.md Worktree Policy from 'NOT gated' to 'gated by an operator grant'; deliver the hook through fw init and fw upgrade like block-cross-session-messages. Text-gate limit applies (a script file is not seen).
+  T-4834 GO (operator, 2026-11-19). Adapt 055's T-649 hook (docs/reports/T-4834/received-055-worktree-gate.md;
+  review in docs/reports/T-4834-worktree-gate-review.md): refuse every visible spelling
+  of git worktree add, fw worktree create (lib/worktree.sh:347 is the only framework
+  creator), Claude Code's EnterWorktree and Agent isolation worktree unless a live
+  operator grant exists; the grant comes from fw worktree grant with an hours limit,
+  refused under agent control like the operator-only approve verbs, logged; agents
+  cannot write the grant file. Change CLAUDE.md Worktree Policy from 'NOT gated' to
+  'gated by an operator grant'; deliver the hook through fw init and fw upgrade like
+  block-cross-session-messages. Text-gate limit applies (a script file is not seen).
 
 status: captured
 workflow_type: build
@@ -39,8 +49,8 @@ origin: {kind: "operator", source: "T-4834"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T13:48:42Z
-last_update: 2026-11-19T13:48:42Z
-date_finished: null
+last_update: '2026-11-19T14:00:35Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +61,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-19T14:00:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5257: Worktree creation gate behind an operator grant: operator-only fw worktree grant and a hook refusing git worktree add, fw worktree create, EnterWorktree and Agent isolation worktree (T-4834 GO)
