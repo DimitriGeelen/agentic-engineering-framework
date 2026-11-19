@@ -160,3 +160,6 @@ For AEF this means:
 
 - 2026-11-18: 1409's message c87d0ee1 received; answers (a)-(d) sent with the facts above;
   inception filed DEFER pending their measurements.
+- 2026-11-19, walkthrough with the operator, IW-1 (owner model). Agent presented A / B / C
+  with 1409's load-test evidence and recommended B (owner is a role; a fresh agent per event
+  reads and writes the arc's journal). **Operator, verbatim:** "1" (B).

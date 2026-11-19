@@ -19,7 +19,7 @@ step_entered_at: '2026-11-18T22:21:49Z'
 revisit_at: 2026-11-25
 waiting_on: peer
 created: 2026-11-18T09:15:42Z
-last_update: '2026-11-19T09:30:42Z'
+last_update: 2026-11-19T11:44:10Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -107,6 +107,9 @@ Research: docs/reports/T-5224-arc-orchestrator.md.
 -->
 
 - **IW-1: Which owner model: A (one orchestrator that stays and is resumed), B (the owner is a role; a fresh agent is woken per event, reads a per-arc handover and writes one back), or C (timer plus a driver, no owner)? Depends on 1409's load test: can a fresh agent continue from the arc's records alone?**
+  confidence: 3
+  disposition: answered
+  rationale: B. 1409's fresh-agent load test (210 agents): 7/10 right next step on the records as they were, 10/10 with decision lines at the unit; every wrong action came from a decision not written into the arc. Resume costs ~16-18K tokens. Operator ruling 2026-11-19: "1" (B). docs/reports/T-5224-arc-orchestrator.md §Dialogue Log.
 - **IW-2: What is the per-arc record? A journal of what was tried, decided and next, kept beside the arc YAML. Who writes it (the owner at each step, the framework at task status changes), and what makes it enough to resume from?**
 - **IW-3: How does it plug in? An optional `orchestrator:` field on the arc, `fw arc handover <id>` / `fw arc resume <id>`, a wake on task status changes inside the arc (sidecar notice, as in T-5211), and which parts stay project-side (1409's timer, pool, judgment rules).**
 - **IW-4: Governance for an agent that owns an arc across sessions and models: focus (arc focus vs task focus), the task gate, the budget gate, and review of the owner's decisions.**
