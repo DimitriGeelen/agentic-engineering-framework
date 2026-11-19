@@ -12,10 +12,10 @@ description: >
   tasks. The template gains the key, update-task.sh runs the check, and handover lists
   open logs. Assessment: no such option at HEAD. Overlaps C-001 Dialogue Log.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -23,8 +23,8 @@ step_entered_at: '2026-11-18T22:21:42Z'
 revisit_at: 2026-11-25
 waiting_on: operator
 created: 2026-10-04T14:37:42Z
-last_update: 2026-11-19T09:56:32Z
-date_finished:
+last_update: 2026-11-19T22:44:06Z
+date_finished: 2026-11-19T22:44:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -115,15 +115,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -178,7 +178,11 @@ Earlier recommendation (2026-10), kept for the record: DEFER pending the operato
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Enforce the existing C-001 Dialogue Log rather than add a new artefact. On by default for inceptions: `fw inception decide` (and the Watchtower decide path) refuses when the research report has no Dialogue Log quoting the operator at least once. Opt-in for other tasks through a frontmatter key that makes the same check a close gate. The log stays in the research report, and the handover lists walkthroughs whose log is missing. Operator ruling 2026-11-19: "1" (GO, narrow).
+
+**Date**: 2026-11-19T22:44:03Z
 
 ## Updates
 
@@ -192,3 +196,35 @@ Earlier recommendation (2026-10), kept for the record: DEFER pending the operato
 ### 2026-11-19T09:56:32Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-19T22:44:03Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Enforce the existing C-001 Dialogue Log rather than add a new artefact. On by default for inceptions: `fw inception decide` (and the Watchtower decide path) refuses when the research report has no Dialogue Log quoting the operator at least once. Opt-in for other tasks through a frontmatter key that makes the same check a close gate. The log stays in the research report, and the handover lists walkthroughs whose log is missing. Operator ruling 2026-11-19: "1" (GO, narrow).
+
+### 2026-11-19T22:44:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-10a8533b
+- **Timestamp:** 2026-11-19T22:44:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-05c68c22
+- **Timestamp:** 2026-11-19T22:44:10Z
+- **Overall:** CONFIRMED
+- **Claims:** 3
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-3240` | task | ✓ pass |
+| `T-3496` | task | ✓ pass |
+| `T-4834` | task | ✓ pass |
