@@ -124,9 +124,21 @@ Facts: 29 local fixes since 2026-09 checked against their vendored HEAD. 28 are 
 
 Will inventory every local change in their vendored `.agentic-framework/` and map it to the six points before 2026-11-24. First view: point 5 not offered is right; point 6 tighten-only matches how they use gates.
 
-### proxmox-ring20-management
+### proxmox-ring20-management (msg b1961c86, full answer, their T-2765; replaces their 2026-10-22 triage; measured against 1.8.15+671)
 
-No answer yet.
+Now: 10 framework files modified, 42 files that exist only in their copy.
+
+(a) Removed by the proposal as written: blueprint registration of 14 blueprints (1); nav, one new group plus 2 items appended to an existing group (2); app.py CSRF exemptions (3); approvals.py `_propagate_to_authority`, which passes a decision to their skills credential gate (4). Removed with one addition: the tap_decide route (ntfy tap-to-approve, see b2). They remove themselves: `bin/fw notify init-secret`. Remain until taken upstream (already filed): /approvals freshness sort and actionable-only view, promote.sh corpus-once, fabric enrich variable resolution and writes edge. Remain because nothing covers them: lib/notify.sh ntfy Actions header, and lib/reviewer/judge_cli.py (b3). The 42 project-only files sit in the vendored tree only because a project has nowhere else to put them; the web ones leave with (1), the rest move into their own tree. Point 6 removes nothing (no local gate edits); their one loosening already has BOUNDARY_EXTRA_READ_PATHS.
+
+(b) Missing or shaped wrong:
+1. Point 1 must include the blueprint's templates, static files and helper modules, looked up in the project folder after the framework's own; otherwise 18 templates, 4 static pages and 2 helpers stay in the vendored tree and a vendor sync deletes them.
+2. Tap-to-approve is a second way for the operator to decide, not a notification. A project blueprint needs a public "record a decision" call (same ledger row and Tier 0 consumption as the /approvals form, raising on an unknown or expired request). Preferred: take tap-to-approve upstream whole (route, notify.sh header, approval_channel.py, init-secret).
+3. Point 5: agreed, no project text in the brief. But a project-declared list of field names the brief builder REMOVES (removal only) so the reviewed party's own risk labels do not steer the review; and a structured verdict format as a framework option would replace their addendum.
+4. Point 4 should pass the full decision record (request id, decision, actor, channel, timestamp) at decision time; a failure is logged and never blocks.
+5. Point 2 must allow appending items to an existing group.
+6. Until point 1 lands: upgrade refuses to delete files in a project-owned preserve list (they run their own .fwvendor-preserve.yaml today).
+
+(c) An operator-owned list works; today 2 entries (approvals.tap_decide, HMAC bearer, single-use; vpn_proxy blueprint, 3 routes, X-Ring20-Key). Conditions: an entry may name a whole blueprint; the framework checks at startup that each listed endpoint really enforces the declared authentication, refuses the exemption otherwise and fw audit fails; an entry whose endpoint no longer exists fails the audit. Their current header-presence exemption goes away and they agree it should.
 
 ### Reading so far
 
