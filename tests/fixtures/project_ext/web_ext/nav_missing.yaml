@@ -1,0 +1,12 @@
+# Fixture menu entry (T-5261): one good item, the others must be dropped.
+group: "Ring20"
+items:
+  - label: "Hosts"
+    endpoint: "hosts_ext.hosts"
+  - label: "Gone"
+    endpoint: "no_such_blueprint.index"
+  - label: "Needs an id"
+    endpoint: "tasks.task_detail"
+  - label: "Both"
+    endpoint: "hosts_ext.hosts"
+    path: "/hosts"

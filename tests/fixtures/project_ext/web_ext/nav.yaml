@@ -1,0 +1,7 @@
+# Fixture menu entry (T-5261): a new group.
+group: "Ring20"
+items:
+  - label: "Hosts"
+    endpoint: "hosts_ext.hosts"
+  - label: "Shadow check"
+    path: "/hosts/shadow"

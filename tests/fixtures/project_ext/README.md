@@ -8,4 +8,5 @@ tests/web/test_t5261_project_nav.py, which write the register
 - `web_ext/broken.py` — fails at import
 - `web_ext/collide.py` — claims the framework route `/tasks`
 - `web_ext/unregistered.py` — never registered, must never be served
-- `web_ext/nav.yaml`, `nav_append.yaml`, `nav_missing.yaml` — menu entries (T-5261)
+- `web_ext/nav.yaml` (new group), `nav_append.yaml` (appended to Knowledge), `nav_govern.yaml`
+  (appended to Govern, which has sub-headings), `nav_missing.yaml` (items that must be dropped) — menu entries (T-5261)

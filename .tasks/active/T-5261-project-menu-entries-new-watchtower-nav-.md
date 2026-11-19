@@ -9,10 +9,10 @@ description: >
   Point 2 (ring20 b5). A slot in an existing page (832 b3) is a follow-up. Depends
   on slice 0.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [extension-points]
 components: []
 related_tasks: [T-4649]
@@ -44,7 +44,7 @@ origin: {kind: "operator", source: "T-4649"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T15:30:56Z
-last_update: '2026-11-19T15:45:53Z'
+last_update: '2026-11-19T23:22:40Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -83,6 +83,22 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-19T23:22:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 1
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=1 (body:log-or-error-line); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5261: Project menu entries: new Watchtower nav groups and items appended to existing groups (T-4649 slice 2)
@@ -102,11 +118,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A `nav` extension declares items {label, endpoint or path} and either a new group name or the name of an existing group to append to; NAV_GROUPS stays the framework's list and the project's entries are merged at render time
-- [ ] Merging only adds: framework groups and items keep their order; an item pointing at a missing endpoint is dropped with one logged line and a `fw doctor` WARN
-- [ ] Tests (t5261_*): new group shown; items appended to an existing group after the framework's own; missing endpoint dropped; no extension → menu identical to today; existing web tests stay green
-- [ ] Watchtower restarted and `bin/fw watchtower current` passes; vendored copies synced
-- [ ] Visual Verification: the menu with a fixture project group and appended items, at the three widths
+- [x] A `nav` extension declares items {label, endpoint or path} and either a new group name or the name of an existing group to append to; NAV_GROUPS stays the framework's list and the project's entries are merged at render time
+- [x] Merging only adds: framework groups and items keep their order; an item pointing at a missing endpoint is dropped with one logged line and a `fw doctor` WARN
+- [x] Tests (t5261_*): new group shown; items appended to an existing group after the framework's own; missing endpoint dropped; no extension → menu identical to today; existing web tests stay green
+- [x] Watchtower restarted and `bin/fw watchtower current` passes; vendored copies synced
+- [x] Visual Verification: the menu with a fixture project group and appended items, at the three widths
 
 ### Human
 - [ ] [REVIEW] Project menu entries look like the framework's own
@@ -299,6 +315,20 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 python3 -m pytest tests/web/test_t5261_project_nav.py -q -p no:cacheprovider > /tmp/.t5261-nav.out 2>&1 && grep -q "9 passed" /tmp/.t5261-nav.out
+timeout 900 python3 -m pytest tests/web/test_t5140_site_nav_on_every_page.py tests/web/test_t5146_nav_full_load.py -q -p no:cacheprovider > /tmp/.t5261-nav2.out 2>&1 && grep -q passed /tmp/.t5261-nav2.out
+python3 -c "import ast; [ast.parse(open(p).read()) for p in ('web/project_extensions.py','web/shared.py','web/app.py')]"
+bin/fw watchtower current
+bin/fw vendor self --check --task T-5261
+
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| menu-ring20-open | new project group "Ring20", dropdown open (Hosts, Shadow check) | ok | ok | ok | Fixture, not the real Watchtower: tests/fixtures/project_ext with a register naming web_ext/hosts.py (page) and nav.yaml, nav_append.yaml, nav_govern.yaml (nav), served on 127.0.0.1:3977 from a temp copy; the real register was never written. At 1024 a fifth group moves the search and settings icons to the second header row, beside the theme toggle that already sits there without extensions (state menu-no-extension); nothing is clipped or hidden. Three groups are highlighted because the fixture points an item in each at /hosts, the page shown. |
+| menu-knowledge-open | "Host notes" appended to the framework group Knowledge, after Decisions | ok | ok | ok | same fixture |
+| menu-govern-open | "Host audit" under its own sub-heading "Ring20", after Operations, in the framework group Govern | ok | ok | ok | same fixture |
+| menu-no-extension | real Watchtower /cron, no extensions registered: four framework groups, unchanged | ok | ok | ok | real Watchtower (192.168.10.107:3000), full-page shot of /cron; only the header matters here |
 
 ## RCA
 
@@ -380,6 +410,20 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-11-19 — where a `nav` extension declares its group and items
+- **Chose:** the register entry's `paths:` names a YAML file in the project (`group:`, optional `section:`, `items:` of `{label, endpoint | path}`), read with the register's own YAML loader.
+- **Why:** the T-5259 register refuses unknown fields and `fw extension add` takes `--path` only, so the operator registers a menu with the existing verb; the T-5259 audit already checks that the file exists.
+- **Rejected:** new `group:`/`items:` fields on the register entry (changes the T-5259 schema, its emitter and its CLI for one kind).
+
+### 2026-11-19 — appending to a group that has sub-headings (Govern)
+- **Chose:** project items go under their own sub-heading at the end of the group (`section:`, default "Project").
+- **Why:** appended bare, they would read as part of the framework's last sub-heading (Operations).
+- **Rejected:** inserting into a framework sub-heading (changes what the framework's own block contains).
+
+### 2026-11-19 — not done here
+- The command palette (⌘K), breadcrumbs and pinnable pages still read the framework list only (`NAV_ITEMS`, `palette_destinations`, `_breadcrumb_index`): a project page is reachable from the menu, not from those three. Not in this task's criteria.
+- Existing web tests, full run `pytest tests/web web/test_app.py` with this change: 644 passed, 1 skipped, 2 failed. Both reds are recorded under T-5260 Decisions and fail the same way without this change's code paths: `test_approvals_cache.py::test_pending_go_uses_cache_filter` (T-2963 reads `EXPLORING`) and `test_bpmn_frozen_v1_pin.py::test_absent_marker_stage_output_byte_identical` (staged-manifest hash).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -396,3 +440,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5261-project-menu-entries-new-watchtower-nav-.md
 - **Context:** Initial task creation
+
+### 2026-11-19T23:22:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

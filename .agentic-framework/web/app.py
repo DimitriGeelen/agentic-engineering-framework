@@ -261,7 +261,8 @@ def create_app() -> Flask:
     @app.context_processor
     def _site_nav_context():
         from web.shared import NAV_FULL_LOAD_ENDPOINTS  # T-5146
-        return {"nav_groups": NAV_GROUPS, "nav_items": NAV_ITEMS,
+        from web.project_extensions import nav_groups as _merged_nav  # T-5261
+        return {"nav_groups": _merged_nav(NAV_GROUPS, app), "nav_items": NAV_ITEMS,
                 "nav_full_load": NAV_FULL_LOAD_ENDPOINTS}
 
     # -------------------------------------------------------------------
@@ -281,6 +282,9 @@ def create_app() -> Flask:
         logging.getLogger(__name__).warning(
             "project extensions: register not loaded, no project pages: %s", _pext_err)
     _pext.load_project_pages(app, PROJECT_ROOT, _fw_root, entries=_pext_entries)
+    # T-5261: the project's menu entries (`nav`), merged for rendering only:
+    # NAV_GROUPS itself stays the framework's list.
+    _pext.build_project_nav(app, PROJECT_ROOT, _fw_root, NAV_GROUPS, entries=_pext_entries)
     _pext.save_state(app, PROJECT_ROOT, _pext_entries)
 
     # -------------------------------------------------------------------
@@ -504,7 +508,7 @@ def create_app() -> Flask:
     def _error_context():
         """Common context for error pages."""
         return {
-            "nav_groups": NAV_GROUPS,
+            "nav_groups": _pext.nav_groups(NAV_GROUPS, app),
             "nav_items": NAV_ITEMS,
             "active_endpoint": None,
             "ambient": build_ambient(),

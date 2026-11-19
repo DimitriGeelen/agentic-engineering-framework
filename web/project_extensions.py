@@ -1,4 +1,4 @@
-"""Project Watchtower pages (T-5260, T-4649 slice 1).
+"""Project Watchtower pages (T-5260) and menu entries (T-5261) — T-4649 slices 1, 2.
 
 A project's own pages live in the PROJECT, not in the vendored framework copy,
 so `fw upgrade` never overwrites them. A page is loaded only when the project's
@@ -128,7 +128,7 @@ def _state(app):
 
 
 def save_state(app, project_root, entries):
-    st = dict(_state(app))
+    st = {k: v for k, v in _state(app).items() if k != "nav_groups"}
     st["ts"] = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     st["pid"] = os.getpid()
     has = any(e.get("kind") in ("page", "nav") for e in entries) or bool(st.get("register_error"))
@@ -193,3 +193,124 @@ def load_project_pages(app, project_root, framework_root, entries=None):
         # Framework loader FIRST: a project template never shadows a framework one.
         app.jinja_loader = ChoiceLoader([app.jinja_loader, FileSystemLoader(template_dirs)])
     return pages
+
+
+# ---------------------------------------------------------------- menu (T-5261)
+#
+# A `nav` extension names a YAML file in the project:
+#
+#     fw extension add nav ring20-menu --path web_ext/nav.yaml --words "our menu"
+#
+#     group: "Ring20"              # a new group, or the name of a framework group
+#     section: "Project"           # optional: sub-heading when the group has sub-headings
+#     items:
+#       - label: "Hosts"
+#         endpoint: "hosts_ext.hosts"     # a Flask endpoint that takes no arguments
+#       - label: "Runbook"
+#         path: "/hosts/runbook"          # or a path on this Watchtower
+#
+# Merging only adds. web.shared.NAV_GROUPS stays the framework's list, in its
+# order; a new group goes after the framework's groups and appended items go
+# after the framework's own items of that group. An item whose endpoint does not
+# exist is dropped with one logged line and shows as a `fw doctor` WARN.
+
+def _nav_copy(items):
+    return [(it[0], _nav_copy(it[1])) if len(it) == 2 and isinstance(it[1], list) else tuple(it)
+            for it in items]
+
+
+def _nav_item(app, raw):
+    """(leaf, None) or (None, reason) for one declared item."""
+    if not isinstance(raw, dict):
+        return None, "item is not a mapping"
+    label = raw.get("label")
+    if not isinstance(label, str) or not label.strip():
+        return None, "item has no label"
+    endpoint, path = raw.get("endpoint"), raw.get("path")
+    if bool(endpoint) == bool(path):
+        return None, "item needs exactly one of endpoint or path"
+    if path:
+        if not isinstance(path, str) or not path.startswith("/") or path.startswith("//"):
+            return None, f"path {path!r} must start with a single /"
+        return (label.strip(), path, None), None
+    if not isinstance(endpoint, str) or endpoint not in app.view_functions:
+        return None, f"endpoint {endpoint!r} does not exist"
+    if not any(not r.arguments for r in app.url_map.iter_rules(endpoint)):
+        return None, f"endpoint {endpoint!r} needs arguments, a menu link cannot supply them"
+    return (label.strip(), endpoint, None), None
+
+
+def build_project_nav(app, project_root, framework_root, base_groups, entries=None):
+    """The menu to draw: the framework's groups plus the project's `nav` entries.
+    Returns the SAME object as `base_groups` when the project adds nothing."""
+    project_root = str(project_root)
+    st = _state(app)
+    nav = st["nav"]
+    if entries is None:
+        entries, _err = load_register(project_root, framework_root)
+    wanted = [e for e in entries if e.get("kind") == "nav"]
+    if not wanted:
+        st["nav_groups"] = base_groups
+        return base_groups
+    ext = _register_module(framework_root)
+    groups = [(name, _nav_copy(items)) for name, items in base_groups]
+
+    def drop(e, rel, label, reason):
+        logger.warning("project menu entry %s (%s%s) dropped: %s", e["id"], rel,
+                       f": {label}" if label else "", reason)
+        nav["dropped"].append({"id": e["id"], "path": rel, "label": label, "reason": reason})
+
+    for e in wanted:
+        for rel in e["paths"]:
+            try:
+                with open(os.path.join(project_root, rel), encoding="utf-8") as fh:
+                    data = ext._yaml_load(fh.read())
+            except Exception as exc:  # noqa: BLE001 - a broken menu file never stops Watchtower
+                drop(e, rel, None, f"{type(exc).__name__}: {exc}")
+                continue
+            group = data.get("group") if isinstance(data, dict) else None
+            items = data.get("items") if isinstance(data, dict) else None
+            if not isinstance(group, str) or not group.strip() or not isinstance(items, list):
+                drop(e, rel, None, "file needs `group:` (a name) and `items:` (a list)")
+                continue
+            group = group.strip()
+            leaves = []
+            for raw in items:
+                leaf, reason = _nav_item(app, raw)
+                if leaf is None:
+                    drop(e, rel, raw.get("label") if isinstance(raw, dict) else None, reason)
+                else:
+                    leaves.append(leaf)
+            if not leaves:
+                continue
+            target = next((g for g in groups if g[0] == group), None)
+            if target is None:
+                target = (group, [])
+                groups.append(target)
+            subsectioned = any(len(it) == 2 and isinstance(it[1], list) for it in target[1])
+            if subsectioned:
+                section = data.get("section") if isinstance(data.get("section"), str) else "Project"
+                sub = next((it for it in target[1] if len(it) == 2 and isinstance(it[1], list)
+                            and it[0] == section), None)
+                if sub is None:
+                    sub = (section, [])
+                    target[1].append(sub)
+                sub[1].extend(leaves)
+            else:
+                target[1].extend(leaves)
+            nav["added"].extend({"id": e["id"], "group": group, "label": leaf[0], "target": leaf[1]}
+                                for leaf in leaves)
+    st["nav_groups"] = groups if nav["added"] else base_groups
+    return st["nav_groups"]
+
+
+def nav_groups(base_groups, app=None):
+    """The merged menu for the current app, at render time. Falls back to the
+    framework's own list outside an app or before the merge ran."""
+    if app is None:
+        try:
+            from flask import current_app
+            app = current_app._get_current_object()
+        except Exception:  # noqa: BLE001 - no app context
+            return base_groups
+    return (app.extensions.get(APP_KEY) or {}).get("nav_groups") or base_groups

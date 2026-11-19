@@ -534,8 +534,9 @@
                 {%- for item in items -%}
                     {%- if item[1] is string -%}
                         <li>
-                            <a href="{{ url_for(item[1]) }}"
-                               {% if item[1] == active_endpoint %}aria-current="page"{% endif %}
+                            {#- T-5261: a project menu entry may be a path ("/x") instead of an endpoint -#}
+                            <a href="{{ item[1] if item[1].startswith('/') else url_for(item[1]) }}"
+                               {% if item[1] == active_endpoint or item[1] == request.path %}aria-current="page"{% endif %}
                                {# T-5146: a page with its own script library is one direct load, not a swap #}
                                {% if item[1] in (nav_full_load or ()) %}hx-boost="false"{% else %}hx-target="#content" hx-swap="innerHTML" hx-push-url="true"{% endif %}>{{ item[0] }}</a>
                         </li>
@@ -548,7 +549,7 @@
             {%- macro nav_active(items) -%}
                 {%- for item in items -%}
                     {%- if item[1] is string -%}
-                        {%- if item[1] == active_endpoint -%}x{%- endif -%}
+                        {%- if item[1] == active_endpoint or item[1] == request.path -%}x{%- endif -%}
                     {%- else -%}
                         {{- nav_active(item[1]) -}}
                     {%- endif -%}

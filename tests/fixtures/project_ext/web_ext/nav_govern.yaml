@@ -1,0 +1,6 @@
+# Fixture menu entry (T-5261): appended to a group that has sub-headings.
+group: "Govern"
+section: "Ring20"
+items:
+  - label: "Host audit"
+    path: "/hosts"

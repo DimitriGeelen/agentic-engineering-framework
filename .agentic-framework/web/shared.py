@@ -3224,7 +3224,9 @@ def render_page(template_name, **context):
     (no `{% extends "base.html" %}`) and raise RuntimeError otherwise — closes
     the convention-violation detection window opened by T-1898.
     """
-    context.setdefault("nav_groups", NAV_GROUPS)
+    if "nav_groups" not in context:
+        from web.project_extensions import nav_groups as _merged_nav  # T-5261
+        context["nav_groups"] = _merged_nav(NAV_GROUPS)
     context.setdefault("nav_items", NAV_ITEMS)
     context.setdefault("active_endpoint", request.endpoint)
     context.setdefault("project_root", str(PROJECT_ROOT))

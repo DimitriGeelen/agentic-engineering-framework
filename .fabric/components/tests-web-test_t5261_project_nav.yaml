@@ -1,0 +1,21 @@
+id: tests/web/test_t5261_project_nav.py
+name: test_t5261_project_nav
+type: script
+subsystem: tests
+location: tests/web/test_t5261_project_nav.py
+tags: []
+
+purpose: "T-5261: a project's own Watchtower menu entries, registered as `nav` extensions."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-19
+created_by: unknown

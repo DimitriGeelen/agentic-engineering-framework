@@ -1,0 +1,5 @@
+# Fixture menu entry (T-5261): items appended to framework groups.
+group: "Knowledge"
+items:
+  - label: "Host notes"
+    endpoint: "hosts_ext.hosts"
