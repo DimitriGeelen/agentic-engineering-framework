@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5259: Project extensions foundation: operator-only command to switch an extension on, a project-owned register of active extensions, fw audit listing, fw upgrade keeps them (T-4649 slice 0)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-19T21:51:13Z
+# ============================================================================
+
+task_id: T-5259
+task_name: "Project extensions foundation: operator-only command to switch an extension on, a project-owned register of active extensions, fw audit listing, fw upgrade keeps them (T-4649 slice 0)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-19T15:30:54Z
+completed: 2026-11-19T21:39:59Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-19T22:20:48+01:00
+last_commit: 2026-11-19T22:37:09+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context and acceptance criteria (operator-decided extension register over the existing preserve mechanism, T-4649 slice 0). project extensions register — fw extension add|remove (operator-only)|list, vendored-override mirrored into .fwvendor-preserve.yaml, fw audit INFO/WARNs, fw vendor names kept extensions; tests
+
+# Key outcomes
+outcomes:
+  - 'Register `.framework-extensions.yaml` (project root, project-owned, never written by vendor/upgrade) with entries {id, kind, paths, words, decided_by, date}; kinds include vendored-override (a file or an in-file block under .agentic-framework/) plus the kinds later slices use (page, nav, csrf-exemption, event-hook, reviewer-brief, gate-check), validated by one module (e.g. lib/extensions.py)'
+  - '`fw extension add <kind> <id> --path P [--path P2] --words "<operator''s words>"`, `fw extension remove <id> --words "..."` and `fw extension list [--json]`: add and remove are operator-only (refused under agent control like `fw inception decide`; `--i-am-human` for scripts and tests, logged); list is open to everyone'
+  - 'A vendored-override entry is mirrored into `.fwvendor-preserve.yaml` (the existing `files:` / `in_file:` shapes) by the same command, so the existing vendor/upgrade protection applies; removing the entry removes the mirror; hand-written preserve entries are left untouched'
+  - '`fw audit` lists the register (INFO) and WARNs: a register path that does not exist; a `.fwvendor-preserve.yaml` entry with no register decision behind it; a vendored file the vendor stamp shows as locally modified with no register decision. `fw upgrade` names the registered extensions it kept'
+  - 'Tests (t5259_*): add/remove/list; agent refusal and --i-am-human logging; mirror into and out of the preserve manifest; a registered override survives `fw vendor` in a fresh-machine-style fixture; the three audit WARNs; existing vendor_preserve tests and tests/unit/upgrade_fresh_machine_simulation.bats stay green'
+  - 'Vendored copies synced (`bin/fw vendor self --check` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/extensions.py'
+  - '.fabric/components/lib-extensions.yaml'
+  - '.fabric/components/tests-unit-t5259_project_extensions.yaml'
+  - '.tasks/active/T-5259-project-extensions-foundation-operator-o.md'
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - 'lib/extensions.py'
+  - 'tests/unit/t5259_project_extensions.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-19T22:20:48'
+    action: 'T-5259: context and acceptance criteria (operator-decided extension register over the existing preserve mechanism, T-4649 slice 0)'
+  - time: '2026-11-19T22:37:09'
+    action: 'T-5259: project extensions register — fw extension add|remove (operator-only)|list, vendored-override mirrored into .fwvendor-preserve.yaml, fw audit INFO/WARNs, fw vendor names kept extensions; tests'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 369 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [extension-points]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 369
+  commits: 3
+  files_changed: 13
+  lines_added: 1716
+  lines_removed: 19
+  footprint_refreshed_at: '2026-11-19T21:51:43Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5259-project-extensions-foundation-operator-o.md
+generated_by: context-agent-hybrid
