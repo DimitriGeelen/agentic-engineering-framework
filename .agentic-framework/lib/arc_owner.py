@@ -10,6 +10,10 @@ per arc. ``fw arc owner <arc> on`` switches it on by writing, in the arc YAML,
       wake: notice        # or worker; read by T-5252
       since: "<UTC ts>"
 
+T-5253 adds ``decision_review: operator|reviewer|either`` (who may approve a
+consequential journal decision; default operator), set with ``--decision-review`` and,
+like ``wake_limit``, kept across off/on.
+
 ``off`` writes ``journal: false`` and ``role: "off"`` (the journal file is kept).
 The edit is line-based: every other line of the YAML, comments included, is left
 byte-for-byte as it was. ``role`` is quoted because YAML 1.1 reads a bare ``on``
@@ -21,7 +25,7 @@ capped), the latest next step with owner and deadline, and the arc's open member
 tasks. ``fw arc resume`` sets focus from it; this module never touches focus files.
 
 CLI:
-  python3 lib/arc_owner.py set <arc> on|off [--wake notice|worker]
+  python3 lib/arc_owner.py set <arc> on|off [--wake notice|worker] [--decision-review operator|reviewer|either]
   python3 lib/arc_owner.py state <arc> [--json]
   python3 lib/arc_owner.py brief <arc> [--json] [--limit N]
 Exit codes: set/state 0 ok, 2 usage/unknown arc; brief 0 resumable, 1 not, 2 usage.
@@ -90,7 +94,7 @@ def state(arc: str, project_root=None) -> dict:
     if i is not None:
         owner = {}
         for ln in lines[i + 1:_block_end(lines, i)]:
-            m = re.match(r"^\s+(role|wake|since|wake_limit):\s*(.*?)\s*(#.*)?$", ln)
+            m = re.match(r"^\s+(role|wake|since|wake_limit|decision_review):\s*(.*?)\s*(#.*)?$", ln)
             if m:
                 owner[m.group(1)] = m.group(2).strip("'\"")
         if not owner:
@@ -98,10 +102,14 @@ def state(arc: str, project_root=None) -> dict:
     return {"slug": slug, "journal": aj.journal_enabled(arc, project_root), "owner": owner}
 
 
-def set_owner(arc: str, on: bool, wake: str | None = None, project_root=None) -> dict:
+def set_owner(arc: str, on: bool, wake: str | None = None, project_root=None,
+              decision_review: str | None = None) -> dict:
     """Switch the owner role on or off. Returns the new state."""
     if wake is not None and wake not in WAKES:
         raise aj.JournalError(f"--wake must be one of {', '.join(WAKES)}, got '{wake}'")
+    if decision_review is not None and decision_review not in aj.DECISION_REVIEW:
+        raise aj.JournalError(f"--decision-review must be one of {', '.join(aj.DECISION_REVIEW)}, "
+                              f"got '{decision_review}'")
     _slug, _n, path = aj.resolve_arc(arc, project_root)
     text = path.read_text(encoding="utf-8")
     lines = text.splitlines()
@@ -119,6 +127,10 @@ def set_owner(arc: str, on: bool, wake: str | None = None, project_root=None) ->
     # T-5252: a per-arc wake limit set by hand survives switching on/off again.
     if str(prev.get("wake_limit") or "").isdigit():
         owner_block.append(f"  wake_limit: {prev['wake_limit']}")
+    # T-5253: who approves consequential decisions; kept across off/on like wake_limit.
+    if decision_review is None and prev.get("decision_review") in aj.DECISION_REVIEW:
+        decision_review = prev["decision_review"]
+    owner_block.append(f"  decision_review: {decision_review or aj.DEFAULT_DECISION_REVIEW}")
     j = _find_top(lines, "journal")
     if j is not None:
         m = re.match(r"^journal:\s*\S*(\s+#.*)?$", lines[j])
@@ -162,7 +174,8 @@ def brief(arc: str, project_root=None, limit: int = DECISION_LIMIT, today=None) 
     slug, numeric, _p = aj.resolve_arc(arc, root)
     findings, resumable = aj.check(arc, root, today=today)
     entries, _bad = aj.read(arc, root)
-    decisions = [aj._clean(e) for e in entries if e["kind"] in ("decided", "outside")][::-1][:limit]
+    decisions = [dict(aj._clean(e), ref=aj.entry_ref(e))
+                 for e in entries if e["kind"] in ("decided", "outside")][::-1][:limit]
     nexts = [e for e in entries if e["kind"] == "next"]
     nxt = aj._clean(nexts[-1]) if nexts else None
     open_tasks = []
@@ -177,7 +190,8 @@ def brief(arc: str, project_root=None, limit: int = DECISION_LIMIT, today=None) 
             focus_task = info["id"]
     return {"arc": slug, "id": numeric, "resumable": resumable, "findings": findings,
             "owner": state(arc, root)["owner"], "decisions": decisions, "next": nxt,
-            "open_tasks": open_tasks, "focus_task": focus_task}
+            "open_tasks": open_tasks, "focus_task": focus_task,
+            "unapproved": aj.unapproved(arc, root)}
 
 
 def render(b: dict) -> str:
@@ -194,7 +208,13 @@ def render(b: dict) -> str:
     for d in b["decisions"]:
         extra = f" [where: {d['where']}]" if d["kind"] == "outside" else ""
         flag = " [consequential]" if d.get("consequential") else ""
-        out.append(f"  {d['ts'][:16]}  {d['kind']:<7} {d['text']} — {d['reason']}{extra}{flag} (by {d['by']})")
+        out.append(f"  {d.get('ref', ''):<6} {d['ts'][:16]}  {d['kind']:<7} {d['text']} — {d['reason']}{extra}{flag} (by {d['by']})")
+    if b.get("unapproved"):
+        out.append("")
+        out.append("Consequential decisions waiting for approval (the arc is held until each is approved):")
+        for u in b["unapproved"]:
+            out.append(f"  {u['ref']}  [{u.get('category') or 'consequential'}] {u['text']} (by {u['by']})")
+            out.append(f"        operator: {u['command']}")
     out.append("")
     out.append("Next step:")
     n = b["next"]
@@ -222,6 +242,7 @@ def main(argv=None) -> int:
     s.add_argument("arc")
     s.add_argument("mode", choices=("on", "off"))
     s.add_argument("--wake", choices=WAKES)
+    s.add_argument("--decision-review", dest="decision_review", choices=aj.DECISION_REVIEW)
     st = sub.add_parser("state")
     st.add_argument("arc")
     st.add_argument("--json", action="store_true")
@@ -235,12 +256,13 @@ def main(argv=None) -> int:
         return 2 if e.code else 0
     try:
         if args.cmd == "set":
-            if args.mode == "off" and args.wake:
-                print("arc_owner: --wake applies to 'on' only", file=sys.stderr)
+            if args.mode == "off" and (args.wake or args.decision_review):
+                print("arc_owner: --wake and --decision-review apply to 'on' only", file=sys.stderr)
                 return 2
-            new = set_owner(args.arc, args.mode == "on", args.wake)
+            new = set_owner(args.arc, args.mode == "on", args.wake, decision_review=args.decision_review)
             o = new["owner"] or {}
-            print(f"Arc {new['slug']}: owner {o.get('role')} (wake {o.get('wake')}), journal "
+            print(f"Arc {new['slug']}: owner {o.get('role')} (wake {o.get('wake')}, decision review "
+                  f"{o.get('decision_review')}), journal "
                   f"{'on' if new['journal'] else 'off'}")
             return 0
         if args.cmd == "state":
@@ -249,7 +271,9 @@ def main(argv=None) -> int:
                 print(json.dumps(cur))
             else:
                 o = cur["owner"]
-                own = f"{o.get('role')} (wake {o.get('wake')}, since {o.get('since')})" if o else "not set"
+                own = (f"{o.get('role')} (wake {o.get('wake')}, since {o.get('since')}, decision review "
+                       f"{o.get('decision_review') or aj.DEFAULT_DECISION_REVIEW})"
+                       if o else "not set")
                 print(f"Owner: {own}   Journal: {'on' if cur['journal'] else 'off'}")
             return 0
         if args.cmd == "brief":

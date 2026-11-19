@@ -612,6 +612,9 @@ arc_show() {
     PROJECT_ROOT="$PROJECT_ROOT" python3 "${_ARC_LIB_DIR}/arc_owner.py" state "$id" 2>/dev/null || true
     # T-5252: today's wake count against the arc's daily wake limit (owner on only).
     PROJECT_ROOT="$PROJECT_ROOT" python3 "${_ARC_LIB_DIR}/arc_wake.py" today "$id" 2>/dev/null || true
+    # T-5253: consequential decisions waiting for approval (silent when the arc keeps no journal).
+    PROJECT_ROOT="$PROJECT_ROOT" python3 "${_ARC_LIB_DIR}/arc_journal.py" pending "$id" 2>/dev/null \
+        | grep -v "no consequential decision is waiting" || true
     echo ""
     echo "─── Tasks tagged arc:${id} ───"
     local found=0
@@ -1222,7 +1225,7 @@ Verbs:
                             Legacy verb: seed constituent_tasks from anchor's
                             related_tasks and legacy from-T-XXXX tags (idempotent).
                             T-1851: prefer task-side arc_id: + 'fw arc tag'.
-  owner <id> on [--wake notice|worker] | off
+  owner <id> on [--wake notice|worker] [--decision-review operator|reviewer|either] | off
                             T-5251: switch the arc's owner role on (journal: true
                             plus an owner: block; wake defaults to notice) or off
                             (journal: false; the journal file is kept). Other YAML
@@ -1234,6 +1237,14 @@ Verbs:
                             YYYY-MM-DD] | outside: --text --reason --where.
                             Any kind: --task T-XXXX, --by WHO (default: this
                             agent/session id). Refused unless 'fw arc owner <id> on'.
+  approve <id> <entry-id> --words "<operator's words>"
+                            T-5253: approve a consequential journal decision
+                            (J-<n>, or J@<line> for an older row). Operator-only:
+                            refused under \$CLAUDECODE=1 unless --i-am-human (logged).
+                            Reviewer route: --dispatch-id <review dispatch> --outcome
+                            green, accepted only when the arc's decision_review is
+                            reviewer|either and the dispatch is a signed review
+                            dispatch. Until approved, the arc is not resumable.
   resume <id>               T-5251: take over an arc. Runs the resumability check,
                             prints the brief (findings, latest decisions, next step
                             with owner and deadline, open member tasks), sets arc
@@ -1518,7 +1529,7 @@ _arc_journal_author() {
 arc_owner() {
     local id="${1:-}" mode="${2:-}"
     if [ -z "$id" ] || [ -z "$mode" ] || [ "$id" = "--help" ] || [ "$id" = "-h" ]; then
-        echo "Usage: fw arc owner <arc-id> on [--wake notice|worker] | off" >&2
+        echo "Usage: fw arc owner <arc-id> on [--wake notice|worker] [--decision-review operator|reviewer|either] | off" >&2
         return 2
     fi
     shift 2
@@ -1526,11 +1537,13 @@ arc_owner() {
         on|off) ;;
         *) echo "Error: fw arc owner: mode must be 'on' or 'off', got '$mode'" >&2; return 2;;
     esac
-    local wake=""
+    local wake="" review=""
     while [ $# -gt 0 ]; do
         case "$1" in
             --wake) wake="${2:-}"; shift 2 || { echo "Error: --wake needs notice|worker" >&2; return 2; };;
             --wake=*) wake="${1#--wake=}"; shift;;
+            --decision-review) review="${2:-}"; shift 2 || { echo "Error: --decision-review needs operator|reviewer|either" >&2; return 2; };;
+            --decision-review=*) review="${1#--decision-review=}"; shift;;
             *) echo "Error: fw arc owner: unknown argument '$1'" >&2; return 2;;
         esac
     done
@@ -1538,6 +1551,7 @@ arc_owner() {
     _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
     local args=(set "$id" "$mode")
     [ -n "$wake" ] && args+=(--wake "$wake")
+    [ -n "$review" ] && args+=(--decision-review "$review")   # T-5253
     PROJECT_ROOT="$PROJECT_ROOT" python3 "${_ARC_LIB_DIR}/arc_owner.py" "${args[@]}"
 }
 
@@ -1546,7 +1560,7 @@ arc_journal() {
     if [ -z "$id" ] || [ -z "$kind" ] || [ "$id" = "--help" ] || [ "$id" = "-h" ]; then
         echo "Usage: fw arc journal <arc-id> tried|decided|next|outside [--text ..] [--result ..]" >&2
         echo "         [--reason ..] [--step ..] [--owner ..] [--deadline YYYY-MM-DD] [--where ..]" >&2
-        echo "         [--task T-XXXX] [--consequential] [--by WHO]" >&2
+        echo "         [--task T-XXXX] [--consequential] [--category skip-step|accept-failed-check|defer|change-scope|other] [--by WHO]" >&2
         return 2
     fi
     shift 2
@@ -1600,7 +1614,7 @@ arc_resume() {
     if [ -n "$focus_task" ] && [ "$rc" -ne 0 ]; then
         # T-5251: a stale next step is worse than none (1409's load test sent
         # fresh agents to the wrong step). Only a resumable arc moves task focus.
-        echo "Task focus NOT moved to ${focus_task}: the arc is not resumable — fix the journal first (fw arc journal ${id} decided|next ...), then run fw arc resume ${id} again"
+        echo "Task focus NOT moved to ${focus_task}: the arc is not resumable — fix the journal first (fw arc journal ${id} decided|next ...) or get each consequential decision listed above approved (fw arc approve, T-5253), then run fw arc resume ${id} again"
     elif [ -n "$focus_task" ]; then
         if PROJECT_ROOT="$PROJECT_ROOT" "${_ARC_FW_ROOT}/agents/context/context.sh" focus "$focus_task" >/dev/null 2>&1; then
             echo "Task focus → ${focus_task} (named by the latest next step)"
@@ -1609,6 +1623,27 @@ arc_resume() {
         fi
     fi
     return "$rc"
+}
+
+# ─── T-5253 (T-5224 slice 4): approval of consequential decisions ──────────
+# The operator route is operator-only: lib/arc_journal.py refuses it under
+# $CLAUDECODE=1 unless --i-am-human (logged to .gate-bypass-log.yaml), the same
+# shape as `fw inception decide` (T-1259). The reviewer route is evidence-based:
+# a signed review dispatch from the review-dispatch registry with outcome green,
+# and only on arcs whose owner.decision_review is reviewer or either.
+arc_approve() {
+    local id="${1:-}" ref="${2:-}"
+    if [ -z "$id" ] || [ -z "$ref" ] || [ "$id" = "--help" ] || [ "$id" = "-h" ]; then
+        echo "Usage: fw arc approve <arc-id> <entry-id> --words \"<operator's words>\" [--i-am-human]" >&2
+        echo "       fw arc approve <arc-id> <entry-id> --dispatch-id <review dispatch> --outcome green" >&2
+        echo "  Operator route: operator-only (refused under agent control)." >&2
+        echo "  Reviewer route: only when the arc's owner.decision_review is reviewer or either." >&2
+        return 2
+    fi
+    shift 2
+    id="$(_arc_normalize_input "$id")"
+    _arc_exists "$id" || { echo "Error: arc '$id' not found" >&2; return 1; }
+    PROJECT_ROOT="$PROJECT_ROOT" python3 "${_ARC_LIB_DIR}/arc_journal.py" approve "$id" "$ref" "$@"
 }
 
 arc_dispatch() {
@@ -1637,6 +1672,7 @@ arc_dispatch() {
         owner)            arc_owner            "$@";;   # T-5251 (T-5224 slice 2)
         journal)          arc_journal          "$@";;   # T-5251
         resume)           arc_resume           "$@";;   # T-5251
+        approve)          arc_approve          "$@";;   # T-5253 (T-5224 slice 4)
         wake-sweep)       PROJECT_ROOT="$PROJECT_ROOT" python3 "${_ARC_LIB_DIR}/arc_wake.py" sweep "$@";;  # T-5252 (cron)
         help|--help|-h) arc_help;;
         *) echo "Unknown verb: $verb" >&2; arc_help; return 2;;

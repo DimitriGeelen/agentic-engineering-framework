@@ -103,12 +103,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Every new journal entry gets a stable id (e.g. J-<n> per arc); existing rows without an id stay readable and are addressed by position; `decided` gains an optional category (skip-step, accept-failed-check, defer, change-scope, other) and a consequential category implies `consequential: true`
-- [ ] `fw arc approve <arc> <entry-id> --words "<operator's words>"` is operator-only (refused under agent control, like `fw inception decide`; `--i-am-human` for scripts/tests, logged) and appends an `approved` entry referencing the decision
-- [ ] Reviewer route: the arc's `owner.decision_review` setting (operator | reviewer | either, default operator); for reviewer, an `approved` entry is accepted only with a review dispatch id registered in the existing review-dispatch registry and outcome green; anything else is refused
-- [ ] The resumability check reports CONSEQUENTIAL_UNAPPROVED for each consequential decision without a valid approval, which makes the arc not resumable (so `fw arc resume` does not move task focus); `fw arc show/resume` list them with their ids
-- [ ] `fw operator pending` lists unapproved consequential arc decisions with the approve command
-- [ ] Tests (t5253_*): ids on new rows and old rows readable; operator approve refused for agents and accepted with --i-am-human; reviewer route accepts a registered green dispatch and refuses an unknown one; the check flags unapproved and clears after approval; pending lists it; t5250/t5251/t5252 tests stay green; vendored copies synced
+- [x] Every new journal entry gets a stable id (e.g. J-<n> per arc); existing rows without an id stay readable and are addressed by position; `decided` gains an optional category (skip-step, accept-failed-check, defer, change-scope, other) and a consequential category implies `consequential: true`
+- [x] `fw arc approve <arc> <entry-id> --words "<operator's words>"` is operator-only (refused under agent control, like `fw inception decide`; `--i-am-human` for scripts/tests, logged) and appends an `approved` entry referencing the decision
+- [x] Reviewer route: the arc's `owner.decision_review` setting (operator | reviewer | either, default operator); for reviewer, an `approved` entry is accepted only with a review dispatch id registered in the existing review-dispatch registry and outcome green; anything else is refused
+- [x] The resumability check reports CONSEQUENTIAL_UNAPPROVED for each consequential decision without a valid approval, which makes the arc not resumable (so `fw arc resume` does not move task focus); `fw arc show/resume` list them with their ids
+- [x] `fw operator pending` lists unapproved consequential arc decisions with the approve command
+- [x] Tests (t5253_*): ids on new rows and old rows readable; operator approve refused for agents and accepted with --i-am-human; reviewer route accepts a registered green dispatch and refuses an unknown one; the check flags unapproved and clears after approval; pending lists it; t5250/t5251/t5252 tests stay green; vendored copies synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -294,6 +294,11 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/t5253_arc_decision_approval.py tests/unit/t5250_arc_journal.py tests/unit/t5252_arc_wake.py -q > /tmp/.t5253-py.out 2>&1 && grep -q passed /tmp/.t5253-py.out
+timeout 300 bats tests/unit/t5251_arc_owner_journal_resume.bats > /tmp/.t5253-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t5253-bats.out
+test "$(grep -c '# skip' /tmp/.t5253-bats.out)" -eq 0
+bash -n lib/arc.sh
+bin/fw vendor self --check --task T-5253
 
 ## RCA
 
@@ -374,6 +379,16 @@ bvp_scores_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-19 — operator approval under a reviewer-only setting
+- **Chose:** an operator approval (`--words`) counts whatever `decision_review` says; the setting only governs whether a reviewer approval counts.
+- **Why:** the operator is sovereign (Authority Model); a project choosing "reviewer" delegates, it does not lock the operator out.
+- **Rejected:** strict per-setting routing (operator refused on reviewer-only arcs) — would make the operator unable to unblock their own arc.
+
+### 2026-11-19 — reviewer route is open to agents; one dispatch approves one decision
+- **Chose:** `fw arc approve … --dispatch-id D --outcome green` is not operator-gated (the evidence is the signed review dispatch, read through `verdict_ledger.dispatch_record`); a dispatch already used for one decision is refused for another.
+- **Why:** gating it on the operator would make the reviewer route pointless; reuse would let one review approve unrelated decisions.
+- **Rejected:** binding the dispatch's task to the decision's task — decided entries often carry no task.
 
 ## Decision
 

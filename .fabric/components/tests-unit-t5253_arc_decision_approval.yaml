@@ -1,0 +1,21 @@
+id: tests/unit/t5253_arc_decision_approval.py
+name: t5253_arc_decision_approval
+type: script
+subsystem: tests
+location: tests/unit/t5253_arc_decision_approval.py
+tags: []
+
+purpose: "T-5253 (T-5224 slice 4): consequential arc decisions need operator approval or a green independent-reviewer verdict."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-19
+created_by: unknown

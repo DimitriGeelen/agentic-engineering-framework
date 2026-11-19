@@ -13,12 +13,32 @@ journal itself); nothing here rewrites or deletes a row.
 Entry kinds and their fields (every row also carries ``ts`` UTC ISO, ``kind``, ``by``):
 
   tried    text, result
-  decided  text, reason, consequential (bool, default false)
+  decided  text, reason, consequential (bool, default false), category (optional:
+           skip-step | accept-failed-check | defer | change-scope | other; any of
+           the first four implies consequential: true — T-5253)
   next     step, owner, deadline (YYYY-MM-DD, optional)
   outside  text, reason, where
   event    task, from, to
+  approved ref, route (operator | reviewer); operator: words; reviewer:
+           dispatch_id, outcome (T-5253). Written only by approve(), never by
+           append(): the CLI ``append`` refuses this kind.
 
 Optional on any kind: ``task``.
+
+Entry ids (T-5253): every row appended from T-5253 on carries ``id: J-<n>``, n one
+more than the highest id in the journal, assigned under the append lock. Rows
+written before that have no id and are addressed by position, ``J@<line>``
+(append-only, so a line number never moves). ``entry_ref`` gives either.
+
+Approval of consequential decisions (T-5253, T-5224 IW-4): a ``decided`` row with
+``consequential: true`` holds the arc until an ``approved`` row references it:
+  route operator  ``fw arc approve`` (operator-only; refused under agent control)
+                  with the operator's words. Always counts: the operator is sovereign.
+  route reviewer  counts only when the arc's ``owner.decision_review`` is reviewer
+                  or either, the dispatch id is a correctly signed REVIEW dispatch in
+                  the review-dispatch registry (lib/verdict_ledger.dispatch_record),
+                  and the outcome is green. Refused at write time otherwise; a row
+                  that no longer verifies is ignored at check time (INVALID_APPROVAL).
 
 Resumability check findings:
   NO_NEXT                  no next entry at all                       (blocks)
@@ -28,6 +48,9 @@ Resumability check findings:
                            row after it                               (blocks)
   DEADLINE_PASSED          the latest next's deadline is in the past  (informational)
   MALFORMED_ROW            a line that is not a valid entry           (blocks)
+  CONSEQUENTIAL_UNAPPROVED a consequential decision with no valid
+                           approval (finding carries ``ref``)         (blocks)
+  INVALID_APPROVAL         an approved row that does not count        (informational)
 
 CLI (the ``fw arc`` verbs are T-5251):
   python3 lib/arc_journal.py append <arc> <kind> --by X [--text ..] [--result ..]
@@ -35,6 +58,9 @@ CLI (the ``fw arc`` verbs are T-5251):
         [--consequential] [--where ..] [--from ..] [--to ..]
   python3 lib/arc_journal.py show <arc> [--json]
   python3 lib/arc_journal.py check <arc> [--json]
+  python3 lib/arc_journal.py pending <arc> [--json]     unapproved consequential decisions
+  python3 lib/arc_journal.py approve <arc> <ref> --by X (--words ".." |
+        --dispatch-id D --outcome green) [--i-am-human]
 Exit codes: append/show 0 ok, 2 usage/unknown arc; check 0 resumable, 1 not, 2 usage.
 Also: ``task-event <task-file> <from> <to>`` used by update-task.sh (exit 0 always
 unless the journal write failed; never called in a way that can block a status change).
@@ -60,11 +86,20 @@ from lib.arc_membership import arc_identities, parse_arc_id_value, read_frontmat
 KINDS: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
     # kind: (required fields, optional fields)
     "tried": (("text", "result"), ("task",)),
-    "decided": (("text", "reason"), ("consequential", "task")),
+    "decided": (("text", "reason"), ("consequential", "category", "task")),
     "next": (("step", "owner"), ("deadline", "task")),
     "outside": (("text", "reason", "where"), ("task",)),
     "event": (("task", "from", "to"), ()),
+    "approved": (("ref", "route"), ("words", "dispatch_id", "outcome", "task")),
 }
+# T-5253: decided categories; the first four are consequential by definition.
+CATEGORIES = ("skip-step", "accept-failed-check", "defer", "change-scope", "other")
+CONSEQUENTIAL_CATEGORIES = CATEGORIES[:4]
+ROUTES = ("operator", "reviewer")
+DECISION_REVIEW = ("operator", "reviewer", "either")
+DEFAULT_DECISION_REVIEW = "operator"
+_ID_RE = re.compile(r"^J-(\d+)$")
+_POS_RE = re.compile(r"^J@(\d+)$")
 # Kinds after which an older ``next`` is stale.
 _STALE_AFTER = ("decided", "outside", "event")
 _DEADLINE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -131,22 +166,60 @@ def _validate(kind: str, by: str, fields: dict) -> dict:
         if fields.get(f) is not None:
             row[f] = fields[f]
     if kind == "decided":
-        row["consequential"] = bool(fields.get("consequential") or False)
+        cat = fields.get("category")
+        if cat is not None and cat not in CATEGORIES:
+            raise JournalError(f"category must be one of {', '.join(CATEGORIES)}, got '{cat}'")
+        row["consequential"] = bool(fields.get("consequential") or False) or cat in CONSEQUENTIAL_CATEGORIES
+    if kind == "approved" and row["route"] not in ROUTES:
+        raise JournalError(f"route must be one of {', '.join(ROUTES)}, got '{row['route']}'")
     if row.get("deadline") and not _DEADLINE_RE.match(str(row["deadline"])):
         raise JournalError(f"deadline must be YYYY-MM-DD, got '{row['deadline']}'")
     return row
 
 
+def _max_id(path: Path) -> int:
+    """Highest J-<n> already in the journal (0 when none). Torn/old rows are skipped."""
+    hi = 0
+    if not path.is_file():
+        return hi
+    with open(path, encoding="utf-8", errors="replace") as fh:
+        for raw in fh:
+            try:
+                row = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+            m = _ID_RE.match(str(row.get("id", ""))) if isinstance(row, dict) else None
+            if m:
+                hi = max(hi, int(m.group(1)))
+    return hi
+
+
 def append(arc: str, kind: str, by: str, project_root=None, **fields) -> dict:
-    """Append one entry; returns the row written. Raises JournalError on bad input."""
-    body = _validate(kind, by, fields)
+    """Append one entry; returns the row written. Raises JournalError on bad input.
+
+    ``approved`` rows go through approve(), which checks the approval first."""
+    if kind == "approved":
+        raise JournalError("'approved' entries are written by approve() (fw arc approve), "
+                           "which checks the approval first")
+    return _append(arc, kind, by, project_root, None, dict(fields))
+
+
+def _append(arc, kind, by, project_root, guard, fields: dict) -> dict:
+    """Append under the journal lock. ``guard(entries)`` runs inside the lock and may
+    raise JournalError (or add to ``fields``), so a check-then-write cannot race a
+    concurrent append."""
+    _validate(kind, by, fields)
     path = journal_path(arc, project_root)
-    row = {"ts": _now(), "kind": kind, "by": str(by), **body}
-    line = (json.dumps(row, ensure_ascii=False, sort_keys=False) + "\n").encode("utf-8")
     fd = os.open(path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o644)
     try:
         fcntl.flock(fd, fcntl.LOCK_EX)
         try:
+            if guard is not None:
+                guard(read(arc, project_root)[0])
+            body = _validate(kind, by, fields)
+            # T-5253: a stable id, assigned under the lock so two writers never share one.
+            row = {"id": f"J-{_max_id(path) + 1}", "ts": _now(), "kind": kind, "by": str(by), **body}
+            line = (json.dumps(row, ensure_ascii=False, sort_keys=False) + "\n").encode("utf-8")
             # A torn last line (crash mid-write) must not glue onto this row.
             size = os.fstat(fd).st_size
             if size:
@@ -179,8 +252,9 @@ def read(arc: str, project_root=None) -> tuple[list[dict], list[dict]]:
             except json.JSONDecodeError as e:
                 bad.append({"line": n, "reason": f"not JSON ({e.msg})", "raw": raw.rstrip("\n")[:200]})
                 continue
-            if not isinstance(row, dict) or row.get("kind") not in KINDS or not row.get("ts") or not row.get("by"):
-                bad.append({"line": n, "reason": "missing ts/by or unknown kind", "raw": raw.rstrip("\n")[:200]})
+            if not isinstance(row, dict) or row.get("kind") not in KINDS or not row.get("ts") or not row.get("by") \
+                    or ("id" in row and not _ID_RE.match(str(row["id"]))):
+                bad.append({"line": n, "reason": "missing ts/by, unknown kind or bad id", "raw": raw.rstrip("\n")[:200]})
                 continue
             missing = [f for f in KINDS[row["kind"]][0] if row.get(f) in (None, "")]
             if missing:
@@ -190,6 +264,152 @@ def read(arc: str, project_root=None) -> tuple[list[dict], list[dict]]:
             row["_line"] = n
             entries.append(row)
     return entries, bad
+
+
+# ---------------------------------------------------------------- approvals (T-5253)
+
+def is_consequential(e: dict) -> bool:
+    """A decided row is consequential when flagged so or when its category says so."""
+    return e.get("kind") == "decided" and (e.get("consequential") is True
+                                           or e.get("category") in CONSEQUENTIAL_CATEGORIES)
+
+
+def entry_ref(e: dict) -> str:
+    """The address of an entry: its id, or J@<line> for a row written before ids."""
+    return str(e.get("id") or f"J@{e.get('_line')}")
+
+
+def find_entry(entries: list[dict], ref: str) -> dict | None:
+    ref = str(ref or "").strip()
+    if _POS_RE.match(ref):
+        n = int(ref[2:])
+        return next((e for e in entries if e.get("_line") == n and not e.get("id")), None)
+    return next((e for e in entries if e.get("id") == ref), None)
+
+
+def decision_review(arc: str, project_root=None) -> str:
+    """The arc's ``owner.decision_review`` (operator | reviewer | either), default operator."""
+    from lib import arc_owner  # lazy: arc_owner imports this module
+    v = ((arc_owner.state(arc, project_root).get("owner") or {}).get("decision_review") or "").strip()
+    return v if v in DECISION_REVIEW else DEFAULT_DECISION_REVIEW
+
+
+def _review_dispatch_fault(dispatch_id: str, root: Path) -> str:
+    """'' when ``dispatch_id`` is a correctly signed REVIEW dispatch in the registry."""
+    from lib import verdict_ledger as vl  # the one registry reader; no second parser
+    rec, why = vl.dispatch_record(root, str(dispatch_id or "").strip())
+    if rec is None:
+        return why
+    if str(rec.get("task_type") or "") != vl.REVIEW_TASK_TYPE:
+        return f"dispatch {dispatch_id!r} is a {rec.get('task_type') or 'untyped'} dispatch, not a review dispatch"
+    return ""
+
+
+def approval_fault(a: dict, setting: str, root: Path, entries: list[dict] | None = None) -> str:
+    """'' when the approved row ``a`` counts; else why not."""
+    route = a.get("route")
+    if route == "operator":
+        return "" if str(a.get("words") or "").strip() else "operator approval without the operator's words"
+    if route != "reviewer":
+        return f"unknown route {route!r}"
+    if setting not in ("reviewer", "either"):
+        return (f"this arc takes decision approval from the {setting} (owner.decision_review), "
+                f"not from a reviewer")
+    if str(a.get("outcome") or "").strip().lower() != "green":
+        return f"reviewer outcome is {a.get('outcome') or 'missing'}, not green"
+    why = _review_dispatch_fault(a.get("dispatch_id"), root)
+    if why:
+        return why
+    # One review dispatch approves one decision.
+    for o in entries or []:
+        if o is not a and o["kind"] == "approved" and o.get("route") == "reviewer" \
+                and o.get("dispatch_id") == a.get("dispatch_id") and o.get("ref") != a.get("ref") \
+                and o.get("_line", 0) < a.get("_line", 1 << 30):
+            return f"dispatch {a.get('dispatch_id')!r} already approved {o.get('ref')}"
+    return ""
+
+
+def approval_state(arc: str, project_root=None, entries: list[dict] | None = None) -> dict:
+    """{'unapproved': [decided rows], 'invalid': [(approved row, reason)], 'approved': {ref: row}}."""
+    root = _project_root(project_root)
+    if entries is None:
+        entries, _bad = read(arc, root)
+    setting = decision_review(arc, root)
+    valid: dict[str, dict] = {}
+    invalid: list[tuple[dict, str]] = []
+    for a in (e for e in entries if e["kind"] == "approved"):
+        target = find_entry(entries, a.get("ref"))
+        if target is None or target["kind"] != "decided":
+            invalid.append((a, f"references {a.get('ref')}, which is not a decided entry in this journal"))
+            continue
+        why = approval_fault(a, setting, root, entries)
+        if why:
+            invalid.append((a, why))
+        else:
+            valid.setdefault(entry_ref(target), a)
+    unapproved = [e for e in entries
+                  if e["kind"] == "decided" and is_consequential(e) and entry_ref(e) not in valid]
+    return {"unapproved": unapproved, "invalid": invalid, "approved": valid, "setting": setting}
+
+
+def approve_command(arc: str, e: dict) -> str:
+    return f'fw arc approve {arc} {entry_ref(e)} --words "<your words>"'
+
+
+def unapproved(arc: str, project_root=None) -> list[dict]:
+    """Consequential decisions without a valid approval, each with ``ref`` and the approve command."""
+    out = []
+    for e in approval_state(arc, project_root)["unapproved"]:
+        out.append({"ref": entry_ref(e), "ts": e["ts"], "by": e["by"], "text": e.get("text"),
+                    "reason": e.get("reason"), "category": e.get("category"),
+                    "command": approve_command(arc, e)})
+    return out
+
+
+def approve(arc: str, ref: str, by: str, *, words: str | None = None, dispatch_id: str | None = None,
+            outcome: str | None = None, project_root=None) -> dict:
+    """Append an ``approved`` row after checking it would count. Raises JournalError otherwise.
+
+    Who may call the operator route is the CLI's job (it refuses agents, T-5253);
+    this function checks what the row says."""
+    root = _project_root(project_root)
+    if words is not None and (dispatch_id is not None or outcome is not None):
+        raise JournalError("an approval is either the operator's (--words) or a reviewer's "
+                           "(--dispatch-id/--outcome), not both")
+    route = "operator" if words is not None else "reviewer"
+    fields = {"ref": str(ref or "").strip(), "route": route}
+    if route == "operator":
+        fields["words"] = words
+    else:
+        fields["dispatch_id"] = dispatch_id
+        fields["outcome"] = outcome
+    setting = decision_review(arc, root)
+
+    def guard(entries):
+        target = find_entry(entries, fields["ref"])
+        if target is None:
+            raise JournalError(f"no entry {fields['ref']} in the journal of {arc}")
+        if target["kind"] != "decided":
+            raise JournalError(f"{fields['ref']} is a '{target['kind']}' entry; only decisions are approved")
+        if not is_consequential(target):
+            raise JournalError(f"{fields['ref']} is a routine decision; it needs no approval")
+        st = approval_state(arc, root, entries)
+        if entry_ref(target) in st["approved"]:
+            prev = st["approved"][entry_ref(target)]
+            raise JournalError(f"{fields['ref']} is already approved ({prev.get('id') or 'J@' + str(prev.get('_line'))}, "
+                               f"{prev['route']} route, by {prev['by']})")
+        probe = dict(fields, kind="approved", by=by, _line=1 << 30)
+        why = approval_fault(probe, setting, root, entries)
+        if why:
+            raise JournalError(f"approval refused: {why}")
+        if target.get("task") and "task" not in fields:
+            fields["task"] = target["task"]
+
+    if route == "operator" and not str(words or "").strip():
+        raise JournalError("an operator approval needs the operator's words (--words)")
+    if route == "reviewer" and (not str(dispatch_id or "").strip() or not str(outcome or "").strip()):
+        raise JournalError("a reviewer approval needs --dispatch-id and --outcome")
+    return _append(arc, "approved", by, root, guard, fields)
 
 
 def check(arc: str, project_root=None, today: _dt.date | None = None) -> tuple[list[dict], bool]:
@@ -235,6 +455,18 @@ def check(arc: str, project_root=None, today: _dt.date | None = None) -> tuple[l
                 add("ISSUES_WITHOUT_DECISION",
                     f"{e.get('task')} went into issues at {e['ts']} and no decision was recorded after it")
 
+    # T-5253: a consequential decision holds the arc until it is approved.
+    st = approval_state(arc, project_root, entries)
+    for e in st["unapproved"]:
+        f_ = {"code": "CONSEQUENTIAL_UNAPPROVED", "blocking": True, "ref": entry_ref(e),
+              "reason": (f"{entry_ref(e)} ({e.get('category') or 'consequential'}, {e['ts']}, by {e['by']}): "
+                         f"'{e.get('text')}' needs approval before anyone acts on it "
+                         f"(decision_review: {st['setting']}); operator: {approve_command(arc, e)}")}
+        findings.append(f_)
+    for a, why in st["invalid"]:
+        findings.append({"code": "INVALID_APPROVAL", "blocking": False, "ref": entry_ref(a),
+                         "reason": f"{entry_ref(a)} (approval of {a.get('ref')}) does not count: {why}"})
+
     resumable = not any(f["blocking"] for f in findings)
     return findings, resumable
 
@@ -266,6 +498,62 @@ def _clean(row: dict) -> dict:
     return {k: v for k, v in row.items() if not k.startswith("_")}
 
 
+def render_pending(arc: str, items: list[dict]) -> str:
+    if not items:
+        return f"{arc}: no consequential decision is waiting for approval"
+    out = [f"{arc}: {len(items)} consequential decision(s) waiting for approval:"]
+    for i in items:
+        out.append(f"  {i['ref']}  [{i.get('category') or 'consequential'}] {i['text']} — {i['reason']} (by {i['by']}, {i['ts'][:16]})")
+        out.append(f"        approve (operator): {i['command']}")
+    return "\n".join(out)
+
+
+def _log_i_am_human(arc: str, ref: str) -> None:
+    """--i-am-human under agent control is logged like the other operator verbs (T-1716 shape)."""
+    log = _project_root() / ".context" / "working" / ".gate-bypass-log.yaml"
+    try:
+        log.parent.mkdir(parents=True, exist_ok=True)
+        q = lambda v: "'" + str(v).replace("'", "''") + "'"  # noqa: E731
+        with open(log, "a", encoding="utf-8") as fh:
+            fh.write(f"- timestamp: {q(_now()[:19] + 'Z')}\n  task: {q('<arc ' + arc + ' ' + ref + '>')}\n"
+                     f"  flag: '--i-am-human'\n  caller: 'fw arc approve'\n"
+                     f"  reason: 'operator-only approval of a consequential arc decision (T-5253)'\n")
+    except OSError as e:
+        print(f"arc_journal: warning: could not log --i-am-human: {e}", file=sys.stderr)
+
+
+def _cli_approve(args) -> int:
+    operator = args.words is not None
+    if operator and args.dispatch_id is not None:
+        raise JournalError("give --words (operator) or --dispatch-id/--outcome (reviewer), not both")
+    if not operator and args.dispatch_id is None:
+        raise JournalError("give --words \"<your words>\" (operator) or --dispatch-id D --outcome green (reviewer)")
+    agent = os.environ.get("CLAUDECODE") == "1"
+    if operator and agent and not args.i_am_human:
+        print("ERROR: fw arc approve with --words is the operator's approval (T-5253, T-5224 IW-4).\n"
+              "  You appear to be running inside Claude Code ($CLAUDECODE=1). An agent, the arc owner\n"
+              "  included, cannot approve a consequential decision on the operator's behalf.\n"
+              f"  Who can run it: the operator, in their own terminal:\n"
+              f"    fw arc approve {args.arc} {args.ref} --words \"<your words>\"\n"
+              "  Or, if this arc takes reviewer approval (fw arc owner <arc> on --decision-review\n"
+              "  reviewer|either): an independent review dispatch's green verdict,\n"
+              f"    fw arc approve {args.arc} {args.ref} --dispatch-id <review dispatch id> --outcome green\n"
+              "  If this is a human typing inside an agent session (rare), pass --i-am-human (logged).",
+              file=sys.stderr)
+        return 1
+    if operator and agent and args.i_am_human:
+        _log_i_am_human(args.arc, args.ref)
+    by = args.by or ("operator" if operator else f"reviewer:{args.dispatch_id}")
+    try:
+        row = approve(args.arc, args.ref, by, words=args.words, dispatch_id=args.dispatch_id,
+                      outcome=args.outcome)
+    except JournalError as e:
+        print(f"arc_journal: {e}", file=sys.stderr)
+        return 1
+    print(json.dumps(row, ensure_ascii=False))
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="arc_journal.py", description="Append-only arc journal (T-5250)")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -276,6 +564,18 @@ def main(argv=None) -> int:
     for f in ("text", "result", "reason", "step", "owner", "deadline", "task", "where", "from", "to"):
         a.add_argument(f"--{f}", dest=f"f_{f}")
     a.add_argument("--consequential", action="store_true", default=None)
+    a.add_argument("--category", dest="f_category", choices=CATEGORIES)
+    ap_ = sub.add_parser("approve")
+    ap_.add_argument("arc")
+    ap_.add_argument("ref")
+    ap_.add_argument("--by")
+    ap_.add_argument("--words")
+    ap_.add_argument("--dispatch-id", dest="dispatch_id")
+    ap_.add_argument("--outcome")
+    ap_.add_argument("--i-am-human", dest="i_am_human", action="store_true")
+    pe = sub.add_parser("pending")
+    pe.add_argument("arc")
+    pe.add_argument("--json", action="store_true")
     s = sub.add_parser("show")
     s.add_argument("arc")
     s.add_argument("--json", action="store_true")
@@ -308,8 +608,9 @@ def main(argv=None) -> int:
                 if not entries and not bad:
                     print(f"{args.arc}: journal is empty")
                 for e in entries:
-                    rest = {k: v for k, v in _clean(e).items() if k not in ("ts", "kind", "by")}
-                    print(f"{e['ts']}  {e['kind']:<8} {e['by']:<14} " + "  ".join(f"{k}={v}" for k, v in rest.items()))
+                    rest = {k: v for k, v in _clean(e).items() if k not in ("id", "ts", "kind", "by")}
+                    print(f"{entry_ref(e):<7} {e['ts']}  {e['kind']:<8} {e['by']:<14} "
+                          + "  ".join(f"{k}={v}" for k, v in rest.items()))
                 for b in bad:
                     print(f"MALFORMED line {b['line']}: {b['reason']}", file=sys.stderr)
             return 1 if bad else 0
@@ -323,6 +624,15 @@ def main(argv=None) -> int:
                     tag = "" if f["blocking"] else " (informational)"
                     print(f"  {f['code']}{tag}: {f['reason']}")
             return 0 if ok else 1
+        if args.cmd == "pending":
+            items = unapproved(args.arc)
+            if args.json:
+                print(json.dumps({"arc": args.arc, "unapproved": items}, ensure_ascii=False, indent=2))
+            else:
+                print(render_pending(args.arc, items))
+            return 1 if items else 0
+        if args.cmd == "approve":
+            return _cli_approve(args)
         if args.cmd == "task-event":
             task_event(args.task_file, args.old, args.new)
             return 0

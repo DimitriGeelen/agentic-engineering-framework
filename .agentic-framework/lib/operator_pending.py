@@ -249,6 +249,22 @@ def arc_wake_limits() -> list[dict]:
     return out
 
 
+def arc_unapproved_decisions() -> list[dict]:
+    """T-5253: consequential arc-journal decisions without a valid approval (they hold the arc)."""
+    sys.path.insert(0, str(FW))
+    from lib import arc_journal as aj  # noqa: E402
+    out = []
+    for p in sorted((PROJECT / ".context" / "arcs").glob("*.journal.jsonl")):
+        slug = p.name[:-len(".journal.jsonl")]
+        try:
+            items = aj.unapproved(slug, PROJECT)
+        except aj.JournalError:
+            continue
+        for i in items:
+            out.append(dict(i, arc=slug))
+    return out
+
+
 def collect() -> dict:
     ready, waiting = partial_complete()
     try:
@@ -271,7 +287,11 @@ def collect() -> dict:
         wake_limits = arc_wake_limits()
     except Exception:  # same rule: a broken ledger must not blank the list
         wake_limits = []
-    return {"arc_wake_limits": wake_limits, "hub_profiles": profiles, "outside_commits": outside, "issue_replies": replies, "inceptions": undecided_inceptions(),
+    try:
+        arc_decisions = arc_unapproved_decisions()
+    except Exception:  # same rule: a broken journal must not blank the list
+        arc_decisions = []
+    return {"arc_decisions": arc_decisions, "arc_wake_limits": wake_limits, "hub_profiles": profiles, "outside_commits": outside, "issue_replies": replies, "inceptions": undecided_inceptions(),
             "inception_questions": questions, "reviews": ready, "runmes": unrun_runmes(),
             "paid_proposals": pending_proposals(), "waiting_on_agent": len(waiting)}
 
@@ -337,6 +357,13 @@ def render(data: dict) -> str:
             lines.append(f"- {a['arc']} — {a['refused']} wake(s) refused today — check: fw arc show {a['arc']}")
         lines.append("")
         n += len(data["arc_wake_limits"])
+    if data.get("arc_decisions"):
+        lines.append("## Arc decisions waiting for your approval (the arc is held until approved)")
+        for d in data["arc_decisions"]:
+            lines.append(f"- {d['arc']} {d['ref']} [{d.get('category') or 'consequential'}] — {d['text']} "
+                         f"(by {d['by']}) — approve: {d['command']}")
+        lines.append("")
+        n += len(data["arc_decisions"])
     if n == 0:
         lines.append("Nothing is waiting on the operator.")
     if data["waiting_on_agent"]:
