@@ -610,6 +610,8 @@ arc_show() {
     echo ""
     # T-5251: owner role / journal state, read the same way 'fw arc owner' writes it.
     PROJECT_ROOT="$PROJECT_ROOT" python3 "${_ARC_LIB_DIR}/arc_owner.py" state "$id" 2>/dev/null || true
+    # T-5252: today's wake count against the arc's daily wake limit (owner on only).
+    PROJECT_ROOT="$PROJECT_ROOT" python3 "${_ARC_LIB_DIR}/arc_wake.py" today "$id" 2>/dev/null || true
     echo ""
     echo "─── Tasks tagged arc:${id} ───"
     local found=0
@@ -1237,6 +1239,9 @@ Verbs:
                             with owner and deadline, open member tasks), sets arc
                             focus, and task focus when the next step names an active
                             task. Exit 0 resumable, 1 not. There is no handover verb.
+  wake-sweep                T-5252: wake the owner of every opted-in arc whose
+                            latest next-step deadline has passed (once per
+                            deadline; daily per-arc wake limit). Run by cron.
 
 Examples:
   fw arc create orchestrator-rethink --name "Orchestrator routing rethink" --anchor T-1641 \\
@@ -1587,6 +1592,7 @@ arc_resume() {
         return "$rc"
     fi
     PROJECT_ROOT="$PROJECT_ROOT" python3 "${_ARC_LIB_DIR}/arc_owner.py" brief "$id" || true
+    PROJECT_ROOT="$PROJECT_ROOT" python3 "${_ARC_LIB_DIR}/arc_wake.py" today "$id" 2>/dev/null || true  # T-5252
     echo ""
     arc_focus "$id" || return 2
     local focus_task
@@ -1631,6 +1637,7 @@ arc_dispatch() {
         owner)            arc_owner            "$@";;   # T-5251 (T-5224 slice 2)
         journal)          arc_journal          "$@";;   # T-5251
         resume)           arc_resume           "$@";;   # T-5251
+        wake-sweep)       PROJECT_ROOT="$PROJECT_ROOT" python3 "${_ARC_LIB_DIR}/arc_wake.py" sweep "$@";;  # T-5252 (cron)
         help|--help|-h) arc_help;;
         *) echo "Unknown verb: $verb" >&2; arc_help; return 2;;
     esac

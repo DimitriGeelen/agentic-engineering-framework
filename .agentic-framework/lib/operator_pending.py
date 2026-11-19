@@ -230,6 +230,25 @@ def hub_profile_notices() -> list[dict]:
     return [dict(r, summary=profile_notices.summary(r)) for r in profile_notices.pending(PROJECT)]
 
 
+def arc_wake_limits() -> list[dict]:
+    """T-5252: arcs that hit their daily wake limit today (UTC) — wakes are being refused."""
+    from datetime import datetime, timezone
+    day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    out = []
+    for p in sorted((PROJECT / ".context" / "arcs").glob("*.wakes.jsonl")):
+        refused = 0
+        for raw in p.read_text(encoding="utf-8", errors="replace").splitlines():
+            try:
+                r = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(r, dict) and str(r.get("ts", "")).startswith(day) and r.get("outcome") == "refused-limit":
+                refused += 1
+        if refused:
+            out.append({"arc": p.name[:-len(".wakes.jsonl")], "refused": refused})
+    return out
+
+
 def collect() -> dict:
     ready, waiting = partial_complete()
     try:
@@ -248,7 +267,11 @@ def collect() -> dict:
         outside = outside_commit_alarms()
     except Exception:  # same rule: a broken check must not blank the list (audit FAILs it)
         outside = []
-    return {"hub_profiles": profiles, "outside_commits": outside, "issue_replies": replies, "inceptions": undecided_inceptions(),
+    try:
+        wake_limits = arc_wake_limits()
+    except Exception:  # same rule: a broken ledger must not blank the list
+        wake_limits = []
+    return {"arc_wake_limits": wake_limits, "hub_profiles": profiles, "outside_commits": outside, "issue_replies": replies, "inceptions": undecided_inceptions(),
             "inception_questions": questions, "reviews": ready, "runmes": unrun_runmes(),
             "paid_proposals": pending_proposals(), "waiting_on_agent": len(waiting)}
 
@@ -308,6 +331,12 @@ def render(data: dict) -> str:
             lines.append(f"- {r['summary']}")
         lines.append("")
         n += len(data["hub_profiles"])
+    if data.get("arc_wake_limits"):
+        lines.append("## Arcs at their daily wake limit (owner wakes refused until tomorrow, UTC)")
+        for a in data["arc_wake_limits"]:
+            lines.append(f"- {a['arc']} — {a['refused']} wake(s) refused today — check: fw arc show {a['arc']}")
+        lines.append("")
+        n += len(data["arc_wake_limits"])
     if n == 0:
         lines.append("Nothing is waiting on the operator.")
     if data["waiting_on_agent"]:
