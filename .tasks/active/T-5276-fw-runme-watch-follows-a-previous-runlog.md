@@ -1,8 +1,14 @@
 ---
 id: T-5276
-name: "fw runme watch follows a previous run.log (reports an old EXIT for a rebuilt runme) and stops at the first inner RUNME EXIT of a nested runme"
+name: "fw runme watch follows a previous run.log (reports an old EXIT for a rebuilt
+  runme) and stops at the first inner RUNME EXIT of a nested runme"
 description: >
-  0506 (msg 293168af, 2026-11-19, proposal C): after a failed run, a rebuilt runme of the same name is reported 'finished (exit 1)' at once from the old run.log; a runme that runs other runmes is reported finished at the first inner RUNME EXIT. Both make the agent report a run that has not happened (lib/runme.sh watch). Fix: tie the watch to the run it started (run id or log rotation at new/start) and match only the outer EXIT. To verify when started.
+  0506 (msg 293168af, 2026-11-19, proposal C): after a failed run, a rebuilt runme
+  of the same name is reported 'finished (exit 1)' at once from the old run.log; a
+  runme that runs other runmes is reported finished at the first inner RUNME EXIT.
+  Both make the agent report a run that has not happened (lib/runme.sh watch). Fix:
+  tie the watch to the run it started (run id or log rotation at new/start) and match
+  only the outer EXIT. To verify when started.
 
 status: captured
 workflow_type: build
@@ -39,8 +45,8 @@ origin: {kind: "peer", source: "0506-Voxtype-extention", ref: "293168af"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T17:13:45Z
-last_update: 2026-11-19T17:13:45Z
-date_finished: null
+last_update: '2026-11-19T17:17:02Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +57,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-19T17:15:56Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-11-19T17:17:02Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5276: fw runme watch follows a previous run.log (reports an old EXIT for a rebuilt runme) and stops at the first inner RUNME EXIT of a nested runme

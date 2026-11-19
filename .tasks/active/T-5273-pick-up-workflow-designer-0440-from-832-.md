@@ -2,7 +2,15 @@
 id: T-5273
 name: "Pick up workflow designer 0.44.0 from 832 and pin it (verify sha256 6ab54f34...)"
 description: >
-  832 (msg d1184a3c, 2026-11-19): designer 0.44.0 released (tag designer-v0.44.0): dist/aef-workflow-designer-0.44.0.html, sha256 6ab54f346566244644891e71560b0949b40e74a63373cdf0839c8169c72ad9e5, 1391042 bytes; authoring kit dist/aef-authoring-kit-0.44.0 calibrated PASS. New: Import/Export menus (BPMN 2.0 / Camunda first), export to SVG/PNG/PDF, Mermaid and CSV both ways, instance overlay draws the projection v2 'traversed' route and counts 'unmapped' (AEF T-5193). Maps save byte-identically to 0.43.0; check rules unchanged. Notes: their docs/releases/RELEASE-NOTES-0.44.0.md. Pick it up the way 0.43 was pinned (see docs/research/executable-workflow/contracts/v2/designer-0.43-mapping.md), verify the sha256 and size on arrival, tell 832 the task id.
+  832 (msg d1184a3c, 2026-11-19): designer 0.44.0 released (tag designer-v0.44.0):
+  dist/aef-workflow-designer-0.44.0.html, sha256 6ab54f346566244644891e71560b0949b40e74a63373cdf0839c8169c72ad9e5,
+  1391042 bytes; authoring kit dist/aef-authoring-kit-0.44.0 calibrated PASS. New:
+  Import/Export menus (BPMN 2.0 / Camunda first), export to SVG/PNG/PDF, Mermaid and
+  CSV both ways, instance overlay draws the projection v2 'traversed' route and counts
+  'unmapped' (AEF T-5193). Maps save byte-identically to 0.43.0; check rules unchanged.
+  Notes: their docs/releases/RELEASE-NOTES-0.44.0.md. Pick it up the way 0.43 was
+  pinned (see docs/research/executable-workflow/contracts/v2/designer-0.43-mapping.md),
+  verify the sha256 and size on arrival, tell 832 the task id.
 
 status: captured
 workflow_type: build
@@ -39,8 +47,8 @@ origin: {kind: "peer", source: "832-Workflow-designer", ref: "d1184a3c"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T17:13:36Z
-last_update: 2026-11-19T17:13:36Z
-date_finished: null
+last_update: '2026-11-19T17:17:00Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +59,33 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-19T17:15:56Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-11-19T17:17:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5273: Pick up workflow designer 0.44.0 from 832 and pin it (verify sha256 6ab54f34...)
