@@ -14,7 +14,7 @@ description: >
   overwrites a registered extension. Silent loss at upgrade is T-5248's track; this
   slice only guarantees registered extensions survive.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -49,7 +49,7 @@ origin: {kind: "operator", source: "T-4649"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T15:30:54Z
-last_update: '2026-11-19T15:45:53Z'
+last_update: 2026-11-19T21:20:10Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,20 +95,24 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-4649 GO (operator, 2026-11-19): "Any modification is completely allowed. We just need to assure that further upgrades don't break, that's the risk ... always it needs to be an operated decision". Consultation answers in docs/reports/T-4649-ring20-patch-triage.md (ring20, 055, 1409, 832). This is slice 0, the base for T-5260..T-5265.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `fw vendor`/`fw upgrade` already protect project files through `.fwvendor-preserve.yaml` (lib/vendor_preserve.py, T-3850/T-4870: `files:`, `in_file:` markers, a vendor stamp that tells local edits from upstream ones, refusal to delete uncovered local files). But nothing records WHO decided a modification: an agent can add a preserve entry or a local patch as easily as the operator, so "always an operator decision" is not visible or checkable, and there is no single list of what a project has changed.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Every project modification of the framework is a recorded decision of that project's operator, listed in one place, and kept by upgrade.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A project-owned register `.framework-extensions.yaml` at the project root lists each extension (id, kind, paths, the operator's words, date). Entries are added and removed only by an operator-only command. Vendored-file overrides in the register are mirrored into `.fwvendor-preserve.yaml`, so the existing protection keeps them through vendor/upgrade. `fw audit` lists the register and flags what is not backed by a decision.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Register `.framework-extensions.yaml` (project root, project-owned, never written by vendor/upgrade) with entries {id, kind, paths, words, decided_by, date}; kinds include vendored-override (a file or an in-file block under .agentic-framework/) plus the kinds later slices use (page, nav, csrf-exemption, event-hook, reviewer-brief, gate-check), validated by one module (e.g. lib/extensions.py)
+- [ ] `fw extension add <kind> <id> --path P [--path P2] --words "<operator's words>"`, `fw extension remove <id> --words "..."` and `fw extension list [--json]`: add and remove are operator-only (refused under agent control like `fw inception decide`; `--i-am-human` for scripts and tests, logged); list is open to everyone
+- [ ] A vendored-override entry is mirrored into `.fwvendor-preserve.yaml` (the existing `files:` / `in_file:` shapes) by the same command, so the existing vendor/upgrade protection applies; removing the entry removes the mirror; hand-written preserve entries are left untouched
+- [ ] `fw audit` lists the register (INFO) and WARNs: a register path that does not exist; a `.fwvendor-preserve.yaml` entry with no register decision behind it; a vendored file the vendor stamp shows as locally modified with no register decision. `fw upgrade` names the registered extensions it kept
+- [ ] Tests (t5259_*): add/remove/list; agent refusal and --i-am-human logging; mirror into and out of the preserve manifest; a registered override survives `fw vendor` in a fresh-machine-style fixture; the three audit WARNs; existing vendor_preserve tests and tests/unit/upgrade_fresh_machine_simulation.bats stay green
+- [ ] Vendored copies synced (`bin/fw vendor self --check` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -391,3 +395,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5259-project-extensions-foundation-operator-o.md
 - **Context:** Initial task creation
+
+### 2026-11-19T21:20:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
