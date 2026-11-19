@@ -10,10 +10,10 @@ description: >
   gets no extra authority (arc close, inception decide, Tier 0, Human criteria stay
   the operator's). Depends on slice 1.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [arc-orchestrator]
 components: []
 related_tasks: [T-5224]
@@ -45,7 +45,7 @@ origin: {kind: "operator", source: "T-5224"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T13:39:10Z
-last_update: '2026-11-19T13:47:02Z'
+last_update: 2026-11-19T20:06:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,20 +91,24 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5224 GO (operator, 2026-11-19), question 4 answered "1": the arc owner gets no extra authority; routine decisions (the template's next step) are only journalled, consequential ones (skip a step, accept a failed check, defer, change scope) are marked and need the operator's approval or a green independent-reviewer verdict, chosen per project; the resumability check flags a consequential decision with neither. T-5250..T-5252 are built: journal `decided` entries already carry a `consequential` flag, and owners are now woken automatically.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** With wake-ups live, an owner agent could record "skip step K3" or "accept the red check" and carry on; nothing stops the next woken agent from acting on it. The flag exists but nothing reads it.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A consequential decision cannot be acted on until the operator or an independent reviewer has approved it.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Each journal entry has a stable id; a consequential decision is either approved (operator command, or a recorded reviewer verdict, per the arc's setting) or it holds the arc: the resumability check reports it and `fw arc resume` does not move focus. The operator sees pending ones in `fw operator pending`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Every new journal entry gets a stable id (e.g. J-<n> per arc); existing rows without an id stay readable and are addressed by position; `decided` gains an optional category (skip-step, accept-failed-check, defer, change-scope, other) and a consequential category implies `consequential: true`
+- [ ] `fw arc approve <arc> <entry-id> --words "<operator's words>"` is operator-only (refused under agent control, like `fw inception decide`; `--i-am-human` for scripts/tests, logged) and appends an `approved` entry referencing the decision
+- [ ] Reviewer route: the arc's `owner.decision_review` setting (operator | reviewer | either, default operator); for reviewer, an `approved` entry is accepted only with a review dispatch id registered in the existing review-dispatch registry and outcome green; anything else is refused
+- [ ] The resumability check reports CONSEQUENTIAL_UNAPPROVED for each consequential decision without a valid approval, which makes the arc not resumable (so `fw arc resume` does not move task focus); `fw arc show/resume` list them with their ids
+- [ ] `fw operator pending` lists unapproved consequential arc decisions with the approve command
+- [ ] Tests (t5253_*): ids on new rows and old rows readable; operator approve refused for agents and accepted with --i-am-human; reviewer route accepts a registered green dispatch and refuses an unknown one; the check flags unapproved and clears after approval; pending lists it; t5250/t5251/t5252 tests stay green; vendored copies synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -387,3 +391,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5253-arc-owner-consequential-decisions-need-o.md
 - **Context:** Initial task creation
+
+### 2026-11-19T20:06:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
