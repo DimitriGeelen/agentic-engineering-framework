@@ -7,12 +7,12 @@ description: >
   rc 124, empty output, on AEF (918 active tasks). Whole focus 16.7 s here; 1409 measures
   16.1-16.2 s at 5,956 active. work-on likely pays the same.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug, performance]
-components: []
+components: [agents/context/lib/focus.sh, lib/config.sh, web/blueprints/config.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T07:38:37Z
-last_update: 2026-11-19T07:42:03Z
-date_finished:
+last_update: 2026-11-19T07:51:04Z
+date_finished: 2026-11-19T07:51:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -294,6 +294,12 @@ grep -q 'focus_briefing:-0}" = "1"' agents/context/lib/focus.sh
 bin/fw vendor self --check --task T-5245
 bin/fw watchtower current
 
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| config-row | FW_FOCUS_BRIEFING row on /config | ok | ok | ok | cropped to the row and its neighbours (the full page is ~13,000 px tall); key wraps like FW_RECALL_USAGE_DAYS above it; steps file .context/visual/T-5245/config-row.steps.yaml |
+
 ## RCA
 
 **Symptom:** `fw context focus` took about 16 s (AEF 16.7 s at 918 active tasks; 1409 16.1 s at 5,956), and `fw work-on` about 17 s. 1409 read it as a file-count limit.
@@ -409,3 +415,16 @@ bin/fw watchtower current
 
 ### 2026-11-19T07:40:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-19T07:51:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7336cc42
+- **Timestamp:** 2026-11-19T07:51:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
