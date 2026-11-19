@@ -51,3 +51,17 @@ Challenges:
 
 Consultation candidates: ring20 (owns the mechanism and scripts), 055 (sees sessions and
 limits across hosts), an independent security review for the login page.
+
+### 2026-11-19 — agent's proposal, and the operator asks for challenge again
+
+**Agent proposed** splitting into two inceptions: a metadata register and central view now,
+the login mechanism later. **Operator, verbatim (repeated):** "As always, I don't want you to
+take this as a statement. I want you to reflect on this, to give your thoughts, to challenge
+it, to see the benefits of it, to get consultation on it if you need."
+
+**Self-challenge.** A register filled by hand would rot the way `voi_score` did (610 of 617 at
+the default, T-3496, same morning). The view is only worth having if its facts arrive by
+themselves: from each login (account, host, valid until), from the dispatcher when a harness
+hits a limit, from the provider where it reports expiry. So the register and the login
+mechanism are designed together; they may still be built in two steps. Revised proposal:
+one inception, one design, two build steps. Consultation sent to ring20 and 055.
