@@ -54,7 +54,7 @@ waiting_on: agent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T15:30:32Z
-last_update: 2026-11-18T22:21:46Z
+last_update: 2026-11-19T09:29:31Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -122,7 +122,7 @@ AEF's Worktree Policy (CLAUDE.md §Worktree Policy, operator directive 2026-08-2
 - **IW-1: Should AEF replace "deliberately not gated" with a gate that refuses worktree creation unless a live operator grant exists (055's design), and if so, how is the grant given (interactive terminal only, Watchtower, or a runme)?**
   confidence: 1
   disposition: deferred
-  rationale: operator decision; evidence is 055's 27 uninstructed branches; source recorded for review
+  rationale: operator decision; evidence is 055's 27 uninstructed branches; source recorded and reviewed 2026-11-19; agent proposes GO with the grant given by an operator-only verb `fw worktree grant` (see Recommendation)
 
 ## Acceptance Criteria
 
@@ -357,12 +357,20 @@ AEF's Worktree Policy (CLAUDE.md §Worktree Policy, operator directive 2026-08-2
 
 ## Recommendation
 
-**Recommendation:** EXPLORING
+**Recommendation:** GO
 
-Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
-Back to EXPLORING by T-5228 triage (the readiness check passes, but the DEFER below waits on agent work). Waiting on: agent — T-4833 has shipped; review 055's hook against AEF's gates, then write GO or NO-GO.
+**Rationale:** Adopt an operator-grant gate on worktree creation in AEF, adapted from 055's T-649 hook, and ship it to consumers like the other refusal hooks. The operator asked for exactly this ("AEF should also have a gate that refuses worktrees without my permission", relayed by 055). A behavioural rule alone did not hold: 055 made 27 uninstructed worktree branches in 8 days, and AEF itself still carries two leftover worktrees from September (`/opt/aef-f21-f24`, `/opt/aef-f25`, both prunable). The gate's footprint in AEF is small: only `fw worktree create` (lib/worktree.sh:347) creates worktrees in framework code; releases and `fw termlink dispatch` do not. Proposed shape, for the build task:
+- refuse `git worktree add` (any spelling the hook can see), `fw worktree create`, Claude Code's EnterWorktree and Agent `isolation: worktree`, unless a live operator grant exists;
+- the grant comes from an operator verb, `fw worktree grant [--hours N]`, refused under agent control (as `fw tier0 approve` and `fw inception decide` are), time-limited, logged; agents cannot write the grant file;
+- CLAUDE.md §Worktree Policy changes from "NOT gated" to "gated by an operator grant"; `fw upgrade` delivers the hook.
 
-**Rationale:** The evidence for a gate is real: 055's 27 uninstructed worktree branches in 8 days show that the behavioural rule alone did not hold there. But in 055's case the policy never reached it (T-4833), so it is not yet known whether delivering the policy is enough. 055's design also has to be reviewed before it is proposed for AEF, in particular how the grant is given and how it fits AEF's existing gates. DEFER until T-4833 has shipped and the hook has been reviewed against AEF; the recommendation then becomes GO or NO-GO.
+**Evidence:**
+- docs/reports/T-4834/received-055-worktree-gate.md: 055's hook source (commit 0cd10ba5) and tests, reviewed 2026-11-19.
+- `git worktree list` (2026-11-19): two prunable worktrees from 2026-09-25/26 besides the main checkout; no new worktree branches since 2026-10-20 apart from release hotfix branches.
+- `grep -rn 'worktree add' lib agents bin`: lib/worktree.sh:347 is the only creator.
+- T-4833 (completed 2026-10-27) carried the policy text to consumers; 055 needed its own gate anyway.
+
+Earlier recommendation (before 2026-11-19), kept for the record: DEFER until T-4833 shipped and the hook was reviewed. Both are now done. Earlier rationale: The evidence for a gate is real: 055's 27 uninstructed worktree branches in 8 days show that the behavioural rule alone did not hold there. But in 055's case the policy never reached it (T-4833), so it is not yet known whether delivering the policy is enough. 055's design also has to be reviewed before it is proposed for AEF, in particular how the grant is given and how it fits AEF's existing gates. DEFER until T-4833 has shipped and the hook has been reviewed against AEF; the recommendation then becomes GO or NO-GO.
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
