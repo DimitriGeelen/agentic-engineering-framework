@@ -9,19 +9,19 @@ description: >
   add a refusal, never remove one), .framework.yaml-declared allowlists per gate,
   and which of ring20's 27 patches are general enough to upstream instead.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: later
+horizon: now
 tags: [consumer, upgrade, extension-points, post-freeze]
 components: []
 related_tasks: []
-step_entered_at: '2026-11-18T22:21:46Z'
-revisit_at: 2026-11-25
-waiting_on: operator
+step_entered_at: '2026-11-19T10:58:36Z'
+revisit_at: 2026-11-24
+waiting_on: peer
 origin: {kind: "peer", source: "proxmox-ring20-management", ref: "83c8790d"}
 created: 2026-10-22T14:14:29Z
-last_update: 2026-11-18T22:21:46Z
+last_update: 2026-11-19T10:58:36Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,6 +98,11 @@ cost_estimate_proposed:
   disposition: answered
   rationale: not as a self-declared contract (a blueprint declaring itself exempt is project code weakening a gate). Only as a committed, operator-owned allowlist naming each endpoint, its auth mechanism and a task id, listed by fw audit, with list changes as an operator action. Proposed; the operator rules on it at decide time (ring20 patches #9, #10)
 
+- **IW-3: Does the proposed shape fit the projects that will use it? Consult ring20, 055, 1409 and 832: which of their local changes it would let them remove, what is missing or shaped wrong, and whether an operator-owned form-safety list works in practice.**
+  confidence: 0
+  disposition:
+  rationale:
+
 ## Exploration Plan
 
 <!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
@@ -158,7 +163,11 @@ cost_estimate_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER until v1.8.15 is released: the operator put the project in a release freeze on 2026-10-28 (T-4869, CLAUDE.md §Release Freeze Phase), so no new development starts now. The per-point analysis below stands for after the release. Then, scoped: build extension points 1+2 (blueprints + nav), 6 (tightening-only project gate patterns) and 4 (notification-only post-decision hook). Point 3 (CSRF) only as an operator-owned allowlist, and only if the operator agrees to that shape. NO-GO on 5 (reviewer-brief addendum).
+**Recommendation:** EXPLORING
+
+Reopened 2026-11-19 for consultation (IW-3). Operator, walkthrough of the ready inceptions: "I'm absolutely in favor of this. I'm just wondering if you should get some consultation on suggestions on how to shape this." Then: "yes, send the consultation and file the inception" (the upgrade feedback loop, filed separately as T-5248). Waiting on: peers (ring20, 055, 1409, 832). The freeze condition of the earlier DEFER has passed (v1.8.15 released 2026-10-29); the agent's verdict after consultation is expected to be GO on points 1, 2, 4, 6, NO-GO on 5, and point 3 as the operator chooses.
+
+Earlier recommendation (2026-10-28), kept for the record: DEFER until v1.8.15 is released: the operator put the project in a release freeze on 2026-10-28 (T-4869, CLAUDE.md §Release Freeze Phase), so no new development starts now. The per-point analysis below stands for after the release. Then, scoped: build extension points 1+2 (blueprints + nav), 6 (tightening-only project gate patterns) and 4 (notification-only post-decision hook). Point 3 (CSRF) only as an operator-owned allowlist, and only if the operator agrees to that shape. NO-GO on 5 (reviewer-brief addendum).
 
 **Rationale:** ring20 carries 27 in-file patches across 22 vendored files and had to roll back be.2 because upgrade would overwrite them (their G-187). Today's only supported extension points are BOUNDARY_EXTRA_READ_PATHS, .fwvendor-preserve.yaml (whole-file keep) and project hooks in .claude/settings.json (kept by upgrade, T-3833). None of them can add a page or add to a framework gate. On 2026-10-26, 055's local edit of a vendored gate killed every agent on one host for about 6 h. The point-by-point analysis splits what is safe to open from what is not:
 - **Points 1, 2, 4 and 6** add routes or display, only observe a decision, or can only tighten a gate. So they are safe to open.
@@ -206,3 +215,11 @@ cost_estimate_proposed:
 ### 2026-11-18T22:21:46Z — inception-wait [inception-lifecycle]
 - **Change:** waiting_on: agent → operator
 - **Revisit:** 2026-11-25
+
+### 2026-11-19T10:57:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-11-19T10:58:36Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: operator → peer
+- **Revisit:** 2026-11-24
