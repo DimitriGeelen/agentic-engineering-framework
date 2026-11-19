@@ -372,6 +372,13 @@ bin/fw watchtower current
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** The only rendered change is one data row in the /config settings table, in the same tuple format as its neighbours. The behaviour fix is pinned by tests and measured.
+**Evidence:**
+- Focus 16.7 s → 1.73 s, work-on 16.99 s → 2.35 s (AEF, 2026-11-19)
+- tests/unit/t5245_focus_briefing_optin.bats 4/4, context_focus.bats 19/19, config-registry-parity green
+- Watchtower restarted; `bin/fw watchtower current` OK; /config contains FOCUS_BRIEFING
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
