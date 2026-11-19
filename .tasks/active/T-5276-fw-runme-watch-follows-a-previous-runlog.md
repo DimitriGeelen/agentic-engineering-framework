@@ -10,10 +10,10 @@ description: >
   tie the watch to the run it started (run id or log rotation at new/start) and match
   only the outer EXIT. To verify when started.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, runme]
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ origin: {kind: "peer", source: "0506-Voxtype-extention", ref: "293168af"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T17:13:45Z
-last_update: '2026-11-19T17:17:02Z'
+last_update: 2026-11-19T22:58:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -103,10 +103,14 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw runme new` on an existing name rotates the old run.log (e.g. run.log.<ts>) so a watch never reads a previous run's EXIT; or the watch is bound to a run id written by `new` and echoed in START, and ignores lines from other runs
-- [ ] The watch matches only the outer run's START and EXIT (its own name and run id); an inner runme's `RUNME EXIT` does not end it
-- [ ] Reproduced first: a test that fails on the current code for both cases (stale log, nested runme), then passes
-- [ ] Existing runme tests stay green (tests/unit/*runme*); vendored copies synced
+- [x] `fw runme new` on an existing name rotates the old run.log (e.g. run.log.<ts>) so a watch never reads a previous run's EXIT; or the watch is bound to a run id written by `new` and echoed in START, and ignores lines from other runs
+  (both: `new` rotates run.log to run.log.1..3 and writes `<name>/run.id`; START, EXIT and STOPPED end in ` id=<run id>`)
+- [x] The watch matches only the outer run's START and EXIT (its own name and run id); an inner runme's `RUNME EXIT` does not end it
+  (`_runme_marks` in lib/runme.sh; `fw runme pending` uses it too)
+- [x] Reproduced first: a test that fails on the current code for both cases (stale log, nested runme), then passes
+  (tests/unit/t5276_runme_watch_own_run.bats: tests 1 and 3 were `not ok` before the fix, 6 of 8 red in total; 8 of 8 pass after)
+- [x] Existing runme tests stay green (tests/unit/*runme*); vendored copies synced
+  (85 existing tests in 10 files pass, no skips; .agentic-framework/lib/runme.sh identical to source)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -293,8 +297,23 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bash -n lib/runme.sh
+timeout 300 bats tests/unit/t5276_runme_watch_own_run.bats > /tmp/.t5276-own.out 2>&1 && ! grep -q "^not ok" /tmp/.t5276-own.out
+test "$(grep -c '# skip' /tmp/.t5276-own.out)" -eq 0
+timeout 600 bats tests/unit/t3675_runme.bats tests/unit/t3741_runme_events.bats tests/unit/t3878_runme_pending.bats tests/unit/t4464_runme_watch_until.bats tests/unit/t4871_runme_single_run.bats tests/unit/t4905_runme_step_exit_trap.bats tests/unit/t4914_runme_keep_finished_log.bats > /tmp/.t5276-old.out 2>&1 && ! grep -q "^not ok" /tmp/.t5276-old.out
+test "$(grep -c '# skip' /tmp/.t5276-old.out)" -eq 0
+python3 -m pytest tests/unit/t4095_operator_pending_test.py tests/unit/test_t5236_profile_remediation.py -q > /tmp/.t5276-py.out 2>&1 && grep -q passed /tmp/.t5276-py.out
+bin/fw vendor self --check --task T-5276
 
 ## RCA
+
+**Symptom:** `fw runme watch <name>` reported "finished (exit 1)" for a runme that had just been rebuilt and not yet run, and reported an outer runme finished when an inner runme it called had ended.
+
+**Root cause:** The watch asked "does run.log contain `RUNME START` / `RUNME EXIT`?" and nothing tied those lines to a run. `fw runme new` rewrote the script and left the previous build's run.log in place (the log is only rotated when the script starts, T-4914), so the old EXIT answered for the new build. An inner runme's output is relayed through the outer script's stdout into the outer log, markers included, so the first inner EXIT matched as well.
+
+**Why structurally allowed:** The markers carried no identity, so any reader could only test for presence. Every existing test ran one runme, once per build, so presence and identity never differed.
+
+**Prevention:** `new` writes a run id and rotates the old log; the script ends START, EXIT and STOPPED with ` id=<run id>`; watch and pending read markers only through `_runme_marks`, which requires that id. tests/unit/t5276_runme_watch_own_run.bats pins both cases, the marker format and the fallback for runmes generated before run ids.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -390,3 +409,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5276-fw-runme-watch-follows-a-previous-runlog.md
 - **Context:** Initial task creation
+
+### 2026-11-19T22:58:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

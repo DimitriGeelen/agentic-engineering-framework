@@ -12,6 +12,9 @@
 #   fw runme watch <name> [--timeout SECS] [--until start|exit]   (default 86400 / FW_RUNME_WATCH_TIMEOUT;
 #       waits for START, then EXIT or STOPPED; --until start returns 0 at START so you can say "it began", then re-arm for exit)
 #   fw runme path <name>
+#   run id (T-5276): `new` writes <name>/run.id and the script ends its START, EXIT and STOPPED
+#       lines with ` id=<run id>`; watch and pending accept only lines carrying that id, so a
+#       previous run's log or an inner runme's EXIT cannot stand in for this run
 #   fw runme pending   (session start: WATCH LOST / RUN IN FLIGHT / RUN ENDED WITHOUT RECORD, T-3878)
 #   fw runme job new|dry-run|list|retire ...   the job queue (T-4491): jobs are job.json data, never sourced
 #   fw runme queue     the operator's ONE fixed command: menu of pending jobs, plan shown, y/N, run
@@ -24,7 +27,7 @@ _runme_root() { echo "${PROJECT_ROOT:-$(pwd)}/.context/runme"; }
 # 30 min for a runme called "--help".
 _runme_valid_name() { [[ "$1" =~ ^[A-Za-z0-9._][A-Za-z0-9._-]*$ ]]; }
 
-_runme_usage() { sed -n '2,19p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
+_runme_usage() { sed -n '2,22p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
 
 runme_new() {
     local name="${1:-}"; shift || true
@@ -51,6 +54,17 @@ runme_new() {
     mkdir -p "$dir"
     local script="$dir/runme.sh" log="$dir/run.log" events
     events="$(_runme_root)/events.jsonl"
+    # T-5276: a rebuild is a new run. The log of the previous build moves aside (same
+    # run.log.1..3 generations as T-4914) so nobody reads its EXIT as this run's, and the
+    # new build gets its own run id, which the script prints and the watch insists on.
+    if [ -s "$log" ]; then
+        local g
+        for g in 2 1; do if [ -f "$log.$g" ]; then mv -f "$log.$g" "$log.$((g + 1))"; fi; done
+        mv -f "$log" "$log.1"
+    fi
+    rm -f "$log"
+    local rid; rid="$(date -u +%Y%m%dT%H%M%SZ)-$$-$RANDOM"
+    printf '%s\n' "$rid" > "$dir/run.id"
     local n="${#cmds[@]}"
     {
         echo '#!/bin/bash'
@@ -84,9 +98,9 @@ runme_new() {
         echo '_ev() { printf '"'"'{"name":"%s","event":"%s","step":"%s","rc":"%s","signal":"%s","ts":"%s"}\n'"'"' \'
         echo '        "'"$name"'" "$1" "${2:-}" "${3:-}" "${4:-}" "$(date -u +%FT%TZ)" >> "$EVENTS" 2>/dev/null || true; }'
         echo 'exec > >(while IFS= read -r l; do printf "%s %s\n" "$(date +%T)" "$l"; done | tee -a "$LOG") 2>&1'
-        echo 'echo "RUNME START '"$name"' $(date -u +%FT%TZ) user=$(id -un) host=$(hostname)"; _ev start'
+        echo 'echo "RUNME START '"$name"' $(date -u +%FT%TZ) user=$(id -un) host=$(hostname) id='"$rid"'"; _ev start'
         echo '_stopped=""'
-        echo 'trap '"'"'rc=$?; [ -n "$_stopped" ] || { echo "RUNME EXIT $rc"; _ev exit "" "$rc"; }; rm -rf "$LOCKD"; sleep 0.3'"'"' EXIT'
+        echo 'trap '"'"'rc=$?; [ -n "$_stopped" ] || { echo "RUNME EXIT $rc id='"$rid"'"; _ev exit "" "$rc"; }; rm -rf "$LOCKD"; sleep 0.3'"'"' EXIT'
         # T-3741: a Ctrl-C, kill or closed terminal is STOPPED, not "ended without record".
         # The signal reaches the whole foreground group, so the tee that writes run.log is
         # already dead: echoing into it raises SIGPIPE and the script would die unrecorded.
@@ -94,7 +108,7 @@ runme_new() {
         local sig code
         for sig in INT:130 TERM:143 HUP:129; do
             code="${sig#*:}"; sig="${sig%%:*}"
-            echo "trap '_stopped=1; trap \"\" PIPE; _ev stopped \"\" $code $sig; printf \"%s RUNME STOPPED $sig\\n%s RUNME EXIT $code\\n\" \"\$(date +%T)\" \"\$(date +%T)\" >> \"\$LOG\" 2>/dev/null; exit $code' $sig"
+            echo "trap '_stopped=1; trap \"\" PIPE; _ev stopped \"\" $code $sig; printf \"%s RUNME STOPPED $sig id=$rid\\n%s RUNME EXIT $code id=$rid\\n\" \"\$(date +%T)\" \"\$(date +%T)\" >> \"\$LOG\" 2>/dev/null; exit $code' $sig"
         done
         # T-4905: all steps run in ONE subshell. A step that sets its own EXIT trap (the
         # mount/umount cleanup idiom) used to replace the EXIT trap above, so the run
@@ -134,6 +148,22 @@ _runme_claude_ancestor() {
     return 0
 }
 
+# T-5276: the lines of ONE run. With a run id (run.id beside the script) only marker
+# lines ending in ` id=<that id>` count: a previous build's log and the markers an inner
+# runme relays into this log carry another id or none. Without run.id (a runme generated
+# before T-5276) every marker counts, as before.
+#   _runme_marks <dir> START|EXIT|STOPPED   prints the matching lines; status 1 when none
+_runme_marks() {
+    local log="$1/run.log" rid=""
+    [ -f "$log" ] || return 1
+    if [ -s "$1/run.id" ]; then rid=$(head -n 1 "$1/run.id" | tr -cd 'A-Za-z0-9._-'); fi
+    if [ -n "$rid" ]; then
+        grep -E "RUNME $2 .*id=$rid\$" "$log" 2>/dev/null
+    else
+        grep "RUNME $2" "$log" 2>/dev/null
+    fi
+}
+
 _runme_alive() { [ -n "${1:-}" ] && [ "$1" != null ] && kill -0 "$1" 2>/dev/null; }
 
 runme_watch() {
@@ -153,7 +183,8 @@ runme_watch() {
     done
     case "$stop_at" in start|exit) ;; *) echo "runme watch: --until takes start or exit" >&2; return 2 ;; esac
     _runme_valid_name "$name" || { echo "runme watch: bad name" >&2; return 2; }
-    local log; log="$(_runme_root)/$name/run.log"
+    local dir; dir="$(_runme_root)/$name"
+    local log="$dir/run.log"
     # T-3878: record WHO armed this watch. A watch dies with the session that
     # armed it; at the next session start `fw runme pending` reads this record
     # and says WATCH LOST instead of leaving the operator's run unobserved.
@@ -162,17 +193,17 @@ runme_watch() {
     printf '{"watch_pid": %s, "arming_claude_pid": %s, "armed_at": "%s"}\n' \
         "$$" "$(_runme_claude_ancestor "$$" | grep . || echo null)" "$(date -u +%FT%TZ)" > "$rec"
     local waited=0
-    until [ -f "$log" ] && grep -q "RUNME START" "$log" 2>/dev/null; do
+    until _runme_marks "$dir" START >/dev/null; do
         [ "$waited" -ge "$timeout" ] && { echo "runme watch: not started within ${timeout}s"; return 124; }
         sleep 2; waited=$((waited + 2))
     done
     echo "runme watch: $name started"
     if [ "$stop_at" = start ]; then
         # watch.json stays: the run is not reported yet, and the exit watch re-arms it.
-        grep "RUNME START" "$log" | tail -1
+        _runme_marks "$dir" START | tail -1
         return 0
     fi
-    until grep -q "RUNME EXIT" "$log" 2>/dev/null; do
+    until _runme_marks "$dir" EXIT >/dev/null; do
         [ "$waited" -ge "$timeout" ] && { echo "runme watch: still running after ${timeout}s"; tail -n 20 "$log"; return 124; }
         sleep 2; waited=$((waited + 2))
     done
@@ -181,8 +212,8 @@ runme_watch() {
     # T-3978: `|| true` is load-bearing. bin/fw runs under `set -euo pipefail`, and on a
     # normal run there is no STOPPED line, so grep exits 1, the pipeline fails and set -e
     # killed the watcher with 1 before it reported a clean run's exit 0.
-    local rc sig; rc=$(grep -o "RUNME EXIT [0-9]*" "$log" | tail -1 | awk '{print $3}' || true)
-    sig=$(grep -o "RUNME STOPPED [A-Z]*" "$log" | tail -1 | awk '{print $3}' || true)
+    local rc sig; rc=$(_runme_marks "$dir" EXIT | grep -o "RUNME EXIT [0-9]*" | tail -1 | awk '{print $3}' || true)
+    sig=$(_runme_marks "$dir" STOPPED | grep -o "RUNME STOPPED [A-Z]*" | tail -1 | awk '{print $3}' || true)
     if [ -n "$sig" ]; then
         echo "runme watch: $name was STOPPED by SIG$sig before it finished (exit ${rc:-?})"
     else
@@ -205,17 +236,17 @@ runme_pending() {
     while IFS= read -r d; do
         name=$(basename "$d"); log="$d/run.log"; rec="$d/watch.json"
         [ -f "$d/runme.sh" ] || continue
-        if grep -q "RUNME EXIT" "$log" 2>/dev/null; then
+        if _runme_marks "$d" EXIT >/dev/null; then
             # T-3741: an interrupted run nobody saw (its watch never reported) is news.
-            if grep -q "RUNME STOPPED" "$log" 2>/dev/null && [ -f "$rec" ]; then
-                echo "RUN STOPPED  $name — the operator's run was interrupted ($(grep -o 'RUNME STOPPED [A-Z]*' "$log" | tail -1 | awk '{print "SIG"$3}')); read $log"
+            if _runme_marks "$d" STOPPED >/dev/null && [ -f "$rec" ]; then
+                echo "RUN STOPPED  $name — the operator's run was interrupted ($(_runme_marks "$d" STOPPED | grep -o 'RUNME STOPPED [A-Z]*' | tail -1 | awk '{print "SIG"$3}')); read $log"
                 found=1
             fi
             rm -f "$rec"; continue
         fi
         running=""
         pgrep -f "$d/runme.sh" >/dev/null 2>&1 && running=1
-        if grep -q "RUNME START" "$log" 2>/dev/null; then
+        if _runme_marks "$d" START >/dev/null; then
             if [ -n "$running" ]; then
                 echo "RUN IN FLIGHT  $name — started, no EXIT yet; watch it: fw runme watch $name"
             else
