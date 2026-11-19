@@ -69,6 +69,20 @@ Reading: "who is waiting" exists everywhere (T-5227). "What it unblocks" exists 
 can start from waiting + mentions + question progress; reach and cost of delay need a way to
 be recorded.
 
+## Calibration log (operator picks vs the v0 order)
+
+| Date | Group | v0 put first | Operator picked | Operator's reason | What it says about the weights |
+|---|---|---|---|---|---|
+| 2026-11-19 | waiting on the agent | T-3682 (named by 6 tasks, no questions filed) | T-4834 | "it only needs the verdict" | closeness to a decision outweighs being named by other tasks; an inception with no questions filed should not lead |
+
+Follow-up found while acting on the pick: T-4834's one question counted as disposed because
+it was *deferred to the operator*, though an agent review was still owed. v1 should treat
+"deferred to the operator" as answered only when the task text owes no agent work.
+
+v0 also put the per-project framing right: the list is per project; 055 has no role
+(operator reflection 2026-11-19, "This is a per project, right? ... it has nothing to do with
+fleet cockpit").
+
 ## Open
 
 IW-1..IW-4 in the task file. Next step: a read-only prototype that prints the computed
