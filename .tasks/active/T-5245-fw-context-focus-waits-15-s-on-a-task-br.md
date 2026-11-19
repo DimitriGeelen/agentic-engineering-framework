@@ -9,7 +9,7 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
+owner: agent
 horizon: now
 tags: [bug, performance]
 components: [agents/context/lib/focus.sh, lib/config.sh, 
@@ -109,7 +109,7 @@ cost_estimate_proposed:
 Measured 2026-11-19 on AEF: focus 16.7 s → 1.73 s; work-on 16.99 s with briefing → 2.35 s without. Reported to 1409.
 
 ### Human
-- [ ] [REVIEW] The settings page shows the new FOCUS_BRIEFING row like its neighbours
+- [x] [REVIEW] The settings page shows the new FOCUS_BRIEFING row like its neighbours
   **Steps:**
   1. Open http://192.168.10.107:3000/config
   2. Find the row FOCUS_BRIEFING (next to INDEX_MAX_AGE_HOURS)
@@ -159,6 +159,7 @@ Measured 2026-11-19 on AEF: focus 16.7 s → 1.73 s; work-on 16.99 s with briefi
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261119-d4247e16 — reviewer-judge-t-5245-r3-d9cd0bac0ab3:reviewer (rung rung-3-termlink-single-reviewer), digest 9724364424d9; dispatch judge-t-5245-r3-d9cd0bac0ab3; evidence: .context/reviews/evidence/T-5245/AC1-judge-t-5245-r3-d9cd0bac0ab3.md, .context/reviews/evidence/T-5245/01-config-judge-t-5245-r3-d9cd0bac0ab3.png, .context/reviews/evidence/T-5245/config-row@1024-judge-t-5245-r3-d9cd0bac0ab3.png, .context/reviews/evidence/T-5245/config-row@1440-judge-t-5245-r3-d9cd0bac0ab3.png, .context/reviews/evidence/T-5245/config-row@1920-judge-t-5245-r3-d9cd0bac0ab3.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
