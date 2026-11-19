@@ -15,12 +15,12 @@ description: >
   a gate changes a standing operator directive. Source recorded in docs/reports/<this
   task>/received-055-worktree-gate.md.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 target_blast_radius: 3
 voi_score: 0.5
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -54,8 +54,8 @@ waiting_on: agent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-27T15:30:32Z
-last_update: 2026-11-19T09:29:31Z
-date_finished:
+last_update: 2026-11-19T14:22:57Z
+date_finished: 2026-11-19T14:22:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -453,3 +453,32 @@ History: before 2026-11-19 this inception waited on two things, the consumer pol
 - refuse `git worktree add` (any spelling the hook can see), `fw worktree create`, Claude Code's EnterWorktree and Agent `isolation: worktree`, unless a live operator grant exists;
 - the grant comes from an operator verb, `fw worktree grant [--hours N]`, refused under agent control (as `fw tier0 approve` and `fw inception decide` are), time-limited, logged; agents cannot write the grant file;
 - CLAUDE.md §Worktree Policy changes from "NOT gated" to "gated by an operator grant"; `fw upgrade` delivers the hook.
+
+### 2026-11-19T14:22:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** T-4535 sweep: decision recorded, closing
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-04fa9690
+- **Timestamp:** 2026-11-19T14:22:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-b6b1233d
+- **Timestamp:** 2026-11-19T14:22:58Z
+- **Overall:** CONTRADICTED
+- **Claims:** 5
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `lib/review.sh:205-211` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `T-649` | task | ✓ pass |
+| `T-4833` | task | ✓ pass |
+| `T-2945` | task | ✓ pass |
+| `T-2421` | task | ✓ pass |

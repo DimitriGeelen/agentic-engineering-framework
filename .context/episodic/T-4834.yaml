@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4834: Decide: gate worktree creation behind an operator grant (055's T-649 check-worktree-grant.sh offer)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-19T14:23:18Z
+# ============================================================================
+
+task_id: T-4834
+task_name: "Decide: gate worktree creation behind an operator grant (055's T-649 check-worktree-grant.sh offer)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-27T15:30:32Z
+completed: 2026-11-19T14:22:57Z
+duration_days: 23
+updates_count: 6
+first_commit: 2026-10-27T16:34:57+01:00
+last_commit: 2026-11-19T14:48:52+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  worktree-grant gate offer from 055 recorded (hook + tests); converted to inception, DEFER until T-4833 ships and the hook is reviewed. record 055's current worktree-gate tests (ce49ae4e, supersedes 2702ab81). recommendation GO — operator-grant gate on worktree creation, adapted from 055 T-649; review artefact. inception acceptance criteria (template placeholders replaced). inception decision GO — decide chain finished (via Watchtower). reword the historical DEFER line (it read as a live deferral to closed T-4833 and blocked completion). file T-5257 (worktree gate, from GO) and T-5256 (Watchtower promises an agent recovery the sweep cannot make)
+
+# Key outcomes
+outcomes:
+  - '055''s hook reviewed against AEF''s gates and code paths (docs/reports/T-4834-worktree-gate-review.md)'
+  - 'Recommendation written with rationale and evidence'
+  - '[REVIEW] Decide whether AEF gates worktree creation behind an operator grant'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/reviews/human-ac-ticks.jsonl'
+  - '.tasks/active/T-4833-consumer-claudemd-template-carries-the-w.md'
+  - '.tasks/active/T-4834-decide-gate-worktree-creation-behind-an-.md'
+  - '.tasks/active/T-4835-review-seats-void-their-own-green-verdic.md'
+  - '.tasks/active/T-5256-watchtower-says-the-agent-session-can-re.md'
+  - '.tasks/active/T-5257-worktree-creation-gate-behind-an-operato.md'
+  - 'docs/reports/T-4834-worktree-gate-review.md'
+  - 'docs/reports/T-4834/received-055-worktree-gate.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-27T16:34:57'
+    action: 'T-4834: worktree-grant gate offer from 055 recorded (hook + tests); converted to inception, DEFER until T-4833 ships and the hook is reviewed'
+  - time: '2026-10-27T16:35:44'
+    action: 'T-4834: record 055''s current worktree-gate tests (ce49ae4e, supersedes 2702ab81)'
+  - time: '2026-11-19T10:31:07'
+    action: 'T-4834: recommendation GO — operator-grant gate on worktree creation, adapted from 055 T-649; review artefact'
+  - time: '2026-11-19T10:31:42'
+    action: 'T-4834: inception acceptance criteria (template placeholders replaced)'
+  - time: '2026-11-19T14:43:57'
+    action: 'T-4834: inception decision GO — decide chain finished (via Watchtower)'
+  - time: '2026-11-19T14:44:53'
+    action: 'T-4834: reword the historical DEFER line (it read as a live deferral to closed T-4833 and blocked completion)'
+  - time: '2026-11-19T14:48:52'
+    action: 'T-4834: file T-5257 (worktree gate, from GO) and T-5256 (Watchtower promises an agent recovery the sweep cannot make)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 33052 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 33052
+  commits: 8
+  files_changed: 11
+  lines_added: 2567
+  lines_removed: 20
+  footprint_refreshed_at: '2026-11-19T14:24:21Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4834-decide-gate-worktree-creation-behind-an-.md
+generated_by: context-agent-hybrid
