@@ -40,6 +40,7 @@ ctl013() {
     PATH="$TEST_TEMP_DIR/stub:$PATH" TASKS_DIR="$TASKS_DIR" PROJECT_ROOT="$TEST_TEMP_DIR" bash -c '
         pass() { echo "PASS: $1"; }
         warn() { echo "WARN: $1"; }
+        info() { echo "INFO: $1"; }
         source "$1"
     ' _ "$BLOCK"
 }
@@ -47,17 +48,17 @@ ctl013() {
 @test "L-391: detects 'bin/fw audit 2>&1 | grep -q Fail: 0' as nested" {
     run ctl013 'bin/fw audit 2>&1 | grep -q "Fail: 0"'
     [ "$status" -eq 0 ]
-    [[ "$output" == PASS:*"1 skipped — nested-audit invocation"* ]]
+    [[ "$output" == INFO:*"every line skipped"*"1 skipped — nested-audit invocation"* ]]
 }
 
 @test "L-391: detects bare 'fw audit | grep' as nested" {
     run ctl013 'fw audit | grep -q ok'
-    [[ "$output" == PASS:*"1 skipped — nested-audit invocation"* ]]
+    [[ "$output" == INFO:*"every line skipped"*"1 skipped — nested-audit invocation"* ]]
 }
 
 @test "L-391: detects '.agentic-framework/bin/fw audit' (consumer-shape path) as nested" {
     run ctl013 '.agentic-framework/bin/fw audit | grep -q pass'
-    [[ "$output" == PASS:*"1 skipped — nested-audit invocation"* ]]
+    [[ "$output" == INFO:*"every line skipped"*"1 skipped — nested-audit invocation"* ]]
 }
 
 @test "L-391: does NOT mis-detect 'fw auditor' (unrelated subcommand)" {
@@ -74,7 +75,7 @@ ctl013() {
     # this is a known limitation, but safer to over-skip than to false-WARN.
     # Pin the limitation explicitly.
     run ctl013 'grep -q "ran fw audit at 12:00" /tmp/log.txt'
-    [[ "$output" == PASS:*"1 skipped — nested-audit invocation"* ]]
+    [[ "$output" == INFO:*"every line skipped"*"1 skipped — nested-audit invocation"* ]]
     # Test asserts the over-match — if you change the predicate to be
     # more precise (require leading whitespace, etc.), update this test.
 }

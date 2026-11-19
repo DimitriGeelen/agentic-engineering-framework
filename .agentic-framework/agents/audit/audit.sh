@@ -7481,12 +7481,18 @@ for task_file in $recent_completed; do
                 _notes="${_notes}${_notes:+, }${_skip_summary}"
             fi
             [ "$cmd_isolated_pass" -gt 0 ] && _notes="${_notes}${_notes:+, }$cmd_isolated_pass passed only in isolation — OBS-022 bats env-contam"
-            if [ -n "$_notes" ]; then
+            if [ "$cmd_pass" -eq 0 ] && [ "$cmd_skipped" -gt 0 ]; then
+                # T-5268: nothing ran, so nothing was verified. A skip that reads as a
+                # PASS is the vacuous-green class (verify_queue.py UNSAFE note).
+                info "CTL-013: $task_id not re-run unattended — every line skipped ($_notes)"
+                _ctl013_results+=("$task_id SKIPPED")
+            elif [ -n "$_notes" ]; then
                 pass "CTL-013: $task_id verification re-run: $cmd_pass/$((cmd_pass + cmd_fail)) pass ($_notes)"
+                _ctl013_results+=("$task_id PASS")
             else
                 pass "CTL-013: $task_id verification re-run: $cmd_pass/$((cmd_pass + cmd_fail)) pass"
+                _ctl013_results+=("$task_id PASS")
             fi
-            _ctl013_results+=("$task_id PASS")
         else
             warn "CTL-013: $task_id verification re-run: $cmd_fail command(s) failing" \
                  "Verification commands that passed at completion now fail" \

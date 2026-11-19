@@ -49,6 +49,7 @@ ctl013() {  # ctl013 <verification-line>
         cd "$PROJECT_ROOT"
         pass() { echo "PASS: $1"; }
         warn() { echo "WARN: $1"; }
+        info() { echo "INFO: $1"; }
         source "$1"
     ' _ "$BLOCK"
 }
@@ -124,14 +125,14 @@ PY
 
 @test "CTL-013: a marked line is skipped with its reason, never counted as a pass" {
     ctl013 "$MARKED"
-    [[ "${lines[0]}" == "PASS: CTL-013: T-9901 verification re-run: 0/0 pass (1 skipped — declared '# needs: fixture' (runs at close only))" ]]
+    [[ "${lines[0]}" == "INFO: CTL-013: T-9901 not re-run unattended — every line skipped (1 skipped — declared '# needs: fixture' (runs at close only))" ]]
     [ ! -e "$P/ran" ]
 }
 
 @test "CTL-013: process control is skipped and never runs" {
     for line in "$PKILL" "$KILL"; do
         ctl013 "$line"
-        [[ "${lines[0]}" == *"0/0 pass (1 skipped — process control"* ]] || { echo "$output"; false; }
+        [[ "${lines[0]}" == "INFO: "*"every line skipped (1 skipped — process control"* ]] || { echo "$output"; false; }
         [ ! -e "$P/ran" ] || { echo "executed: $line"; false; }
     done
 }
@@ -176,4 +177,10 @@ PY
         timeout 120 bash "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9902 --status work-completed
     [[ "$output" == *"Verification: 1/1 passed"* ]] || { echo "$output" | tail -30; false; }
     [ -e "$P/ran" ]
+}
+
+@test "CTL-013: one line runs and one is skipped -> still PASS with the skip note (control)" {
+    ctl013 "true
+$MARKED"
+    [[ "${lines[0]}" == "PASS: CTL-013: T-9901 verification re-run: 1/1 pass (1 skipped — declared '# needs: fixture'"* ]] || { echo "$output"; false; }
 }
