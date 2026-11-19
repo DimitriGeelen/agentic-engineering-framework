@@ -378,7 +378,7 @@ AEF's Worktree Policy (CLAUDE.md §Worktree Policy, operator directive 2026-08-2
 - `grep -rn 'worktree add' lib agents bin`: lib/worktree.sh:347 is the only creator.
 - T-4833 (completed 2026-10-27) carried the policy text to consumers; 055 needed its own gate anyway.
 
-Earlier recommendation (before 2026-11-19), kept for the record: DEFER until T-4833 shipped and the hook was reviewed. Both are now done. Earlier rationale: The evidence for a gate is real: 055's 27 uninstructed worktree branches in 8 days show that the behavioural rule alone did not hold there. But in 055's case the policy never reached it (T-4833), so it is not yet known whether delivering the policy is enough. 055's design also has to be reviewed before it is proposed for AEF, in particular how the grant is given and how it fits AEF's existing gates. DEFER until T-4833 has shipped and the hook has been reviewed against AEF; the recommendation then becomes GO or NO-GO.
+History: before 2026-11-19 this inception waited on two things, the consumer policy delivery (completed 2026-10-27 as T-4833) and a review of 055's hook against AEF (done 2026-11-19, docs/reports/T-4834-worktree-gate-review.md). Nothing is deferred any more.
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
