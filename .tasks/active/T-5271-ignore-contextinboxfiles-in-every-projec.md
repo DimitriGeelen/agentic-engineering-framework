@@ -13,7 +13,7 @@ description: >
   the same way, ignore it in AEF's own repo, and have fw doctor (WARN) and fw audit
   flag a project where a file under it is tracked or the path is not ignored.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -48,7 +48,7 @@ origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "1ed082c3"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T16:18:37Z
-last_update: '2026-11-19T16:32:02Z'
+last_update: 2026-11-19T16:41:31Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,20 +94,24 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 055-agentic-fleet-cockpit (msg 1ed082c3, 2026-11-19, their T-703): the cockpit's /drop page delivers operator files, possibly sensitive, into `<project>/.context/inbox/files/`. Verified 2026-11-19: the path is not ignored even in AEF (`git check-ignore .context/inbox/files/x` exits 1). Operator: "yes, start with T-5271".
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** No project ignores `.context/inbox/files/`, so `git add -A`, a handover commit of `.context`, or an explicit add can put an operator's dropped file into git history and onto its remotes.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Every project, new or existing, ignores dropped files, and the framework notices when one does not.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `fw init` writes the ignore rule, `fw upgrade` adds it to existing projects, AEF's own repo has it, and `fw doctor` and `fw audit` flag a project where the path is not ignored or a file under it is already tracked. Same shape as lib/vec-index-gitignore.sh (T-3861), lib/dispatch-gitignore.sh and lib/working-gitignore.sh.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A helper in the same shape as lib/vec-index-gitignore.sh (one rule list, an idempotent ensure function with --dry-run) keeps `.context/inbox/files/` ignored, via a nested `.context/inbox/.gitignore` or the file the precedents use
+- [ ] `fw init` writes it for new projects; `fw upgrade` adds it to existing ones (dry-run reports WOULD ADD)
+- [ ] AEF's own repo ignores the path: `git check-ignore -q .context/inbox/files/x` exits 0
+- [ ] `fw doctor` WARNs and `fw audit` flags a project where the path is not ignored or where a file under it is tracked (naming the tracked file and how to untrack it without deleting it)
+- [ ] Tests (t5271_*): fresh init, upgrade of a project without the rule, idempotence, dry-run, the doctor/audit finding for not-ignored and for tracked; the precedents' tests stay green (t3861_vec_index_gitignore.bats, t4701_tracked_runtime_untrack.bats); tests/unit/upgrade_fresh_machine_simulation.bats stays green
+- [ ] Vendored copies synced (`bin/fw vendor self --check` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -391,3 +395,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5271-ignore-contextinboxfiles-in-every-projec.md
 - **Context:** Initial task creation
+
+### 2026-11-19T16:41:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
