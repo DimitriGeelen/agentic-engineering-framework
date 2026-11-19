@@ -16,7 +16,7 @@ description: >
   counter from becoming an unbounded loop, and widening it needs an operator call
   plus a real in-session turn counter to bound it. Evidence: docs/reports/T-3239-continuous-loop-demo/evidence/E2-armed-*.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -27,7 +27,7 @@ step_entered_at: '2026-11-18T22:21:39Z'
 revisit_at: 2026-11-25
 waiting_on: operator
 created: 2026-09-01T07:30:33Z
-last_update: 2026-11-18T22:21:39Z
+last_update: 2026-11-19T08:27:23Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -102,6 +102,11 @@ bvp_scores_proposed:
      §Disposition Gate. Bypass: --skip-disposition-gate "rationale" (direct) or
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
+
+- **IW-1: Should a continuous run go past Claude Code's `stop_hook_active` cap inside one session, and if so what bounds it?**
+  confidence: 3
+  disposition: answered
+  rationale: No. The outside driver (T-3254, cron continuous-driver-10m) gives multi-turn runs without touching the vendor guard, and our four limits now bind (T-3253). Operator ruling 2026-11-19: "1" (NO-GO as recommended).
 
 ## Exploration Plan
 
@@ -201,14 +206,16 @@ asserts that mechanically rather than trusting anyone to remember it.
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** NO-GO
 
-**Rationale:** Evidence gap is genuine: the measurement establishes the cap is one continuation, but whether the loop SHOULD run longer per session is an operator call about autonomy ceiling, and it cannot be answered without also deciding what in-session counter would bound it. Both halves need the operator.
+**Rationale:** Keep honouring `stop_hook_active`; do not widen the in-session cap. The need behind this inception (a continuous run that lasts more than two turns) is now met from outside the session, which leaves Claude Code's runaway guard fully in place as the backstop against a bug in our own counting. The two prerequisites the September DEFER waited on have both landed. Operator ruling 2026-11-19, walkthrough of the ready inceptions: "1" (NO-GO as recommended).
 
-<!-- 2026-09-03: the second half of this rationale ("cannot be answered without
-     deciding what in-session counter would bound it") is superseded by Candidate C
-     above, which requires no in-session counter. Left unedited because the
-     Recommendation is the operator's to revise, not the agent's. -->
+**Evidence:**
+- T-3254 (completed): the outside driver. Cron job `continuous-driver-10m` in `.context/cron-registry.yaml` reads `fw continuous status --json` and injects a new turn into an idle registered session. An injected turn is a new user turn, so `stop_hook_active` is never set for it; the rate is bounded by the schedule, not by logic we wrote.
+- T-3253 (completed): a tier-ceiling breach now stops the running session instead of only disarming the state file; T-3250 (E10) was the measurement that found the hole.
+- T-3239 evidence (docs/reports/T-3239-continuous-loop-demo/evidence/E2-armed-*) still shows the in-session cap at one continuation; that is now the intended behaviour, not a defect.
+
+Earlier filing-time recommendation (2026-09): DEFER, because the answer needed the operator and an in-session counter. Candidate C (above) removed the need for that counter.
 
 ## Decisions
 
@@ -235,3 +242,6 @@ asserts that mechanically rather than trusting anyone to remember it.
 ### 2026-11-18T22:21:39Z — inception-wait [inception-lifecycle]
 - **Change:** waiting_on: agent → operator
 - **Revisit:** 2026-11-25
+
+### 2026-11-19T08:27:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
