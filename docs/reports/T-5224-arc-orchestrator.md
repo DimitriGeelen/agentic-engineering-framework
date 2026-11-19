@@ -179,3 +179,7 @@ For AEF this means:
   per-step versions, re-render in place if never started (T-5247), new linked task if redone,
   carry-over rule, outdated mark across arcs with a downstream gate, arc complete when every
   step's latest instance is done and not outdated. **Operator, verbatim:** "1" (as proposed).
+- 2026-11-19, IW-6 (grain at scale). Agent proposed: one task per step stays the grain (1409's
+  operator ruling, IW-5); the index T-5246 carries the volume; a slim template for generated
+  step tasks. **Operator, verbatim:** "1" (as proposed). All six questions answered; the agent
+  wrote the recommendation GO with the agreed scope and build order.

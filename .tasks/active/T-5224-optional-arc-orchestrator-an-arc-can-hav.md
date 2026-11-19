@@ -15,11 +15,11 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
-step_entered_at: '2026-11-18T22:21:49Z'
-revisit_at: 2026-11-25
-waiting_on: peer
+step_entered_at: '2026-11-19T13:31:14Z'
+revisit_at: 2026-11-26
+waiting_on: operator
 created: 2026-11-18T09:15:42Z
-last_update: 2026-11-19T11:44:10Z
+last_update: 2026-11-19T13:31:14Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -127,6 +127,9 @@ Research: docs/reports/T-5224-arc-orchestrator.md.
   disposition: answered
   rationale: Adopt 1409's operator rules (msgs fb6c390d, da96da3b, 72b696d8, d9c814d1): versions per STEP, not per run. A never-started step task is re-rendered in place from the newer template, same id (needs T-5247 date_started). A started step that is redone gets a NEW task from the template valid then, template version recorded, linked both ways (supersedes / superseded_by); new tasks only for the resumed step and later steps as they come up; the whole sequence is copied only when a check says earlier results no longer hold. Carry over findings and information, assumptions marked as assumptions; never judgements or check results. A template change names the steps it affects; "results no longer hold" marks those step instances outdated across arcs, and a gate refuses downstream acceptance over an outdated step. Arc complete = every step's latest instance finished and not outdated. Each new instance is also a journal entry (IW-2). AEF needs `fw arc instantiate` into an existing arc from a given step. Operator ruling 2026-11-19: "1".
 - **IW-6: Grain at scale: one task per step is about 142,000 task files for one pass over 10,953 units (1409). Is a per-unit step task the right grain at that size, or do steps become journal entries inside a per-unit task or arc? Evidence: 1409's fw command timings at 10k / 50k / 142k files (pending).**
+  confidence: 2
+  disposition: answered
+  rationale: The grain stays one task per step: 1409's operator ruled a step version IS a task in the unit's arc ("one system of governance"; msg bbf3f214), IW-5 builds on it, and governance, review and the close gate all work per task. Volume (~142,000 files plus redone steps, msg 72b696d8; work-on 31-105 s at 10,000, over 600 s at 142,000, msg bb07ad3f) is carried by the derived task index T-5246, measured with 1409's generator; if T-5246 misses its targets this question returns with numbers. Plus a slim template for generated step tasks (13 step files = 378 KB per unit, of which 5 KB run notes). Operator ruling 2026-11-19: "1".
 
 ## Exploration Plan
 
@@ -188,12 +191,21 @@ Research: docs/reports/T-5224-arc-orchestrator.md.
 
 ## Recommendation
 
-**Recommendation:** EXPLORING
+**Recommendation:** GO
 
-Earlier filing-time recommendation (before T-5226): DEFER — rationale kept below.
-Back to EXPLORING by T-5228 triage (6 IW questions not disposed). Waiting on: peer (1409) — their measurements, especially the five-unit load test.
+**Scope agreed with the operator, question by question (2026-11-19, docs/reports/T-5224-arc-orchestrator.md §Dialogue Log):**
+1. Owner model B: the owner is a role; a fresh agent per event reads and writes the arc's journal (IW-1).
+2. An append-only journal per arc (tried, decided with reason, next with owner and deadline, outside decisions), written by the framework on task status changes and by any actor through one command, with a resumability check every woken agent runs first (IW-2).
+3. Opt-in per arc; `fw arc journal` and `fw arc resume`; wake on task status changes and passed deadlines, by idle-aware sidecar notice or a fresh TermLink worker; timer, pool, judgement rules and model choice stay project-side (IW-3).
+4. No extra authority for the owner; work under a task; a per-arc wake limit as the brake; consequential decisions need operator approval or a green reviewer verdict (IW-4).
+5. Per-step instances inside the arc: re-render in place if never started (needs T-5247), new linked task if redone, carry-over rule, outdated mark across arcs with a downstream gate, arc complete when every step's latest instance is done (IW-5).
+6. One task per step stays the grain; the task index T-5246 carries the volume; a slim template for generated step tasks (IW-6).
 
-**Rationale:**
+Suggested build order: journal + resume check (2) → opt-in setting and verbs (3) → wake and wake limit (3, 4) → consequential-decision review (4) → step instances (5, after T-5247) → slim step template (6). The index is T-5246's own track.
+
+**Rationale (evidence):** 1409 measured that 43% of their units (56 of 129) stood at a judgement step nobody started, because what had been tried lived only in ended orchestrator sessions. Their fresh-agent load test (210 agents) showed a fresh agent continues correctly from the arc's record alone once every decision, including outside ones, is written at the unit: 7/10 right next step before, 10/10 after, three models agreeing. A resume costs about 16-18K tokens.
+
+Earlier recommendations, kept for the record: DEFER (filing, pending 1409's measurements), then EXPLORING (T-5228 triage, 6 questions open). Earlier rationale:
 
 Evidence gap, not a hedge: 1409 is measuring (1) how many units hit judgment outcomes and at which steps, (2) orchestrator token cost per unit and per reload, (3) a load test on five real units of whether a fresh agent can continue from the arc's records alone, (4) options A resumed orchestrator / B owner as a role woken per event with a per-arc handover / C timer plus driver. The recommendation between A, B and C depends on (3).
 
@@ -232,3 +244,7 @@ Evidence gap, not a hedge: 1409 is measuring (1) how many units hit judgment out
 ### 2026-11-18T22:21:49Z — inception-wait [inception-lifecycle]
 - **Change:** waiting_on: agent → peer
 - **Revisit:** 2026-11-25
+
+### 2026-11-19T13:31:14Z — inception-wait [inception-lifecycle]
+- **Change:** waiting_on: peer → operator
+- **Revisit:** 2026-11-26
