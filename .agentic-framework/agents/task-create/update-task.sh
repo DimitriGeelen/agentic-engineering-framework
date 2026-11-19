@@ -2758,6 +2758,18 @@ PY
         echo "Status:  $OLD_STATUS → $NEW_STATUS"
         CHANGES+=("status: $OLD_STATUS → $NEW_STATUS")
 
+        # === Arc journal event (T-5250, T-5224 IW-2) ===
+        # Appends {task, from, to} to .context/arcs/<slug>.journal.jsonl when the
+        # task's arc_id resolves to an arc whose YAML has `journal: true`. Arcs
+        # without the field: nothing. Never blocks the status change: any
+        # failure is one stderr line.
+        if [ -f "$FRAMEWORK_ROOT/lib/arc_journal.py" ] && grep -q "^arc_id:[[:space:]]*[^[:space:]#]" "$TASK_FILE" 2>/dev/null; then
+            if ! _aj_err=$(PROJECT_ROOT="$PROJECT_ROOT" timeout 20 python3 "$FRAMEWORK_ROOT/lib/arc_journal.py" \
+                    task-event "$TASK_FILE" "$OLD_STATUS" "$NEW_STATUS" 2>&1); then
+                echo "WARN: arc journal event not written (status change unaffected): $(printf '%s' "$_aj_err" | tail -1)" >&2
+            fi
+        fi
+
         # === GitHub issue lifecycle stages (T-4341, T-4039 stages 6-7) ===
         # started-work → in-progress; work-completed (partial-complete too) → fixed-on-bleeding-edge.
         # Never blocks or fails the transition: lib/issues.py records failures and exits 0.

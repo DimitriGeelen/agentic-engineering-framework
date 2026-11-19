@@ -103,12 +103,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] lib/arc_journal.py: append-only journal at `.context/arcs/<slug>.journal.jsonl` (resolves slug or arc-NNN through lib/arc_membership.py arc_identities); entry kinds tried (text, result), decided (text, reason, consequential flag), next (step, owner, deadline), outside (text, reason, where it was decided), event (task, from, to); every row carries ts and by; appends are locked and never rewrite earlier rows
-- [ ] A resumability check returns findings with plain reasons and exit 0 (resumable) or 1: no next entry; latest next older than a later decided/outside/event entry (stale next); a task event into `issues` with no decided entry after it; latest next's deadline passed (reported, not a refusal)
-- [ ] Small CLI for now: `python3 lib/arc_journal.py append|show|check <arc> ...` (the `fw arc` verbs are T-5251)
-- [ ] agents/task-create/update-task.sh appends an event entry when a task whose arc_id resolves to an arc with `journal: true` in its YAML changes status; arcs without the field are untouched; a journal failure never blocks the status change
-- [ ] Tests (t5250_*): append and read back; append-only (no rewrite); each check finding and the resumable case; the update-task.sh event for an opted-in arc and none for a non-opted arc; a broken journal does not block a status change. Existing arc tests stay green; `fw audit` arc checks accept the new YAML field
-- [ ] Vendored copies synced (`bin/fw vendor self --check` clean)
+- [x] lib/arc_journal.py: append-only journal at `.context/arcs/<slug>.journal.jsonl` (resolves slug or arc-NNN through lib/arc_membership.py arc_identities); entry kinds tried (text, result), decided (text, reason, consequential flag), next (step, owner, deadline), outside (text, reason, where it was decided), event (task, from, to); every row carries ts and by; appends are locked and never rewrite earlier rows
+- [x] A resumability check returns findings with plain reasons and exit 0 (resumable) or 1: no next entry; latest next older than a later decided/outside/event entry (stale next); a task event into `issues` with no decided entry after it; latest next's deadline passed (reported, not a refusal)
+- [x] Small CLI for now: `python3 lib/arc_journal.py append|show|check <arc> ...` (the `fw arc` verbs are T-5251)
+- [x] agents/task-create/update-task.sh appends an event entry when a task whose arc_id resolves to an arc with `journal: true` in its YAML changes status; arcs without the field are untouched; a journal failure never blocks the status change
+- [x] Tests (t5250_*): append and read back; append-only (no rewrite); each check finding and the resumable case; the update-task.sh event for an opted-in arc and none for a non-opted arc; a broken journal does not block a status change. Existing arc tests stay green; `fw audit` arc checks accept the new YAML field
+- [x] Vendored copies synced (`bin/fw vendor self --check` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -294,6 +294,12 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/t5250_arc_journal.py -q > /tmp/.t5250_py 2>&1 && grep -q passed /tmp/.t5250_py && ! grep -q failed /tmp/.t5250_py
+bash -n agents/task-create/update-task.sh
+grep -q "arc_journal.py" agents/task-create/update-task.sh
+python3 lib/arc_journal.py check no-such-arc-t5250 >/dev/null 2>&1; test $? -eq 2
+test -f .fabric/components/lib-arc_journal.yaml
+bin/fw vendor self --check --task T-5250
 
 ## RCA
 
@@ -374,6 +380,11 @@ bvp_scores_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-19 — append lock
+- **Chose:** exclusive flock on the journal file's own O_APPEND descriptor.
+- **Why:** serialises writers exactly as well as a sidecar lock file, and leaves no `.lock` file beside the arc YAMLs to ignore or commit. A torn last line gets a newline before the next row, so one crash never corrupts a later entry.
+- **Rejected:** sidecar `<slug>.journal.lock` (an extra untracked file per arc, nothing gained).
 
 ## Decision
 
