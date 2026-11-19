@@ -1,8 +1,16 @@
 ---
 id: T-5247
-name: "Record when a task was first started (date_started, written once, never cleared) so 'never started' is a fact a command can read"
+name: "Record when a task was first started (date_started, written once, never cleared)
+  so 'never started' is a fact a command can read"
 description: >
-  1409 (msg d9c814d1, 2026-11-19): their operator's rule reuses an unstarted step task in place but never a started one. Checked: task files carry created, last_update and date_finished but no first-start field (no date_started anywhere in .tasks/templates or agents/task-create), and lib/enums.sh allows started-work -> captured (update-task.sh also auto-demotes on --horizon next/later, T-1068), so a started-then-shelved task is indistinguishable from an untouched one. Need: date_started written once by update-task.sh on the first transition into started-work, never cleared. Related: T-5224 IW-5 (step instances).
+  1409 (msg d9c814d1, 2026-11-19): their operator's rule reuses an unstarted step
+  task in place but never a started one. Checked: task files carry created, last_update
+  and date_finished but no first-start field (no date_started anywhere in .tasks/templates
+  or agents/task-create), and lib/enums.sh allows started-work -> captured (update-task.sh
+  also auto-demotes on --horizon next/later, T-1068), so a started-then-shelved task
+  is indistinguishable from an untouched one. Need: date_started written once by update-task.sh
+  on the first transition into started-work, never cleared. Related: T-5224 IW-5 (step
+  instances).
 
 status: captured
 workflow_type: build
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T09:11:09Z
-last_update: 2026-11-19T09:11:09Z
-date_finished: null
+last_update: '2026-11-19T09:15:22Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-19T09:15:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5247: Record when a task was first started (date_started, written once, never cleared) so 'never started' is a fact a command can read
