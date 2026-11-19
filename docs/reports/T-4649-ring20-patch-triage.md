@@ -76,3 +76,39 @@ Each candidate below was checked against today's code. The test for each: does i
 **Not in T-4649's scope.** ring20's category-5 list consists of general fixes, not extension points, so each gets its own build task where still open. #28/#30 (API optional-dependency guards) is already T-4657.
 
 **Sequencing if GO:** 1+2 (one task), 6, 4, then 3 after the operator's IW-2 ruling. 5 is not built.
+
+## Consultation (IW-3), sent 2026-11-19
+
+Operator, walkthrough of the ready inceptions: "I'm absolutely in favor of this. I'm just wondering if you should get some consultation on suggestions on how to shape this." Sent to proxmox-ring20-management, 055-agentic-fleet-cockpit, 1409-sprind and 832-Workflow-designer with the six points and three questions: (a) which local changes the shape would let them remove, (b) what is missing or shaped wrong, (c) whether an operator-owned list works for the form-safety exemption. Revisit 2026-11-24.
+
+### 1409-sprind (msg bd94a1e0, first answer; full inventory promised by 2026-11-24), summarised from German
+
+(a) Local changes in framework files today:
+1. A block in `agents/task-create/update-task.sh`: the sovereignty gate accepts the project's own review approval (`.context/reviews/<T>.yaml`) instead of the stamp. This RELAXES a gate under a condition, so point 6 (tighten only) does not cover it; it would remain.
+2. Watchtower page `/arbeiter` (`web/blueprints/arbeiter.py`) and a "Governance" nav entry: removed by points 1 and 2.
+3. Their other gates already live in the project (`.claude/hooks/`, `tools/`).
+
+(b) Missing:
+1. An extension point for the close gate: the project supplies a CHECKER (a command with an exit code) that the gate asks IN ADDITION, or, once approved by the project's operator and visible in `fw audit`, INSTEAD OF the stamp. Without it their largest patch stays.
+2. Project-owned operator-only classes for acceptance criteria (AEF T-3968).
+3. For point 4: also a notification hook after task completion and after `fw arc instantiate`.
+4. For point 5: agreed that the project must not steer the reviewer brief; they attach fixed target questions in their own tool. If AEF's reviewer becomes the only route, they would need a project-operator-approved file, visible in audit.
+
+(c) An AEF-operator-owned list works for them (same person). In general they find a list IN THE PROJECT, changeable only by that project's operator (Tier 0 class, shown by `fw audit`), more workable, otherwise every project waits for a framework release. They have no endpoint needing the exemption today.
+
+### 832-Workflow-designer (msg afd1515b, acknowledgement)
+
+Carries 44 declared local changes to vendored files, re-applied by hand at every upgrade: at be.60 this morning 37 were overwritten and 3 needed a hand merge (their T-1445). Will answer path by path from their divergence manifest before 2026-11-24. Also evidence for T-5248 (upgrade feedback loop).
+
+### 055-agentic-fleet-cockpit (msg 618e7751, acknowledgement)
+
+Will inventory every local change in their vendored `.agentic-framework/` and map it to the six points before 2026-11-24. First view: point 5 not offered is right; point 6 tighten-only matches how they use gates.
+
+### proxmox-ring20-management
+
+No answer yet.
+
+### Reading so far
+
+- New, beyond the six points: a project checker for the close gate (1409 b1). Its "instead of the stamp" form relaxes a gate, so it falls under the same rule as point 3: only with an operator approval visible in audit. Notification hooks after task completion and after arc instantiate (1409 b3) extend point 4 without new risk.
+- Where the operator-owned list lives (AEF vs the project, 1409 c) is a real design choice for the operator.
