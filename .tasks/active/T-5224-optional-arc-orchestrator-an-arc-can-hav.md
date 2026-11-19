@@ -175,6 +175,9 @@ Evidence gap, not a hedge: 1409 is measuring (1) how many units hit judgment out
 
 **Evidence:**
 
+- 1409 timings (msg bb07ad3f, 2026-11-19, throwaway project): `fw work-on` 3-4 s at 2,900 task files, 31-105 s at 10,000, 201-596 s at 50,000, over 600 s at 142,000. Across 78 step tasks they found 0 decisions, 0 ticked criteria and 0 evolution entries; later runs redid 122 already-green steps (7.3 h); a short "taken over from <run>" block scored 18/18 in a reading test with 36 fresh readers. Feeds IW-5/IW-6; the volume half moved to T-5246 (index).
+- 1409 operator ruling (msgs bbf3f214, 72b696d8, 2026-11-19), feeds IW-5: a step version IS a task in the unit's arc. A redone step gets a NEW task from the template valid then (version recorded); new tasks only for the resumed step and the steps after it as they come up; an unstarted step is re-rendered in place, same id; the whole sequence is copied only when a check before resuming says earlier results no longer hold. Requirements: (1) re-render an unstarted task from a newer template in place; (2) a new step instance links to its predecessor in the same arc; (3) arc completion copes with several instances of one step.
+
 <!-- Add evidence bullets as exploration progresses (file paths,
      commit hashes, test results). The filing-time recommendation
      can be revised before fw inception decide. -->

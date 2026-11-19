@@ -68,6 +68,8 @@ The `fw` commands an agent runs in the rhythm of its work read the task files di
 
 The operator already gave GO on a derived SQLite index in front of the task files (T-3934, 2026-10-08), scoped to the slowest Watchtower pages; build task T-5107 has not started. On 2026-11-19 the operator approved widening that scope to the everyday CLI commands, planned as this inception ("2 yes"). 1409 adds one requirement (msg 95af5a15): the index must be verifiably rebuildable, with one command that rebuilds it from the files and reports every difference, cheap enough for a test tier.
 
+**Correction from 1409 (msg 72b696d8, 2026-11-19):** the 290,000 figure assumed a full copy of all 13 steps per rescan, which their operator's restated rule does not do. Only a redone step (and the steps after it, as they come up) gets a new task; an unstarted step is re-rendered in place. Floor: 13 task files per unit, about 142,000 for all 10,953 units, plus one per step actually redone. The 5 s / 60 s targets stand; size the tests at 142,000 plus headroom.
+
 Already separated out: about 15 s of every `fw context focus` and `fw work-on` was a task briefing that always timed out, fixed in T-5245. What remains is the file-count effect.
 
 ## Assumptions
