@@ -167,3 +167,7 @@ For AEF this means:
   decided-with-reason / next (step, owner, deadline) / outside decisions; writers = framework on
   task status changes, the on-duty agent and any outside decider through one command; a
   resumability check run first by every woken agent. **Operator, verbatim:** "1" (as proposed).
+- 2026-11-19, IW-3 (plug-in). Agent proposed: opt-in per arc; `fw arc journal` and `fw arc
+  resume` (no separate handover verb); wake on task status changes and passed deadlines by
+  sidecar notice or fresh worker; timer, pool, judgement rules and model choice stay with the
+  project. **Operator, verbatim:** "1" (as proposed).
