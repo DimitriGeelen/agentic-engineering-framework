@@ -38,7 +38,7 @@ def _git(root, *a):
 def root(tmp_path, monkeypatch):
     d = tmp_path / ".context" / "arcs"
     d.mkdir(parents=True)
-    (d / "demo-arc.yaml").write_text("id: arc-901\nslug: demo-arc\nname: \"fixture\"\nstatus: in-progress\n")
+    (d / "demo-arc.yaml").write_text("id: arc-901\nslug: demo-arc\nname: \"fixture\"\nstatus: in-progress\nanchor_task: T-9001\n")
     monkeypatch.setenv("PROJECT_ROOT", str(tmp_path))
     monkeypatch.setenv("FRAMEWORK_ROOT", str(FW))
     monkeypatch.delenv("CLAUDECODE", raising=False)
@@ -72,6 +72,16 @@ def _resumable_with(root, **decided):
     row = aj.append("demo-arc", "decided", "owner-agent", root, text="skip K3", reason="K3 is moot", **decided)
     aj.append("demo-arc", "next", "owner-agent", root, step="go on", owner="agent")
     return row
+
+
+def _green(root, did, outcome="green"):
+    """A verdict-ledger row for the dispatch: the green must come from here, not from the
+    approval row (T-5253 hardening)."""
+    led = root / ".context" / "reviews" / "verdicts.jsonl"
+    led.parent.mkdir(parents=True, exist_ok=True)
+    with led.open("a") as fh:
+        fh.write(json.dumps({"id": f"V-{did}", "dispatch_id": did, "outcome": outcome,
+                             "task": "T-9001", "ac": 1}) + "\n")
 
 
 def _codes(root):
@@ -227,6 +237,7 @@ def test_reviewer_route_accepts_registered_green_review_dispatch(root):
     ao.set_owner("demo-arc", True, decision_review="reviewer", project_root=root)
     _resumable_with(root, consequential=True)
     did = rt.dispatch(root, "rv-arc-1", "T-9001")
+    _green(root, did)
     r = _cli(root, "approve", "demo-arc", "J-1", "--dispatch-id", did, "--outcome", "green")
     assert r.returncode == 0, r.stderr                    # evidence-based: allowed under agent control
     assert json.loads(r.stdout)["route"] == "reviewer"
@@ -261,6 +272,7 @@ def test_one_review_dispatch_approves_one_decision(root):
     aj.append("demo-arc", "decided", "a", root, text="defer K4", reason="r", category="defer")
     aj.append("demo-arc", "next", "a", root, step="s", owner="a")
     rt.dispatch(root, "rv-arc-1", "T-9001")
+    _green(root, "rv-arc-1")
     aj.approve("demo-arc", "J-1", "rev", dispatch_id="rv-arc-1", outcome="green", project_root=root)
     with pytest.raises(aj.JournalError, match="already approved J-1"):
         aj.approve("demo-arc", "J-3", "rev", dispatch_id="rv-arc-1", outcome="green", project_root=root)
@@ -270,6 +282,7 @@ def test_reviewer_approval_ignored_at_check_time_once_invalid(root):
     ao.set_owner("demo-arc", True, decision_review="reviewer", project_root=root)
     _resumable_with(root, consequential=True)
     rt.dispatch(root, "rv-arc-1", "T-9001")
+    _green(root, "rv-arc-1")
     aj.approve("demo-arc", "J-1", "rev", dispatch_id="rv-arc-1", outcome="green", project_root=root)
     assert _codes(root)[1] is True
     # the project switches back to operator-only: the reviewer approval no longer counts
@@ -309,3 +322,40 @@ def test_operator_pending_lists_unapproved_with_command(root, monkeypatch):
     aj.approve("demo-arc", "J-1", "operator", words="ok", project_root=root)
     assert op.arc_unapproved_decisions() == []
     importlib.reload(op)
+
+
+# ---------------------------------------------------------------- reviewer binding (T-5253 hardening)
+
+def test_reviewer_route_refuses_dispatch_for_another_task(root):
+    ao.set_owner("demo-arc", True, decision_review="reviewer", project_root=root)
+    _resumable_with(root, consequential=True)
+    rt.dispatch(root, "rv-other", "T-9002")
+    _green(root, "rv-other")
+    with pytest.raises(aj.JournalError, match="reviewed T-9002, not T-9001"):
+        aj.approve("demo-arc", "J-1", "rev", dispatch_id="rv-other", outcome="green", project_root=root)
+
+
+def test_reviewer_route_refuses_without_green_in_the_verdict_ledger(root):
+    ao.set_owner("demo-arc", True, decision_review="reviewer", project_root=root)
+    _resumable_with(root, consequential=True)
+    rt.dispatch(root, "rv-arc-1", "T-9001")
+    _green(root, "rv-arc-1", outcome="amber")
+    with pytest.raises(aj.JournalError, match="no green verdict"):
+        aj.approve("demo-arc", "J-1", "rev", dispatch_id="rv-arc-1", outcome="green", project_root=root)
+
+
+def test_reviewer_route_refuses_dispatch_older_than_the_decision(root):
+    ao.set_owner("demo-arc", True, decision_review="reviewer", project_root=root)
+    rt.dispatch(root, "rv-early", "T-9001")
+    _green(root, "rv-early")
+    reg = root / ".context" / "reviews" / "review-dispatches.jsonl"
+    rows = [json.loads(l) for l in reg.read_text().splitlines() if l.strip()]
+    assert rows and rows[-1]["ts"]
+    import time
+    time.sleep(1.1)                                       # timestamps have second resolution
+    _resumable_with(root, consequential=True)
+    jp = aj.journal_path("demo-arc", root)
+    lines = [json.loads(l) for l in jp.read_text().splitlines() if l.strip()]
+    assert lines[0]["ts"] > rows[-1]["ts"]
+    with pytest.raises(aj.JournalError, match="started before the decision"):
+        aj.approve("demo-arc", "J-1", "rev", dispatch_id="rv-early", outcome="green", project_root=root)

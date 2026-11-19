@@ -294,18 +294,52 @@ def decision_review(arc: str, project_root=None) -> str:
     return v if v in DECISION_REVIEW else DEFAULT_DECISION_REVIEW
 
 
-def _review_dispatch_fault(dispatch_id: str, root: Path) -> str:
-    """'' when ``dispatch_id`` is a correctly signed REVIEW dispatch in the registry."""
+def _review_dispatch_fault(dispatch_id: str, root: Path, target: dict | None = None,
+                           anchor: str | None = None) -> str:
+    """'' when ``dispatch_id`` is a correctly signed REVIEW dispatch that reviewed THIS
+    decision and has a green verdict in the verdict ledger.
+
+    T-5253 (agent review of the worker's result): existence alone let an agent approve its
+    own consequential decision by citing any review dispatch and claiming 'green'. So the
+    dispatch must be bound to the decision (its task, or the arc's anchor task when the
+    decision names none), must start after the decision, and the green must come from the
+    verdict ledger, not from the approval row."""
     from lib import verdict_ledger as vl  # the one registry reader; no second parser
-    rec, why = vl.dispatch_record(root, str(dispatch_id or "").strip())
+    did = str(dispatch_id or "").strip()
+    rec, why = vl.dispatch_record(root, did)
     if rec is None:
         return why
     if str(rec.get("task_type") or "") != vl.REVIEW_TASK_TYPE:
         return f"dispatch {dispatch_id!r} is a {rec.get('task_type') or 'untyped'} dispatch, not a review dispatch"
+    if target is not None:
+        want = target.get("task") or anchor
+        if not want:
+            return ("the decision names no task and the arc has no anchor_task, so no review "
+                    "dispatch can be bound to it; use the operator route")
+        if str(rec.get("task") or "") != str(want):
+            return (f"dispatch {did!r} reviewed {rec.get('task') or 'no task'}, not {want} "
+                    f"(the decision's task, or the arc's anchor task)")
+        if str(rec.get("ts") or "") < str(target.get("ts") or ""):
+            return f"dispatch {did!r} started before the decision was recorded, so it did not review it"
+    greens = [r for r in vl._read(vl.VERDICTS, root)
+              if r.get("dispatch_id") == did and str(r.get("outcome") or "").lower() == "green"]
+    if not greens:
+        return f"the verdict ledger has no green verdict from dispatch {did!r}"
     return ""
 
 
-def approval_fault(a: dict, setting: str, root: Path, entries: list[dict] | None = None) -> str:
+def anchor_task(arc: str, root: Path) -> str | None:
+    """The arc's anchor_task from its YAML, or None."""
+    try:
+        _slug, _num, y = resolve_arc(arc, root)
+        m = re.search(r"(?m)^anchor_task:\s*['\"]?(T-\d+)", y.read_text(encoding="utf-8")[:8192])
+        return m.group(1) if m else None
+    except (JournalError, OSError):
+        return None
+
+
+def approval_fault(a: dict, setting: str, root: Path, entries: list[dict] | None = None,
+                   anchor: str | None = None) -> str:
     """'' when the approved row ``a`` counts; else why not."""
     route = a.get("route")
     if route == "operator":
@@ -317,7 +351,8 @@ def approval_fault(a: dict, setting: str, root: Path, entries: list[dict] | None
                 f"not from a reviewer")
     if str(a.get("outcome") or "").strip().lower() != "green":
         return f"reviewer outcome is {a.get('outcome') or 'missing'}, not green"
-    why = _review_dispatch_fault(a.get("dispatch_id"), root)
+    target = find_entry(entries or [], a.get("ref"))
+    why = _review_dispatch_fault(a.get("dispatch_id"), root, target, anchor)
     if why:
         return why
     # One review dispatch approves one decision.
@@ -342,7 +377,7 @@ def approval_state(arc: str, project_root=None, entries: list[dict] | None = Non
         if target is None or target["kind"] != "decided":
             invalid.append((a, f"references {a.get('ref')}, which is not a decided entry in this journal"))
             continue
-        why = approval_fault(a, setting, root, entries)
+        why = approval_fault(a, setting, root, entries, anchor_task(arc, root))
         if why:
             invalid.append((a, why))
         else:
@@ -399,7 +434,7 @@ def approve(arc: str, ref: str, by: str, *, words: str | None = None, dispatch_i
             raise JournalError(f"{fields['ref']} is already approved ({prev.get('id') or 'J@' + str(prev.get('_line'))}, "
                                f"{prev['route']} route, by {prev['by']})")
         probe = dict(fields, kind="approved", by=by, _line=1 << 30)
-        why = approval_fault(probe, setting, root, entries)
+        why = approval_fault(probe, setting, root, entries, anchor_task(arc, root))
         if why:
             raise JournalError(f"approval refused: {why}")
         if target.get("task") and "task" not in fields:
