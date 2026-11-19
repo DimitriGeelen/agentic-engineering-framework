@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5271: Ignore .context/inbox/files/ in every project (fw init writes it, fw upgrade adds it, doctor/audit flag a project where it is not ignored) so operator-dropped files are never committed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-19T17:44:20Z
+# ============================================================================
+
+task_id: T-5271
+task_name: "Ignore .context/inbox/files/ in every project (fw init writes it, fw upgrade adds it, doctor/audit flag a project where it is not ignored) so operator-dropped files are never committed"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-19T16:18:37Z
+completed: 2026-11-19T17:18:43Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-19T17:18:51+01:00
+last_commit: 2026-11-19T18:01:10+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — ignore .context/inbox/files/ in every project (055 T-703). context and acceptance criteria (ignore .context/inbox/files/ everywhere; init, upgrade, doctor, audit). ignore .context/inbox/files/ — shared helper, fw init/upgrade write it, doctor/audit WARN when not ignored or tracked; applied to AEF. tests criterion met — t5271 12/12, t3861+t4701+t4684 18/18, fresh-machine simulation 19/19, no skips
+
+# Key outcomes
+outcomes:
+  - 'A helper in the same shape as lib/vec-index-gitignore.sh (one rule list, an idempotent ensure function with --dry-run) keeps `.context/inbox/files/` ignored, via a nested `.context/inbox/.gitignore` or the file the precedents use'
+  - '`fw init` writes it for new projects; `fw upgrade` adds it to existing ones (dry-run reports WOULD ADD)'
+  - 'AEF''s own repo ignores the path: `git check-ignore -q .context/inbox/files/x` exits 0'
+  - '`fw doctor` WARNs and `fw audit` flags a project where the path is not ignored or where a file under it is tracked (naming the tracked file and how to untrack it without deleting it)'
+  - 'Tests (t5271_*): fresh init, upgrade of a project without the rule, idempotence, dry-run, the doctor/audit finding for not-ignored and for tracked; the precedents'' tests stay green (t3861_vec_index_gitignore.bats, t4701_tracked_runtime_untrack.bats); tests/unit/upgrade_fresh_machine_simulation.bats stays green'
+  - 'Vendored copies synced (`bin/fw vendor self --check` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-19 — where the ignore rule lives'
+    chose: '`/inbox/files/` in the nested `.context/.gitignore`, the file lib/dispatch-gitignore.sh (T-4684) already writes.'
+    rationale: 'one file for .context/-level runtime rules; it applies before `.context/inbox/` exists; anchoring leaves `inbox.yaml`, `inbox/processed/` and any same-named directory elsewhere visible.'
+    alternatives_rejected: ['nested `.context/inbox/.gitignore` with `files/` (needs the directory first, one more file per project); the root `.gitignore` (a consumer''s root file is theirs, and the framework''s own root file is not inherited).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/inbox-files-gitignore.sh'
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.context/.gitignore'
+  - '.fabric/components/lib-inbox-files-gitignore.yaml'
+  - '.tasks/active/T-5271-ignore-contextinboxfiles-in-every-projec.md'
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - 'lib/inbox-files-gitignore.sh'
+  - 'lib/init.sh'
+  - 'lib/upgrade.sh'
+  - 'tests/unit/t5271_inbox_files_gitignore.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-19T17:18:51'
+    action: 'T-5271: file — ignore .context/inbox/files/ in every project (055 T-703)'
+  - time: '2026-11-19T17:42:16'
+    action: 'T-5271: context and acceptance criteria (ignore .context/inbox/files/ everywhere; init, upgrade, doctor, audit)'
+  - time: '2026-11-19T17:53:21'
+    action: 'T-5271: ignore .context/inbox/files/ — shared helper, fw init/upgrade write it, doctor/audit WARN when not ignored or tracked; applied to AEF'
+  - time: '2026-11-19T18:01:10'
+    action: 'T-5271: tests criterion met — t5271 12/12, t3861+t4701+t4684 18/18, fresh-machine simulation 19/19, no skips'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 60 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [safety, consumer]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 60
+  commits: 5
+  files_changed: 17
+  lines_added: 1088
+  lines_removed: 19
+  footprint_refreshed_at: '2026-11-19T17:44:44Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5271-ignore-contextinboxfiles-in-every-projec.md
+generated_by: context-agent-hybrid
