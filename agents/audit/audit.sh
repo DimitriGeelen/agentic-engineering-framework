@@ -4863,6 +4863,32 @@ check_vec_index_ignored() {
 }
 check_vec_index_ignored
 
+# T-5271: the fleet cockpit's /drop page writes operator files (possibly
+# sensitive) into .context/inbox/files/. A project that does not ignore the path,
+# or already tracks a file under it, can publish a dropped file. WARN, never FAIL.
+check_inbox_files_ignored() {
+    [ -f "$FRAMEWORK_ROOT/lib/inbox-files-gitignore.sh" ] || return 0
+    # shellcheck source=/dev/null
+    source "$FRAMEWORK_ROOT/lib/inbox-files-gitignore.sh"
+    local _out _tr _first
+    if _out=$(fw_inbox_files_problems "$PROJECT_ROOT"); then
+        return 0
+    fi
+    if grep -qx 'not-ignored' <<<"$_out"; then
+        warn "Dropped files can be committed: .context/inbox/files/ is not gitignored" \
+             "git check-ignore --no-index .context/inbox/files/x finds no rule" \
+             "Run: fw upgrade (adds /inbox/files/ to .context/.gitignore) (T-5271)"
+    fi
+    _tr=$(sed -n 's/^tracked //p' <<<"$_out")
+    if [ -n "$_tr" ]; then
+        _first=$(head -1 <<<"$_tr")
+        warn "Dropped files TRACKED by git: $(grep -c . <<<"$_tr") under .context/inbox/files/" \
+             "First: $_first" \
+             "Untrack without deleting: git rm --cached $(printf '%q' "$_first") (and each other path from: git ls-files .context/inbox/files) (T-5271)"
+    fi
+}
+check_inbox_files_ignored
+
 # T-2680 (T-2679 Slice 1). A grep that pins a YAML key at an exact indent, or a
 # `grep -c` on a .context/ store whose failure is folded into 0, reads "none"
 # when the store is reshaped — exit 0, plausible output. T-2676 (harvest.sh) and

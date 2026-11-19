@@ -5647,6 +5647,31 @@ if len(rows) > 5:
         fi
     fi
 
+    # T-5271: operator-dropped files (fleet cockpit /drop) land in
+    # .context/inbox/files/ — WARN when git would commit one, or already tracks one.
+    if [ -f "$FRAMEWORK_ROOT/lib/inbox-files-gitignore.sh" ] && git -C "$PROJECT_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        # shellcheck source=lib/inbox-files-gitignore.sh
+        . "$FRAMEWORK_ROOT/lib/inbox-files-gitignore.sh"
+        local _if_out _if_tr
+        if _if_out=$(fw_inbox_files_problems "$PROJECT_ROOT"); then
+            echo -e "  ${GREEN}OK${NC}  Dropped files (.context/inbox/files/) gitignored, none tracked"
+        else
+            if grep -qx 'not-ignored' <<<"$_if_out"; then
+                echo -e "  ${YELLOW}WARN${NC}  Dropped files can be committed: .context/inbox/files/ is not gitignored"
+                echo -e "         Run: fw upgrade (adds /inbox/files/ to .context/.gitignore) (T-5271)"
+            fi
+            _if_tr=$(sed -n 's/^tracked //p' <<<"$_if_out")
+            if [ -n "$_if_tr" ]; then
+                echo -e "  ${YELLOW}WARN${NC}  Dropped files TRACKED by git: $(grep -c . <<<"$_if_tr") under .context/inbox/files/"
+                while IFS= read -r _ul; do
+                    echo -e "         $_ul"
+                done < <(head -12 <<<"$_if_tr")
+                echo -e "         Untrack (keeps the file on disk): git rm --cached <path>"
+            fi
+            warnings=$((warnings + 1))
+        fi
+    fi
+
     # T-2185: stale gauge-READY gaps — surface operator-procrastination class.
     # WARN when ≥1 gap has closure_check_command + gauge currently READY for
     # ≥7 days (created/last_reviewed). Mirrors OBS-048 (G-064 READY since

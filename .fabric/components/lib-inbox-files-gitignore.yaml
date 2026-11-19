@@ -1,0 +1,21 @@
+id: lib/inbox-files-gitignore.sh
+name: inbox-files-gitignore
+type: script
+subsystem: framework-core
+location: lib/inbox-files-gitignore.sh
+tags: []
+
+purpose: "T-5271 — keep operator-dropped files out of a project's git."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-19
+created_by: unknown

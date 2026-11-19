@@ -416,6 +416,10 @@ WGIT
     # shellcheck source=lib/dispatch-gitignore.sh
     source "$FRAMEWORK_ROOT/lib/dispatch-gitignore.sh"
     fw_dispatch_ensure_ignored "$target_dir" >/dev/null
+    # T-5271: operator-dropped files (.context/inbox/files/) — one list shared with fw upgrade, doctor, audit.
+    # shellcheck source=lib/inbox-files-gitignore.sh
+    source "$FRAMEWORK_ROOT/lib/inbox-files-gitignore.sh"
+    fw_inbox_files_ensure_ignored "$target_dir" >/dev/null
 
     echo -e "  ${GREEN}✓${NC}  Task system (.tasks/)"
     echo -e "  ${GREEN}✓${NC}  Context fabric (.context/)"

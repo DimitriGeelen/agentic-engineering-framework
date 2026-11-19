@@ -3416,6 +3416,40 @@ MCPJSON
         echo -e "        git -C \"$target_dir\" rm -r --cached -- .context/dispatch"
     fi
 
+    # T-5271: the fleet cockpit's /drop page writes operator files (possibly
+    # sensitive) into .context/inbox/files/, ignored by no project until now.
+    # shellcheck source=lib/inbox-files-gitignore.sh
+    source "$FRAMEWORK_ROOT/lib/inbox-files-gitignore.sh"
+    local _if_added
+    local -a _if_paths=()
+    local _if_p
+    if [ "$dry_run" = true ]; then
+        _if_added=$(fw_inbox_files_ensure_ignored "$target_dir" --dry-run)
+    else
+        _if_added=$(fw_inbox_files_ensure_ignored "$target_dir")
+    fi
+    if [ "${_if_added:-0}" -gt 0 ]; then
+        changes=$((changes + 1))
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${CYAN}WOULD ADD${NC}  dropped-files ignore rule (/inbox/files/) to .context/.gitignore"
+            [ -e "$target_dir/.context/.gitignore" ] || _t4692_would+=(".context/.gitignore")
+        else
+            _t4697_wrote .context/.gitignore
+            echo -e "  ${GREEN}ADDED${NC}  dropped-files ignore rule (/inbox/files/) to .context/.gitignore"
+        fi
+    else
+        echo -e "  ${GREEN}OK${NC}  Dropped files (.context/inbox/files/) gitignored"
+    fi
+    while IFS= read -r _if_p; do
+        [ -n "$_if_p" ] && _if_paths+=("$_if_p")
+    done < <(fw_inbox_files_tracked "$target_dir")
+    if [ "${#_if_paths[@]}" -gt 0 ]; then
+        echo -e "  ${YELLOW}NOTE${NC}  ${#_if_paths[@]} dropped file(s) under .context/inbox/files are already tracked (an ignore rule does not untrack):"
+        printf '        %s\n' "${_if_paths[@]}" | head -20
+        echo -e "        untrack with (files stay on disk):"
+        echo "        git -C \"$target_dir\" rm --cached --$(printf ' %q' "${_if_paths[@]}")"
+    fi
+
     # ── 9. Version tracking (.framework.yaml) ──
     echo -e "${YELLOW}[9/10] Version tracking${NC}"
 

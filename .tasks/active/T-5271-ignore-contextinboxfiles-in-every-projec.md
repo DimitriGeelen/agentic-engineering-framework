@@ -106,12 +106,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A helper in the same shape as lib/vec-index-gitignore.sh (one rule list, an idempotent ensure function with --dry-run) keeps `.context/inbox/files/` ignored, via a nested `.context/inbox/.gitignore` or the file the precedents use
-- [ ] `fw init` writes it for new projects; `fw upgrade` adds it to existing ones (dry-run reports WOULD ADD)
-- [ ] AEF's own repo ignores the path: `git check-ignore -q .context/inbox/files/x` exits 0
-- [ ] `fw doctor` WARNs and `fw audit` flags a project where the path is not ignored or where a file under it is tracked (naming the tracked file and how to untrack it without deleting it)
+- [x] A helper in the same shape as lib/vec-index-gitignore.sh (one rule list, an idempotent ensure function with --dry-run) keeps `.context/inbox/files/` ignored, via a nested `.context/inbox/.gitignore` or the file the precedents use
+- [x] `fw init` writes it for new projects; `fw upgrade` adds it to existing ones (dry-run reports WOULD ADD)
+- [x] AEF's own repo ignores the path: `git check-ignore -q .context/inbox/files/x` exits 0
+- [x] `fw doctor` WARNs and `fw audit` flags a project where the path is not ignored or where a file under it is tracked (naming the tracked file and how to untrack it without deleting it)
 - [ ] Tests (t5271_*): fresh init, upgrade of a project without the rule, idempotence, dry-run, the doctor/audit finding for not-ignored and for tracked; the precedents' tests stay green (t3861_vec_index_gitignore.bats, t4701_tracked_runtime_untrack.bats); tests/unit/upgrade_fresh_machine_simulation.bats stays green
-- [ ] Vendored copies synced (`bin/fw vendor self --check` clean)
+- [x] Vendored copies synced (`bin/fw vendor self --check` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -298,6 +298,15 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bash -n lib/inbox-files-gitignore.sh && bash -n lib/init.sh && bash -n lib/upgrade.sh && bash -n bin/fw && bash -n agents/audit/audit.sh
+git check-ignore -q .context/inbox/files/x
+! git check-ignore -q .context/inbox/processed/x
+grep -qx '/inbox/files/' .context/.gitignore
+timeout 3000 bats tests/unit/t5271_inbox_files_gitignore.bats > /tmp/.t5271.out 2>&1 && ! grep -q "^not ok" /tmp/.t5271.out # needs: fixture
+test "$(grep -c '# skip' /tmp/.t5271.out)" -eq 0
+timeout 1800 bats tests/unit/t3861_vec_index_gitignore.bats tests/unit/t4701_tracked_runtime_untrack.bats tests/unit/t4684_dispatch_gitignore.bats > /tmp/.t5271p.out 2>&1 && ! grep -q "^not ok" /tmp/.t5271p.out # needs: fixture
+test -f .fabric/components/lib-inbox-files-gitignore.yaml
+bin/fw vendor self --check --task T-5271
 
 ## RCA
 
@@ -378,6 +387,11 @@ bvp_scores_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-19 — where the ignore rule lives
+- **Chose:** `/inbox/files/` in the nested `.context/.gitignore`, the file lib/dispatch-gitignore.sh (T-4684) already writes.
+- **Why:** one file for .context/-level runtime rules; it applies before `.context/inbox/` exists; anchoring leaves `inbox.yaml`, `inbox/processed/` and any same-named directory elsewhere visible.
+- **Rejected:** nested `.context/inbox/.gitignore` with `files/` (needs the directory first, one more file per project); the root `.gitignore` (a consumer's root file is theirs, and the framework's own root file is not inherited).
 
 ## Decision
 
