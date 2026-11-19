@@ -1,8 +1,18 @@
 ---
 id: T-5259
-name: "Project extensions foundation: operator-only command to switch an extension on, a project-owned register of active extensions, fw audit listing, fw upgrade keeps them (T-4649 slice 0)"
+name: "Project extensions foundation: operator-only command to switch an extension
+  on, a project-owned register of active extensions, fw audit listing, fw upgrade
+  keeps them (T-4649 slice 0)"
 description: >
-  T-4649 GO (operator, 2026-11-19). Principle: any project modification is allowed when it is that project's operator's recorded decision, listed by fw audit, and kept intact by fw upgrade. Shape and consultation answers: docs/reports/T-4649-ring20-patch-triage.md. Foundation every slice uses: one project-owned register (in the project, not the vendored tree) of active extensions with who decided and when; switched on only by an operator-only command (refused under agent control, like the other operator verbs); fw audit lists them; fw upgrade reads the register and never removes or overwrites a registered extension. Silent loss at upgrade is T-5248's track; this slice only guarantees registered extensions survive.
+  T-4649 GO (operator, 2026-11-19). Principle: any project modification is allowed
+  when it is that project's operator's recorded decision, listed by fw audit, and
+  kept intact by fw upgrade. Shape and consultation answers: docs/reports/T-4649-ring20-patch-triage.md.
+  Foundation every slice uses: one project-owned register (in the project, not the
+  vendored tree) of active extensions with who decided and when; switched on only
+  by an operator-only command (refused under agent control, like the other operator
+  verbs); fw audit lists them; fw upgrade reads the register and never removes or
+  overwrites a registered extension. Silent loss at upgrade is T-5248's track; this
+  slice only guarantees registered extensions survive.
 
 status: captured
 workflow_type: build
@@ -39,8 +49,8 @@ origin: {kind: "operator", source: "T-4649"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T15:30:54Z
-last_update: 2026-11-19T15:30:54Z
-date_finished: null
+last_update: '2026-11-19T15:45:24Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +61,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-19T15:45:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5259: Project extensions foundation: operator-only command to switch an extension on, a project-owned register of active extensions, fw audit listing, fw upgrade keeps them (T-4649 slice 0)

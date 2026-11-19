@@ -1,8 +1,17 @@
 ---
 id: T-5262
-name: "Project form-safety (CSRF) exemption list: owned by the project's operator, each entry proven by its auth check and a test, verified at startup, failing fw audit when unproven or stale (T-4649 slice 3)"
+name: "Project form-safety (CSRF) exemption list: owned by the project's operator,
+  each entry proven by its auth check and a test, verified at startup, failing fw
+  audit when unproven or stale (T-4649 slice 3)"
 description: >
-  T-4649 GO (operator, 2026-11-19). Principle: any project modification is allowed when it is that project's operator's recorded decision, listed by fw audit, and kept intact by fw upgrade. Shape and consultation answers: docs/reports/T-4649-ring20-patch-triage.md. Point 3: list in the project (1409 c); an entry names an endpoint or whole blueprint, its own authentication and the proving test (832 c, 055 c); Watchtower verifies at startup that the endpoint enforces it and refuses the exemption otherwise; fw audit fails on unproven or stale entries (ring20 c). Replaces ring20's header-presence exemption. Depends on slice 0.
+  T-4649 GO (operator, 2026-11-19). Principle: any project modification is allowed
+  when it is that project's operator's recorded decision, listed by fw audit, and
+  kept intact by fw upgrade. Shape and consultation answers: docs/reports/T-4649-ring20-patch-triage.md.
+  Point 3: list in the project (1409 c); an entry names an endpoint or whole blueprint,
+  its own authentication and the proving test (832 c, 055 c); Watchtower verifies
+  at startup that the endpoint enforces it and refuses the exemption otherwise; fw
+  audit fails on unproven or stale entries (ring20 c). Replaces ring20's header-presence
+  exemption. Depends on slice 0.
 
 status: captured
 workflow_type: build
@@ -39,8 +48,8 @@ origin: {kind: "operator", source: "T-4649"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T15:30:57Z
-last_update: 2026-11-19T15:30:57Z
-date_finished: null
+last_update: '2026-11-19T15:45:24Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +60,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-19T15:45:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5262: Project form-safety (CSRF) exemption list: owned by the project's operator, each entry proven by its auth check and a test, verified at startup, failing fw audit when unproven or stale (T-4649 slice 3)

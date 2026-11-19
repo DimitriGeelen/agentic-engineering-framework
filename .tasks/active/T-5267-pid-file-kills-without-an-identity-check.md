@@ -1,8 +1,25 @@
 ---
 id: T-5267
-name: "Pid-file kills without an identity check can terminate an unrelated process that reused the pid (sidecar receiver/watcher/supervisor, Watchtower stop with its children)"
+name: "Pid-file kills without an identity check can terminate an unrelated process
+  that reused the pid (sidecar receiver/watcher/supervisor, Watchtower stop with its
+  children)"
 description: >
-  0506-Voxtype-extention (msg b6b05a93, 2026-11-19, their T-230): unexplained SIGTERMs to long-lived processes while framework audit/doctor ran (Watchtower pid 49737 on 2026-11-11; their systemd user units voxtype-led and voxtype-transcribe on 2026-11-19 10:09Z and 12:43Z, code=killed signal=TERM). Verified in AEF: every pid-file kill checks only that the number is alive (lib/sidecar/lifecycle.py pid_alive / is_receiver_alive; lib/pid-alive.sh fw_pid_alive), never that it is still the same process: lib/sidecar_cli.py:997 (receiver 'runs stale code', SIGTERM), lib/sidecar/watcher.py:922 (orphan watcher, SIGTERM), watcher.py stop_processes (supervisor and watcher, SIGTERM then SIGKILL), bin/watchtower.sh do_stop (SIGTERM to the pid AND pkill -TERM -P its children, then SIGKILL). A reused pid gets killed; in Watchtower's case so do its children, which would match user units ending with signal=TERM if the pid was reused by a systemd --user manager or a shell (hypothesis, not proven). Reached from the per-minute sidecar-ensure cron, the 5-minute watchtower-ensure cron, SessionStart sidecar-autostart and stale-code restarts. Fix: record identity (start time from /proc/<pid>/stat plus a cmdline marker) when writing every pid file, and refuse any kill whose target no longer matches; one shared helper for shell and Python.
+  0506-Voxtype-extention (msg b6b05a93, 2026-11-19, their T-230): unexplained SIGTERMs
+  to long-lived processes while framework audit/doctor ran (Watchtower pid 49737 on
+  2026-11-11; their systemd user units voxtype-led and voxtype-transcribe on 2026-11-19
+  10:09Z and 12:43Z, code=killed signal=TERM). Verified in AEF: every pid-file kill
+  checks only that the number is alive (lib/sidecar/lifecycle.py pid_alive / is_receiver_alive;
+  lib/pid-alive.sh fw_pid_alive), never that it is still the same process: lib/sidecar_cli.py:997
+  (receiver 'runs stale code', SIGTERM), lib/sidecar/watcher.py:922 (orphan watcher,
+  SIGTERM), watcher.py stop_processes (supervisor and watcher, SIGTERM then SIGKILL),
+  bin/watchtower.sh do_stop (SIGTERM to the pid AND pkill -TERM -P its children, then
+  SIGKILL). A reused pid gets killed; in Watchtower's case so do its children, which
+  would match user units ending with signal=TERM if the pid was reused by a systemd
+  --user manager or a shell (hypothesis, not proven). Reached from the per-minute
+  sidecar-ensure cron, the 5-minute watchtower-ensure cron, SessionStart sidecar-autostart
+  and stale-code restarts. Fix: record identity (start time from /proc/<pid>/stat
+  plus a cmdline marker) when writing every pid file, and refuse any kill whose target
+  no longer matches; one shared helper for shell and Python.
 
 status: captured
 workflow_type: build
@@ -39,8 +56,8 @@ origin: {kind: "peer", source: "0506-Voxtype-extention", ref: "b6b05a93"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T15:40:14Z
-last_update: 2026-11-19T15:40:14Z
-date_finished: null
+last_update: '2026-11-19T15:45:24Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +68,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-19T15:45:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5267: Pid-file kills without an identity check can terminate an unrelated process that reused the pid (sidecar receiver/watcher/supervisor, Watchtower stop with its children)
