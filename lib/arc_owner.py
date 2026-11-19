@@ -90,7 +90,7 @@ def state(arc: str, project_root=None) -> dict:
     if i is not None:
         owner = {}
         for ln in lines[i + 1:_block_end(lines, i)]:
-            m = re.match(r"^\s+(role|wake|since):\s*(.*?)\s*(#.*)?$", ln)
+            m = re.match(r"^\s+(role|wake|since|wake_limit):\s*(.*?)\s*(#.*)?$", ln)
             if m:
                 owner[m.group(1)] = m.group(2).strip("'\"")
         if not owner:
@@ -116,6 +116,9 @@ def set_owner(arc: str, on: bool, wake: str | None = None, project_root=None) ->
 
     journal_line = f"journal: {'true' if on else 'false'}"
     owner_block = ["owner:", f'  role: "{"on" if on else "off"}"', f"  wake: {wake}", f'  since: "{_now()}"']
+    # T-5252: a per-arc wake limit set by hand survives switching on/off again.
+    if str(prev.get("wake_limit") or "").isdigit():
+        owner_block.append(f"  wake_limit: {prev['wake_limit']}")
     j = _find_top(lines, "journal")
     if j is not None:
         m = re.match(r"^journal:\s*\S*(\s+#.*)?$", lines[j])

@@ -2767,6 +2767,15 @@ PY
             if ! _aj_err=$(PROJECT_ROOT="$PROJECT_ROOT" timeout 20 python3 "$FRAMEWORK_ROOT/lib/arc_journal.py" \
                     task-event "$TASK_FILE" "$OLD_STATUS" "$NEW_STATUS" 2>&1); then
                 echo "WARN: arc journal event not written (status change unaffected): $(printf '%s' "$_aj_err" | tail -1)" >&2
+            # === Arc owner wake (T-5252, T-5224 IW-3/IW-4) ===
+            # Only after the event was written. Arcs whose owner role is not on:
+            # nothing. Bounded by timeout, never blocks: at most one stderr line.
+            elif [ -f "$FRAMEWORK_ROOT/lib/arc_wake.py" ]; then
+                _aw_err=$(PROJECT_ROOT="$PROJECT_ROOT" timeout 150 python3 "$FRAMEWORK_ROOT/lib/arc_wake.py" \
+                    task-event "$TASK_FILE" "$OLD_STATUS" "$NEW_STATUS" 2>&1 >/dev/null) || true
+                if [ -n "$_aw_err" ]; then
+                    echo "WARN: $(printf '%s' "$_aw_err" | tail -1) (status change unaffected)" >&2
+                fi
             fi
         fi
 

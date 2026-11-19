@@ -1,0 +1,21 @@
+id: lib/arc_wake.py
+name: arc_wake
+type: script
+subsystem: framework-core
+location: lib/arc_wake.py
+tags: []
+
+purpose: "Arc owner wake-up and the per-arc daily wake limit (T-5252, T-5224 slice 3)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-19
+created_by: unknown

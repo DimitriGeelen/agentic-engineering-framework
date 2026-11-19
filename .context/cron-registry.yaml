@@ -514,3 +514,17 @@ jobs:
     title/body is recorded (not re-classified); submitter replies are recorded and
     surfaced, never answered. Unattended-safe: a gh failure leaves the ledger untouched
     and exits non-zero. flock prevents overlap.'
+- id: arc-wake-sweep-15m
+  name: Arc owner deadline wake sweep (15 min, T-5252)
+  schedule: 4,19,34,49 * * * *
+  command: flock -n /var/lock/agentic-cron-arc-wake-sweep.lock -c 'fw arc wake-sweep'
+  source_file: agentic-audit.crontab
+  origin_task: T-5252
+  status: active
+  description: 'T-5252 (T-5224 slice 3, IW-3/IW-4). Wakes the owner of every arc switched
+    on with `fw arc owner <arc> on` whose latest journal next-step deadline has passed:
+    a sidecar notice or a TermLink worker, per the arc''s owner.wake. Each passed deadline
+    wakes once (deduped through .context/arcs/<slug>.wakes.jsonl), and the per-arc daily
+    wake limit (owner.wake_limit, default 12) applies. A no-op when no arc is switched
+    on. Offset to :04/:19/:34/:49 off the audit slots (T-3070 collision class); takes
+    its own lock.'
