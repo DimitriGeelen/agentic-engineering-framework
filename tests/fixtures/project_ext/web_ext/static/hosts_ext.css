@@ -1,0 +1,2 @@
+/* fixture static file (T-5260) */
+.hosts-ext td:first-child { font-weight: 600; }

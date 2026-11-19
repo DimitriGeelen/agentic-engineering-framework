@@ -1,0 +1,21 @@
+id: web/project_extensions.py
+name: project_extensions
+type: script
+subsystem: watchtower
+location: web/project_extensions.py
+tags: []
+
+purpose: "Project Watchtower pages (T-5260, T-4649 slice 1)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-19
+created_by: unknown

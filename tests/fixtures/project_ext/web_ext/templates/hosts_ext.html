@@ -1,0 +1,15 @@
+<link rel="stylesheet" href="{{ css_url }}">
+<h1>Hosts</h1>
+
+<p class="muted">project-page-marker &middot; {{ hosts|length }} hosts, from the project's own helper</p>
+
+<table role="grid" class="hosts-ext">
+    <thead>
+        <tr><th>Host</th><th>Role</th><th>State</th></tr>
+    </thead>
+    <tbody>
+    {% for h in hosts %}
+        <tr><td>{{ h.name }}</td><td>{{ h.role }}</td><td>{{ h.state }}</td></tr>
+    {% endfor %}
+    </tbody>
+</table>

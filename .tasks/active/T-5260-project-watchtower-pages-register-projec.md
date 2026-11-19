@@ -11,10 +11,10 @@ description: >
   2 helpers; 055 T-342/T-344; 1409 /arbeiter; 832 /designer/open). Depends on slice
   0.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [extension-points]
 components: []
 related_tasks: [T-4649]
@@ -46,7 +46,7 @@ origin: {kind: "operator", source: "T-4649"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T15:30:55Z
-last_update: '2026-11-19T15:45:53Z'
+last_update: '2026-11-19T22:58:44Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,6 +86,23 @@ bvp_scores_proposed:
       (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
       F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-19T22:58:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 4
+      D3: 3
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=4 (body:fw-audit-or-doctor); 
+      D3=3 (body:component-discoverability); D4=0 (no-signal); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5260: Project Watchtower pages: register project blueprints with their templates, static files and helpers from the project folder (T-4649 slice 1)
@@ -105,13 +122,13 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Watchtower loads every blueprint registered as a `page` extension in the project's `.framework-extensions.yaml` (path to a module in the project, e.g. `web_ext/<name>.py` exposing `bp`), after the framework's own blueprints; an unregistered file in that folder is not loaded
-- [ ] Templates and static files of a project page are looked up in the project folder after the framework's own (a project cannot shadow a framework template unless that is itself registered as a vendored-override); project helper modules import from the project folder
-- [ ] A project page that fails to import or collides with a framework route is skipped with one logged line and a `fw doctor` WARN; Watchtower still starts and serves every other page
-- [ ] `fw audit`/`fw doctor` list loaded project pages; the T-5259 audit check covers their paths
-- [ ] Tests (t5260_*): a fixture project with a registered page is served (status 200, its template and static file found); an unregistered page is not; a broken page is skipped and Watchtower still serves `/`; route collision skipped; existing web tests stay green
-- [ ] Watchtower restarted and `bin/fw watchtower current` passes; vendored copies synced
-- [ ] Visual Verification: a fixture project page at the three widths (`fw ux shots`)
+- [x] Watchtower loads every blueprint registered as a `page` extension in the project's `.framework-extensions.yaml` (path to a module in the project, e.g. `web_ext/<name>.py` exposing `bp`), after the framework's own blueprints; an unregistered file in that folder is not loaded
+- [x] Templates and static files of a project page are looked up in the project folder after the framework's own (a project cannot shadow a framework template unless that is itself registered as a vendored-override); project helper modules import from the project folder
+- [x] A project page that fails to import or collides with a framework route is skipped with one logged line and a `fw doctor` WARN; Watchtower still starts and serves every other page
+- [x] `fw audit`/`fw doctor` list loaded project pages; the T-5259 audit check covers their paths
+- [x] Tests (t5260_*): a fixture project with a registered page is served (status 200, its template and static file found); an unregistered page is not; a broken page is skipped and Watchtower still serves `/`; route collision skipped; existing web tests stay green
+- [x] Watchtower restarted and `bin/fw watchtower current` passes; vendored copies synced
+- [x] Visual Verification: a fixture project page at the three widths (`fw ux shots`)
 
 ### Human
 - [ ] [REVIEW] A project page sits in Watchtower like a framework page
@@ -304,6 +321,18 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 python3 -m pytest tests/web/test_t5260_project_pages.py -q -p no:cacheprovider > /tmp/.t5260-pages.out 2>&1 && grep -q "11 passed" /tmp/.t5260-pages.out
+python3 -c "import ast,sys; [ast.parse(open(p).read()) for p in ('web/project_extensions.py','lib/extensions.py','web/app.py')]"
+bash -n bin/fw
+python3 lib/extensions.py --project . web-status
+bin/fw watchtower current
+bin/fw vendor self --check --task T-5260
+
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| project-page | fixture project page /hosts (header, menu, status strip, table, footer) | ok | ok | ok | Fixture, not the real Watchtower: tests/fixtures/project_ext copied to /tmp/t5260-fixture with a register naming web_ext/hosts.py, served by a second Watchtower on 127.0.0.1:3977 (PROJECT_ROOT=/tmp/t5260-fixture); the real register was never written. At 1024 the theme toggle wraps to a second header row; that is the framework header at that width, not the project page (same on /cron of the real Watchtower, see T-5261 state menu-no-extension). |
 
 ## RCA
 
@@ -385,6 +414,19 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-11-19 — how fw doctor learns what a running Watchtower skipped
+- **Chose:** Watchtower writes a load report (`.context/working/watchtower-extensions.json`: loaded, skipped with reason) at start; `lib/extensions.py web-status` turns it into rows for `fw doctor`, and `audit` includes the same rows. The report is written only when the register has a page or nav entry (or a report already exists), so projects without extensions get no new file.
+- **Why:** doctor is another process; a skipped page is a fact about the running server, and re-importing project code inside doctor would run it a second time, in a different environment.
+- **Rejected:** importing the pages again from doctor (runs project code in the health check, can disagree with the server); log-file grep (the log rotates and has no structure).
+
+### 2026-11-19 — existing web tests: what "stay green" was measured against
+- Full run `pytest tests/web web/test_app.py` with this change: 634 passed, 1 skipped, 3 failed. None of the three touches this change: `test_approvals_cache.py::test_pending_go_uses_cache_filter` (live corpus: T-2963 now reads `EXPLORING`, a value the test does not list, T-5226), `test_bpmn_frozen_v1_pin.py::test_absent_marker_stage_output_byte_identical` (staged-manifest hash), `test_t5128_approvals_ac_cache.py::test_a_warm_request_...` (passes alone; the live task corpus moved between its two reads). The first two fail the same way run alone.
+
+### 2026-11-19 — static files of a project page
+- **Chose:** a blueprint's own `static_folder` is used as written; one that sets none and has `static/` beside its module gets it at `/ext/<blueprint name>/static/`.
+- **Why:** without a `url_prefix` Flask would put the blueprint's static route on `/static`, where the framework's route wins and the project file is unreachable.
+- **Rejected:** adding the project folder to the app's static lookup (a project file could then answer for a missing framework asset).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -401,3 +443,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5260-project-watchtower-pages-register-projec.md
 - **Context:** Initial task creation
+
+### 2026-11-19T22:58:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

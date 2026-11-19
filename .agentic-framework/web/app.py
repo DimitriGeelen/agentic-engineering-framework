@@ -271,6 +271,18 @@ def create_app() -> Flask:
     from web.blueprints import register_blueprints
     register_blueprints(app)
 
+    # T-5260: the project's own pages (`page` entries in .framework-extensions.yaml),
+    # after the framework's. A broken or colliding page is skipped, never fatal.
+    from web import project_extensions as _pext
+    from web.shared import FRAMEWORK_ROOT as _fw_root
+    _pext_entries, _pext_err = _pext.load_register(PROJECT_ROOT, _fw_root)
+    if _pext_err:
+        _pext._state(app)["register_error"] = _pext_err
+        logging.getLogger(__name__).warning(
+            "project extensions: register not loaded, no project pages: %s", _pext_err)
+    _pext.load_project_pages(app, PROJECT_ROOT, _fw_root, entries=_pext_entries)
+    _pext.save_state(app, PROJECT_ROOT, _pext_entries)
+
     # -------------------------------------------------------------------
     # Flask-SocketIO for web terminal (T-964)
     # -------------------------------------------------------------------

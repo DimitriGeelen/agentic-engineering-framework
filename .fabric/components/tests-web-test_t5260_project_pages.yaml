@@ -1,0 +1,21 @@
+id: tests/web/test_t5260_project_pages.py
+name: test_t5260_project_pages
+type: script
+subsystem: tests
+location: tests/web/test_t5260_project_pages.py
+tags: []
+
+purpose: "T-5260: a project's own Watchtower pages, registered as `page` extensions."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-19
+created_by: unknown

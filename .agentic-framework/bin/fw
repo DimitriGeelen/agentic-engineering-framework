@@ -3443,6 +3443,22 @@ PY
     else
         echo -e "  ${CYAN}SKIP${NC}  Watchtower not running (no triple) — start with: fw serve"
     fi
+    # T-5260/T-5261: project pages and menu entries (.framework-extensions.yaml,
+    # kinds page and nav): what Watchtower loaded at its last start, and what it
+    # skipped. A skipped page never stops Watchtower, so this is where it shows.
+    if [ -f "$FRAMEWORK_ROOT/lib/extensions.py" ]; then
+        local _pe_rows _pe_lvl _pe_title _pe_ev _pe_mit
+        _pe_rows=$(python3 "$FRAMEWORK_ROOT/lib/extensions.py" --project "$PROJECT_ROOT" web-status 2>/dev/null) || _pe_rows=""
+        if [ -n "$_pe_rows" ]; then
+            while IFS=$'\t' read -r _pe_lvl _pe_title _pe_ev _pe_mit; do
+                case "$_pe_lvl" in
+                    INFO) echo -e "  ${GREEN}OK${NC}  $_pe_title" ;;
+                    WARN) echo -e "  ${YELLOW}WARN${NC}  $_pe_title${_pe_ev:+ — $_pe_ev}${_pe_mit:+ ($_pe_mit)}"
+                          warnings=$((warnings + 1)) ;;
+                esac
+            done <<< "$_pe_rows"
+        fi
+    fi
     # T-4706: Watchtower was killed and stayed down ~1h47m with nothing saying so.
     # The ensure keep-alive records every outage it repairs; a recent one is a finding.
     if [ -f "$FRAMEWORK_ROOT/lib/watchtower-ensure.sh" ]; then

@@ -33,6 +33,7 @@ CLI (routed by `fw extension`):
     remove <id> --words "..."
     list [--json]
     audit                     # TSV lines LEVEL<TAB>title<TAB>evidence<TAB>mitigation
+    web-status                # the page/nav part of audit alone (fw doctor, T-5260)
     kept --target DIR         # what fw vendor/upgrade prints after the copy
 
 add/remove are the operator's: refused under $CLAUDECODE=1 unless --i-am-human,
@@ -507,6 +508,7 @@ def audit_findings(root):
                         f"{PRESERVE} keeps {VENDOR_DIR}/{rel} through upgrade, but nobody recorded deciding it",
                         f"Operator: fw extension add vendored-override <id> --path {rel} --words \"...\" "
                         f"(then drop the hand-written {PRESERVE} item)"))
+    out.extend(web_status_findings(root, entries))
     if _is_framework_repo(root):
         return out
     sp = os.path.join(root, VENDOR_DIR, STAMP)
@@ -532,6 +534,62 @@ def audit_findings(root):
                     f"Operator decides: keep it (fw extension add vendored-override <id> --path {rel} --words \"...\") "
                     f"or restore it (fw upgrade)"))
     return out
+
+
+WEB_STATE = os.path.join(".context", "working", "watchtower-extensions.json")
+
+
+def web_status_findings(root, entries=None):
+    """What Watchtower did with the `page` and `nav` extensions at its last start
+    (T-5260, T-5261): read from the report web/project_extensions.py writes."""
+    if entries is None:
+        try:
+            entries = load(root)
+        except ExtensionError:
+            return []
+    wanted = [e for e in entries if e["kind"] in ("page", "nav")]
+    path = os.path.join(root, WEB_STATE)
+    try:
+        st = json.load(open(path, encoding="utf-8"))
+    except (OSError, ValueError):
+        if not wanted:
+            return []
+        return [("INFO", f"Project pages/menu entries registered ({len(wanted)}) but not loaded yet: "
+                         "Watchtower has not started since", "", "")]
+    out = []
+    restart = "Fix the page, then: fw watchtower restart"
+    if st.get("register_error"):
+        out.append(("WARN", f"Watchtower could not read {REGISTER}: no project pages or menu entries loaded",
+                    str(st["register_error"]), f"Fix {REGISTER}, then: fw watchtower restart"))
+    pages = st.get("pages") or {}
+    loaded = pages.get("loaded") or []
+    if loaded:
+        names = ", ".join(f"{p.get('id')} ({p.get('path')}: {' '.join(p.get('routes') or [])})" for p in loaded)
+        out.append(("INFO", f"Project pages loaded by Watchtower ({len(loaded)}): {names}", "", ""))
+    for p in pages.get("skipped") or []:
+        out.append(("WARN", f"Project page {p.get('id')} ({p.get('path')}) was skipped by Watchtower",
+                    str(p.get("reason")), restart))
+    nav = st.get("nav") or {}
+    added = nav.get("added") or []
+    if added:
+        names = ", ".join(f"{n.get('group')} > {n.get('label')}" for n in added)
+        out.append(("INFO", f"Project menu entries shown by Watchtower ({len(added)}): {names}", "", ""))
+    for n in nav.get("dropped") or []:
+        out.append(("WARN", f"Project menu entry {n.get('id')}: {n.get('label') or n.get('path')} was dropped by Watchtower",
+                    str(n.get("reason")), "Fix the entry, then: fw watchtower restart"))
+    loaded_ids = {p.get("id") for p in loaded} | {p.get("id") for p in pages.get("skipped") or []} \
+        | {n.get("id") for n in added} | {n.get("id") for n in nav.get("dropped") or []}
+    pending = [e["id"] for e in wanted if e["id"] not in loaded_ids]
+    if pending:
+        out.append(("INFO", f"Registered since Watchtower last started, not loaded yet: {', '.join(pending)}",
+                    "", "fw watchtower restart"))
+    return out
+
+
+def cmd_web_status(a):
+    for row in web_status_findings(a.project):
+        print("\t".join(x.replace("\t", " ").replace("\n", " ") for x in row))
+    return 0
 
 
 def cmd_audit(a):
@@ -583,6 +641,8 @@ def main(argv=None):
     p.set_defaults(fn=cmd_list)
     p = sub.add_parser("audit", help="audit findings as TSV (used by fw audit)")
     p.set_defaults(fn=cmd_audit)
+    p = sub.add_parser("web-status", help="what Watchtower loaded and skipped, as TSV (used by fw doctor)")
+    p.set_defaults(fn=cmd_web_status)
     p = sub.add_parser("kept", help="report registered extensions after a vendor")
     p.add_argument("--target", required=True)
     p.set_defaults(fn=cmd_kept)
