@@ -140,6 +140,12 @@ Now: 10 framework files modified, 42 files that exist only in their copy.
 
 (c) An operator-owned list works; today 2 entries (approvals.tap_decide, HMAC bearer, single-use; vpn_proxy blueprint, 3 routes, X-Ring20-Key). Conditions: an entry may name a whole blueprint; the framework checks at startup that each listed endpoint really enforces the declared authentication, refuses the exemption otherwise and fw audit fails; an entry whose endpoint no longer exists fails the audit. Their current header-presence exemption goes away and they agree it should.
 
+### Operator ruling 2026-11-19 (choice 1 of 4: may a project replace a framework check?)
+
+Agent recommended add-only (no replacing; replacing loosens a gate). **Operator, verbatim:** "Any modification is completely allowed. We just need to assure that further upgrades don't break, that's the risk, right? People can decide what they want for their thing themselves, but always it needs to be an operated decision, not mine, but it's always an operated decision."
+
+Reading: the shape is not "add or tighten only". Every extension, loosening and replacing included, is allowed when (1) it is a recorded decision of THAT project's operator (not an agent's, not the AEF operator's), visible in `fw audit`, and (2) an upgrade never breaks it or drops it silently. The framework's job moves from forbidding to recording and protecting. This also bears on choices 2 (where the operator-owned lists live: in the project, owned by its operator) and 4 (the reviewer brief), and on T-5248 (upgrade safety becomes the core guarantee).
+
 ### Reading so far
 
 - 055: the most important finding is a silent loss at upgrade (their T-342 page block), which no extension point would have caught; it belongs to T-5248: upgrade must list every local difference and say whether it will be lost, before replacing.
