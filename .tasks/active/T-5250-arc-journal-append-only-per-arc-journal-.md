@@ -10,7 +10,7 @@ description: >
   latest event; a failed check with no decision; a consequential decision with no
   approval (slice 4). Evidence: 1409 load tests, docs/reports/T-5224-arc-orchestrator.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -45,7 +45,7 @@ origin: {kind: "operator", source: "T-5224"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T13:39:04Z
-last_update: '2026-11-19T13:47:02Z'
+last_update: 2026-11-19T16:03:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,20 +91,24 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5224 GO (operator, 2026-11-19), question 2 answered "1": an append-only journal per arc plus a resumability check is the first build slice of the arc orchestrator. Evidence: 1409's fresh-agent load test (docs/reports/T-5224-arc-orchestrator.md): 7/10 right next step from the records as they were, 10/10 once every decision, including ones taken outside the arc, was written at the unit; a stale "next" led agents to the wrong step.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** An arc today has a YAML definition and member tasks but no record of what was tried, decided and planned next. What a run learned lives only in the session that ran it, so a fresh agent cannot continue correctly.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Every opted-in arc has one append-only journal that a fresh agent can resume from, and a check that says whether it can.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `.context/arcs/<slug>.journal.jsonl` holds tried / decided / next / outside / event entries; the framework appends an event when a member task changes status; a check reports whether the arc is resumable and why not. Verbs (`fw arc journal`, `fw arc resume`) and the opt-in switch are T-5251; wake-up is T-5252; consequential-decision review is T-5253.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] lib/arc_journal.py: append-only journal at `.context/arcs/<slug>.journal.jsonl` (resolves slug or arc-NNN through lib/arc_membership.py arc_identities); entry kinds tried (text, result), decided (text, reason, consequential flag), next (step, owner, deadline), outside (text, reason, where it was decided), event (task, from, to); every row carries ts and by; appends are locked and never rewrite earlier rows
+- [ ] A resumability check returns findings with plain reasons and exit 0 (resumable) or 1: no next entry; latest next older than a later decided/outside/event entry (stale next); a task event into `issues` with no decided entry after it; latest next's deadline passed (reported, not a refusal)
+- [ ] Small CLI for now: `python3 lib/arc_journal.py append|show|check <arc> ...` (the `fw arc` verbs are T-5251)
+- [ ] agents/task-create/update-task.sh appends an event entry when a task whose arc_id resolves to an arc with `journal: true` in its YAML changes status; arcs without the field are untouched; a journal failure never blocks the status change
+- [ ] Tests (t5250_*): append and read back; append-only (no rewrite); each check finding and the resumable case; the update-task.sh event for an opted-in arc and none for a non-opted arc; a broken journal does not block a status change. Existing arc tests stay green; `fw audit` arc checks accept the new YAML field
+- [ ] Vendored copies synced (`bin/fw vendor self --check` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -387,3 +391,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5250-arc-journal-append-only-per-arc-journal-.md
 - **Context:** Initial task creation
+
+### 2026-11-19T16:03:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
