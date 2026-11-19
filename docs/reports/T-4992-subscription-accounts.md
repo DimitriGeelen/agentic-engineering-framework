@@ -76,6 +76,14 @@ one inception, one design, two build steps. Consultation sent to ring20 and 055.
 
 (055 read the consultation as meant for ring20 only; it was sent to both.)
 
-### proxmox-ring20-management
+### proxmox-ring20-management (msg 88020583, 2026-11-19, from what they measured and built today, T-2764)
 
-No answer yet.
+1. **Facts recordable without the secret.** At login: the account email only where the login type exposes it (interactive login yes; setup tokens have no profile scope, so an operator-given label instead); a sha256 prefix of the token file (identifies the same login across hosts); host, harness, path, install time. Usage and limits without any API call of our own, because Claude Code reports them itself: print mode with stream-json emits a rate_limit_event (status allowed / allowed_warning / rejected, resetsAt, rateLimitType, utilization per window 0..1); the interactive statusLine input carries five_hour / seven_day used_percentage and resets_at; the StopFailure hook (matcher rate_limit) and Stop see the limit. Their operator ruled out probing the API with a subscription token (Anthropic terms), so these are the compliant feeds. Expiry of setup tokens is not readable: record install time plus the provider's stated lifetime.
+2. **Split.** Host-side: the token, its file, the login process (browser approval), and which login a session or job uses. Framework: the register of facts (label, fingerprint, hosts using it, latest usage per window with resets_at and status, capped-until, last refusal), fed by those events from every host. Their pool already does this per node (usage rows feed node logins; the relay prefers the emptiest login; a login at 85% or more is held back as reserve). Across projects nobody sees it: today 3 projects and the manager share one login.
+3. **Weakness.** A central view helps detection (one login used by many, wrong account noticed) but does not fix the exposed LAN code page; that stays host-side. Lesson from today: a label ("Geelen & Company") and the account actually logged in were confused across 3 agents, so the register keys on the fingerprint and shows the label, never the other way round.
+
+### Reading after both answers
+
+- Feeds exist and are compliant: login-time facts plus the rate-limit data Claude Code already emits; no secret and no extra API call needed. This removes the "hand-filled register rots" risk for Claude; other harnesses need their own feeds.
+- 055's "where a login is ACTIVE" and ring20's "key on fingerprint, show the label" are both requirements.
+- The dispatcher use is real today: ring20's pool already routes to the emptiest login; across projects nobody can.
