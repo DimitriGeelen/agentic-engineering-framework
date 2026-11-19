@@ -171,3 +171,7 @@ For AEF this means:
   resume` (no separate handover verb); wake on task status changes and passed deadlines by
   sidecar notice or fresh worker; timer, pool, judgement rules and model choice stay with the
   project. **Operator, verbatim:** "1" (as proposed).
+- 2026-11-19, IW-4 (governance). Agent proposed: same rules as any agent (initiative, not
+  authority); work under a task; a per-arc wake limit as the brake; consequential decisions
+  need operator approval or a green reviewer verdict, routine ones only a journal entry.
+  **Operator, verbatim:** "1" (as proposed).
