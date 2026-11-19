@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5253: Arc owner: consequential decisions need operator approval or a green reviewer verdict (T-5224 slice 4)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-19T20:22:26Z
+# ============================================================================
+
+task_id: T-5253
+task_name: "Arc owner: consequential decisions need operator approval or a green reviewer verdict (T-5224 slice 4)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-19T13:39:10Z
+completed: 2026-11-19T20:20:39Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-19T21:07:08+01:00
+last_commit: 2026-11-19T21:20:24+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context and acceptance criteria (approval of consequential arc decisions, T-5224 slice 4). consequential arc decisions need operator approval or a green reviewer verdict (T-5224 slice 4). bind reviewer approvals — the review dispatch must have reviewed this decision's task (or the arc's anchor), start after it, and have a green verdict in the verdict ledger; tests
+
+# Key outcomes
+outcomes:
+  - 'Every new journal entry gets a stable id (e.g. J-<n> per arc); existing rows without an id stay readable and are addressed by position; `decided` gains an optional category (skip-step, accept-failed-check, defer, change-scope, other) and a consequential category implies `consequential: true`'
+  - '`fw arc approve <arc> <entry-id> --words "<operator''s words>"` is operator-only (refused under agent control, like `fw inception decide`; `--i-am-human` for scripts/tests, logged) and appends an `approved` entry referencing the decision'
+  - 'Reviewer route: the arc''s `owner.decision_review` setting (operator | reviewer | either, default operator); for reviewer, an `approved` entry is accepted only with a review dispatch id registered in the existing review-dispatch registry and outcome green; anything else is refused'
+  - 'The resumability check reports CONSEQUENTIAL_UNAPPROVED for each consequential decision without a valid approval, which makes the arc not resumable (so `fw arc resume` does not move task focus); `fw arc show/resume` list them with their ids'
+  - '`fw operator pending` lists unapproved consequential arc decisions with the approve command'
+  - 'Tests (t5253_*): ids on new rows and old rows readable; operator approve refused for agents and accepted with --i-am-human; reviewer route accepts a registered green dispatch and refuses an unknown one; the check flags unapproved and clears after approval; pending lists it; t5250/t5251/t5252 tests stay green; vendored copies synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-19 — operator approval under a reviewer-only setting'
+    chose: 'an operator approval (`--words`) counts whatever `decision_review` says; the setting only governs whether a reviewer approval counts.'
+    rationale: 'the operator is sovereign (Authority Model); a project choosing "reviewer" delegates, it does not lock the operator out.'
+    alternatives_rejected: ['strict per-setting routing (operator refused on reviewer-only arcs) — would make the operator unable to unblock their own arc.']
+  - decision: '2026-11-19 — reviewer route is open to agents; one dispatch approves one decision'
+    chose: '`fw arc approve … --dispatch-id D --outcome green` is not operator-gated (the evidence is the signed review dispatch, read through `verdict_ledger.dispatch_record`); a dispatch already used for one decision is refused for another.'
+    rationale: 'gating it on the operator would make the reviewer route pointless; reuse would let one review approve unrelated decisions.'
+    alternatives_rejected: ['binding the dispatch''s task to the decision''s task — decided entries often carry no task.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/arc.sh'
+  - '.agentic-framework/lib/arc_journal.py'
+  - '.agentic-framework/lib/arc_owner.py'
+  - '.agentic-framework/lib/operator_pending.py'
+  - '.fabric/components/tests-unit-t5253_arc_decision_approval.yaml'
+  - '.tasks/active/T-5253-arc-owner-consequential-decisions-need-o.md'
+  - 'lib/arc.sh'
+  - 'lib/arc_journal.py'
+  - 'lib/arc_owner.py'
+  - 'lib/operator_pending.py'
+  - 'tests/unit/t5253_arc_decision_approval.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-19T21:07:08'
+    action: 'T-5253: context and acceptance criteria (approval of consequential arc decisions, T-5224 slice 4)'
+  - time: '2026-11-19T21:14:48'
+    action: 'T-5253: consequential arc decisions need operator approval or a green reviewer verdict (T-5224 slice 4)'
+  - time: '2026-11-19T21:20:24'
+    action: 'T-5253: bind reviewer approvals — the review dispatch must have reviewed this decision''s task (or the arc''s anchor), start after it, and have a green verdict in the verdict ledger; tests'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 401 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-orchestrator]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 401
+  commits: 4
+  files_changed: 14
+  lines_added: 1493
+  lines_removed: 91
+  footprint_refreshed_at: '2026-11-19T20:23:12Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5253-arc-owner-consequential-decisions-need-o.md
+generated_by: context-agent-hybrid
