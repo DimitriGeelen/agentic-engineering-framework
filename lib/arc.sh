@@ -1591,7 +1591,11 @@ arc_resume() {
     arc_focus "$id" || return 2
     local focus_task
     focus_task=$(printf '%s' "$json" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("focus_task") or "")')
-    if [ -n "$focus_task" ]; then
+    if [ -n "$focus_task" ] && [ "$rc" -ne 0 ]; then
+        # T-5251: a stale next step is worse than none (1409's load test sent
+        # fresh agents to the wrong step). Only a resumable arc moves task focus.
+        echo "Task focus NOT moved to ${focus_task}: the arc is not resumable — fix the journal first (fw arc journal ${id} decided|next ...), then run fw arc resume ${id} again"
+    elif [ -n "$focus_task" ]; then
         if PROJECT_ROOT="$PROJECT_ROOT" "${_ARC_FW_ROOT}/agents/context/context.sh" focus "$focus_task" >/dev/null 2>&1; then
             echo "Task focus → ${focus_task} (named by the latest next step)"
         else

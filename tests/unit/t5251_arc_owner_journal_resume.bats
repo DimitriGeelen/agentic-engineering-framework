@@ -161,7 +161,7 @@ PY
     [ ! -s "$ARCS_DIR/demo-arc.journal.jsonl" ]
 }
 
-@test "resume on a non-resumable arc: exit 1, findings shown, brief still printed, focus still set" {
+@test "resume on a non-resumable arc: exit 1, findings shown, brief printed, arc focus set, task focus NOT moved" {
     arc owner demo-arc on
     arc journal demo-arc next --step "old step" --owner agent --task T-9001
     arc journal demo-arc decided --text "pivot" --reason "evidence"
@@ -172,8 +172,9 @@ PY
     [[ "$output" == *"pivot"* ]]
     [[ "$output" == *"old step"* ]]
     grep -q '^current_arc: demo-arc$' "$ARC_FOCUS_FILE"
-    # spec (T-5251 AC3): task focus follows the latest next entry's active task
-    grep -q '^current_task: T-9001$' "$PROJECT_ROOT/.context/working/focus.yaml"
+    # A stale next step must not steer focus (1409: stale next worse than none).
+    [ ! -e "$PROJECT_ROOT/.context/working/focus.yaml" ] || ! grep -q '^current_task: T-9001$' "$PROJECT_ROOT/.context/working/focus.yaml"
+    [[ "$output" == *"Task focus NOT moved to T-9001"* ]]
 }
 
 @test "resume on a resumable arc: exit 0, brief sections, decisions newest first and capped, focus set" {
