@@ -101,12 +101,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A wake module (e.g. lib/arc_wake.py) sends one wake per trigger using the arc's `owner.wake`: `notice` through lib/agent_notice.py send_notice to this project's own address, idle-aware like decision notices; `worker` through `fw termlink dispatch` with a prompt that starts with `fw arc resume <arc>`, respecting the worker cap (a refused dispatch is recorded, never retried in a loop)
-- [ ] Trigger 1: after update-task.sh appends a status event for an opted-in arc, it calls the wake (never blocking the status change)
-- [ ] Trigger 2: a scheduled sweep finds opted-in arcs whose latest next-deadline has passed and wakes each once per passed deadline (not again on every sweep); registered in the cron registry and generated
-- [ ] Per-arc daily wake limit (`owner.wake_limit`, default 12): over the limit no wake is sent, the refusal is recorded, and the operator is notified once per arc per day (fw_notify or the operator pending list)
-- [ ] Wakes and refusals are recorded in an append-only per-arc wake ledger beside the journal; `fw arc show` / `fw arc resume` show today's count and limit
-- [ ] Tests (t5252_*): notice wake on a status change; worker wake builds the right dispatch (stubbed); deadline sweep wakes once per deadline; limit reached → no wake, one operator notice; arcs not switched on never wake; existing t5250/t5251 tests green
+- [x] A wake module (e.g. lib/arc_wake.py) sends one wake per trigger using the arc's `owner.wake`: `notice` through lib/agent_notice.py send_notice to this project's own address, idle-aware like decision notices; `worker` through `fw termlink dispatch` with a prompt that starts with `fw arc resume <arc>`, respecting the worker cap (a refused dispatch is recorded, never retried in a loop)
+- [x] Trigger 1: after update-task.sh appends a status event for an opted-in arc, it calls the wake (never blocking the status change)
+- [x] Trigger 2: a scheduled sweep finds opted-in arcs whose latest next-deadline has passed and wakes each once per passed deadline (not again on every sweep); registered in the cron registry and generated
+- [x] Per-arc daily wake limit (`owner.wake_limit`, default 12): over the limit no wake is sent, the refusal is recorded, and the operator is notified once per arc per day (fw_notify or the operator pending list)
+- [x] Wakes and refusals are recorded in an append-only per-arc wake ledger beside the journal; `fw arc show` / `fw arc resume` show today's count and limit
+- [x] Tests (t5252_*): notice wake on a status change; worker wake builds the right dispatch (stubbed); deadline sweep wakes once per deadline; limit reached → no wake, one operator notice; arcs not switched on never wake; existing t5250/t5251 tests green
 - [ ] Cron chain in sync: `out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"`; vendored copies synced
 
 ### Human
@@ -293,6 +293,14 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/t5252_arc_wake.py -q > /tmp/.t5252 2>&1 && grep -q passed /tmp/.t5252
+python3 -m pytest tests/unit/t5250_arc_journal.py -q > /tmp/.t5250 2>&1 && grep -q passed /tmp/.t5250
+timeout 300 bats tests/unit/t5251_arc_owner_journal_resume.bats > /tmp/.t5251 2>&1 && ! grep -q "^not ok" /tmp/.t5251
+test "$(grep -c '# skip' /tmp/.t5251)" -eq 0
+python3 -m pytest tests/unit/t4095_operator_pending_test.py -q > /tmp/.t4095 2>&1 && grep -q passed /tmp/.t4095
+python3 -c "import yaml; d=yaml.safe_load(open('.context/cron-registry.yaml')); assert any(j['id']=='arc-wake-sweep-15m' for j in d['jobs'])"
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
+bin/fw vendor self --check --task T-5252
 
 ## RCA
 
@@ -373,6 +381,23 @@ bvp_scores_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-19 — `fw cron install` pending the operator
+- **State:** `arc-wake-sweep-15m` is in `.context/cron-registry.yaml` and `bin/fw cron generate` ran clean (crontab line 114). It is NOT installed: `fw cron install` is operator-only. Until it is, `fw doctor` reports "Cron registry drift" and the cron Verification line (and the 7th Agent criterion) stays red. Operator: `cd /opt/999-Agentic-Engineering-Framework && bin/fw cron install`.
+
+### 2026-11-19 — cron runs `fw arc wake-sweep`, not `python3 lib/arc_wake.py sweep`
+- **Chose:** a `fw arc wake-sweep` verb wrapping `lib/arc_wake.py sweep`.
+- **Why:** consumer projects have no `lib/` at the root (vendored under `.agentic-framework/`); `fw` resolves the path in both.
+- **Rejected:** a raw `python3 lib/...` cron command (framework-repo only).
+
+### 2026-11-19 — what counts toward the limit, and deadline dedupe
+- **Chose:** `sent`, `dispatch-refused` and `error` count toward `owner.wake_limit`; `refused-limit` and `skipped` (FW_ARC_WAKE=0 / test run) do not. A deadline is used up by any ledger row with its key except `skipped`, so a deadline refused by the limit is not retried the next day (the operator was told).
+- **Why:** a failing channel must not let an arc wake endlessly; a switched-off run must not burn a deadline.
+- **Rejected:** retrying a limit-refused deadline each day (re-notifies every day for one stale step).
+
+### 2026-11-19 — operator notice over the limit: both channels
+- **Chose:** one `fw_notify` push per arc per UTC day (recorded as `operator_notified` on the first `refused-limit` row) AND a live `fw operator pending` section "Arcs at their daily wake limit", read from today's ledger rows.
+- **Why:** fw_notify is opt-in and may be off; the pending list is the live operator surface (T-4095) and needs no state of its own.
 
 ## Decision
 
