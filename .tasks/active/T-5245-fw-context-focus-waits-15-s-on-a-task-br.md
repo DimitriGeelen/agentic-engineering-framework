@@ -377,7 +377,7 @@ bin/fw watchtower current
 **Evidence:**
 - Focus 16.7 s → 1.73 s, work-on 16.99 s → 2.35 s (AEF, 2026-11-19)
 - tests/unit/t5245_focus_briefing_optin.bats 4/4, context_focus.bats 19/19, config-registry-parity green
-- Watchtower restarted; `bin/fw watchtower current` OK; /config contains FOCUS_BRIEFING
+- Watchtower restarted; `bin/fw watchtower current` OK; http://192.168.10.107:3000/config contains FOCUS_BRIEFING
 
 ## Decisions
 
