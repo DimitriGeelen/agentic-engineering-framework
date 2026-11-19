@@ -8,10 +8,10 @@ description: >
   context for its whole life and can be handed over and resumed from the arc's own
   record (possibly by a newer model) — 1409 request
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -19,8 +19,8 @@ step_entered_at: '2026-11-19T13:31:14Z'
 revisit_at: 2026-11-26
 waiting_on: operator
 created: 2026-11-18T09:15:42Z
-last_update: 2026-11-19T13:31:14Z
-date_finished:
+last_update: 2026-11-19T13:36:57Z
+date_finished: 2026-11-19T13:36:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -151,15 +151,15 @@ Research: docs/reports/T-5224-arc-orchestrator.md.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -231,7 +231,15 @@ Evidence gap, not a hedge: 1409 is measuring (1) how many units hit judgment out
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: 1409 measured that 43% of their units (56 of 129) stood at a judgement step nobody started, because what had been tried lived only in ended orchestrator sessions. Their fresh-agent load test (210 agents) showed a fresh agent continues correctly from the arc's record alone once every decision, including outside ones, is written at the unit: 7/10 right next step before, 10/10 after, three models agreeing. A resume costs about 16-18K tokens.
+
+Earlier recommendations, kept for the record: DEFER (filing, pending 1409's measurements), then EXPLORING (T-5228 triage, 6 questions open). Earlier rationale:
+
+Evidence gap, not a hedge: 1409 is measuring (1) how many units hit judgment outcomes and at which steps, (2) orchestrator token cost per unit and per reload, (3) a load test on five real units of whether a fresh agent can continue from the arc's records alone, (4) options A resumed orchestrator / B owner as a role woken per event with a per-arc handover / C timer plus driver. The recommendation between A, B and C depends on (3).
+
+**Date**: 2026-11-19T13:36:55Z
 
 ## Updates
 
@@ -248,3 +256,44 @@ Evidence gap, not a hedge: 1409 is measuring (1) how many units hit judgment out
 ### 2026-11-19T13:31:14Z — inception-wait [inception-lifecycle]
 - **Change:** waiting_on: peer → operator
 - **Revisit:** 2026-11-26
+
+### 2026-11-19T13:36:55Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** 1409 measured that 43% of their units (56 of 129) stood at a judgement step nobody started, because what had been tried lived only in ended orchestrator sessions. Their fresh-agent load test (210 agents) showed a fresh agent continues correctly from the arc's record alone once every decision, including outside ones, is written at the unit: 7/10 right next step before, 10/10 after, three models agreeing. A resume costs about 16-18K tokens.
+
+Earlier recommendations, kept for the record: DEFER (filing, pending 1409's measurements), then EXPLORING (T-5228 triage, 6 questions open). Earlier rationale:
+
+Evidence gap, not a hedge: 1409 is measuring (1) how many units hit judgment outcomes and at which steps, (2) orchestrator token cost per unit and per reload, (3) a load test on five real units of whether a fresh agent can continue from the arc's records alone, (4) options A resumed orchestrator / B owner as a role woken per event with a per-arc handover / C timer plus driver. The recommendation between A, B and C depends on (3).
+
+### 2026-11-19T13:36:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-07779af1
+- **Timestamp:** 2026-11-19T13:36:59Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-457188ba
+- **Timestamp:** 2026-11-19T13:36:59Z
+- **Overall:** CONFIRMED
+- **Claims:** 3
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-5247` | task | ✓ pass |
+| `T-5246` | task | ✓ pass |
+| `T-5228` | task | ✓ pass |
