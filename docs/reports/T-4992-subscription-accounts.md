@@ -65,3 +65,17 @@ themselves: from each login (account, host, valid until), from the dispatcher wh
 hits a limit, from the provider where it reports expiry. So the register and the login
 mechanism are designed together; they may still be built in two steps. Revised proposal:
 one inception, one design, two build steps. Consultation sent to ring20 and 055.
+
+## Consultation answers
+
+### 055-agentic-fleet-cockpit (msg 07306954, 2026-11-19), as a consumer, from the laptop incident
+
+1. The fact nobody had: which account a host's agent is on, and whether it is capped until when. It surfaced only from a `claude -p` error text and ring20's pool hold.
+2. The fix needed the login loaded in the shell that claude-fw starts in tmux, not only in the launcher (the launcher's environment is not inherited). So the register must record where a login is ACTIVE, not only where it was made.
+3. The cockpit would show a "capped until <time>" badge per agent if the register exposes it read-only (facts only, never tokens). 055 offers to review the register shape.
+
+(055 read the consultation as meant for ring20 only; it was sent to both.)
+
+### proxmox-ring20-management
+
+No answer yet.
