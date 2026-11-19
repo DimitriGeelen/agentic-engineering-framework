@@ -10,10 +10,10 @@ description: >
   arc context and focuses the next step's task. No separate handover verb. Depends
   on slice 1.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [arc-orchestrator]
 components: []
 related_tasks: [T-5224]
@@ -45,7 +45,7 @@ origin: {kind: "operator", source: "T-5224"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T13:39:06Z
-last_update: '2026-11-19T13:47:02Z'
+last_update: 2026-11-19T16:15:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,20 +91,24 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5224 GO (operator, 2026-11-19), question 3 answered "1": opt-in per arc, `fw arc journal` and `fw arc resume`, no separate handover verb. T-5250 (closed) built the journal library and check (`lib/arc_journal.py`, `journal: true` in the arc YAML) with only a developer CLI.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The journal exists but nobody can use it as intended: there is no `fw arc` verb to switch an arc on, to write an entry, or to take over an arc. A fresh agent has no single command that checks resumability and tells it what to do.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Agents use the arc journal through `fw arc`, and taking over an arc is one command.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `fw arc owner <arc> on|off`, `fw arc journal <arc> <kind> ...` and `fw arc resume <arc>` work; resume runs the check, prints a short brief and sets focus. Wake-up (T-5252) and decision review (T-5253) are not in scope.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw arc owner <arc> on [--wake notice|worker] | off` sets or clears `journal: true` and an `owner:` block (`wake:` recorded for T-5252, default notice) in the arc YAML without disturbing other fields or comments; `fw arc show` displays it; arcs without it are unchanged
+- [ ] `fw arc journal <arc> tried|decided|next|outside ...` writes through lib/arc_journal.py (same fields and validation; `by` defaults to the session/agent id); refuses on an arc that is not switched on, naming `fw arc owner <arc> on`
+- [ ] `fw arc resume <arc>` runs the resumability check first and prints a brief: resumable or not with the findings, the latest decided/outside entries (newest first, capped), the next step with owner and deadline, and the arc's open member tasks; it sets arc focus, and task focus when the next entry names a task that is active
+- [ ] `fw arc help` and the verb list in lib/arc.sh name the three verbs; no `fw arc handover` verb is added
+- [ ] Tests (t5251_*): owner on/off round trip preserves other YAML content; journal refused when off and written when on; resume on a resumable and a non-resumable fixture arc, including focus setting; existing arc tests stay green
+- [ ] Vendored copies synced (`bin/fw vendor self --check` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -387,3 +391,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5251-arc-owner-opt-in-and-verbs-fw-arc-journa.md
 - **Context:** Initial task creation
+
+### 2026-11-19T16:15:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
