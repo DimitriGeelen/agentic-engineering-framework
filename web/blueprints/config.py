@@ -87,6 +87,7 @@ SETTINGS = [
     ("GITIGNORE_REGISTER_ADVISORY", "1", "Enable the audit WARN for .gitignore comment blocks that defer work without naming a T-/G-/OBS-/L- entry; 0 silences it; T-2994"),
     ("INDEX_STALE_DAYS", "7", "Days before fw doctor WARNs that the vector index is stale, measured from the corpus manifest's build time; T-3013"),
     ("RECALL_USAGE_DAYS", "7", "Window fw doctor looks back over for semantic-recall queries; zero rows in the window WARNs — the G-064 zero-consumer signal; T-3019"),
+    ("FOCUS_BRIEFING", "0", "1 = fw context focus (and fw work-on) also asks the local model for a task briefing (lib/ask.py, 15 s limit). Off by default: it timed out every time and cost ~15 s per focus; T-5245"),
     ("INDEX_MAX_AGE_HOURS", "24", "Hours since the vector index manifest was written before the vector-index health check FAILs (doctor, audit, handover, operator push); T-3783"),
     ("INDEX_REINDEX_INTERVAL_HOURS", "1", "Hours between runs of the index-reindex-hourly cron job (1-24): 1 writes hour field '*', N writes '*/N'; read by fw cron generate (lib/cron_schedule.py). The job's minute is derived per project unless the registry pins it; T-4351"),
     ("EMBED_WORKERS", "1", "Concurrent embed requests the vector reindex sends to the bulk embedding host (web/embeddings.py:_embed_batches; order preserved). Match it to the server's OLLAMA_NUM_PARALLEL; 1 is serial. Malformed or <1 means 1; T-4475"),

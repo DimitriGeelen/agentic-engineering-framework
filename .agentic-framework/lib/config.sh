@@ -356,6 +356,7 @@ FW_CONFIG_REGISTRY=(
     # T-3783: the vector-index health check (lib/vector_index_health.py) FAILs in
     # doctor/audit/handover when these are exceeded — the reindex runs hourly, so
     # 24h is a full day of missed runs, not jitter.
+    "FOCUS_BRIEFING|0|1 = fw context focus (and fw work-on) also asks the local model for a task briefing (lib/ask.py, 15 s limit) after setting focus. Off by default: measured 2026-11-19 it timed out every time and cost ~15 s per focus. T-5245."
     "INDEX_MAX_AGE_HOURS|24|Hours since the vector index manifest was written before the vector-index health check FAILs (fw doctor, fw audit corpus-health, handover, operator push). The reindex cron runs hourly. T-3783."
     "INDEX_REINDEX_INTERVAL_HOURS|1|Hours between runs of the index-reindex-hourly cron job (1-24). 1 writes hour field '*', N writes '*/N'; read by fw cron generate (lib/cron_schedule.py). Raise for large, slowly changing indexes; keep it under INDEX_MAX_AGE_HOURS. The job's minute is derived per project unless the registry pins it. T-4351."
     "EMBED_WORKERS|1|Concurrent embed requests the vector reindex sends to the bulk embedding host (web/embeddings.py:_embed_batches; order preserved). Match it to the server's OLLAMA_NUM_PARALLEL; 1 is serial. Measured 70 to 107 chunks/s at 3 on a 3-slot Ollama. Malformed or <1 means 1. T-4475."

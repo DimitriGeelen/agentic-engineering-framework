@@ -1,10 +1,13 @@
 ---
 id: T-5245
-name: "fw context focus waits 15 s on a task briefing that always times out (ask.py, exit 124)"
+name: "fw context focus waits 15 s on a task briefing that always times out (ask.py,
+  exit 124)"
 description: >
-  focus.sh runs lib/ask.py with timeout 15 after setting focus; measured 15.06 s, rc 124, empty output, on AEF (918 active tasks). Whole focus 16.7 s here; 1409 measures 16.1-16.2 s at 5,956 active. work-on likely pays the same.
+  focus.sh runs lib/ask.py with timeout 15 after setting focus; measured 15.06 s,
+  rc 124, empty output, on AEF (918 active tasks). Whole focus 16.7 s here; 1409 measures
+  16.1-16.2 s at 5,956 active. work-on likely pays the same.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T07:38:37Z
-last_update: 2026-11-19T07:38:37Z
-date_finished: null
+last_update: 2026-11-19T07:42:03Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +53,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-19T07:40:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5245: fw context focus waits 15 s on a task briefing that always times out (ask.py, exit 124)
@@ -57,20 +77,25 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 1409 measured `fw context focus` at 16.1-16.2 s in their real project (msg bbf3f214, 2026-11-19). On AEF it takes 16.7 s with 918 active tasks. Timing the parts: the memory recall takes 2.0 s; the task briefing (`lib/ask.py`, run under `timeout 15`) takes 15.06 s and exits 124 with no output.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** After setting focus, `agents/context/lib/focus.sh` asks a local model for a task briefing with a 15 s limit. On these hosts the call never finishes inside the limit, so every focus waits 15 s and prints nothing. The cost is not file count.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Setting focus does not wait on a briefing that does not arrive. The briefing stays available to anyone who wants it.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `fw context focus` takes a few seconds instead of about 16. The briefing runs only when a project switches it on (operator ruling 2026-11-19, "1 yes" — fix it now).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] focus.sh runs the ask.py briefing only when the config key FOCUS_BRIEFING is 1; default 0
+- [x] FOCUS_BRIEFING is in the config registry with a description; config-registry parity lint passes
+- [x] A bats test pins both legs: briefing not invoked by default, invoked when FOCUS_BRIEFING=1
+- [x] `fw context focus` on AEF measured under 5 s after the fix (before: 16.7 s); `fw work-on` checked for the same cost and the result reported to 1409
+- [x] Vendored copies synced (`bin/fw vendor self --check` clean)
+
+Measured 2026-11-19 on AEF: focus 16.7 s → 1.73 s; work-on 16.99 s with briefing → 2.35 s without. Reported to 1409.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -256,8 +281,23 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bats tests/unit/t5245_focus_briefing_optin.bats
+bats tests/unit/context_focus.bats
+bats tests/lint/config-registry-parity.bats
+grep -q 'focus_briefing:-0}" = "1"' agents/context/lib/focus.sh
+bin/fw vendor self --check --task T-5245
+bin/fw watchtower current
 
 ## RCA
+
+**Symptom:** `fw context focus` took about 16 s (AEF 16.7 s at 918 active tasks; 1409 16.1 s at 5,956), and `fw work-on` about 17 s. 1409 read it as a file-count limit.
+
+**Root cause:** after setting focus, `focus.sh` always asked a local model for a task briefing (`lib/ask.py`, T-270) under `timeout 15`. On these hosts the call never finished inside 15 s (exit 124, no output), so every focus waited the full limit and showed nothing.
+
+**Why structurally allowed:** the call ran as `timeout 15 … 2>/dev/null || true`. A timeout looked exactly like "no briefing to show": no message, no log line, no timing anywhere. Nothing measured how long focus takes, so 15 s of dead waiting stayed invisible until a peer timed the command.
+
+**Prevention:** the briefing is opt-in (`FOCUS_BRIEFING`, default 0), and `tests/unit/t5245_focus_briefing_optin.bats` pins that focus does not invoke it by default (marker-file stub, plus a control leg). A command-timing budget for the run-rhythm verbs belongs with T-5107, where 1409's targets (under 5 s) are recorded.
+
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -353,3 +393,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5245-fw-context-focus-waits-15-s-on-a-task-br.md
 - **Context:** Initial task creation
+
+### 2026-11-19T07:40:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -200,8 +200,20 @@ os.replace(tmp_path, focus_file)
 
         # Task briefing via semantic search (T-270)
         # Timeout: 15s to prevent hanging when Ollama/Qdrant is slow (T-323)
+        # T-5245: opt-in. Measured 2026-11-19 the call timed out every time (15 s,
+        # exit 124, no output) and was ~15 of focus's ~16 s, here and at 1409.
+        # Switch on per project with: fw config set FOCUS_BRIEFING 1
+        local focus_briefing="${FW_FOCUS_BRIEFING:-}"
+        if [ -z "$focus_briefing" ]; then
+            if ! declare -F fw_config >/dev/null 2>&1 && [ -f "$FRAMEWORK_ROOT/lib/config.sh" ]; then
+                source "$FRAMEWORK_ROOT/lib/config.sh" 2>/dev/null || true
+            fi
+            if declare -F fw_config >/dev/null 2>&1; then
+                focus_briefing=$(fw_config "FOCUS_BRIEFING" 0 2>/dev/null)
+            fi
+        fi
         local ask_script="$FRAMEWORK_ROOT/lib/ask.py"
-        if [ -f "$ask_script" ]; then
+        if [ "${focus_briefing:-0}" = "1" ] && [ -f "$ask_script" ]; then
             local briefing
             briefing=$(FW_RECALL_NO_BANNER=1 timeout 15 python3 "$ask_script" --concise --no-think \
                 "Brief me on task $task_id: $task_name. What prior work, patterns, and decisions are relevant? What should I watch out for?" \
