@@ -8,10 +8,10 @@ description: >
   a self-waking loop and notifies the operator, like T-3253's continuous-run limits.
   Depends on slices 1-2.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [arc-orchestrator]
 components: []
 related_tasks: [T-5224]
@@ -43,7 +43,7 @@ origin: {kind: "operator", source: "T-5224"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T13:39:08Z
-last_update: '2026-11-19T13:47:02Z'
+last_update: 2026-11-19T18:26:37Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,20 +89,25 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5224 GO (operator, 2026-11-19), questions 3 and 4 answered "1": the owner of an opted-in arc is woken on task status changes inside the arc and when a journal "next" deadline passes, by idle-aware sidecar notice or a fresh TermLink worker, chosen per arc; a per-arc wake limit stops a self-waking loop and tells the operator. T-5250 (journal, update-task.sh event hook) and T-5251 (`fw arc owner on --wake notice|worker`, `fw arc resume`) are built.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Nothing yet wakes anyone when an opted-in arc needs attention: 1409 measured 43% of units standing at a judgement step nobody started. Without a limit, an owner that writes a journal entry and thereby triggers another wake could loop.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** An opted-in arc wakes its owner when something happens or a deadline passes, and can never wake it endlessly.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A status change of a member task, or a passed next-deadline, produces one wake: a sidecar notice to this project's agent ("arc X: <what happened>; run fw arc resume X") or a dispatched worker that starts with `fw arc resume`. A daily per-arc limit stops further wakes and notifies the operator once. Every wake and every refusal is recorded.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A wake module (e.g. lib/arc_wake.py) sends one wake per trigger using the arc's `owner.wake`: `notice` through lib/agent_notice.py send_notice to this project's own address, idle-aware like decision notices; `worker` through `fw termlink dispatch` with a prompt that starts with `fw arc resume <arc>`, respecting the worker cap (a refused dispatch is recorded, never retried in a loop)
+- [ ] Trigger 1: after update-task.sh appends a status event for an opted-in arc, it calls the wake (never blocking the status change)
+- [ ] Trigger 2: a scheduled sweep finds opted-in arcs whose latest next-deadline has passed and wakes each once per passed deadline (not again on every sweep); registered in the cron registry and generated
+- [ ] Per-arc daily wake limit (`owner.wake_limit`, default 12): over the limit no wake is sent, the refusal is recorded, and the operator is notified once per arc per day (fw_notify or the operator pending list)
+- [ ] Wakes and refusals are recorded in an append-only per-arc wake ledger beside the journal; `fw arc show` / `fw arc resume` show today's count and limit
+- [ ] Tests (t5252_*): notice wake on a status change; worker wake builds the right dispatch (stubbed); deadline sweep wakes once per deadline; limit reached → no wake, one operator notice; arcs not switched on never wake; existing t5250/t5251 tests green
+- [ ] Cron chain in sync: `out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"`; vendored copies synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -385,3 +390,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5252-arc-owner-wake-up-and-per-arc-wake-limit.md
 - **Context:** Initial task creation
+
+### 2026-11-19T18:26:37Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
