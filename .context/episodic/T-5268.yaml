@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5268: Audit verify-queue re-runs stored Verification lines unattended on the host: let a line declare it needs a fixture (skipped there, still run at close) and keep an append-only run history
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-19T15:59:27Z
+# ============================================================================
+
+task_id: T-5268
+task_name: "Audit verify-queue re-runs stored Verification lines unattended on the host: let a line declare it needs a fixture (skipped there, still run at close) and keep an append-only run history"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-19T15:41:46Z
+completed: 2026-11-19T15:58:05Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-19T16:44:42+01:00
+last_commit: 2026-11-19T16:57:56+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  context and acceptance criteria (one shared unattended-run rule for verify-queue and CTL-013, marker, process-control skips, history). one unattended-run predicate for CTL-013 and verify-queue; '# needs: fixture' marker, process-control skips, append-only history. CTL-013 reports a task whose every line was skipped as INFO 'not re-run unattended', never PASS (closes the worker's noted gap); tests updated + mixed-case control
+
+# Key outcomes
+outcomes:
+  - 'One shared predicate (Python, e.g. lib/unattended_verification.py) says whether a stored line may run unattended and why not; lib/verify_queue.py uses it, and CTL-013 in agents/audit/audit.sh calls it (no second copy of the patterns)'
+  - 'The predicate refuses: the existing UNSAFE_PATTERNS, nested `fw audit`, process control (`kill` with a pid or signal, `pkill`, `killall`, `systemctl ... stop|restart|kill|disable`, `service ... stop|restart`, `shutdown`, `reboot`), and any line carrying the trailing marker `# needs: fixture`; each skip carries its reason and is never counted as a pass'
+  - 'The P-011 close gate still runs a line with the trailing marker (bash treats it as a comment): pinned by a test'
+  - 'Append-only history at .context/audits/verify-queue/history.jsonl: one row per line run or skipped by either runner (ts, runner, task, line sha256, outcome, reason); rotation never rewrites old rows'
+  - 'Tests: marker skip and process-control skip in both runners, the close gate running a marked line, history rows appended by both; existing tests t2765_verify_queue.bats, audit_ctl013_skip_nested_audit.bats and t5132_ctl013_coverage.bats stay green'
+  - 'The task template''s Verification guidance and CLAUDE.md §Verification Gate name the marker in one line each; vendored copies synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'one unattended-run predicate for CTL-013 and verify-queue; ''# needs: fixture'' marker, process-control skips, append-only history'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/.tasks/templates/default.md'
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/unattended_verification.py'
+  - '.agentic-framework/lib/upgrade_template_shipped.py'
+  - '.agentic-framework/lib/verify_queue.py'
+  - '.fabric/components/lib-unattended_verification.yaml'
+  - '.gitignore'
+  - '.tasks/active/T-5268-audit-verify-queue-re-runs-stored-verifi.md'
+  - '.tasks/templates/default.md'
+  - 'CLAUDE.md'
+  - 'agents/audit/audit.sh'
+  - 'lib/unattended_verification.py'
+  - 'lib/upgrade_template_shipped.py'
+  - 'lib/verify_queue.py'
+  - 'tests/unit/audit_ctl013_skip_nested_audit.bats'
+  - 'tests/unit/t5268_unattended_verification.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-19T16:44:42'
+    action: 'T-5268: context and acceptance criteria (one shared unattended-run rule for verify-queue and CTL-013, marker, process-control skips, history)'
+  - time: '2026-11-19T16:52:08'
+    action: 'T-5268: one unattended-run predicate for CTL-013 and verify-queue; ''# needs: fixture'' marker, process-control skips, append-only history'
+  - time: '2026-11-19T16:57:56'
+    action: 'T-5268: CTL-013 reports a task whose every line was skipped as INFO ''not re-run unattended'', never PASS (closes the worker''s noted gap); tests updated + mixed-case control'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [safety, audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 16
+  commits: 4
+  files_changed: 19
+  lines_added: 897
+  lines_removed: 107
+  footprint_refreshed_at: '2026-11-19T15:59:55Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5268-audit-verify-queue-re-runs-stored-verifi.md
+generated_by: context-agent-hybrid

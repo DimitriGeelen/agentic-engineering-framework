@@ -57101,3 +57101,21 @@ task_id: T-4649
 payload:
   overall: CONFIRMED
   claim_count: 7
+---
+kind: scan_emitted
+timestamp: '2026-11-19T15:59:00Z'
+scan_id: R-43eb4d2d
+task_id: T-5268
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-19T15:59:00Z'
+scan_id: R-43eb4d2d
+task_id: T-5268
+payload:
+  task_file: .tasks/active/T-5268-audit-verify-queue-re-runs-stored-verifi.md
