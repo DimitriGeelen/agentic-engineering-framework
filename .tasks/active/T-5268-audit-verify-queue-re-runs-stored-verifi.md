@@ -110,12 +110,12 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] One shared predicate (Python, e.g. lib/unattended_verification.py) says whether a stored line may run unattended and why not; lib/verify_queue.py uses it, and CTL-013 in agents/audit/audit.sh calls it (no second copy of the patterns)
-- [ ] The predicate refuses: the existing UNSAFE_PATTERNS, nested `fw audit`, process control (`kill` with a pid or signal, `pkill`, `killall`, `systemctl ... stop|restart|kill|disable`, `service ... stop|restart`, `shutdown`, `reboot`), and any line carrying the trailing marker `# needs: fixture`; each skip carries its reason and is never counted as a pass
-- [ ] The P-011 close gate still runs a line with the trailing marker (bash treats it as a comment): pinned by a test
-- [ ] Append-only history at .context/audits/verify-queue/history.jsonl: one row per line run or skipped by either runner (ts, runner, task, line sha256, outcome, reason); rotation never rewrites old rows
-- [ ] Tests: marker skip and process-control skip in both runners, the close gate running a marked line, history rows appended by both; existing tests t2765_verify_queue.bats, audit_ctl013_skip_nested_audit.bats and t5132_ctl013_coverage.bats stay green
-- [ ] The task template's Verification guidance and CLAUDE.md §Verification Gate name the marker in one line each; vendored copies synced
+- [x] One shared predicate (Python, e.g. lib/unattended_verification.py) says whether a stored line may run unattended and why not; lib/verify_queue.py uses it, and CTL-013 in agents/audit/audit.sh calls it (no second copy of the patterns)
+- [x] The predicate refuses: the existing UNSAFE_PATTERNS, nested `fw audit`, process control (`kill` with a pid or signal, `pkill`, `killall`, `systemctl ... stop|restart|kill|disable`, `service ... stop|restart`, `shutdown`, `reboot`), and any line carrying the trailing marker `# needs: fixture`; each skip carries its reason and is never counted as a pass
+- [x] The P-011 close gate still runs a line with the trailing marker (bash treats it as a comment): pinned by a test
+- [x] Append-only history at .context/audits/verify-queue/history.jsonl: one row per line run or skipped by either runner (ts, runner, task, line sha256, outcome, reason); rotation never rewrites old rows
+- [x] Tests: marker skip and process-control skip in both runners, the close gate running a marked line, history rows appended by both; existing tests t2765_verify_queue.bats, audit_ctl013_skip_nested_audit.bats and t5132_ctl013_coverage.bats stay green
+- [x] The task template's Verification guidance and CLAUDE.md §Verification Gate name the marker in one line each; vendored copies synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -301,6 +301,16 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t5268_unattended_verification.bats > /tmp/.t5268-new.out 2>&1 && ! grep -q "^not ok" /tmp/.t5268-new.out
+test "$(grep -c '# skip' /tmp/.t5268-new.out)" -eq 0
+timeout 600 bats tests/unit/t2765_verify_queue.bats tests/unit/audit_ctl013_skip_nested_audit.bats tests/unit/t5132_ctl013_coverage.bats > /tmp/.t5268-old.out 2>&1 && ! grep -q "^not ok" /tmp/.t5268-old.out
+test "$(grep -c '# skip' /tmp/.t5268-old.out)" -eq 0
+test "$(python3 lib/unattended_verification.py check 'pkill -f x' >/dev/null; echo $?)" = "3"
+python3 lib/unattended_verification.py check 'kill -0 1'
+bash -n agents/audit/audit.sh
+grep -q 'needs: fixture' .tasks/templates/default.md && grep -q 'needs: fixture' CLAUDE.md
+git check-ignore -q .context/audits/verify-queue/history.jsonl
+bin/fw vendor self --check --task T-5268
 
 ## RCA
 

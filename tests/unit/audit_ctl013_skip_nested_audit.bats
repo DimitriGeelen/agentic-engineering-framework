@@ -96,8 +96,11 @@ ctl013() {
     # Source-of-truth pin: the audit.sh code MUST contain the skip
     # branch with the same regex. If this test fails, someone refactored
     # CTL-013 without preserving the L-391 protection.
+    # T-5268: the pattern moved to the predicate shared with verify-queue;
+    # CTL-013 must call it, and the predicate must carry the nested-audit rule.
     grep -q 'L-391\b' "$FRAMEWORK_ROOT/agents/audit/audit.sh"
-    grep -q "(\\\\bbin/)?fw +audit\\\\b" "$FRAMEWORK_ROOT/agents/audit/audit.sh"
+    grep -q 'lib/unattended_verification.py" check' "$FRAMEWORK_ROOT/agents/audit/audit.sh"
+    grep -qF 'fw\s+audit\b' "$FRAMEWORK_ROOT/lib/unattended_verification.py"
 }
 
 @test "OBS-022: audit.sh CTL-013 contains bats-isolation-retry block" {

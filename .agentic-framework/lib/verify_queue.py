@@ -31,30 +31,23 @@ STATE_REL = ".context/working/.verify-queue-state.json"
 DEFAULT_LIMIT = 5
 DEFAULT_TIMEOUT = 180
 
-# Lines we refuse to execute. CTL-013 already skips nested audit invocations
-# (L-391); scaling from 3 tasks to the whole queue widens the blast radius
-# enough that "skip and say so" beats "run and hope". Reported as SKIPPED, never
-# as PASS — a skip that reads as a pass is the vacuous-green class this rail
-# exists to remove.
-UNSAFE_PATTERNS = [
-    (re.compile(r"\bfw\s+audit\b"), "nested audit invocation (L-391)"),
-    (re.compile(r"\bcorpus\s+prove\b"), "destructive on the live corpus store"),
-    (re.compile(r"\brm\s+-rf\b"), "destructive"),
-    (re.compile(r"\bgit\s+push\b"), "outward-facing"),
-    (re.compile(r"\bgit\s+reset\s+--hard\b"), "destructive"),
-    # T-4026: an HTTP write changes a live service. This rail re-runs blocks
-    # OUTSIDE a close, every day, so it must only observe: T-2529's save-check
-    # re-created a deleted map in the live designer store at each 07:12 audit.
-    # Scoped to the curl/wget segment (no |;& in between) so a line that merely
-    # greps for "POST" still runs. Case-sensitive on purpose: -D (dump headers)
-    # is a read and must not match -d.
-    (re.compile(r"\bcurl\b[^|;&\n]*?\s(?:-[A-Za-z]*X\s*(?i:POST|PUT|PATCH|DELETE)\b"
-                r"|--request[=\s]+(?i:POST|PUT|PATCH|DELETE)\b"
-                r"|-d\b|--data(?:-[a-z]+)?\b|-F\b|--form\b|--json\b)"),
-     "HTTP write against a live service"),
-    (re.compile(r"\bwget\b[^|;&\n]*?\s--(?:post-data|post-file|method)\b"),
-     "HTTP write against a live service"),
-]
+# T-5268: the refusal rule (UNSAFE_PATTERNS, process control, the
+# `# needs: fixture` marker) lives in lib/unattended_verification.py and is
+# shared with CTL-013 — one predicate for both unattended rails. Skips are
+# reported as SKIPPED, never as PASS.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from unattended_verification import (  # noqa: E402
+    UNSAFE_PATTERNS, append_history, unattended_refusal)
+
+RUNNER = "verify-queue"
+
+
+def _history(root: Path, task_id: str, line: str, outcome: str, reason: str = "") -> None:
+    """Append-only run history (T-5268). Never fails the rail."""
+    try:
+        append_history(root, RUNNER, task_id, line, outcome, reason)
+    except OSError:
+        pass
 
 
 def _root() -> Path:
@@ -126,10 +119,7 @@ def _unparseable(root: Path, lines: list[str]) -> bool:
 
 
 def _unsafe(line: str) -> str | None:
-    for pat, why in UNSAFE_PATTERNS:
-        if pat.search(line):
-            return why
-    return None
+    return unattended_refusal(line)
 
 
 def run_task(root: Path, task_id: str, timeout: int) -> dict:
@@ -160,11 +150,15 @@ def run_task(root: Path, task_id: str, timeout: int) -> dict:
         rec["failures"] = [{"line": ln, "why": "block has unparseable line(s) — "
                             "see T-2991; the gate is line-oriented"}
                            for ln in lines if _bad_syntax(ln)]
+        for ln in lines:
+            _history(root, task_id, ln, "skipped", "block has unparseable line(s) (T-2991)")
         return rec
     for line in lines:
         why = _unsafe(line)
         if why:
             rec["skipped"] += 1
+            rec.setdefault("skips", []).append({"line": line.strip(), "why": why})
+            _history(root, task_id, line, "skipped", why)
             continue
         try:
             # cwd=PROJECT_ROOT so `.tasks/active/<file>` self-references resolve (L-356).
@@ -183,10 +177,13 @@ def run_task(root: Path, task_id: str, timeout: int) -> dict:
             # budget. Counting it red would put the same defect in this rail that
             # L-539 is about: two states with opposite meaning sharing one bucket.
             rec["timed_out"] += 1
+            _history(root, task_id, line, "timeout", f"exceeded {timeout}s")
             continue
         if rc == 0:
             rec["passed"] += 1
+            _history(root, task_id, line, "pass")
         else:
+            _history(root, task_id, line, "fail", f"rc={rc}")
             rec["failed"] += 1
             rec["failures"].append({
                 "command": line.strip(),
@@ -255,6 +252,9 @@ def _print_one(r: dict) -> None:
         note = f", {r['skipped']} skipped" if r["skipped"] else ""
         print(f"\033[32mPASS\033[0m  {r['task']}  {r['passed']}/{r['total']}{note}",
               flush=True)
+    # T-5268: every skip names its reason (INFO, not a verdict).
+    for sk in r.get("skips", []):
+        print(f"        INFO skipped ({sk['why']}): {sk['line'][:100]}", flush=True)
 
 
 def main(argv: list[str]) -> int:

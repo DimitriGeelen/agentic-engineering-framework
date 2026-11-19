@@ -336,6 +336,7 @@ The `## Verification` section contains shell commands that **must pass** before 
 
 **Rules:**
 - Lines starting with `#` are comments (skipped)
+- A line ending in `# needs: fixture` still runs at close but is never re-run unattended by `fw audit` (CTL-013, verify-queue), which also skip process control and the other patterns in `lib/unattended_verification.py`; both log every run or skip to `.context/audits/verify-queue/history.jsonl` (T-5268)
 - Empty lines are ignored
 - Each non-comment line is executed as a shell command
 - First 5 lines of failure output are shown for debugging

@@ -7331,6 +7331,13 @@ for _rid in $_ctl013_recheck; do
         case " $recent_completed " in *" $_rf "*) ;; *) recent_completed="$recent_completed $_rf" ;; esac
     done
 done
+# T-5268: append-only history, one row per line run or skipped, so an unattended
+# run can be matched to an incident later (.context/audits/verify-queue/history.jsonl,
+# shared with verify-queue). Never fails the audit.
+_ctl013_history() {  # task line outcome reason
+    PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/unattended_verification.py" history \
+        --runner ctl-013 --task "$1" --line "$2" --outcome "$3" --reason "$4" >/dev/null 2>&1 || true
+}
 for task_file in $recent_completed; do
     [ -f "$task_file" ] || continue
     task_id=$({ grep "^id:" "$task_file" 2>/dev/null || true; } | head -1 | sed 's/id: //' | tr -d ' ')
@@ -7373,15 +7380,24 @@ for task_file in $recent_completed; do
         cmd_fail=0
         cmd_skipped=0
         cmd_isolated_pass=0
+        _skip_reasons=()
         for cmd in "${verify_cmds[@]}"; do
-            # T-1870/L-391: a verification line that invokes `bin/fw audit`
-            # (or `fw audit`) cannot run during CTL-013 — we're already inside
-            # the audit lock, so the nested call exits "Another audit is
-            # already running" and any downstream grep fails. Skip rather
-            # than report a false positive. Safe pattern in such tasks:
-            # grep the most recent saved audit YAML instead.
-            if echo "$cmd" | grep -qE '(\bbin/)?fw +audit\b'; then
+            # T-5268: one predicate decides, for both unattended rails (this one
+            # and verify-queue / CTL-013b), whether a stored line may run outside
+            # its close: lib/unattended_verification.py. It refuses a nested-audit
+            # invocation (`fw audit`, T-1870/L-391 — we hold the audit lock, so the nested
+            # call always fails), destructive and outward-facing lines, HTTP
+            # writes, process control (kill/pkill/systemctl stop, 0506 P25), and
+            # any line the author marked `# needs: fixture`. A skip is counted
+            # as skipped, never as a pass. If the predicate cannot run, the line
+            # is skipped too (fail closed: this runs unattended on a live host).
+            _uv_rc=0
+            _uv_why=$(python3 "$FRAMEWORK_ROOT/lib/unattended_verification.py" check "$cmd" 2>/dev/null) || _uv_rc=$?
+            if [ "$_uv_rc" -ne 0 ]; then
+                [ "$_uv_rc" -eq 3 ] || _uv_why="unattended-run predicate unavailable (rc=$_uv_rc)"
                 cmd_skipped=$((cmd_skipped + 1))
+                _skip_reasons+=("$_uv_why")
+                _ctl013_history "$task_id" "$cmd" skipped "$_uv_why"
                 continue
             fi
             if [ -n "${FW_AUDIT_VERIFY_DEBUG:-}" ]; then
@@ -7409,6 +7425,11 @@ for task_file in $recent_completed; do
                     # parent-shell coupling); brace-group sidesteps it.
                     _eval_rc=0
                     { eval "$cmd"; } >"$_aud_out" 2>&1 || _eval_rc=$?
+                fi
+                if [ "$_eval_rc" -eq 0 ]; then
+                    _ctl013_history "$task_id" "$cmd" pass ""
+                else
+                    _ctl013_history "$task_id" "$cmd" fail "rc=$_eval_rc"
                 fi
                 if [ "$_eval_rc" -eq 0 ]; then
                     cmd_pass=$((cmd_pass + 1))
@@ -7442,8 +7463,10 @@ for task_file in $recent_completed; do
                     fi
                 fi
                 if [ "$_eval_rc" -eq 0 ]; then
+                    _ctl013_history "$task_id" "$cmd" pass ""
                     cmd_pass=$((cmd_pass + 1))
                 else
+                    _ctl013_history "$task_id" "$cmd" fail "rc=$_eval_rc"
                     cmd_fail=$((cmd_fail + 1))
                     # T-1395: FW_AUDIT_VERIFY_DEBUG=1 dumps captured output (T-1475).
                 fi
@@ -7451,7 +7474,12 @@ for task_file in $recent_completed; do
         done
         if [ "$cmd_fail" -eq 0 ]; then
             _notes=""
-            [ "$cmd_skipped" -gt 0 ] && _notes="${_notes}${_notes:+, }$cmd_skipped skipped — nested-audit invocation"
+            if [ "$cmd_skipped" -gt 0 ]; then
+                # One note per distinct reason, with its count (T-5268).
+                _skip_summary=$(printf '%s\n' "${_skip_reasons[@]}" | sort | uniq -c | \
+                    awk '{n=$1; $1=""; sub(/^ /,""); printf "%s%s skipped — %s", (NR>1?", ":""), n, $0}')
+                _notes="${_notes}${_notes:+, }${_skip_summary}"
+            fi
             [ "$cmd_isolated_pass" -gt 0 ] && _notes="${_notes}${_notes:+, }$cmd_isolated_pass passed only in isolation — OBS-022 bats env-contam"
             if [ -n "$_notes" ]; then
                 pass "CTL-013: $task_id verification re-run: $cmd_pass/$((cmd_pass + cmd_fail)) pass ($_notes)"
@@ -7529,6 +7557,15 @@ except Exception: print(-1)" 2>/dev/null || echo -1)
     vq_checked=$(echo "$vq_json" | python3 -c "import json,sys
 try: print(json.load(sys.stdin).get('checked', 0))
 except Exception: print(0)" 2>/dev/null || echo 0)
+    # T-5268: name each line the shared predicate refused (INFO, never a pass).
+    while IFS= read -r _vq_skip; do
+        [ -n "$_vq_skip" ] && info "CTL-013b: $_vq_skip"
+    done < <(echo "$vq_json" | python3 -c "import json,sys
+try: d=json.load(sys.stdin)
+except Exception: sys.exit(0)
+for r in d.get('results', []):
+    for s in r.get('skips', []):
+        print(f\"{r['task']} line skipped ({s['why']}): {s['line'][:100]}\")" 2>/dev/null || true)
     if [ "$vq_red" = "-1" ]; then
         info "CTL-013b: review-queue verification re-run produced no verdict (skipped)"
     elif [ "$vq_red" = "0" ]; then
