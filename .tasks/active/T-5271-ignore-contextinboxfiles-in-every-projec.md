@@ -110,7 +110,7 @@ bvp_scores_proposed:
 - [x] `fw init` writes it for new projects; `fw upgrade` adds it to existing ones (dry-run reports WOULD ADD)
 - [x] AEF's own repo ignores the path: `git check-ignore -q .context/inbox/files/x` exits 0
 - [x] `fw doctor` WARNs and `fw audit` flags a project where the path is not ignored or where a file under it is tracked (naming the tracked file and how to untrack it without deleting it)
-- [ ] Tests (t5271_*): fresh init, upgrade of a project without the rule, idempotence, dry-run, the doctor/audit finding for not-ignored and for tracked; the precedents' tests stay green (t3861_vec_index_gitignore.bats, t4701_tracked_runtime_untrack.bats); tests/unit/upgrade_fresh_machine_simulation.bats stays green
+- [x] Tests (t5271_*): fresh init, upgrade of a project without the rule, idempotence, dry-run, the doctor/audit finding for not-ignored and for tracked; the precedents' tests stay green (t3861_vec_index_gitignore.bats, t4701_tracked_runtime_untrack.bats); tests/unit/upgrade_fresh_machine_simulation.bats stays green
 - [x] Vendored copies synced (`bin/fw vendor self --check` clean)
 
 ### Human
@@ -305,6 +305,7 @@ grep -qx '/inbox/files/' .context/.gitignore
 timeout 3000 bats tests/unit/t5271_inbox_files_gitignore.bats > /tmp/.t5271.out 2>&1 && ! grep -q "^not ok" /tmp/.t5271.out # needs: fixture
 test "$(grep -c '# skip' /tmp/.t5271.out)" -eq 0
 timeout 1800 bats tests/unit/t3861_vec_index_gitignore.bats tests/unit/t4701_tracked_runtime_untrack.bats tests/unit/t4684_dispatch_gitignore.bats > /tmp/.t5271p.out 2>&1 && ! grep -q "^not ok" /tmp/.t5271p.out # needs: fixture
+timeout 3000 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t5271s.out 2>&1 && ! grep -q "^not ok" /tmp/.t5271s.out # needs: fixture
 test -f .fabric/components/lib-inbox-files-gitignore.yaml
 bin/fw vendor self --check --task T-5271
 
