@@ -5299,3 +5299,9 @@ X'` returning empty group."
   task: T-3496
   date: 2026-11-19
   context: Added via context agent
+- id: L-724
+  learning: "Do not keep an old 'DEFER until ... T-XXXX' sentence 'for the record' in an inception's Recommendation: the deferral-target gate (T-3694) reads any DEFER line naming a task id as a live deferral and refuses the close when that task is completed. Write history as 'History: waited on X (completed as T-XXXX); nothing is deferred any more'. Hit twice on 2026-11-19 (T-4834 via T-4833, T-4649 via T-4869), each costing an operator runme."
+  source: P-001
+  task: T-4649
+  date: 2026-11-19
+  context: Added via context agent
