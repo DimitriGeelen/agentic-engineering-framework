@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5299: Sidecar inject: dead headless worker records knock the main session out of delivery (inject.py headless_tl ignores alive; ring20 T-2788)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T12:01:28Z
+# ============================================================================
+
+task_id: T-5299
+task_name: "Sidecar inject: dead headless worker records knock the main session out of delivery (inject.py headless_tl ignores alive; ring20 T-2788)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-20T11:52:15Z
+completed: 2026-11-20T12:00:22Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-20T12:54:46+01:00
+last_commit: 2026-11-20T13:00:19+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed (ring20 T-2788). a dead headless worker record no longer knocks the main session out of delivery (ring20 T-2788)
+
+# Key outcomes
+outcomes:
+  - '`headless_tl` in lib/sidecar/inject.py counts only headless records whose `alive` is not False.'
+  - 'Test: a dead headless record naming the same TermLink session as the live main record does not stop the main session being chosen; a live headless record still excludes its session; the existing headless tests stay green.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/inject.py'
+  - '.tasks/active/T-5299-sidecar-inject-dead-headless-worker-reco.md'
+  - 'lib/sidecar/inject.py'
+  - 'tests/unit/test_sidecar_untagged_record_t4481.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T12:54:46'
+    action: 'T-5299: filed (ring20 T-2788)'
+  - time: '2026-11-20T13:00:19'
+    action: 'T-5299: a dead headless worker record no longer knocks the main session out of delivery (ring20 T-2788)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 8 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 8
+  commits: 3
+  files_changed: 7
+  lines_added: 567
+  lines_removed: 19
+  footprint_refreshed_at: '2026-11-20T12:02:10Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5299-sidecar-inject-dead-headless-worker-reco.md
+generated_by: context-agent-hybrid
