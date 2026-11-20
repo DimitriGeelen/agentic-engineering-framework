@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5289: Codex reviewer seat reports search/settings icons missing from a 1280 px Watchtower capture where they are present (twice, T-5262)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T08:41:49Z
+# ============================================================================
+
+task_id: T-5289
+task_name: "Codex reviewer seat reports search/settings icons missing from a 1280 px Watchtower capture where they are present (twice, T-5262)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-20T06:42:10Z
+completed: 2026-11-20T08:41:05Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-20T09:29:34+01:00
+last_commit: 2026-11-20T09:41:02+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed. G-136 registered — codex seat votes on screenshot criteria without viewing any image. codex not seated on screenshot criteria (vision false) — its runs vote on images never opened; RCA and operator ruling recorded
+
+# Key outcomes
+outcomes:
+  - 'The way the codex seat reads a PNG in a review run is established from its run log (tool used, image size it saw) and written in ## RCA.'
+  - 'A fix is in place: either images reach codex at full resolution (e.g. attached with its image option) or render criteria are not given to a seat kind that cannot view images, with a test.'
+  - 'Re-running the codex seat on the T-5262 captures no longer claims the icons are missing, or codex is no longer seated for that criterion.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-20 — how to stop false render votes (operator: "Go record it", accepting the agent''s recommendation)'
+    chose: '(1) now: codex not seated on screenshot criteria (`vision: false` in policy/review-backends.yaml); (3) later: T-5290''s checker counts a render vote only when the seat''s log shows it viewed the evidence; (a) re-judge the render criteria of T-5260, T-5226 and T-5236 without codex.'
+    rationale: 'the run logs show codex votes on images it never opened; stopping the false votes today costs one registry line; the checker catches any seat that does the same later.'
+    alternatives_rejected: ['(2) only attach images to codex: needs its image option confirmed and still trusts the seat to look; waiting for T-5290 alone leaves false votes counting meanwhile.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/review-backends.yaml'
+  - '.context/project/concerns.yaml'
+  - '.tasks/active/T-5289-codex-reviewer-seat-reports-searchsettin.md'
+  - 'policy/review-backends.yaml'
+  - 'tests/unit/test_t4944_vision_gated_citation.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T09:29:34'
+    action: 'T-5289: filed'
+  - time: '2026-11-20T09:31:49'
+    action: 'T-5289: G-136 registered — codex seat votes on screenshot criteria without viewing any image'
+  - time: '2026-11-20T09:41:02'
+    action: 'T-5289: codex not seated on screenshot criteria (vision false) — its runs vote on images never opened; RCA and operator ruling recorded'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 118 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 118
+  commits: 4
+  files_changed: 8
+  lines_added: 571
+  lines_removed: 23
+  footprint_refreshed_at: '2026-11-20T08:41:58Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5289-codex-reviewer-seat-reports-searchsettin.md
+generated_by: context-agent-hybrid
