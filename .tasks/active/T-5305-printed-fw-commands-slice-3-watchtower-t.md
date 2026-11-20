@@ -100,9 +100,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The five templates and web/blueprints/inception.py print copyable fw commands through `fw_cmd` / the Python builder; no literal `bin/fw ` remains in web/templates or web/blueprints printed text (comments excepted).
-- [ ] A test renders each changed page (or its template) for a framework-repo and a vendored fixture and finds the builder's output, not a literal `bin/fw`.
-- [ ] Watchtower restarted; `bin/fw watchtower current` passes; the changed pages answer 200.
+- [x] The five templates and web/blueprints/inception.py print copyable fw commands through `fw_cmd` / the Python builder; no literal `bin/fw ` remains in web/templates or web/blueprints printed text (comments excepted).
+- [x] A test renders each changed page (or its template) for a framework-repo and a vendored fixture and finds the builder's output, not a literal `bin/fw`.
+- [x] Watchtower restarted; `bin/fw watchtower current` passes; the changed pages answer 200.
 
 ### Human
 - [ ] [REVIEW] The changed Watchtower pages show the copyable commands in the builder's form and otherwise look as before
