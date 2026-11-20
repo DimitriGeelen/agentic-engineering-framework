@@ -124,6 +124,7 @@ from lib import review_cost  # noqa: E402
 from lib import review_policy  # noqa: E402
 from lib import task_commits  # noqa: E402
 from lib import verdict_format  # noqa: E402
+from lib import vote_checker  # noqa: E402
 from lib import delegation_widening  # noqa: E402
 from lib.delegation import (  # noqa: E402
     GENERATED_ANNOTATION_RE,
@@ -1341,6 +1342,9 @@ def verdict_hash(row: dict) -> str:
         # without `format` (every row before T-5292) hashes exactly as it always did.
         body["format"] = row.get("format")
         body["structured"] = row.get("structured")
+    if "check" in row:
+        # T-5293: the mechanical check of a verdict/1 vote is covered too, only when present.
+        body["check"] = row.get("check")
     return hashlib.sha256(json.dumps(body, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
@@ -1707,6 +1711,20 @@ def parse_harness_vote(text: str, *, task: str, crits: list) -> tuple[dict[int, 
     return out, problems
 
 
+def _vote_check(root: Path, drec: dict, structured: dict, revision: str, criterion_text: str) -> dict:
+    """T-5293: vote_checker's result for one recorded verdict/1 criterion. The seat's run record
+    is its dispatch dir's result.jsonl (harness events or claude stream-json)."""
+    try:
+        wd = str(drec.get("wdir") or "")
+        seat = Path(wd) if wd and Path(wd).is_dir() else None
+        out = vote_checker.safe_check(structured, root, revision, seat,
+                                      task=str(drec.get("task") or ""), criterion_text=criterion_text)
+        out["worker_kind"] = str(drec.get("worker_kind") or "")
+        return out
+    except Exception as e:  # noqa: BLE001 — recording never fails because the checker did
+        return {"checker": vote_checker.CHECKER, "error": f"{type(e).__name__}: {e}"}
+
+
 def check_vote_report(path: Path, *, task: str, ac: int, outcome: str) -> tuple[dict | None, str]:
     """T-5292: a self-recording seat's evidence report for Human AC#`ac` must hold one valid
     `verdict/1` vote whose section for that criterion votes `outcome`. Returns (structure, '')
@@ -1891,6 +1909,7 @@ def _record_for_worker_locked(root: Path, did: str, drec: dict, kind: str, here:
                          dispatch_id=did, run_id=str(drec.get("run_id") or ""), root=root,
                          structured=v.get("structured"))
             res["recorded"].append({"ac": ac, "id": rec["id"], "outcome": rec["outcome"]})
+            touched.extend(vote_checker.crops(rec.get("check")))
         except VerdictRefused as e:
             res["refused"].append({"ac": ac, "why": str(e)})
     if not touched:
@@ -1914,7 +1933,8 @@ def record_and_commit(task_id: str, ac_index: int, outcome: str, *, identity: st
     root = root or _root()
     with _ledger_lock(root):
         rec = record(task_id, ac_index, outcome, root=root, **kw)
-        sha, err = _commit_rows(root, _ledger_paths(root, kw.get("evidence")), identity,
+        extra = list(kw.get("evidence") or []) + vote_checker.crops(rec.get("check"))
+        sha, err = _commit_rows(root, _ledger_paths(root, extra), identity,
                                 f"{task_id}: reviewer verdict", email=email, ids=[rec["id"]],
                                 task=task_id, dispatch_id=str(kw.get("dispatch_id") or ""))
     if err:
@@ -3911,6 +3931,9 @@ def record(task_id: str, ac_index: int, outcome: str, *, reviewer: str, rung: st
         rec["run_id"] = run_id.strip()
     if structured is not None:
         rec["format"], rec["structured"] = verdict_format.FORMAT, structured
+        # T-5293: measure what the vote cites and record it. Never changes whether it counts
+        # (slice 3, T-5294), and a fault inside the checker never stops the recording.
+        rec["check"] = _vote_check(root, drec, structured, revision, crit.title)
     if wide is not None:
         rec["widened_by"], rec["ruling"] = wide["id"], str(wide.get("ruling") or "")
     # Not committed yet, and no completion yet: the runtime signs one when the worker exits.
