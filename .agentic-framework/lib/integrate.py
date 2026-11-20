@@ -95,6 +95,7 @@ _RULES = [
                      ".context/working/.budget-status",
                      ".context/working/watchtower.log",
                      ".context/working/watchtower.pid",
+                     ".context/working/watchtower.pid.identity",
                      ".context/working/watchtower.url",
                      ".context/working/watchtower.port"),
      "regenerate", "session/runtime transient; take newest / reset, never merge", False),

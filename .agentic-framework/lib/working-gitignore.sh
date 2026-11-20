@@ -71,6 +71,7 @@ fw_working_ignore_rules() {
         'tier0-action-approvals.json' \
         'watchtower.url' \
         'watchtower.port' \
+        'watchtower.pid.identity' \
         'estate-push-state.json' \
         'recall-telemetry.jsonl' \
         'continuous-run.jsonl' \

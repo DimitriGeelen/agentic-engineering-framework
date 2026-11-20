@@ -108,6 +108,38 @@ pid_alive() {
     [ -n "$pid" ] && [ "$pid" -gt 0 ] 2>/dev/null && kill -0 "$pid" 2>/dev/null
 }
 
+# T-5267 (G-135): self-contained mirror of the framework's pid identity rule
+# (lib/proc_identity.py, lib/pid-alive.sh) — this script is installed standalone.
+# proc_start_ticks PID: field 22 of /proc/PID/stat, after the LAST ')'.
+proc_start_ticks() {
+    local rest
+    [ -r "/proc/$1/stat" ] || return 1
+    rest=$(sed 's/.*) //' "/proc/$1/stat" 2>/dev/null) || return 1
+    set -- $rest
+    [ "$#" -ge 20 ] || return 1
+    shift 19
+    case "$1" in ''|*[!0-9]*) return 1 ;; esac
+    printf '%s\n' "$1"
+}
+
+# same_listener PID RECORDED_START_TICKS — rc 0 when PID is still the listener this
+# script started (start time matches; or, for a state file without one, its cmdline
+# names listener-heartbeat), 1 when it is another process, 2 when there is no /proc.
+same_listener() {
+    local pid="$1" want="$2" now marker
+    [ -d /proc/self ] || return 2
+    now=$(proc_start_ticks "$pid") || return 1
+    if [ -n "$want" ]; then
+        [ "$now" = "$want" ]
+        return
+    fi
+    marker="$(basename "$LH_SCRIPT")"
+    case "$(tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null)" in
+        *"$marker"*|*listener-heartbeat*) return 0 ;;
+    esac
+    return 1
+}
+
 # ---- defaults ------------------------------------------------------------
 
 default_agent_id() {
@@ -248,6 +280,7 @@ cmd_start() {
 {
   "agent_id": "${agent_id}",
   "pid": ${pid},
+  "start_ticks": "$(proc_start_ticks "$pid" || true)",
   "started_at": "${started_at}",
   "role": "${role}",
   "interval": ${interval},
@@ -285,7 +318,16 @@ cmd_stop() {
     pid="$(read_state_field pid)"
     agent_id="$(read_state_field agent_id)"
 
+    local want_st same=0
+    want_st="$(read_state_field start_ticks)"
     if pid_alive "$pid"; then
+        same_listener "$pid" "$want_st" || same=$?
+    fi
+    if pid_alive "$pid" && [ "$same" -eq 1 ]; then
+        # T-5267: the pid was reused by an unrelated process — never signal it.
+        echo "be-reachable: pid ${pid} is no longer the listener this state file names (pid reused); not signalling it; clearing state."
+    elif pid_alive "$pid"; then
+        [ "$same" -eq 2 ] && echo "be-reachable: no /proc here — cannot verify pid ${pid}; stopping it by pid." >&2
         kill -TERM "$pid" 2>/dev/null || true
         # Graceful wait up to 3s.
         local i
@@ -293,7 +335,7 @@ cmd_stop() {
             sleep 1
             pid_alive "$pid" || break
         done
-        if pid_alive "$pid"; then
+        if pid_alive "$pid" && { [ "$same" -eq 2 ] || same_listener "$pid" "$want_st"; }; then
             kill -KILL "$pid" 2>/dev/null || true
             sleep 1
         fi

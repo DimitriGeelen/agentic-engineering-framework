@@ -32,6 +32,27 @@ from pathlib import Path
 from . import receiver
 
 
+def _load_proc_identity():
+    """lib/proc_identity.py (T-5267), loaded by path: this package is imported both as
+    `lib.sidecar` and as a top-level `sidecar` (lib/ on sys.path)."""
+    import importlib.util
+    import sys as _sys
+    mod = _sys.modules.get("fw_proc_identity")
+    if mod is None:
+        spec = importlib.util.spec_from_file_location(
+            "fw_proc_identity", Path(__file__).resolve().parent.parent / "proc_identity.py")
+        mod = importlib.util.module_from_spec(spec)
+        _sys.modules["fw_proc_identity"] = mod
+        spec.loader.exec_module(mod)
+    return mod
+
+
+proc_identity = _load_proc_identity()
+
+#: T-5267: the substring a receiver's cmdline carries (legacy pid files are checked on it).
+RECEIVER_MARKER = "http_server.py"
+
+
 def _sidecar_dir() -> Path:
     d = receiver._root() / ".context" / "sidecar"
     d.mkdir(parents=True, exist_ok=True)
@@ -93,7 +114,7 @@ def write_token() -> str:
 #: direct-ack, receipts, receipts-sent, refusals) are audit records and stay tracked.
 _RUNTIME_IGNORES = ("receiver.token", "receiver.token.tmp", "ready-for-input.yaml", "receiver/",
                     "sessions/", "watcher/", "liveness.yaml",
-                    "receiver.pid", "receiver.port", "receiver.url", "inbox-state.json",
+                    "receiver.pid", "receiver.pid.identity", "receiver.port", "receiver.url", "inbox-state.json",
                     "hub-id", "peers.json", "waiting/", "*.lock", "*.tmp")
 
 
@@ -140,8 +161,9 @@ def inject_enabled() -> bool:
 # ── triple-file ─────────────────────────────────────────────────────────────
 
 def write_triple_file(pid: int, port: int, url: str) -> None:
-    """Write the pid/port/url triple files."""
+    """Write the pid/port/url triple files, plus the pid's identity (T-5267)."""
     _triple_file_path("pid").write_text(str(pid), encoding="utf-8")
+    proc_identity.write_identity(_triple_file_path("pid"), pid, RECEIVER_MARKER)
     _triple_file_path("port").write_text(str(port), encoding="utf-8")
     _triple_file_path("url").write_text(url, encoding="utf-8")
 
@@ -205,6 +227,63 @@ def clear_triple_file() -> None:
             _triple_file_path(suffix).unlink()
         except FileNotFoundError:
             pass
+    proc_identity.remove_identity(_triple_file_path("pid"))
+
+
+def receiver_pid_file() -> Path:
+    return _triple_file_path("pid")
+
+
+# ── identity-checked kills (T-5267, G-135) ──────────────────────────────────
+# A pid file names a number; after a reboot or pid wrap it can belong to an
+# unrelated process. Every pid-file kill goes through stop_checked, which signals
+# only when the pid is still the process that wrote the file (lib/proc_identity.py).
+
+def checked_signal(pid, sig, *, site: str, marker: str, pid_file=None, record=None,
+                   log=None) -> bool:
+    """Send `sig` to `pid` only when its identity matches. `record` (a snapshot from
+    proc_identity.identity) wins over `pid_file`. Refusal is logged via `log(event,
+    **detail)` and returns False. Without /proc the old behaviour stands, logged."""
+    if record is not None:
+        ok, why = proc_identity.verdict(record)
+    else:
+        ok, why = proc_identity.check_pid_file(pid_file, pid, marker)
+    detail = {"pid": pid, "site": site, "signal": int(sig), "reason": why}
+    if ok is False:
+        if log:
+            log("KILL_REFUSED", **detail)
+        return False
+    if ok is None and log:
+        log("KILL_IDENTITY_UNCHECKED", **detail)
+    try:
+        os.kill(int(pid), sig)
+    except ProcessLookupError:
+        pass
+    return True
+
+
+def stop_checked(pid, *, site: str, marker: str, pid_file=None, record=None, log=None,
+                 timeout: float = 5.0) -> str:
+    """SIGTERM, wait up to `timeout`, SIGKILL if still there — each signal behind the
+    identity check. Returns "refused" (nothing signalled), "stopped" or "not-running"."""
+    import signal
+    import time
+    if not pid_alive(pid):
+        return "not-running"
+    if record is None and proc_identity.check_pid_file(pid_file, pid, marker)[0] is True:
+        # Pin the process just verified, so the SIGKILL below cannot reach a pid that
+        # was reused while we waited, even after the exiting process removed its file.
+        record = proc_identity.identity(pid, marker)
+    if not checked_signal(pid, signal.SIGTERM, site=site, marker=marker, pid_file=pid_file,
+                          record=record, log=log):
+        return "refused"
+    deadline = time.time() + timeout
+    while time.time() < deadline and pid_alive(pid):
+        time.sleep(0.1)
+    if pid_alive(pid):
+        checked_signal(pid, signal.SIGKILL, site=site, marker=marker, pid_file=pid_file,
+                       record=record, log=log)
+    return "stopped"
 
 
 def get_receiver_url() -> str | None:
