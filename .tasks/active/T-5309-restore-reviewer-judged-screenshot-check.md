@@ -1,10 +1,27 @@
 ---
 id: T-5309
-name: "Restore reviewer-judged screenshot checks: attach screenshots to codex at launch (-i) and log antigravity's tool calls (stream-json), so three seats can give countable render votes again"
+name: "Restore reviewer-judged screenshot checks: attach screenshots to codex at launch
+  (-i) and log antigravity's tool calls (stream-json), so three seats can give countable
+  render votes again"
 description: >
-  Operator 2026-11-20: screenshot checks must be judged by reviewer agents, not handed to the operator (D-626, T-3557; 'this rubber stamping behavior'). After T-5289 (codex vision false: it never opened images) and T-5294 (a vote whose seat cannot be shown to have opened the image does not count), only the claude seat gives countable render votes, so every rung-5 render criterion (T-5303, T-5262) falls to the operator or a paid seat. Measured 2026-11-20: codex CAN read an image (probe answered 8 / exact title via view_image) but did not choose to in judge runs; 'codex exec' supports '-i, --image <FILE>...' (images attached to the initial prompt); antigravity (agy) supports '--output-format stream-json', which logs its tool calls (its native read_file opens images, T-4944). Fix: (1) the review runtime attaches every screenshot the brief names to a codex seat with -i, and records the attached list in the dispatch; the checker treats an attached image as viewed; then codex vision back to true (the T-5289 condition 'until a review run is shown to view the images' is met by construction); (2) antigravity runs with stream-json output kept as its run record, and vote_checker reads its read_file events on images; (3) test both with a real review run; then re-judge T-5303 and T-5262 without the operator.
+  Operator 2026-11-20: screenshot checks must be judged by reviewer agents, not handed
+  to the operator (D-626, T-3557; 'this rubber stamping behavior'). After T-5289 (codex
+  vision false: it never opened images) and T-5294 (a vote whose seat cannot be shown
+  to have opened the image does not count), only the claude seat gives countable render
+  votes, so every rung-5 render criterion (T-5303, T-5262) falls to the operator or
+  a paid seat. Measured 2026-11-20: codex CAN read an image (probe answered 8 / exact
+  title via view_image) but did not choose to in judge runs; 'codex exec' supports
+  '-i, --image <FILE>...' (images attached to the initial prompt); antigravity (agy)
+  supports '--output-format stream-json', which logs its tool calls (its native read_file
+  opens images, T-4944). Fix: (1) the review runtime attaches every screenshot the
+  brief names to a codex seat with -i, and records the attached list in the dispatch;
+  the checker treats an attached image as viewed; then codex vision back to true (the
+  T-5289 condition 'until a review run is shown to view the images' is met by construction);
+  (2) antigravity runs with stream-json output kept as its run record, and vote_checker
+  reads its read_file events on images; (3) test both with a real review run; then
+  re-judge T-5303 and T-5262 without the operator.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +55,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T15:41:43Z
-last_update: 2026-11-20T15:41:43Z
-date_finished: null
+last_update: '2026-11-20T15:42:08Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +67,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-20T15:42:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5309: Restore reviewer-judged screenshot checks: attach screenshots to codex at launch (-i) and log antigravity's tool calls (stream-json), so three seats can give countable render votes again
@@ -57,20 +91,23 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Operator, 2026-11-20, on being asked to tick T-5303's screenshot check: "this review, I don't need to review right? ... Is that not something that a reviewing agent can do? ... look what we discussed for reviewing and this rubber stamping behavior." Screenshot criteria are reviewer-judged by operator ruling (D-626, T-3557). Today's changes left one countable vision seat: T-5289 set codex `vision: false` (it voted on images it never opened), and T-5294 makes a vote not count when the seat's log cannot show it opened the image (antigravity leaves no log). Rung-5 render criteria (T-5303, T-5262) therefore fall to the operator or a paid OpenRouter seat (T-5303's run proposed three at ~2 each).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Image viewing is inferred from each seat's own choices and logs. Codex can see images (probe 2026-11-20: 8 cards, exact title, via view_image) but skips them in judge runs; antigravity can see them (T-4944) but leaves no event log.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Three free seats (claude, codex, antigravity) give countable votes on screenshot criteria, so rung-5 render checks close without the operator.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Codex seats get every screenshot the brief names attached at launch (`codex exec -i <file>...`), recorded in the dispatch, and the checker treats an attached image as viewed; codex `vision` returns to true. Antigravity seats run with `--output-format stream-json`, kept as the run record, and the checker reads its image reads from it. T-5303 and T-5262 are re-judged and close on reviewer verdicts.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The review runtime (agents/termlink/termlink.sh codex branch) passes every screenshot the brief names to codex with `-i`, and the dispatch record lists the attached files with their hashes.
+- [ ] lib/vote_checker.py treats a cited image as viewed when it (or its copy, by content hash) was attached at launch; a cited image that was neither attached nor opened stays "not viewed".
+- [ ] Antigravity seats run with `--output-format stream-json`; the output is kept as the seat's run record; the checker recognises its image reads; "cannot tell" remains only when the record is missing.
+- [ ] policy/review-backends.yaml codex `vision: true` again, with the comment pointing to this task; the T-4944 test updated.
+- [ ] A real review run (fw reviewer judge on T-5303) shows codex and antigravity votes as checkable; T-5303's render criterion closes on reviewer verdicts without the operator.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,6 +294,9 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5309_seat_image_proof.py tests/unit/test_t5293_vote_checker.py tests/unit/test_t5294_checkable_votes.py tests/unit/test_t4944_vision_gated_citation.py -q > /tmp/.t5309a 2>&1 && grep -q passed /tmp/.t5309a && ! grep -q failed /tmp/.t5309a
+bash -n agents/termlink/termlink.sh
+bin/fw vendor self --check --task T-5309
 
 ## RCA
 
@@ -354,3 +394,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5309-restore-reviewer-judged-screenshot-check.md
 - **Context:** Initial task creation
+
+### 2026-11-20T15:42:03Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
