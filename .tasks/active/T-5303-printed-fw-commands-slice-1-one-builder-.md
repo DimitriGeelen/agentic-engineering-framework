@@ -11,7 +11,7 @@ description: >
   parity test across all three. fw doctor: report whether the PATH fw is the T-2793
   router, an old fw-shim (ring20 .122), or absent, and how to refresh. Research: docs/reports/T-5302-command-naming-vendored.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T13:49:52Z
-last_update: '2026-11-20T14:01:18Z'
+last_update: 2026-11-20T14:18:08Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,20 +91,23 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5302 GO (operator 2026-11-20, commit b516ea63a), after GitHub #68 and consultation with ring20, 1409, 055 and 832 (docs/reports/T-5302-command-naming-vendored.md). Every vendored project rewrites the framework's printed `bin/fw` by hand or keeps a root shim; ring20's host .122 still has the old fw-shim, not the T-2793 router; 1409 measured sessions and workers without the login PATH.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** There is no single rule for printing a command. lib/paths.sh `_fw_cmd` returns bare `fw` whenever any `fw` is on PATH (unsafe where PATH `fw` is the old shim or missing); Python keeps its own copies (lib/delegation_cli.py `_fw()`, web/designer_registry.py) that disagree with it; Watchtower templates print literals.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** One builder for every printed command, the same in shell, Python and Watchtower, so later slices (T-5304..T-5307) only have to call it.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** In shell `_fw_cmd` returns `bin/fw` in the framework repo and `.agentic-framework/bin/fw` in a vendored project (never bare `fw`), and `_emit_user_command "<args>"` returns `cd <absolute project root> && <that> <args>`; a Python module gives the same two functions; Watchtower templates get a global with the same output; a parity test pins all three on a framework-repo fixture and a vendored fixture. `fw doctor` reports whether the PATH `fw` is the T-2793 router, an old fw-shim, or absent.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Shell: `_fw_cmd` never returns bare `fw`; `_emit_user_command` gives `cd <absolute PROJECT_ROOT> && <fw path> <args>`; existing callers keep working.
+- [ ] Python: one module (e.g. lib/fw_command.py) with `fw_path(project_root)` and `user_command(args, project_root)` matching the shell output; lib/delegation_cli.py `_fw()` and other Python copies call it.
+- [ ] Watchtower: a template global (e.g. `fw_cmd(args)`) returning the same string for the running project; no template is migrated yet (that is T-5305).
+- [ ] Parity test: shell, Python and the template global give identical output for a framework-repo fixture and a vendored fixture, including args with spaces and quotes.
+- [ ] `fw doctor` reports the PATH `fw` kind: router (header line `fw-router`), old shim (`fw-shim`), other, or absent, WARN-only for shim/absent with how to refresh.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,6 +294,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5303_fw_command_builder.py -q > /tmp/.t5303a 2>&1 && grep -q passed /tmp/.t5303a
+out=$(bash -c 'export PROJECT_ROOT=/opt/999-Agentic-Engineering-Framework FRAMEWORK_ROOT=/opt/999-Agentic-Engineering-Framework; . lib/paths.sh; _fw_cmd'); test "$out" = "bin/fw"
+bin/fw vendor self --check --task T-5303
+bin/fw watchtower current
 
 ## RCA
 
@@ -388,3 +395,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5303-printed-fw-commands-slice-1-one-builder-.md
 - **Context:** Initial task creation
+
+### 2026-11-20T14:18:08Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
