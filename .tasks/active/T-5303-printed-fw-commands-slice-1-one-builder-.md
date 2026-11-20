@@ -103,13 +103,19 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Shell: `_fw_cmd` never returns bare `fw`; `_emit_user_command` gives `cd <absolute PROJECT_ROOT> && <fw path> <args>`; existing callers keep working.
-- [ ] Python: one module (e.g. lib/fw_command.py) with `fw_path(project_root)` and `user_command(args, project_root)` matching the shell output; lib/delegation_cli.py `_fw()` and other Python copies call it.
-- [ ] Watchtower: a template global (e.g. `fw_cmd(args)`) returning the same string for the running project; no template is migrated yet (that is T-5305).
-- [ ] Parity test: shell, Python and the template global give identical output for a framework-repo fixture and a vendored fixture, including args with spaces and quotes.
-- [ ] `fw doctor` reports the PATH `fw` kind: router (header line `fw-router`), old shim (`fw-shim`), other, or absent, WARN-only for shim/absent with how to refresh.
+- [x] Shell: `_fw_cmd` never returns bare `fw`; `_emit_user_command` gives `cd <absolute PROJECT_ROOT> && <fw path> <args>`; existing callers keep working.
+- [x] Python: one module (e.g. lib/fw_command.py) with `fw_path(project_root)` and `user_command(args, project_root)` matching the shell output; lib/delegation_cli.py `_fw()` and other Python copies call it.
+- [x] Watchtower: a template global (e.g. `fw_cmd(args)`) returning the same string for the running project; no template is migrated yet (that is T-5305).
+- [x] Parity test: shell, Python and the template global give identical output for a framework-repo fixture and a vendored fixture, including args with spaces and quotes.
+- [x] `fw doctor` reports the PATH `fw` kind: router (header line `fw-router`), old shim (`fw-shim`), other, or absent, WARN-only for shim/absent with how to refresh.
 
 ### Human
+- [ ] [REVIEW] Watchtower pages render as before after the web/app.py change (a template global was added; nothing visible should change)
+  **Steps:**
+  1. Open the screenshots in .context/visual/T-5303/ (home and /approvals header, /approvals footer, taken from http://192.168.10.107:3000/ and http://192.168.10.107:3000/approvals after the restart)
+  2. Check each shot at 1024, 1440 and 1920 px
+  **Expected:** every framework menu element (logo, Work, Knowledge, Architecture, Govern, Docs, search, settings, theme toggle) and the footer text are present, with no clipping or overlap. At 1024 px the theme toggle on a second header row is the existing layout (T-5261, state menu-no-extension), not a change.
+  **If not:** note the page and width that differs
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -298,6 +304,14 @@ python3 -m pytest tests/unit/test_t5303_fw_command_builder.py -q > /tmp/.t5303a 
 out=$(bash -c 'export PROJECT_ROOT=/opt/999-Agentic-Engineering-Framework FRAMEWORK_ROOT=/opt/999-Agentic-Engineering-Framework; . lib/paths.sh; _fw_cmd'); test "$out" = "bin/fw"
 bin/fw vendor self --check --task T-5303
 bin/fw watchtower current
+
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| home-header | site menu on the home page | ok | ok | ok | real Watchtower http://192.168.10.107:3000/, cropped nav.site-nav to div.ambient-strip |
+| approvals-header | site menu on /approvals | ok | ok | ok | real Watchtower, same crop |
+| approvals-footer | footer on /approvals | ok | ok | ok | real Watchtower, crop from footer.site-footer |
 
 ## RCA
 
