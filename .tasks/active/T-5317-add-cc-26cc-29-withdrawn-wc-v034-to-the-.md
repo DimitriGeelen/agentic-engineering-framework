@@ -1,8 +1,12 @@
 ---
 id: T-5317
-name: "Add CC-26..CC-29 (withdrawn, wc v0.3.4) to the machine-readable conformance vectors and their checker"
+name: "Add CC-26..CC-29 (withdrawn, wc v0.3.4) to the machine-readable conformance
+  vectors and their checker"
 description: >
-  T-5312 implemented T3w in lib/dispatch_records.py with tests, but tests/conformance/worker-contract/vectors.yaml (and its checker) still list CC-01..CC-25. TermLink and ring20 run conformance against that file; add the four vectors from docs/specs/shared-worker-contract-transitions.md §9 and extend the checker.
+  T-5312 implemented T3w in lib/dispatch_records.py with tests, but tests/conformance/worker-contract/vectors.yaml
+  (and its checker) still list CC-01..CC-25. TermLink and ring20 run conformance against
+  that file; add the four vectors from docs/specs/shared-worker-contract-transitions.md
+  §9 and extend the checker.
 
 status: captured
 workflow_type: build
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T17:13:57Z
-last_update: 2026-11-20T17:13:57Z
-date_finished: null
+last_update: '2026-11-20T17:15:29Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-20T17:15:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5317: Add CC-26..CC-29 (withdrawn, wc v0.3.4) to the machine-readable conformance vectors and their checker
