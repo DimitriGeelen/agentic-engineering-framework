@@ -1,0 +1,278 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5303: Printed fw commands slice 1: one builder (shell + Python + Watchtower global, parity test); fw doctor reports router / old shim / none (T-5302)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T16:54:40Z
+# ============================================================================
+
+task_id: T-5303
+task_name: "Printed fw commands slice 1: one builder (shell + Python + Watchtower global, parity test); fw doctor reports router / old shim / none (T-5302)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-20T13:49:52Z
+completed: 2026-11-20T14:50:58Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-20T14:50:10+01:00
+last_commit: 2026-11-20T17:53:44+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed (T-5302 GO slice). scope — context, criteria, verification. one builder for printed fw commands (shell, Python, Watchtower global); doctor reports the PATH fw kind. vendor self — builder, PATH-fw check, bin/fw. criteria ticked; render criterion and visual verification (web/app.py touched). reviewer verdict. reviewer verdict (antigravity seat antigravity, recorded by the runtime). recommendation for the operator's render check. full URLs in the recommendation. full URLs in the screenshot table. no bare routes in the render criterion. partial-complete — awaiting the operator's render check. reviewer verdict (codex seat codex, recorded by the runtime)
+
+# Key outcomes
+outcomes:
+  - 'Shell: `_fw_cmd` never returns bare `fw`; `_emit_user_command` gives `cd <absolute PROJECT_ROOT> && <fw path> <args>`; existing callers keep working.'
+  - 'Python: one module (e.g. lib/fw_command.py) with `fw_path(project_root)` and `user_command(args, project_root)` matching the shell output; lib/delegation_cli.py `_fw()` and other Python copies call it.'
+  - 'Watchtower: a template global (e.g. `fw_cmd(args)`) returning the same string for the running project; no template is migrated yet (that is T-5305).'
+  - 'Parity test: shell, Python and the template global give identical output for a framework-repo fixture and a vendored fixture, including args with spaces and quotes.'
+  - '`fw doctor` reports the PATH `fw` kind: router (header line `fw-router`), old shim (`fw-shim`), other, or absent, WARN-only for shim/absent with how to refresh.'
+  - '[REVIEW] Watchtower pages render as before after the web/app.py change (a template global was added; nothing visible should change)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/delegation_cli.py'
+  - '.agentic-framework/lib/fw-path-check.sh'
+  - '.agentic-framework/lib/fw_command.py'
+  - '.agentic-framework/lib/paths.sh'
+  - '.agentic-framework/web/app.py'
+  - '.agentic-framework/web/designer_registry.py'
+  - '.context/reviews/evidence/T-5303/01-root-0_0_1280_104-crop.png'
+  - '.context/reviews/evidence/T-5303/01-root-0_0_1280_120-crop.png'
+  - '.context/reviews/evidence/T-5303/01-root-judge-t-5303-r5-antigravity-271df671570d.png'
+  - '.context/reviews/evidence/T-5303/01-root-judge-t-5303-r5-antigravity-2b034fabd918.png'
+  - '.context/reviews/evidence/T-5303/01-root-judge-t-5303-r5-antigravity-b7a68f99e3d7.png'
+  - '.context/reviews/evidence/T-5303/01-root-judge-t-5303-r5-claude-code-937e488ccdf2-0_0_1280_135-crop.png'
+  - '.context/reviews/evidence/T-5303/01-root-judge-t-5303-r5-claude-code-937e488ccdf2.png'
+  - '.context/reviews/evidence/T-5303/01-root-judge-t-5303-r5-claude-code-a3225c07a9ef-0_0_1280_135-crop.png'
+  - '.context/reviews/evidence/T-5303/01-root-judge-t-5303-r5-claude-code-a3225c07a9ef.png'
+  - '.context/reviews/evidence/T-5303/01-root-judge-t-5303-r5-claude-code-f1650be45568-0_0_1280_135-crop.png'
+  - '.context/reviews/evidence/T-5303/01-root-judge-t-5303-r5-claude-code-f1650be45568.png'
+  - '.context/reviews/evidence/T-5303/01-root-judge-t-5303-r5-codex-8471300cab08.png'
+  - '.context/reviews/evidence/T-5303/02-approvals-0_0_1280_104-crop.png'
+  - '.context/reviews/evidence/T-5303/02-approvals-0_0_1280_120-crop.png'
+  - '.context/reviews/evidence/T-5303/02-approvals-judge-t-5303-r5-antigravity-271df671570d.png'
+  - '.context/reviews/evidence/T-5303/02-approvals-judge-t-5303-r5-antigravity-2b034fabd918.png'
+  - '.context/reviews/evidence/T-5303/02-approvals-judge-t-5303-r5-antigravity-b7a68f99e3d7.png'
+  - '.context/reviews/evidence/T-5303/02-approvals-judge-t-5303-r5-claude-code-937e488ccdf2-0_0_1280_135-crop.png'
+  - '.context/reviews/evidence/T-5303/02-approvals-judge-t-5303-r5-claude-code-937e488ccdf2.png'
+  - '.context/reviews/evidence/T-5303/02-approvals-judge-t-5303-r5-claude-code-a3225c07a9ef-0_0_1280_135-crop.png'
+  - '.context/reviews/evidence/T-5303/02-approvals-judge-t-5303-r5-claude-code-a3225c07a9ef.png'
+  - '.context/reviews/evidence/T-5303/02-approvals-judge-t-5303-r5-claude-code-f1650be45568-0_0_1280_135-crop.png'
+  - '.context/reviews/evidence/T-5303/02-approvals-judge-t-5303-r5-claude-code-f1650be45568.png'
+  - '.context/reviews/evidence/T-5303/02-approvals-judge-t-5303-r5-codex-8471300cab08.png'
+  - '.context/reviews/evidence/T-5303/AC1-judge-t-5303-r5-antigravity-271df671570d.md'
+  - '.context/reviews/evidence/T-5303/AC1-judge-t-5303-r5-antigravity-2b034fabd918.md'
+  - '.context/reviews/evidence/T-5303/AC1-judge-t-5303-r5-antigravity-b7a68f99e3d7.md'
+  - '.context/reviews/evidence/T-5303/AC1-judge-t-5303-r5-claude-code-937e488ccdf2.md'
+  - '.context/reviews/evidence/T-5303/AC1-judge-t-5303-r5-claude-code-a3225c07a9ef.md'
+  - '.context/reviews/evidence/T-5303/AC1-judge-t-5303-r5-claude-code-f1650be45568.md'
+  - '.context/reviews/evidence/T-5303/AC1-judge-t-5303-r5-codex-8471300cab08.md'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1024-0_0_1024_97-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1024-249_30_526_37-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1024-judge-t-5303-r5-antigravity-271df671570d.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1024-judge-t-5303-r5-antigravity-2b034fabd918.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1024-judge-t-5303-r5-antigravity-b7a68f99e3d7.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1024-judge-t-5303-r5-claude-code-937e488ccdf2-0_0_1024_97-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1024-judge-t-5303-r5-claude-code-937e488ccdf2.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1024-judge-t-5303-r5-claude-code-a3225c07a9ef-0_0_1024_97-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1024-judge-t-5303-r5-claude-code-a3225c07a9ef.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1024-judge-t-5303-r5-claude-code-f1650be45568-0_0_1024_97-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1024-judge-t-5303-r5-claude-code-f1650be45568.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1024-judge-t-5303-r5-codex-8471300cab08.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1440-0_0_1440_97-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1440-457_30_526_37-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1440-judge-t-5303-r5-antigravity-271df671570d.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1440-judge-t-5303-r5-antigravity-2b034fabd918.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1440-judge-t-5303-r5-antigravity-b7a68f99e3d7.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1440-judge-t-5303-r5-claude-code-937e488ccdf2-0_0_1440_97-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1440-judge-t-5303-r5-claude-code-937e488ccdf2.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1440-judge-t-5303-r5-claude-code-a3225c07a9ef-0_0_1440_97-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1440-judge-t-5303-r5-claude-code-a3225c07a9ef.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1440-judge-t-5303-r5-claude-code-f1650be45568-0_0_1440_97-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1440-judge-t-5303-r5-claude-code-f1650be45568.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1440-judge-t-5303-r5-codex-8471300cab08.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1920-0_0_1920_97-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1920-697_30_526_37-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1920-judge-t-5303-r5-antigravity-271df671570d.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1920-judge-t-5303-r5-antigravity-2b034fabd918.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1920-judge-t-5303-r5-antigravity-b7a68f99e3d7.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1920-judge-t-5303-r5-claude-code-937e488ccdf2-0_0_1920_97-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1920-judge-t-5303-r5-claude-code-937e488ccdf2.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1920-judge-t-5303-r5-claude-code-a3225c07a9ef-0_0_1920_97-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1920-judge-t-5303-r5-claude-code-a3225c07a9ef.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1920-judge-t-5303-r5-claude-code-f1650be45568-0_0_1920_97-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1920-judge-t-5303-r5-claude-code-f1650be45568.png'
+  - '.context/reviews/evidence/T-5303/approvals-footer@1920-judge-t-5303-r5-codex-8471300cab08.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1024-0_0_1024_166-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1024-24_39_931_93-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1024-judge-t-5303-r5-antigravity-271df671570d.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1024-judge-t-5303-r5-antigravity-2b034fabd918.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1024-judge-t-5303-r5-antigravity-b7a68f99e3d7.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1024-judge-t-5303-r5-claude-code-937e488ccdf2-0_0_1024_166-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1024-judge-t-5303-r5-claude-code-937e488ccdf2.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1024-judge-t-5303-r5-claude-code-a3225c07a9ef-0_0_1024_166-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1024-judge-t-5303-r5-claude-code-a3225c07a9ef.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1024-judge-t-5303-r5-claude-code-f1650be45568-0_0_1024_166-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1024-judge-t-5303-r5-claude-code-f1650be45568.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1024-judge-t-5303-r5-codex-8471300cab08.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1440-0_0_1440_104-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1440-24_39_972_40-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1440-judge-t-5303-r5-antigravity-271df671570d.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1440-judge-t-5303-r5-antigravity-2b034fabd918.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1440-judge-t-5303-r5-antigravity-b7a68f99e3d7.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1440-judge-t-5303-r5-claude-code-937e488ccdf2-0_0_1440_104-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1440-judge-t-5303-r5-claude-code-937e488ccdf2.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1440-judge-t-5303-r5-claude-code-a3225c07a9ef-0_0_1440_104-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1440-judge-t-5303-r5-claude-code-a3225c07a9ef.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1440-judge-t-5303-r5-claude-code-f1650be45568-0_0_1440_104-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1440-judge-t-5303-r5-claude-code-f1650be45568.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1440-judge-t-5303-r5-codex-8471300cab08.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1920-0_0_1920_104-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1920-24_39_972_40-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1920-judge-t-5303-r5-antigravity-271df671570d.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1920-judge-t-5303-r5-antigravity-2b034fabd918.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1920-judge-t-5303-r5-antigravity-b7a68f99e3d7.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1920-judge-t-5303-r5-claude-code-937e488ccdf2-0_0_1920_104-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1920-judge-t-5303-r5-claude-code-937e488ccdf2.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1920-judge-t-5303-r5-claude-code-a3225c07a9ef-0_0_1920_104-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1920-judge-t-5303-r5-claude-code-a3225c07a9ef.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1920-judge-t-5303-r5-claude-code-f1650be45568-0_0_1920_104-crop.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1920-judge-t-5303-r5-claude-code-f1650be45568.png'
+  - '.context/reviews/evidence/T-5303/approvals-header@1920-judge-t-5303-r5-codex-8471300cab08.png'
+  - '.context/reviews/evidence/T-5303/home-header@1024-0_0_1024_166-crop.png'
+  - '.context/reviews/evidence/T-5303/home-header@1024-24_48_931_84-crop.png'
+  - '.context/reviews/evidence/T-5303/home-header@1024-judge-t-5303-r5-antigravity-271df671570d.png'
+  - '.context/reviews/evidence/T-5303/home-header@1024-judge-t-5303-r5-antigravity-2b034fabd918.png'
+  - '.context/reviews/evidence/T-5303/home-header@1024-judge-t-5303-r5-antigravity-b7a68f99e3d7.png'
+  - '.context/reviews/evidence/T-5303/home-header@1024-judge-t-5303-r5-claude-code-937e488ccdf2-0_0_1024_166-crop.png'
+  - '.context/reviews/evidence/T-5303/home-header@1024-judge-t-5303-r5-claude-code-937e488ccdf2.png'
+  - '.context/reviews/evidence/T-5303/home-header@1024-judge-t-5303-r5-claude-code-a3225c07a9ef-0_0_1024_166-crop.png'
+  - '.context/reviews/evidence/T-5303/home-header@1024-judge-t-5303-r5-claude-code-a3225c07a9ef.png'
+  - '.context/reviews/evidence/T-5303/home-header@1024-judge-t-5303-r5-claude-code-f1650be45568-0_0_1024_166-crop.png'
+  - '.context/reviews/evidence/T-5303/home-header@1024-judge-t-5303-r5-claude-code-f1650be45568.png'
+  - '.context/reviews/evidence/T-5303/home-header@1024-judge-t-5303-r5-codex-8471300cab08.png'
+  - '.context/reviews/evidence/T-5303/home-header@1440-0_0_1440_104-crop.png'
+  - '.context/reviews/evidence/T-5303/home-header@1440-24_40_972_28-crop.png'
+  - '.context/reviews/evidence/T-5303/home-header@1440-judge-t-5303-r5-antigravity-271df671570d.png'
+  - '.context/reviews/evidence/T-5303/home-header@1440-judge-t-5303-r5-antigravity-2b034fabd918.png'
+  - '.context/reviews/evidence/T-5303/home-header@1440-judge-t-5303-r5-antigravity-b7a68f99e3d7.png'
+  - '.context/reviews/evidence/T-5303/home-header@1440-judge-t-5303-r5-claude-code-937e488ccdf2-0_0_1440_104-crop.png'
+  - '.context/reviews/evidence/T-5303/home-header@1440-judge-t-5303-r5-claude-code-937e488ccdf2.png'
+  - '.context/reviews/evidence/T-5303/home-header@1440-judge-t-5303-r5-claude-code-a3225c07a9ef-0_0_1440_104-crop.png'
+  - '.context/reviews/evidence/T-5303/home-header@1440-judge-t-5303-r5-claude-code-a3225c07a9ef.png'
+  - '.context/reviews/evidence/T-5303/home-header@1440-judge-t-5303-r5-claude-code-f1650be45568-0_0_1440_104-crop.png'
+  - '.context/reviews/evidence/T-5303/home-header@1440-judge-t-5303-r5-claude-code-f1650be45568.png'
+  - '.context/reviews/evidence/T-5303/home-header@1440-judge-t-5303-r5-codex-8471300cab08.png'
+  - '.context/reviews/evidence/T-5303/home-header@1920-0_0_1920_104-crop.png'
+  - '.context/reviews/evidence/T-5303/home-header@1920-24_40_972_28-crop.png'
+  - '.context/reviews/evidence/T-5303/home-header@1920-judge-t-5303-r5-antigravity-271df671570d.png'
+  - '.context/reviews/evidence/T-5303/home-header@1920-judge-t-5303-r5-antigravity-2b034fabd918.png'
+  - '.context/reviews/evidence/T-5303/home-header@1920-judge-t-5303-r5-antigravity-b7a68f99e3d7.png'
+  - '.context/reviews/evidence/T-5303/home-header@1920-judge-t-5303-r5-claude-code-937e488ccdf2-0_0_1920_104-crop.png'
+  - '.context/reviews/evidence/T-5303/home-header@1920-judge-t-5303-r5-claude-code-937e488ccdf2.png'
+  - '.context/reviews/evidence/T-5303/home-header@1920-judge-t-5303-r5-claude-code-a3225c07a9ef-0_0_1920_104-crop.png'
+  - '.context/reviews/evidence/T-5303/home-header@1920-judge-t-5303-r5-claude-code-a3225c07a9ef.png'
+  - '.context/reviews/evidence/T-5303/home-header@1920-judge-t-5303-r5-claude-code-f1650be45568-0_0_1920_104-crop.png'
+  - '.context/reviews/evidence/T-5303/home-header@1920-judge-t-5303-r5-claude-code-f1650be45568.png'
+  - '.context/reviews/evidence/T-5303/home-header@1920-judge-t-5303-r5-codex-8471300cab08.png'
+  - '.context/reviews/evidence/T-5303/t5261-menu-no-extension-1024-top-judge-t-5303-r5-claude-code-f1650be45568-0_0_1024_166-crop.png'
+  - '.context/reviews/evidence/T-5303/t5261-menu-no-extension-1024-top-judge-t-5303-r5-claude-code-f1650be45568.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.fabric/components/lib-fw-path-check.yaml'
+  - '.fabric/components/lib-fw_command.yaml'
+  - '.fabric/components/tests-unit-test_t5303_fw_command_builder.yaml'
+  - '.tasks/active/T-5303-printed-fw-commands-slice-1-one-builder-.md'
+  - 'bin/fw'
+  - 'lib/delegation_cli.py'
+  - 'lib/fw-path-check.sh'
+  - 'lib/fw_command.py'
+  - 'lib/paths.sh'
+  - 'tests/unit/test_delegation_fw_path.py'
+  - 'tests/unit/test_t5303_fw_command_builder.py'
+  - 'web/app.py'
+  - 'web/designer_registry.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T14:50:10'
+    action: 'T-5303: filed (T-5302 GO slice)'
+  - time: '2026-11-20T15:18:35'
+    action: 'T-5303: scope — context, criteria, verification'
+  - time: '2026-11-20T15:28:02'
+    action: 'T-5303: one builder for printed fw commands (shell, Python, Watchtower global); doctor reports the PATH fw kind'
+  - time: '2026-11-20T15:28:20'
+    action: 'T-5303: vendor self — builder, PATH-fw check, bin/fw'
+  - time: '2026-11-20T15:33:52'
+    action: 'T-5303: criteria ticked; render criterion and visual verification (web/app.py touched)'
+  - time: '2026-11-20T15:35:29'
+    action: 'T-5303: reviewer verdict'
+  - time: '2026-11-20T15:38:54'
+    action: 'T-5303: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-20T15:45:23'
+    action: 'T-5303: reviewer verdict'
+  - time: '2026-11-20T15:48:33'
+    action: 'T-5303: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-20T15:49:22'
+    action: 'T-5303: recommendation for the operator''s render check'
+  - time: '2026-11-20T15:49:54'
+    action: 'T-5303: full URLs in the recommendation'
+  - time: '2026-11-20T15:50:25'
+    action: 'T-5303: full URLs in the screenshot table'
+  - time: '2026-11-20T15:50:56'
+    action: 'T-5303: no bare routes in the render criterion'
+  - time: '2026-11-20T15:51:31'
+    action: 'T-5303: partial-complete — awaiting the operator''s render check'
+  - time: '2026-11-20T17:46:24'
+    action: 'T-5303: reviewer verdict'
+  - time: '2026-11-20T17:47:50'
+    action: 'T-5303: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-20T17:53:44'
+    action: 'T-5303: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 17 commit(s), 61 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 61
+  commits: 18
+  files_changed: 168
+  lines_added: 2005
+  lines_removed: 67
+  footprint_refreshed_at: '2026-11-20T16:54:55Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5303-printed-fw-commands-slice-1-one-builder-.md
+generated_by: context-agent-hybrid

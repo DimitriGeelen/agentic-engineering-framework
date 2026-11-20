@@ -13,8 +13,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
 components: [bin/fw, lib/delegation_cli.py, lib/fw-path-check.sh, lib/fw_command.py, lib/paths.sh, tests/unit/test_t5303_fw_command_builder.py, web/app.py, web/designer_registry.py]
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T13:49:52Z
-last_update: 2026-11-20T14:50:58Z
+last_update: 2026-11-20T16:54:13Z
 date_finished: 2026-11-20T14:50:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -84,6 +84,7 @@ bvp_scores_proposed:
       (body:env-class-handled); F-RECALL=0 (no-signal); F-AUTONOMY=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+date_finalised: 2026-11-20T16:54:13Z
 ---
 
 # T-5303: Printed fw commands slice 1: one builder (shell + Python + Watchtower global, parity test); fw doctor reports router / old shim / none (T-5302)
@@ -110,7 +111,7 @@ bvp_scores_proposed:
 - [x] `fw doctor` reports the PATH `fw` kind: router (header line `fw-router`), old shim (`fw-shim`), other, or absent, WARN-only for shim/absent with how to refresh.
 
 ### Human
-- [ ] [REVIEW] Watchtower pages render as before after the web/app.py change (a template global was added; nothing visible should change)
+- [x] [REVIEW] Watchtower pages render as before after the web/app.py change (a template global was added; nothing visible should change)
   **Steps:**
   1. Open the screenshots in .context/visual/T-5303/ (home page header, approvals page header and footer, taken from http://192.168.10.107:3000/ and http://192.168.10.107:3000/approvals after the restart)
   2. Check each shot at 1024, 1440 and 1920 px
@@ -160,6 +161,7 @@ bvp_scores_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261120-6df2268d — reviewer-judge-t-5303-r5-antigravity-2b034fabd918:antigravity (rung rung-5-panel:antigravity), digest eaffe5f23c28; dispatch judge-t-5303-r5-antigravity-2b034fabd918; evidence: .context/reviews/evidence/T-5303/AC1-judge-t-5303-r5-antigravity-2b034fabd918.md, .context/reviews/evidence/T-5303/01-root-judge-t-5303-r5-antigravity-2b034fabd918.png, .context/reviews/evidence/T-5303/02-approvals-judge-t-5303-r5-antigravity-2b034fabd918.png, .context/reviews/evidence/T-5303/home-header@1024-judge-t-5303-r5-antigravity-2b034fabd918.png, .context/reviews/evidence/T-5303/home-header@1440-judge-t-5303-r5-antigravity-2b034fabd918.png, .context/reviews/evidence/T-5303/home-header@1920-judge-t-5303-r5-antigravity-2b034fabd918.png, .context/reviews/evidence/T-5303/approvals-header@1024-judge-t-5303-r5-antigravity-2b034fabd918.png, .context/reviews/evidence/T-5303/approvals-header@1440-judge-t-5303-r5-antigravity-2b034fabd918.png, .context/reviews/evidence/T-5303/approvals-header@1920-judge-t-5303-r5-antigravity-2b034fabd918.png, .context/reviews/evidence/T-5303/approvals-footer@1024-judge-t-5303-r5-antigravity-2b034fabd918.png, .context/reviews/evidence/T-5303/approvals-footer@1440-judge-t-5303-r5-antigravity-2b034fabd918.png, .context/reviews/evidence/T-5303/approvals-footer@1920-judge-t-5303-r5-antigravity-2b034fabd918.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
