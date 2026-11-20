@@ -130,6 +130,12 @@ bvp_scores_proposed:
 - [x] Tests cover: valid entry applied; header-presence-only endpoint refused; missing endpoint refused; blueprint form; audit FAIL rows; non-listed endpoint still protected.
 
 ### Human
+- [ ] [REVIEW] Watchtower pages still render the same after the web/app.py form-safety change
+  **Steps:**
+  1. Open the screenshots in .context/visual/T-5262/ (home and /approvals header, /approvals footer, taken from http://192.168.10.107:3000/ and http://192.168.10.107:3000/approvals after the restart)
+  2. Compare with the header and footer shots in .context/visual/T-5260/
+  **Expected:** menu, header and footer look the same as before; nothing missing or broken (the change adds no visible element; no project exemption is registered here)
+  **If not:** note the page and width that differs
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -318,6 +324,14 @@ python3 -m pytest tests/web/test_t5260_project_pages.py tests/web/test_t5261_pro
 timeout 300 bats tests/unit/t5259_project_extensions.bats > /tmp/.t5262c 2>&1 && ! grep -q "^not ok" /tmp/.t5262c
 bin/fw vendor self --check --task T-5262
 bin/fw watchtower current
+
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| home-header | site menu on the home page | ok | ok | ok | real Watchtower http://192.168.10.107:3000/, cropped nav.site-nav to div.ambient-strip |
+| approvals-header | site menu on /approvals (a page with forms) | ok | ok | ok | real Watchtower, same crop |
+| approvals-footer | footer on /approvals | ok | ok | ok | real Watchtower, crop from footer.site-footer |
 
 ## RCA
 
