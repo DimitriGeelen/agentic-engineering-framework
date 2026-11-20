@@ -73,9 +73,21 @@ Reviewer verdicts (`fw reviewer judge`, verdict ledger) are free text: VERDICT /
 ## Open Questions
 
 - **IW-1: What exactly is 1409's verdict structure (fields, required evidence per claim, how pass and fail differ), and what made them build it?** (consult 1409)
+  confidence: 3
+  disposition: answered
+  rationale: 1409 msgs b558c363 and 2753c605 (format text 0.1, a draft not yet tried with models); summarised in docs/reports/T-5290-structured-reviewer-verdicts.md
 - **IW-2: How does a structured verdict fit the existing ledger (verdicts.jsonl digest, provenance, rung panels) without breaking committed rows?**
+  confidence: 2
+  disposition: answered
+  rationale: the structure lives in the printed block the runtime already parses (lib/verdict_ledger.py parse_harness_verdicts, lib/reviewer/judge_cli.py _parse_printed) and in the evidence report; new rows carry a format version and the checker result as added fields; rows without a format version are the old kind and are read exactly as today, so no committed row changes
 - **IW-3: What happens to a verdict whose claim its own evidence refutes (T-5262 case): rejected at record time, sent to another seat, or escalated to the operator?**
+  confidence: 2
+  disposition: answered
+  rationale: following 1409 (msg b558c363 point 3): a vote that fails the mechanical check is "not checkable" and does not count (neither green nor red); the panel replaces the seat through the existing reassignment path; if no checkable vote can be had, it goes to the operator. The exchange round (change a vote only with a checkable reason) is a later slice
 - **IW-4: How does it reach consumer projects (vendored reviewer preamble and validator via fw upgrade), and does ring20's request (b3) fit the same shape?**
+  confidence: 3
+  disposition: answered
+  rationale: lib/reviewer/judge_cli.py (brief) and lib/verdict_ledger.py (parser, checker) are vendored framework files, delivered by fw upgrade; ring20's b3 asked for exactly a structured verdict format as a framework option (docs/reports/T-4649-ring20-patch-triage.md)
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
@@ -153,13 +165,18 @@ Reviewer verdicts (`fw reviewer judge`, verdict ledger) are free text: VERDICT /
 
 ## Recommendation
 
-**Recommendation:** EXPLORING
+**Recommendation:** GO
 
 **Rationale:**
 
-Operator 2026-11-20 after T-5262: the codex seat gave red twice on a claim its own evidence refutes; the free-text verdict gave no structure to check it against. 1409 has already defined a verdict structure; ring20 asked for a structured verdict format as a framework option (T-4649 b3). Consult 1409 first.
+Adopt 1409's verdict structure (draft 0.1) as the framework's reviewer verdict format, for new verdicts only, delivered to every project by fw upgrade. Every vote, pass or fail, has the same shape: per criterion a vote, evidence, where it is, the rule, and a one-sentence conclusion, plus a counter-search and "what would change my mind". A program checks each vote mechanically; a vote that fails the check does not count and the seat is replaced, so a misreading like T-5262's no longer blocks a panel or forces a bypass. Operator chose to start now rather than wait for 1409's experiment (2026-11-20, option 1); we measure on our own ledger. Build in slices: (1) format in the judge's brief plus a strict reader that refuses a malformed vote instead of coercing it; (2) the checker (quote found in the named file and line; for screenshots, the named region exists and its crop is attached for the other seats; rule known; overall vote consistent with the criteria); (3) "not checkable" votes do not count and the panel reassigns the seat, else the operator; (4) later: the exchange round. Old ledger rows are untouched.
 
 **Evidence:**
+
+- T-5262: the codex seat's red was refuted by its own capture (icon zone identical to 01-root.png, 187 dark px each); filed T-5289.
+- 1409 answers msg b558c363 and format text msg 2753c605, in docs/reports/T-5290-structured-reviewer-verdicts.md, with their caveats: untried with models; a checker finds whether evidence is there, not whether it supports the claim; strict reading is required.
+- ring20 asked for a structured verdict format (docs/reports/T-4649-ring20-patch-triage.md, b3).
+- Brief and parser are vendored framework files: lib/reviewer/judge_cli.py, lib/verdict_ledger.py.
 
 <!-- Add evidence bullets as exploration progresses (file paths,
      commit hashes, test results). The filing-time recommendation

@@ -58,3 +58,4 @@ Full text: `fw sidecar inbox --show 2753c605-def3-424e-a923-13da8fd422b1`. Draft
 ## Dialogue Log
 
 - 2026-11-20, operator: the verdict structure must be fixed for pass and fail alike; take 1409's protocol as the basis; ship it to all consumer projects.
+- 2026-11-20, operator chose option 1: start now with the format as a draft for new verdicts (image regions as location for screenshots, strict reader), rather than wait for 1409's experiment result. Agent recommendation: GO, built in slices (brief + strict reader; checker; not-checkable votes do not count and the seat is replaced; later the exchange round).
