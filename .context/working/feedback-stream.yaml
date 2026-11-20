@@ -57566,3 +57566,21 @@ scan_id: R-0d26f2bb
 task_id: T-5293
 payload:
   task_file: .tasks/active/T-5293-structured-verdicts-slice-2-mechanical-c.md
+---
+kind: scan_emitted
+timestamp: '2026-11-20T12:56:04Z'
+scan_id: R-36170a67
+task_id: T-5281
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-20T12:56:04Z'
+scan_id: R-36170a67
+task_id: T-5281
+payload:
+  task_file: .tasks/active/T-5281-route-fw-sidecar-inbox---peek-and-other-.md

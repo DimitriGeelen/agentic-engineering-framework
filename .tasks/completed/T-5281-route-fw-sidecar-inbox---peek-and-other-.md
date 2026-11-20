@@ -15,12 +15,12 @@ description: >
   t3700-peek-route: route --peek and any other diagnostic inbox read through it, keep
   a fallback for older termlink, and test. Nothing changes until an inbox is bound.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [sidecar, termlink]
-components: []
+components: [bin/fw, lib/sidecar/alerts.py, lib/sidecar/inbox.py, lib/sidecar_cli.py, tests/unit/test_sidecar_alerts_t3856.py]
 related_tasks: []
 origin: {kind: "peer", source: "010-termlink", ref: "25826710"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -50,8 +50,8 @@ origin: {kind: "peer", source: "010-termlink", ref: "25826710"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T22:41:26Z
-last_update: 2026-11-20T11:49:17Z
-date_finished:
+last_update: 2026-11-20T12:55:31Z
+date_finished: 2026-11-20T12:55:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -421,3 +421,16 @@ bin/fw vendor self --check --task T-5281
 
 ### 2026-11-20T11:49:17Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-20T12:55:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-36170a67
+- **Timestamp:** 2026-11-20T12:56:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

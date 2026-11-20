@@ -1,0 +1,112 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5281: Route fw sidecar inbox --peek (and other diagnostic inbox reads) through termlink sidecar peek once 010 ships it, so reads stay valid after an inbox is bound to its agent
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T12:56:19Z
+# ============================================================================
+
+task_id: T-5281
+task_name: "Route fw sidecar inbox --peek (and other diagnostic inbox reads) through termlink sidecar peek once 010 ships it, so reads stay valid after an inbox is bound to its agent"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-19T22:41:26Z
+completed: 2026-11-20T12:55:31Z
+duration_days: 1
+updates_count: 7
+first_commit: 2026-11-19T23:41:28+01:00
+last_commit: 2026-11-20T13:55:29+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — route inbox peeks through termlink sidecar peek (010 T-3700). unblocked — termlink sidecar peek live on .107 (010 msg 9fbc1132). scope — every own-inbox read is unsigned, not only --peek; 010 asked about the consuming-read route. 010's answer recorded — no peek consumer; Python receivers stay unsigned while unbound. 010 detail — INBOX_BOUND is error -32049. re-scoped to the mailbox alarm (operator option a, after 010's answer). 010's addition — warn when we are the unproven second reader beside a signed one. inbox-bound alarm — -32049 reads as 'inbox locked', alerts and doctor WARN on a bound inbox. vendor the inbox-bound alarm. warn when a signed reader sits beside our unsigned one (010 msg a0e9e80e). criteria ticked, scope note
+
+# Key outcomes
+outcomes:
+  - '010 has answered how a consuming read is signed and whether peek''s JSON matches channel subscribe''s envelopes; the answer is recorded under ## Updates and the build follows it.'
+  - '`default_reader` turns a refusal with error code -32049 into a ReadFailed whose reason says the inbox is locked (bound) and that AEF''s reads are unsigned.'
+  - '`fw sidecar alerts` and `fw doctor` WARN when our own inbox''s `termlink hub inbox consumers --json` shows a non-null `bound`; silent when null; "not checked" (not OK) when the command fails.'
+  - 'Tests with a fake termlink: -32049 read → locked reason; bound non-null → WARN in both places; bound null → no warning; command missing → not checked.'
+  - '(010 msg a0e9e80e, 2026-11-20) Also WARN, ahead of any bind, when an inbox AEF''s receiver reads also lists a proven (signed) reader such as the agent''s own Rust sidecar while AEF''s reads appear as an unproven reader: that inbox is the one likely to be bound first.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: '010 detail — INBOX_BOUND is error -32049'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/sidecar/alerts.py'
+  - '.agentic-framework/lib/sidecar/inbox.py'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.tasks/active/T-5281-route-fw-sidecar-inbox---peek-and-other-.md'
+  - 'bin/fw'
+  - 'lib/sidecar/alerts.py'
+  - 'lib/sidecar/inbox.py'
+  - 'lib/sidecar_cli.py'
+  - 'tests/lib/termlink-tripwire/termlink'
+  - 'tests/unit/test_sidecar_alerts_t3856.py'
+  - 'tests/unit/test_t5281_inbox_bound_alarm.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-19T23:41:28'
+    action: 'T-5281: file — route inbox peeks through termlink sidecar peek (010 T-3700)'
+  - time: '2026-11-20T10:16:30'
+    action: 'T-5281: unblocked — termlink sidecar peek live on .107 (010 msg 9fbc1132)'
+  - time: '2026-11-20T12:50:53'
+    action: 'T-5281: scope — every own-inbox read is unsigned, not only --peek; 010 asked about the consuming-read route'
+  - time: '2026-11-20T13:14:55'
+    action: 'T-5281: 010''s answer recorded — no peek consumer; Python receivers stay unsigned while unbound'
+  - time: '2026-11-20T13:15:25'
+    action: 'T-5281: 010 detail — INBOX_BOUND is error -32049'
+  - time: '2026-11-20T13:42:27'
+    action: 'T-5281: re-scoped to the mailbox alarm (operator option a, after 010''s answer)'
+  - time: '2026-11-20T13:43:51'
+    action: 'T-5281: 010''s addition — warn when we are the unproven second reader beside a signed one'
+  - time: '2026-11-20T13:51:03'
+    action: 'T-5281: inbox-bound alarm — -32049 reads as ''inbox locked'', alerts and doctor WARN on a bound inbox'
+  - time: '2026-11-20T13:51:23'
+    action: 'T-5281: vendor the inbox-bound alarm'
+  - time: '2026-11-20T13:55:16'
+    action: 'T-5281: warn when a signed reader sits beside our unsigned one (010 msg a0e9e80e)'
+  - time: '2026-11-20T13:55:29'
+    action: 'T-5281: criteria ticked, scope note'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 11 commit(s), 854 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [sidecar, termlink]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 854
+  commits: 12
+  files_changed: 15
+  lines_added: 1135
+  lines_removed: 28
+  footprint_refreshed_at: '2026-11-20T12:56:35Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5281-route-fw-sidecar-inbox---peek-and-other-.md
+generated_by: context-agent-hybrid
