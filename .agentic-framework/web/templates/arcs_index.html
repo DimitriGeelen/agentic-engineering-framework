@@ -379,7 +379,7 @@
 <article>
     {% if all_arcs_count == 0 %}
     <p>No arcs registered. Create one with:</p>
-    <pre><code>cd {{ project_root }} && bin/fw arc create &lt;id&gt; --name "Description" --anchor T-XXXX</code></pre>
+    <pre><code>{{ fw_cmd('arc create <id> --name "Description" --anchor T-XXXX') }}</code></pre>
     {% else %}
     <p>No arcs match filter <strong>{{ current_filter }}</strong>. <a href="/arcs?status=all">Show all {{ all_arcs_count }}</a>.</p>
     {% endif %}

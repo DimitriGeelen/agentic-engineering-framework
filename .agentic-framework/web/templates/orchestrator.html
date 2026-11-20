@@ -175,7 +175,7 @@
 {% else %}
 <div class="empty-state">
     Audit not yet run. <code>bash agents/audit/orchestrator-mcp-scan.sh</code> or
-    <code>bin/fw audit --section orchestrator</code>.
+    <code>{{ fw_cmd('audit --section orchestrator') }}</code>.
 </div>
 {% endif %}
 

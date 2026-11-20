@@ -430,7 +430,7 @@
       — checks (a) scorable, (b) distinct, (c) distinguishes — and adds the driver only on PASS
       (<code>approved_by: reviewer:…</code>). Up to 3 (M2; weight ≤6), or approve none with
       justification (R6: ≥30 chars). Refresh every verdict:
-      <code>bin/fw arc review-driver {{ arc_slug }} --all</code>.</p>
+      <code>{{ fw_cmd('arc review-driver ' ~ arc_slug ~ ' --all') }}</code>.</p>
     {% for p in bvp_info.proposed_drivers %}
     <article style="margin-bottom: 1rem; padding: 0.8rem;">
         <header style="margin-bottom: 0.5rem;">
@@ -469,7 +469,7 @@
         {% if p.get('reviewer_state') == 'fail' %}
         <p class="muted"><small>Approve will refuse while the reviewer fails. Fix the driver
           (a missing <code>scoring:</code> spec is the usual one — T-3428), or override with
-          <code>bin/fw arc approve-driver {{ arc_slug }} "{{ p.get('name', '') }}" --i-am-human</code>.</small></p>
+          <code>{{ fw_cmd('arc approve-driver ' ~ arc_slug ~ ' "' ~ p.get('name', '') ~ '" --i-am-human') }}</code>.</small></p>
         {% endif %}
     </article>
     {% endfor %}
@@ -592,7 +592,7 @@
 </p>
 <details class="close-arc-cli-fallback">
     <summary class="muted">CLI fallback (headless / no-Watchtower contexts)</summary>
-<pre><code>cd {{ project_root }} && bin/fw arc close {{ arc_id }} \
+<pre><code>{{ fw_cmd('arc close ' ~ arc_id) }} \
     --demo &lt;path-to-wire-evidence&gt; \
     --decision "&lt;success|partial|failed|cancelled&gt; — &lt;one-line summary&gt;"</code></pre>
 <p class="muted">
