@@ -123,6 +123,7 @@ from lib import judge_verdict  # noqa: E402
 from lib import review_cost  # noqa: E402
 from lib import review_policy  # noqa: E402
 from lib import task_commits  # noqa: E402
+from lib import verdict_format  # noqa: E402
 from lib import delegation_widening  # noqa: E402
 from lib.delegation import (  # noqa: E402
     GENERATED_ANNOTATION_RE,
@@ -378,6 +379,17 @@ def _commit_rows_once(root: Path, paths: list[str], identity: str, message: str,
     subprocess.run(["git", "reset", "-q", "--", *paths], cwd=str(root), env=env,
                    capture_output=True, text=True)
     return "", err + " (the ledger paths were unstaged; the row stays uncommitted on disk)"
+
+
+def _brief_text(drec: dict) -> str:
+    """The review dispatch's brief.md ('' when it cannot be read)."""
+    wd = str(drec.get("wdir") or "")
+    if not wd:
+        return ""
+    try:
+        return (Path(wd) / "brief.md").read_text(errors="replace")
+    except OSError:
+        return ""
 
 
 def _brief_criteria(drec: dict) -> set[int]:
@@ -1324,6 +1336,11 @@ def verdict_hash(row: dict) -> str:
     body = {"outcome": row.get("outcome"), "guidance": row.get("guidance", ""),
             "evidence": row.get("evidence"), "evidence_sha256": row.get("evidence_sha256") or {},
             "ac_digest": row.get("ac_digest"), "revision": row.get("revision", "")}
+    if "format" in row:
+        # T-5292: a verdict/1 row's hash also covers its format and parsed structure. A row
+        # without `format` (every row before T-5292) hashes exactly as it always did.
+        body["format"] = row.get("format")
+        body["structured"] = row.get("structured")
     return hashlib.sha256(json.dumps(body, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
@@ -1674,6 +1691,51 @@ def parse_harness_verdicts(text: str) -> dict[int, dict]:
     return {n: v for n, v in out.items() if n not in bad}
 
 
+def parse_harness_vote(text: str, *, task: str, crits: list) -> tuple[dict[int, dict], dict]:
+    """T-5292: a harness seat's printed `verdict/1` vote, for a run whose brief asked for it.
+    Returns ({criterion index: {outcome, why, guidance, block, structured}}, problems) where
+    `problems` is verdict_format's map (VOTE and Human AC number keys). `crits` is the brief's
+    [(criterion index, Human AC number)]. Strict: a criterion with any fault, or every criterion
+    when the vote as a whole has one, is absent — never coerced into a verdict."""
+    by_ac = {ac: idx for idx, ac in crits}
+    parsed, problems = verdict_format.parse_vote(text, task=task, expected_acs=list(by_ac))
+    out: dict[int, dict] = {}
+    for ac, st in verdict_format.accepted(parsed, problems).items():
+        c = st["criterion"]
+        out[by_ac[ac]] = {"outcome": c["vote"], "why": c["conclusion"], "guidance": c["guidance"],
+                          "block": parsed["criteria"][ac]["text"], "structured": st}
+    return out, problems
+
+
+def check_vote_report(path: Path, *, task: str, ac: int, outcome: str) -> tuple[dict | None, str]:
+    """T-5292: a self-recording seat's evidence report for Human AC#`ac` must hold one valid
+    `verdict/1` vote whose section for that criterion votes `outcome`. Returns (structure, '')
+    or (None, why). On refusal the reason is appended to the report, after the vote, so the
+    report says why its criterion got no verdict."""
+    try:
+        text = Path(path).read_text(encoding="utf-8", errors="replace")
+    except OSError as e:
+        return None, f"evidence report {path} is unreadable: {e}"
+    parsed, problems = verdict_format.parse_vote(text, task=task, expected_acs=[ac])
+    st = verdict_format.accepted(parsed, problems).get(ac)
+    why = ""
+    if st is None:
+        why = (f"the evidence report is not a valid {verdict_format.FORMAT} vote for AC{ac}:\n"
+               + verdict_format.problem_text(problems, ac))
+    elif st["criterion"]["vote"] != outcome:
+        why = (f"the report's AC{ac} section votes {st['criterion']['vote']}, but {outcome} is "
+               f"being recorded")
+        st = None
+    if why:
+        try:
+            with Path(path).open("a", encoding="utf-8") as fh:
+                fh.write(f"\n\n## {verdict_format.FORMAT} check: refused (no verdict recorded)\n\n"
+                         f"{why}\n")
+        except OSError:
+            pass
+    return st, why
+
+
 def _freeze_seat_evidence(root: Path, task: str, did: str, paths: list[str]) -> list[str]:
     """T-5178: per-dispatch copies of the screenshots a harness seat cited, as a claude seat makes
     them itself (brief, T-4514): `REPORT_DIR/<task>/<stem>-<dispatch><ext>`. The originals under
@@ -1753,17 +1815,26 @@ def record_for_worker(dispatch_id: str, *, wdir: str, secret: str = "",
         output = ""
     shas = {n: _file_sha(Path(here) / n) for n in ("result.md", "result.jsonl")
             if (Path(here) / n).is_file()}
-    printed = parse_harness_verdicts(output)
+    problems: dict = {}
+    if verdict_format.brief_format(brief) == verdict_format.FORMAT:
+        # T-5292: the brief asked for verdict/1, so only that is read, strictly.
+        printed, problems = parse_harness_vote(output, task=str(drec["task"]), crits=crits)
+        if not verdict_format.attempted(output):
+            # No attempt at a vote (empty output, a provider error): no verdict, not a refused
+            # one — the seat stays eligible to count as unavailable (T-4490).
+            problems = {}
+    else:
+        printed = parse_harness_verdicts(output)
     # T-3940: the lock spans every append below AND the commit, so no other writer's row can
     # land between them and be committed under this worker's identity.
     with _ledger_lock(root):
         return _record_for_worker_locked(root, did, drec, kind, here, brief, crits, rung, output,
-                                         shas, printed)
+                                         shas, printed, problems)
 
 
 def _record_for_worker_locked(root: Path, did: str, drec: dict, kind: str, here: str, brief: str,
                               crits: list, rung: str, output: str, shas: dict,
-                              printed: dict) -> dict:
+                              printed: dict, problems: dict | None = None) -> dict:
     task = str(drec["task"])
     ctx = _task_ctx(root, task)
     identity = worker_identity(did)
@@ -1772,6 +1843,24 @@ def _record_for_worker_locked(root: Path, did: str, drec: dict, kind: str, here:
     touched: list[str] = []
     for idx, ac in crits:
         v = printed.get(idx)
+        if v is None and problems:
+            # T-5292: the seat's verdict/1 vote does not hold for this criterion. No row; the
+            # evidence report records the seat's output and why it gave no verdict.
+            why = (f"not a valid {verdict_format.FORMAT} vote for AC{ac}:\n"
+                   + verdict_format.problem_text(problems, ac))
+            rep = Path(REPORT_DIR) / task / f"AC{ac}-{did}.md"
+            (root / rep).parent.mkdir(parents=True, exist_ok=True)
+            (root / rep).write_text(
+                f"# Reviewer evidence — {task} AC#{ac} (REFUSED: no verdict)\n\n"
+                f"- dispatch: `{did}`\n- worker kind: `{kind}`\n- seat: `{seat}`\n"
+                + "".join(f"- {n} sha256: `{h}`\n" for n, h in sorted(shas.items()))
+                + f"\n## {verdict_format.FORMAT} check: refused\n\n{why}\n"
+                f"\n## The worker's full output (result.md)\n\n```\n{_ANSI_RE.sub('', output).strip()}\n```\n")
+            touched.append(str(rep))
+            _refuse_row(root, task, "verdict-format", why, ac=ac, reviewer=f"{identity}:{seat}",
+                        dispatch_id=did)
+            res["refused"].append({"ac": ac, "why": why})
+            continue
         if v is None:
             res["refused"].append({"ac": ac, "why": "no unambiguous printed verdict"})
             continue
@@ -1799,7 +1888,8 @@ def _record_for_worker_locked(root: Path, did: str, drec: dict, kind: str, here:
         try:
             rec = record(task, ac, v["outcome"], reviewer=f"{identity}:{seat}", rung=rung,
                          guidance=guidance, evidence=[str(rep)] + seen, digest=criterion_digest(crit),
-                         dispatch_id=did, run_id=str(drec.get("run_id") or ""), root=root)
+                         dispatch_id=did, run_id=str(drec.get("run_id") or ""), root=root,
+                         structured=v.get("structured"))
             res["recorded"].append({"ac": ac, "id": rec["id"], "outcome": rec["outcome"]})
         except VerdictRefused as e:
             res["refused"].append({"ac": ac, "why": str(e)})
@@ -2620,6 +2710,15 @@ def _structural_fault(row: dict) -> str:
         return "judgement block judges a different criterion than the row names"
     if row["verdict"] != jv.get("state"):
         return "row verdict disagrees with its judgement"
+    if "format" in row:
+        # T-5292: only rows that carry a format are checked for it; older rows are unchanged.
+        if row["format"] != verdict_format.FORMAT:
+            return f"row has an unknown verdict format {row['format']!r}"
+        st = row.get("structured")
+        if (not isinstance(st, dict) or st.get("format") != verdict_format.FORMAT
+                or st.get("ac") != row["ac"]
+                or (st.get("criterion") or {}).get("vote") != row["outcome"]):
+            return "row's structured vote does not agree with the row (format, criterion, outcome)"
     return ""
 
 
@@ -3673,7 +3772,7 @@ def _task_ctx(root: Path, task_id: str) -> _Ctx | None:
 def record(task_id: str, ac_index: int, outcome: str, *, reviewer: str, rung: str,
            guidance: str = "", evidence: list[str] | None = None,
            digest: str = "", dispatch_id: str = "", run_id: str = "",
-           root: Path | None = None) -> dict:
+           root: Path | None = None, structured: dict | None = None) -> dict:
     """Append a verdict for Human criterion `ac_index` of `task_id`, or raise VerdictRefused.
 
     Every refusal is written to the refusal ledger before it is raised. `digest` is what the
@@ -3714,6 +3813,25 @@ def record(task_id: str, ac_index: int, outcome: str, *, reviewer: str, rung: st
                f"dispatch {dispatch_id!r} was briefed on Human AC#{', AC#'.join(map(str, sorted(named)))}"
                f", not AC#{ac_index} — record the Human AC number from the criterion heading, "
                f"not the criterion's position in the brief")
+
+    # T-5292: a dispatch whose brief asked for verdict/1 records only a structured vote. A harness
+    # seat's vote was parsed by the runtime (`structured`); a self-recording seat's is read from
+    # its own evidence report AC<N>-*.md. A brief without the marker keeps the old path.
+    if verdict_format.brief_format(_brief_text(drec)) == verdict_format.FORMAT and structured is None:
+        reps = [e for e in evidence
+                if re.fullmatch(rf"{re.escape(str(REPORT_DIR))}/{re.escape(task_id)}/AC{ac_index}-[^/]+\.md",
+                                e.strip().removeprefix("./"))]
+        if len(reps) != 1:
+            refuse("verdict-format", f"the brief asked for a {verdict_format.FORMAT} vote: cite exactly "
+                                     f"one evidence report {REPORT_DIR}/{task_id}/AC{ac_index}-<id>.md "
+                                     f"(cited: {len(reps)})")
+        structured, why = check_vote_report(root / reps[0].strip().removeprefix("./"), task=task_id, ac=ac_index,
+                                            outcome=outcome)
+        if structured is None:
+            refuse("verdict-format", why)
+    elif structured is not None and (structured.get("ac") != ac_index
+                                     or (structured.get("criterion") or {}).get("vote") != outcome):
+        refuse("verdict-format", "the structured vote names another criterion or outcome than the row")
 
     path, sub = _find_task(root, task_id)
     if path is None:
@@ -3791,6 +3909,8 @@ def record(task_id: str, ac_index: int, outcome: str, *, reviewer: str, rung: st
     }
     if run_id.strip():
         rec["run_id"] = run_id.strip()
+    if structured is not None:
+        rec["format"], rec["structured"] = verdict_format.FORMAT, structured
     if wide is not None:
         rec["widened_by"], rec["ruling"] = wide["id"], str(wide.get("ruling") or "")
     # Not committed yet, and no completion yet: the runtime signs one when the worker exits.
