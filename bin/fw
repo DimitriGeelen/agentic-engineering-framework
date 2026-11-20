@@ -3828,6 +3828,14 @@ PY
         echo -e "  ${CYAN}SKIP${NC}  claude-fw not on PATH (no auto-restart wrapper installed)"
     fi
 
+    # Check: which fw is on PATH — the T-2793 router, the old fw-shim, other, or
+    # none (T-5303). WARN-only for shim/absent, with the refresh command.
+    if [ -f "$FRAMEWORK_ROOT/lib/fw-path-check.sh" ]; then
+        # shellcheck source=../lib/fw-path-check.sh
+        source "$FRAMEWORK_ROOT/lib/fw-path-check.sh"
+        fw_doctor_path_fw || warnings=$((warnings + 1))
+    fi
+
     # Check: running claude-fw wrappers older than the script they run (T-4069).
     # bash keeps the code it loaded, so a wrapper started before a re-vendor never
     # sees the fix (T-4032) even though upgrade/vendor reported success.

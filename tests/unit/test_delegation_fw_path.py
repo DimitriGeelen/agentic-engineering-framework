@@ -33,10 +33,13 @@ def test_vendored_consumer_uses_vendored_path(tmp_path, monkeypatch):
 
 
 def test_framework_repo_keeps_bin_fw(tmp_path, monkeypatch):
-    _layout(tmp_path, monkeypatch, "bin/fw")
+    # T-5303: the framework repo is FRAMEWORK.md + bin/fw at the root.
+    _layout(tmp_path, monkeypatch, "bin/fw", "FRAMEWORK.md")
     assert delegation_cli.verification_line("T-1").startswith("bin/fw reviewer T-1 ")
 
 
-def test_consumer_with_tracked_shim_keeps_bin_fw(tmp_path, monkeypatch):
+def test_consumer_with_tracked_shim_prints_vendored_path(tmp_path, monkeypatch):
+    # T-5302 GO / T-5303: a consumer's own root shim (055's T-147) existed only
+    # to work around AEF printing `bin/fw`; the one rule prints the vendored path.
     _layout(tmp_path, monkeypatch, "bin/fw", ".agentic-framework/bin/fw")
-    assert delegation_cli._fw() == "bin/fw"
+    assert delegation_cli._fw() == ".agentic-framework/bin/fw"

@@ -1,0 +1,21 @@
+id: tests/unit/test_t5303_fw_command_builder.py
+name: test_t5303_fw_command_builder
+type: script
+subsystem: tests
+location: tests/unit/test_t5303_fw_command_builder.py
+tags: []
+
+purpose: "T-5303 — one builder for printed fw commands (rule: T-5302 GO)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-20
+created_by: unknown

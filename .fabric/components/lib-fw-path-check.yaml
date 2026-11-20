@@ -1,0 +1,21 @@
+id: lib/fw-path-check.sh
+name: fw-path-check
+type: script
+subsystem: framework-core
+location: lib/fw-path-check.sh
+tags: []
+
+purpose: "fw-path-check.sh — which `fw` is on PATH? (T-5303, rule T-5302)"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-20
+created_by: unknown
