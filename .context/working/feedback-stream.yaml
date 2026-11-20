@@ -57842,3 +57842,21 @@ scan_id: R-f82f3e77
 task_id: T-5291
 payload:
   task_file: .tasks/active/T-5291-re-judge-the-render-criteria-of-t-5260-t.md
+---
+kind: scan_emitted
+timestamp: '2026-11-20T17:52:41Z'
+scan_id: R-b079e194
+task_id: T-5296
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-20T17:52:41Z'
+scan_id: R-b079e194
+task_id: T-5296
+payload:
+  task_file: .tasks/active/T-5296-orphan-inbox-check-calls-an-inbox-unread.md
