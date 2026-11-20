@@ -24,6 +24,10 @@ source "$FRAMEWORK_ROOT/lib/watchtower.sh"
 source "$FRAMEWORK_ROOT/lib/pid-alive.sh"
 # PID/LOG in PROJECT_ROOT so review.sh and watchtower.sh find them in the same place (T-1154)
 PID_FILE="$PROJECT_ROOT/.context/working/watchtower.pid"
+# T-5267: the identity of the pid on file (lib/pid-alive.sh fw_pid_identity_write),
+# and the cmdline substring a Watchtower server carries (`python3 -m web.app`).
+PID_ID_FILE="$PID_FILE.identity"
+WATCHTOWER_CMD_MARKER="web.app"
 # T-4323: UFW rules this project's Watchtower added (one port per line); stop removes them.
 FIREWALL_STATE_FILE="$PROJECT_ROOT/.context/working/watchtower.firewall"
 # T-1287: port + url triple alongside pid (foundation for T-1284 3-layer discovery)
@@ -67,6 +71,19 @@ get_pid() {
 # start refused on a server that was already gone. A zombie is stopped.
 _pid_alive() {
     fw_pid_alive "$1"
+}
+
+# _wt_kill_own_child SIG PID — T-5267: signal the server this start launched, only
+# while it is still that process (start time recorded at launch); a pid that was
+# reaped and reused in the meantime is left alone.
+_wt_kill_own_child() {
+    local sig="$1" pid="$2" why rc=0
+    why=$(fw_pid_same_process "$PID_FILE" "$pid" "$WATCHTOWER_CMD_MARKER") || rc=$?
+    if [ "$rc" -eq 1 ]; then
+        log_warn "Not sending SIG$sig to PID $pid: $why"
+        return 0
+    fi
+    kill "-$sig" "$pid" 2>/dev/null || true
 }
 
 is_running() {
@@ -170,9 +187,24 @@ do_stop() {
 
     if ! _pid_alive "$pid"; then
         log_warn "Stale PID file (PID $pid not running). Cleaning up."
-        rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE" "$HOST_FILE"
+        rm -f "$PID_FILE" "$PID_ID_FILE" "$PORT_FILE" "$URL_FILE" "$HOST_FILE"
         close_recorded_firewall_rules "$FIREWALL_STATE_FILE"
         return 0
+    fi
+
+    # T-5267 (G-135): a live pid is not necessarily OUR Watchtower — after a reboot
+    # or a pid wrap it can be any process, and below we signal it AND its children.
+    # Signal only the process that wrote the pid file (lib/pid-alive.sh).
+    local _id_why _id_rc=0
+    _id_why=$(fw_pid_same_process "$PID_FILE" "$pid" "$WATCHTOWER_CMD_MARKER") || _id_rc=$?
+    if [ "$_id_rc" -eq 1 ]; then
+        log_warn "PID $pid is no longer the Watchtower that wrote $PID_FILE ($_id_why) — not signalling it or its children."
+        log_warn "Cleaning up the stale PID file."
+        rm -f "$PID_FILE" "$PID_ID_FILE" "$PORT_FILE" "$URL_FILE" "$HOST_FILE"
+        close_recorded_firewall_rules "$FIREWALL_STATE_FILE"
+        return 0
+    elif [ "$_id_rc" -eq 2 ]; then
+        log_warn "Cannot verify that PID $pid is our Watchtower ($_id_why); stopping it by pid as before."
     fi
 
     log_info "Stopping Watchtower (PID $pid)..."
@@ -190,12 +222,18 @@ do_stop() {
         timeout=$((timeout - 1))
     done
 
-    # Force kill if still running
+    # Force kill if still running — and still the same process (T-5267)
     if _pid_alive "$pid"; then
-        log_warn "Graceful shutdown failed. Sending SIGKILL..."
-        pkill -KILL -P "$pid" 2>/dev/null || true
-        kill -KILL "$pid" 2>/dev/null || true
-        sleep 1
+        _id_rc=0
+        _id_why=$(fw_pid_same_process "$PID_FILE" "$pid" "$WATCHTOWER_CMD_MARKER") || _id_rc=$?
+        if [ "$_id_rc" -eq 1 ]; then
+            log_warn "PID $pid is no longer our Watchtower ($_id_why) — not sending SIGKILL."
+        else
+            log_warn "Graceful shutdown failed. Sending SIGKILL..."
+            pkill -KILL -P "$pid" 2>/dev/null || true
+            kill -KILL "$pid" 2>/dev/null || true
+            sleep 1
+        fi
     fi
 
     if _pid_alive "$pid"; then
@@ -203,7 +241,7 @@ do_stop() {
         return 1
     fi
 
-    rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE" "$HOST_FILE"
+    rm -f "$PID_FILE" "$PID_ID_FILE" "$PORT_FILE" "$URL_FILE" "$HOST_FILE"
     # T-4323: remove the UFW rule(s) start added; a stopped server serves no port.
     close_recorded_firewall_rules "$FIREWALL_STATE_FILE"
     log_info "Watchtower stopped."
@@ -308,7 +346,7 @@ do_start() {
         # T-4306: the pid on file is gone or a zombie — stale. Keep the port file:
         # choose_port reads it as the last port (T-3876).
         log_warn "Stale PID file (PID $(get_pid) not running). Cleaning up."
-        rm -f "$PID_FILE" "$URL_FILE"
+        rm -f "$PID_FILE" "$PID_ID_FILE" "$URL_FILE"
     fi
 
     # T-3876: one port rule for start and restart (choose_port). T-3662's
@@ -398,6 +436,7 @@ do_start() {
     # the pid file names it (exec keeps $$), so `stop` works from another shell.
     if [ -n "$debug_flag" ]; then
         echo "$$" > "$PID_FILE"
+        fw_pid_identity_write "$PID_FILE" "$$" "$WATCHTOWER_CMD_MARKER" || true
         printf '%s\n' "$port" > "$PORT_FILE"
         printf '%s\n' "http://$(_watchtower_probe_host):${port}" > "$URL_FILE"
         [ "$allocated" -eq 1 ] && persist_port "$port"
@@ -442,6 +481,10 @@ do_start() {
     fi
     local new_pid=$!
     echo "$new_pid" > "$PID_FILE"
+    # T-5267: start time now, no marker: the pid may still be a wrapper (setsid,
+    # systemd-run, a shim) whose cmdline changes at exec. The marker is recorded
+    # once the health check below has passed.
+    fw_pid_identity_write "$PID_FILE" "$new_pid" "" || true
 
     # Health check — T-4460: poll the cheap /api/_identity, not GET / (the home
     # page took 68 s under load), for up to WATCHTOWER_START_TIMEOUT seconds.
@@ -457,7 +500,7 @@ do_start() {
         if ! _pid_alive "$new_pid"; then
             log_error "Watchtower exited immediately. Last 10 lines of log:"
             tail -10 "$LOG_FILE" >&2
-            rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE" "$HOST_FILE"
+            rm -f "$PID_FILE" "$PID_ID_FILE" "$PORT_FILE" "$URL_FILE" "$HOST_FILE"
             exit 1
         fi
 
@@ -470,11 +513,12 @@ do_start() {
             if [ "$_state" != "ours" ]; then
                 log_error "Port $port responds but identifies as a FOREIGN service, not this project's Watchtower."
                 log_error "  Refusing to write a triple pointing at it. Aborting."
-                kill -KILL "$new_pid" 2>/dev/null || true
-                rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE" "$HOST_FILE"
+                _wt_kill_own_child KILL "$new_pid"
+                rm -f "$PID_FILE" "$PID_ID_FILE" "$PORT_FILE" "$URL_FILE" "$HOST_FILE"
                 exit 1
             fi
             log_info "Health check passed (identity verified)."
+            fw_pid_identity_write "$PID_FILE" "$new_pid" "$WATCHTOWER_CMD_MARKER" || true
             [ "$allocated" -eq 1 ] && persist_port "$port"
             # T-4297: pass the bind host (loopback never touches UFW) and honour the
             # operator's opt-in from config; without it nothing is opened.
@@ -517,10 +561,10 @@ do_start() {
     log_error "  Raise the deadline under load: bin/fw config set WATCHTOWER_START_TIMEOUT <seconds>"
     log_error "  Last 10 lines of $LOG_FILE:"
     tail -10 "$LOG_FILE" >&2 || true
-    kill -TERM "$new_pid" 2>/dev/null || true
+    _wt_kill_own_child TERM "$new_pid"
     sleep 1
-    kill -KILL "$new_pid" 2>/dev/null || true
-    rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE" "$HOST_FILE"
+    _wt_kill_own_child KILL "$new_pid"
+    rm -f "$PID_FILE" "$PID_ID_FILE" "$PORT_FILE" "$URL_FILE" "$HOST_FILE"
     exit 1
 }
 

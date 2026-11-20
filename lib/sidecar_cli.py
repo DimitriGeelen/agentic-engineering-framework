@@ -929,7 +929,6 @@ def _reclaim_orphan_receivers(agent: str, root, quiet: bool) -> list[int]:
     A receiver younger than ORPHAN_MIN_AGE_S is not an orphan: it is still booting
     (it writes its triple file only once bound), and a concurrent start must not
     stop it. Returns the rivals that remain."""
-    import signal
     import time
 
     left = []
@@ -939,15 +938,20 @@ def _reclaim_orphan_receivers(agent: str, root, quiet: bool) -> list[int]:
         if young or lifecycle.process_cwd(pid) != root:
             left.append(pid)
             continue
+        # T-5267: pin the process the scan found; both signals check it is still that one.
+        snap = lifecycle.proc_identity.identity(pid, lifecycle.RECEIVER_MARKER)
+        if snap is None or snap["cmd_marker"] != lifecycle.RECEIVER_MARKER:
+            if snap is not None:
+                watcher.record_event("KILL_REFUSED", pid=pid, site="orphan-receiver",
+                                     reason=f"cmdline lacks {lifecycle.RECEIVER_MARKER!r}")
+            continue
         if not quiet:
             print(f"receiver: stopping orphan pid={pid} for agent {agent!r} "
                   f"(alive, no triple file, runs in {root})")
-        os.kill(pid, signal.SIGTERM)
-        deadline = time.time() + 5
-        while time.time() < deadline and lifecycle.pid_alive(pid):
-            time.sleep(0.1)
-        if lifecycle.pid_alive(pid):
-            os.kill(pid, signal.SIGKILL)
+        res = lifecycle.stop_checked(pid, site="orphan-receiver", marker=lifecycle.RECEIVER_MARKER,
+                                     record=snap, log=watcher.record_event)
+        if res == "refused":
+            continue
         watcher.record_event("ORPHAN_RECEIVER_RECLAIMED", pid=pid, agent=agent)
     return left
 
@@ -992,16 +996,16 @@ def _start_receiver(agent: str, port, no_inject: bool, quiet: bool) -> tuple[int
             return 1, None
         # T-3685: running code older than what is on disk — replace it, so a
         # fix (e.g. T-3745's per-session targeting) is actually live.
-        import signal as _sig
         if not quiet:
             print(f"receiver pid={info['pid']} runs stale code — restarting it")
-        os.kill(int(info["pid"]), _sig.SIGTERM)
-        for _ in range(50):
-            if not lifecycle.pid_alive(info["pid"]):
-                break
-            time.sleep(0.1)
-        if lifecycle.pid_alive(info["pid"]):
-            os.kill(int(info["pid"]), _sig.SIGKILL)
+        # T-5267: only when the pid is still the receiver that wrote the triple file.
+        res = lifecycle.stop_checked(int(info["pid"]), site="receiver-stale-code",
+                                     marker=lifecycle.RECEIVER_MARKER,
+                                     pid_file=lifecycle.receiver_pid_file(),
+                                     log=watcher.record_event)
+        if res == "refused" and not quiet:
+            print(f"receiver: pid={info['pid']} is no longer the receiver that wrote the "
+                  f"triple file (pid reused) — not signalled; clearing the stale triple file")
     if info:
         lifecycle.clear_triple_file()
 
@@ -1330,9 +1334,6 @@ def cmd_receiver_stop(args) -> int:
     """Stop the receiver: SIGTERM, wait, SIGKILL only if it will not go.
     The watcher is stopped (and disabled) FIRST, or its supervisor would
     restart the receiver this just stopped."""
-    import signal
-    import time
-
     if watcher.read_enabled() is not None or watcher.supervisor_alive():
         watcher.stop_all()
 
@@ -1342,13 +1343,12 @@ def cmd_receiver_stop(args) -> int:
             print("receiver not running (no triple-file)")
         return 0
     pid = info.get("pid")
-    if lifecycle.pid_alive(pid):
-        os.kill(pid, signal.SIGTERM)
-        deadline = time.time() + 5
-        while time.time() < deadline and lifecycle.pid_alive(pid):
-            time.sleep(0.1)
-        if lifecycle.pid_alive(pid):
-            os.kill(pid, signal.SIGKILL)
+    # T-5267: signal only the receiver that wrote the triple file, never a reused pid.
+    res = lifecycle.stop_checked(pid, site="receiver-stop", marker=lifecycle.RECEIVER_MARKER,
+                                 pid_file=lifecycle.receiver_pid_file(), log=watcher.record_event)
+    if res == "refused" and not args.quiet:
+        print(f"receiver: pid={pid} is no longer the receiver that wrote the triple file "
+              f"(pid reused) — not signalled; clearing the stale triple file")
     # The server clears these itself on a clean exit; this covers a SIGKILL.
     lifecycle.clear_triple_file()
     agent = args.agent or _agent_or_none()

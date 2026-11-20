@@ -189,8 +189,22 @@ def read_pid(which: str) -> int | None:
         return None
 
 
+#: T-5267: the cmdline substring each pid file's process carries (`watcher.py run`,
+#: `watcher.py supervise`, from _spawn); legacy pid files are checked on it.
+PID_MARKERS = {"watcher": "watcher.py run", "supervisor": "watcher.py supervise"}
+
+
 def _write_pid(which: str, pid: int) -> None:
     _pidfile(which).write_text(str(pid), encoding="utf-8")
+    lifecycle.proc_identity.write_identity(_pidfile(which), pid, PID_MARKERS.get(which, ""))
+
+
+def _remove_pidfile(which: str) -> None:
+    try:
+        _pidfile(which).unlink()
+    except FileNotFoundError:
+        pass
+    lifecycle.proc_identity.remove_identity(_pidfile(which))
 
 
 def _agent() -> str:
@@ -918,13 +932,13 @@ def supervise() -> int:
     # Adopt by replacing it: one watcher per project, owned by this supervisor.
     orphan = read_pid("watcher")
     if lifecycle.pid_alive(orphan):
-        record_event("ORPHAN_WATCHER_REPLACED", pid=orphan)
-        os.kill(orphan, signal.SIGTERM)
-        deadline = time.time() + 10
-        while time.time() < deadline and lifecycle.pid_alive(orphan):
-            time.sleep(0.1)
-        if lifecycle.pid_alive(orphan):
-            os.kill(orphan, signal.SIGKILL)
+        # T-5267: only when the pid is still the watcher that wrote the pid file.
+        res = lifecycle.stop_checked(orphan, site="orphan-watcher", marker=PID_MARKERS["watcher"],
+                                     pid_file=_pidfile("watcher"), log=record_event, timeout=10)
+        if res == "refused":
+            _remove_pidfile("watcher")
+        else:
+            record_event("ORPHAN_WATCHER_REPLACED", pid=orphan)
     child: subprocess.Popen | None = None
     child_started = 0.0
     last_receiver_check = 0.0
@@ -973,10 +987,7 @@ def supervise() -> int:
                 child.kill()
         record_event("SUPERVISOR_STOPPED", pid=os.getpid())
         if not project_gone() and read_pid("supervisor") == os.getpid():
-            try:
-                _pidfile("supervisor").unlink()
-            except FileNotFoundError:
-                pass
+            _remove_pidfile("supervisor")
     return 0
 
 
@@ -1057,12 +1068,13 @@ def stop_processes(timeout: float = 10.0, reason: str = "restart") -> dict:
     for which in ("supervisor", "watcher"):
         pid = read_pid(which)
         if lifecycle.pid_alive(pid):
-            os.kill(pid, signal.SIGTERM)
-            deadline = time.time() + timeout
-            while time.time() < deadline and lifecycle.pid_alive(pid):
-                time.sleep(0.1)
-            if lifecycle.pid_alive(pid):
-                os.kill(pid, signal.SIGKILL)
+            # T-5267: signal only the process that wrote the pid file, never a reused pid.
+            res = lifecycle.stop_checked(pid, site=f"stop-{which}", marker=PID_MARKERS[which],
+                                         pid_file=_pidfile(which), log=record_event,
+                                         timeout=timeout)
+            if res == "refused":
+                _remove_pidfile(which)
+                continue
             stopped[which] = pid
     return stopped
 

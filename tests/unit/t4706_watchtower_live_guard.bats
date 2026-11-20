@@ -63,6 +63,10 @@ _wt_as_live_test() {
 }
 
 @test "t4706: FW_WATCHTOWER_ALLOW_LIVE_IN_TEST=1 lets the stop through" {
+    # T-5267: stop signals only the process that wrote the pid file; a bare `sleep`
+    # in a legacy pid file is now (rightly) refused, so record the fake's identity.
+    bash -c 'source "$1/lib/pid-alive.sh"; fw_pid_identity_write "$2" "$3" ""' _ \
+        "$FWROOT" "$LIVE/.context/working/watchtower.pid" "$FAKE_PID"
     FW_WATCHTOWER_ALLOW_LIVE_IN_TEST=1 run _wt_as_live_test stop
     [ "$status" -eq 0 ]
     ! kill -0 "$FAKE_PID" 2>/dev/null || false
