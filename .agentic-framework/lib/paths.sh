@@ -462,49 +462,9 @@ fw_task_view_dirs() {
 }
 
 # Printed fw command builder (T-1102/T-1143; rule T-5302, builder T-5303).
-# Every command the framework PRINTS for a person or an agent is
-#     cd <absolute project root> && <fw path> <args>
-# with <fw path> = bin/fw in the framework repo (FRAMEWORK.md + bin/fw at the
-# root) and .agentic-framework/bin/fw in a vendored project. Never bare `fw`:
-# the PATH fw is not the T-2793 router on every host (ring20 .122 keeps the old
-# fw-shim) nor on every PATH a worker or hook runs with (1409). Before T-5303
-# this returned bare `fw` whenever any fw was on PATH.
-# Python twin: lib/fw_command.py; Watchtower global: fw_cmd. Parity is pinned by
-# tests/unit/test_t5303_fw_command_builder.py. Args are ONE pre-formed string,
-# concatenated unchanged (no re-quoting: printf %q and shlex.quote differ);
-# only the root is quoted, with shlex.quote rules (_fw_quote_word).
-_fw_cmd() {
-    if [ -f "$PROJECT_ROOT/FRAMEWORK.md" ] && [ -f "$PROJECT_ROOT/bin/fw" ]; then
-        echo "bin/fw"
-    else
-        echo ".agentic-framework/bin/fw"
-    fi
-}
-
-# shlex.quote, in bash: unchanged when every char is [A-Za-z0-9@%+=:,./_-],
-# else single-quoted with ' written as '"'"'.
-_fw_quote_word() {
-    local LC_ALL=C s="$1" sq="'" rep="'\"'\"'"
-    if [ -z "$s" ]; then
-        printf "''"
-    elif [[ "$s" =~ ^[A-Za-z0-9@%+=:,./_-]+$ ]]; then
-        printf '%s' "$s"
-    else
-        printf "'%s'" "${s//$sq/$rep}"
-    fi
-}
-
-# Emit a full copy-pasteable command with cd prefix (T-609/T-1102/T-5303)
-# Usage: _emit_user_command "inception decide T-XXX go"
-_emit_user_command() {
-    local root="$PROJECT_ROOT"
-    case "$root" in /*) ;; *) root="$(cd "$root" 2>/dev/null && pwd || printf '%s' "$root")" ;; esac
-    if [ -n "${1:-}" ]; then
-        printf 'cd %s && %s %s\n' "$(_fw_quote_word "$root")" "$(_fw_cmd)" "$1"
-    else
-        printf 'cd %s && %s\n' "$(_fw_quote_word "$root")" "$(_fw_cmd)"
-    fi
-}
+# _fw_cmd / _fw_quote_word / _emit_user_command live in lib/fw-command.sh
+# (T-5304) so bin/fw, which cannot source this file, sources the same builder.
+source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh"
 
 # T-4406: fw_refuse_fs_root — writers refuse an empty or "/" root.
 source "$(dirname "${BASH_SOURCE[0]}")/fs-root-guard.sh"
