@@ -105,10 +105,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The brief (lib/reviewer/judge_cli.py, both the harness and the self-recording variant) asks for the structured vote: a header (format `verdict/1`, task, reviewer, round, overall vote, failed criteria) and per criterion vote, evidence (verbatim quote, or for an image the file plus region `x,y,w,h` or a CSS selector), location (file:line, or image file plus region), rule, one-sentence conclusion, counter-search (searched for / found), and what would change my mind; pass and fail have the same form, and a non-green vote still carries guidance.
-- [ ] A strict reader (one function, used by the harness path and by `verdict record` for self-recording seats) returns the parsed structure or a list of what is missing; a vote missing any required label, with an outcome outside the allowed set, or whose overall vote disagrees with its per-criterion votes, yields no verdict for that criterion and says why in the evidence report.
-- [ ] New rows carry `format: verdict/1` and the parsed structure; rows without a format version are read and validated exactly as before (existing ledger tests stay green, the committed ledger audits the same).
-- [ ] Tests: a complete pass and a complete fail are accepted; each missing label is refused; a lenient-reader case (prose that only says "all criteria hold") is refused; an old free-text row still validates.
+- [x] The brief (lib/reviewer/judge_cli.py, both the harness and the self-recording variant) asks for the structured vote: a header (format `verdict/1`, task, reviewer, round, overall vote, failed criteria) and per criterion vote, evidence (verbatim quote, or for an image the file plus region `x,y,w,h` or a CSS selector), location (file:line, or image file plus region), rule, one-sentence conclusion, counter-search (searched for / found), and what would change my mind; pass and fail have the same form, and a non-green vote still carries guidance.
+- [x] A strict reader (one function, used by the harness path and by `verdict record` for self-recording seats) returns the parsed structure or a list of what is missing; a vote missing any required label, with an outcome outside the allowed set, or whose overall vote disagrees with its per-criterion votes, yields no verdict for that criterion and says why in the evidence report.
+- [x] New rows carry `format: verdict/1` and the parsed structure; rows without a format version are read and validated exactly as before (existing ledger tests stay green, the committed ledger audits the same).
+- [x] Tests: a complete pass and a complete fail are accepted; each missing label is refused; a lenient-reader case (prose that only says "all criteria hold") is refused; an old free-text row still validates.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
