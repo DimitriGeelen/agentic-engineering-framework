@@ -1,13 +1,19 @@
 ---
 id: T-5289
-name: "Codex reviewer seat reports search/settings icons missing from a 1280 px Watchtower capture where they are present (twice, T-5262)"
+name: "Codex reviewer seat reports search/settings icons missing from a 1280 px Watchtower
+  capture where they are present (twice, T-5262)"
 description: >
-  T-5262 render criterion: codex seat gave red twice (judge-t-5262-r5-codex-8742b556a1e8, -cc747b0f5d67) saying 02-approvals.png lacks the search and settings icons. The icon zone of 02-approvals.png and 01-root.png is pixel-equivalent (187 dark px each at x 895-960, y 45-70) and a zoomed crop shows both icons. Find out how the codex worker receives images (resizing? format?) and why it misreads small header icons; a false red from one seat blocks a unanimous rung-5 panel.
+  T-5262 render criterion: codex seat gave red twice (judge-t-5262-r5-codex-8742b556a1e8,
+  -cc747b0f5d67) saying 02-approvals.png lacks the search and settings icons. The
+  icon zone of 02-approvals.png and 01-root.png is pixel-equivalent (187 dark px each
+  at x 895-960, y 45-70) and a zoomed crop shows both icons. Find out how the codex
+  worker receives images (resizing? format?) and why it misreads small header icons;
+  a false red from one seat blocks a unanimous rung-5 panel.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T06:42:10Z
-last_update: 2026-11-20T06:42:10Z
-date_finished: null
+last_update: '2026-11-20T08:29:54Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-20T08:29:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5289: Codex reviewer seat reports search/settings icons missing from a 1280 px Watchtower capture where they are present (twice, T-5262)
@@ -57,20 +80,21 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5262 render criterion, 2026-11-20: the codex seat gave red twice (judge-t-5262-r5-codex-8742b556a1e8, judge-t-5262-r5-codex-cc747b0f5d67), saying 02-approvals.png (1280 px) lacks the search and settings icons. The icon zone (x 895-960, y 45-70) of 02-approvals.png and 01-root.png has the same 187 dark pixels and a zoomed crop shows both icons. The claude-code seat gave green both times.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The codex seat is launched with the prompt text only (agents/termlink/termlink.sh, `codex exec ... "$PROMPT_TEXT"`, no image attachment), so how it "opens" a PNG is unknown: it may read a downscaled image, or not see the image at all and infer. Hypothesis 1: its image view loses small detail.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Find out how the codex seat sees screenshots and why it misread this one; fix the launch (or exclude codex from image criteria) so a seat's red on a render criterion rests on what the image shows.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** The codex seat either reads the T-5262 captures correctly (icons present) or is not seated for criteria it cannot see; the cause is recorded.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The way the codex seat reads a PNG in a review run is established from its run log (tool used, image size it saw) and written in ## RCA.
+- [ ] A fix is in place: either images reach codex at full resolution (e.g. attached with its image option) or render criteria are not given to a seat kind that cannot view images, with a test.
+- [ ] Re-running the codex seat on the T-5262 captures no longer claims the icons are missing, or codex is no longer seated for that criterion.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -354,3 +378,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5289-codex-reviewer-seat-reports-searchsettin.md
 - **Context:** Initial task creation
+
+### 2026-11-20T08:29:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

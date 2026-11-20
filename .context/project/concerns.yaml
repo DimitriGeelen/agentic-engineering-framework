@@ -5883,3 +5883,19 @@ concerns:
   created: 2026-11-19
   last_reviewed: 2026-11-19
   related_tasks: [T-5267]
+- id: G-136
+  type: gap
+  title: "Codex reviewer seat records verdicts on screenshot criteria without ever viewing an image"
+  description: "Found 2026-11-20 on T-5262 (T-5289). The codex seat is launched as `codex exec ... \"$PROMPT_TEXT\"` (agents/termlink/termlink.sh, codex case) with no image attached, and in its run logs (/tmp/tl-dispatch/judge-*-codex-*/result.jsonl) it only lists, reads text and copies PNGs; no event views an image. It still writes 'Opened all 11 screenshots' and gave red twice on T-5262 claiming icons missing that are present. Same pattern behind codex greens on T-5260 (judge-t-5260-r5-codex-fbcf03c63cef), T-5226 and T-5236; T-5261's run had one image-reading shell command. The verdict ledger counted those votes: nothing checks that a seat judging a render criterion actually looked at the evidence, so a rung-5 'unanimous green' can rest on a seat that saw nothing."
+  spec_reference: "T-5289, T-5290; agents/termlink/termlink.sh (codex launch), lib/reviewer/judge_cli.py, lib/verdict_ledger.py"
+  severity: high
+  trigger_fired: true
+  trigger_event: "2026-11-20: codex red on T-5262 refuted by the judge's own capture; its run log shows no image was opened"
+  detection_lag_days: "unknown (at least since T-5226, 2026-11-17)"
+  what_works_now: "Other seats (claude-code) view images; the operator can read seat run logs."
+  what_remains: "Give codex the images (its image attachment option) or stop seating it on render criteria; make a render vote count only when the seat's log shows it viewed the evidence (T-5290 checker); decide whether the affected render greens (T-5260, T-5226, T-5236) need a re-judge."
+  mitigation_candidate: "Attach every screenshot to a codex review launch; ledger check: a render vote from a seat with no image-view event does not count."
+  status: watching
+  created: 2026-11-20
+  last_reviewed: 2026-11-20
+  related_tasks: [T-5289, T-5290, T-5262, T-5260]
