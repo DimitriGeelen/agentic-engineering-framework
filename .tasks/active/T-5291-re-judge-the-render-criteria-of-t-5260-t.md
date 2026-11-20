@@ -102,8 +102,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] For T-5260, T-5226 and T-5236, the seats' verdicts and whether each viewed the screenshots are recorded under ## Updates, from the saved dispatch logs.
-- [ ] Each criterion is marked sound (at least one green from a seat that viewed the images) or not; for any that is not, a follow-up task exists.
+- [x] For T-5260, T-5226 and T-5236, the seats' verdicts and whether each viewed the screenshots are recorded under ## Updates, from the saved dispatch logs.
+- [x] Each criterion is marked sound (at least one green from a seat that viewed the images) or not; for any that is not, a follow-up task exists.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -383,6 +383,16 @@ grep -q "T-5291 finding" .tasks/active/T-5291-re-judge-the-render-criteria-of-t-
      legacy tasks lacking this section. -->
 
 ## Updates
+
+### 2026-11-20 — T-5291 finding (from the saved dispatch logs, lib/vote_checker.py seat_viewed_images)
+| Task | claude seats (images viewed → verdict) | codex seats (viewed → verdict) | antigravity seats |
+|---|---|---|---|
+| T-5260 | 6 → not-evaluated, 5 → not-evaluated, 13 → green, 18 → green | 0 → not-evaluated ×2, 0 → amber, 0 → green | cannot tell (no log then) → green ×3 |
+| T-5226 | 6 → green, 5 → not-evaluated | 0 → not-evaluated, 0 → green | cannot tell → green, not-evaluated |
+| T-5236 | 14 → amber, 6 → green ×3, 6 → not-evaluated | 0 → amber, 0 → green ×2, 0 → not-evaluated | cannot tell → green ×2, amber |
+
+- **All three criteria are sound:** each had at least one green from a claude seat whose log shows it opened the screenshots. Codex's greens rested on no image (as G-136 said); antigravity's are unprovable (it kept no log before T-5309).
+- **But the panels were weaker than they looked:** under today's rules (T-5294) only the claude vote would count, so none of these rung-5 panels had three checkable seats. No page was passed unseen; no follow-up re-check is needed. Re-judging a closed task is not supported by `fw reviewer judge`; not built, since nothing here needs it.
 
 ### 2026-11-20T08:42:06Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
