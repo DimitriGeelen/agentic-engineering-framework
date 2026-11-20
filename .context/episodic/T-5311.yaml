@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5311: Shared worker contract v0.3.4: specify the 'withdrawn' outcome and send it to TermLink and ring20 (T-5300)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T16:34:28Z
+# ============================================================================
+
+task_id: T-5311
+task_name: "Shared worker contract v0.3.4: specify the 'withdrawn' outcome and send it to TermLink and ring20 (T-5300)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-20T16:29:09Z
+completed: 2026-11-20T16:34:05Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-20T17:29:13+01:00
+last_commit: 2026-11-20T17:34:03+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed (T-5300 GO). scope — withdrawn as item 3 of the v0.3.4 draft. shared worker contract v0.3.4 item 3 — the withdrawn outcome (T3w, credential rule, start-after-T2, CC-26..29). criteria ticked; v0.3.4 item 3 sent to TermLink and ring20
+
+# Key outcomes
+outcomes:
+  - 'v0.3.4 changelog item 3 "withdrawn" with sources [ring20 T-2790 3d5e1fda] and [termlink ab85e88e], and the body edits it names: T3b variant dispatched -> done outcome withdrawn; allowed only from dispatched for the current attempt; running -> cas_mismatch; done/lost/unknown -> forbidden_transition; repeat deduped (T8); only the holder of the attempt''s credentials on an Execute-scope connection; hub sweep never withdraws; no operator path; evidence_digest = sha256(reason), result_kind none; closes open questions; logged with actor and reason; no notice; a supervisor starts the worker only after its T2 succeeded.'
+  - 'Four conformance vectors (withdraw from dispatched; withdraw vs T2 race, one wins; withdraw from running = cas_mismatch; repeat = deduped), in the same form as the existing CC vectors.'
+  - 'The version-field question is answered in the text (does a new outcome stay `wc/0.3` as a patch revision, or not), with the reason.'
+  - 'The text is sent to 010-termlink and proxmox-ring20-management over the sidecar (parent sends, after review). Sent 2026-11-20 (msgs 109021fb, 1767777d); spec commit 90202e700, vectors CC-26..CC-29.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5311-shared-worker-contract-v034-specify-the-.md'
+  - 'docs/specs/shared-worker-contract-transitions.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T17:29:13'
+    action: 'T-5311: filed (T-5300 GO)'
+  - time: '2026-11-20T17:29:59'
+    action: 'T-5311: scope — withdrawn as item 3 of the v0.3.4 draft'
+  - time: '2026-11-20T17:32:46'
+    action: 'T-5311: shared worker contract v0.3.4 item 3 — the withdrawn outcome (T3w, credential rule, start-after-T2, CC-26..29)'
+  - time: '2026-11-20T17:34:03'
+    action: 'T-5311: criteria ticked; v0.3.4 item 3 sent to TermLink and ring20'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4
+  commits: 5
+  files_changed: 5
+  lines_added: 615
+  lines_removed: 30
+  footprint_refreshed_at: '2026-11-20T16:34:42Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5311-shared-worker-contract-v034-specify-the-.md
+generated_by: context-agent-hybrid
