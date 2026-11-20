@@ -924,6 +924,19 @@ _terminator_watch() {
         local banner="${FW_TERMINATOR_BANNER_SECS:-5}"
         _budget_end_banner "$root" "$banner"
         sleep "$banner"
+        # T-5297 (ring20 T-2784, G-236): a prompt typed during the banner starts a new turn;
+        # check again right before the signal, or that turn is killed and never answered.
+        if [ "$why" = idle ]; then
+            pids=$(pgrep -P "$wrapper_pid" 2>/dev/null | grep -v "^${self}$" | tr '\n' ' ' || true)
+            [ -n "${pids// /}" ] || return 0
+            case "$(_turn_state "$root" "$first_mtf" "$pids" "")" in
+                idle\ *) ;;
+                *) idle_since=0
+                   echo "[terminator] a prompt arrived before the kill — waiting again (T-5297)" \
+                       >> "$root/.context/working/.compact-log" 2>/dev/null || true
+                   continue ;;
+            esac
+        fi
         for p in $pids; do kill -TERM "$p" 2>/dev/null || true; done
         sleep "$grace"
         for p in $pids; do kill -KILL "$p" 2>/dev/null || true; done

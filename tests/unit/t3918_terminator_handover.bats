@@ -220,6 +220,24 @@ _stop_bg() { kill "$TW" 2>/dev/null || true; }
     grep -q "no session record" "$LOG"
 }
 
+@test "T-5297: a turn that starts during the pre-kill banner is not killed" {
+    export FW_TERMINATOR_POLL=0.2 FW_TERMINATOR_GRACE=0.2 FW_TERMINATOR_MAX_WAIT=60
+    export FW_TERMINATOR_BANNER_SECS=3
+    eval "$(awk '/^_budget_end_banner\(\) \{/,/^}/' "$FRAMEWORK_ROOT/bin/claude-fw")"
+    eval "$(awk '/^_handover_id\(\) \{/,/^}/' "$FRAMEWORK_ROOT/bin/claude-fw")"
+    _fake_wrapper
+    echo '{}' > "$SIG"
+    sleep 1; _session true                   # the turn has ended: the terminator goes to the banner
+    _terminator_watch "$WRAP" "$SIG" "$(( $(date +%s) - 1 ))" 2>"$T/banner.err" & TW=$!
+    for _ in $(seq 1 300); do grep -q "Ending in" "$T/banner.err" 2>/dev/null && break; sleep 0.1; done
+    grep -q "Ending in" "$T/banner.err"      # the banner is showing now
+    _session false                           # a prompt arrives while the banner is showing
+    sleep 4                                  # past the banner: pre-T-5297 the child is dead here
+    _alive
+    _stop_bg
+    grep -q "a prompt arrived before the kill" "$LOG"
+}
+
 @test "T-3918: budget-gate no longer claims claude -c preserves the conversation" {
     run grep -q "Handover stays best-effort (claude -c" "$FRAMEWORK_ROOT/agents/context/budget-gate.sh"
     [ "$status" -eq 1 ]

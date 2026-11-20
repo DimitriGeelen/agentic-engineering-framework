@@ -12,7 +12,7 @@ description: >
   the banner sleep and before each signal; on a busy turn go back to waiting; test
   it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T09:50:30Z
-last_update: '2026-11-20T10:01:38Z'
+last_update: 2026-11-20T10:14:32Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,20 +92,20 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** proxmox-ring20-management (their T-2784, gap G-236), DM relayed by the operator 2026-11-20: a prompt typed after the budget handover, while claude-fw shows its pre-kill banner, is killed mid-turn and never answered. ring20 patched their vendored copy (marker 'a prompt arrived before the kill').
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** bin/claude-fw `_terminator_watch` checks `_turn_state` once right after the handover (~line 907), then shows the banner, sleeps FW_TERMINATOR_BANNER_SECS and sends SIGTERM (~line 923-927) without checking again. Verified in our source.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Never kill a turn that started during the banner.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** After the banner sleep the terminator checks the turn state again; a busy turn sends it back to waiting (as the post-handover check already does); an idle one is ended as before. The max-wait ceiling path is unchanged.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] On the idle path, `_terminator_watch` re-checks `_turn_state` after the banner sleep and before `kill -TERM`; on a busy turn it logs "a prompt arrived before the kill" to .compact-log and goes back to waiting.
+- [ ] Test in tests/unit/t3918_terminator_handover.bats: a turn that starts during the banner is not killed; the existing T-3918/T-4032 tests stay green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -292,6 +292,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t3918_terminator_handover.bats > /tmp/.t5297a 2>&1 && ! grep -q "^not ok" /tmp/.t5297a
+grep -q "a prompt arrived before the kill" bin/claude-fw
+bin/fw vendor self --check --task T-5297
 
 ## RCA
 
@@ -389,3 +392,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5297-claude-fw-terminator-kills-a-turn-starte.md
 - **Context:** Initial task creation
+
+### 2026-11-20T10:14:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
