@@ -4453,6 +4453,11 @@ print(s + "\t" + d.replace("\t", " ").replace("\n", " "))' "$FRAMEWORK_ROOT" 2>/
                     echo "         Ask the operator who bound it; see: fw sidecar alerts"
                     warnings=$((warnings + 1))
                     ;;
+                at-risk)
+                    echo -e "  ${YELLOW}WARN${NC}  Our inbox is likely to be locked first ($_lk_detail): AEF's reads are unsigned (T-5281)"
+                    echo "         Decide signed reads (or leave reading to the signed reader) before anyone binds it"
+                    warnings=$((warnings + 1))
+                    ;;
                 *)
                     echo -e "  ${CYAN}SKIP${NC}  Inbox lock: not checked (${_lk_detail:-could not ask the hub})"
                     ;;

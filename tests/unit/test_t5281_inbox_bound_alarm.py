@@ -230,3 +230,30 @@ def test_doctor_not_checked_when_consumers_fails(fake):
     out = _run_doctor_block(fake)
     assert "SKIP  Inbox lock: not checked (" in out
     assert "OK" not in out and "warnings=0" in out
+
+
+# --- 010 msg a0e9e80e: a signed reader beside our unsigned one is "at-risk" ----
+
+def _consumers(monkeypatch, consumers):
+    out = json.dumps({"bound": None, "consumers": consumers, "topic": "t", "window_s": 86400})
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: subprocess.CompletedProcess(a, 0, out, ""))
+
+
+def test_signed_reader_beside_unsigned_is_at_risk(fake, monkeypatch):
+    _consumers(monkeypatch, [
+        {"agent": "010-termlink", "strength": "proven"},
+        {"agent": "(unnamed)", "strength": "claimed"}])
+    state, detail = inbox.own_inbox_bound()
+    assert state == "at-risk" and "010-termlink" in detail
+    lines = alerts.lock_lines(state, detail)
+    assert lines and lines[0].startswith("WARN:") and "locked first" in lines[0]
+
+
+def test_only_unsigned_readers_is_unbound(fake, monkeypatch):
+    _consumers(monkeypatch, [{"agent": "(unnamed)", "strength": "claimed"}])
+    assert inbox.own_inbox_bound()[0] == "unbound"
+
+
+def test_only_signed_reader_is_unbound(fake, monkeypatch):
+    _consumers(monkeypatch, [{"agent": "010-termlink", "strength": "proven"}])
+    assert inbox.own_inbox_bound()[0] == "unbound"

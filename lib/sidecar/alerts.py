@@ -131,6 +131,11 @@ def lock_lines(state: str, detail: str) -> list[str]:
                 f"unsigned, so the hub refuses them and no mail arrives (T-5281)",
                 "  Ask the operator who bound it; unbinding (or signed reads) is "
                 "needed before mail flows again."]
+    if state == "at-risk":
+        return [f"WARN: our inbox is likely to be locked first ({detail}): AEF's reads "
+                f"are unsigned and would be refused after a bind (T-5281)",
+                "  Before anyone binds it: decide signed reads or leave reading to the "
+                "signed reader."]
     if state == "unbound":
         return []
     return [f"inbox lock: not checked ({detail})"]

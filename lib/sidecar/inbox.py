@@ -363,6 +363,15 @@ def inbox_bound(topic: str, *, binary: str | None = None,
     if not isinstance(data, dict) or "bound" not in data:
         return "unknown", "termlink hub inbox consumers: no 'bound' field (older termlink?)"
     if data["bound"] is None:
+        # 010 msg a0e9e80e: an inbox that a SIGNED reader (e.g. the agent's Rust
+        # sidecar) already reads, beside an unproven one (our unsigned reads), is the
+        # one likely to be bound first: warn before the bind, not after.
+        cons = [c for c in (data.get("consumers") or []) if isinstance(c, dict)]
+        proven = [c for c in cons if str(c.get("strength") or "") == "proven"]
+        unproven = [c for c in cons if str(c.get("strength") or "") != "proven"]
+        if proven and unproven:
+            names = ", ".join(sorted({str(c.get("agent") or "?") for c in proven}))
+            return "at-risk", f"{topic}: signed reader(s) {names} beside an unsigned one"
         return "unbound", topic
     return "bound", _bound_holder(data["bound"])
 
