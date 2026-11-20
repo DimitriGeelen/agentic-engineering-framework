@@ -288,6 +288,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5312_withdraw.py tests/unit/t4802_dispatch_records_test.py -q > /tmp/.t5312a 2>&1 && grep -q passed /tmp/.t5312a && ! grep -q failed /tmp/.t5312a
+bin/fw vendor self --check --task T-5312
 
 ## RCA
 
