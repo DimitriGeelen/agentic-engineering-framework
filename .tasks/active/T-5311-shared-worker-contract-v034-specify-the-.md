@@ -108,10 +108,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] v0.3.4 changelog item 3 "withdrawn" with sources [ring20 T-2790 3d5e1fda] and [termlink ab85e88e], and the body edits it names: T3b variant dispatched -> done outcome withdrawn; allowed only from dispatched for the current attempt; running -> cas_mismatch; done/lost/unknown -> forbidden_transition; repeat deduped (T8); only the holder of the attempt's credentials on an Execute-scope connection; hub sweep never withdraws; no operator path; evidence_digest = sha256(reason), result_kind none; closes open questions; logged with actor and reason; no notice; a supervisor starts the worker only after its T2 succeeded.
-- [ ] Four conformance vectors (withdraw from dispatched; withdraw vs T2 race, one wins; withdraw from running = cas_mismatch; repeat = deduped), in the same form as the existing CC vectors.
-- [ ] The version-field question is answered in the text (does a new outcome stay `wc/0.3` as a patch revision, or not), with the reason.
-- [ ] The text is sent to 010-termlink and proxmox-ring20-management over the sidecar (parent sends, after review).
+- [x] v0.3.4 changelog item 3 "withdrawn" with sources [ring20 T-2790 3d5e1fda] and [termlink ab85e88e], and the body edits it names: T3b variant dispatched -> done outcome withdrawn; allowed only from dispatched for the current attempt; running -> cas_mismatch; done/lost/unknown -> forbidden_transition; repeat deduped (T8); only the holder of the attempt's credentials on an Execute-scope connection; hub sweep never withdraws; no operator path; evidence_digest = sha256(reason), result_kind none; closes open questions; logged with actor and reason; no notice; a supervisor starts the worker only after its T2 succeeded.
+- [x] Four conformance vectors (withdraw from dispatched; withdraw vs T2 race, one wins; withdraw from running = cas_mismatch; repeat = deduped), in the same form as the existing CC vectors.
+- [x] The version-field question is answered in the text (does a new outcome stay `wc/0.3` as a patch revision, or not), with the reason.
+- [x] The text is sent to 010-termlink and proxmox-ring20-management over the sidecar (parent sends, after review). Sent 2026-11-20 (msgs 109021fb, 1767777d); spec commit 90202e700, vectors CC-26..CC-29.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
