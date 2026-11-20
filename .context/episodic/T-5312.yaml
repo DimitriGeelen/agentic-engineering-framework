@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5312: lib/dispatch_records.py: Store.withdraw per wc v0.3.4 with the four conformance vectors (T-5300)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T17:13:53Z
+# ============================================================================
+
+task_id: T-5312
+task_name: "lib/dispatch_records.py: Store.withdraw per wc v0.3.4 with the four conformance vectors (T-5300)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-20T16:29:10Z
+completed: 2026-11-20T17:13:00Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-20T17:29:16+01:00
+last_commit: 2026-11-20T18:12:57+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed (T-5300 GO). scope; spec v0.3.4 T2 note — launch failure after T2 ends through T3 as failed (ring20 question). verification lines. Store.withdraw (T3w, outcome withdrawn) per wc v0.3.4, CC-26..CC-29 tests. vendor sync of lib/dispatch_records.py. criteria ticked
+
+# Key outcomes
+outcomes:
+  - 'Spec: the v0.3.4 T2 note states the launch-failure path (T3, outcome `failed`, launch-error evidence; T3w stays dispatched-only), cited to ring20 msg 4c9335d8.'
+  - 'lib/dispatch_records.py: OUTCOMES gains `withdrawn`; `Store.withdraw(dispatch_id, attempt, *, reason, actor, nonce, credential)` implements T3w: only from `dispatched` with the current attempt and matching supervisor_gen; running → cas_mismatch; done/lost/unknown → forbidden_transition; an identical repeat deduped; a different-reason withdrawal of a withdrawn attempt → forbidden_transition; a late real completion → done_conflict; evidence_digest = sha256(reason), result_kind none; history entry with actor and reason; no notice.'
+  - 'Tests CC-26..CC-29 plus the two v0.3.4 cases above pass; existing dispatch_records tests stay green. (aab7522cb, e3dad4b6e: 18 new tests incl. a 20-round threaded T2-vs-withdraw race; 28 with t4802. Not done here: CC-26..CC-29 are not yet in tests/conformance/worker-contract/vectors.yaml, whose checker lists CC-01..CC-25; follow-up filed.)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/dispatch_records.py'
+  - '.tasks/active/T-5312-libdispatchrecordspy-storewithdraw-per-w.md'
+  - 'docs/specs/shared-worker-contract-transitions.md'
+  - 'lib/dispatch_records.py'
+  - 'tests/unit/test_t5312_withdraw.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T17:29:16'
+    action: 'T-5312: filed (T-5300 GO)'
+  - time: '2026-11-20T17:38:06'
+    action: 'T-5312: scope; spec v0.3.4 T2 note — launch failure after T2 ends through T3 as failed (ring20 question)'
+  - time: '2026-11-20T18:05:27'
+    action: 'T-5312: verification lines'
+  - time: '2026-11-20T18:09:07'
+    action: 'T-5312: Store.withdraw (T3w, outcome withdrawn) per wc v0.3.4, CC-26..CC-29 tests'
+  - time: '2026-11-20T18:09:33'
+    action: 'T-5312: vendor sync of lib/dispatch_records.py'
+  - time: '2026-11-20T18:12:57'
+    action: 'T-5312: criteria ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 43 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 43
+  commits: 7
+  files_changed: 8
+  lines_added: 883
+  lines_removed: 30
+  footprint_refreshed_at: '2026-11-20T17:14:11Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5312-libdispatchrecordspy-storewithdraw-per-w.md
+generated_by: context-agent-hybrid
