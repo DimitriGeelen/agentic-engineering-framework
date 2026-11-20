@@ -333,6 +333,69 @@ def _bound_holder(bound) -> str:
     return str(bound)[:120]
 
 
+def _consumers(topic: str, *, binary: str | None = None, timeout: float | None = None,
+               runner=None) -> tuple[dict | None, str]:
+    """`termlink hub inbox consumers <topic> --json` -> (data, "") or (None, why).
+    One subprocess, no shell, bounded by CONSUMERS_TIMEOUT (T-5281, T-5296)."""
+    binary = binary or _binary()
+    if runner is None and not (shutil.which(binary) or binary.startswith("/")):
+        return None, f"termlink binary not found ({binary})"
+    argv = [binary, "hub", "inbox", "consumers", topic, "--json"]
+    try:
+        proc = (runner or subprocess.run)(
+            argv, capture_output=True, text=True,
+            timeout=CONSUMERS_TIMEOUT if timeout is None else timeout)
+    except subprocess.TimeoutExpired:
+        return None, f"termlink hub inbox consumers timed out on {topic}"
+    except (OSError, subprocess.SubprocessError) as e:
+        return None, f"termlink hub inbox consumers: {type(e).__name__}: {e}"
+    if proc.returncode != 0:
+        err = (proc.stderr or proc.stdout or "").strip().splitlines()
+        return None, (f"termlink hub inbox consumers rc={proc.returncode} "
+                      f"{err[-1] if err else ''}").strip()
+    try:
+        data = json.loads(proc.stdout or "")
+    except json.JSONDecodeError:
+        return None, "termlink hub inbox consumers: output is not JSON"
+    if not isinstance(data, dict):
+        return None, "termlink hub inbox consumers: output is not a JSON object"
+    return data, ""
+
+
+UNNAMED_AGENTS = ("", "(unnamed)", "?")
+
+
+def inbox_readers(topic: str, *, binary: str | None = None, timeout: float | None = None,
+                  runner=None) -> tuple[str, str]:
+    """Does any real reader hold `topic`? (T-5296, 010 msgs 8db94e3b/ed47e529)
+
+    Returns (state, detail), state one of "read", "unread", "unknown". A reader
+    counts when the hub names it or its read is proven (signed). An unnamed
+    `claimed` read alone does not: it may be a diagnostic read such as
+    `termlink channel info`. "unknown" says why the hub could not be asked.
+    """
+    try:
+        data, why = _consumers(topic, binary=binary, timeout=timeout, runner=runner)
+    except Exception as e:  # noqa: BLE001 — any failure is "could not ask"
+        data, why = None, f"termlink hub inbox consumers: {type(e).__name__}: {e}"
+    if data is None:
+        return "unknown", why
+    cons = data.get("consumers")
+    if not isinstance(cons, list):
+        return "unknown", "termlink hub inbox consumers: no 'consumers' list (older termlink?)"
+    real = []
+    for c in cons:
+        if not isinstance(c, dict):
+            continue
+        agent = str(c.get("agent") or "").strip()
+        named = agent not in UNNAMED_AGENTS
+        if named or str(c.get("strength") or "") == "proven":
+            real.append(f"{agent if named else '(unnamed)'} ({c.get('strength') or '?'})")
+    if real:
+        return "read", ", ".join(sorted(set(real)))
+    return "unread", topic
+
+
 def inbox_bound(topic: str, *, binary: str | None = None,
                 timeout: float | None = None) -> tuple[str, str]:
     """Is `topic` bound to an agent's key? (T-5281)
@@ -341,25 +404,9 @@ def inbox_bound(topic: str, *, binary: str | None = None,
     "bound" names the holder in detail; "unknown" says why the hub could not be
     asked. One subprocess, no shell, bounded by CONSUMERS_TIMEOUT.
     """
-    binary = binary or _binary()
-    if not (shutil.which(binary) or binary.startswith("/")):
-        return "unknown", f"termlink binary not found ({binary})"
-    argv = [binary, "hub", "inbox", "consumers", topic, "--json"]
-    try:
-        proc = subprocess.run(argv, capture_output=True, text=True,
-                              timeout=CONSUMERS_TIMEOUT if timeout is None else timeout)
-    except subprocess.TimeoutExpired:
-        return "unknown", f"termlink hub inbox consumers timed out on {topic}"
-    except (OSError, subprocess.SubprocessError) as e:
-        return "unknown", f"termlink hub inbox consumers: {type(e).__name__}: {e}"
-    if proc.returncode != 0:
-        err = (proc.stderr or proc.stdout or "").strip().splitlines()
-        return "unknown", (f"termlink hub inbox consumers rc={proc.returncode} "
-                           f"{err[-1] if err else ''}").strip()
-    try:
-        data = json.loads(proc.stdout or "")
-    except json.JSONDecodeError:
-        return "unknown", "termlink hub inbox consumers: output is not JSON"
+    data, why = _consumers(topic, binary=binary, timeout=timeout)
+    if data is None:
+        return "unknown", why
     if not isinstance(data, dict) or "bound" not in data:
         return "unknown", "termlink hub inbox consumers: no 'bound' field (older termlink?)"
     if data["bound"] is None:
