@@ -57860,3 +57860,21 @@ scan_id: R-b079e194
 task_id: T-5296
 payload:
   task_file: .tasks/active/T-5296-orphan-inbox-check-calls-an-inbox-unread.md
+---
+kind: scan_emitted
+timestamp: '2026-11-20T18:24:14Z'
+scan_id: R-20045492
+task_id: T-5305
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-20T18:24:14Z'
+scan_id: R-20045492
+task_id: T-5305
+payload:
+  task_file: .tasks/active/T-5305-printed-fw-commands-slice-3-watchtower-t.md

@@ -1,0 +1,203 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5305: Printed fw commands slice 3: Watchtower templates and blueprint strings use the builder's template global (T-5302)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T18:24:30Z
+# ============================================================================
+
+task_id: T-5305
+task_name: "Printed fw commands slice 3: Watchtower templates and blueprint strings use the builder's template global (T-5302)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-20T13:49:53Z
+completed: 2026-11-20T18:23:33Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-20T14:50:20+01:00
+last_commit: 2026-11-20T19:23:00+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed (T-5302 GO slice). scope. one Human heading. Watchtower templates and inception/decide strings print fw commands via the builder. vendor sync. redirect error keeps the full refusal command. claim command wraps instead of scrolling off the card; render criterion and visual verification. vendored template; agent criteria ticked. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (antigravity seat antigravity, recorded by the runtime)
+
+# Key outcomes
+outcomes:
+  - 'The five templates and web/blueprints/inception.py print copyable fw commands through `fw_cmd` / the Python builder; no literal `bin/fw ` remains in web/templates or web/blueprints printed text (comments excepted).'
+  - 'A test renders each changed page (or its template) for a framework-repo and a vendored fixture and finds the builder''s output, not a literal `bin/fw`.'
+  - 'Watchtower restarted; `bin/fw watchtower current` passes; the changed pages answer 200.'
+  - '[REVIEW] The changed Watchtower pages show the copyable commands in the builder''s form and otherwise look as before'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'redirect error keeps the full refusal command'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/inception.py'
+  - '.agentic-framework/web/decide_runner.py'
+  - '.agentic-framework/web/templates/arc_detail.html'
+  - '.agentic-framework/web/templates/arcs_index.html'
+  - '.agentic-framework/web/templates/designer_ghosts.html'
+  - '.agentic-framework/web/templates/embeddings.html'
+  - '.agentic-framework/web/templates/orchestrator.html'
+  - '.context/reviews/applied.jsonl'
+  - '.context/reviews/evidence/T-5305/01-designer-ghosts-40_411_367_149-crop.png'
+  - '.context/reviews/evidence/T-5305/01-designer-ghosts-judge-t-5305-r5-antigravity-63acfc9cdb1a.png'
+  - '.context/reviews/evidence/T-5305/01-designer-ghosts-judge-t-5305-r5-claude-code-b6794cc6a6ee-40_253_390_312-crop.png'
+  - '.context/reviews/evidence/T-5305/01-designer-ghosts-judge-t-5305-r5-claude-code-b6794cc6a6ee.png'
+  - '.context/reviews/evidence/T-5305/01-designer-ghosts-judge-t-5305-r5-codex-227a04a4303d.png'
+  - '.context/reviews/evidence/T-5305/02-arcs-0_0_1280_2856-crop.png'
+  - '.context/reviews/evidence/T-5305/02-arcs-judge-t-5305-r5-antigravity-63acfc9cdb1a.png'
+  - '.context/reviews/evidence/T-5305/02-arcs-judge-t-5305-r5-claude-code-b6794cc6a6ee.png'
+  - '.context/reviews/evidence/T-5305/02-arcs-judge-t-5305-r5-codex-227a04a4303d.png'
+  - '.context/reviews/evidence/T-5305/03-designer-app-0_0_1280_900-crop.png'
+  - '.context/reviews/evidence/T-5305/03-designer-app-judge-t-5305-r5-antigravity-63acfc9cdb1a.png'
+  - '.context/reviews/evidence/T-5305/03-designer-app-judge-t-5305-r5-claude-code-b6794cc6a6ee.png'
+  - '.context/reviews/evidence/T-5305/03-designer-app-judge-t-5305-r5-codex-227a04a4303d.png'
+  - '.context/reviews/evidence/T-5305/04-designer-0_0_1280_900-crop.png'
+  - '.context/reviews/evidence/T-5305/04-designer-judge-t-5305-r5-antigravity-63acfc9cdb1a.png'
+  - '.context/reviews/evidence/T-5305/04-designer-judge-t-5305-r5-claude-code-b6794cc6a6ee.png'
+  - '.context/reviews/evidence/T-5305/04-designer-judge-t-5305-r5-codex-227a04a4303d.png'
+  - '.context/reviews/evidence/T-5305/05-designer-corpus-0_0_1280_2395-crop.png'
+  - '.context/reviews/evidence/T-5305/05-designer-corpus-judge-t-5305-r5-antigravity-63acfc9cdb1a.png'
+  - '.context/reviews/evidence/T-5305/05-designer-corpus-judge-t-5305-r5-claude-code-b6794cc6a6ee.png'
+  - '.context/reviews/evidence/T-5305/05-designer-corpus-judge-t-5305-r5-codex-227a04a4303d.png'
+  - '.context/reviews/evidence/T-5305/06-embeddings-0_0_1280_1998-crop.png'
+  - '.context/reviews/evidence/T-5305/06-embeddings-judge-t-5305-r5-antigravity-63acfc9cdb1a.png'
+  - '.context/reviews/evidence/T-5305/06-embeddings-judge-t-5305-r5-claude-code-b6794cc6a6ee.png'
+  - '.context/reviews/evidence/T-5305/06-embeddings-judge-t-5305-r5-codex-227a04a4303d.png'
+  - '.context/reviews/evidence/T-5305/07-inception-0_0_1280_5941-crop.png'
+  - '.context/reviews/evidence/T-5305/07-inception-judge-t-5305-r5-antigravity-63acfc9cdb1a.png'
+  - '.context/reviews/evidence/T-5305/07-inception-judge-t-5305-r5-claude-code-b6794cc6a6ee.png'
+  - '.context/reviews/evidence/T-5305/07-inception-judge-t-5305-r5-codex-227a04a4303d.png'
+  - '.context/reviews/evidence/T-5305/08-assumptions-0_0_1280_6871-crop.png'
+  - '.context/reviews/evidence/T-5305/08-assumptions-judge-t-5305-r5-antigravity-63acfc9cdb1a.png'
+  - '.context/reviews/evidence/T-5305/08-assumptions-judge-t-5305-r5-claude-code-b6794cc6a6ee.png'
+  - '.context/reviews/evidence/T-5305/08-assumptions-judge-t-5305-r5-codex-227a04a4303d.png'
+  - '.context/reviews/evidence/T-5305/09-orchestrator-parallel-0_0_1280_900-crop.png'
+  - '.context/reviews/evidence/T-5305/09-orchestrator-parallel-judge-t-5305-r5-antigravity-63acfc9cdb1a.png'
+  - '.context/reviews/evidence/T-5305/09-orchestrator-parallel-judge-t-5305-r5-claude-code-b6794cc6a6ee.png'
+  - '.context/reviews/evidence/T-5305/09-orchestrator-parallel-judge-t-5305-r5-codex-227a04a4303d.png'
+  - '.context/reviews/evidence/T-5305/10-orchestrator-0_0_1280_6719-crop.png'
+  - '.context/reviews/evidence/T-5305/10-orchestrator-judge-t-5305-r5-antigravity-63acfc9cdb1a.png'
+  - '.context/reviews/evidence/T-5305/10-orchestrator-judge-t-5305-r5-claude-code-b6794cc6a6ee.png'
+  - '.context/reviews/evidence/T-5305/10-orchestrator-judge-t-5305-r5-codex-227a04a4303d.png'
+  - '.context/reviews/evidence/T-5305/AC1-judge-t-5305-r5-antigravity-63acfc9cdb1a.md'
+  - '.context/reviews/evidence/T-5305/AC1-judge-t-5305-r5-claude-code-b6794cc6a6ee.md'
+  - '.context/reviews/evidence/T-5305/AC1-judge-t-5305-r5-codex-227a04a4303d.md'
+  - '.context/reviews/evidence/T-5305/ghosts-claim@1024-34_0_475_62-crop.png'
+  - '.context/reviews/evidence/T-5305/ghosts-claim@1024-59_22_424_40-crop.png'
+  - '.context/reviews/evidence/T-5305/ghosts-claim@1024-judge-t-5305-r5-antigravity-63acfc9cdb1a.png'
+  - '.context/reviews/evidence/T-5305/ghosts-claim@1024-judge-t-5305-r5-claude-code-b6794cc6a6ee-60_22_422_40-crop.png'
+  - '.context/reviews/evidence/T-5305/ghosts-claim@1024-judge-t-5305-r5-claude-code-b6794cc6a6ee.png'
+  - '.context/reviews/evidence/T-5305/ghosts-claim@1024-judge-t-5305-r5-codex-227a04a4303d.png'
+  - '.context/reviews/evidence/T-5305/ghosts-claim@1440-117_0_397_77-crop.png'
+  - '.context/reviews/evidence/T-5305/ghosts-claim@1440-142_22_345_55-crop.png'
+  - '.context/reviews/evidence/T-5305/ghosts-claim@1440-judge-t-5305-r5-antigravity-63acfc9cdb1a.png'
+  - '.context/reviews/evidence/T-5305/ghosts-claim@1440-judge-t-5305-r5-claude-code-b6794cc6a6ee-142_22_345_55-crop.png'
+  - '.context/reviews/evidence/T-5305/ghosts-claim@1440-judge-t-5305-r5-claude-code-b6794cc6a6ee.png'
+  - '.context/reviews/evidence/T-5305/ghosts-claim@1440-judge-t-5305-r5-codex-227a04a4303d.png'
+  - '.context/reviews/evidence/T-5305/ghosts-claim@1920-232_0_359_78-crop.png'
+  - '.context/reviews/evidence/T-5305/ghosts-claim@1920-257_22_307_56-crop.png'
+  - '.context/reviews/evidence/T-5305/ghosts-claim@1920-judge-t-5305-r5-antigravity-63acfc9cdb1a.png'
+  - '.context/reviews/evidence/T-5305/ghosts-claim@1920-judge-t-5305-r5-claude-code-b6794cc6a6ee-257_22_307_55-crop.png'
+  - '.context/reviews/evidence/T-5305/ghosts-claim@1920-judge-t-5305-r5-claude-code-b6794cc6a6ee.png'
+  - '.context/reviews/evidence/T-5305/ghosts-claim@1920-judge-t-5305-r5-codex-227a04a4303d.png'
+  - '.context/reviews/evidence/T-5305/ghosts-header@1024-0_0_1024_166-crop.png'
+  - '.context/reviews/evidence/T-5305/ghosts-header@1024-0_48_1024_118-crop.png'
+  - '.context/reviews/evidence/T-5305/ghosts-header@1024-judge-t-5305-r5-antigravity-63acfc9cdb1a.png'
+  - '.context/reviews/evidence/T-5305/ghosts-header@1024-judge-t-5305-r5-claude-code-b6794cc6a6ee-0_30_1024_120-crop.png'
+  - '.context/reviews/evidence/T-5305/ghosts-header@1024-judge-t-5305-r5-claude-code-b6794cc6a6ee.png'
+  - '.context/reviews/evidence/T-5305/ghosts-header@1024-judge-t-5305-r5-codex-227a04a4303d.png'
+  - '.context/reviews/evidence/T-5305/ghosts-header@1440-0_0_1440_104-crop.png'
+  - '.context/reviews/evidence/T-5305/ghosts-header@1440-0_41_1440_63-crop.png'
+  - '.context/reviews/evidence/T-5305/ghosts-header@1440-judge-t-5305-r5-antigravity-63acfc9cdb1a.png'
+  - '.context/reviews/evidence/T-5305/ghosts-header@1440-judge-t-5305-r5-claude-code-b6794cc6a6ee-0_30_1440_60-crop.png'
+  - '.context/reviews/evidence/T-5305/ghosts-header@1440-judge-t-5305-r5-claude-code-b6794cc6a6ee.png'
+  - '.context/reviews/evidence/T-5305/ghosts-header@1440-judge-t-5305-r5-codex-227a04a4303d.png'
+  - '.context/reviews/evidence/T-5305/ghosts-header@1920-0_0_1920_104-crop.png'
+  - '.context/reviews/evidence/T-5305/ghosts-header@1920-0_41_1920_63-crop.png'
+  - '.context/reviews/evidence/T-5305/ghosts-header@1920-judge-t-5305-r5-antigravity-63acfc9cdb1a.png'
+  - '.context/reviews/evidence/T-5305/ghosts-header@1920-judge-t-5305-r5-claude-code-b6794cc6a6ee-0_30_1920_60-crop.png'
+  - '.context/reviews/evidence/T-5305/ghosts-header@1920-judge-t-5305-r5-claude-code-b6794cc6a6ee.png'
+  - '.context/reviews/evidence/T-5305/ghosts-header@1920-judge-t-5305-r5-codex-227a04a4303d.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-5305-printed-fw-commands-slice-3-watchtower-t.md'
+  - 'tests/web/test_t5305_fw_cmd_templates.py'
+  - 'web/blueprints/inception.py'
+  - 'web/decide_runner.py'
+  - 'web/templates/arc_detail.html'
+  - 'web/templates/arcs_index.html'
+  - 'web/templates/designer_ghosts.html'
+  - 'web/templates/embeddings.html'
+  - 'web/templates/orchestrator.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T14:50:20'
+    action: 'T-5305: filed (T-5302 GO slice)'
+  - time: '2026-11-20T18:59:14'
+    action: 'T-5305: scope'
+  - time: '2026-11-20T18:59:33'
+    action: 'T-5305: one Human heading'
+  - time: '2026-11-20T19:04:22'
+    action: 'T-5305: Watchtower templates and inception/decide strings print fw commands via the builder'
+  - time: '2026-11-20T19:04:40'
+    action: 'T-5305: vendor sync'
+  - time: '2026-11-20T19:10:38'
+    action: 'T-5305: redirect error keeps the full refusal command'
+  - time: '2026-11-20T19:10:45'
+    action: 'T-5305: vendor sync'
+  - time: '2026-11-20T19:13:31'
+    action: 'T-5305: claim command wraps instead of scrolling off the card; render criterion and visual verification'
+  - time: '2026-11-20T19:14:30'
+    action: 'T-5305: vendored template; agent criteria ticked'
+  - time: '2026-11-20T19:16:56'
+    action: 'T-5305: reviewer verdict'
+  - time: '2026-11-20T19:18:51'
+    action: 'T-5305: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-20T19:23:00'
+    action: 'T-5305: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 12 commit(s), 273 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 273
+  commits: 13
+  files_changed: 105
+  lines_added: 1144
+  lines_removed: 55
+  footprint_refreshed_at: '2026-11-20T18:24:50Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5305-printed-fw-commands-slice-3-watchtower-t.md
+generated_by: context-agent-hybrid

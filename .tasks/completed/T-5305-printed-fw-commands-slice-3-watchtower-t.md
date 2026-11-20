@@ -8,12 +8,12 @@ description: >
   project these copy-paste commands do not run. Running fw stays as T-3952 (absolute
   FRAMEWORK_ROOT path). Render-surface task: needs screenshots. Depends on slice 1.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [web/blueprints/inception.py, web/decide_runner.py, web/templates/arc_detail.html, web/templates/arcs_index.html, web/templates/designer_ghosts.html, web/templates/embeddings.html, web/templates/orchestrator.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T13:49:53Z
-last_update: 2026-11-20T17:58:52Z
-date_finished:
+last_update: 2026-11-20T18:23:33Z
+date_finished: 2026-11-20T18:23:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -105,7 +105,7 @@ bvp_scores_proposed:
 - [x] Watchtower restarted; `bin/fw watchtower current` passes; the changed pages answer 200.
 
 ### Human
-- [ ] [REVIEW] The changed Watchtower pages show the copyable commands in the builder's form and otherwise look as before
+- [x] [REVIEW] The changed Watchtower pages show the copyable commands in the builder's form and otherwise look as before
   **Steps:**
   1. Open the screenshots in .context/visual/T-5305/ (taken from http://192.168.10.107:3000/designer/ghosts after the restart: the claim card and the page header). The other changed pages (arcs, arc detail, embeddings, orchestrator) show their command only in states not present on this host today; their output is pinned by tests/web/test_t5305_fw_cmd_templates.py.
   2. Check each shot at 1024, 1440 and 1920 px
@@ -156,6 +156,7 @@ bvp_scores_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261120-b7a5dd39 — reviewer-judge-t-5305-r5-antigravity-63acfc9cdb1a:antigravity (rung rung-5-panel:antigravity), digest a1271537f30f; dispatch judge-t-5305-r5-antigravity-63acfc9cdb1a; evidence: .context/reviews/evidence/T-5305/AC1-judge-t-5305-r5-antigravity-63acfc9cdb1a.md, .context/reviews/evidence/T-5305/01-designer-ghosts-judge-t-5305-r5-antigravity-63acfc9cdb1a.png, .context/reviews/evidence/T-5305/02-arcs-judge-t-5305-r5-antigravity-63acfc9cdb1a.png, .context/reviews/evidence/T-5305/03-designer-app-judge-t-5305-r5-antigravity-63acfc9cdb1a.png, .context/reviews/evidence/T-5305/04-designer-judge-t-5305-r5-antigravity-63acfc9cdb1a.png, .context/reviews/evidence/T-5305/05-designer-corpus-judge-t-5305-r5-antigravity-63acfc9cdb1a.png, .context/reviews/evidence/T-5305/06-embeddings-judge-t-5305-r5-antigravity-63acfc9cdb1a.png, .context/reviews/evidence/T-5305/07-inception-judge-t-5305-r5-antigravity-63acfc9cdb1a.png, .context/reviews/evidence/T-5305/08-assumptions-judge-t-5305-r5-antigravity-63acfc9cdb1a.png, .context/reviews/evidence/T-5305/09-orchestrator-parallel-judge-t-5305-r5-antigravity-63acfc9cdb1a.png, .context/reviews/evidence/T-5305/10-orchestrator-judge-t-5305-r5-antigravity-63acfc9cdb1a.png, .context/reviews/evidence/T-5305/ghosts-claim@1024-judge-t-5305-r5-antigravity-63acfc9cdb1a.png, .context/reviews/evidence/T-5305/ghosts-claim@1440-judge-t-5305-r5-antigravity-63acfc9cdb1a.png, .context/reviews/evidence/T-5305/ghosts-claim@1920-judge-t-5305-r5-antigravity-63acfc9cdb1a.png, .context/reviews/evidence/T-5305/ghosts-header@1024-judge-t-5305-r5-antigravity-63acfc9cdb1a.png, .context/reviews/evidence/T-5305/ghosts-header@1440-judge-t-5305-r5-antigravity-63acfc9cdb1a.png, .context/reviews/evidence/T-5305/ghosts-header@1920-judge-t-5305-r5-antigravity-63acfc9cdb1a.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
@@ -407,3 +408,21 @@ bin/fw watchtower current
 ### 2026-11-20T17:58:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-20T18:23:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-20045492
+- **Timestamp:** 2026-11-20T18:24:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — The five templates and web/blueprints/inception.py print copyable fw commands through `fw_cmd` / the Python builder; no literal `bin/fw ` remains in web/templates or web/blueprints printed text (comme
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/inception.py in: The five templates and web/blueprints/inception.py print copyable fw commands through `fw_cmd` / the Python builder; no literal `bin/fw ` remains in w`
