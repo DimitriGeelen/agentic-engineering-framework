@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5317: Add CC-26..CC-29 (withdrawn, wc v0.3.4) to the machine-readable conformance vectors and their checker
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T18:42:01Z
+# ============================================================================
+
+task_id: T-5317
+task_name: "Add CC-26..CC-29 (withdrawn, wc v0.3.4) to the machine-readable conformance vectors and their checker"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-20T17:13:57Z
+completed: 2026-11-20T18:41:40Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-20T18:14:14+01:00
+last_commit: 2026-11-20T19:41:37+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed — CC-26..29 into conformance vectors. scope. CC-26..CC-29 (withdrawal, T3w, wc v0.3.4) in the conformance vectors and checkers. vendor sync (dispatch_records snapshot last_actor/last_reason). criteria ticked
+
+# Key outcomes
+outcomes:
+  - 'vectors.yaml has CC-26..CC-29 in the existing vector format, matching docs/specs/shared-worker-contract-transitions.md §9.'
+  - 'check_vectors.py (and check_mapping.py if it enumerates vectors) accept CC-01..CC-29.'
+  - 'run_local.py runs all vectors, CC-26..CC-29 included, green against lib/dispatch_records.py. (ea8379a56, fca29b20f: "summary: n/a=3, pass=26"; one CC-26 variant n/a because the local backend has no answer channel. Note for TermLink/ring20: CC-26 reads last_actor/last_reason from the adapter snapshot.)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/dispatch_records.py'
+  - '.tasks/active/T-5317-add-cc-26cc-29-withdrawn-wc-v034-to-the-.md'
+  - 'lib/dispatch_records.py'
+  - 'tests/conformance/worker-contract/README.md'
+  - 'tests/conformance/worker-contract/check_mapping.py'
+  - 'tests/conformance/worker-contract/check_vectors.py'
+  - 'tests/conformance/worker-contract/vectors.yaml'
+  - 'tests/unit/test_worker_contract_mapping.py'
+  - 'tests/unit/test_worker_contract_vectors.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T18:14:14'
+    action: 'T-5317: filed — CC-26..29 into conformance vectors'
+  - time: '2026-11-20T19:32:54'
+    action: 'T-5317: scope'
+  - time: '2026-11-20T19:38:29'
+    action: 'T-5317: CC-26..CC-29 (withdrawal, T3w, wc v0.3.4) in the conformance vectors and checkers'
+  - time: '2026-11-20T19:38:54'
+    action: 'T-5317: vendor sync (dispatch_records snapshot last_actor/last_reason)'
+  - time: '2026-11-20T19:41:37'
+    action: 'T-5317: criteria ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 87 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 87
+  commits: 6
+  files_changed: 12
+  lines_added: 795
+  lines_removed: 38
+  footprint_refreshed_at: '2026-11-20T18:42:16Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5317-add-cc-26cc-29-withdrawn-wc-v034-to-the-.md
+generated_by: context-agent-hybrid

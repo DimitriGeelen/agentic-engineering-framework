@@ -57878,3 +57878,21 @@ scan_id: R-20045492
 task_id: T-5305
 payload:
   task_file: .tasks/active/T-5305-printed-fw-commands-slice-3-watchtower-t.md
+---
+kind: scan_emitted
+timestamp: '2026-11-20T18:41:47Z'
+scan_id: R-8e0bb79f
+task_id: T-5317
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-20T18:41:47Z'
+scan_id: R-8e0bb79f
+task_id: T-5317
+payload:
+  task_file: .tasks/active/T-5317-add-cc-26cc-29-withdrawn-wc-v034-to-the-.md
