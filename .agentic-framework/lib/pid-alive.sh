@@ -74,7 +74,7 @@ fw_pid_identity_write() {
         cl=$(_fw_proc_cmdline "$pid")
         case "$cl" in *"$marker"*) ;; *) marker="" ;; esac
     fi
-    tmp="$pf.identity.tmp.$$-$RANDOM$RANDOM"
+    tmp="$pf.identity.tmp.${BASHPID:-$$}-$RANDOM$RANDOM"
     printf 'pid=%s\nstart_ticks=%s\nboot_id=%s\ncmd_marker=%s\n' \
         "$pid" "$st" "$(_fw_boot_id)" "$marker" > "$tmp" 2>/dev/null \
         && mv -f "$tmp" "$pf.identity" 2>/dev/null && return 0
