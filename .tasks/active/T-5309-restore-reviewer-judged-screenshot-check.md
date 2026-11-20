@@ -113,11 +113,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The review runtime (agents/termlink/termlink.sh codex branch) passes every screenshot the brief names to codex with `-i`, and the dispatch record lists the attached files with their hashes.
-- [ ] lib/vote_checker.py treats a cited image as viewed when it (or its copy, by content hash) was attached at launch; a cited image that was neither attached nor opened stays "not viewed".
-- [ ] Antigravity seats run with `--output-format stream-json`; the output is kept as the seat's run record; the checker recognises its image reads; "cannot tell" remains only when the record is missing.
-- [ ] policy/review-backends.yaml codex `vision: true` again, with the comment pointing to this task; the T-4944 test updated.
-- [ ] A real review run (fw reviewer judge on T-5303) shows codex and antigravity votes as checkable; T-5303's render criterion closes on reviewer verdicts without the operator.
+- [x] The review runtime (agents/termlink/termlink.sh codex branch) passes every screenshot the brief names to codex with `-i`, and the dispatch record lists the attached files with their hashes.
+- [x] lib/vote_checker.py treats a cited image as viewed when it (or its copy, by content hash) was attached at launch; a cited image that was neither attached nor opened stays "not viewed".
+- [x] Antigravity seats run with `--output-format stream-json`; the output is kept as the seat's run record; the checker recognises its image reads; "cannot tell" remains only when the record is missing.
+- [x] policy/review-backends.yaml codex `vision: true` again, with the comment pointing to this task; the T-4944 test updated.
+- [x] A real review run (fw reviewer judge on T-5303) shows codex and antigravity votes as checkable; T-5303's render criterion closes on reviewer verdicts without the operator. (2026-11-20: claude judge-t-5303-r5-claude-code-f1650be45568, codex judge-t-5303-r5-codex-8471300cab08, antigravity judge-t-5303-r5-antigravity-2b034fabd918, all green and checkable; T-5303 closed with owner_before human, owner_after agent.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
