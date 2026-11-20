@@ -271,7 +271,10 @@ def check_image(evidence: str, location: str, root: Path, revision: str, *, task
     elif sm:
         res["selector"] = sm.group(1).strip()
         res["selector_named"] = bool(res["selector"])
-    res["seat_viewed"] = image_viewed(views, img) if views_known else None
+    sha = hashlib.sha256(data).hexdigest() if data is not None else None
+    res["seat_viewed"] = image_viewed(views, img, sha) if views_known else None
+    if views_known and views and sha and sha in (views.get("__attached_sha256__") or ()):
+        res["seat_viewed_how"] = "attached at launch (T-5309)"
     if views_known and views is None:
         res["seat_viewed_why"] = "the seat's run record cannot tell"
     elif not views_known:
@@ -295,6 +298,18 @@ _OPENCODE_PLAIN = {"bash", "glob", "grep", "list", "ls", "write", "edit", "patch
 _CLAUDE_PLAIN = {"Bash", "Glob", "Grep", "LS", "Write", "Edit", "MultiEdit", "NotebookEdit",
                  "TodoWrite", "WebFetch", "WebSearch", "Task", "Agent", "ToolSearch", "Skill"}
 
+#: antigravity (`--output-format stream-json`, T-5309) tools that open a file for the model;
+#: for an image file that is the image (T-4944: its read_file opens images).
+_AGY_VIEW = {"read_file", "view_file"}
+#: antigravity tools that show the model no image.
+_AGY_PLAIN = {"run_command", "list_dir", "find_by_name", "grep_search", "command_status",
+              "send_command_input", "write_to_file", "replace_file_content",
+              "multi_replace_file_content", "sed_file", "finish", "wait", "wait_5_seconds",
+              "ask_question", "ask_permission", "ask_custom_permission", "list_permissions",
+              "search_web", "read_url_content", "manage_task", "manage_inbox", "notebook_edit"}
+#: T-5309: written beside the run record by the review runtime when it attached images at launch.
+ATTACHED_MANIFEST = "attached-images.json"
+
 _IMG_NAME_RE = re.compile(r"[\w@.\-]+\.(?:png|jpe?g|gif|webp|bmp)", re.I)
 
 
@@ -309,6 +324,22 @@ def _record_file(path) -> Path | None:
     return p if p.is_file() else None
 
 
+def attached_images(record) -> list[dict] | None:
+    """T-5309: the images the runtime attached to the seat at launch (`codex exec -i`), from
+    `attached-images.json` in the dispatch dir; None when there is no such manifest."""
+    if not record:
+        return None
+    p = Path(record)
+    d = p if p.is_dir() else p.parent
+    try:
+        m = json.loads((d / ATTACHED_MANIFEST).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(m, dict) or not isinstance(m.get("attached"), list):
+        return None
+    return [a for a in m["attached"] if isinstance(a, dict)]
+
+
 def seat_viewed_images(record) -> dict | None:
     """Images a seat's run record shows it opened with an image-viewing tool.
 
@@ -316,19 +347,31 @@ def seat_viewed_images(record) -> dict | None:
     for an image viewed; {basename: None} for an image named by an event the reader does not
     understand (cannot tell); an image absent from the dict was not viewed. Returns None when
     the record is missing or in no known shape (cannot tell at all — e.g. antigravity, which
-    leaves only its final text). Shell commands that touch an image (`cp`, `ls`, a python one-
+    left only its final text before T-5309). T-5309: images the runtime attached at launch
+    (`attached-images.json` beside the record) count as viewed, by name and by content hash
+    (key '__attached_sha256__'); antigravity's stream-json read_file/view_file steps count. Shell commands that touch an image (`cp`, `ls`, a python one-
     liner) are not image views: they show the model no pixels. Their names are listed under the
     key '__named_in_commands__' (informative only)."""
     f = _record_file(record) if record else None
-    if f is None:
+    attached = attached_images(record)
+    if f is None and attached is None:
         return None
-    try:
-        raw = f.read_text(encoding="utf-8", errors="replace").splitlines()
-    except OSError:
-        return None
+    raw: list[str] = []
+    if f is not None:
+        try:
+            raw = f.read_text(encoding="utf-8", errors="replace").splitlines()
+        except OSError:
+            if attached is None:
+                return None
     out: dict = {}
     named: set[str] = set()
-    known = False
+    known = attached is not None
+    if attached is not None:                 # T-5309: in the initial prompt by construction
+        shas = sorted({str(a.get("sha256")) for a in attached if a.get("sha256")})
+        for a in attached:
+            if a.get("path") and _is_image(str(a["path"])):
+                out[Path(str(a["path"])).name] = True
+        out["__attached_sha256__"] = shas
 
     def mark(paths, val):
         for p in paths:
@@ -347,7 +390,24 @@ def seat_viewed_images(record) -> dict | None:
         item = e.get("item")
         part = e.get("part")
         msg = e.get("message")
-        if isinstance(item, dict) and "type" in item:                       # codex
+        if "event" in e and isinstance(e.get("event"), str):               # antigravity stream-json
+            known = True
+            su = e.get("step_update") if e.get("event") == "step_update" else None
+            if not isinstance(su, dict) or su.get("step_type") != "tool":
+                continue
+            tool = str(su.get("tool_name") or (su.get("tool_info") or {}).get("name") or "")
+            params = ((su.get("tool_info") or {}).get("parameters")) or {}
+            if not isinstance(params, dict):
+                params = {}
+            if tool in _AGY_VIEW:
+                for k in ("Path", "AbsolutePath", "path", "file_path", "FilePath"):
+                    if params.get(k) and _is_image(str(params[k])):
+                        mark([str(params[k])], True)
+            elif tool == "run_command":
+                named.update(_IMG_NAME_RE.findall(json.dumps(params)))
+            elif tool not in _AGY_PLAIN:
+                mark(_IMG_NAME_RE.findall(json.dumps(params)), None)
+        elif isinstance(item, dict) and "type" in item:                     # codex
             known = True
             t = str(item.get("type"))
             blob = json.dumps(item)
@@ -402,11 +462,15 @@ def _stem_match(a: str, b: str) -> bool:
     return a == b or a.startswith(b + "-") or b.startswith(a + "-")
 
 
-def image_viewed(views: dict | None, image: str) -> bool | None:
+def image_viewed(views: dict | None, image: str, sha256: str | None = None) -> bool | None:
     """True / False / None (cannot tell) for one cited image, matched by stem: a seat's copy is
-    `<stem>-<dispatch>.png`, and a cited copy may be the other way round."""
+    `<stem>-<dispatch>.png`, and a cited copy may be the other way round. T-5309: also True when
+    the cited image's content hash is one the runtime attached at launch (a copy has a new name
+    but the same bytes)."""
     if views is None:
         return None
+    if sha256 and sha256 in (views.get("__attached_sha256__") or ()):
+        return True
     hits = [v for k, v in views.items() if not k.startswith("__") and _stem_match(k, image)]
     if True in hits:
         return True

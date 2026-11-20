@@ -1414,8 +1414,9 @@ def _worker_session(wdir: Path) -> str:
                 ev = json.loads(line)
             except ValueError:
                 continue
-            # claude: session_id; codex --json: thread_id; opencode --format json: sessionID.
-            for key in ("session_id", "thread_id", "sessionID"):
+            # claude: session_id; codex --json: thread_id; opencode --format json: sessionID;
+            # antigravity stream-json (T-5309): conversation_id.
+            for key in ("session_id", "thread_id", "sessionID", "conversation_id"):
                 if isinstance(ev, dict) and str(ev.get(key) or "").strip():
                     return str(ev[key]).strip()
     except OSError:
