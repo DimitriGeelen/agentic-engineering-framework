@@ -133,8 +133,8 @@ bvp_scores_proposed:
 - [ ] [REVIEW] Watchtower pages still render the same after the web/app.py form-safety change
   **Steps:**
   1. Open the screenshots in .context/visual/T-5262/ (home and /approvals header, /approvals footer, taken from http://192.168.10.107:3000/ and http://192.168.10.107:3000/approvals after the restart)
-  2. Compare with the header and footer shots in .context/visual/T-5260/
-  **Expected:** menu, header and footer look the same as before; nothing missing or broken (the change adds no visible element; no project exemption is registered here)
+  2. Check each shot at 1024, 1440 and 1920 px
+  **Expected:** every framework menu element (logo, Work, Knowledge, Architecture, Govern, Docs, search, settings, theme toggle) and the footer text are present, with no clipping or overlap; the change adds no visible element and no project exemption is registered here. At 1024 px the theme toggle sitting on a second header row is the existing layout without extensions (recorded on T-5261, state menu-no-extension), not a change.
   **If not:** note the page and width that differs
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
