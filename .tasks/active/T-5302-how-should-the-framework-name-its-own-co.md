@@ -62,9 +62,21 @@ The framework prints commands for people and agents to run: fw doctor remedies, 
 ## Open Questions
 
 - **IW-1: Where does the framework print a command for someone to run, and how does each place spell `fw` today (count by spelling, framework repo vs vendored)?**
+  confidence: 2
+  disposition: answered
+  rationale: report F3/F4: ~99 user-facing echo lines hard-code `bin/fw`; fw doctor "Run:" remedies 21 bare `fw`, 10 `bin/fw`, 2 `bin/watchtower.sh` (#68); 5 Watchtower templates and blueprint strings print `bin/fw`; handover "Regenerate in full: bin/fw task list"; /resume skill `bin/fw config get PORT` (832, 1409, ring20)
 - **IW-2: What path rewriting and resolution already exist (fw path resolution in bin/fw, vendoring rewrites, Watchtower page rendering), and where do they disagree?**
+  confidence: 3
+  disposition: answered
+  rationale: report F2/F3/F5: no rewriting at vendoring; the PATH router (T-2793) isolates at run time; `_fw_cmd` (lib/paths.sh) returns bare `fw` whenever any fw is on PATH, while Python `_fw()` (lib/delegation_cli.py, T-4250) never does; Watchtower runs fw by absolute path (T-3952) but prints literals
 - **IW-3: What isolation should a vendored project have (what lives in the project, what in .agentic-framework/, what on PATH), and what should a printed command look like there?**
+  confidence: 3
+  disposition: answered
+  rationale: framework bytes only under .agentic-framework/ (no root shim, 055's T-147 shim exists only to work around AEF's printing); a printed command must run from any folder and any shell without trusting PATH: `cd <absolute project root> && .agentic-framework/bin/fw ...` in a vendored project, `bin/fw` in the framework repo (all four peers; ring20 .122 still has the old fw-shim, 1409 measured non-login shells with another PATH)
 - **IW-4: What do vendored projects (ring20, 055, 1409, 832, and the outside contributor) see break, and what would they want printed?**
+  confidence: 3
+  disposition: answered
+  rationale: answers 055 375757be, 832 6e167fb8, 1409 be999d4b, ring20 eed8daaa in the report; all four rewrite printed `bin/fw` by hand or keep a shim; all want the resolved path with cd, bare `fw` only where the router is verified; 1409: "a function that builds the line instead of 99 literals"; 832: "one spelling per audience, documented". The outside contributor is not consulted (GitHub, operator's call).
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
@@ -142,17 +154,17 @@ The framework prints commands for people and agents to run: fw doctor remedies, 
 
 ## Recommendation
 
-**Recommendation:** EXPLORING
+**Recommendation:** GO
 
 **Rationale:**
 
-Operator 2026-11-20 on GitHub #68 (outside PR 2): fw doctor prints bin/watchtower.sh, which does not exist in a vendored project; the proposed fix (bin/fw) is not at the root of a vendored project either. Operator: the bin/fw / bin/watchtower path in vendored projects is a buggy artifact of path rewriting and missing isolation that breaks things often; reflect, research how vendored projects, isolation and Watchtower page rewriting work, and consult before deciding.
+One rule, one builder, used everywhere a command is printed for someone to run. The builder returns `cd <absolute project root> && <path to this project's fw> <args>`: `bin/fw` in the framework repo, `.agentic-framework/bin/fw` in a vendored project. It never prints bare `fw` and never `bin/watchtower.sh` (Watchtower is reached as `<fw> watchtower …`). The same builder serves people and agents (one spelling, documented, as 832 asked), because bare `fw` is not safe everywhere: ring20's host .122 still has the old fw-shim, not the router, and 1409 measured sessions and workers running without the login PATH. Nothing new goes into a vendored project's root (no shim): the isolation stays inside `.agentic-framework/`, and the run-time router (T-2793) stays as it is for people typing `fw` themselves. This fixes the cause the operator named: not one wrong line, but ~100 printers each spelling the command by hand, with Python and Watchtower keeping their own rules. Build slices: (1) the builder in shell (fix `_fw_cmd`, which today returns bare `fw` whenever any fw is on PATH) and Python, with a parity test, plus a Watchtower template global; `fw doctor` reports whether the PATH `fw` is the router, an old shim, or absent; (2) move the printers in bin/fw, lib/, agents/ to the builder (fw doctor remedies and gate messages first, including #68's two lines); (3) Watchtower templates and blueprint strings; (4) a lint that fails on a new hand-written `bin/fw` or `bin/watchtower.sh` in printed text (ratchet the rest); (5) skills, handover text and the consumer CLAUDE.md template. For #68: the contributor's PR becomes the first user of the builder (their two lines call it), so their answer is none of a, b, c as asked, but the resolved path through one function.
 
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- Research F1-F6 in docs/reports/T-5302-command-naming-vendored.md: ~99 hard-coded `bin/fw` printers; `_fw_cmd` (lib/paths.sh) and Python `_fw()` (lib/delegation_cli.py) disagree; Watchtower prints literals; no rewriting at vendoring.
+- All four vendored projects consulted (055 375757be, 832 6e167fb8, 1409 be999d4b, ring20 eed8daaa): each rewrites printed `bin/fw` by hand or keeps a root shim (055 T-147); all want the resolved path with `cd`; ring20 .122 has no router.
+- Recurring incidents of this class: T-609, T-1257, T-1633, T-3952, T-4250 (ring20 G-235: 9 of 11 closes blocked), GitHub #68.
 
 ## Decisions
 
