@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T16:31:28Z
-last_update: '2026-11-20T16:32:47Z'
+last_update: '2026-11-20T16:45:26Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -76,6 +76,16 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-11-20T16:45:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=311,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5313: Risk practice slice 1: risk fields in the concerns register, matrix template, standing arc 'risk' (T-5310)
@@ -95,10 +105,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Risk entries in .context/project/concerns.yaml may carry likelihood, impact (1-5), score (L × I), actors (list of {actor, how, likelihood, impact, mitigated_likelihood, mitigated_impact}; actor one of own-agent-unintentional, human-unintentional, outsider-intentional, provider-host, intruder), introduced_by, exists_anyway, mitigation_task; whatever validates the register checks the ranges and actor names; the 5 existing risks still validate.
-- [ ] A matrix template (e.g. .tasks/templates/risk-matrix.md or docs/templates/risk-matrix.md): header (change, baseline), scales and bands, summary table, per-risk actor split, and the rule (any actor ≥ 6 → mitigation task in the standing arc; the decision rests on what the change introduces).
-- [ ] A standing arc "risk" in .context/arcs/ that is marked never-closing, and the stale-arc audit check does not WARN on it.
-- [ ] Documentation (where the concerns register is described) of the trigger (trust-boundary changes: new sandbox, credential use, network path, unattended automation) and the split: agent drafts and scores, reviewer agent checks, operator decides only risk acceptance (introduced risk still ≥ 6 after mitigation, or any ≥ 15).
+- [x] Risk entries in .context/project/concerns.yaml may carry likelihood, impact (1-5), score (L × I), actors (list of {actor, how, likelihood, impact, mitigated_likelihood, mitigated_impact}; actor one of own-agent-unintentional, human-unintentional, outsider-intentional, provider-host, intruder), introduced_by, exists_anyway, mitigation_task; whatever validates the register checks the ranges and actor names; the 5 existing risks still validate.
+- [x] A matrix template (e.g. .tasks/templates/risk-matrix.md or docs/templates/risk-matrix.md): header (change, baseline), scales and bands, summary table, per-risk actor split, and the rule (any actor ≥ 6 → mitigation task in the standing arc; the decision rests on what the change introduces).
+- [x] A standing arc "risk" in .context/arcs/ that is marked never-closing, and the stale-arc audit check does not WARN on it.
+- [x] Documentation (where the concerns register is described) of the trigger (trust-boundary changes: new sandbox, credential use, network path, unattended automation) and the split: agent drafts and scores, reviewer agent checks, operator decides only risk acceptance (introduced risk still ≥ 6 after mitigation, or any ≥ 15).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
