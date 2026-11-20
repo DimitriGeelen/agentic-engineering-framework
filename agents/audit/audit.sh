@@ -1930,6 +1930,9 @@ for d in ('active', 'completed'):
         status_val=$(awk -F': ' '/^status:/ {sub(/^status:[[:space:]]*/, ""); print; exit}' "$af" \
                      | tr -d ' "' | head -c 32)
         [ "$status_val" = "in-progress" ] || continue
+        # T-5313: a standing arc (standing: true, e.g. the risk arc) never closes
+        # and is quiet between mitigation tasks by design — not stale.
+        grep -qE '^standing:[[:space:]]*true[[:space:]]*(#.*)?$' "$af" && continue
 
         arc_numeric=$(awk -F': ' '/^id:/ {sub(/^id:[[:space:]]*/, ""); print; exit}' "$af" \
                       | tr -d ' "' | head -c 32)
@@ -6705,6 +6708,31 @@ PYEOF
         fi
     else
         pass "Gaps register: no gaps being watched"
+    fi
+
+    # T-5313: risk entries (type: risk) — validate the scoring fields and the
+    # mitigation rule (any score >= 6 on an assessed open risk needs a
+    # mitigation_task in the standing arc 'risk'). lib/risk_register.py.
+    _rr_py="$FRAMEWORK_ROOT/lib/risk_register.py"
+    if [ -f "$_rr_py" ]; then
+        _rr_rc=0
+        _rr_out=$(python3 "$_rr_py" --path "$GAPS_FILE" 2>&1) || _rr_rc=$?
+        _rr_errs=$(grep '^ERROR ' <<<"$_rr_out" || true)
+        _rr_warns=$(grep '^WARN  ' <<<"$_rr_out" || true)
+        _rr_sum=$(tail -1 <<<"$_rr_out")
+        if [ "$_rr_rc" -ne 0 ]; then
+            [ -n "$_rr_errs" ] && echo "$_rr_errs" | sed 's/^/    /'
+            fail "Risk register invalid: $_rr_sum" \
+                 "Risk entries in concerns.yaml carry out-of-range scores, unknown actors or wrong arithmetic" \
+                 "Fix the entries listed above (python3 lib/risk_register.py; template .tasks/templates/risk-matrix.md)"
+        elif [ -n "$_rr_warns" ]; then
+            echo "$_rr_warns" | sed 's/^/    /'
+            warn "Risk register: assessed risk(s) at score >= 6 without a mitigation task" \
+                 "The risk-matrix rule needs a mitigation task in the standing arc 'risk' for these" \
+                 "File the task with arc_id: risk and set mitigation_task: on the risk entry"
+        else
+            pass "Risk register: $_rr_sum"
+        fi
     fi
 else
     echo -e "  ${CYAN}SKIP${NC}  No concerns register (.context/project/concerns.yaml)"

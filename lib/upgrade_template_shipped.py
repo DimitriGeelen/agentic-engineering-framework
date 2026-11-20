@@ -66,5 +66,8 @@ SHIPPED = {
   "0841fc26b06febf39ab01d107c97c2d458e5769748999e674b3e3ef3ed3cb97e",
   "21abff0b4264b8dae043dee1507ee7613d66acd39510b42cdb3e98aaffdd03d0",
   "40dad8d6d38b4b540300c56295e1e9e56e2ca201a8eb97f5c4671f79e1481f4c"
+ ],
+ ".tasks/templates/risk-matrix.md": [
+  "725db21918b08c53ab910a899c79f5dda183da253e5f3d9748af377b8bada88b"
  ]
 }
