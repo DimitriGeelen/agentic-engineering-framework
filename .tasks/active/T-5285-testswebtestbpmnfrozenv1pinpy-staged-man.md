@@ -1,8 +1,17 @@
 ---
 id: T-5285
-name: "tests/web/test_bpmn_frozen_v1_pin.py: staged manifest hash drifted for the unmarked fixture (frozen-v1 pin) — decide whether T-4551 broke the frozen format or the golden is stale"
+name: "tests/web/test_bpmn_frozen_v1_pin.py: staged manifest hash drifted for the
+  unmarked fixture (frozen-v1 pin) — decide whether T-4551 broke the frozen format
+  or the golden is stale"
 description: >
-  Found 2026-11-20 while verifying T-5260: test_absent_marker_stage_output_byte_identical fails (manifest sha256 5b2cd125... vs golden bbb2e46e...). The test pins the staged manifest of tools/bpmn_to_tasks.py write_proposals() for an unmarked fixture (T-2556 frozen-v1: kind= legs must be byte-identical on unmarked input). Last change to tools/bpmn_to_tasks.py: T-4551 (2026-10-22, forward compile reads aef:io v1.1). Not caused by T-5260/T-5261 (they do not touch tools/). Diff the staged manifest against the golden's fixture, decide: regression in T-4551 (fix the compiler) or an intended format change (re-pin with the reason recorded).
+  Found 2026-11-20 while verifying T-5260: test_absent_marker_stage_output_byte_identical
+  fails (manifest sha256 5b2cd125... vs golden bbb2e46e...). The test pins the staged
+  manifest of tools/bpmn_to_tasks.py write_proposals() for an unmarked fixture (T-2556
+  frozen-v1: kind= legs must be byte-identical on unmarked input). Last change to
+  tools/bpmn_to_tasks.py: T-4551 (2026-10-22, forward compile reads aef:io v1.1).
+  Not caused by T-5260/T-5261 (they do not touch tools/). Diff the staged manifest
+  against the golden's fixture, decide: regression in T-4551 (fix the compiler) or
+  an intended format change (re-pin with the reason recorded).
 
 status: captured
 workflow_type: build
@@ -39,8 +48,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T23:53:44Z
-last_update: 2026-11-19T23:53:44Z
-date_finished: null
+last_update: '2026-11-20T00:00:44Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +60,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-20T00:00:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5285: tests/web/test_bpmn_frozen_v1_pin.py: staged manifest hash drifted for the unmarked fixture (frozen-v1 pin) — decide whether T-4551 broke the frozen format or the golden is stale

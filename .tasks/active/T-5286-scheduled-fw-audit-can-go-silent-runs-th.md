@@ -1,8 +1,20 @@
 ---
 id: T-5286
-name: "Scheduled fw audit can go silent: runs that take longer than the interval, a killed run and overlapping runs leave hours without any audit report and nothing says so"
+name: "Scheduled fw audit can go silent: runs that take longer than the interval,
+  a killed run and overlapping runs leave hours without any audit report and nothing
+  says so"
 description: >
-  1409-sprind (msg 6bf79564, 2026-11-19, measured over 75 min on their host; evidence in their docs/reports/T-3418-tests-im-pool-1119.md): the cron audit takes 25-50 min on a 30-min interval, so it runs almost continuously (~0.8 cores, 63% of that git); between 17:06 and 19:52 local time NO audit report was written: one run was killed with SIGKILL at 18:20 without writing a report, and overlapping runs exit at the lock without a verdict. Their pre-push hook waits on audit.lock. Need (no solution prescribed): an audit that does not finish must say so visibly (no silent gap), and the schedule must fit the measured duration. Check AEF's own audit timing (.context/audits/full-audit-timing.yaml) and the lock/watchdog paths in agents/audit/audit.sh (~689-807). Second note from them: their full tier reads .context/reviews/<T>.yaml outside the key its result is bound to; they check that themselves.
+  1409-sprind (msg 6bf79564, 2026-11-19, measured over 75 min on their host; evidence
+  in their docs/reports/T-3418-tests-im-pool-1119.md): the cron audit takes 25-50
+  min on a 30-min interval, so it runs almost continuously (~0.8 cores, 63% of that
+  git); between 17:06 and 19:52 local time NO audit report was written: one run was
+  killed with SIGKILL at 18:20 without writing a report, and overlapping runs exit
+  at the lock without a verdict. Their pre-push hook waits on audit.lock. Need (no
+  solution prescribed): an audit that does not finish must say so visibly (no silent
+  gap), and the schedule must fit the measured duration. Check AEF's own audit timing
+  (.context/audits/full-audit-timing.yaml) and the lock/watchdog paths in agents/audit/audit.sh
+  (~689-807). Second note from them: their full tier reads .context/reviews/<T>.yaml
+  outside the key its result is bound to; they check that themselves.
 
 status: captured
 workflow_type: build
@@ -39,8 +51,8 @@ origin: {kind: "peer", source: "1409-sprind", ref: "6bf79564"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T23:58:59Z
-last_update: 2026-11-19T23:58:59Z
-date_finished: null
+last_update: '2026-11-20T00:00:44Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +63,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-20T00:00:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5286: Scheduled fw audit can go silent: runs that take longer than the interval, a killed run and overlapping runs leave hours without any audit report and nothing says so
