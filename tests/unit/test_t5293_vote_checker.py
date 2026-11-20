@@ -332,3 +332,28 @@ def test_rows_without_format_carry_no_check():
     src_text = Path(vl.__file__).read_text()
     i = src_text.index("rec[\"check\"] = _vote_check(root")
     assert "if structured is not None:" in src_text[i - 500:i]
+
+
+# ── T-5308: inner double quotes escaped as \" (the real T-5303 review) ───────
+
+def test_t5308_escaped_inner_quotes_are_found_in_the_real_file():
+    root = Path(__file__).resolve().parents[2]
+    rev = subprocess.run(["git", "-C", str(root), "log", "-1", "--format=%H", "--", "web/app.py"],
+                         capture_output=True, text=True).stdout.strip()
+    line = subprocess.run(["git", "-C", str(root), "show", f"{rev}:web/app.py"],
+                          capture_output=True, text=True).stdout.splitlines()
+    n = next(i for i, l in enumerate(line, 1) if 'jinja_env.globals["fw_cmd"]' in l)
+    written = 'app.jinja_env.globals[\\"fw_cmd\\"] = lambda args=\\"\\": _fw_us'   # as the seat wrote it
+    r = vc.check_quote(written, f"web/app.py:{n}", root, rev)
+    assert r["result"] == "found-at-location" and r.get("unescaped") is True
+
+
+def test_t5308_absent_quote_with_escapes_is_still_not_found(src):
+    root, rev = src
+    r = vc.check_quote('display: \\"flex\\"', "web/static/css/header.css:3", root, rev)
+    assert r["result"] == "not-found"
+
+
+def test_t5308_unescape():
+    assert vc._unescape('a[\\"b\\"] \\\\n') == 'a["b"] \\n'
+    assert vc._unescape("plain") == "plain"

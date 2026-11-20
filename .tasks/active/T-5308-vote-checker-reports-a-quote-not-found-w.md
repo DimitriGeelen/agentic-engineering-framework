@@ -1,10 +1,16 @@
 ---
 id: T-5308
-name: "Vote checker reports a quote 'not found' when the reviewer escaped double quotes inside it (\\\" in Evidence)"
+name: "Vote checker reports a quote 'not found' when the reviewer escaped double quotes
+  inside it (\\\" in Evidence)"
 description: >
-  First real verdict/1 run (T-5303 render criterion, judge-t-5303-r5-claude-code-937e488ccdf2): the claude seat quoted web/app.py:252 as Evidence: "app.jinja_env.globals[\"fw_cmd\"] = ...". The line exists; the checker compared the escaped text literally and reported 'quote not found', so a correct green vote did not count (T-5294). Fix: the quote matcher also tries the unescaped form (\" -> ", \\ -> \); the brief says how to quote text that contains double quotes. Test with the real case.
+  First real verdict/1 run (T-5303 render criterion, judge-t-5303-r5-claude-code-937e488ccdf2):
+  the claude seat quoted web/app.py:252 as Evidence: "app.jinja_env.globals[\"fw_cmd\"]
+  = ...". The line exists; the checker compared the escaped text literally and reported
+  'quote not found', so a correct green vote did not count (T-5294). Fix: the quote
+  matcher also tries the unescaped form (\" -> ", \\ -> \); the brief says how to
+  quote text that contains double quotes. Test with the real case.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T14:39:58Z
-last_update: 2026-11-20T14:39:58Z
-date_finished: null
+last_update: '2026-11-20T14:40:09Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-20T14:40:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5308: Vote checker reports a quote 'not found' when the reviewer escaped double quotes inside it (\" in Evidence)
@@ -57,20 +80,21 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** First real verdict/1 review (T-5303's render criterion, 2026-11-20): the claude seat judge-t-5303-r5-claude-code-937e488ccdf2 voted green and quoted web/app.py:252 as `Evidence: "app.jinja_env.globals[\"fw_cmd\"] = lambda args=\"\": ..."`. The checker (lib/vote_checker.py check_quote) reported "quote not found", so under T-5294 the correct vote did not count.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The quoted Evidence is written inside double quotes, so a reviewer quoting text that itself contains double quotes escapes them as `\"`. check_quote compares the text as written, backslashes included, and misses.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A correctly quoted line is found whether or not the reviewer escaped its inner quotes.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** check_quote also tries the unescaped form (`\"` → `"`, `\\` → `\`) when the written form is not in the file, and marks the result `unescaped: true`; a quote that is really absent is still "not found".
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] check_quote finds a quote whose inner double quotes are written `\"`, at the named line, and records `unescaped: true`.
+- [x] A quote that is absent in both forms is still `not-found`; quotes without escapes behave exactly as before (existing T-5293 and T-5294 tests green).
+- [x] Test with the real T-5303 case (the web/app.py:252 line as the seat wrote it).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,8 +281,18 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5293_vote_checker.py tests/unit/test_t5294_checkable_votes.py -q > /tmp/.t5308a 2>&1 && grep -q passed /tmp/.t5308a && ! grep -q failed /tmp/.t5308a
+bin/fw vendor self --check --task T-5308
 
 ## RCA
+
+**Symptom:** on the first real verdict/1 review (T-5303), a correct green vote quoting web/app.py:252 was reported "quote not found" and did not count.
+
+**Root cause:** Evidence quotes are written inside double quotes; the seat escaped the line's own double quotes as `\"`, and check_quote compared the escaped text literally.
+
+**Why structurally allowed:** the T-5293 tests used quotes without inner double quotes, and the verdict/1 brief does not say how to write one; the first real run found it.
+
+**Prevention:** check_quote also tries the unescaped form and marks `unescaped: true`; tests pin the real T-5303 line (fails without the fix) and that an absent escaped quote stays not-found.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -354,3 +388,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5308-vote-checker-reports-a-quote-not-found-w.md
 - **Context:** Initial task creation
+
+### 2026-11-20T14:40:07Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

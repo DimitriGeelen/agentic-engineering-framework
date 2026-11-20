@@ -101,6 +101,19 @@ def read_cited(root: Path, revision: str, path: str, extra_roots: list[Path] | N
 
 # ── quotes and file:line locations ────────────────────────────────────────────────────────────
 
+def _unescape(s: str) -> str:
+    """Undo the escapes a reviewer uses inside a double-quoted Evidence: \\" -> ", \\\\ -> \\."""
+    out, i = [], 0
+    while i < len(s):
+        if s[i] == "\\" and i + 1 < len(s) and s[i + 1] in ('"', "\\"):
+            out.append(s[i + 1])
+            i += 2
+        else:
+            out.append(s[i])
+            i += 1
+    return "".join(out)
+
+
 def check_quote(quote: str, location: str, root: Path, revision: str,
                 extra_roots: list[Path] | None = None) -> dict:
     """A quoted Evidence paired with its Location. `quote`: found-at-location / found-elsewhere /
@@ -132,6 +145,13 @@ def check_quote(quote: str, location: str, root: Path, revision: str,
     if not res["location_exists"]:
         res["why"] = f"{path} has {len(lines)} line(s); {a}-{b} is outside it"
     at = "\n".join(lines[a - 1:b]) if res["location_exists"] else ""
+    # T-5308: a reviewer quoting text that contains double quotes writes them as \" inside the
+    # quoted Evidence (T-5303's review: web/app.py:252). When the quote as written is not in
+    # the file but its unescaped form is, match the unescaped form and say so.
+    unesc = _unescape(quote)
+    if unesc != quote and quote not in text and unesc in text:
+        res["unescaped"] = True
+        quote = unesc
     if res["location_exists"] and quote in at:
         res["result"] = "found-at-location"
     elif quote in text:
