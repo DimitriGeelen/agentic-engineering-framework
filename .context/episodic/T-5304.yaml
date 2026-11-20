@@ -1,0 +1,256 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5304: Printed fw commands slice 2: move bin/fw, lib/ and agents/ printers to the builder, fw doctor remedies and gate messages first (T-5302, GH #68)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T16:14:17Z
+# ============================================================================
+
+task_id: T-5304
+task_name: "Printed fw commands slice 2: move bin/fw, lib/ and agents/ printers to the builder, fw doctor remedies and gate messages first (T-5302, GH #68)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-20T13:49:53Z
+completed: 2026-11-20T16:12:06Z
+duration_days: 0
+updates_count: 5
+first_commit: 2026-11-20T14:50:15+01:00
+last_commit: 2026-11-20T17:12:01+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed (T-5302 GO slice). scope — side-effect-free builder for bin/fw, then move the printers. side-effect-free builder lib bin/fw can source. vendor the builder lib, paths.sh and bin/fw. fw doctor remedies print through the builder. gate block messages print commands through the builder. handover, runme and Human-AC lines print through the builder. the rest of bin/fw, lib/ and agents/ printers use the builder; vendor. prescribed-commands lint reads the builder form and checks it. reroute removes the reviewer-PASS line in any fw spelling (T-5303 regression, t4916); counts recorded
+
+# Key outcomes
+outcomes:
+  - 'A side-effect-free shell lib (e.g. lib/fw-command.sh) defines the builder; lib/paths.sh and bin/fw source it; sourcing it exports and changes nothing else; the T-5303 parity test covers it.'
+  - 'fw doctor "Run:" remedies and gate block messages print through the builder, except bin/fw''s two `bin/watchtower.sh` lines (#68, left for the contributor''s PR).'
+  - 'The handover''s "Regenerate in full" line, the runme start gate and the Human-AC hook''s `fw task review` lines print through the builder.'
+  - 'A count of hand-spelled `bin/fw ` in user-facing echo/print lines in bin/fw, lib/ and agents/ is recorded before and after in ## Updates; the after count is only lines that are not printed for a person or agent to run (listed with why).'
+  - 'Existing tests that pin printed text are updated to the builder''s output and stay green; `bats tests/lint/` green.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/context/audit-task-tools.sh'
+  - '.agentic-framework/agents/context/block-cross-session-messages.sh'
+  - '.agentic-framework/agents/context/block-task-tools.sh'
+  - '.agentic-framework/agents/context/check-active-completed-dup.py'
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.agentic-framework/agents/context/check-human-ac-tick.py'
+  - '.agentic-framework/agents/context/check-inception-recommendation.py'
+  - '.agentic-framework/agents/context/check-rail-mcp-label.sh'
+  - '.agentic-framework/agents/context/check-settings-edit.sh'
+  - '.agentic-framework/agents/context/check-tier0.sh'
+  - '.agentic-framework/agents/context/check-visual-verification.sh'
+  - '.agentic-framework/agents/context/check-worktree-governance-write.sh'
+  - '.agentic-framework/agents/context/checkpoint.sh'
+  - '.agentic-framework/agents/context/consolidate.py'
+  - '.agentic-framework/agents/context/inject-next-directive.py'
+  - '.agentic-framework/agents/context/lib/focus.sh'
+  - '.agentic-framework/agents/context/post-compact-resume.sh'
+  - '.agentic-framework/agents/context/stop-driver.sh'
+  - '.agentic-framework/agents/designer/designer.sh'
+  - '.agentic-framework/agents/fabric/lib/drift.sh'
+  - '.agentic-framework/agents/fabric/lib/enrich.py'
+  - '.agentic-framework/agents/fabric/lib/query.sh'
+  - '.agentic-framework/agents/fabric/lib/register.sh'
+  - '.agentic-framework/agents/git/lib/parked-merge-guard.sh'
+  - '.agentic-framework/agents/git/lib/secret-scan.sh'
+  - '.agentic-framework/agents/git/lib/worktree-corpus-guard.sh'
+  - '.agentic-framework/agents/handover/handover.sh'
+  - '.agentic-framework/agents/mcp/manifest.py'
+  - '.agentic-framework/agents/resume/resume.sh'
+  - '.agentic-framework/agents/task-create/create-batch.sh'
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/accepted_miss.py'
+  - '.agentic-framework/lib/arc.sh'
+  - '.agentic-framework/lib/assumption.sh'
+  - '.agentic-framework/lib/branch-hygiene.sh'
+  - '.agentic-framework/lib/bvp.sh'
+  - '.agentic-framework/lib/config-file.sh'
+  - '.agentic-framework/lib/delegation_cli.py'
+  - '.agentic-framework/lib/doctor-drift.sh'
+  - '.agentic-framework/lib/fw-command.sh'
+  - '.agentic-framework/lib/harvest.sh'
+  - '.agentic-framework/lib/human_ac_ticks.py'
+  - '.agentic-framework/lib/inception.sh'
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/mirror.sh'
+  - '.agentic-framework/lib/paths.sh'
+  - '.agentic-framework/lib/pending.sh'
+  - '.agentic-framework/lib/pickup.sh'
+  - '.agentic-framework/lib/promote.sh'
+  - '.agentic-framework/lib/prompt.sh'
+  - '.agentic-framework/lib/rail-identity.sh'
+  - '.agentic-framework/lib/recorded_ruling.py'
+  - '.agentic-framework/lib/release-tags.sh'
+  - '.agentic-framework/lib/release.sh'
+  - '.agentic-framework/lib/resolver.py'
+  - '.agentic-framework/lib/review.sh'
+  - '.agentic-framework/lib/review_cost.py'
+  - '.agentic-framework/lib/review_credential.py'
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/reviewer/restatement_cli.py'
+  - '.agentic-framework/lib/runme.sh'
+  - '.agentic-framework/lib/runme_queue.py'
+  - '.agentic-framework/lib/sidecar/e2e.py'
+  - '.agentic-framework/lib/subscriptions.py'
+  - '.agentic-framework/lib/update.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/lib/upstream.sh'
+  - '.agentic-framework/lib/validate-init.sh'
+  - '.agentic-framework/lib/version.sh'
+  - '.agentic-framework/lib/watchtower.sh'
+  - '.agentic-framework/lib/worktree.sh'
+  - '.fabric/components/lib-fw-command.yaml'
+  - '.tasks/active/T-5304-printed-fw-commands-slice-2-move-binfw-l.md'
+  - 'agents/audit/audit.sh'
+  - 'agents/context/audit-task-tools.sh'
+  - 'agents/context/block-cross-session-messages.sh'
+  - 'agents/context/block-task-tools.sh'
+  - 'agents/context/check-active-completed-dup.py'
+  - 'agents/context/check-active-task.sh'
+  - 'agents/context/check-human-ac-tick.py'
+  - 'agents/context/check-inception-recommendation.py'
+  - 'agents/context/check-rail-mcp-label.sh'
+  - 'agents/context/check-settings-edit.sh'
+  - 'agents/context/check-tier0.sh'
+  - 'agents/context/check-visual-verification.sh'
+  - 'agents/context/check-worktree-governance-write.sh'
+  - 'agents/context/checkpoint.sh'
+  - 'agents/context/consolidate.py'
+  - 'agents/context/inject-next-directive.py'
+  - 'agents/context/lib/focus.sh'
+  - 'agents/context/post-compact-resume.sh'
+  - 'agents/context/stop-driver.sh'
+  - 'agents/designer/designer.sh'
+  - 'agents/fabric/lib/drift.sh'
+  - 'agents/fabric/lib/enrich.py'
+  - 'agents/fabric/lib/query.sh'
+  - 'agents/fabric/lib/register.sh'
+  - 'agents/git/lib/parked-merge-guard.sh'
+  - 'agents/git/lib/secret-scan.sh'
+  - 'agents/git/lib/worktree-corpus-guard.sh'
+  - 'agents/handover/handover.sh'
+  - 'agents/mcp/manifest.py'
+  - 'agents/resume/resume.sh'
+  - 'agents/task-create/create-batch.sh'
+  - 'agents/task-create/update-task.sh'
+  - 'agents/termlink/termlink.sh'
+  - 'bin/fw'
+  - 'lib/accepted_miss.py'
+  - 'lib/arc.sh'
+  - 'lib/assumption.sh'
+  - 'lib/branch-hygiene.sh'
+  - 'lib/bvp.sh'
+  - 'lib/config-file.sh'
+  - 'lib/delegation_cli.py'
+  - 'lib/doctor-drift.sh'
+  - 'lib/fw-command.sh'
+  - 'lib/harvest.sh'
+  - 'lib/human_ac_ticks.py'
+  - 'lib/inception.sh'
+  - 'lib/init.sh'
+  - 'lib/mirror.sh'
+  - 'lib/paths.sh'
+  - 'lib/pending.sh'
+  - 'lib/pickup.sh'
+  - 'lib/promote.sh'
+  - 'lib/prompt.sh'
+  - 'lib/rail-identity.sh'
+  - 'lib/recorded_ruling.py'
+  - 'lib/release-tags.sh'
+  - 'lib/release.sh'
+  - 'lib/resolver.py'
+  - 'lib/review.sh'
+  - 'lib/review_cost.py'
+  - 'lib/review_credential.py'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/reviewer/restatement_cli.py'
+  - 'lib/runme.sh'
+  - 'lib/runme_queue.py'
+  - 'lib/sidecar/e2e.py'
+  - 'lib/subscriptions.py'
+  - 'lib/update.sh'
+  - 'lib/upgrade.sh'
+  - 'lib/upstream.sh'
+  - 'lib/validate-init.sh'
+  - 'lib/version.sh'
+  - 'lib/watchtower.sh'
+  - 'lib/worktree.sh'
+  - 'tests/lint/prescribed-commands-are-allowed.bats'
+  - 'tests/unit/arc_create_start_flag.bats'
+  - 'tests/unit/fw_doctor_pending.bats'
+  - 'tests/unit/fw_doctor_vendored_drift.bats'
+  - 'tests/unit/t2243_doctor_self_vendor_templates.bats'
+  - 'tests/unit/t2290_doctor_mcp_content_check.bats'
+  - 'tests/unit/t3430_fabric_audit_doctor.bats'
+  - 'tests/unit/test_doctor_consumer_version_ahead.bats'
+  - 'tests/unit/test_t5303_fw_command_builder.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T14:50:15'
+    action: 'T-5304: filed (T-5302 GO slice)'
+  - time: '2026-11-20T16:16:33'
+    action: 'T-5304: scope — side-effect-free builder for bin/fw, then move the printers'
+  - time: '2026-11-20T16:22:23'
+    action: 'T-5304: side-effect-free builder lib bin/fw can source'
+  - time: '2026-11-20T16:22:44'
+    action: 'T-5304: vendor the builder lib, paths.sh and bin/fw'
+  - time: '2026-11-20T16:30:18'
+    action: 'T-5304: fw doctor remedies print through the builder'
+  - time: '2026-11-20T16:38:13'
+    action: 'T-5304: gate block messages print commands through the builder'
+  - time: '2026-11-20T16:38:24'
+    action: 'T-5304: handover, runme and Human-AC lines print through the builder'
+  - time: '2026-11-20T16:58:37'
+    action: 'T-5304: the rest of bin/fw, lib/ and agents/ printers use the builder; vendor'
+  - time: '2026-11-20T17:07:20'
+    action: 'T-5304: prescribed-commands lint reads the builder form and checks it'
+  - time: '2026-11-20T17:12:01'
+    action: 'T-5304: reroute removes the reviewer-PASS line in any fw spelling (T-5303 regression, t4916); counts recorded'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 10 commit(s), 142 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 142
+  commits: 11
+  files_changed: 162
+  lines_added: 2132
+  lines_removed: 744
+  footprint_refreshed_at: '2026-11-20T16:14:54Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5304-printed-fw-commands-slice-2-move-binfw-l.md
+generated_by: context-agent-hybrid

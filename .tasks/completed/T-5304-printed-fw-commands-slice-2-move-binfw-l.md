@@ -9,12 +9,12 @@ description: >
   full: bin/fw task list' (ring20) and the runme / Human-AC hook 'fw task review'
   lines (1409). Depends on slice 1.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/audit.sh, agents/context/audit-task-tools.sh, agents/context/block-cross-session-messages.sh, agents/context/block-task-tools.sh, agents/context/check-active-completed-dup.py, agents/context/check-active-task.sh, agents/context/check-human-ac-tick.py, agents/context/check-inception-recommendation.py, agents/context/check-rail-mcp-label.sh, agents/context/check-settings-edit.sh, agents/context/check-tier0.sh, agents/context/check-visual-verification.sh, agents/context/check-worktree-governance-write.sh, agents/context/checkpoint.sh, agents/context/consolidate.py, agents/context/inject-next-directive.py, agents/context/lib/focus.sh, agents/context/post-compact-resume.sh, agents/context/stop-driver.sh, agents/designer/designer.sh, agents/fabric/lib/drift.sh, agents/fabric/lib/enrich.py, agents/fabric/lib/query.sh, agents/fabric/lib/register.sh, agents/git/lib/parked-merge-guard.sh, agents/git/lib/secret-scan.sh, agents/git/lib/worktree-corpus-guard.sh, agents/handover/handover.sh, agents/mcp/manifest.py, agents/resume/resume.sh, agents/task-create/create-batch.sh, agents/task-create/update-task.sh, agents/termlink/termlink.sh, bin/fw, lib/accepted_miss.py, lib/arc.sh, lib/assumption.sh, lib/branch-hygiene.sh, lib/bvp.sh, lib/config-file.sh, lib/delegation_cli.py, lib/doctor-drift.sh, lib/fw-command.sh, lib/harvest.sh, lib/human_ac_ticks.py, lib/inception.sh, lib/init.sh, lib/mirror.sh, lib/paths.sh, lib/pending.sh, lib/pickup.sh, lib/promote.sh, lib/prompt.sh, lib/rail-identity.sh, lib/recorded_ruling.py, lib/release-tags.sh, lib/release.sh, lib/resolver.py, lib/review.sh, lib/review_cost.py, lib/review_credential.py, lib/reviewer/restatement_cli.py, lib/runme.sh, lib/runme_queue.py, lib/sidecar/e2e.py, lib/update.sh, lib/upgrade.sh, lib/upstream.sh, lib/validate-init.sh, lib/version.sh, lib/watchtower.sh, lib/worktree.sh, tests/lint/prescribed-commands-are-allowed.bats, tests/unit/arc_create_start_flag.bats, tests/unit/t3430_fabric_audit_doctor.bats, tests/unit/test_doctor_consumer_version_ahead.bats, tests/unit/test_t5303_fw_command_builder.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T13:49:53Z
-last_update: 2026-11-20T15:15:40Z
-date_finished:
+last_update: 2026-11-20T16:12:06Z
+date_finished: 2026-11-20T16:12:06Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -408,3 +408,21 @@ bin/fw vendor self --check --task T-5304
 ### 2026-11-20T15:15:40Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-20T16:12:06Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-be3a8ab5
+- **Timestamp:** 2026-11-20T16:13:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — fw doctor "Run:" remedies and gate block messages print through the builder, except bin/fw's two `bin/watchtower.sh` lines (#68, left for the contributor's PR).
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=bin/watchtower.sh in: fw doctor "Run:" remedies and gate block messages print through the builder, except bin/fw's two `bin/watchtower.sh` lines (#68, left for the contribu`

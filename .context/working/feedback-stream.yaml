@@ -57646,3 +57646,39 @@ scan_id: R-c325a1de
 task_id: T-5308
 payload:
   task_file: .tasks/active/T-5308-vote-checker-reports-a-quote-not-found-w.md
+---
+kind: scan_emitted
+timestamp: '2026-11-20T14:51:11Z'
+scan_id: R-ac537423
+task_id: T-5303
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-20T14:51:11Z'
+scan_id: R-ac537423
+task_id: T-5303
+payload:
+  task_file: .tasks/active/T-5303-printed-fw-commands-slice-1-one-builder-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-20T16:13:34Z'
+scan_id: R-be3a8ab5
+task_id: T-5304
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-20T16:13:34Z'
+scan_id: R-be3a8ab5
+task_id: T-5304
+payload:
+  task_file: .tasks/active/T-5304-printed-fw-commands-slice-2-move-binfw-l.md
