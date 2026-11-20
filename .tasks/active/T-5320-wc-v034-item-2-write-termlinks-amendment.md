@@ -105,10 +105,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Spec changelog item 2 rewritten as amended by A1-A6 (each amendment cited), and the body sections it touches (§2 record schema incl. `closure` declaration and dispatch-level close record, §3.3 close transaction and `fence_reject(dispatch_closed)`, §4.7, §8.4, CC-15, CC-19) carry the same rules
-- [ ] §9 has CC-15a, CC-15b, CC-19a, CC-19b and CC-30..CC-43, each with setup, steps and expected result, grouped as TermLink named them
-- [ ] tests/conformance/worker-contract/vectors.yaml has the same cases; check_vectors.py and check_mapping.py pass; run_local.py shows no failure (closure-supported cases n/a for AEF)
-- [ ] Text sent to 010-termlink and proxmox-ring20-management for their check
+- [x] Spec changelog item 2 rewritten as amended by A1-A6 (each amendment cited), and the body sections it touches (§2 record schema incl. `closure` declaration and dispatch-level close record, §3.3 close transaction and `fence_reject(dispatch_closed)`, §4.7, §8.4, CC-15, CC-19) carry the same rules
+- [x] §9 has CC-15a, CC-15b, CC-19a, CC-19b and CC-30..CC-43, each with setup, steps and expected result, grouped as TermLink named them
+- [x] tests/conformance/worker-contract/vectors.yaml has the same cases; check_vectors.py and check_mapping.py pass; run_local.py shows no failure (closure-supported cases n/a for AEF)
+- [x] Text sent to 010-termlink and proxmox-ring20-management for their check
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
