@@ -49,7 +49,7 @@ def _case(doc, cid):
 
 
 def test_table_comes_from_vectors():
-    assert sorted(TABLE) == check_mapping.REQUIRED_IDS
+    assert sorted(TABLE) == check_mapping.REQUIRED_IDS_V034
     assert {cid for cid, ok in TABLE.items() if ok} == {"CC-11", "CC-12", "CC-17", "CC-18"}
 
 
@@ -126,4 +126,19 @@ def test_proposal_table_matches_vectors():
     """The §9 applicability table proposed for the spec must not drift from vectors.yaml."""
     rows = re.findall(r"^\| (CC-\d\d) \|[^|]*\|[^|]*\|[^|]*\| (yes|no)\b", PROPOSAL.read_text(), re.M)
     assert [cid for cid, _ in rows] == check_mapping.REQUIRED_IDS
-    assert {cid: ans == "yes" for cid, ans in rows} == TABLE
+    # the proposal predates v0.3.4; CC-26..CC-29 (T3w) are transition cases, never n/a (T-5317)
+    assert {cid: ans == "yes" for cid, ans in rows} == {c: TABLE[c] for c in check_mapping.REQUIRED_IDS}
+    assert not any(TABLE[c] for c in check_mapping.REQUIRED_IDS_V034[25:])
+
+
+def test_v034_mapping_must_cover_withdrawal_cases():
+    """T-5317: a mapping that claims wc/0.3.4 must cover CC-26..CC-29; an earlier one need not."""
+    doc = _fixture("valid")
+    assert _errors(doc) == []
+    doc["spec_version"] = "wc/0.3.4"
+    errs = _errors(doc)
+    assert any("cases: missing CC-26, CC-27, CC-28, CC-29" in e for e in errs), errs
+    for cid in ("CC-26", "CC-27", "CC-28", "CC-29"):
+        doc["cases"].append({"id": cid, "verdict": "GAP", "rationale": "T3w not built yet",
+                             "tasks": ["ring20:T-2790"]})
+    assert _errors(doc) == []

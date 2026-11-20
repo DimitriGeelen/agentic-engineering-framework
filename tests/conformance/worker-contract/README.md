@@ -1,7 +1,7 @@
 # Shared worker-contract conformance vectors
 
 `vectors.yaml` is the **single** conformance vector file for the shared dispatched-worker
-contract (spec v0.3.3; v0.3.4 draft pending adoption, `contract_version: wc/0.3`, §9 cases CC-01..CC-25). AEF owns it, as
+contract (spec v0.3.3; v0.3.4 draft pending adoption, `contract_version: wc/0.3`, §9 cases CC-01..CC-29; CC-26..CC-29 are the v0.3.4 withdrawal, T3w). AEF owns it, as
 agreed with TermLink and ring20. Every backend that claims conformance (TermLink's `hub`, AEF's
 `local`, any external backend such as `ring20`) runs these same vectors through its own adapter.
 The file is data only and names no backend's paths.
@@ -16,7 +16,7 @@ for theirs. Do not fork the file and do not keep a second vector file. A patch:
   term goes into the vocabulary in the same patch, with a one-line meaning);
 - passes `python3 check_vectors.py vectors.yaml` (stdlib + PyYAML).
 
-The check enforces the contract's fixed sets: all 25 case ids, the seven `fence_reject`
+The check enforces the contract's fixed sets: all 29 case ids, the seven `fence_reject`
 reasons of §3.3, and the N2 rule of §6.6. A case whose subject is a §3 transition row has
 `n_a_allowed: false`. Only cases about the answer channel, `registry_epoch` or caller-chosen
 ids may be n/a.

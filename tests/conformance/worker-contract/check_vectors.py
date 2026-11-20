@@ -2,7 +2,8 @@
 """Schema check for the shared worker-contract conformance vectors (T-4520).
 
 Validates vectors.yaml against the structure its header describes and against the
-contract's fixed sets (spec v0.3.4 draft): every case CC-01..CC-25 present exactly once,
+contract's fixed sets (spec v0.3.4 draft): every case CC-01..CC-29 present exactly once (CC-26..CC-29: the v0.3.4
+withdrawal, T3w),
 fence_reject reasons from §3.3, the N2 applicability rule from §6.6, steps naming
 ops/writers/transitions from the file's own vocabulary, and no paths into one
 backend's tree (the file is shared with TermLink and ring20).
@@ -22,7 +23,7 @@ import yaml
 HERE = Path(__file__).resolve().parent
 DEFAULT_PATH = HERE / "vectors.yaml"
 
-REQUIRED_IDS = [f"CC-{i:02d}" for i in range(1, 26)]
+REQUIRED_IDS = [f"CC-{i:02d}" for i in range(1, 30)]  # CC-26..CC-29: v0.3.4 T3w (T-5317)
 # §3.3 fence_reject reasons — fixed by the spec, not by the file.
 FENCE_REASONS = {"stale_attempt", "bad_nonce", "bad_credential", "stale_gen",
                  "cas_mismatch", "forbidden_transition", "done_conflict",
@@ -32,8 +33,9 @@ EQUIVALENT_ONLY_REASONS = {"dispatch_closed"}
 # §6.6 N2: n/a only when the case's subject is one of these capabilities.
 NA_CAPABILITIES = {"answer_channel", "registry_epoch", "caller_chosen_ids"}
 STATES = {"dispatched", "running", "done", "lost", "unknown"}
-OUTCOMES = {"succeeded", "failed", "refused", "handback-malformed", "paused"}
-TRANSITIONS = {"T1", "T2", "T3", "T3b", "T-RECLAIM", "T4", "T5", "T6", "T6b",
+OUTCOMES = {"succeeded", "failed", "refused", "handback-malformed", "paused",
+            "withdrawn"}  # v0.3.4: written only by T3w
+TRANSITIONS = {"T1", "T2", "T3", "T3b", "T3w", "T-RECLAIM", "T4", "T5", "T6", "T6b",
                "T7a", "T7b", "T7c", "T7d", "T8"}
 VOCAB_KEYS = {"states", "outcomes", "transitions", "writers", "fence_reasons",
               "errors", "refusals", "capabilities", "ops"}

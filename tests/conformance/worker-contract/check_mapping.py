@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Reader for an external backend's conformance mapping (T-4752).
 
-An external backend (spec v0.3.3 §6.6) publishes, for every §9 case CC-01..CC-25, a
+An external backend (spec v0.3.3 §6.6) publishes, for every §9 case CC-01..CC-25 (CC-29 from v0.3.4), a
 verdict PASS | N/A | GAP. The format is ring20's draft `wc-conformance-mapping/0.1`
 (their scripts/wc-mapping-check.py, received under docs/reports/T-4752/received/).
 This is a reimplementation of that checker's rules, not a copy, with one change the
@@ -10,7 +10,8 @@ may be N/A is read from the spec's own table, `applicability.n_a_allowed` in
 vectors.yaml, never from the backend's `exercises_section3` declaration.
 
 Rules: format and header present; spec_version a wc/0.3 revision; the seven §6.6
-declarations present and non-empty, G a number; cases exactly CC-01..CC-25 once each;
+declarations present and non-empty, G a number; cases exactly CC-01..CC-25 once each
+(CC-01..CC-29 for a wc/0.3.4 or later mapping);
 verdict PASS | N/A | GAP; every case has a rationale; PASS lists evidence; GAP names a
 task (T-N or project:T-N); N/A only where the vectors allow it; a declared
 exercises_section3 that contradicts the vectors is refused.
@@ -32,13 +33,23 @@ HERE = Path(__file__).resolve().parent
 DEFAULT_VECTORS = HERE / "vectors.yaml"
 
 FORMAT = "wc-conformance-mapping/0.1"
-REQUIRED_IDS = [f"CC-{i:02d}" for i in range(1, 26)]
+REQUIRED_IDS = [f"CC-{i:02d}" for i in range(1, 26)]   # a mapping against wc/0.3.3 or earlier
+# v0.3.4 adds CC-26..CC-29 (the withdrawal, T3w); a mapping that claims wc/0.3.4 or later
+# must cover them too (T-5317). An earlier mapping is still read against CC-01..CC-25.
+REQUIRED_IDS_V034 = [f"CC-{i:02d}" for i in range(1, 30)]
 VERDICTS = {"PASS", "N/A", "GAP"}
 HEADER = ("spec_version", "spec_commit", "code_commit", "date")
 DECLARATIONS = ("backend", "id_scheme", "single_writer", "writer_auth",
                 "evidence_channel", "persisted_at_source", "G")
 SPEC_VERSION = re.compile(r"^wc/0\.3(\.\d+)?$")
 TASK_REF = re.compile(r"^([A-Za-z0-9-]+:)?T-\d+$")
+
+
+def required_ids(spec_version) -> list[str]:
+    """The §9 case ids a mapping must cover, from the spec revision it claims."""
+    m = SPEC_VERSION.match(spec_version) if isinstance(spec_version, str) else None
+    patch = int(m.group(1)[1:]) if m and m.group(1) else 0
+    return REQUIRED_IDS_V034 if patch >= 4 else REQUIRED_IDS
 
 
 def na_table(vectors_doc) -> dict[str, bool]:
@@ -82,6 +93,7 @@ def check(doc, table: dict[str, bool]) -> list[str]:
     if decl.get("backend") in ("hub", "local"):
         errs.append("declarations: backend must be a registered name other than hub and local")
 
+    ids = required_ids(sv)
     cases = doc.get("cases")
     if not isinstance(cases, list):
         errs.append("cases must be a list")
@@ -93,14 +105,14 @@ def check(doc, table: dict[str, bool]) -> list[str]:
             continue
         cid = case.get("id")
         where = cid if isinstance(cid, str) else f"cases[{i}]"
-        if cid not in REQUIRED_IDS:
+        if cid not in ids:
             errs.append(f"{where}: not a §9 case id")
         elif cid in seen:
             errs.append(f"{cid}: duplicate id")
         else:
             seen[cid] = i
         _check_case(where, case, table, errs)
-    missing = [c for c in REQUIRED_IDS if c not in seen]
+    missing = [c for c in ids if c not in seen]
     if missing:
         errs.append(f"cases: missing {', '.join(missing)}")
     return errs
@@ -145,7 +157,7 @@ def main(argv: list[str]) -> int:
     except (OSError, yaml.YAMLError) as exc:
         print(f"check_mapping: cannot read: {exc}", file=sys.stderr)
         return 2
-    if sorted(table) != REQUIRED_IDS:
+    if sorted(table) != REQUIRED_IDS_V034:
         print(f"check_mapping: {vectors} has no applicability for every case", file=sys.stderr)
         return 2
     errors = check(doc, table)

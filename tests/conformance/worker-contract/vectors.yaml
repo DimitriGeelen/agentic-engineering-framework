@@ -43,13 +43,13 @@ spec: shared-worker-contract-transitions v0.3.4 (draft, pending adoption)
 
 vocabulary:
   states: [dispatched, running, done, lost, unknown]
-  outcomes: [succeeded, failed, refused, handback-malformed, paused]
-  transitions: [T1, T2, T3, T3b, T-RECLAIM, T4, T5, T6, T6b, T7a, T7b, T7c, T7d, T8]
-  writers: [hub, supervisor, reconciler, operator, worker, dispatcher, consumer]
+  outcomes: [succeeded, failed, refused, handback-malformed, paused, withdrawn]
+  transitions: [T1, T2, T3, T3b, T3w, T-RECLAIM, T4, T5, T6, T6b, T7a, T7b, T7c, T7d, T8]
+  writers: [hub, supervisor, reconciler, operator, worker, dispatcher, consumer, submitter]
   fence_reasons: [stale_attempt, bad_nonce, bad_credential, stale_gen, cas_mismatch, forbidden_transition, done_conflict, dispatch_closed]
   errors: [id_taken, malformed_id]
   refusals:
-    not_finished_work: a consumer (review verdict, pass-rate, landing) refuses a paused or attested done (§3.3)
+    not_finished_work: a consumer (review verdict, pass-rate, landing) refuses a paused, attested or withdrawn done (§3.3)
     agent_session: operator resolve refused from an agent session without a recorded override (T7d speed bump)
     not_available: operator resolve is not offered as a remote call (T7d, no signed operator identity)
     backend_fixed: a write addressed to a backend other than the record's (§6.4, no mid-flight switch)
@@ -64,6 +64,7 @@ vocabulary:
     create: new dispatch plus attempt 1 (T1); args dispatch_id (optional), dispatcher, retry_of_dispatch_id (optional)
     allocate: next attempt of an existing dispatch (T1)
     start: supervisor confirms the agent child started (T2)
+    withdraw: the submitter takes back an attempt that never started (T3w, v0.3.4); args actor, reason; presents nonce, credential and supervisor_gen. evidence_digest = sha256(reason); an identical repeat is T8
     complete: completion write with evidence; the backend takes T3, T3b, T5, T7b or answers T8 from the attempt's state (§3.3 fence is per attempt)
     reclaim: restarted supervisor claims supervisor_gen+1, or takes the lease over (T-RECLAIM)
     confirm_end: the sweep writer confirms the attempt's end by the backend's own evidence (hub two sweeps at the last-seen epoch then G; hubless independent probe, evidence read first) and acts on it; G elapses inside the op. Precondition (hub) - the attempt has a seen_alive_epoch in given; an attempt never seen alive leaves only through the deadlines (T6b/T6), never T4 (§3.4)
@@ -1467,3 +1468,231 @@ vectors:
           attempt_count: 1
           history_causes: {A1: revoked}
           admissible_histories: {A1: [[running, done]]}
+
+  - id: CC-26
+    title: Withdraw from dispatched (v0.3.4)
+    spec_refs: ["§3.3 T3w", "§3.2 submitter", "§5.5", "§9 CC-26"]
+    applicability:
+      subject: transition
+      rows: [T3w, T1]
+      requires: []
+      n_a_allowed: false
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA26, backend: under_test}
+      attempts:
+        - {attempt: 1, state: dispatched, nonce: n1, credential: c1, supervisor_gen: 1}
+      evidence: {}
+      clock: 20
+    steps: []
+    then: {judged_by: variants}
+    variants:
+      - name: withdraw
+        steps:
+          - op: withdraw
+            writer: submitter
+            attempt: 1
+            nonce: n1
+            credential: c1
+            supervisor_gen: 1
+            args: {actor: a, reason: superseded by D2}
+            expect: {accepted: T3w, notices: 0}
+        then:
+          final:
+            # evidence_digest = sha256("superseded by D2", UTF-8)
+            A1: {state: done, outcome: withdrawn, exit_code: null, result_kind: none, attested: false,
+                 evidence_digest: 8ca243126e2fb57133532a71450fad6c48d76d1ee930a575ccd493903eb87a23,
+                 last_actor: a, last_reason: superseded by D2}
+          operator_notices: 0
+          admissible_histories: {A1: [[dispatched, done]]}
+      - name: without-credential
+        steps:
+          - op: withdraw
+            writer: submitter
+            attempt: 1
+            nonce: n1
+            credential: c-wrong
+            supervisor_gen: 1
+            args: {actor: a, reason: superseded by D2}
+            expect: {fence_reject: bad_credential}
+        then:
+          final: {A1: {state: dispatched, outcome: null}}
+          record_unchanged: true
+      - name: sweep-writer
+        # the sweep writer never withdraws (§3.2); the spec fixes the refusal, not its reason
+        steps:
+          - op: withdraw
+            writer: hub
+            attempt: 1
+            nonce: n1
+            credential: c1
+            supervisor_gen: 1
+            args: {actor: sweep, reason: superseded by D2}
+            expect: {any_of: [{fence_reject: bad_credential}, {fence_reject: forbidden_transition}]}
+        then:
+          final: {A1: {state: dispatched, outcome: null}}
+          record_unchanged: true
+      - name: consumers-refuse
+        steps:
+          - {op: withdraw, writer: submitter, attempt: 1, nonce: n1, credential: c1, supervisor_gen: 1, args: {actor: a, reason: superseded by D2}, expect: {accepted: T3w}}
+          - {op: consume, writer: consumer, attempt: 1, args: {consumer: review}, expect: {refused: not_finished_work}}
+          - {op: consume, writer: consumer, attempt: 1, args: {consumer: pass-rate}, expect: {refused: not_finished_work}}
+          - {op: consume, writer: consumer, attempt: 1, args: {consumer: landing}, expect: {refused: not_finished_work}}
+        then:
+          final: {A1: {state: done, outcome: withdrawn}}
+          admissible_histories: {A1: [[dispatched, done]]}
+      - name: allocate-after-withdraw
+        # same route as CC-15 allocate-after-resolve (T-4800): withdrawn is terminal, so a later T1 may allocate A2
+        equivalent: a backend that closes a dispatch once its last attempt is terminal (§4.7) answers the allocate fence_reject(dispatch_closed) and no A2 exists
+        steps:
+          - {op: withdraw, writer: submitter, attempt: 1, nonce: n1, credential: c1, supervisor_gen: 1, args: {actor: a, reason: superseded by D2}, expect: {accepted: T3w}}
+          - op: allocate
+            writer: dispatcher
+            expect: {accepted: T1, bind: {nonce: n2, credential: c2}}
+            expect_equivalent: {fence_reject: dispatch_closed}
+        then:
+          final:
+            A1: {state: done, outcome: withdrawn}
+            A2: {state: dispatched, outcome: null}
+          final_equivalent:
+            A1: {state: done, outcome: withdrawn}
+            A2: null
+          admissible_histories:
+            A1: [[dispatched, done]]
+            A2: [[dispatched]]
+          admissible_histories_equivalent:
+            A1: [[dispatched, done]]
+      - name: answer-channel
+        # the withdrawal closes the open question and bounces the un-acked answer (§5.5)
+        requires: [answer_channel]
+        steps:
+          - {op: append_question, writer: worker, attempt: 1, nonce: n1, args: {question_id: q1, body: which branch}, expect: {ok: true}}
+          - {op: append_answer, writer: dispatcher, attempt: 1, args: {question_id: q1, body: bleeding-edge, deadline: 100}, expect: {ok: true}}
+          - {op: withdraw, writer: submitter, attempt: 1, nonce: n1, credential: c1, supervisor_gen: 1, args: {actor: a, reason: superseded by D2}, expect: {accepted: T3w, notices: 0}}
+        then:
+          final: {A1: {state: done, outcome: withdrawn, questions_open: 0, answers: {q1: bounced}}}
+          operator_notices: 0
+          admissible_histories: {A1: [[dispatched, done]]}
+
+  - id: CC-27
+    title: Withdraw races the start (v0.3.4)
+    spec_refs: ["§3.3 T2", "§3.3 T3w", "§3.2 CAS", "§9 CC-27"]
+    applicability:
+      subject: transition
+      rows: [T2, T3w]
+      requires: []
+      n_a_allowed: false
+      # Each variant fixes one arrival order; both orders are admissible histories of the race. A
+      # supervisor that launches the agent child before its T2 is accepted fails this case.
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA27, backend: under_test}
+      attempts:
+        - {attempt: 1, state: dispatched, nonce: n1, credential: c1, supervisor_gen: 1}
+      evidence: {}
+      clock: 20
+    steps: []
+    then: {judged_by: variants}
+    variants:
+      - name: withdraw-first
+        steps:
+          - {op: withdraw, writer: submitter, attempt: 1, nonce: n1, credential: c1, supervisor_gen: 1, args: {actor: a, reason: superseded by D2}, expect: {accepted: T3w}}
+          - {op: start, writer: supervisor, attempt: 1, nonce: n1, credential: c1, supervisor_gen: 1, expect: {fence_reject: cas_mismatch}}
+        then:
+          final: {A1: {state: done, outcome: withdrawn}}
+          admissible_histories: {A1: [[dispatched, done], [dispatched, running]]}
+      - name: start-first
+        steps:
+          - {op: start, writer: supervisor, attempt: 1, nonce: n1, credential: c1, supervisor_gen: 1, expect: {accepted: T2}}
+          - {op: withdraw, writer: submitter, attempt: 1, nonce: n1, credential: c1, supervisor_gen: 1, args: {actor: a, reason: superseded by D2}, expect: {fence_reject: cas_mismatch}}
+        then:
+          final: {A1: {state: running, outcome: null}}
+          admissible_histories: {A1: [[dispatched, done], [dispatched, running]]}
+
+  - id: CC-28
+    title: Withdraw from running (v0.3.4)
+    spec_refs: ["§3.3 T3w", "§3.3 backend stop", "§9 CC-28"]
+    applicability:
+      subject: transition
+      rows: [T3w]
+      requires: []
+      n_a_allowed: false
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA28, backend: under_test}
+      attempts:
+        - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1}
+      evidence: {}
+      clock: 20
+    steps: []
+    then: {judged_by: variants}
+    variants:
+      - name: running
+        steps:
+          - {op: withdraw, writer: submitter, attempt: 1, nonce: n1, credential: c1, supervisor_gen: 1, args: {actor: a, reason: superseded by D2}, expect: {fence_reject: cas_mismatch}}
+        then:
+          final: {A1: {state: running, outcome: null}}
+          record_unchanged: true
+      - name: lost
+        given:
+          attempts:
+            - {attempt: 1, state: lost, nonce: n1, credential: c1, supervisor_gen: 1, lost_at: 10}
+        steps:
+          - {op: withdraw, writer: submitter, attempt: 1, nonce: n1, credential: c1, supervisor_gen: 1, args: {actor: a, reason: superseded by D2}, expect: {fence_reject: forbidden_transition}}
+        then:
+          final: {A1: {state: lost, outcome: null}}
+          record_unchanged: true
+      - name: unknown
+        given:
+          attempts:
+            - {attempt: 1, state: unknown, nonce: n1, credential: c1, supervisor_gen: 1}
+        steps:
+          - {op: withdraw, writer: submitter, attempt: 1, nonce: n1, credential: c1, supervisor_gen: 1, args: {actor: a, reason: superseded by D2}, expect: {fence_reject: forbidden_transition}}
+        then:
+          final: {A1: {state: unknown, outcome: null}}
+          record_unchanged: true
+
+  - id: CC-29
+    title: Repeated withdrawal (v0.3.4)
+    spec_refs: ["§3.3 T3w", "§3.3 T8", "§3.3 forbidden done_conflict", "§9 CC-29"]
+    applicability:
+      subject: transition
+      rows: [T3w, T8]
+      requires: []
+      n_a_allowed: false
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA29, backend: under_test}
+      attempts:
+        - {attempt: 1, state: dispatched, nonce: n1, credential: c1, supervisor_gen: 1}
+      evidence:
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA29, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+      clock: 20
+    # shared: A1 becomes done{withdrawn} with evidence_digest = sha256("superseded by D2")
+    steps:
+      - {op: withdraw, writer: submitter, attempt: 1, nonce: n1, credential: c1, supervisor_gen: 1, args: {actor: a, reason: superseded by D2}, expect: {accepted: T3w}}
+    then: {judged_by: variants}
+    variants:
+      - name: same-withdrawal
+        steps:
+          - {op: withdraw, writer: submitter, attempt: 1, nonce: n1, credential: c1, supervisor_gen: 1, args: {actor: a, reason: superseded by D2}, expect: {response: T8, notices: 0}}
+        then:
+          final:
+            A1: {state: done, outcome: withdrawn,
+                 evidence_digest: 8ca243126e2fb57133532a71450fad6c48d76d1ee930a575ccd493903eb87a23}
+          operator_notices: 0
+          admissible_histories: {A1: [[dispatched, done]]}
+      - name: other-reason
+        steps:
+          - {op: withdraw, writer: submitter, attempt: 1, nonce: n1, credential: c1, supervisor_gen: 1, args: {actor: a, reason: wrong commission}, expect: {fence_reject: forbidden_transition}}
+        then:
+          final:
+            A1: {state: done, outcome: withdrawn,
+                 evidence_digest: 8ca243126e2fb57133532a71450fad6c48d76d1ee930a575ccd493903eb87a23}
+          operator_notices: 0
+          admissible_histories: {A1: [[dispatched, done]]}
+      - name: later-handback
+        steps:
+          - {op: complete, writer: supervisor, attempt: 1, nonce: n1, credential: c1, evidence: E1, expect: {fence_reject: done_conflict, notices: 1}}
+        then:
+          final:
+            A1: {state: done, outcome: withdrawn, exit_code: null, result_kind: none,
+                 evidence_digest: 8ca243126e2fb57133532a71450fad6c48d76d1ee930a575ccd493903eb87a23}
+          operator_notices: 1
+          admissible_histories: {A1: [[dispatched, done]]}

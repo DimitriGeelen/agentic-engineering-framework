@@ -50,7 +50,7 @@ def _vec(doc, vid):
 # ── schema check ──────────────────────────────────────────────────────────
 def test_shipped_file_is_valid(doc):
     assert _errors(doc) == []
-    assert [v["id"] for v in doc["vectors"]] == [f"CC-{i:02d}" for i in range(1, 26)]
+    assert [v["id"] for v in doc["vectors"]] == [f"CC-{i:02d}" for i in range(1, 30)]
 
 
 def test_cli_exit_codes(tmp_path, doc):
@@ -120,7 +120,7 @@ def no_backend(monkeypatch, tmp_path):
 def test_runner_without_backend_reports_not_implemented(doc, no_backend):
     assert not run_local.LOCAL_BACKEND.exists()
     results = [run_local.run_vector(v, None, "no local backend") for v in doc["vectors"]]
-    assert len(results) == 25
+    assert len(results) == 29
     assert {r["status"] for r in results} == {"not-implemented"}
     cc17 = next(r for r in results if r["id"] == "CC-17")
     assert "capability:registry_epoch" in cc17["missing"]
@@ -132,7 +132,7 @@ def test_runner_cli_never_passes_without_backend(capsys, no_backend):
     import json
     out = json.loads(capsys.readouterr().out)
     assert out["backend_found"] is False
-    assert out["counts"] == {"not-implemented": 25}
+    assert out["counts"] == {"not-implemented": 29}
     assert run_local.main(["--require-implemented"]) == 3
 
 
