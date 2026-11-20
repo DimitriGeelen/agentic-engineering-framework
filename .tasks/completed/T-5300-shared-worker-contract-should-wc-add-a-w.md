@@ -8,18 +8,18 @@ description: >
   -> done, never-started jobs only) so a submitter can withdraw a queued pool job?
   (ring20 T-2790)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 waiting_on: agent
 revisit_at: 2026-11-27
 created: 2026-11-20T12:45:49Z
-last_update: 2026-11-20T16:24:20Z
-date_finished:
+last_update: 2026-11-20T16:27:12Z
+date_finished: 2026-11-20T16:27:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -118,15 +118,15 @@ A job submitted to the shared worker pool cannot be taken back before it starts.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -183,7 +183,11 @@ Add a `withdrawn` outcome to the shared worker contract as v0.3.4, on the shape 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Add a `withdrawn` outcome to the shared worker contract as v0.3.4, on the shape all three owners now agree on. A job that never started can be taken back by whoever holds that attempt's credentials (the nonce plus the supervisor token returned once at allocation), nobody else; the hub's sweep never withdraws; there is no operator path in this change. It is a `dispatched -> done` transition with outcome `withdrawn`, allowed only from `dispatched` with the current attempt (cas_mismatch from `running`, forbidden_transition from `done`/`lost`/`unknown`, a repeat deduped), carrying sha256 of the reason as evidence with `result_kind: none`, closing the attempt's open questions, logged with actor and reason, raising no notice. The race with a starting worker is safe because both writes are compare-and-set in one transaction; v0.3.4 adds the rule that a supervisor starts the worker only after its start transition succeeded. Build: (1) write v0.3.4 in docs/specs/shared-worker-contract-transitions.md and send it to TermLink and ring20; (2) AEF's lib/dispatch_records.py `Store.withdraw` with the four conformance cases 010 named (from dispatched; race with start; from running; repeat); TermLink and ring20 build theirs against the same vectors.
+
+**Date**: 2026-11-20T16:27:10Z
 
 ## Updates
 
@@ -192,3 +196,43 @@ Add a `withdrawn` outcome to the shared worker contract as v0.3.4, on the shape 
 
 ### 2026-11-20T16:24:20Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-20T16:27:10Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Add a `withdrawn` outcome to the shared worker contract as v0.3.4, on the shape all three owners now agree on. A job that never started can be taken back by whoever holds that attempt's credentials (the nonce plus the supervisor token returned once at allocation), nobody else; the hub's sweep never withdraws; there is no operator path in this change. It is a `dispatched -> done` transition with outcome `withdrawn`, allowed only from `dispatched` with the current attempt (cas_mismatch from `running`, forbidden_transition from `done`/`lost`/`unknown`, a repeat deduped), carrying sha256 of the reason as evidence with `result_kind: none`, closing the attempt's open questions, logged with actor and reason, raising no notice. The race with a starting worker is safe because both writes are compare-and-set in one transaction; v0.3.4 adds the rule that a supervisor starts the worker only after its start transition succeeded. Build: (1) write v0.3.4 in docs/specs/shared-worker-contract-transitions.md and send it to TermLink and ring20; (2) AEF's lib/dispatch_records.py `Store.withdraw` with the four conformance cases 010 named (from dispatched; race with start; from running; repeat); TermLink and ring20 build theirs against the same vectors.
+
+### 2026-11-20T16:27:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7005ed9b
+- **Timestamp:** 2026-11-20T16:27:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-a06562ca
+- **Timestamp:** 2026-11-20T16:27:14Z
+- **Overall:** CONFIRMED
+- **Claims:** 2
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `Store.withdraw` | module | ✓ pass |
+| `T-4752` | task | ✓ pass |
