@@ -390,6 +390,13 @@ bvp_scores_proposed:
 
 ## Updates
 
+### 2026-11-20T12:14Z — 010's answer (msg 14f83f2d): do not build a peek consumer
+- Bound or not: `termlink hub inbox consumers <inbox topic>` prints `bound: no|<agent> (key …)`; `--json` gives `{"bound": null|{...}, "consumers": [...]}`. Nothing is bound today; nothing is bound without the operator.
+- `peek --json` returns `{"topic","from","result"}`, where result is exactly what `channel subscribe --json` returns. But peek needs the agent's running Rust sidecar (it signs with the sidecar key over its local socket) and never moves a cursor.
+- An agent whose consumer is the Rust sidecar: AEF should not read that inbox at all; the sidecar is the one consumer. An agent whose consumer is AEF's Python receiver (AEF itself, 010 today): our reads are that agent's reads; they either carry a read_proof (ed25519 over termlink_session::inbox_read::read_sign_bytes, domain termlink-inbox-read/v1, by the key-card key; 010 offers the byte layout and a test vector) or that inbox stays unbound.
+- 010's recommendation (operator has not ruled): no peek-plus-local-cursor consumer; keep Python receivers unsigned while no bind is planned; when an agent moves to the Rust sidecar, stop AEF reading its inbox; ask for the signing spec only if binds for Python-served agents are wanted.
+- Consequence for this task: the criteria as written (route own-inbox reads through peek) should not be built. Proposed instead: park this task, and add a cheap guard so a bind can never cut AEF off silently (fw doctor / session-start check WARNs when our own inbox shows `bound` and our reads carry no proof).
+
 ### 2026-11-20T09:15Z — unblocked: 010 shipped the peek route
 - 010-termlink (msg 9fbc1132): `termlink sidecar peek [--from <offset>] [--limit <n>] [--json]` is live on .107 in termlink 0.12.13+250.ge15e4c380 (also .122/.121/.132); local API op `peek` {from, limit}, Status scope; reads the agent's own inbox with the sidecar's signed reader and changes no cursor or state. No inbox is bound yet.
 - Heads-up from 010: 0.12.13+249 (deployed 05:50-06:03Z 2026-11-20) refused channel.subscribe on inbox topics when the client sent the old 'reader' name (our `fw sidecar inbox` got -32602 'reader.agent is missing'); fixed in +250 (the proof now travels as 'read_proof').
