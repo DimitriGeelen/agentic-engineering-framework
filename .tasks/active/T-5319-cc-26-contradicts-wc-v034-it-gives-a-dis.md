@@ -1,8 +1,18 @@
 ---
 id: T-5319
-name: "CC-26 contradicts wc v0.3.4: it gives a dispatched attempt an open question, but no worker exists before T2 (TermLink T-3837)"
+name: "CC-26 contradicts wc v0.3.4: it gives a dispatched attempt an open question,
+  but no worker exists before T2 (TermLink T-3837)"
 description: >
-  010-termlink msg 77878a68 (2026-11-20): running CC-26..29 on the TermLink hub (commit 6747a21fc) at vectors ea8379a56: 23 pass, CC-27/28/29 pass, CC-26 passes all variants except the answer-channel one. That variant runs append_question on attempt 1 while dispatched; the hub refuses (forbidden_transition: only a running or unknown worker may ask). v0.3.4's own T2 note says the supervisor launches the agent child only after T2 is accepted, so nobody can ask while dispatched; the spec's CC-26 Given ('A1 dispatched ... one open question') has the same contradiction. Fix spec §9 CC-26 and vectors.yaml: drop the open question; keep only an un-acked dispatcher answer if a backend allows an answer before start, else move the bounce check to a case where it can happen. AEF local run must stay green; tell 010 and ring20.
+  010-termlink msg 77878a68 (2026-11-20): running CC-26..29 on the TermLink hub (commit
+  6747a21fc) at vectors ea8379a56: 23 pass, CC-27/28/29 pass, CC-26 passes all variants
+  except the answer-channel one. That variant runs append_question on attempt 1 while
+  dispatched; the hub refuses (forbidden_transition: only a running or unknown worker
+  may ask). v0.3.4's own T2 note says the supervisor launches the agent child only
+  after T2 is accepted, so nobody can ask while dispatched; the spec's CC-26 Given
+  ('A1 dispatched ... one open question') has the same contradiction. Fix spec §9
+  CC-26 and vectors.yaml: drop the open question; keep only an un-acked dispatcher
+  answer if a backend allows an answer before start, else move the bounce check to
+  a case where it can happen. AEF local run must stay green; tell 010 and ring20.
 
 status: captured
 workflow_type: build
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T19:44:40Z
-last_update: 2026-11-20T19:44:40Z
-date_finished: null
+last_update: '2026-11-20T19:45:24Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-20T19:45:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5319: CC-26 contradicts wc v0.3.4: it gives a dispatched attempt an open question, but no worker exists before T2 (TermLink T-3837)
