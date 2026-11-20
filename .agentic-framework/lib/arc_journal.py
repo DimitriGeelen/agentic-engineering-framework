@@ -325,6 +325,10 @@ def _review_dispatch_fault(dispatch_id: str, root: Path, target: dict | None = N
               if r.get("dispatch_id") == did and str(r.get("outcome") or "").lower() == "green"]
     if not greens:
         return f"the verdict ledger has no green verdict from dispatch {did!r}"
+    # T-5294: a verdict/1 green that fails its own check counts neither green nor red.
+    if not any(not vl.not_checkable_reasons(r) for r in greens):
+        return (f"dispatch {did!r}'s green vote is not checkable and does not count — "
+                + "; ".join(vl.not_checkable_reasons(greens[-1])))
     return ""
 
 

@@ -10,7 +10,9 @@ image-viewing tool.
 
 It does NOT judge whether the conclusion follows from the evidence (1409 caveat b), it runs no
 command (a `command:` location is reported "not checkable"), and it never decides whether a vote
-counts — that is slice 3 (T-5294). "Cannot tell" is always reported as such, never as yes.
+counts: `checkable(row)` (T-5294) only reads a recorded check and names why a vote fails it;
+the ledger decides that such a vote counts neither green nor red. "Cannot tell" is always
+reported as such, never as yes.
 """
 from __future__ import annotations
 
@@ -514,3 +516,93 @@ def safe_check(*args, **kw) -> dict:
         return check_vote(*args, **kw)
     except Exception as exc:  # noqa: BLE001
         return {"checker": CHECKER, "error": f"{type(exc).__name__}: {exc}"}
+
+
+# ── T-5294: does a recorded vote hold up to its own check? ────────────────────────────────────
+
+FORMAT = "verdict/1"   # verdict_format.FORMAT (not imported: this module stays import-light)
+
+
+def _found(item: dict) -> bool:
+    """A quote is found when it is in the cited file, verbatim or with whitespace normalised."""
+    return (item.get("result") in ("found-at-location", "found-elsewhere")
+            or item.get("normalised") in ("found-at-location", "found-elsewhere"))
+
+
+def check_reasons(check) -> list[str]:
+    """Every reason the recorded `check` of a verdict/1 vote shows it is NOT checkable ([] when it
+    is). Not checkable: the check is missing or errored; a cited quote is not in the file; a cited
+    location does not exist; an image is missing, its region is outside it (or its size cannot be
+    read), or the location names another image or region; an evidence line is malformed; for a
+    vote citing an image, the seat's run record does not show it opened that image ("cannot tell"
+    is not "opened"); the rule is missing; the vote is incomplete or inconsistent. A `command:`
+    location is never run and is not a reason by itself (the checker cannot tell either way)."""
+    if not isinstance(check, dict) or not check:
+        return ["no check recorded"]
+    if check.get("error"):
+        return [f"the check errored: {check['error']}"]
+    out: list[str] = []
+    if check.get("complete") is False:
+        inc = check.get("incomplete") or {}
+        out.append("incomplete vote" + (f" ({'; '.join(f'AC{a}: ' + ', '.join(m) for a, m in inc.items())})"
+                                         if inc else ""))
+    if check.get("consistent") is False:
+        out.append("inconsistent vote: " + "; ".join(check.get("inconsistent") or ["?"]))
+    crits = check.get("criteria")
+    if not isinstance(crits, dict) or not crits:
+        out.append("the check names no criterion")
+        return out
+    for ac, c in sorted(crits.items(), key=lambda kv: str(kv[0])):
+        c = c if isinstance(c, dict) else {}
+        if not (c.get("rule") or {}).get("present"):
+            out.append(f"AC{ac}: rule missing")
+        for it in c.get("items") or []:
+            it = it if isinstance(it, dict) else {}
+            kind = it.get("kind")
+            if kind == "quote":
+                where = it.get("location") or "?"
+                if it.get("result") == "location-mismatch":
+                    out.append(f"AC{ac}: location {where!r} is neither path:line nor command:")
+                    continue
+                if it.get("location_exists") is False:
+                    out.append(f"AC{ac}: location {where} does not exist"
+                               + (f" ({it['why']})" if it.get("why") else ""))
+                if it.get("result") != "not-checkable" and not _found(it):
+                    out.append(f"AC{ac}: quote {str(it.get('quote', ''))[:60]!r} not found in "
+                               f"{it.get('path') or where}")
+            elif kind == "image":
+                img = it.get("image") or it.get("evidence") or "?"
+                if it.get("result") == "malformed":
+                    out.append(f"AC{ac}: malformed image evidence {str(it.get('evidence', ''))[:60]!r}")
+                    continue
+                if not it.get("image_exists"):
+                    out.append(f"AC{ac}: image {img} missing")
+                elif it.get("region") is not None and it.get("region_inside") is not True:
+                    out.append(f"AC{ac}: region {','.join(map(str, it['region']))} "
+                               + ("outside" if it.get("region_inside") is False
+                                  else "cannot be placed in") + f" image {img}")
+                if it.get("location_agrees") is False:
+                    out.append(f"AC{ac}: location {it.get('location')!r} does not name image {img} "
+                               f"and the same region")
+                seen = it.get("seat_viewed")
+                if seen is not True:
+                    out.append(f"AC{ac}: seat did not open image {img}" if seen is False else
+                               f"AC{ac}: cannot tell whether the seat opened image {img}"
+                               + (f" ({it['seat_viewed_why']})" if it.get("seat_viewed_why") else ""))
+            elif kind == "error":
+                out.append(f"AC{ac}: the check errored on an evidence item: {it.get('error', '?')}")
+            else:
+                out.append(f"AC{ac}: malformed evidence {str(it.get('evidence', ''))[:60]!r}")
+    return out
+
+
+def checkable(row) -> tuple[bool, list[str]]:
+    """(True, []) when a recorded ledger row's vote holds up to its own mechanical check, else
+    (False, reasons). Rows without `format: verdict/1` (old free-text rows) are always (True, [])
+    — they are counted exactly as before. A not-evaluated row has no vote to check."""
+    if not isinstance(row, dict) or row.get("format") != FORMAT:
+        return True, []
+    if row.get("outcome") == "not-evaluated":
+        return True, []
+    why = check_reasons(row.get("check"))
+    return (not why), why
