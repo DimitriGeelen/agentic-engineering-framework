@@ -1,6 +1,6 @@
 # Shared dispatched-worker contract — transition table and conformance spec
 
-**Status:** DRAFT v0.3.4 pending adoption (AEF operator; TermLink operator via their T-3484; ring20). v0.3.4 is proposed, not adopted: until all three adopt it, v0.3.3 is the agreed text. v0.3.3 history: v0.3.3 was for agreement by TermLink, ring20 and AEF. TermLink AGREES to v0.3.x: the six changes marked "TermLink re-agreement" in `docs/reports/T-4439-reviews/ring20-v0.2-answers.md` (v0.3) and v0.3.1 [termlink v0.3 agree]; v0.3.3 words in its hub credential carrier. ring20: SIGN-WITH-NOTES on v0.3, signing conditions N1-N3 and notes N4-N6 worded in here; v0.3.1 is the version ring20 signs; v0.3.2 is editorial only. **Task:** T-4439 (slice 1 of T-4435, GO 2026-10-20).
+**Status:** DRAFT v0.3.4 pending adoption (AEF operator; TermLink operator via their T-3484; ring20). v0.3.4 (three items: refusal order, dispatch closure, the `withdrawn` outcome) is proposed, not adopted: until all three adopt it, v0.3.3 is the agreed text. v0.3.3 history: v0.3.3 was for agreement by TermLink, ring20 and AEF. TermLink AGREES to v0.3.x: the six changes marked "TermLink re-agreement" in `docs/reports/T-4439-reviews/ring20-v0.2-answers.md` (v0.3) and v0.3.1 [termlink v0.3 agree]; v0.3.3 words in its hub credential carrier. ring20: SIGN-WITH-NOTES on v0.3, signing conditions N1-N3 and notes N4-N6 worded in here; v0.3.1 is the version ring20 signs; v0.3.2 is editorial only. **Task:** T-4439 (slice 1 of T-4435, GO 2026-10-20).
 **Contract version field value:** `wc/0.3` (see §2; a patch revision does not change it). **Rule:** no implementation starts before this table is agreed.
 
 ## Changelog v0.3.3 → v0.3.4
@@ -10,10 +10,15 @@ dispatch closed after a resolve-as-lost or a paused end answers a later allocate
 fail on a step the spec never asked a backend to support; and their T-2544 adapter derives `refused` before the
 hand-back check); **[termlink 14d0100a]** = TermLink's implementation-side reply: no objection to either item, its
 hub never closes a dispatch and already orders refusal first (`worker_contract.rs:605-628`); formal adoption is by
-TermLink's operator through their T-3484. **DRAFT for adoption:** nothing here is in force until the AEF operator,
+TermLink's operator through their T-3484. **[ring20 T-2790 3d5e1fda]** = ring20's request (their T-2790, msg 3d5e1fda,
+2026-11-20, operator-requested): a submitter cannot take back a pool job that never started (9 judge jobs held 5 h on two
+nodes); **[termlink ab85e88e]** = TermLink's answer from its backend (`worker_contract.rs`, `dispatch_contract.rs`):
+agree, with the evidence and question-closing points, the credential rule and the start-after-T2 requirement (AEF
+record: `docs/reports/T-5300-withdraw-outcome.md`). **DRAFT for adoption:** nothing here is in force until the AEF operator,
 TermLink's operator and ring20 adopt it. The version field stays `wc/0.3` (§2: a patch revision does not change it):
 item 1 states the order every implementation and the CC-16/CC-21 vectors already use, and item 2 adds an optional
-backend behaviour that a backend which never closes a dispatch does not see.
+backend behaviour that a backend which never closes a dispatch does not see. Item 3 adds an outcome value, which every
+reader of `outcome` sees; it too keeps `wc/0.3`, for the reasons given in the item.
 
 1. **Refusal before rule 1 (§3.3 outcome derivation):** rule 1 (hand-back missing or malformed →
    `handback-malformed`) applies to a worker that ran. A run.sh or supervisor refusal yields `refused` through rule 2
@@ -28,6 +33,27 @@ backend behaviour that a backend which never closes a dispatch does not see.
    equivalent route. Closing changes no attempt, and a closed dispatch whose last attempt is `paused` is never counted
    as resolved or finished work. A backend that never closes a dispatch (TermLink's hub) is unaffected and stays
    conformant unchanged. [ring20 closure] [termlink 14d0100a]
+3. **The `withdrawn` outcome (§2, §3.1, §3.2, §3.3 T2, T3w, T8 and `fence_reject`, §5.5, Open questions 7, CC-26 to
+   CC-29):** a submitter may take back an attempt that never started. New row **T3w**, a T3b variant: `dispatched →
+   done{withdrawn}`, CAS expected-prior `dispatched`, accepted only for the current attempt with a matching
+   `supervisor_gen` (or the lease, §3.2). From `running` it is `fence_reject(cas_mismatch)` (the worker started; stop
+   it instead); from `done`, `lost` or `unknown` it is `fence_reject(forbidden_transition)`, except that the same
+   withdrawal repeated (identical `evidence_digest`) is a T8 response. **Who:** only the holder of the attempt's
+   credentials: the nonce plus the `supervisor_token` that `dispatch.allocate` returned once to its caller, on an
+   Execute-scope connection (hub); other backends, the §3.2 lifecycle credential or channel. The hub's sweep never
+   withdraws, and this revision has no operator path (a separate decision, like T7d; Open questions 7).
+   **Evidence:** `evidence_digest` = sha256 of the reason, `result.kind: none`, no hand-back, `exit_code` null.
+   **Effects:** closes the attempt's open questions and bounces its un-acked answers as any `done` does (§5.5);
+   logged in `history` with actor and reason; **no** operator notice. `withdrawn` is terminal and never success: not
+   counted as finished work, success or failure. **New supervisor rule (§3.3 T2):** a supervisor launches the agent
+   child only after its T2 was accepted; a refused T2 means the attempt is gone and nothing is launched. With that,
+   the T2/T3w race needs nothing beyond the CAS: each runs in one atomic step that checks the actual state, so exactly
+   one wins and the other gets `cas_mismatch` (CC-27). **Version field stays `wc/0.3`:** the field exists so a reader
+   can refuse a record it cannot read (§2); an added outcome value does not make a record unreadable, provided every
+   reader treats an outcome value it does not know as terminal and not finished work, the way it treats `paused`.
+   This item adds that reader rule (§2), and no backend emits `withdrawn` before all three owners adopt v0.3.4, so no
+   adopted reader meets it unprepared. A bump would instead make every v0.3.3 reader refuse every record, including
+   the many that never carry the value. [ring20 T-2790 3d5e1fda] [termlink ab85e88e]
 
 ## Changelog v0.3.2 → v0.3.3
 
@@ -227,7 +253,7 @@ attempts:                         # append-only list, index = attempt number sta
   - attempt: 1
     nonce: <random>               # allocated with the attempt, never reused
     state: dispatched|running|done|lost|unknown
-    outcome: succeeded|failed|refused|handback-malformed|paused|null   # non-null iff state == done
+    outcome: succeeded|failed|refused|handback-malformed|paused|withdrawn|null   # non-null iff state == done; withdrawn only via T3w (v0.3.4)
     worker_kind: claude|ollama|pi|...
     session_binding:              # written at spawn, before the worker runs [claude 1b, §6.4]; hub fields OPTIONAL when backend is neither hub nor local
       worker_binding: D-<ulid>:1           # --worker-binding; unique among live sessions; the T4 key [termlink v0.1 review]
@@ -251,7 +277,7 @@ attempts:                         # append-only list, index = attempt number sta
       findings: [...]
     evidence_digest: <sha256 of the evidence the terminal write cited>
     history:                      # append-only transition log: (from, to, writer, ts, evidence_digest[, cause])
-      - {from: null, to: dispatched, writer: hub, ts: ...}   # cause ∈ {deadline_stop, revoked, operator_stop} when a backend stopped the attempt (§3.3)
+      - {from: null, to: dispatched, writer: hub, ts: ...}   # cause ∈ {deadline_stop, revoked, operator_stop} when a backend stopped the attempt (§3.3); a T3w entry also carries actor and reason (v0.3.4)
     answers:                      # per-attempt section; the lifecycle ignores it (§5)
       - {cmd_id, question_id, body, deadline, state: stored|received|applied|undelivered|expired, ...}
     questions: [...]              # worker-appended, same fence (§5)
@@ -269,7 +295,7 @@ it writes `lost` (ring20) may use `G = 0`; ring20's `deadline_running` is its wo
   response, not a transition, and appends nothing (§3.3). [ring20 v0.2 review §10]
 - I2. `outcome != null` iff `state == done`.
 - I3. A write names `(dispatch_id, attempt, nonce)` and an **expected prior state**; the backend checks nonce and
-  prior state in the *same atomic step* as the write. A lifecycle write (T2, T3, T3b, T-RECLAIM, T5, T7b, and T8) also
+  prior state in the *same atomic step* as the write. A lifecycle write (T2, T3, T3b, T3w, T-RECLAIM, T5, T7b, and T8) also
   presents the writer's credential or arrives on a channel the worker cannot write (§3.2), checked in the same step.
   For an external backend fencing by lease (§6.6), "the same step" means while holding the lease.
   [claude 1c, opencode Q1, codex Q1, §6.2.3] [ring20 v0.2 review §3] [ring20 v0.3 check N1]
@@ -280,6 +306,10 @@ it writes `lost` (ring20) may use `G = 0`; ring20's `deadline_running` is its wo
   incomplete; each attempt keeps the epoch of the sweep that last saw it alive. [AEF v0.2 answers §1.1]
 - I8. Verification, review and landing never change `outcome` or `state`. They are evaluation-layer facts keyed by
   `(dispatch_id, attempt, result.value)`, held outside the record. [ring20 v0.2 review §6]
+
+**Unknown outcome values (reader rule, v0.3.4).** A reader that meets an `outcome` value it does not know treats the
+attempt as terminal and **not finished work** (as `paused`): never success, never counted in a pass rate. This is what
+lets an outcome value be added within `wc/0.3` (changelog v0.3.4 item 3). [termlink ab85e88e]
 
 ---
 
@@ -292,9 +322,9 @@ it writes `lost` (ring20) may use `G = 0`; ring20's `deadline_running` is its wo
 
 | State | Meaning | Terminal? |
 |---|---|---|
-| `dispatched` | Attempt allocated, session binding written, worker not yet confirmed started | no |
+| `dispatched` | Attempt allocated, session binding written, worker not yet confirmed started (and, from v0.3.4, not yet launched: §3.3 T2) | no |
 | `running` | Supervisor confirmed the agent child started | no |
-| `done{outcome}` | Agent child **stopped**, fenced evidence accepted. `outcome` ∈ succeeded, failed, refused, handback-malformed, paused | yes (final; see T5/T8) |
+| `done{outcome}` | Agent child **stopped**, fenced evidence accepted. `outcome` ∈ succeeded, failed, refused, handback-malformed, paused, withdrawn (`withdrawn`: the child was never launched, §3.3 T3w) | yes (final; see T5/T8) |
 | `lost` | Hub confirmed the session ended with **no** completion evidence | terminal but **upgradable** to `done` (T5) |
 | `unknown` | Bounded silence and no way to confirm (from `dispatched` or `running`); operator-visible; never decays on its own | no (must be resolved) |
 
@@ -312,6 +342,9 @@ ESCALATED rule] [ring20 v0.2 review §5]
 | `hub` (the *sweep writer*) | the backend's sweep module: the TermLink hub; for `backend: local`, the local backend module; for an external backend, its own sweep module. T4/T6/T6b/T7a/T7c are written from the state sweep (§3.4) | T1, T4, T6, T6b, T7a, T7c |
 | `reconciler` | AEF reader of the worker dir; submits *local evidence*, never a verdict of its own; a supervisor that died is replaced by it for the completion write | T3, T3b, T5, T7b, T8 |
 | `operator` | human, `fw worker resolve`, a hub-host CLI until a signed operator identity exists | T7d |
+| `submitter` | the holder of the attempt's credentials: the nonce plus the `supervisor_token` that `dispatch.allocate` returned once to its caller, on an Execute-scope connection (hub); on other backends, the §3.2 lifecycle credential or channel. Usually the dispatcher; a supervisor holding the same credentials qualifies (v0.3.4) | T3w, and its T8 repeat |
+
+The **sweep writer never withdraws**, and no operator path to T3w exists in this revision (Open questions 7). [termlink ab85e88e]
 
 The worker (the agent) **never writes lifecycle fields**. It may append `questions` and ack `answers` only (§5).
 [P.2, codex Q3 cond.2 field-level permissions]
@@ -356,9 +389,10 @@ rejected (never merged). `fence_reject` is defined after the table.
 | # | From → To | Writer | Required evidence | CAS expected-prior | Precedence / notes |
 |---|---|---|---|---|---|
 | T1 | ∅ → `dispatched` | hub | dispatcher identity; prior attempt (if any) is terminal; backend allocates `attempt` and `nonce` atomically | no attempt exists, or last attempt state ∈ {done, lost} (an operator-resolved `unknown` is `lost` or `done` after T7d); and the dispatch is not closed (§4.7) | allocation is the only place attempts are minted (§4). On a closed dispatch: `fence_reject(dispatch_closed)` [v0.3.4] |
-| T2 | `dispatched` → `running` | supervisor | echo of `nonce`; session binding confirmed; `supervisor_gen` claimed | `dispatched` | sets `deadline_running` |
+| T2 | `dispatched` → `running` | supervisor | echo of `nonce`; session binding confirmed; `supervisor_gen` claimed | `dispatched` | sets `deadline_running`. **v0.3.4:** the supervisor launches the agent child only **after** its T2 was accepted; a refused T2 (`cas_mismatch`: the attempt was withdrawn) means it launches nothing and ends. A supervisor that launches first and records T2 afterwards can run a withdrawn job and is non-conforming [termlink ab85e88e] |
 | T3 | `running` → `done{outcome}` | supervisor, or reconciler when the supervisor is gone | agent child exited; `exit_code` read **after** exit; hand-back parsed and hash computed; `evidence_digest` | `running` | the single normal completion path; `outcome` derived by rule below. A reconciler submits the same fenced local evidence when the supervisor died, for instance inside `G`; so `running → done` is a valid history [ring20 v0.2 review §12] |
 | T3b | `dispatched` → `done{outcome}` | supervisor, or reconciler when the supervisor is gone | as T3 (worker died/refused before T2 landed, e.g. run.sh `exit 3`) | `dispatched` | covers fast-fail without a spurious `lost` |
+| T3w | `dispatched` → `done{withdrawn}` | submitter (§3.2) | a withdrawal request with `actor` and `reason`, for the **current** attempt, presenting its nonce and credential and a matching `supervisor_gen` (an external backend fencing by lease: the lease, §3.2). `evidence_digest` = sha256 of the reason (UTF-8); `result.kind: none`, no `result.value`, no hand-back, `exit_code` null, `attested: false` | `dispatched` | a T3b variant (v0.3.4). `outcome: withdrawn` is written, never derived. From `running`: `fence_reject(cas_mismatch)` (stop the worker instead, §3.3 backend stop). From `done`, `lost`, `unknown`: `fence_reject(forbidden_transition)`, except a repeat of the same withdrawal (identical `evidence_digest`), which is T8. The `history` entry carries `actor` and `reason`; **no** operator notice. Closes the attempt's open questions and bounces its un-acked answers as any `done` (§5.5). T2 and T3w race only through the CAS: exactly one is accepted (CC-27). `withdrawn` is terminal and not finished work; a later T1 may allocate A2 (§4.3) [ring20 T-2790 3d5e1fda] [termlink ab85e88e] |
 | T-RECLAIM | `running` → `running` | supervisor | restarted supervisor presents nonce + local worker dir + `supervisor_gen = prev + 1` | `running` and `supervisor_gen == prev` | fences a stale supervisor: its later writes carry the old gen and are `fence_reject`ed [codex Q1]. An external backend fencing by lease: lease takeover, expected-prior `running` and the lease held (§3.2) [ring20 v0.3 check N1] |
 | T4 | `running`/`dispatched` → `lost` | hub | session end **confirmed from state** (§3.4). The hub's evidence: the attempt was seen alive, then absent on two consecutive sweeps at the epoch of the sweep that last saw it alive; then reconciliation requested; and no fenced `done` evidence within `G`. Without a hub, the sweep writer's evidence is §3.2's: an independent probe (unit state) confirms the end, and local evidence is read *before* the write [ring20 v0.3 check] | `running` or `dispatched` | never on a missed heartbeat and never from an event. `G` (hub: default 120 s, at least 4 × the sweep interval; other backends set their own `G` per §2) lets local evidence win; earliest `lost` ≈ 60 s + `G` after the end [codex Q1] [termlink v0.1 review §1.1, §2.1] [AEF v0.2 answers §1.2]. A confirmed exit of the agent child (its real exit status is known) is completion evidence even with no hand-back: it ends through T3 as `handback-malformed`, not T4 [ring20 v0.3 check N5] |
 | T5 | `lost` → `done{outcome}` | reconciler (or supervisor, late) | fenced local evidence: `exit_code` + signed completion + hand-back hash, or channel-bound evidence per §3.2 (external backends), matching `(dispatch_id, attempt, nonce)` [ring20 v0.3 check N3] | `lost` | **idempotent upgrade**; `done` outranks `lost`. Appends history, keeps the `lost` row for audit [§6.2.1]. Accepted only if the evidence's `persisted_at` is not later than the `lost` history entry (the evidence existed when the end was confirmed); otherwise `forbidden_transition`, logged, operator notice. A T3/T3b naming a `lost` attempt is processed as T5 [ring20 v0.2 review §4, §S4] |
@@ -370,7 +404,11 @@ rejected (never merged). `fence_reject` is defined after the table.
 | T7d | `unknown` → `lost` \| `done{outcome}` | operator | explicit `fw worker resolve <id> <attempt> --as lost\|done --reason "…"`, run on the hub host; `done` additionally needs evidence **or** an operator-attested `outcome`, which writes `attested: true`, `attested_by`, `result.kind: none` and no `evidence_digest`. "Evidence" here is exactly T7b's: a signed completion, or channel-bound evidence per §3.2 for an external backend, bound to `(dispatch_id, attempt, nonce)` and verified by the backend in the same step as the write; the outcome is then derived by the rule below, never chosen by the operator. Anything the operator supplies that is not so bound (a pasted log, a description, a hash with no signed completion) is not evidence: the write is an attestation and records `attested: true` [ring20 v0.3 check N6] | `unknown` | the only way out of `unknown` without hub/reconciler evidence; every resolve is logged with actor and reason. Until a signed operator identity exists this is a hub-host CLI, not an RPC, because scope alone cannot tell an operator from an agent holding control scope [AEF v0.2 answers §3]. **Detective control:** every resolve posts a notice to the operator's channel with dispatch, attempt, outcome, reason, actor and host. **Speed bump:** the CLI refuses an agent session (agent-environment markers present) without an explicit, recorded override; this is stated as a speed bump, not identity [ring20 v0.2 review §S2]. An attested `done` is **not finished work**: consumers (review verdicts, pass-rate, landing) refuse it as they refuse `paused` [ring20 v0.2 review §S3] |
 
 **T8 (duplicate finalisation) is a response, not a transition.** Re-submitting a `done` with an identical
-`evidence_digest` returns the stored record, appends nothing and changes nothing. [ring20 v0.2 review §10]
+`evidence_digest` returns the stored record, appends nothing and changes nothing. [ring20 v0.2 review §10] This
+covers a repeated withdrawal: a T3w naming a `done{withdrawn}` attempt with the same `evidence_digest` (the same
+reason) is deduplicated; with a different reason it is `forbidden_transition`. A completion (T3/T3b) naming a
+`done{withdrawn}` attempt carries different evidence and is `done_conflict`, as for any `done` (v0.3.4).
+[termlink ab85e88e]
 
 **A backend may stop an attempt** (worker deadline, revocation, operator request). The stop is an action, not a state:
 the confirmed end follows T3 when the agent child's exit is confirmed (its real exit status is known), whether the
@@ -397,6 +435,8 @@ changes `outcome`/`result` of a `done` attempt (a `done` with a *different* `evi
 3. `exit_code != 0` or hand-back `status: failed` → `failed`;
 3b. hand-back `status: paused` with `exit_code == 0` → `paused`;
 4. otherwise → `succeeded`.
+
+`withdrawn` is never derived by these rules: only T3w writes it, and T3w applies none of them (v0.3.4).
 
 `paused` is a terminal `done` for that attempt, **never a success**: a review verdict or pass-rate consumer must not
 count it as finished work. The dispatch continues through attempt N+1 or a re-dispatch naming it in
@@ -535,6 +575,8 @@ received and applied are separate states. Dedupe by `cmd_id` is built in. [claud
 state → `undelivered`/`expired` and it **bounces** to the dispatcher (a circuit that is read) or dead-letters naming
 the dispatch id. It is never escalated and never re-posted past the worker's death. [opencode Q4, §6.2.4]
 Old-attempt answers are **never** replayed into a replacement attempt automatically. [codex Q4]
+"Terminal" includes `done{withdrawn}` (T3w): a withdrawal closes the attempt's open questions and bounces its un-acked
+answers exactly as any `done` does (v0.3.4). [termlink ab85e88e]
 
 5.6 **Default: pause-and-redispatch; in-run polling is the fast path.** A `claude -p` worker cannot reliably wait
 long mid-turn, and a prompt saying "poll" is not evidence a running agent consumes an answer. Until in-run consumption
@@ -880,6 +922,37 @@ limits of §6.6: `n/a` only for a capability it does not offer, never for a §3 
   `history` entry carries `cause: deadline_stop`; no new attempt is allocated by the stop. Revocation
   (`cause: revoked`) behaves the same. [ring20 v0.2 review §9] [ring20 v0.3 check N5]
 
+### CC-26 Withdraw from dispatched (v0.3.4)
+- **Given** A1 `dispatched`, nonce n1, supervisor credential c1, `supervisor_gen` g1; one open question, one un-acked
+  answer.
+- **When** the submitter presents n1, c1 and g1 and withdraws A1 with actor `a` and reason `r`.
+- **Then** `dispatched → done{withdrawn}` (T3w); `evidence_digest = sha256(r)`, `result.kind: none`, `exit_code` null;
+  the `history` entry carries actor `a` and reason `r`; no operator notice; the answer bounces and the question is
+  closed (§5.5). The same request without c1 is `fence_reject(bad_credential)` and A1 stays `dispatched`; a request
+  from the sweep writer is refused, A1 unchanged. A consumer counting finished work, success or failure refuses
+  `(D, A1)`. A later T1 may allocate A2. [ring20 T-2790 3d5e1fda] [termlink ab85e88e]
+
+### CC-27 Withdraw races the start (v0.3.4)
+- **Given** A1 `dispatched`; the supervisor is about to write T2, the submitter is about to withdraw.
+- **When** both writes arrive.
+- **Then** exactly one is accepted and the other is `fence_reject(cas_mismatch)`. **Admissible histories:**
+  `dispatched→done` (T3w wins; the supervisor's T2 is refused and it launches nothing) or `dispatched→running` (T2
+  wins; the withdrawal is refused and the worker runs). A supervisor that launched the agent child before its T2 was
+  accepted fails this case. [termlink ab85e88e]
+
+### CC-28 Withdraw from running (v0.3.4)
+- **Given** A1 `running`.
+- **When** the submitter withdraws A1 with valid credentials.
+- **Then** `fence_reject(cas_mismatch)`; A1 stays `running`, record unchanged. Likewise A1 `lost` or `unknown`:
+  `fence_reject(forbidden_transition)`, record unchanged. [termlink ab85e88e]
+
+### CC-29 Repeated withdrawal (v0.3.4)
+- **Given** A1 `done{withdrawn}` with `evidence_digest = sha256(r)`.
+- **When** (a) the same withdrawal (reason `r`) is submitted again; (b) a withdrawal with reason `r2 ≠ r`; (c) a
+  supervisor T3b with a hand-back.
+- **Then** (a) T8: the stored record is returned, no history entry; (b) `fence_reject(forbidden_transition)`, record
+  unchanged; (c) `done_conflict`, logged, operator notice, record unchanged. [termlink ab85e88e]
+
 ---
 
 ## Open questions
@@ -905,3 +978,6 @@ Still open:
    fallback *during* a hub outage it needs its own protocol.
 5. **Signed operator identity** for T7d: until it exists resolve is a hub-host CLI; the identity mechanism is not
    specified. [AEF v0.2 answers §3]
+7. **Operator withdrawal** (v0.3.4): T3w is open only to the holder of the attempt's credentials. Whether an operator
+   may withdraw an attempt whose submitter is gone is a separate decision; if wanted, it would be its own operator
+   command, like T7d. [termlink ab85e88e]
