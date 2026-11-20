@@ -114,11 +114,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] One shared identity helper (Python module plus a shell function that calls or mirrors it, with a parity test) records `pid`, `start_ticks` and `cmd_marker` and answers "is this pid still that process".
-- [ ] Every pid file written by the sidecar receiver, supervisor, watcher and Watchtower carries the identity, in a way old readers still parse (or all readers updated in the same change).
-- [ ] Every kill site listed in the Problem part checks identity before signalling, including Watchtower's child kill (`pkill -P`), and refuses with a logged reason on mismatch; a legacy pid file without identity is killed only when the process's cmdline matches the expected marker.
-- [ ] Tests: a reused pid (a live unrelated process whose pid is written into the pid file) is NOT signalled at each kill site; the real process is still stopped; legacy pid file with matching and non-matching cmdline.
-- [ ] Existing sidecar and Watchtower lifecycle tests stay green.
+- [x] One shared identity helper (Python module plus a shell function that calls or mirrors it, with a parity test) records `pid`, `start_ticks` and `cmd_marker` and answers "is this pid still that process".
+- [x] Every pid file written by the sidecar receiver, supervisor, watcher and Watchtower carries the identity, in a way old readers still parse (or all readers updated in the same change).
+- [x] Every kill site listed in the Problem part checks identity before signalling, including Watchtower's child kill (`pkill -P`), and refuses with a logged reason on mismatch; a legacy pid file without identity is killed only when the process's cmdline matches the expected marker.
+- [x] Tests: a reused pid (a live unrelated process whose pid is written into the pid file) is NOT signalled at each kill site; the real process is still stopped; legacy pid file with matching and non-matching cmdline.
+- [x] Existing sidecar and Watchtower lifecycle tests stay green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -311,6 +311,16 @@ bin/fw vendor self --check --task T-5267
 bin/fw watchtower current
 
 ## RCA
+
+**Symptom:** none observed in AEF; found while checking 0506's report of SIGTERMs during audit runs (whose real cause was T-5268). A pid-file kill could signal an unrelated process that reused the pid, and in Watchtower's case its children.
+
+**Root cause:** pid files held only a number, and every kill site checked only that the number was alive (pid_alive / fw_pid_alive), never that it was still the same process.
+
+**Why structurally allowed:** the liveness helpers were hardened twice (zombies T-4306, EPERM T-4216) without asking the identity question; tests always used the real process, never a reused pid, so the gap had no failing test.
+
+**Prevention:** lib/proc_identity.py and fw_pid_same_process (shell) are the one rule; identity (start ticks, boot id, cmdline marker) is written beside every pid file; 46 tests plant an unrelated live process under each kill site and fail if it is signalled (verified to fail when the check is forced to "same"). G-135 can move to closed.
+
+**Verified live (2026-11-20):** the running Watchtower (pid file from before the change) passes through the legacy rule: "legacy pid file: cmdline contains 'web.app'"; the sidecar receiver already writes receiver.pid.identity.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
