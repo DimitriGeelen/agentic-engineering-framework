@@ -298,6 +298,14 @@ out=$(python3 tests/conformance/worker-contract/run_local.py 2>&1); grep -q "CC-
 
 ## RCA
 
+**Symptom:** TermLink's run of CC-26 failed on its answer-channel variant: append_question on a dispatched attempt was refused.
+
+**Root cause:** T-5311 wrote CC-26's Given with an open question on a dispatched attempt, while the same revision's T2 note says no worker exists before T2, so no question can exist then.
+
+**Why structurally allowed:** AEF's local backend has no answer channel, so its run reported that variant n/a and never exercised it; the first backend with an answer channel (TermLink) found the contradiction.
+
+**Prevention:** the variant now uses one un-acked dispatcher answer with no question_id, which every backend with an answer channel can produce before start; the n/a-locally note on the task says only a backend with an answer channel tests it, so a new vector touching that channel needs one such run before it is called done.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
