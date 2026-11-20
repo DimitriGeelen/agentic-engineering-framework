@@ -1,0 +1,516 @@
+"""T-5293 (T-5290 GO, G-136): a mechanical check of each `verdict/1` vote against what it cites.
+
+Slice 1 (lib/verdict_format.py) checks a vote's FORM. This module checks whether the evidence the
+vote names is THERE: the quoted text is in the file at the line it names (or elsewhere in that
+file, or nowhere); the line exists; the image exists and the region lies inside it (and the crop
+of that region is written beside the seat's evidence so other seats and the operator can see
+it); a selector is named; a rule is given; the overall vote agrees with the criterion votes; and,
+for a vote citing an image, whether the seat's own run record shows it opened that image with an
+image-viewing tool.
+
+It does NOT judge whether the conclusion follows from the evidence (1409 caveat b), it runs no
+command (a `command:` location is reported "not checkable"), and it never decides whether a vote
+counts — that is slice 3 (T-5294). "Cannot tell" is always reported as such, never as yes.
+"""
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import re
+import struct
+import subprocess
+from pathlib import Path
+
+CHECKER = "vote-check/1"
+REPORT_DIR = ".context/reviews/evidence"   # same as verdict_ledger.REPORT_DIR
+#: Evidence (captures, seat copies, crops) lives here, is written during the review and committed
+#: with the verdict, so it is read from the working tree even when git tracks it by now.
+EVIDENCE_DIRS = (REPORT_DIR + "/", ".context/working/", ".context/visual/")
+IMAGE_EXTS = (".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp")
+GREEN = "green"
+
+_QUOTE_RE = re.compile(r'^(?:"(.+)"|“(.+)”|„(.+)[“”"])$', re.S)
+_REGION_RE = re.compile(r"region[ \t]+(\d+)[ \t]*,[ \t]*(\d+)[ \t]*,[ \t]*(\d+)[ \t]*,[ \t]*(\d+)")
+_SELECTOR_RE = re.compile(r"selector[ \t]+(\S.*)$", re.S)
+_IMG_EVIDENCE_RE = re.compile(r"^image:[ \t]*(\S+)[ \t]+(.+)$", re.S)
+_IMG_LOC_RE = re.compile(r"^(\S+)[ \t]+((?:region|selector)[ \t].+)$", re.S)
+_FILE_LINE_RE = re.compile(r"^(\S+):(\d+)(?:-(\d+))?$")
+_COMMAND_RE = re.compile(r"^command:[ \t]*(\S.*)$", re.S)
+_RULE_QUOTE_RE = re.compile(r'"([^"]{3,})"|“([^”]{3,})”')
+
+
+def _ws(s: str) -> str:
+    return re.sub(r"\s+", " ", s or "").strip()
+
+
+# ── reading files at the reviewed revision ────────────────────────────────────────────────────
+
+def _git(root: Path, *args: str) -> tuple[int, bytes]:
+    try:
+        p = subprocess.run(["git", *args], cwd=str(root), capture_output=True, timeout=30)
+        return p.returncode, p.stdout
+    except (OSError, subprocess.SubprocessError):
+        return 1, b""
+
+
+def _rel(root: Path, path: str, extra_roots: list[Path]) -> str:
+    """A cited path as root-relative: absolute paths under root or a seat's tree are reduced."""
+    p = path.strip().strip("`").removeprefix("./")
+    if os.path.isabs(p):
+        for base in [root, *extra_roots]:
+            try:
+                return str(Path(p).resolve().relative_to(Path(base).resolve()))
+            except (ValueError, OSError):
+                continue
+        m = re.search(r"/tree/(.+)$", p)        # a seat's export tree: /tmp/tl-dispatch/<id>/tree/…
+        if m:
+            return m.group(1)
+    return p
+
+
+def read_cited(root: Path, revision: str, path: str, extra_roots: list[Path] | None = None
+               ) -> tuple[bytes | None, str]:
+    """(bytes, source) of a cited file: the reviewed revision's blob when git tracks it there;
+    else, only for a file git does not track at that revision (a capture, a seat's copy), the
+    working tree under root or a seat's tree. (None, why) when it is nowhere."""
+    extra = [Path(r) for r in (extra_roots or [])]
+    rel = _rel(Path(root), path, extra)
+    if revision:
+        rc, out = _git(Path(root), "cat-file", "-e", f"{revision}:{rel}")
+        if rc == 0:
+            rc, out = _git(Path(root), "show", f"{revision}:{rel}")
+            if rc == 0:
+                return out, f"revision {revision[:12]}"
+    rc, _ = _git(Path(root), "ls-files", "--error-unmatch", "--", rel)
+    if rc == 0 and revision and not rel.startswith(EVIDENCE_DIRS):
+        # git tracks it now but not at the reviewed revision: the reviewed files did not have it.
+        return None, f"{rel} is not in revision {revision[:12]} (tracked only later)"
+    for base in [Path(root), *extra]:
+        f = base / rel
+        if f.is_file():
+            try:
+                return f.read_bytes(), ("working tree" if base == Path(root) else f"seat tree {base}")
+            except OSError as e:
+                return None, f"{rel} unreadable: {e}"
+    where = f"revision {revision[:12]} or the working tree" if revision else "the working tree"
+    return None, f"{rel} is not in {where}"
+
+
+# ── quotes and file:line locations ────────────────────────────────────────────────────────────
+
+def check_quote(quote: str, location: str, root: Path, revision: str,
+                extra_roots: list[Path] | None = None) -> dict:
+    """A quoted Evidence paired with its Location. `quote`: found-at-location / found-elsewhere /
+    not-found (verbatim), and separately the same with whitespace normalised; `location`: exists
+    (file present and the line range inside it) or not."""
+    res: dict = {"kind": "quote", "quote": quote[:200], "location": location}
+    cm = _COMMAND_RE.match(location.strip())
+    if cm:
+        res.update(result="not-checkable", location_exists=None,
+                   why="command output: the checker runs no command")
+        return res
+    fm = _FILE_LINE_RE.match(location.strip())
+    if not fm:
+        res.update(result="location-mismatch", location_exists=None,
+                   why="a quote needs a `<path>:<line>` or `command:` location")
+        return res
+    path, a = fm.group(1), int(fm.group(2))
+    b = int(fm.group(3)) if fm.group(3) else a
+    data, src = read_cited(root, revision, path, extra_roots)
+    res["path"], res["lines"], res["source"] = path, [a, b], src
+    if data is None:
+        res.update(location_exists=False, result="not-found", why=src)
+        return res
+    text = data.decode("utf-8", errors="replace")
+    lines = text.split("\n")
+    if text.endswith("\n"):
+        lines = lines[:-1]
+    res["location_exists"] = 1 <= a <= b <= len(lines)
+    if not res["location_exists"]:
+        res["why"] = f"{path} has {len(lines)} line(s); {a}-{b} is outside it"
+    at = "\n".join(lines[a - 1:b]) if res["location_exists"] else ""
+    if res["location_exists"] and quote in at:
+        res["result"] = "found-at-location"
+    elif quote in text:
+        res["result"] = "found-elsewhere"
+        pos = text.index(quote)
+        res["found_at_line"] = text.count("\n", 0, pos) + 1
+    else:
+        res["result"] = "not-found"
+    nq = _ws(quote)
+    if nq and res["location_exists"] and nq in _ws(at):
+        res["normalised"] = "found-at-location"
+    elif nq and nq in _ws(text):
+        res["normalised"] = "found-elsewhere"
+    else:
+        res["normalised"] = "not-found"
+    return res
+
+
+# ── images ────────────────────────────────────────────────────────────────────────────────────
+
+def image_size(data: bytes) -> tuple[int, int] | None:
+    """(width, height) of an image: PIL when available, else the PNG header."""
+    try:
+        from io import BytesIO
+
+        from PIL import Image
+        with Image.open(BytesIO(data)) as im:
+            return int(im.size[0]), int(im.size[1])
+    except Exception:  # noqa: BLE001 — fall back to the header, else unknown
+        pass
+    if data[:8] == b"\x89PNG\r\n\x1a\n" and data[12:16] == b"IHDR":
+        w, h = struct.unpack(">II", data[16:24])
+        return int(w), int(h)
+    return None
+
+
+def _write_atomic(path: Path, data: bytes) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = f"{path}.tmp.{os.getpid()}-{os.urandom(4).hex()}"
+    try:
+        with open(tmp, "wb") as fh:
+            fh.write(data)
+        os.replace(tmp, path)
+    finally:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+
+
+def write_crop(data: bytes, region: tuple[int, int, int, int], image_name: str, out_dir: Path,
+               root: Path) -> tuple[str, str]:
+    """Crop `region` (x, y, w, h) of the image and write it as PNG into `out_dir` as
+    `<stem>-<x>_<y>_<w>_<h>-crop.png`. An existing crop with other bytes is never overwritten:
+    the new one gets a content hash in its name. Returns (root-relative path, '') or ('', why)."""
+    try:
+        from io import BytesIO
+
+        from PIL import Image
+    except ImportError:
+        return "", "PIL is not available: no crop written"
+    x, y, w, h = region
+    try:
+        with Image.open(BytesIO(data)) as im:
+            crop = im.crop((x, y, x + w, y + h))
+            buf = BytesIO()
+            crop.save(buf, format="PNG")
+    except Exception as e:  # noqa: BLE001
+        return "", f"crop failed: {e}"
+    png = buf.getvalue()
+    stem = Path(image_name).stem
+    dst = out_dir / f"{stem}-{x}_{y}_{w}_{h}-crop.png"
+    if dst.exists() and dst.read_bytes() != png:
+        dst = out_dir / f"{stem}-{x}_{y}_{w}_{h}-{hashlib.sha256(png).hexdigest()[:8]}-crop.png"
+    if not (dst.exists() and dst.read_bytes() == png):
+        _write_atomic(dst, png)
+    try:
+        return str(dst.resolve().relative_to(Path(root).resolve())), ""
+    except ValueError:
+        return str(dst), ""
+
+
+def check_image(evidence: str, location: str, root: Path, revision: str, *, task: str,
+                extra_roots: list[Path] | None = None, views: dict | None = None,
+                views_known: bool = False, write_crops: bool = True) -> dict:
+    """An `image:` Evidence paired with its Location: image exists; region inside it (and crop
+    written) or selector named; location names the same image and region; seat viewed it."""
+    em = _IMG_EVIDENCE_RE.match(evidence.strip())
+    res: dict = {"kind": "image", "evidence": evidence, "location": location}
+    if not em:
+        res.update(result="malformed")
+        return res
+    img, spec = em.group(1), em.group(2).strip()
+    res["image"] = img
+    lm = _IMG_LOC_RE.match(location.strip())
+    res["location_agrees"] = bool(lm and Path(lm.group(1)).name == Path(img).name
+                                  and _ws(lm.group(2)) == _ws(spec))
+    data, src = read_cited(root, revision, img, extra_roots)
+    res["image_exists"], res["source"] = data is not None, src
+    rm, sm = _REGION_RE.search(spec), _SELECTOR_RE.search(spec)
+    if rm:
+        x, y, w, h = (int(v) for v in rm.groups())
+        res["region"] = [x, y, w, h]
+        size = image_size(data) if data is not None else None
+        res["size"] = list(size) if size else None
+        if data is None:
+            res["region_inside"] = None
+        elif size is None:
+            res["region_inside"] = None
+            res["why"] = "image size could not be read"
+        else:
+            res["region_inside"] = w > 0 and h > 0 and x + w <= size[0] and y + h <= size[1]
+            if res["region_inside"] and write_crops:
+                out_dir = Path(root) / REPORT_DIR / (task or "_unknown")
+                crop, why = write_crop(data, (x, y, w, h), img, out_dir, Path(root))
+                res["crop"] = crop or None
+                if why:
+                    res["crop_why"] = why
+    elif sm:
+        res["selector"] = sm.group(1).strip()
+        res["selector_named"] = bool(res["selector"])
+    res["seat_viewed"] = image_viewed(views, img) if views_known else None
+    if views_known and views is None:
+        res["seat_viewed_why"] = "the seat's run record cannot tell"
+    elif not views_known:
+        res["seat_viewed_why"] = "no seat run record given"
+    res["result"] = "ok" if (res["image_exists"] and res.get("region_inside", True) is not False
+                             and res["location_agrees"]) else "problem"
+    return res
+
+
+# ── what the seat's run record shows it opened ────────────────────────────────────────────────
+
+#: codex `exec --json` item types that carry no image view.
+_CODEX_PLAIN = {"command_execution", "agent_message", "reasoning", "file_change", "todo_list",
+                "web_search", "error"}
+#: codex item types that are an image view (codex's own image tool).
+_CODEX_VIEW = {"view_image", "image_view", "view_image_tool_call", "image"}
+#: opencode tools that do not show the model an image (`read` does, for an image file).
+_OPENCODE_PLAIN = {"bash", "glob", "grep", "list", "ls", "write", "edit", "patch", "todowrite",
+                   "todoread", "webfetch", "task", "multiedit"}
+#: claude tools that do not show the model a file's image (`Read` does, for an image file).
+_CLAUDE_PLAIN = {"Bash", "Glob", "Grep", "LS", "Write", "Edit", "MultiEdit", "NotebookEdit",
+                 "TodoWrite", "WebFetch", "WebSearch", "Task", "Agent", "ToolSearch", "Skill"}
+
+_IMG_NAME_RE = re.compile(r"[\w@.\-]+\.(?:png|jpe?g|gif|webp|bmp)", re.I)
+
+
+def _is_image(p: str) -> bool:
+    return str(p).lower().endswith(IMAGE_EXTS)
+
+
+def _record_file(path) -> Path | None:
+    p = Path(path)
+    if p.is_dir():
+        p = p / "result.jsonl"
+    return p if p.is_file() else None
+
+
+def seat_viewed_images(record) -> dict | None:
+    """Images a seat's run record shows it opened with an image-viewing tool.
+
+    `record`: a result.jsonl, or a dispatch dir holding one. Returns {image basename: True}
+    for an image viewed; {basename: None} for an image named by an event the reader does not
+    understand (cannot tell); an image absent from the dict was not viewed. Returns None when
+    the record is missing or in no known shape (cannot tell at all — e.g. antigravity, which
+    leaves only its final text). Shell commands that touch an image (`cp`, `ls`, a python one-
+    liner) are not image views: they show the model no pixels. Their names are listed under the
+    key '__named_in_commands__' (informative only)."""
+    f = _record_file(record) if record else None
+    if f is None:
+        return None
+    try:
+        raw = f.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        return None
+    out: dict = {}
+    named: set[str] = set()
+    known = False
+
+    def mark(paths, val):
+        for p in paths:
+            if p and _is_image(p):
+                n = Path(str(p)).name
+                if out.get(n) is not True:
+                    out[n] = val
+
+    for line in raw:
+        try:
+            e = json.loads(line)
+        except (ValueError, TypeError):
+            continue
+        if not isinstance(e, dict):
+            continue
+        item = e.get("item")
+        part = e.get("part")
+        msg = e.get("message")
+        if isinstance(item, dict) and "type" in item:                       # codex
+            known = True
+            t = str(item.get("type"))
+            blob = json.dumps(item)
+            if t in _CODEX_VIEW or (t == "mcp_tool_call" and "image" in str(item.get("tool", "")).lower()):
+                mark([item.get("path"), item.get("image_path"), *(_IMG_NAME_RE.findall(blob))], True)
+            elif t == "command_execution":
+                named.update(_IMG_NAME_RE.findall(str(item.get("command", ""))))
+            elif t not in _CODEX_PLAIN:
+                mark(_IMG_NAME_RE.findall(blob), None)
+        elif isinstance(part, dict) and part.get("type") == "tool":          # opencode
+            known = True
+            tool = str(part.get("tool", ""))
+            inp = ((part.get("state") or {}).get("input")) or {}
+            if tool == "read":
+                fp = str(inp.get("filePath") or inp.get("path") or "")
+                if _is_image(fp):
+                    mark([fp], True)
+            elif tool == "bash":
+                named.update(_IMG_NAME_RE.findall(str(inp.get("command", ""))))
+            elif tool not in _OPENCODE_PLAIN:
+                mark(_IMG_NAME_RE.findall(json.dumps(inp)), None)
+        elif isinstance(part, dict) and "type" in part:
+            known = True                                                     # opencode text/step
+        elif isinstance(msg, dict) and e.get("type") in ("assistant", "user"):  # claude stream-json
+            known = True
+            if e.get("type") != "assistant":
+                continue
+            for c in msg.get("content") or []:
+                if not isinstance(c, dict) or c.get("type") != "tool_use":
+                    continue
+                name, inp = str(c.get("name", "")), c.get("input") or {}
+                if name == "Read":
+                    fp = str(inp.get("file_path") or "")
+                    if _is_image(fp):
+                        mark([fp], True)
+                elif name == "Bash":
+                    named.update(_IMG_NAME_RE.findall(str(inp.get("command", ""))))
+                elif name not in _CLAUDE_PLAIN:
+                    mark(_IMG_NAME_RE.findall(json.dumps(inp)), None)
+        elif e.get("type") in ("system", "result", "thread.started", "turn.started",
+                               "turn.completed", "turn.failed", "error", "rate_limit_event"):
+            known = True
+    if not known:
+        return None
+    if named:
+        out["__named_in_commands__"] = sorted(named)
+    return out
+
+
+def _stem_match(a: str, b: str) -> bool:
+    a, b = Path(a).stem.lower(), Path(b).stem.lower()
+    return a == b or a.startswith(b + "-") or b.startswith(a + "-")
+
+
+def image_viewed(views: dict | None, image: str) -> bool | None:
+    """True / False / None (cannot tell) for one cited image, matched by stem: a seat's copy is
+    `<stem>-<dispatch>.png`, and a cited copy may be the other way round."""
+    if views is None:
+        return None
+    hits = [v for k, v in views.items() if not k.startswith("__") and _stem_match(k, image)]
+    if True in hits:
+        return True
+    if None in hits:
+        return None
+    return False
+
+
+# ── the whole vote ────────────────────────────────────────────────────────────────────────────
+
+def _criteria(vote: dict) -> tuple[dict, dict]:
+    """(header, {ac: criterion}) from a full parse_vote result or a one-criterion structure."""
+    if "criteria" in vote:
+        return vote.get("header") or {}, {int(k): v for k, v in (vote.get("criteria") or {}).items()}
+    if "criterion" in vote:
+        return vote.get("header") or {}, {int(vote.get("ac") or 0): vote.get("criterion") or {}}
+    return {}, {}
+
+
+def _rule_check(rule: str, criterion_text: str | None) -> dict:
+    r: dict = {"present": bool((rule or "").strip())}
+    q = [a or b for a, b in _RULE_QUOTE_RE.findall(rule or "")]
+    if q:
+        r["quoted"] = q[0][:200]
+        r["quote_in_criterion"] = (None if criterion_text is None
+                                   else _ws(q[0]).lower() in _ws(criterion_text).lower())
+    return r
+
+
+def check_vote(parsed_vote: dict, root, revision: str, seat_record=None, *, task: str = "",
+               criterion_text: str | None = None, extra_roots: list | None = None,
+               write_crops: bool = True) -> dict:
+    """Check a parsed `verdict/1` vote (verdict_format.parse_vote's result, or one criterion's
+    `structure`) against the reviewed revision's files. Returns per-item results; never raises
+    for a fault in what the vote cites. `seat_record`: the seat's result.jsonl or dispatch dir
+    (None: seat-viewed is not checked and says so)."""
+    root = Path(root)
+    header, crits = _criteria(parsed_vote)
+    task = task or str(header.get("task") or "")
+    extra = [Path(r) for r in (extra_roots or [])]
+    if seat_record:
+        sr = Path(seat_record)
+        d = sr if sr.is_dir() else sr.parent
+        if (d / "tree").is_dir():
+            extra.append(d / "tree")
+    views = seat_viewed_images(seat_record) if seat_record else None
+    out: dict = {"checker": CHECKER, "revision": revision, "criteria": {}}
+    if seat_record:
+        out["seat_record"] = str(seat_record)
+        out["seat_record_readable"] = views is not None
+        if views and views.get("__named_in_commands__"):
+            out["images_named_in_commands"] = views["__named_in_commands__"]
+
+    # complete: every criterion has the required labels (slice 1 refuses otherwise; re-stated).
+    missing = {ac: [lab for lab in ("vote", "evidence", "location", "rule", "conclusion")
+                    if not c.get(lab)] for ac, c in crits.items()}
+    for ac, c in crits.items():
+        if c.get("vote") and c.get("vote") != GREEN and not c.get("guidance"):
+            missing[ac].append("guidance")
+    out["complete"] = bool(crits) and not any(missing.values())
+    if any(missing.values()):
+        out["incomplete"] = {str(a): m for a, m in missing.items() if m}
+
+    # consistent: overall vote vs criterion votes vs failed (as far as this vote shows them).
+    overall = str(header.get("vote") or "")
+    failed = sorted(int(x) for x in header.get("failed") or [])
+    nongreen = sorted(ac for ac, c in crits.items() if c.get("vote") != GREEN)
+    why = []
+    if "criteria" in parsed_vote:
+        if (overall == GREEN) != (not nongreen):
+            why.append(f"overall {overall} vs non-green criteria {nongreen}")
+        if failed != nongreen:
+            why.append(f"failed {failed} vs non-green criteria {nongreen}")
+    else:                                    # one criterion of a vote: check what it can show
+        for ac, c in crits.items():
+            v = c.get("vote")
+            if v == GREEN and ac in failed:
+                why.append(f"AC{ac} green but listed in failed {failed}")
+            if v != GREEN and ac not in failed:
+                why.append(f"AC{ac} {v} but not listed in failed {failed}")
+            if v != GREEN and overall == GREEN:
+                why.append(f"overall green while AC{ac} is {v}")
+    out["consistent"] = not why
+    if why:
+        out["inconsistent"] = why
+
+    any_image = False
+    for ac, c in crits.items():
+        items = []
+        ev, loc = list(c.get("evidence") or []), list(c.get("location") or [])
+        for i, e in enumerate(ev):
+            e = str(e).strip()
+            l_ = str(loc[i]).strip() if i < len(loc) else ""
+            try:
+                qm = _QUOTE_RE.match(e)
+                if qm:
+                    q = next(g for g in qm.groups() if g is not None)
+                    items.append(check_quote(q, l_, root, revision, extra))
+                elif e.startswith("image:"):
+                    any_image = True
+                    items.append(check_image(e, l_, root, revision, task=task, extra_roots=extra,
+                                             views=views, views_known=bool(seat_record),
+                                             write_crops=write_crops))
+                else:
+                    items.append({"kind": "unknown", "evidence": e[:200], "result": "malformed"})
+            except Exception as exc:  # noqa: BLE001 — one item's fault never sinks the check
+                items.append({"kind": "error", "evidence": e[:200], "error": f"{type(exc).__name__}: {exc}"})
+        out["criteria"][str(ac)] = {"vote": c.get("vote"), "items": items,
+                                    "rule": _rule_check(str(c.get("rule") or ""), criterion_text)}
+    out["cites_image"] = any_image
+    return out
+
+
+def crops(check: dict | None) -> list[str]:
+    """The crop files a check result names (root-relative), for committing with the row."""
+    got = []
+    for c in ((check or {}).get("criteria") or {}).values():
+        for it in c.get("items") or []:
+            if it.get("crop"):
+                got.append(it["crop"])
+    return list(dict.fromkeys(got))
+
+
+def safe_check(*args, **kw) -> dict:
+    """check_vote that never raises: an internal failure is recorded as {'error': …}."""
+    try:
+        return check_vote(*args, **kw)
+    except Exception as exc:  # noqa: BLE001
+        return {"checker": CHECKER, "error": f"{type(exc).__name__}: {exc}"}

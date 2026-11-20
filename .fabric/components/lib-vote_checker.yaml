@@ -1,0 +1,21 @@
+id: lib/vote_checker.py
+name: vote_checker
+type: script
+subsystem: framework-core
+location: lib/vote_checker.py
+tags: []
+
+purpose: "T-5293 (T-5290 GO, G-136): a mechanical check of each `verdict/1` vote against what it cites."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-20
+created_by: unknown
