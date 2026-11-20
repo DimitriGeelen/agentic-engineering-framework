@@ -434,14 +434,17 @@ def brief_lines(task_id: str, acs: list[int], *, printed: bool) -> list[str]:
 def example_vote(task: str, votes: dict, *, reviewer: str = "reviewer", why: str = "checked it",
                  guidance: str = "needs work") -> str:
     """A well-formed verdict/1 vote for `votes` ({Human AC number: outcome}). For fixtures and
-    stand-in workers; its evidence is a placeholder quote, not a real check."""
+    stand-in workers; its evidence is a placeholder quote, not a real check. It cites command
+    output (`command:`), which the checker reports "not checkable" without failing the vote
+    (T-5294): a placeholder citing a file line that does not exist would make every fixture vote
+    not count."""
     nongreen = sorted(int(a) for a, v in votes.items() if v != GREEN)
     overall = votes[nongreen[0]] if nongreen else GREEN
     out = [BEGIN, f"format: {FORMAT}", f"task: {task}", f"reviewer: {reviewer}", "round: 1",
            f"vote: {overall}", f"failed: [{', '.join(map(str, nongreen))}]", ""]
     for ac, v in sorted((int(a), v) for a, v in votes.items()):
         out += [f"## AC{ac} criterion", f"Vote: {v}", f'Evidence: "{why}"',
-                "Location: README.md:1", "Rule: the criterion as written", f"Conclusion: {why}."]
+                "Location: command: git log -1 --stat", "Rule: the criterion as written", f"Conclusion: {why}."]
         if v != GREEN:
             out.append(f"Guidance: {guidance}")
         out.append("")

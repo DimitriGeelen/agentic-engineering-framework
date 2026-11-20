@@ -201,6 +201,9 @@ GREEN, AMBER, RED, ESCALATE = "green", "amber", "red", "escalate"
 #: criterion to another seat kind, and only then the operator. Its guidance (the reason) is
 #: mandatory, like every non-green.
 NOT_EVALUATED = "not-evaluated"
+#: T-5294: not an outcome a row records — the state of a verdict/1 row whose vote fails its own
+#: mechanical check (vote_checker.checkable). Such a row counts neither green nor red.
+NOT_CHECKABLE = "not-checkable"
 OUTCOMES = (GREEN, AMBER, RED, ESCALATE, NOT_EVALUATED)
 #: Fewest seats that must have EVALUATED a criterion for a multi-seat (rung-5) panel to close it
 #: when any of its seats did not.
@@ -3565,8 +3568,10 @@ def satisfying_verdict(ctx: _Ctx, crit) -> tuple[dict | None, str]:
     # T-3986: a not-evaluated row is no verdict, so the LATEST EVALUATED row decides. Every row
     # from that one to the end is still validated first: an invalid trailing not-evaluated row
     # is `unknown` like any invalid latest row, and cannot be skipped to reach an older green.
+    # T-5294: a verdict/1 vote that fails its own mechanical check is no verdict either — it
+    # counts neither green nor red — so it is passed over exactly like a not-evaluated row.
     k = len(mine) - 1
-    while k > 0 and mine[k].get("outcome") == NOT_EVALUATED:
+    while k > 0 and not _counts(mine[k]):
         k -= 1
     for row in mine[k + 1:]:
         f = _fault(ctx, row, crit, led.intro(row["id"]))
@@ -3581,12 +3586,28 @@ def satisfying_verdict(ctx: _Ctx, crit) -> tuple[dict | None, str]:
     if last.get("outcome") == NOT_EVALUATED:
         return None, (f"not-evaluated: no reviewer has evaluated this criterion ({last.get('id')}: "
                       f"{last.get('guidance', '')}) — reassign it to a seat kind that can")
+    ok, reasons = vote_checker.checkable(last)
+    if not ok:
+        return None, (f"{NOT_CHECKABLE}: the latest vote {last.get('id')} ({last.get('outcome')}) "
+                      f"fails its check and counts neither green nor red — "
+                      f"{'; '.join(reasons)} — reassign it to another seat kind")
     if last.get("outcome") != GREEN:
         return None, f"latest verdict is {last.get('outcome')!r}"
     why = _panel_fault(ctx, crit, last, mine)
     if why:
         return None, why
     return last, ""
+
+
+def _counts(row: dict) -> bool:
+    """T-5294: does this (valid) row count as a verdict at all? A not-evaluated row and a verdict/1
+    vote that fails its own check (vote_checker.checkable) count neither green nor red."""
+    return row.get("outcome") != NOT_EVALUATED and vote_checker.checkable(row)[0]
+
+
+def not_checkable_reasons(row: dict) -> list[str]:
+    """T-5294: why a verdict/1 row does not count ([] when it does, or for an old-format row)."""
+    return vote_checker.checkable(row)[1]
 
 
 def _panel_fault(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> str:
@@ -3725,6 +3746,12 @@ def _panel_state(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> tuple[str, di
             # did evaluate decide, and there must be enough of them (checked below).
             not_evaluated.append(s["seat"])
             continue
+        nc = not_checkable_reasons(r)
+        if nc:
+            # T-5294: the seat's vote fails its own check (the T-5262 seat that voted red on a
+            # screenshot it never opened). Like not-evaluated: neither blocks nor counts.
+            not_evaluated.append(f"{s['seat']} ({NOT_CHECKABLE}: {'; '.join(nc)})")
+            continue
         if r.get("outcome") != GREEN:
             return f"panel-incomplete: seat {s['seat']!r} of run {run['run_id']} is {r.get('outcome')!r}", {}
         drec, _ = dispatch_record(root, str(r["dispatch_id"]))
@@ -3749,8 +3776,9 @@ def _panel_state(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> tuple[str, di
         seats = ", ".join(s for s, _ in unavailable)
         if not_evaluated:
             return (f"panel-incomplete: seat(s) {seats} of run {run['run_id']} unavailable and "
-                    f"seat(s) {', '.join(not_evaluated)} not-evaluated — a green-degraded close "
-                    f"needs every missing seat UNAVAILABLE, never a not-evaluated"), {}
+                    f"seat(s) {', '.join(not_evaluated)} not-evaluated or not-checkable — a "
+                    f"green-degraded close needs every missing seat UNAVAILABLE, never a "
+                    f"not-evaluated"), {}
         cls = ctx.classify(crit)
         if cls.delegation_class != REVIEWER_JUDGES:
             return (f"panel-incomplete: seat(s) {seats} of run {run['run_id']} unavailable — a "
@@ -3764,10 +3792,10 @@ def _panel_state(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> tuple[str, di
     if not_evaluated:
         if len(run["seats"]) < 2:
             return (f"not-evaluated: the only seat of run {run['run_id']} did not evaluate this "
-                    f"criterion — reassign it to a seat kind that can"), {}
+                    f"criterion ({', '.join(not_evaluated)}) — reassign it to a seat kind that can"), {}
         if evaluating < MIN_EVALUATING_SEATS or len(vendors) < MIN_EVALUATING_SEATS:
             return (f"not-evaluated: seat(s) {', '.join(not_evaluated)} of run {run['run_id']} did "
-                    f"not evaluate this criterion; {evaluating} seat(s) across {len(vendors)} "
+                    f"not evaluate this criterion (or their vote is not checkable); {evaluating} seat(s) across {len(vendors)} "
                     f"vendor(s) did, and a panel closes only on at least {MIN_EVALUATING_SEATS} "
                     f"evaluating seats of distinct vendors — reassign the criterion to another "
                     f"seat kind, then the operator"), {}
@@ -4327,7 +4355,7 @@ def audit(root: Path | None = None) -> tuple[int, list[str]]:
     if not n and not led.torn and not led.faults and not led.missing \
             and not _read(APPLIED, root) and not comps_exist:
         return 0, downs + ["verdict ledger: empty or absent (path is off until a review dispatch writes rows)"]
-    out, bad, acked, voided = [], 0, 0, 0
+    out, bad, acked, voided, unchecked = [], 0, 0, 0, 0
     acks, ack_lines = _committed_acks(root)
     for ln in ack_lines:
         if ln.startswith("FAIL"):
@@ -4396,12 +4424,22 @@ def audit(root: Path | None = None) -> tuple[int, list[str]]:
             bad += 1
             out.append(f"FAIL {rid} ({task}): {f[0].replace('-', ' ')} — {f[1]}"
                        + (f" [acknowledgement not honoured: {why}]" if why else ""))
+            continue
+        nc = not_checkable_reasons(r)
+        if nc:
+            # T-5294: a valid verdict/1 row whose vote fails its own check. Not a fault (the row
+            # is what the seat said), but it never counts as green or red; say why.
+            unchecked += 1
+            out.append(f"WARN {NOT_CHECKABLE}: {rid} ({task}) AC#{r.get('ac')} {r.get('outcome')} "
+                       f"never counts — " + "; ".join(nc))
     out += downs
-    code = 2 if bad else AUDIT_WARN if acked or voided else 0
+    code = 2 if bad else AUDIT_WARN if acked or voided or unchecked else 0
     # T-4979 (ring20): the exit code is a three-way contract, so the summary names it. Exit 3 is
     # not a failure: test `rc -eq 2` for "a row does not verify".
     out.append(f"verdict ledger: {n} row(s), {bad} failure(s), {acked} acknowledged refusal(s), "
-               f"{voided} void/provisional row(s) — exit {code}: {AUDIT_EXIT_MEANING[code]}")
+               f"{voided} void/provisional row(s)"
+               + (f", {unchecked} not-checkable vote(s)" if unchecked else "")
+               + f" — exit {code}: {AUDIT_EXIT_MEANING[code]}")
     return code, out
 
 
