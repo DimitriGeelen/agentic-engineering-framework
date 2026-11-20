@@ -11,12 +11,12 @@ description: >
   2 helpers; 055 T-342/T-344; 1409 /arbeiter; 832 /designer/open). Depends on slice
   0.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [extension-points]
-components: []
+components: [bin/fw, lib/extensions.py, tests/web/test_t5260_project_pages.py, web/app.py, web/project_extensions.py]
 related_tasks: [T-4649]
 origin: {kind: "operator", source: "T-4649"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -46,8 +46,8 @@ origin: {kind: "operator", source: "T-4649"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T15:30:55Z
-last_update: '2026-11-19T22:58:44Z'
-date_finished:
+last_update: 2026-11-20T00:35:28Z
+date_finished: 2026-11-20T00:35:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -131,11 +131,12 @@ bvp_scores_proposed:
 - [x] Visual Verification: a fixture project page at the three widths (`fw ux shots`)
 
 ### Human
-- [ ] [REVIEW] Framework pages are unchanged by the project-page loader
+- [x] [REVIEW] Framework pages are unchanged by the project-page loader
   **Steps:**
   1. Open http://192.168.10.107:3000/ and http://192.168.10.107:3000/cron (this project registers no project pages, so only the loader itself is in play)
   **Expected:** both pages render as before: normal header, menu and footer, no extra or missing menu items, no layout breaks at 1024, 1440 and 1920 px. (How a project page itself looks inside Watchtower was judged green under T-5261, verdict V-20261120-67560666, on the fixture page http://127.0.0.1:3977/hosts; the review tooling only captures this project's own Watchtower, which has no project page registered.)
   **If not:** note the width and what breaks
+  **Reviewer verdict:** green V-20261120-4015a8c2 — reviewer-judge-t-5260-r5-antigravity-3cfb93188c0d:antigravity (rung rung-5-panel:antigravity), digest 439c3f8cee37; dispatch judge-t-5260-r5-antigravity-3cfb93188c0d; evidence: .context/reviews/evidence/T-5260/AC1-judge-t-5260-r5-antigravity-3cfb93188c0d.md, .context/reviews/evidence/T-5260/01-root-judge-t-5260-r5-antigravity-3cfb93188c0d.png, .context/reviews/evidence/T-5260/02-cron-judge-t-5260-r5-antigravity-3cfb93188c0d.png, .context/reviews/evidence/T-5260/home-header@1024-judge-t-5260-r5-antigravity-3cfb93188c0d.png, .context/reviews/evidence/T-5260/home-header@1440-judge-t-5260-r5-antigravity-3cfb93188c0d.png, .context/reviews/evidence/T-5260/home-header@1920-judge-t-5260-r5-antigravity-3cfb93188c0d.png, .context/reviews/evidence/T-5260/cron-header@1024-judge-t-5260-r5-antigravity-3cfb93188c0d.png, .context/reviews/evidence/T-5260/cron-header@1440-judge-t-5260-r5-antigravity-3cfb93188c0d.png, .context/reviews/evidence/T-5260/cron-header@1920-judge-t-5260-r5-antigravity-3cfb93188c0d.png, .context/reviews/evidence/T-5260/home-footer@1024-judge-t-5260-r5-antigravity-3cfb93188c0d.png, .context/reviews/evidence/T-5260/home-footer@1440-judge-t-5260-r5-antigravity-3cfb93188c0d.png, .context/reviews/evidence/T-5260/home-footer@1920-judge-t-5260-r5-antigravity-3cfb93188c0d.png, .context/reviews/evidence/T-5260/cron-footer@1024-judge-t-5260-r5-antigravity-3cfb93188c0d.png, .context/reviews/evidence/T-5260/cron-footer@1440-judge-t-5260-r5-antigravity-3cfb93188c0d.png, .context/reviews/evidence/T-5260/cron-footer@1920-judge-t-5260-r5-antigravity-3cfb93188c0d.png, .context/reviews/evidence/T-5260/project-page@1024-judge-t-5260-r5-antigravity-3cfb93188c0d.png, .context/reviews/evidence/T-5260/project-page@1440-judge-t-5260-r5-antigravity-3cfb93188c0d.png, .context/reviews/evidence/T-5260/project-page@1920-judge-t-5260-r5-antigravity-3cfb93188c0d.png; ledger .context/reviews/verdicts.jsonl
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -451,3 +452,16 @@ bin/fw vendor self --check --task T-5260
 ### 2026-11-19T22:58:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-20T00:35:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c0d061c9
+- **Timestamp:** 2026-11-20T00:37:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

@@ -1,0 +1,235 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5260: Project Watchtower pages: register project blueprints with their templates, static files and helpers from the project folder (T-4649 slice 1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T00:38:38Z
+# ============================================================================
+
+task_id: T-5260
+task_name: "Project Watchtower pages: register project blueprints with their templates, static files and helpers from the project folder (T-4649 slice 1)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-19T15:30:55Z
+completed: 2026-11-20T00:35:28Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-20T00:21:48+01:00
+last_commit: 2026-11-20T01:34:43+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  project Watchtower pages — page extensions loaded from the project folder after the framework's own. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (antigravity seat antigravity, recorded by the runtime). render criterion names the page it is about (fixture URL), so the review ledger can bind the verdict. render criterion narrowed to what the review tooling can see (framework pages unchanged by the loader; project-page look judged under T-5261); header-cropped shots. footer shots and the before-change comparison for the 1024 px header row (answers the amber review)
+
+# Key outcomes
+outcomes:
+  - 'Watchtower loads every blueprint registered as a `page` extension in the project''s `.framework-extensions.yaml` (path to a module in the project, e.g. `web_ext/<name>.py` exposing `bp`), after the framework''s own blueprints; an unregistered file in that folder is not loaded'
+  - 'Templates and static files of a project page are looked up in the project folder after the framework''s own (a project cannot shadow a framework template unless that is itself registered as a vendored-override); project helper modules import from the project folder'
+  - 'A project page that fails to import or collides with a framework route is skipped with one logged line and a `fw doctor` WARN; Watchtower still starts and serves every other page'
+  - '`fw audit`/`fw doctor` list loaded project pages; the T-5259 audit check covers their paths'
+  - 'Tests (t5260_*): a fixture project with a registered page is served (status 200, its template and static file found); an unregistered page is not; a broken page is skipped and Watchtower still serves `/`; route collision skipped; existing web tests stay green'
+  - 'Watchtower restarted and `bin/fw watchtower current` passes; vendored copies synced'
+  - 'Visual Verification: a fixture project page at the three widths (`fw ux shots`)'
+  - '[REVIEW] Framework pages are unchanged by the project-page loader'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'render criterion names the page it is about (fixture URL), so the review ledger can bind the verdict'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-19 — how fw doctor learns what a running Watchtower skipped'
+    chose: 'Watchtower writes a load report (`.context/working/watchtower-extensions.json`: loaded, skipped with reason) at start; `lib/extensions.py web-status` turns it into rows for `fw doctor`, and `audit` includes the same rows. The report is written only when the register has a page or nav entry (or a report already exists), so projects without extensions get no new file.'
+    rationale: 'doctor is another process; a skipped page is a fact about the running server, and re-importing project code inside doctor would run it a second time, in a different environment.'
+    alternatives_rejected: ['importing the pages again from doctor (runs project code in the health check, can disagree with the server); log-file grep (the log rotates and has no structure).']
+  - decision: '2026-11-19 — existing web tests: what "stay green" was measured against'
+  - decision: '2026-11-19 — static files of a project page'
+    chose: 'a blueprint''s own `static_folder` is used as written; one that sets none and has `static/` beside its module gets it at `/ext/<blueprint name>/static/`.'
+    rationale: 'without a `url_prefix` Flask would put the blueprint''s static route on `/static`, where the framework''s route wins and the project file is unreachable.'
+    alternatives_rejected: ['adding the project folder to the app''s static lookup (a project file could then answer for a missing framework asset).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/extensions.py'
+  - '.agentic-framework/web/app.py'
+  - '.agentic-framework/web/project_extensions.py'
+  - '.context/reviews/applied.jsonl'
+  - '.context/reviews/evidence/T-5260/01-root-judge-t-5260-r5-antigravity-3cfb93188c0d.png'
+  - '.context/reviews/evidence/T-5260/01-root-judge-t-5260-r5-claude-code-463a7d936f8d.png'
+  - '.context/reviews/evidence/T-5260/01-root-judge-t-5260-r5-claude-code-bc8fdbbbfbe3.png'
+  - '.context/reviews/evidence/T-5260/01-root-judge-t-5260-r5-codex-fbcf03c63cef.png'
+  - '.context/reviews/evidence/T-5260/02-cron-judge-t-5260-r5-antigravity-3cfb93188c0d.png'
+  - '.context/reviews/evidence/T-5260/02-cron-judge-t-5260-r5-claude-code-463a7d936f8d.png'
+  - '.context/reviews/evidence/T-5260/02-cron-judge-t-5260-r5-claude-code-bc8fdbbbfbe3.png'
+  - '.context/reviews/evidence/T-5260/02-cron-judge-t-5260-r5-codex-fbcf03c63cef.png'
+  - '.context/reviews/evidence/T-5260/AC1-judge-t-5260-r5-antigravity-3cfb93188c0d.md'
+  - '.context/reviews/evidence/T-5260/AC1-judge-t-5260-r5-antigravity-b57f9ec01685.md'
+  - '.context/reviews/evidence/T-5260/AC1-judge-t-5260-r5-antigravity-cb9cdf4d7afe.md'
+  - '.context/reviews/evidence/T-5260/AC1-judge-t-5260-r5-claude-code-0a67a62e3071.md'
+  - '.context/reviews/evidence/T-5260/AC1-judge-t-5260-r5-claude-code-294d2048fb2f.md'
+  - '.context/reviews/evidence/T-5260/AC1-judge-t-5260-r5-claude-code-463a7d936f8d.md'
+  - '.context/reviews/evidence/T-5260/AC1-judge-t-5260-r5-claude-code-bc8fdbbbfbe3.md'
+  - '.context/reviews/evidence/T-5260/AC1-judge-t-5260-r5-codex-1b701cc40c0b.md'
+  - '.context/reviews/evidence/T-5260/AC1-judge-t-5260-r5-codex-3b0d57f8a44d.md'
+  - '.context/reviews/evidence/T-5260/AC1-judge-t-5260-r5-codex-e1d98e4f35c6.md'
+  - '.context/reviews/evidence/T-5260/AC1-judge-t-5260-r5-codex-fbcf03c63cef.md'
+  - '.context/reviews/evidence/T-5260/cron-footer@1024-judge-t-5260-r5-antigravity-3cfb93188c0d.png'
+  - '.context/reviews/evidence/T-5260/cron-footer@1024-judge-t-5260-r5-claude-code-bc8fdbbbfbe3.png'
+  - '.context/reviews/evidence/T-5260/cron-footer@1024-judge-t-5260-r5-codex-fbcf03c63cef.png'
+  - '.context/reviews/evidence/T-5260/cron-footer@1440-judge-t-5260-r5-antigravity-3cfb93188c0d.png'
+  - '.context/reviews/evidence/T-5260/cron-footer@1440-judge-t-5260-r5-claude-code-bc8fdbbbfbe3.png'
+  - '.context/reviews/evidence/T-5260/cron-footer@1440-judge-t-5260-r5-codex-fbcf03c63cef.png'
+  - '.context/reviews/evidence/T-5260/cron-footer@1920-judge-t-5260-r5-antigravity-3cfb93188c0d.png'
+  - '.context/reviews/evidence/T-5260/cron-footer@1920-judge-t-5260-r5-claude-code-bc8fdbbbfbe3.png'
+  - '.context/reviews/evidence/T-5260/cron-footer@1920-judge-t-5260-r5-codex-fbcf03c63cef.png'
+  - '.context/reviews/evidence/T-5260/cron-header@1024-judge-t-5260-r5-antigravity-3cfb93188c0d.png'
+  - '.context/reviews/evidence/T-5260/cron-header@1024-judge-t-5260-r5-claude-code-463a7d936f8d.png'
+  - '.context/reviews/evidence/T-5260/cron-header@1024-judge-t-5260-r5-claude-code-bc8fdbbbfbe3.png'
+  - '.context/reviews/evidence/T-5260/cron-header@1024-judge-t-5260-r5-codex-fbcf03c63cef.png'
+  - '.context/reviews/evidence/T-5260/cron-header@1440-judge-t-5260-r5-antigravity-3cfb93188c0d.png'
+  - '.context/reviews/evidence/T-5260/cron-header@1440-judge-t-5260-r5-claude-code-463a7d936f8d.png'
+  - '.context/reviews/evidence/T-5260/cron-header@1440-judge-t-5260-r5-claude-code-bc8fdbbbfbe3.png'
+  - '.context/reviews/evidence/T-5260/cron-header@1440-judge-t-5260-r5-codex-fbcf03c63cef.png'
+  - '.context/reviews/evidence/T-5260/cron-header@1920-judge-t-5260-r5-antigravity-3cfb93188c0d.png'
+  - '.context/reviews/evidence/T-5260/cron-header@1920-judge-t-5260-r5-claude-code-463a7d936f8d.png'
+  - '.context/reviews/evidence/T-5260/cron-header@1920-judge-t-5260-r5-claude-code-bc8fdbbbfbe3.png'
+  - '.context/reviews/evidence/T-5260/cron-header@1920-judge-t-5260-r5-codex-fbcf03c63cef.png'
+  - '.context/reviews/evidence/T-5260/framework-cron-footer@1024-judge-t-5260-r5-claude-code-0a67a62e3071.png'
+  - '.context/reviews/evidence/T-5260/framework-cron-header@1024-judge-t-5260-r5-claude-code-0a67a62e3071.png'
+  - '.context/reviews/evidence/T-5260/framework-cron-header@1024-judge-t-5260-r5-claude-code-294d2048fb2f.png'
+  - '.context/reviews/evidence/T-5260/home-footer@1024-judge-t-5260-r5-antigravity-3cfb93188c0d.png'
+  - '.context/reviews/evidence/T-5260/home-footer@1024-judge-t-5260-r5-claude-code-bc8fdbbbfbe3.png'
+  - '.context/reviews/evidence/T-5260/home-footer@1024-judge-t-5260-r5-codex-fbcf03c63cef.png'
+  - '.context/reviews/evidence/T-5260/home-footer@1440-judge-t-5260-r5-antigravity-3cfb93188c0d.png'
+  - '.context/reviews/evidence/T-5260/home-footer@1440-judge-t-5260-r5-claude-code-bc8fdbbbfbe3.png'
+  - '.context/reviews/evidence/T-5260/home-footer@1440-judge-t-5260-r5-codex-fbcf03c63cef.png'
+  - '.context/reviews/evidence/T-5260/home-footer@1920-judge-t-5260-r5-antigravity-3cfb93188c0d.png'
+  - '.context/reviews/evidence/T-5260/home-footer@1920-judge-t-5260-r5-claude-code-bc8fdbbbfbe3.png'
+  - '.context/reviews/evidence/T-5260/home-footer@1920-judge-t-5260-r5-codex-fbcf03c63cef.png'
+  - '.context/reviews/evidence/T-5260/home-header@1024-judge-t-5260-r5-antigravity-3cfb93188c0d.png'
+  - '.context/reviews/evidence/T-5260/home-header@1024-judge-t-5260-r5-claude-code-463a7d936f8d.png'
+  - '.context/reviews/evidence/T-5260/home-header@1024-judge-t-5260-r5-claude-code-bc8fdbbbfbe3.png'
+  - '.context/reviews/evidence/T-5260/home-header@1024-judge-t-5260-r5-codex-fbcf03c63cef.png'
+  - '.context/reviews/evidence/T-5260/home-header@1440-judge-t-5260-r5-antigravity-3cfb93188c0d.png'
+  - '.context/reviews/evidence/T-5260/home-header@1440-judge-t-5260-r5-claude-code-463a7d936f8d.png'
+  - '.context/reviews/evidence/T-5260/home-header@1440-judge-t-5260-r5-claude-code-bc8fdbbbfbe3.png'
+  - '.context/reviews/evidence/T-5260/home-header@1440-judge-t-5260-r5-codex-fbcf03c63cef.png'
+  - '.context/reviews/evidence/T-5260/home-header@1920-judge-t-5260-r5-antigravity-3cfb93188c0d.png'
+  - '.context/reviews/evidence/T-5260/home-header@1920-judge-t-5260-r5-claude-code-463a7d936f8d.png'
+  - '.context/reviews/evidence/T-5260/home-header@1920-judge-t-5260-r5-claude-code-bc8fdbbbfbe3.png'
+  - '.context/reviews/evidence/T-5260/home-header@1920-judge-t-5260-r5-codex-fbcf03c63cef.png'
+  - '.context/reviews/evidence/T-5260/project-page@1024-judge-t-5260-r5-antigravity-3cfb93188c0d.png'
+  - '.context/reviews/evidence/T-5260/project-page@1024-judge-t-5260-r5-antigravity-b57f9ec01685.png'
+  - '.context/reviews/evidence/T-5260/project-page@1024-judge-t-5260-r5-antigravity-cb9cdf4d7afe.png'
+  - '.context/reviews/evidence/T-5260/project-page@1024-judge-t-5260-r5-claude-code-0a67a62e3071.png'
+  - '.context/reviews/evidence/T-5260/project-page@1024-judge-t-5260-r5-claude-code-294d2048fb2f.png'
+  - '.context/reviews/evidence/T-5260/project-page@1024-judge-t-5260-r5-claude-code-463a7d936f8d.png'
+  - '.context/reviews/evidence/T-5260/project-page@1024-judge-t-5260-r5-claude-code-bc8fdbbbfbe3.png'
+  - '.context/reviews/evidence/T-5260/project-page@1024-judge-t-5260-r5-codex-fbcf03c63cef.png'
+  - '.context/reviews/evidence/T-5260/project-page@1440-judge-t-5260-r5-antigravity-3cfb93188c0d.png'
+  - '.context/reviews/evidence/T-5260/project-page@1440-judge-t-5260-r5-antigravity-b57f9ec01685.png'
+  - '.context/reviews/evidence/T-5260/project-page@1440-judge-t-5260-r5-antigravity-cb9cdf4d7afe.png'
+  - '.context/reviews/evidence/T-5260/project-page@1440-judge-t-5260-r5-claude-code-0a67a62e3071.png'
+  - '.context/reviews/evidence/T-5260/project-page@1440-judge-t-5260-r5-claude-code-294d2048fb2f.png'
+  - '.context/reviews/evidence/T-5260/project-page@1440-judge-t-5260-r5-claude-code-463a7d936f8d.png'
+  - '.context/reviews/evidence/T-5260/project-page@1440-judge-t-5260-r5-claude-code-bc8fdbbbfbe3.png'
+  - '.context/reviews/evidence/T-5260/project-page@1440-judge-t-5260-r5-codex-fbcf03c63cef.png'
+  - '.context/reviews/evidence/T-5260/project-page@1920-judge-t-5260-r5-antigravity-3cfb93188c0d.png'
+  - '.context/reviews/evidence/T-5260/project-page@1920-judge-t-5260-r5-antigravity-b57f9ec01685.png'
+  - '.context/reviews/evidence/T-5260/project-page@1920-judge-t-5260-r5-antigravity-cb9cdf4d7afe.png'
+  - '.context/reviews/evidence/T-5260/project-page@1920-judge-t-5260-r5-claude-code-0a67a62e3071.png'
+  - '.context/reviews/evidence/T-5260/project-page@1920-judge-t-5260-r5-claude-code-294d2048fb2f.png'
+  - '.context/reviews/evidence/T-5260/project-page@1920-judge-t-5260-r5-claude-code-463a7d936f8d.png'
+  - '.context/reviews/evidence/T-5260/project-page@1920-judge-t-5260-r5-claude-code-bc8fdbbbfbe3.png'
+  - '.context/reviews/evidence/T-5260/project-page@1920-judge-t-5260-r5-codex-fbcf03c63cef.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.fabric/components/tests-web-test_t5260_project_pages.yaml'
+  - '.fabric/components/web-project_extensions.yaml'
+  - '.tasks/active/T-5260-project-watchtower-pages-register-projec.md'
+  - 'bin/fw'
+  - 'lib/extensions.py'
+  - 'tests/fixtures/project_ext/README.md'
+  - 'tests/fixtures/project_ext/web_ext/broken.py'
+  - 'tests/fixtures/project_ext/web_ext/collide.py'
+  - 'tests/fixtures/project_ext/web_ext/hosts.py'
+  - 'tests/fixtures/project_ext/web_ext/hosts_helper.py'
+  - 'tests/fixtures/project_ext/web_ext/static/hosts_ext.css'
+  - 'tests/fixtures/project_ext/web_ext/templates/cron.html'
+  - 'tests/fixtures/project_ext/web_ext/templates/hosts_ext.html'
+  - 'tests/fixtures/project_ext/web_ext/unregistered.py'
+  - 'tests/web/test_t5260_project_pages.py'
+  - 'web/app.py'
+  - 'web/project_extensions.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T00:21:48'
+    action: 'T-5260: project Watchtower pages — page extensions loaded from the project folder after the framework''s own'
+  - time: '2026-11-20T00:59:57'
+    action: 'T-5260: reviewer verdict'
+  - time: '2026-11-20T01:01:01'
+    action: 'T-5260: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-20T01:03:48'
+    action: 'T-5260: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-20T01:12:12'
+    action: 'T-5260: render criterion names the page it is about (fixture URL), so the review ledger can bind the verdict'
+  - time: '2026-11-20T01:14:13'
+    action: 'T-5260: reviewer verdict'
+  - time: '2026-11-20T01:15:02'
+    action: 'T-5260: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-20T01:17:48'
+    action: 'T-5260: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-20T01:21:17'
+    action: 'T-5260: render criterion narrowed to what the review tooling can see (framework pages unchanged by the loader; project-page look judged under T-5261); header-cropped shots'
+  - time: '2026-11-20T01:23:38'
+    action: 'T-5260: reviewer verdict'
+  - time: '2026-11-20T01:25:12'
+    action: 'T-5260: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-20T01:27:59'
+    action: 'T-5260: footer shots and the before-change comparison for the 1024 px header row (answers the amber review)'
+  - time: '2026-11-20T01:29:46'
+    action: 'T-5260: reviewer verdict'
+  - time: '2026-11-20T01:31:42'
+    action: 'T-5260: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-20T01:34:43'
+    action: 'T-5260: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 15 commit(s), 544 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [extension-points]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 544
+  commits: 16
+  files_changed: 119
+  lines_added: 1762
+  lines_removed: 21
+  footprint_refreshed_at: '2026-11-20T00:39:07Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5260-project-watchtower-pages-register-projec.md
+generated_by: context-agent-hybrid
