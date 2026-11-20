@@ -1,8 +1,14 @@
 ---
 id: T-5291
-name: "Re-judge the render criteria of T-5260, T-5226 and T-5236 without the codex seat (G-136: its greens rest on images it never opened)"
+name: "Re-judge the render criteria of T-5260, T-5226 and T-5236 without the codex
+  seat (G-136: its greens rest on images it never opened)"
 description: >
-  Operator 2026-11-20 (option a, recorded in T-5289). The codex seat's greens on these render criteria came from runs with no image view. Re-judge each with vision seats only (claude, antigravity). These tasks are closed and a rung-5 panel needs three vision seats while only two exist, so first establish what the judge does for a closed task and an incomplete panel, and report each result; a red reopens follow-up work.
+  Operator 2026-11-20 (option a, recorded in T-5289). The codex seat's greens on these
+  render criteria came from runs with no image view. Re-judge each with vision seats
+  only (claude, antigravity). These tasks are closed and a rung-5 panel needs three
+  vision seats while only two exist, so first establish what the judge does for a
+  closed task and an incomplete panel, and report each result; a red reopens follow-up
+  work.
 
 status: captured
 workflow_type: test
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T08:42:06Z
-last_update: 2026-11-20T08:42:06Z
-date_finished: null
+last_update: '2026-11-20T08:46:01Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-20T08:46:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 1
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
+      (workflow:test); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5291: Re-judge the render criteria of T-5260, T-5226 and T-5236 without the codex seat (G-136: its greens rest on images it never opened)
