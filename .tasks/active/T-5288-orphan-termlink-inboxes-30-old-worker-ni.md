@@ -101,8 +101,10 @@ bvp_scores_proposed:
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] Every orphan inbox is grouped by name pattern and last writer, and each writer is identified (project or test identity) in ## Decisions.
-- [ ] A live sender writing to a wrong address is told the real address over the sidecar.
-- [ ] Inboxes of dead test/worker identities are acknowledged with `fw sidecar orphan-inboxes --ack` (no message deleted); `fw sidecar alerts` no longer lists them.
+- [x] A live sender writing to a wrong address is told the real address over the sidecar.
+- [x] Inboxes of dead test/worker identities are acknowledged with `fw sidecar orphan-inboxes --ack` (no message deleted); `fw sidecar alerts` no longer lists them.
+
+**Outcome (2026-11-20):** 99 → 1. Answers: 010 (msg 13d7f876): `termlink`, `claude-termlink`, `claude-termlink-alt` are theirs and read; 010 is moving the one live sender still writing to `termlink` (their old short name). 1409 (msg a26b7cc2): `nachlauf-c2`, `t2336-zwei-stellen`, `entlastung-e1b` are finished workers of theirs; `smk-b` is our own pre-T-3855 bare-name sends. ring20 (msg fd509032) read the 14 posts on `proxmox-ring20-management` itself: all old (832 and 1409 in 2026-10, already answered) from bare-name sends before T-3855. The one line left is `termlink` (new posts from 010's sender, being moved by 010); it shows only because our check ignores other projects' readers, fixed by T-5296.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
