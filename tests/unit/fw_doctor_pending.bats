@@ -40,7 +40,7 @@ teardown() {
     PROJECT_ROOT="$TMPREPO" TASKS_DIR= CONTEXT_DIR= \
         run bash "$FW" doctor
     [[ "$output" == *"Pending-updates registry: 1 unresolved entry"* ]]
-    [[ "$output" == *"Run: fw pending list"* ]]
+    [[ "$output" == *"Run: cd $TMPREPO && "*"bin/fw pending list"* ]]
 }
 
 @test "fw doctor does not warn when all entries are resolved" {

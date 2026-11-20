@@ -2241,7 +2241,7 @@ do_doctor() {
         case "$_vtp_state" in
             behind)
                 echo -e "  ${RED}FAIL${NC}  VERSION ($_vtp_ver) is BELOW the latest release tag (v$_vtp_tagver) — tag is canonical (T-3242)"
-                echo -e "         Fix: echo $_vtp_tagver > $FRAMEWORK_ROOT/VERSION   (or cut a release: bin/fw release tag-and-release)"
+                echo -e "         Fix: echo $_vtp_tagver > $FRAMEWORK_ROOT/VERSION   (or cut a release: $(_emit_user_command "release tag-and-release"))"
                 issues=$((issues + 1))
                 ;;
             ok)
@@ -2352,14 +2352,14 @@ do_doctor() {
     if [ -f "$hooks_dir/commit-msg" ] && grep -q "Task Reference" "$hooks_dir/commit-msg" 2>/dev/null; then
         echo -e "  ${GREEN}OK${NC}  Git commit-msg hook"
     else
-        echo -e "  ${YELLOW}WARN${NC}  Git commit-msg hook not installed (run: fw git install-hooks)"
+        echo -e "  ${YELLOW}WARN${NC}  Git commit-msg hook not installed (run: $(_emit_user_command "git install-hooks"))"
         warnings=$((warnings + 1))
     fi
 
     if [ -f "$hooks_dir/pre-push" ] && grep -q "audit" "$hooks_dir/pre-push" 2>/dev/null; then
         echo -e "  ${GREEN}OK${NC}  Git pre-push hook"
     else
-        echo -e "  ${YELLOW}WARN${NC}  Git pre-push hook not installed (run: fw git install-hooks)"
+        echo -e "  ${YELLOW}WARN${NC}  Git pre-push hook not installed (run: $(_emit_user_command "git install-hooks"))"
         warnings=$((warnings + 1))
     fi
 
@@ -2425,7 +2425,7 @@ do_doctor() {
         lf_warns=$(echo "$lf_out" | grep -c "\[WARN\]"  || true)
         if [ "$lf_blocks" -gt 0 ]; then
             echo -e "  ${YELLOW}WARN${NC}  Large-file gate: $lf_blocks tracked file(s) above block threshold"
-            echo -e "         Run: bin/fw doctor large-files   (or untrack + .gitignore)"
+            echo -e "         Run: $(_emit_user_command "doctor large-files")   (or untrack + .gitignore)"
             warnings=$((warnings + 1))
         elif [ "$lf_warns" -gt 0 ]; then
             echo -e "  ${CYAN}INFO${NC}  Large-file gate: $lf_warns tracked file(s) above warn threshold (under block)"
@@ -2474,7 +2474,7 @@ do_doctor() {
             echo -e "  ${GREEN}OK${NC}  Handover LATEST.md resolves to $(readlink "$latest_link" 2>/dev/null || echo 'a file')"
         else
             _doctor_warn_host "Handover LATEST.md is dangling (target missing): $(readlink "$latest_link" 2>/dev/null || echo '?')"
-            echo -e "         Repoint to the newest real handover or regenerate: fw handover --commit"
+            echo -e "         Repoint to the newest real handover or regenerate: $(_emit_user_command "handover --commit")"
         fi
     fi
 
@@ -2499,7 +2499,7 @@ do_doctor() {
         if echo "$last_ho_line" | grep -q "FAILED"; then
             _doctor_warn_host "Last $last_ho_src FAILED — memory capture is broken; the next compaction/restart will reinject a stale handover"
             echo -e "         Cause: $last_ho_line"
-            echo -e "         Recover: fw handover --no-commit   (repoints LATEST.md to a fresh capture)"
+            echo -e "         Recover: $(_emit_user_command "handover --no-commit")   (repoints LATEST.md to a fresh capture)"
         elif [ -n "$last_ho_line" ]; then
             echo -e "  ${GREEN}OK${NC}  Last auto-handover succeeded ($last_ho_src)"
         fi
@@ -2640,7 +2640,7 @@ for kind, path in broken_list:
                 [ -n "$hb_kind" ] && echo -e "        missing: $hb_path"
             done <<< "$hook_broken_lines"
             if echo "$hook_broken_lines" | grep -q '^fw '; then
-                echo -e "        Run: fw upgrade (regenerates hooks with portable paths)"
+                echo -e "        Run: $(_emit_user_command "upgrade") (regenerates hooks with portable paths)"
             fi
             if echo "$hook_broken_lines" | grep -q '^file '; then
                 echo -e "        Fix: create the missing script, or correct or remove that hook in .claude/settings.json (fw upgrade does not manage project hooks)"
@@ -2648,12 +2648,12 @@ for kind, path in broken_list:
             issues=$((issues + 1))
         elif [ "${hook_stale:-0}" -gt 0 ]; then
             echo -e "  ${YELLOW}WARN${NC}  Hook path isolation: $hook_stale/$hook_total hooks use hardcoded paths (works here, breaks on clone)"
-            echo -e "        Run: fw upgrade (migrates to portable 'fw hook' format)"
+            echo -e "        Run: $(_emit_user_command "upgrade") (migrates to portable 'fw hook' format)"
             warnings=$((warnings + 1))
         elif [ "${hook_nonportable:-0}" -gt 0 ]; then
             echo -e "  ${YELLOW}WARN${NC}  Hook path portability: $hook_nonportable/$hook_total hooks hardcode this host's checkout path (governance is OFF on any other host)"
             echo -e "        Expected: \${CLAUDE_PROJECT_DIR}/bin/fw hook <name>  (absolute after expansion, host-portable)"
-            echo -e "        Run: fw upgrade (regenerates hooks from the fixed generator), then fw enforcement baseline"
+            echo -e "        Run: $(_emit_user_command "upgrade") (regenerates hooks from the fixed generator), then $(_fw_cmd) enforcement baseline"
             warnings=$((warnings + 1))
         elif [ "${hook_total:-0}" -ge 10 ]; then
             echo -e "  ${GREEN}OK${NC}  Hook path validation: $hook_total hooks, all portable"
@@ -2704,7 +2704,7 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
             fi
         fi
     else
-        echo -e "  ${YELLOW}WARN${NC}  No .claude/settings.json found (run: fw init)"
+        echo -e "  ${YELLOW}WARN${NC}  No .claude/settings.json found (run: $(_emit_user_command "init"))"
         warnings=$((warnings + 1))
     fi
 
@@ -2737,14 +2737,14 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
                 echo "$hook_exercise" | grep '^FAIL|' | while IFS='|' read -r _ event tag reason; do
                     echo -e "        ${RED}x${NC} $event/$tag - $reason"
                 done
-                echo -e "        Run: fw upgrade (regenerates hook paths to absolute form)"
+                echo -e "        Run: $(_emit_user_command "upgrade") (regenerates hook paths to absolute form)"
                 issues=$((issues + 1))
             elif [ "${hex_undet:-0}" -gt 0 ]; then
                 echo -e "  ${YELLOW}WARN${NC}  Hook exercise from /tmp: $hex_undet/$hex_total hook(s) not determined (timed out); none failed to resolve"
                 echo "$hook_exercise" | grep '^TIMEOUT|' | while IFS='|' read -r _ event tag reason; do
                     echo -e "        ${YELLOW}?${NC} $event/$tag - $reason"
                 done
-                echo -e "        Host under load? Re-run fw doctor; HOOK_EXERCISE_TIMEOUT=<s> raises the per-hook budget"
+                echo -e "        Host under load? Re-run $(_emit_user_command "doctor"); HOOK_EXERCISE_TIMEOUT=<s> raises the per-hook budget"
                 warnings=$((warnings + 1))
             elif [ "${hex_total:-0}" -gt 0 ]; then
                 # T-2714 (OBS-110): name the scope. The probe deliberately covers
@@ -2786,7 +2786,7 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
         if [ "${bypassing_count:-0}" = "0" ]; then
             echo -e "  ${GREEN}OK${NC}  Plugin task-awareness"
         else
-            echo -e "  ${YELLOW}WARN${NC}  $bypassing_count plugin skill(s) may bypass task-first rule (run: fw plugin-audit)"
+            echo -e "  ${YELLOW}WARN${NC}  $bypassing_count plugin skill(s) may bypass task-first rule (run: $(_emit_user_command "plugin-audit"))"
             warnings=$((warnings + 1))
         fi
     else
@@ -2837,7 +2837,7 @@ print('|'.join(f'{e}:{n}' for e, n in overlap))
                    grep -cE "(npm exec.*(mcp|context7|playwright))|(node .*(mcp|context7))" || echo 0)
     orphan_count=$(echo "$orphan_count" | tr -d '[:space:]')
     if [ "$orphan_count" -gt 0 ]; then
-        _doctor_warn_host "$orphan_count orphaned MCP process(es) detected — run 'fw mcp reap'"
+        _doctor_warn_host "$orphan_count orphaned MCP process(es) detected — run: $(_emit_user_command "mcp reap")"
     else
         echo -e "  ${GREEN}OK${NC}  No orphaned MCP processes"
     fi
@@ -2865,7 +2865,7 @@ print(f'{total}|{\",\".join(missing)}')
         mcp_total=$(echo "$mcp_check" | cut -d'|' -f1)
         mcp_missing=$(echo "$mcp_check" | cut -d'|' -f2)
         if [ -n "$mcp_missing" ] && [ "$mcp_missing" != "parse-error" ]; then
-            echo -e "  ${YELLOW}WARN${NC}  .mcp.json missing recommended servers: $mcp_missing (run: fw upgrade)"
+            echo -e "  ${YELLOW}WARN${NC}  .mcp.json missing recommended servers: $mcp_missing (run: $(_emit_user_command "upgrade"))"
             warnings=$((warnings + 1))
         elif [ "$mcp_missing" = "parse-error" ]; then
             echo -e "  ${YELLOW}WARN${NC}  .mcp.json exists but failed to parse"
@@ -2874,7 +2874,7 @@ print(f'{total}|{\",\".join(missing)}')
             echo -e "  ${GREEN}OK${NC}  .mcp.json ($mcp_total MCP server(s) configured)"
         fi
     else
-        echo -e "  ${YELLOW}WARN${NC}  No .mcp.json found (run: fw upgrade to create)"
+        echo -e "  ${YELLOW}WARN${NC}  No .mcp.json found (run: $(_emit_user_command "upgrade") to create)"
         warnings=$((warnings + 1))
     fi
 
@@ -2897,7 +2897,7 @@ print(f'{total}|{\",\".join(missing)}')
         _doctor_absent_ok "Playwright MCP server"
     else
         echo -e "  ${YELLOW}WARN${NC}  Playwright MCP server not in .mcp.json"
-        echo -e "         Run: fw upgrade  # auto-adds the MCP block"
+        echo -e "         Run: $(_emit_user_command "upgrade")  # auto-adds the MCP block"
         warnings=$((warnings + 1))
     fi
 
@@ -2910,7 +2910,7 @@ print(f'{total}|{\",\".join(missing)}')
             link_target=$(readlink -f "$local_fw" 2>/dev/null || echo "")
             if [[ "$link_target" == *".agentic-framework/bin/fw"* ]]; then
                 _doctor_warn_host "Global install: ~/.local/bin/fw symlinks to stale $global_dir"
-                echo -e "         Migrate: run install.sh or fw upgrade (installs project-detecting shim)"
+                echo -e "         Migrate: run install.sh or $(_emit_user_command "upgrade") (installs project-detecting shim)"
             else
                 echo -e "  ${GREEN}OK${NC}  fw shim installed (global install at $global_dir is unused)"
             fi
@@ -2980,7 +2980,7 @@ else:
         _bvp_rows=$(fw_bvp_unscorable_drivers "$PROJECT_ROOT" 2>/dev/null) && _bvp_rc=0 || _bvp_rc=$?  # T-3837: set -e
         if [ "$_bvp_rc" -eq 2 ]; then
             echo -e "  ${YELLOW}WARN${NC}  BVP driver scorability scan did not run"
-            echo -e "         Run: bin/fw bvp driver --validate-scoring <file>  (estimator unimportable or policy YAML broken)"
+            echo -e "         Run: $(_emit_user_command "bvp driver --validate-scoring <file>")  (estimator unimportable or policy YAML broken)"
             warnings=$((warnings + 1))
         elif [ "$_bvp_rc" -eq 0 ] && [ -n "$_bvp_rows" ]; then
             _bvp_n=$(printf '%s\n' "$_bvp_rows" | grep -c .)
@@ -2988,7 +2988,7 @@ else:
             printf '%s\n' "$_bvp_rows" | while IFS=$'\t' read -r _d_id _d_name _d_src _d_reason; do
                 [ -n "$_d_id" ] && echo -e "         $_d_id ($_d_src) — $_d_reason"
             done
-            echo -e "         Give one a mechanism: bin/fw bvp driver --validate-scoring <file> (schema: policy/value-drivers.yaml header, T-3428)"
+            echo -e "         Give one a mechanism: $(_emit_user_command "bvp driver --validate-scoring <file>") (schema: policy/value-drivers.yaml header, T-3428)"
             warnings=$((warnings + 1))
         elif [ "$_bvp_rc" -eq 0 ]; then
             echo -e "  ${GREEN}OK${NC}  BVP drivers: every active free and arc-scoped driver is scorable"
@@ -3045,7 +3045,7 @@ PY
                     printf '%s\n' "$_adr_rows" | while IFS=$'\t' read -r _adr_f _adr_name _adr_why; do
                         [ -n "$_adr_name" ] && echo -e "         $_adr_name (.context/arcs/$_adr_f) — $_adr_why"
                     done
-                    echo -e "         Run: bin/fw arc review-driver <arc> \"<name>\" --dry-run  (T-3429, D-586)"
+                    echo -e "         Run: $(_emit_user_command "arc review-driver <arc> \"<name>\" --dry-run")  (T-3429, D-586)"
                     warnings=$((warnings + 1))
                 else
                     echo -e "  ${GREEN}OK${NC}  Arc driver reviewer records: $_adr_total scoped driver(s), every reviewer-approved one carries its verdict"
@@ -3074,7 +3074,7 @@ PY
             else
                 echo -e "  ${YELLOW}WARN${NC}  Fabric: $_fab_total under-populated card(s)"
                 echo -e "         TODO purpose: $_fab_todo, unknown subsystem: $_fab_unknown, no edges: $_fab_noedges"
-                echo -e "         Run: bin/fw fabric enrich --describe-only  (then: bin/fw fabric drift)"
+                echo -e "         Run: $(_emit_user_command "fabric enrich --describe-only")  (then: $(_fw_cmd) fabric drift)"
                 warnings=$((warnings + 1))
             fi
         fi
@@ -3119,11 +3119,11 @@ PY
             if [ "${_del_level:-}" = "WARN" ]; then
                 echo -e "  ${YELLOW}WARN${NC}  Delegation surface: 0 reviewer-closeable or reviewer-judges criteria while $_del_oo are operator-only (threshold $_del_thr)"
                 echo -e "         $_del_tasks active task(s) with open Human criteria — the D-626 delegation reaches nothing"
-                echo -e "         Run: bin/fw reviewer surface"
+                echo -e "         Run: $(_emit_user_command "reviewer surface")"
                 warnings=$((warnings + 1))
             elif [ -n "${_del_level:-}" ]; then
                 echo -e "  ${GREEN}OK${NC}  Delegation surface: reviewer-closeable $_del_rc, reviewer-judges $_del_rj, agent-self $_del_as, operator-only $_del_oo (across $_del_tasks active task(s))"
-                [ -n "${_del_list:-}" ] && echo -e "         delegable now: $_del_list — bin/fw task delegate <id> --dry-run"
+                [ -n "${_del_list:-}" ] && echo -e "         delegable now: $_del_list — $(_emit_user_command "task delegate <id> --dry-run")"
             fi
         fi
     fi
@@ -3145,7 +3145,7 @@ PY
             IFS=$'\t' read -r _um_count _ <<< "$_um_facts"
             if [ "${_um_count:-0}" -gt 0 ] 2>/dev/null; then
                 echo -e "  ${CYAN}INFO${NC}  Unclosable-misfiled: $_um_count active task(s) — owner:human, no Human criteria, all Agent ACs ticked"
-                echo -e "         Run: bin/fw review-queue  (READY TO CLOSE section — per-task evidence, one command each)"
+                echo -e "         Run: $(_emit_user_command "review-queue")  (READY TO CLOSE section — per-task evidence, one command each)"
             fi
         fi
     fi
@@ -3341,9 +3341,9 @@ PY
         case "$_pp_state" in
             ok)            echo -e "  ${GREEN}OK${NC}  proxy-policy deployed copy matches source" ;;
             drift)         echo -e "  ${YELLOW}WARN${NC}  proxy-policy.yaml edited but not installed"
-                           echo -e "         Run: sudo fw policy install   (Lock-1 Part 1, root)"
+                           echo -e "         Run: cd $(_fw_quote_word "$PROJECT_ROOT") && sudo $(_fw_cmd) policy install   (Lock-1 Part 1, root)"
                            warnings=$((warnings + 1)) ;;
-            not_installed) echo -e "  ${CYAN}SKIP${NC}  proxy-policy not installed (install is human/root — fw policy emit)" ;;
+            not_installed) echo -e "  ${CYAN}SKIP${NC}  proxy-policy not installed (install is human/root — $(_emit_user_command "policy emit"))" ;;
             *)             echo -e "  ${CYAN}SKIP${NC}  proxy-policy drift check unavailable" ;;
         esac
     fi
@@ -3359,14 +3359,14 @@ PY
         case "$_sb_state" in
             ok)             echo -e "  ${GREEN}OK${NC}  sandbox profile emitted and deployed copies match" ;;
             stale)          echo -e "  ${YELLOW}WARN${NC}  sandbox-profile.yaml edited but not re-emitted"
-                            echo -e "         Run: bin/fw sandbox emit-profile   (agent-safe)"
+                            echo -e "         Run: $(_emit_user_command "sandbox emit-profile")   (agent-safe)"
                             warnings=$((warnings + 1)) ;;
             drift)          echo -e "  ${YELLOW}WARN${NC}  sandbox profile emitted but deployed copy differs"
-                            echo -e "         Run: sudo fw sandbox install   (Lock-1 Part 1, root)"
+                            echo -e "         Run: cd $(_fw_quote_word "$PROJECT_ROOT") && sudo $(_fw_cmd) sandbox install   (Lock-1 Part 1, root)"
                             warnings=$((warnings + 1)) ;;
-            not_installed)  echo -e "  ${CYAN}SKIP${NC}  sandbox profile not installed (install is human/root — fw sandbox spec)" ;;
+            not_installed)  echo -e "  ${CYAN}SKIP${NC}  sandbox profile not installed (install is human/root — $(_emit_user_command "sandbox spec"))" ;;
             absent_emitted) echo -e "  ${YELLOW}WARN${NC}  sandbox profile source present but never emitted"
-                            echo -e "         Run: bin/fw sandbox emit-profile"
+                            echo -e "         Run: $(_emit_user_command "sandbox emit-profile")"
                             warnings=$((warnings + 1)) ;;
             *)              echo -e "  ${CYAN}SKIP${NC}  sandbox profile drift check unavailable" ;;
         esac
@@ -3389,7 +3389,7 @@ PY
                 # it, so a project that relied on network access is not left guessing.
                 case "$(tr -d '[:space:]' < "$PROJECT_ROOT/.context/working/watchtower.host" 2>/dev/null)" in
                     127.*|::1|localhost)
-                        echo -e "  ${CYAN}INFO${NC}  Watchtower answers on this machine only (HOST default 127.0.0.1, T-4239). To open it to your network: fw config set HOST 0.0.0.0 && fw watchtower restart" ;;
+                        echo -e "  ${CYAN}INFO${NC}  Watchtower answers on this machine only (HOST default 127.0.0.1, T-4239). To open it to your network: $(_emit_user_command "config set HOST 0.0.0.0") && $(_fw_cmd) watchtower restart" ;;
                 esac
                 # T-2938: alive and identifying correctly is NOT the same as
                 # running current code. Flask serves with debug=False here, so
@@ -3413,7 +3413,7 @@ PY
                         # errexit+pipefail doctor then exited 141 (050 field report).
                         printf '%s\n' "$_wt_stale" | awk 'NR<=3 {print "         - " $0}'
                         echo -e "         Every web/ change since it started is inert, including any awaiting [REVIEW]."
-                        echo -e "         Run: bin/fw watchtower restart"
+                        echo -e "         Run: $(_emit_user_command "watchtower restart")"
                         warnings=$((warnings + 1))
                     elif [ "$_wt_rc" -eq 2 ]; then
                         echo -e "  ${YELLOW}WARN${NC}  Watchtower currency cannot be determined ($_wt_web missing while pid $_wt_pid runs)"
@@ -3430,7 +3430,7 @@ PY
                     if _wt_fd_del=$(watchtower_log_fd_deleted "$_wt_pid"); then
                         echo -e "  ${YELLOW}WARN${NC}  Watchtower (pid $_wt_pid) writes its log to a deleted file — its errors are readable nowhere"
                         printf '%s\n' "$_wt_fd_del" | sed 's|^|         - |'
-                        echo -e "         Run: bin/fw watchtower restart"
+                        echo -e "         Run: $(_emit_user_command "watchtower restart")"
                         warnings=$((warnings + 1))
                     fi
                 fi
@@ -3448,10 +3448,10 @@ PY
         # T-3877: this project has run a Watchtower (or configured its port), so
         # "not running" is a finding — after a reboot every link handed out is
         # dead — not a skip. The session-start ensure step normally prevents it.
-        echo -e "  ${YELLOW}WARN${NC}  Watchtower not running (no triple) — start with: fw serve"
+        echo -e "  ${YELLOW}WARN${NC}  Watchtower not running (no triple) — start with: $(_emit_user_command "serve")"
         warnings=$((warnings + 1))
     else
-        echo -e "  ${CYAN}SKIP${NC}  Watchtower not running (no triple) — start with: fw serve"
+        echo -e "  ${CYAN}SKIP${NC}  Watchtower not running (no triple) — start with: $(_emit_user_command "serve")"
     fi
     # T-5260/T-5261: project pages and menu entries (.framework-extensions.yaml,
     # kinds page and nav): what Watchtower loaded at its last start, and what it
@@ -3638,12 +3638,12 @@ PY
                         # T-4358 (GH #101): never armed, or deliberately disarmed.
                         # The wrapper logs `start` for every interactive session, so
                         # this is the ordinary case, not the T-3225 lapsed-arm failure.
-                        echo -e "         turn driver: not armed (interactive session; arm with: bin/fw continuous arm --hours N --iterations N)"
+                        echo -e "         turn driver: not armed (interactive session; arm with: $(_emit_user_command "continuous arm --hours N --iterations N"))"
                     else
                         echo -e "  ${YELLOW}WARN${NC}  ...but the TURN DRIVER is not armed — the loop takes no turns"
                         printf '%s\n' "$_crl_live" | sed -n 's/^  Reason (live): /         reason: /p'
-                        echo -e "         Arm it:  bin/fw continuous arm --hours N --iterations N"
-                        echo -e "         Detail:  bin/fw continuous status"
+                        echo -e "         Arm it:  $(_emit_user_command "continuous arm --hours N --iterations N")"
+                        echo -e "         Detail:  $(_emit_user_command "continuous status")"
                     fi
                 fi
                 if [ -n "${_crl_pid:-}" ] && [ "${_crl_pid}" != "0" ]; then
@@ -3742,8 +3742,8 @@ PY
                     echo -e "         ${_cyc_task} is already work-completed — this latch is provably stale"
                 fi
             fi
-            echo -e "         Clear it:  bin/fw continuous disarm --reason \"<why it's stale now>\""
-            echo -e "         Re-arm:    bin/fw continuous arm --hours N --iterations N --directive '...'"
+            echo -e "         Clear it:  $(_emit_user_command "continuous disarm --reason \"<why it's stale now>\"")"
+            echo -e "         Re-arm:    $(_emit_user_command "continuous arm --hours N --iterations N --directive '...'")"
             warnings=$((warnings + 1))
         fi
     fi
@@ -4108,7 +4108,7 @@ else:
         if [ "$_ir_rc" -eq 2 ]; then
             echo -e "  ${YELLOW}WARN${NC}  Armed stale index entries (G-114): $(echo "$_ir_out" | tail -1)"
             echo "$_ir_out" | awk '/^ARMED/ && ++n<=10 {print "         " $0}'  # T-4691
-            echo -e "         Fix (index only, worktree untouched): bin/fw git reconcile-index --apply"
+            echo -e "         Fix (index only, worktree untouched): $(_emit_user_command "git reconcile-index --apply")"
             warnings=$((warnings + 1))
         elif [ "$_ir_rc" -eq 0 ]; then
             echo -e "  ${GREEN}OK${NC}  No armed stale index entries"
@@ -4130,7 +4130,7 @@ else:
                 echo -e "  ${YELLOW}WARN${NC}  Tier 0 approval request unanswered for ${_aq_age}h ($_aq_kind): $_aq_file — $_aq_preview"
                 warnings=$((warnings + 1))
             done <<< "$_aq_rows"
-            echo "         Review: bin/fw approvals pending (or Watchtower /approvals); sweep: bin/fw approvals expire"
+            echo "         Review: $(_emit_user_command "approvals pending") (or Watchtower /approvals); sweep: $(_emit_user_command "approvals expire")"
         elif [ "$_aq_rc" -eq 0 ]; then
             echo -e "  ${GREEN}OK${NC}  No Tier 0 approval request pending over ${_aq_hours:-24}h"
         fi
@@ -4363,7 +4363,7 @@ sys.exit(0 if '$_tl_topic' in names else 1)
                     [ -z "$_dm_topic" ] && continue
                     _dm_age_disp=$(awk -v h="$_dm_age" 'BEGIN{if (h>=48) printf "%.1fd", h/24; else printf "%.0fh", h}')
                     echo -e "  ${YELLOW}WARN${NC}  DM rail $_dm_topic has $_dm_unread unread post(s), oldest $_dm_age_disp"
-                    echo "         Run: fw sidecar inbox --peek to confirm, then fw sidecar inbox to drain and read it"
+                    echo "         Run: $(_emit_user_command "sidecar inbox --peek") to confirm, then $(_fw_cmd) sidecar inbox to drain and read it"
                     warnings=$((warnings + 1))
                 done <<< "$_dm_rows"
             fi
@@ -4379,7 +4379,7 @@ from lib.sidecar import dm
 print(" ".join(sorted(dm.host_shared_address_keys())))' "$FRAMEWORK_ROOT" 2>/dev/null) || _dm_hk=""
             if [ -n "$_dm_hk" ]; then
                 echo -e "  ${YELLOW}WARN${NC}  SIDECAR_DM_ADDRESS_KEYS lists the host-shared key $_dm_hk: its rails carry other agents' mail too (T-4892)"
-                echo "         Remove it unless a peer really addresses this project there: fw config set SIDECAR_DM_ADDRESS_KEYS <keys>"
+                echo "         Remove it unless a peer really addresses this project there: $(_emit_user_command "config set SIDECAR_DM_ADDRESS_KEYS <keys>")"
                 warnings=$((warnings + 1))
             fi
 
@@ -4403,7 +4403,7 @@ print(" ".join(sorted(dm.host_shared_address_keys())))' "$FRAMEWORK_ROOT" 2>/dev
                         _ib_age_disp=$(awk -v h="$_ib_age" 'BEGIN{if (h>=48) printf "%.1fd", h/24; else printf "%.0fh", h}')
                     fi
                     echo -e "  ${YELLOW}WARN${NC}  $_ib_unread unread consult(s) on $_ib_topic, oldest $_ib_age_disp from $_ib_from"
-                    echo "         A peer is waiting. Run: fw sidecar inbox --peek to read without draining, then fw sidecar inbox to drain"
+                    echo "         A peer is waiting. Run: $(_emit_user_command "sidecar inbox --peek") to read without draining, then $(_fw_cmd) sidecar inbox to drain"
                     warnings=$((warnings + 1))
                 done <<< "$_ib_rows"
             fi
@@ -4419,7 +4419,7 @@ print(" ".join(sorted(dm.host_shared_address_keys())))' "$FRAMEWORK_ROOT" 2>/dev
                 local _hu_id _hu_age _hu_from
                 _hu_n=$(printf '%s\n' "$_hu_rows" | grep -c .)
                 echo -e "  ${YELLOW}WARN${NC}  $_hu_n peer message(s) held past $(fw_config SIDECAR_HELD_WARN_HOURS)h and never shown to any session"
-                echo "         Nothing is delivering them (injection off or no interactive session). Run: fw sidecar held-unsurfaced; then fw sidecar inbox --peek"
+                echo "         Nothing is delivering them (injection off or no interactive session). Run: $(_emit_user_command "sidecar held-unsurfaced"); then $(_fw_cmd) sidecar inbox --peek"
                 warnings=$((warnings + 1))
             fi
             # T-4208: two live receivers for one agent id, from any framework copy.
@@ -4433,7 +4433,7 @@ print(" ".join(sorted(dm.host_shared_address_keys())))' "$FRAMEWORK_ROOT" 2>/dev
                 while IFS=$'\t' read -r _dup_agent _dup_n _dup_pids; do
                     [ -z "$_dup_agent" ] && continue
                     echo -e "  ${YELLOW}WARN${NC}  $_dup_n live receivers serve agent $_dup_agent (pids $_dup_pids)"
-                    echo "         Two receivers race for one inbox. Stop the copy you do not run from (its operator's call). See: fw sidecar receiver-census"
+                    echo "         Two receivers race for one inbox. Stop the copy you do not run from (its operator's call). See: $(_emit_user_command "sidecar receiver-census")"
                     warnings=$((warnings + 1))
                 done <<< "$_dup_rows"
             fi
@@ -4448,7 +4448,7 @@ print(" ".join(sorted(dm.host_shared_address_keys())))' "$FRAMEWORK_ROOT" 2>/dev
                 while IFS=$'\t' read -r _oi_topic _oi_n; do
                     [ -z "$_oi_topic" ] && continue
                     echo -e "  ${YELLOW}WARN${NC}  Orphan inbox $_oi_topic holds $_oi_n unread post(s) that no known agent reads"
-                    echo "         Mail sent to a nickname? Tell the senders the real circuit. See: fw sidecar orphan-inboxes"
+                    echo "         Mail sent to a nickname? Tell the senders the real circuit. See: $(_emit_user_command "sidecar orphan-inboxes")"
                     warnings=$((warnings + 1))
                 done <<< "$_oi_rows"
             fi
@@ -4468,7 +4468,7 @@ print(s + "\t" + d.replace("\t", " ").replace("\n", " "))' "$FRAMEWORK_ROOT" 2>/
                 unbound) : ;;
                 bound)
                     echo -e "  ${YELLOW}WARN${NC}  Our inbox is locked (bound to $_lk_detail): AEF's reads are unsigned, so the hub refuses them and no mail arrives (T-5281)"
-                    echo "         Ask the operator who bound it; see: fw sidecar alerts"
+                    echo "         Ask the operator who bound it; see: $(_emit_user_command "sidecar alerts")"
                     warnings=$((warnings + 1))
                     ;;
                 at-risk)
@@ -4529,19 +4529,19 @@ print(s + "\t" + d.replace("\t", " ").replace("\n", " "))' "$FRAMEWORK_ROOT" 2>/
                     fi ;;
                 not-live)
                     echo -e "  ${RED}FAIL${NC}  Sidecar watcher NOT live: $_sw_why"
-                    echo "         Run: fw sidecar liveness; fw sidecar ensure (restarts the supervisor); logs in .context/sidecar/watcher/"
+                    echo "         Run: $(_emit_user_command "sidecar liveness"); $(_fw_cmd) sidecar ensure (restarts the supervisor); logs in .context/sidecar/watcher/"
                     issues=$((issues + 1)) ;;
                 *)
                     # T-3855: an inbox that nothing would wake is a deaf agent — FAIL.
                     if [ "$_sw_wake" = "none" ]; then
                         echo -e "  ${RED}FAIL${NC}  Sidecar inbox with NOTHING to wake it: no watcher running ($_sw_why)"
-                        echo "         Run: fw sidecar start (plain sessions start it at SessionStart; claude-fw too)"
+                        echo "         Run: $(_emit_user_command "sidecar start") (plain sessions start it at SessionStart; claude-fw too)"
                         issues=$((issues + 1))
                     elif fw_sidecar_watcher_awaiting_first_session "$PROJECT_ROOT"; then
                         # T-4258: fresh init — the SessionStart hook starts it; not a gap yet.
-                        echo -e "  ${CYAN}INFO${NC}  No sidecar watcher yet — it starts at the first agent session (SessionStart sidecar-autostart); start now: fw sidecar start"
+                        echo -e "  ${CYAN}INFO${NC}  No sidecar watcher yet — it starts at the first agent session (SessionStart sidecar-autostart); start now: $(_emit_user_command "sidecar start")"
                     else
-                        echo -e "  ${YELLOW}WARN${NC}  No sidecar watcher in this project (R14: every agent runs one) — start: fw sidecar start"
+                        echo -e "  ${YELLOW}WARN${NC}  No sidecar watcher in this project (R14: every agent runs one) — start: $(_emit_user_command "sidecar start")"
                         warnings=$((warnings + 1))
                     fi ;;
             esac
@@ -4666,7 +4666,7 @@ except Exception:
         else
             _doctor_warn_host "embed endpoint not reachable on $_embed_host and no other embed host answers${_embed_alt:+ ($_embed_alt is down too)}: embedding calls will fail"
             echo -e "         Start the endpoint (or point embed_host/ollama_host in .context/settings.yaml at one that runs),"
-            echo -e "         or, if this host does not use semantic recall: fw config set SEMANTIC_RECALL 0. See T-3045, T-5064."
+            echo -e "         or, if this host does not use semantic recall: $(_emit_user_command "config set SEMANTIC_RECALL 0"). See T-3045, T-5064."
         fi
     fi
 
@@ -4710,7 +4710,7 @@ except Exception:
             case "$_sub_lvl" in
                 PASS) echo -e "  ${GREEN}OK${NC}  $_sub_msg" ;;
                 FAIL) echo -e "  ${RED}FAIL${NC}  $_sub_msg"
-                      echo "         Fix policy/subscriptions.yaml (operator): bin/fw quota subscription list"
+                      echo "         Fix policy/subscriptions.yaml (operator): $(_emit_user_command "quota subscription list")"
                       issues=$((issues + 1)) ;;
                 "") ;;
                 *) echo -e "  ${YELLOW}WARN${NC}  subscription registry check: unexpected output ${_sub_lvl:0:120}"
@@ -4737,7 +4737,7 @@ except Exception:
                 fi
             done
             if [ "$_ts_stale" -eq 1 ]; then
-                echo -e "  ${YELLOW}WARN${NC}  TypeScript build stale (run 'fw build')"
+                echo -e "  ${YELLOW}WARN${NC}  TypeScript build stale (run: $(_emit_user_command "build"))"
                 warnings=$((warnings + 1))
             else
                 echo -e "  ${GREEN}OK${NC}  TypeScript build (${#_ts_files[@]} source(s))"
@@ -4767,11 +4767,11 @@ print(hashlib.sha256(hooks_str.encode()).hexdigest())
             echo -e "  ${GREEN}OK${NC}  Enforcement baseline intact"
         else
             echo -e "  ${RED}FAIL${NC}  Enforcement baseline CHANGED — settings.json hooks differ from baseline"
-            echo -e "         Run 'fw enforcement baseline' to update after review"
+            echo -e "         Run: $(_emit_user_command "enforcement baseline") to update after review"
             issues=$((issues + 1))
         fi
     elif [ ! -f "$baseline_file" ]; then
-        echo -e "  ${YELLOW}WARN${NC}  No enforcement baseline — run 'fw enforcement baseline' to create"
+        echo -e "  ${YELLOW}WARN${NC}  No enforcement baseline — run: $(_emit_user_command "enforcement baseline") to create"
         warnings=$((warnings + 1))
     fi
 
@@ -4821,7 +4821,7 @@ print(hashlib.sha256(hooks_str.encode()).hexdigest())
         local debt_what="active tasks with last_update older than 7 days or unreadable"
         if [ "$stale_count" -gt 10 ]; then
             echo -e "  ${YELLOW}WARN${NC}  Task debt: $stale_count $debt_what"
-            echo -e "         Run: fw task stale"
+            echo -e "         Run: $(_emit_user_command "task stale")"
             warnings=$((warnings + 1))
         elif [ "$stale_count" -gt 0 ]; then
             echo -e "  ${CYAN}INFO${NC}  Task debt: $stale_count $debt_what"
@@ -4841,7 +4841,7 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
 " 2>/dev/null || echo 0)
         if [ "$pending_count" -gt 0 ]; then
             echo -e "  ${YELLOW}WARN${NC}  Pending-updates registry: $pending_count unresolved entry(ies)"
-            echo -e "         Run: fw pending list"
+            echo -e "         Run: $(_emit_user_command "pending list")"
             warnings=$((warnings + 1))
         fi
     fi
@@ -4924,7 +4924,7 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
                         # and froze consumers. State the ignorance, don't dress it up.
                         echo -e "         Cannot order these: ${FW_VERSION_RELATION_REASON}."
                         echo -e "         Upgrade is NOT blocked on this — it records version_sha, making the next check decidable."
-                        echo -e "         Run: fw upgrade $consumer_dir"
+                        echo -e "         Run: $(_emit_user_command "upgrade $consumer_dir")"
                         ;;
                     foreign-source)
                         # T-2762. Without this branch the relation fell through to
@@ -4940,7 +4940,7 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
                         fi
                         ;;
                     *)
-                        echo -e "         Run: fw upgrade $consumer_dir"
+                        echo -e "         Run: $(_emit_user_command "upgrade $consumer_dir")"
                         ;;
                 esac
                 warnings=$((warnings + 1))
@@ -5024,7 +5024,7 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
                 echo -e "  ${GREEN}OK${NC}  Enforcement parity clean — examined $wt_count linked worktree(s)"
             else
                 echo -e "         $wt_issues of $wt_count linked worktree(s) drifted from the authority's hook set."
-                echo -e "         Refresh: fw upgrade <worktree-path>, or land and remove the worktree."
+                echo -e "         Refresh: $(_emit_user_command "upgrade <worktree-path>"), or land and remove the worktree."
             fi
         fi
     fi
@@ -5061,7 +5061,7 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
         local recent_crashes
         recent_crashes=$( { grep "$(date -u +%Y-%m-%d)" "$crash_log" 2>/dev/null || true; } | wc -l | tr -d '[:space:]')
         if [ "${recent_crashes:-0}" -gt 0 ]; then
-            echo -e "  ${YELLOW}WARN${NC}  Hook crashes: $recent_crashes today ($crash_count total) — inspect: fw doctor hook-crashes show; once handled: fw doctor hook-crashes acknowledge"
+            echo -e "  ${YELLOW}WARN${NC}  Hook crashes: $recent_crashes today ($crash_count total) — inspect: $(_emit_user_command "doctor hook-crashes show"); once handled: $(_fw_cmd) doctor hook-crashes acknowledge"
             warnings=$((warnings + 1))
         else
             echo -e "  ${CYAN}INFO${NC}  Hook crash log: $crash_count historical entries (none today)"
@@ -5119,7 +5119,7 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
         _ck_file="${_ck_line%%|*}"
         _ck_canon="${_ck_line#*|}"
         echo -e "  ${YELLOW}WARN${NC}  .framework.yaml key '$_ck_file' is ignored — the setting is '$_ck_canon' (keys are read case-sensitively)"
-        echo -e "         Fix: rename it to '$_ck_canon' in .framework.yaml, or: fw config set $_ck_canon <value>  (then delete '$_ck_file')"
+        echo -e "         Fix: rename it to '$_ck_canon' in .framework.yaml, or: $(_emit_user_command "config set $_ck_canon <value>")  (then delete '$_ck_file')"
         warnings=$((warnings + 1))
     done < <(fw_config_case_mismatches "$PROJECT_ROOT/.framework.yaml")
 
@@ -5199,7 +5199,7 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
                     echo -e "  ${YELLOW}WARN${NC}  Cron registry edited but not generated: $cron_registry is ahead of $cron_source"
                     # T-4555: the other cause — a framework upgrade changed the renderer.
                     echo -e "        (or the framework's cron renderer changed since the last generate)"
-                    echo -e "        Run: fw cron generate"
+                    echo -e "        Run: $(_emit_user_command "cron generate")"
                     warnings=$((warnings + 1))
                 fi
             fi
@@ -5210,15 +5210,15 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
                 echo -e "  ${GREEN}OK${NC}  Cron registry in sync with $cron_target"
             else
                 echo -e "  ${YELLOW}WARN${NC}  Cron registry drift: $cron_source differs from $cron_target"
-                echo -e "        Run: fw cron install"
+                echo -e "        Run: $(_emit_user_command "cron install")"
                 warnings=$((warnings + 1))
             fi
         elif [ -f "$cron_source" ] && [ ! -f "$cron_target" ]; then
             echo -e "  ${YELLOW}WARN${NC}  Cron generated but not installed at $cron_target"
-            echo -e "        Run: fw cron install"
+            echo -e "        Run: $(_emit_user_command "cron install")"
             warnings=$((warnings + 1))
         elif [ ! -f "$cron_source" ]; then
-            echo -e "  ${YELLOW}WARN${NC}  Cron registry present but not generated — run: fw cron install"
+            echo -e "  ${YELLOW}WARN${NC}  Cron registry present but not generated — run: $(_emit_user_command "cron install")"
             warnings=$((warnings + 1))
         fi
 
@@ -5236,7 +5236,7 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
             _dep_flock_count="${_dep_flock_count:-0}"
             if [ "$_reg_flock_count" -gt "$_dep_flock_count" ]; then
                 echo -e "  ${YELLOW}WARN${NC}  Cron flock parity: registry declares $_reg_flock_count wrapped jobs, deployed crontab has $_dep_flock_count"
-                echo -e "        T-1331 orphan-prevention may be partially disabled. Run: fw cron install"
+                echo -e "        T-1331 orphan-prevention may be partially disabled. Run: $(_emit_user_command "cron install")"
                 warnings=$((warnings + 1))
             fi
         fi
@@ -5349,7 +5349,7 @@ d = json.load(sys.stdin)
 for tid, info in sorted((d.get('stalled') or {}).items()):
     print(f\"        {tid}  dispatches={info['dispatch_count']}  outcomes={info['outcome_count']}  since={info['since']}\")
 " 2>/dev/null
-            echo -e "        Details: fw resolver stalled --json"
+            echo -e "        Details: $(_emit_user_command "resolver stalled --json")"
             warnings=$((warnings + 1))
         else
             echo -e "  ${GREEN}OK${NC}  No stalled/zero-outcome tasks"
@@ -5387,7 +5387,7 @@ for tid, info in rows[:5]:
 if len(rows) > 5:
     print(f\"        … and {len(rows) - 5} more (oldest shown first)\")
 " 2>/dev/null
-            echo -e "        Details: fw resolver latched --json"
+            echo -e "        Details: $(_emit_user_command "resolver latched --json")"
             warnings=$((warnings + 1))
         else
             echo -e "  ${GREEN}OK${NC}  No stale in-flight latches"
@@ -5618,7 +5618,7 @@ if len(rows) > 5:
             # the newer one — the remediation undoing the finding.
             local _bh_devname
             _bh_devname=$(_fw_bh_dev_name "$PROJECT_ROOT")
-            echo -e "         Cleanup: git branch -d <name> (merged); fw integrate run ${_bh_devname} (overdue merge-back)"
+            echo -e "         Cleanup: git branch -d <name> (merged); $(_emit_user_command "integrate run ${_bh_devname}") (overdue merge-back)"
             if printf '%s\n' "$_bh_out" | grep -q '^diverged-fork '; then
                 # T-100195 (RCA T-100194): a fork needs reconcile-while-small, NOT
                 # a one-way `fw integrate` — that cannot absorb what the target has.
@@ -5728,7 +5728,7 @@ if len(rows) > 5:
         else
             if grep -qx 'not-ignored' <<<"$_if_out"; then
                 echo -e "  ${YELLOW}WARN${NC}  Dropped files can be committed: .context/inbox/files/ is not gitignored"
-                echo -e "         Run: fw upgrade (adds /inbox/files/ to .context/.gitignore) (T-5271)"
+                echo -e "         Run: $(_emit_user_command "upgrade") (adds /inbox/files/ to .context/.gitignore) (T-5271)"
             fi
             _if_tr=$(sed -n 's/^tracked //p' <<<"$_if_out")
             if [ -n "$_if_tr" ]; then
@@ -5765,7 +5765,7 @@ except Exception as e:
             [ -n "$_gid" ] || continue
             echo -e "         $_gid (${_age}d READY) — $_title"
         done <<< "$_stale_gaps_out"
-        echo -e "         Close via: fw gaps close <gap_id> (or /gaps Close button)"
+        echo -e "         Close via: $(_emit_user_command "gaps close <gap_id>") (or /gaps Close button)"
         warnings=$((warnings + 1))
     else
         echo -e "  ${GREEN}OK${NC}  No stale gauge-READY gaps"

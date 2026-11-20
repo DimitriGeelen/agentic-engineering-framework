@@ -53,10 +53,10 @@ FW_BIN="${FRAMEWORK_ROOT}/bin/fw"
     [ "$status" -eq 0 ]
 }
 
-@test "T-1838: behind branch still uses 'Run: fw upgrade' suggestion" {
+@test "T-1838: behind branch still uses 'Run: fw upgrade' suggestion (via the builder, T-5304)" {
     # Pin the unchanged behind-case text — refactor accidentally dropping it
     # would silently regress the original feature.
-    run grep -q 'Run: fw upgrade $consumer_dir' "$FW_BIN"
+    run grep -qF 'Run: $(_emit_user_command "upgrade $consumer_dir")' "$FW_BIN"
     [ "$status" -eq 0 ]
 }
 

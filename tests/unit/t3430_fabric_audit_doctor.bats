@@ -105,7 +105,7 @@ print('ok')
 @test "T-3430: doctor mirrors the check and counts a warning" {
     grep -q 'Fabric: \$_fab_total under-populated card(s)' "$FRAMEWORK_ROOT/bin/fw"
     grep -q 'Fabric: 0 under-populated card(s)' "$FRAMEWORK_ROOT/bin/fw"
-    grep -q 'fw fabric enrich --describe-only' "$FRAMEWORK_ROOT/bin/fw"
+    grep -qF '$(_emit_user_command "fabric enrich --describe-only")' "$FRAMEWORK_ROOT/bin/fw"
 }
 
 @test "T-3430: the cron entry is registered, active, and off the audit minutes" {
