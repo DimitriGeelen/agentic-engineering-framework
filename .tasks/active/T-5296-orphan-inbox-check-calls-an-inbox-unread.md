@@ -11,10 +11,10 @@ description: >
   cursors) before calling an inbox orphaned; an inbox with a reader at its head is
   not an orphan. Do after T-5267 (same files: lib/sidecar_cli.py).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T09:42:57Z
-last_update: '2026-11-20T09:46:01Z'
+last_update: 2026-11-20T17:44:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,20 +91,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5288 (2026-11-20): `fw sidecar alerts` / `fw sidecar orphan-inboxes` reported inbox:cacc73ea32b121dd/termlink, claude-termlink and claude-termlink-alt as unread by any known agent. 010-termlink (msg 13d7f876) says all three are read: termlink by their AEF sidecar (cursor at 69 of 69), the other two by proven Rust test sidecars. 010 (msgs 8db94e3b, ed47e529): `termlink hub inbox consumers <topic> --json` lists readers seen in the last 24 h with `strength` (proven / claimed) and `agent`; an unnamed claimed read may be just a diagnostic read (`termlink channel info`).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The orphan check counts only agents it knows locally, so another project's reader is invisible and the session-start check raises false alarms.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** An inbox with a real reader is not reported as an orphan.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Before calling an inbox an orphan, the check asks the hub's consumer list; a named reader, or a proven reader, or a reader whose cursor is at the inbox head, means "read"; an unnamed claimed read alone does not.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The orphan check consults `termlink hub inbox consumers <topic> --json` (one call per candidate, bounded timeout) and drops a candidate that has a named or proven reader.
+- [ ] An unnamed `claimed` reader alone does not clear the orphan state; a failed consumers call keeps today's behaviour and says the check was partial.
+- [ ] Tests with a fake termlink: proven reader → not orphan; named claimed reader → not orphan; only unnamed claimed → orphan; consumers call fails → orphan, marked partial.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,6 +292,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5296_orphan_readers.py -q > /tmp/.t5296a 2>&1 && grep -q passed /tmp/.t5296a
+bin/fw vendor self --check --task T-5296
 
 ## RCA
 
@@ -391,3 +394,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5296-orphan-inbox-check-calls-an-inbox-unread.md
 - **Context:** Initial task creation
+
+### 2026-11-20T17:44:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
