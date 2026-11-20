@@ -123,11 +123,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Register: a `csrf-exemption` entry carries `paths` (endpoint names like `bp.view`, or `blueprint:<name>`), `auth` (`bearer` or `header:<Name>`) and `test` (relative path to the proving test file); `validate()` refuses the entry without them, and `fw extension add csrf-exemption` takes `--auth` and `--test`; other kinds refuse those fields.
-- [ ] Startup: Watchtower probes each listed endpoint (every state-changing URL rule) twice, once without the credential and once with a wrong random credential; the exemption is applied only when both answers are 401 or 403; the result (applied / refused with reason / endpoint missing) is written to the Watchtower extensions state file.
-- [ ] `csrf_protect()` skips the check only for endpoints whose exemption was applied; a refused or unlisted endpoint still gets 403 without a token.
-- [ ] `fw audit` lists every applied exemption (INFO, with who decided it), and FAILs for an entry that was refused at startup, names an endpoint that no longer exists, or names a test file that does not exist; WARN while Watchtower has not started since the entry was added.
-- [ ] Tests cover: valid entry applied; header-presence-only endpoint refused; missing endpoint refused; blueprint form; audit FAIL rows; non-listed endpoint still protected.
+- [x] Register: a `csrf-exemption` entry carries `paths` (endpoint names like `bp.view`, or `blueprint:<name>`), `auth` (`bearer` or `header:<Name>`) and `test` (relative path to the proving test file); `validate()` refuses the entry without them, and `fw extension add csrf-exemption` takes `--auth` and `--test`; other kinds refuse those fields.
+- [x] Startup: Watchtower probes each listed endpoint (every state-changing URL rule) twice, once without the credential and once with a wrong random credential; the exemption is applied only when both answers are 401 or 403; the result (applied / refused with reason / endpoint missing) is written to the Watchtower extensions state file.
+- [x] `csrf_protect()` skips the check only for endpoints whose exemption was applied; a refused or unlisted endpoint still gets 403 without a token.
+- [x] `fw audit` lists every applied exemption (INFO, with who decided it), and FAILs for an entry that was refused at startup, names an endpoint that no longer exists, or names a test file that does not exist; WARN while Watchtower has not started since the entry was added.
+- [x] Tests cover: valid entry applied; header-presence-only endpoint refused; missing endpoint refused; blueprint form; audit FAIL rows; non-listed endpoint still protected.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -398,6 +398,12 @@ bin/fw watchtower current
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-20 — how an exemption is proven
+- **Chose:** a live startup probe (no credential, then a wrong random credential; both must answer 401/403), run last in create_app; probe requests pass csrf_protect via a per-startup secret in a WSGI environ key that no client header can set, compared with hmac.compare_digest and deleted after startup.
+- **Why:** ring20 asked for the framework to check the endpoint really enforces its auth; the wrong-credential probe is what catches a header-presence-only check (ring20's current one).
+- **Rejected:** trusting the declared auth plus the named test alone (proves nothing at runtime); a static code scan (cannot judge arbitrary auth code).
+- **Accepted cost:** a probe really calls the endpoint, so a presence-only endpoint acts once on the wrong-credential request at startup — which is how it is caught. Endpoints with no state-changing method are refused (nothing to exempt). A register entry changed after its probe gives WARN "changed since it was checked". `fw doctor` shows these rows as WARN (it reads web-status, INFO/WARN only); `fw audit` keeps FAIL.
 
 ## Decision
 
