@@ -173,10 +173,13 @@ def _fw_bin(store: Path) -> Path | None:
     if env:
         return Path(env)
     root = registry_path(store).parents[2]  # <root>/.context/designer/registry.yaml
-    for cand in (root / "bin" / "fw", root / ".agentic-framework" / "bin" / "fw"):
-        if cand.is_file():
-            return cand
-    return None
+    # One rule for which fw a project has (T-5303, lib/fw_command.py).
+    _fwroot = str(Path(__file__).resolve().parents[1])
+    if _fwroot not in sys.path:
+        sys.path.insert(0, _fwroot)
+    from lib.fw_command import fw_path
+    cand = root / fw_path(root)
+    return cand if cand.is_file() else None
 
 
 def mint_ghost_tasks(store: Path, runner=None) -> list[dict]:

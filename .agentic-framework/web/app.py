@@ -242,6 +242,15 @@ def create_app() -> Flask:
         _ver = "dev"
     app.jinja_env.globals["fw_version"] = _ver
 
+    # T-5303: the one builder for printed fw commands — `{{ fw_cmd("doctor") }}`
+    # gives `cd <project root> && <bin/fw | .agentic-framework/bin/fw> doctor`,
+    # the same text as lib/paths.sh _emit_user_command and lib/fw_command.py.
+    _fwroot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if _fwroot not in sys.path:
+        sys.path.insert(0, _fwroot)
+    from lib.fw_command import user_command as _fw_user_command
+    app.jinja_env.globals["fw_cmd"] = lambda args="": _fw_user_command(args, str(PROJECT_ROOT))
+
     # Project name from directory basename (T-854, T-865: strip leading number prefix)
     import re as _re
     _raw_name = os.path.basename(
