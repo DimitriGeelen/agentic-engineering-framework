@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5313: Risk practice slice 1: risk fields in the concerns register, matrix template, standing arc 'risk' (T-5310)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T16:46:17Z
+# ============================================================================
+
+task_id: T-5313
+task_name: "Risk practice slice 1: risk fields in the concerns register, matrix template, standing arc 'risk' (T-5310)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-20T16:31:28Z
+completed: 2026-11-20T16:45:44Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-20T17:31:33+01:00
+last_commit: 2026-11-20T17:45:42+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed (T-5310 GO). scope. risk fields validation, risk-matrix template, standing arc 'risk'. vendor sync. criteria ticked (audit warning for unmitigated 6+ risks landed here too)
+
+# Key outcomes
+outcomes:
+  - 'Risk entries in .context/project/concerns.yaml may carry likelihood, impact (1-5), score (L × I), actors (list of {actor, how, likelihood, impact, mitigated_likelihood, mitigated_impact}; actor one of own-agent-unintentional, human-unintentional, outsider-intentional, provider-host, intruder), introduced_by, exists_anyway, mitigation_task; whatever validates the register checks the ranges and actor names; the 5 existing risks still validate.'
+  - 'A matrix template (e.g. .tasks/templates/risk-matrix.md or docs/templates/risk-matrix.md): header (change, baseline), scales and bands, summary table, per-risk actor split, and the rule (any actor ≥ 6 → mitigation task in the standing arc; the decision rests on what the change introduces).'
+  - 'A standing arc "risk" in .context/arcs/ that is marked never-closing, and the stale-arc audit check does not WARN on it.'
+  - 'Documentation (where the concerns register is described) of the trigger (trust-boundary changes: new sandbox, credential use, network path, unattended automation) and the split: agent drafts and scores, reviewer agent checks, operator decides only risk acceptance (introduced risk still ≥ 6 after mitigation, or any ≥ 15).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/.tasks/templates/risk-matrix.md'
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/arc.sh'
+  - '.agentic-framework/lib/risk_register.py'
+  - '.agentic-framework/lib/templates/claude-project.md'
+  - '.agentic-framework/lib/upgrade_template_shipped.py'
+  - '.context/arcs/risk.yaml'
+  - '.fabric/components/lib-risk_register.yaml'
+  - '.fabric/components/tests-unit-test_t5313_risk_fields.yaml'
+  - '.tasks/active/T-5313-risk-practice-slice-1-risk-fields-in-the.md'
+  - '.tasks/templates/risk-matrix.md'
+  - 'agents/audit/audit.sh'
+  - 'lib/arc.sh'
+  - 'lib/risk_register.py'
+  - 'lib/templates/claude-project.md'
+  - 'lib/upgrade_template_shipped.py'
+  - 'tests/unit/test_t5313_risk_fields.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T17:31:33'
+    action: 'T-5313: filed (T-5310 GO)'
+  - time: '2026-11-20T17:33:32'
+    action: 'T-5313: scope'
+  - time: '2026-11-20T17:43:03'
+    action: 'T-5313: risk fields validation, risk-matrix template, standing arc ''risk'''
+  - time: '2026-11-20T17:43:23'
+    action: 'T-5313: vendor sync'
+  - time: '2026-11-20T17:45:42'
+    action: 'T-5313: criteria ticked (audit warning for unmitigated 6+ risks landed here too)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 14
+  commits: 6
+  files_changed: 20
+  lines_added: 1531
+  lines_removed: 22
+  footprint_refreshed_at: '2026-11-20T16:46:29Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5313-risk-practice-slice-1-risk-fields-in-the.md
+generated_by: context-agent-hybrid

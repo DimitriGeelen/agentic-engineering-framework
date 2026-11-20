@@ -57752,3 +57752,21 @@ scan_id: R-1fbc8d61
 task_id: T-5311
 payload:
   task_file: .tasks/active/T-5311-shared-worker-contract-v034-specify-the-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-20T16:45:56Z'
+scan_id: R-3beea644
+task_id: T-5313
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-20T16:45:56Z'
+scan_id: R-3beea644
+task_id: T-5313
+payload:
+  task_file: .tasks/active/T-5313-risk-practice-slice-1-risk-fields-in-the.md
