@@ -15,6 +15,13 @@ adapter object:
                                  plus any then-level facts it reports (operator_notices, …)}
     adapter.equivalent_routes   optional set of "<case id>/<variant name>" the backend cannot run
                                 directly and runs by the variant's `equivalent:` instead (§6.6 N2)
+    adapter.closure             optional "never" | "supported", the backend's §2 closure declaration
+                                (v0.3.4, A3). It adds the capability closure_never or closure_supported.
+                                An adapter that declares nothing is run as "never", and the output says so.
+
+Closure (T-5320). Cases that require closure_supported are n/a on a closure-never backend. A
+case listed in LOCAL_PENDING is reported n/a with the named task when the default local
+backend has not implemented it yet; once it runs, it is judged like any other case.
 
 Equivalent route (T-4793). A variant may carry `equivalent:` (what a backend without the
 phrased path runs instead). A backend that runs the real path returns no "equivalent" and is
@@ -56,7 +63,25 @@ import yaml  # noqa: E402
 
 from check_vectors import Checker  # noqa: E402
 
-NA_CAPABILITIES = {"answer_channel", "registry_epoch", "caller_chosen_ids"}
+NA_CAPABILITIES = {"answer_channel", "registry_epoch", "caller_chosen_ids",
+                   "closure_supported", "closure_never"}
+# Cases the default local backend (AEF, closure: never) applies but has not built yet, with the
+# task that builds them. Used only while the case is not-implemented on that backend (T-5320).
+LOCAL_PENDING = {"CC-35": "AEF typed refusal of close lands in T-5321"}
+LOCAL_REASON = "lib/dispatch_records.py"
+
+
+def closure_of(adapter) -> tuple[str, bool]:
+    """The adapter's closure declaration (v0.3.4 A3) and whether it declared one."""
+    declared = getattr(adapter, "closure", None)
+    if declared in ("never", "supported"):
+        return declared, True
+    return "never", False
+
+
+def capabilities_of(adapter) -> set:
+    caps = set(getattr(adapter, "capabilities", set()) or set())
+    return caps | {f"closure_{closure_of(adapter)[0]}"}
 
 
 class Mismatch(Exception):
@@ -233,7 +258,7 @@ def run_vector(vec: dict, adapter, backend_reason: str) -> dict:
         missing = [backend_reason] + [f"op:{o}" for o in ops_used(vec)] + \
                   [f"capability:{c}" for c in app.get("requires") or []]
         return {**base, "status": "not-implemented", "missing": missing}
-    caps = set(getattr(adapter, "capabilities", set()) or set())
+    caps = capabilities_of(adapter)
     lacking = [c for c in app.get("requires") or [] if c not in caps]
     if lacking:
         if app.get("n_a_allowed") and set(lacking) <= NA_CAPABILITIES | {"real_worker"}:
@@ -280,6 +305,8 @@ def run_vector(vec: dict, adapter, backend_reason: str) -> dict:
         out["reason"] = "N2: no variant applies to a transition-subject case"
     if status == "not-implemented":
         out["missing"] = sorted({m for v in variant_results for m in v.get("missing", [])})
+        if backend_reason == LOCAL_REASON and vec["id"] in LOCAL_PENDING:
+            out = {**out, "status": "n/a", "reason": LOCAL_PENDING[vec["id"]]}
     return out
 
 
@@ -308,6 +335,9 @@ def main(argv: list[str]) -> int:
                           "counts": counts, "results": results}, indent=2))
     else:
         print(f"backend: {reason}")
+        if adapter is not None:
+            closure, declared = closure_of(adapter)
+            print(f"closure: {closure}" + ("" if declared else " (not declared by the adapter; run as never)"))
         for r in results:
             detail = r.get("reason") or "; ".join(r.get("missing", [])[:1]) or "; ".join(
                 f"{v['variant']} by equivalent: {v['equivalent']}" for v in r.get("variants", []) if "equivalent" in v)

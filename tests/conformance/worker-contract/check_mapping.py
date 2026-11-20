@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Reader for an external backend's conformance mapping (T-4752).
 
-An external backend (spec v0.3.3 §6.6) publishes, for every §9 case CC-01..CC-25 (CC-29 from v0.3.4), a
+An external backend (spec v0.3.3 §6.6) publishes, for every §9 case CC-01..CC-25 (from v0.3.4 also
+CC-26..CC-29, CC-15a/b, CC-19a/b and CC-30..CC-43), a
 verdict PASS | N/A | GAP. The format is ring20's draft `wc-conformance-mapping/0.1`
 (their scripts/wc-mapping-check.py, received under docs/reports/T-4752/received/).
 This is a reimplementation of that checker's rules, not a copy, with one change the
@@ -11,7 +12,7 @@ vectors.yaml, never from the backend's `exercises_section3` declaration.
 
 Rules: format and header present; spec_version a wc/0.3 revision; the seven §6.6
 declarations present and non-empty, G a number; cases exactly CC-01..CC-25 once each
-(CC-01..CC-29 for a wc/0.3.4 or later mapping);
+(CC-01..CC-29 plus the closure cases for a wc/0.3.4 or later mapping);
 verdict PASS | N/A | GAP; every case has a rationale; PASS lists evidence; GAP names a
 task (T-N or project:T-N); N/A only where the vectors allow it; a declared
 exercises_section3 that contradicts the vectors is refused.
@@ -34,9 +35,11 @@ DEFAULT_VECTORS = HERE / "vectors.yaml"
 
 FORMAT = "wc-conformance-mapping/0.1"
 REQUIRED_IDS = [f"CC-{i:02d}" for i in range(1, 26)]   # a mapping against wc/0.3.3 or earlier
-# v0.3.4 adds CC-26..CC-29 (the withdrawal, T3w); a mapping that claims wc/0.3.4 or later
-# must cover them too (T-5317). An earlier mapping is still read against CC-01..CC-25.
-REQUIRED_IDS_V034 = [f"CC-{i:02d}" for i in range(1, 30)]
+# v0.3.4 adds CC-26..CC-29 (the withdrawal, T3w, T-5317) and CC-15a/b, CC-19a/b, CC-30..CC-43
+# (dispatch closure, A1-A6, T-5320); a mapping that claims wc/0.3.4 or later must cover them
+# too. An earlier mapping is still read against CC-01..CC-25.
+CLOSURE_IDS = ["CC-15a", "CC-15b", "CC-19a", "CC-19b"] + [f"CC-{i}" for i in range(30, 44)]
+REQUIRED_IDS_V034 = sorted([f"CC-{i:02d}" for i in range(1, 30)] + CLOSURE_IDS)
 VERDICTS = {"PASS", "N/A", "GAP"}
 HEADER = ("spec_version", "spec_commit", "code_commit", "date")
 DECLARATIONS = ("backend", "id_scheme", "single_writer", "writer_auth",

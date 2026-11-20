@@ -36,6 +36,14 @@
 # replace the variant's histories and final. `fence_reject: dispatch_closed` (v0.3.4,
 # a backend that closes a dispatch, §4.7) appears only in an expect_equivalent, so a
 # backend that keeps dispatches open is judged on the plain path unchanged.
+#
+# Dispatch closure (v0.3.4 item 2, A1-A6; CC-15a/b, CC-19a/b, CC-30..CC-43). A backend
+# declares `closure: never` or `closure: supported` (§2); its adapter offers the matching
+# capability `closure_never` or `closure_supported`. Cases that require
+# `closure_supported` may name dispatch_closed and dispatch_not_terminal in a plain
+# expect; elsewhere those reasons appear only in an expect_equivalent. Then-level facts
+# of a closure case: `closed` (the close record, or null) and `dispatch_history` (the
+# event names of the dispatch-level rows, in order).
 
 schema: wc-conformance/1
 contract_version: wc/0.3
@@ -46,13 +54,14 @@ vocabulary:
   outcomes: [succeeded, failed, refused, handback-malformed, paused, withdrawn]
   transitions: [T1, T2, T3, T3b, T3w, T-RECLAIM, T4, T5, T6, T6b, T7a, T7b, T7c, T7d, T8]
   writers: [hub, supervisor, reconciler, operator, worker, dispatcher, consumer, submitter]
-  fence_reasons: [stale_attempt, bad_nonce, bad_credential, stale_gen, cas_mismatch, forbidden_transition, done_conflict, dispatch_closed]
+  fence_reasons: [stale_attempt, bad_nonce, bad_credential, stale_gen, cas_mismatch, forbidden_transition, done_conflict, dispatch_closed, dispatch_not_terminal]
   errors: [id_taken, malformed_id]
   refusals:
     not_finished_work: a consumer (review verdict, pass-rate, landing) refuses a paused, attested or withdrawn done (§3.3)
     agent_session: operator resolve refused from an agent session without a recorded override (T7d speed bump)
     not_available: operator resolve is not offered as a remote call (T7d, no signed operator identity)
     backend_fixed: a write addressed to a backend other than the record's (§6.4, no mid-flight switch)
+    closure_not_supported: a closure-never backend answers a close with this typed refusal, never a silent no-op (v0.3.4, A3)
   capabilities:
     registry_epoch: hub-level registry_epoch and the two-sweep-at-one-epoch evidence (I7, §3.4)
     answer_channel: per-attempt questions/answers with read-markers (§5)
@@ -60,6 +69,8 @@ vocabulary:
     supervisor_gen: fencing by supervisor_gen plus the per-write lock (§3.2, §6.2)
     lease: fencing by an exclusive single-writer lease (§3.2, §6.6)
     real_worker: the case must run against a real agent worker, not a mock (CC-11)
+    closure_supported: the backend declares closure supported and closes dispatches (§2, §3.3 close, §4.7; v0.3.4)
+    closure_never: the backend declares closure never; it answers a close with a typed refusal (§2, §3.3 close; v0.3.4)
   ops:
     create: new dispatch plus attempt 1 (T1); args dispatch_id (optional), dispatcher, retry_of_dispatch_id (optional)
     allocate: next attempt of an existing dispatch (T1)
@@ -88,6 +99,9 @@ vocabulary:
     wait: consumer waits on the attempt with a bound (worker wait); returns its state
     consume: an evaluation-layer consumer names (dispatch, attempt, result)
     inspect: read-only check of an operator-visible surface (queue, notices, topics)
+    close: close the dispatch (v0.3.4, §3.3 close) - one fenced CAS on (last attempt = `attempt`, its state in {done, lost}); presents `credential` (the attempt's supervisor credential) or args.policy (a declared backend policy); args reason, actor (caller text, never recorded as the actor). In the vectors policy `p` is the backend's declared policy and any other name is undeclared. Result values - created, actor, reason
+    read: the reader view of the dispatch (§2 reader fields); result values - closed, finished, last_state, last_outcome
+    client_reject: a wc/0.3 client receives fence_reject with args.reason; result values - retryable, typed_refusal (§2 client rule)
 
 vectors:
   - id: CC-01
@@ -1002,6 +1016,75 @@ vectors:
           admissible_histories_equivalent:
             A1: [[unknown, lost]]
 
+  - id: CC-15a
+    title: Resolved, no close record - next attempt allocated (v0.3.4)
+    spec_refs: ["§3.3 T7d", "§3.3 T1", "§4.7", "§9 CC-15a"]
+    applicability:
+      subject: transition
+      rows: [T7d, T1]
+      requires: []
+      n_a_allowed: false
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAA15A, backend: under_test}
+      attempts:
+        - {attempt: 1, state: unknown, nonce: n1, credential: c1, supervisor_gen: 1}
+      evidence: {}
+      clock: 20
+    steps:
+      - op: resolve
+        writer: operator
+        attempt: 1
+        args: {as: lost, reason: host reimaged, session: operator, via: host_cli}
+        expect: {accepted: T7d, notices: 1}
+      - op: allocate
+        writer: dispatcher
+        expect: {accepted: T1, bind: {nonce: n2, credential: c2}}
+    then:
+      final:
+        A1: {state: lost, outcome: null}
+        A2: {state: dispatched, outcome: null}
+      operator_notices: 1
+      admissible_histories:
+        A1: [[unknown, lost]]
+        A2: [[dispatched]]
+
+  - id: CC-15b
+    title: Resolved, closed - allocate refused with the record (v0.3.4)
+    spec_refs: ["§3.3 T7d", "§3.3 close", "§3.3 fence_reject", "§4.7", "§9 CC-15b"]
+    applicability:
+      subject: capability
+      rows: [T7d, T1]
+      requires: [closure_supported]
+      n_a_allowed: true
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAA15B, backend: under_test}
+      attempts:
+        - {attempt: 1, state: unknown, nonce: n1, credential: c1, supervisor_gen: 1}
+      evidence: {}
+      clock: 20
+    steps:
+      - op: resolve
+        writer: operator
+        attempt: 1
+        args: {as: lost, reason: host reimaged, session: operator, via: host_cli}
+        expect: {accepted: T7d, notices: 1}
+      - op: close
+        writer: hub
+        attempt: 1
+        args: {policy: p, reason: resolved lost}
+        expect: {ok: true, values: {created: true, actor: "backend:p", reason: resolved lost}}
+      - op: allocate
+        writer: dispatcher
+        expect: {fence_reject: dispatch_closed, values: {closed: {actor: "backend:p", reason: resolved lost, ts: {present: true}}}}
+    then:
+      final:
+        A1: {state: lost, outcome: null}
+        A2: null
+      closed: {actor: "backend:p", reason: resolved lost}
+      dispatch_history: [close, dispatch_closed]
+      admissible_histories:
+        A1: [[unknown, lost]]
+
   - id: CC-16
     title: Outcome derivation
     spec_refs: ["§3.3 outcome derivation", "§2 exit_code", "§9 CC-16"]
@@ -1218,6 +1301,66 @@ vectors:
             A1: {state: done, outcome: paused}
           new_dispatch_retry_of: D-01JAAAAAAAAAAAAAAAAAAAAA19
           admissible_histories: {A1: [[running, done]]}
+
+  - id: CC-19a
+    title: Paused, no close record - next attempt allocated (v0.3.4)
+    spec_refs: ["§3.3 outcome rule 3b", "§3.3 T1", "§4.7", "§9 CC-19a"]
+    applicability:
+      subject: transition
+      rows: [T3, T1]
+      requires: []
+      n_a_allowed: false
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAA19A, backend: under_test}
+      attempts:
+        - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1}
+      evidence:
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAA19A, status: paused, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+      clock: 20
+    steps:
+      - {op: complete, writer: supervisor, attempt: 1, nonce: n1, credential: c1, evidence: E1, expect: {accepted: T3}}
+      - op: allocate
+        writer: dispatcher
+        expect: {accepted: T1, bind: {nonce: n2, credential: c2}}
+    then:
+      final:
+        A1: {state: done, outcome: paused}
+        A2: {state: dispatched, outcome: null}
+      admissible_histories: {A1: [[running, done]], A2: [[dispatched]]}
+
+  - id: CC-19b
+    title: Paused, closed - allocate refused with the record (v0.3.4)
+    spec_refs: ["§3.3 outcome rule 3b", "§3.3 close", "§3.3 fence_reject", "§4.7", "§8.4", "§9 CC-19b"]
+    applicability:
+      subject: capability
+      rows: [T3, T1]
+      requires: [closure_supported]
+      n_a_allowed: true
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAA19B, backend: under_test}
+      attempts:
+        - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1}
+      evidence:
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAA19B, status: paused, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+      clock: 20
+    steps:
+      - {op: complete, writer: supervisor, attempt: 1, nonce: n1, credential: c1, evidence: E1, expect: {accepted: T3}}
+      - {op: close, writer: supervisor, attempt: 1, credential: c1, args: {reason: paused for review}, expect: {ok: true, values: {created: true, reason: paused for review}}}
+      - op: allocate
+        writer: dispatcher
+        expect: {fence_reject: dispatch_closed, values: {closed: {reason: paused for review, actor: {present: true}, ts: {present: true}}}}
+      - op: read
+        writer: consumer
+        expect: {ok: true, values: {closed: {present: true}, finished: false, last_state: done, last_outcome: paused}}
+      - {op: create, writer: dispatcher, args: {retry_of_dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAA19B}, expect: {accepted: T1}}
+    then:
+      final:
+        A1: {state: done, outcome: paused}
+        A2: null
+      closed: {reason: paused for review}
+      dispatch_history: [close, dispatch_closed]
+      new_dispatch_retry_of: D-01JAAAAAAAAAAAAAAAAAAAA19B
+      admissible_histories: {A1: [[running, done]]}
 
   - id: CC-20
     title: Lost attempt seen alive
@@ -1697,3 +1840,415 @@ vectors:
                  evidence_digest: 8ca243126e2fb57133532a71450fad6c48d76d1ee930a575ccd493903eb87a23}
           operator_notices: 1
           admissible_histories: {A1: [[dispatched, done]]}
+
+  # ── v0.3.4 item 2, dispatch closure (A1-A6). CC-30..CC-34, CC-36..CC-43 need closure_supported;
+  # CC-35 needs closure_never; CC-39 foreign-closed runs on every backend. ──────────────────────
+
+  - id: CC-30
+    title: Close wins the race with T1 (v0.3.4)
+    spec_refs: ["§3.3 close", "§3.3 T1", "§4.7", "§9 CC-30"]
+    applicability:
+      subject: capability
+      rows: [T1]
+      requires: [closure_supported]
+      n_a_allowed: true
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA30, backend: under_test}
+      attempts:
+        - {attempt: 1, state: lost, nonce: n1, credential: c1, supervisor_gen: 1, lost_at: 10}
+      evidence: {}
+      clock: 20
+    steps:
+      - {op: close, writer: supervisor, attempt: 1, credential: c1, args: {reason: r}, expect: {ok: true, values: {created: true, reason: r, actor: {present: true}}}}
+      - {op: allocate, writer: dispatcher, expect: {fence_reject: dispatch_closed, values: {closed: {reason: r, actor: {present: true}, ts: {present: true}}}}}
+    then:
+      final: {A1: {state: lost, outcome: null}, A2: null}
+      closed: {reason: r}
+      dispatch_history: [close, dispatch_closed]
+      admissible_histories: {A1: [[lost]]}
+
+  - id: CC-31
+    title: T1 wins the race, so close is refused (v0.3.4)
+    spec_refs: ["§3.3 close", "§3.3 T1", "§9 CC-31"]
+    applicability:
+      subject: capability
+      rows: [T1]
+      requires: [closure_supported]
+      n_a_allowed: true
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA31, backend: under_test}
+      attempts:
+        - {attempt: 1, state: lost, nonce: n1, credential: c1, supervisor_gen: 1, lost_at: 10}
+      evidence: {}
+      clock: 20
+    steps:
+      - {op: allocate, writer: dispatcher, expect: {accepted: T1, bind: {nonce: n2, credential: c2}}}
+      - {op: close, writer: supervisor, attempt: 1, credential: c1, args: {reason: r}, expect: {fence_reject: cas_mismatch}}
+    then:
+      final: {A1: {state: lost, outcome: null}, A2: {state: dispatched, outcome: null}}
+      closed: null
+      dispatch_history: []
+      admissible_histories: {A1: [[lost]], A2: [[dispatched]]}
+
+  - id: CC-32
+    title: Close refused while the last attempt is not terminal (v0.3.4)
+    spec_refs: ["§3.3 close", "§9 CC-32"]
+    applicability:
+      subject: capability
+      rows: []
+      requires: [closure_supported]
+      n_a_allowed: true
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA32, backend: under_test}
+      attempts:
+        - {attempt: 1, state: dispatched, nonce: n1, credential: c1, supervisor_gen: 1}
+      evidence: {}
+      clock: 20
+    steps: []
+    then: {judged_by: variants}
+    variants:
+      - name: dispatched
+        steps:
+          - {op: close, writer: supervisor, attempt: 1, credential: c1, args: {reason: r}, expect: {fence_reject: dispatch_not_terminal}}
+        then:
+          final: {A1: {state: dispatched, outcome: null}}
+          closed: null
+          record_unchanged: true
+      - name: running
+        given:
+          attempts:
+            - {attempt: 1, state: running, nonce: n1, credential: c1, supervisor_gen: 1}
+        steps:
+          - {op: close, writer: supervisor, attempt: 1, credential: c1, args: {reason: r}, expect: {fence_reject: dispatch_not_terminal}}
+        then:
+          final: {A1: {state: running, outcome: null}}
+          closed: null
+          record_unchanged: true
+      - name: unknown
+        given:
+          attempts:
+            - {attempt: 1, state: unknown, nonce: n1, credential: c1, supervisor_gen: 1}
+        steps:
+          - {op: close, writer: supervisor, attempt: 1, credential: c1, args: {reason: r}, expect: {fence_reject: dispatch_not_terminal}}
+        then:
+          final: {A1: {state: unknown, outcome: null}}
+          closed: null
+          record_unchanged: true
+
+  - id: CC-33
+    title: Late completion after close is accepted (v0.3.4)
+    spec_refs: ["§3.3 close", "§3.3 T5", "§4.7", "§9 CC-33"]
+    applicability:
+      subject: capability
+      rows: [T5]
+      requires: [closure_supported]
+      n_a_allowed: true
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA33, backend: under_test}
+      attempts:
+        - {attempt: 1, state: lost, nonce: n1, credential: c1, supervisor_gen: 1, lost_at: 100}
+      evidence:
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA33, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 100}
+      clock: 200
+    steps:
+      - {op: close, writer: supervisor, attempt: 1, credential: c1, args: {reason: r}, expect: {ok: true, values: {created: true}}}
+      - {op: complete, writer: reconciler, attempt: 1, nonce: n1, credential: c1, evidence: E1, expect: {accepted: T5}}
+      - {op: read, writer: consumer, expect: {ok: true, values: {closed: {present: true}, finished: true, last_state: done, last_outcome: succeeded}}}
+    then:
+      final: {A1: {state: done, outcome: succeeded}}
+      closed: {reason: r}
+      dispatch_history: [close]
+      admissible_histories: {A1: [[lost, done]]}
+
+  - id: CC-34
+    title: Other attempt writes after close stay legal (v0.3.4)
+    spec_refs: ["§3.3 close", "§3.3 T5", "§3.3 T8", "§3.3 forbidden done_conflict", "§9 CC-34"]
+    applicability:
+      subject: capability
+      rows: [T5, T8]
+      requires: [closure_supported]
+      n_a_allowed: true
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA34, backend: under_test}
+      attempts:
+        - {attempt: 1, state: lost, nonce: n1, credential: c1, supervisor_gen: 1, lost_at: 100}
+      evidence:
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA34, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 100}
+        E2: {attempt: 1, nonce: n1, exit_code: 1, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA34, status: failed, attempt: 1, nonce: n1}, signed: true, persisted_at: 100}
+        EP: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA34, status: paused, attempt: 1, nonce: n1}, signed: true, persisted_at: 100}
+      clock: 200
+    steps:
+      - {op: close, writer: supervisor, attempt: 1, credential: c1, args: {reason: r}, expect: {ok: true, values: {created: true}}}
+    then: {judged_by: variants}
+    variants:
+      - name: late-paused
+        steps:
+          - {op: complete, writer: reconciler, attempt: 1, nonce: n1, credential: c1, evidence: EP, expect: {accepted: T5}}
+          - {op: read, writer: consumer, expect: {ok: true, values: {closed: {present: true}, finished: false, last_state: done, last_outcome: paused}}}
+        then:
+          final: {A1: {state: done, outcome: paused}}
+          closed: {reason: r}
+          dispatch_history: [close]
+          admissible_histories: {A1: [[lost, done]]}
+      - name: duplicate-then-conflict
+        given:
+          attempts:
+            - {attempt: 1, state: done, outcome: succeeded, nonce: n1, credential: c1, supervisor_gen: 1, evidence: E1}
+        steps:
+          - {op: complete, writer: supervisor, attempt: 1, nonce: n1, credential: c1, evidence: E1, expect: {response: T8}}
+          - {op: complete, writer: supervisor, attempt: 1, nonce: n1, credential: c1, evidence: E2, expect: {fence_reject: done_conflict, notices: 1}}
+        then:
+          final: {A1: {state: done, outcome: succeeded}}
+          closed: {reason: r}
+          dispatch_history: [close]
+          operator_notices: 1
+          admissible_histories: {A1: [[done]]}
+
+  - id: CC-35
+    title: A closure-never backend refuses close; clients tolerate unknown reasons (v0.3.4)
+    spec_refs: ["§2 client rule", "§2 dispatch closure", "§3.3 close", "§9 CC-35"]
+    applicability:
+      subject: capability
+      rows: []
+      requires: [closure_never]
+      n_a_allowed: true
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA35, backend: under_test}
+      attempts:
+        - {attempt: 1, state: done, outcome: succeeded, nonce: n1, credential: c1, supervisor_gen: 1, evidence: E1}
+      evidence:
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA35, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+      clock: 20
+    steps: []
+    then: {judged_by: variants}
+    variants:
+      - name: close-refused
+        steps:
+          - {op: close, writer: supervisor, attempt: 1, credential: c1, args: {reason: r}, expect: {refused: closure_not_supported}}
+          - {op: allocate, writer: dispatcher, expect: {accepted: T1, bind: {nonce: n2, credential: c2}}}
+        then:
+          final: {A1: {state: done, outcome: succeeded}, A2: {state: dispatched, outcome: null}}
+          closed: null
+          dispatch_history: []
+          admissible_histories: {A1: [[done]], A2: [[dispatched]]}
+      - name: client-unknown-reason
+        steps:
+          - {op: client_reject, writer: dispatcher, args: {reason: a_reason_from_a_later_revision}, expect: {ok: true, values: {retryable: false, typed_refusal: a_reason_from_a_later_revision}}}
+        then:
+          final: {A1: {state: done, outcome: succeeded}}
+          record_unchanged: true
+
+  - id: CC-36
+    title: Close by an authorised credential (v0.3.4)
+    spec_refs: ["§3.2 writer authentication", "§3.3 close", "§9 CC-36"]
+    applicability:
+      subject: capability
+      rows: []
+      requires: [closure_supported]
+      n_a_allowed: true
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA36, backend: under_test}
+      attempts:
+        - {attempt: 1, state: done, outcome: succeeded, nonce: n1, credential: c1, supervisor_gen: 1, evidence: E1}
+      evidence:
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA36, status: complete, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+      clock: 20
+    steps: []
+    then: {judged_by: variants}
+    variants:
+      - name: supervisor-credential
+        steps:
+          - {op: close, writer: supervisor, attempt: 1, credential: c1, args: {reason: r, actor: someone-else}, expect: {ok: true, values: {created: true, actor_matches: "^(?!someone-else$).+"}}}
+        then:
+          final: {A1: {state: done, outcome: succeeded}}
+          closed: {reason: r}
+          dispatch_history: [close]
+      - name: backend-policy
+        steps:
+          - {op: close, writer: hub, attempt: 1, args: {policy: p, reason: r}, expect: {ok: true, values: {created: true, actor: "backend:p"}}}
+        then:
+          final: {A1: {state: done, outcome: succeeded}}
+          closed: {actor: "backend:p", reason: r}
+          dispatch_history: [close]
+
+  - id: CC-37
+    title: Close with a wrong credential is refused and recorded (v0.3.4)
+    spec_refs: ["§3.2 writer authentication", "§3.3 close", "§9 CC-37"]
+    applicability:
+      subject: capability
+      rows: []
+      requires: [closure_supported]
+      n_a_allowed: true
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA37, backend: under_test}
+      attempts:
+        - {attempt: 1, state: lost, nonce: n1, credential: c1, supervisor_gen: 1, lost_at: 5}
+        - {attempt: 2, state: done, outcome: succeeded, nonce: n2, credential: c2, supervisor_gen: 1, evidence: E2}
+      evidence:
+        E2: {attempt: 2, nonce: n2, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA37, status: complete, attempt: 2, nonce: n2}, signed: true, persisted_at: 10}
+      clock: 20
+    steps:
+      - {op: close, writer: supervisor, attempt: 2, credential: none, args: {reason: r}, expect: {fence_reject: bad_credential}}
+      - {op: close, writer: supervisor, attempt: 2, credential: c1, args: {reason: r}, expect: {fence_reject: bad_credential}}
+      - {op: close, writer: hub, attempt: 2, args: {policy: undeclared, reason: r}, expect: {fence_reject: bad_credential}}
+      - {op: close, writer: supervisor, attempt: 2, credential: c2, args: {reason: r}, expect: {ok: true, values: {created: true}}}
+    then:
+      final: {A1: {state: lost, outcome: null}, A2: {state: done, outcome: succeeded}}
+      closed: {reason: r}
+      dispatch_history: [close_refused, close_refused, close_refused, close]
+
+  - id: CC-38
+    title: No reopen (v0.3.4)
+    spec_refs: ["§3.3 close", "§4.7", "§9 CC-38"]
+    applicability:
+      subject: capability
+      rows: [T1]
+      requires: [closure_supported]
+      n_a_allowed: true
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA38, backend: under_test}
+      attempts:
+        - {attempt: 1, state: lost, nonce: n1, credential: c1, supervisor_gen: 1, lost_at: 10}
+      evidence: {}
+      clock: 20
+    steps:
+      - {op: close, writer: supervisor, attempt: 1, credential: c1, args: {reason: r}, expect: {ok: true, values: {created: true, reason: r}}}
+      - {op: close, writer: hub, attempt: 1, args: {policy: p, reason: reopen}, expect: {ok: true, values: {created: false, reason: r}}}
+      - {op: allocate, writer: dispatcher, expect: {fence_reject: dispatch_closed}}
+    then:
+      final: {A1: {state: lost, outcome: null}, A2: null}
+      closed: {reason: r}
+      dispatch_history: [close, dispatch_closed]
+
+  - id: CC-39
+    title: Recovery by a new dispatch naming the closed one (v0.3.4)
+    spec_refs: ["§3.3 T1", "§4.7", "§8.4", "§9 CC-39"]
+    applicability:
+      subject: transition
+      rows: [T1]
+      requires: []
+      n_a_allowed: false
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA39, backend: under_test}
+      attempts:
+        - {attempt: 1, state: done, outcome: paused, nonce: n1, credential: c1, supervisor_gen: 1, evidence: E1}
+      evidence:
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA39, status: paused, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+      clock: 20
+    steps: []
+    then: {judged_by: variants}
+    variants:
+      - name: own-closed
+        requires: [closure_supported]
+        steps:
+          - {op: close, writer: supervisor, attempt: 1, credential: c1, args: {reason: r}, expect: {ok: true, values: {created: true}}}
+          - {op: create, writer: dispatcher, args: {retry_of_dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA39}, expect: {accepted: T1}}
+        then:
+          final: {A1: {state: done, outcome: paused}}
+          closed: {reason: r}
+          new_dispatch_retry_of: D-01JAAAAAAAAAAAAAAAAAAAAA39
+          admissible_histories: {A1: [[done]]}
+      - name: foreign-closed
+        # the named id is a dispatch closed on another backend (external id form, §2); every backend accepts the link
+        steps:
+          - {op: create, writer: dispatcher, args: {retry_of_dispatch_id: "other:D-01JAAAAAAAAAAAAAAAAAAAAA39"}, expect: {accepted: T1}}
+        then:
+          final: {A1: {state: done, outcome: paused}}
+          new_dispatch_retry_of: "other:D-01JAAAAAAAAAAAAAAAAAAAAA39"
+          admissible_histories: {A1: [[done]]}
+
+  - id: CC-40
+    title: Reader keeps closed, finished and last state apart (v0.3.4)
+    spec_refs: ["§2 reader fields", "§4.7", "§8.4", "§9 CC-40"]
+    applicability:
+      subject: capability
+      rows: []
+      requires: [closure_supported]
+      n_a_allowed: true
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA40, backend: under_test}
+      attempts:
+        - {attempt: 1, state: done, outcome: paused, nonce: n1, credential: c1, supervisor_gen: 1, evidence: E1}
+      evidence:
+        E1: {attempt: 1, nonce: n1, exit_code: 0, handback: {commission: D-01JAAAAAAAAAAAAAAAAAAAAA40, status: paused, attempt: 1, nonce: n1}, signed: true, persisted_at: 10}
+      clock: 20
+    steps:
+      - {op: close, writer: supervisor, attempt: 1, credential: c1, args: {reason: r}, expect: {ok: true, values: {created: true}}}
+      - {op: read, writer: consumer, expect: {ok: true, values: {closed: {present: true}, finished: false, last_state: done, last_outcome: paused}}}
+      - {op: consume, writer: consumer, attempt: 1, args: {consumer: review_verdict}, expect: {refused: not_finished_work}}
+    then:
+      final: {A1: {state: done, outcome: paused}}
+      closed: {reason: r}
+      dispatch_history: [close]
+
+  - id: CC-41
+    title: Repeated close returns the stored record (v0.3.4)
+    spec_refs: ["§3.3 close", "§9 CC-41"]
+    applicability:
+      subject: capability
+      rows: []
+      requires: [closure_supported]
+      n_a_allowed: true
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA41, backend: under_test}
+      attempts:
+        - {attempt: 1, state: lost, nonce: n1, credential: c1, supervisor_gen: 1, lost_at: 10}
+      evidence: {}
+      clock: 20
+    steps:
+      - {op: close, writer: supervisor, attempt: 1, credential: c1, args: {reason: r}, expect: {ok: true, values: {created: true, reason: r}}}
+      - {op: close, writer: supervisor, attempt: 1, credential: c1, args: {reason: r}, expect: {ok: true, values: {created: false, reason: r}}}
+      - {op: close, writer: supervisor, attempt: 1, credential: c1, args: {reason: r2}, expect: {ok: true, values: {created: false, reason: r}}}
+    then:
+      final: {A1: {state: lost, outcome: null}}
+      closed: {reason: r}
+      dispatch_history: [close]
+
+  - id: CC-42
+    title: Every close and every dispatch_closed refusal is a history row (v0.3.4)
+    spec_refs: ["§2 dispatch history", "§3.3 close", "§3.3 fence_reject", "§9 CC-42"]
+    applicability:
+      subject: capability
+      rows: [T1]
+      requires: [closure_supported]
+      n_a_allowed: true
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA42, backend: under_test}
+      attempts:
+        - {attempt: 1, state: lost, nonce: n1, credential: c1, supervisor_gen: 1, lost_at: 10}
+      evidence: {}
+      clock: 20
+    steps:
+      - {op: close, writer: supervisor, attempt: 1, credential: c1, args: {reason: r}, expect: {ok: true, values: {created: true}}}
+      - {op: allocate, writer: dispatcher, expect: {fence_reject: dispatch_closed}}
+      - {op: allocate, writer: dispatcher, expect: {fence_reject: dispatch_closed}}
+    then:
+      final: {A1: {state: lost, outcome: null}, A2: null}
+      closed: {reason: r}
+      dispatch_history: [close, dispatch_closed, dispatch_closed]
+      history_unchanged: [A1]
+
+  - id: CC-43
+    title: Closedness is authoritative only on the dispatch's own backend (v0.3.4)
+    spec_refs: ["§4.7", "§6.4", "§9 CC-43"]
+    applicability:
+      subject: capability
+      rows: [T1]
+      requires: [closure_supported]
+      n_a_allowed: true
+    # backend: other = a second backend the adapter runs beside the one under test (§6.4)
+    given:
+      dispatch: {dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA43, backend: under_test}
+      attempts:
+        - {attempt: 1, state: lost, nonce: n1, credential: c1, supervisor_gen: 1, lost_at: 10}
+      evidence: {}
+      clock: 20
+    steps:
+      - {op: close, writer: supervisor, attempt: 1, credential: c1, args: {reason: r}, expect: {ok: true, values: {created: true}}}
+      - {op: allocate, writer: dispatcher, args: {backend: other}, expect: {refused: backend_fixed}}
+      - {op: create, writer: dispatcher, args: {backend: other, retry_of_dispatch_id: D-01JAAAAAAAAAAAAAAAAAAAAA43}, expect: {accepted: T1}}
+    then:
+      final: {A1: {state: lost, outcome: null}, A2: null}
+      closed: {reason: r}
+      dispatch_history: [close]
+      new_dispatch_retry_of: D-01JAAAAAAAAAAAAAAAAAAAAA43

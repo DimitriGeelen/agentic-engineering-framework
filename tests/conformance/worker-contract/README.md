@@ -1,7 +1,7 @@
 # Shared worker-contract conformance vectors
 
 `vectors.yaml` is the **single** conformance vector file for the shared dispatched-worker
-contract (spec v0.3.3; v0.3.4 draft pending adoption, `contract_version: wc/0.3`, §9 cases CC-01..CC-29; CC-26..CC-29 are the v0.3.4 withdrawal, T3w). AEF owns it, as
+contract (spec v0.3.3; v0.3.4 draft pending adoption, `contract_version: wc/0.3`, §9 cases CC-01..CC-29; CC-26..CC-29 are the v0.3.4 withdrawal, T3w; CC-15a/b, CC-19a/b and CC-30..CC-43 are the v0.3.4 dispatch closure, A1-A6). AEF owns it, as
 agreed with TermLink and ring20. Every backend that claims conformance (TermLink's `hub`, AEF's
 `local`, any external backend such as `ring20`) runs these same vectors through its own adapter.
 The file is data only and names no backend's paths.
@@ -16,10 +16,21 @@ for theirs. Do not fork the file and do not keep a second vector file. A patch:
   term goes into the vocabulary in the same patch, with a one-line meaning);
 - passes `python3 check_vectors.py vectors.yaml` (stdlib + PyYAML).
 
-The check enforces the contract's fixed sets: all 29 case ids, the seven `fence_reject`
+The check enforces the contract's fixed sets: all 47 case ids, the nine `fence_reject`
 reasons of §3.3, and the N2 rule of §6.6. A case whose subject is a §3 transition row has
-`n_a_allowed: false`. Only cases about the answer channel, `registry_epoch` or caller-chosen
-ids may be n/a.
+`n_a_allowed: false`. Only cases about the answer channel, `registry_epoch`, caller-chosen
+ids or a backend's closure declaration (`closure_supported`, `closure_never`) may be n/a.
+
+## Dispatch closure (v0.3.4 item 2, A1-A6)
+
+Each backend declares `closure: never` or `closure: supported` (spec §2). An adapter states it
+as `adapter.closure`; `run_local.py` adds the capability `closure_never` or `closure_supported`
+and runs an adapter that declares nothing as `never`, saying so in its output. CC-15b, CC-19b,
+CC-30..CC-34 and CC-36..CC-43 need `closure_supported`; CC-35 needs `closure_never`; CC-15a,
+CC-19a and CC-39 `foreign-closed` run on every backend. In a case that requires
+`closure_supported`, `dispatch_closed` and `dispatch_not_terminal` may appear in a plain
+`expect`; anywhere else only in an `expect_equivalent`. AEF's local backend is `closure: never`;
+its CC-35 (typed refusal of close) lands in T-5321 and is reported n/a with that reason until then.
 
 ## Files
 

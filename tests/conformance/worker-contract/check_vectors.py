@@ -3,7 +3,7 @@
 
 Validates vectors.yaml against the structure its header describes and against the
 contract's fixed sets (spec v0.3.4 draft): every case CC-01..CC-29 present exactly once (CC-26..CC-29: the v0.3.4
-withdrawal, T3w),
+withdrawal, T3w), plus CC-15a/b, CC-19a/b and CC-30..CC-43 (v0.3.4 dispatch closure, A1-A6),
 fence_reject reasons from §3.3, the N2 applicability rule from §6.6, steps naming
 ops/writers/transitions from the file's own vocabulary, and no paths into one
 backend's tree (the file is shared with TermLink and ring20).
@@ -23,15 +23,22 @@ import yaml
 HERE = Path(__file__).resolve().parent
 DEFAULT_PATH = HERE / "vectors.yaml"
 
-REQUIRED_IDS = [f"CC-{i:02d}" for i in range(1, 30)]  # CC-26..CC-29: v0.3.4 T3w (T-5317)
+# CC-26..CC-29: v0.3.4 T3w (T-5317). CC-15a/b, CC-19a/b, CC-30..CC-43: v0.3.4 closure, A1-A6 (T-5320).
+CLOSURE_IDS = ["CC-15a", "CC-15b", "CC-19a", "CC-19b"] + [f"CC-{i}" for i in range(30, 44)]
+REQUIRED_IDS = sorted([f"CC-{i:02d}" for i in range(1, 30)] + CLOSURE_IDS)
 # §3.3 fence_reject reasons — fixed by the spec, not by the file.
 FENCE_REASONS = {"stale_attempt", "bad_nonce", "bad_credential", "stale_gen",
                  "cas_mismatch", "forbidden_transition", "done_conflict",
-                 "dispatch_closed"}  # v0.3.4 draft (T-4800): T1 on a closed dispatch, §4.7
-# T-4800: a reason only a backend's optional behaviour produces; accepted on an equivalent route only.
-EQUIVALENT_ONLY_REASONS = {"dispatch_closed"}
-# §6.6 N2: n/a only when the case's subject is one of these capabilities.
-NA_CAPABILITIES = {"answer_channel", "registry_epoch", "caller_chosen_ids"}
+                 "dispatch_closed",         # v0.3.4 draft (T-4800): T1 on a closed dispatch, §4.7
+                 "dispatch_not_terminal"}   # v0.3.4 A1/A2 (T-5320): close while the last attempt is live
+# T-4800: reasons only a backend's optional closure produces. Accepted in a plain expect only
+# on a case or variant that requires closure_supported (T-5320); elsewhere on an equivalent route only.
+EQUIVALENT_ONLY_REASONS = {"dispatch_closed", "dispatch_not_terminal"}
+CLOSURE_CAPABILITY = "closure_supported"
+# §6.6 N2: n/a only when the case's subject is one of these capabilities. closure_supported and
+# closure_never (v0.3.4, A3) are a backend's declared closure; a case about the other one is n/a.
+NA_CAPABILITIES = {"answer_channel", "registry_epoch", "caller_chosen_ids",
+                   "closure_supported", "closure_never"}
 STATES = {"dispatched", "running", "done", "lost", "unknown"}
 OUTCOMES = {"succeeded", "failed", "refused", "handback-malformed", "paused",
             "withdrawn"}  # v0.3.4: written only by T3w
@@ -139,7 +146,9 @@ class Checker:
         self._check_applicability(where, vec.get("applicability"))
         if not isinstance(vec.get("given"), dict):
             self.err(where, "given must be a mapping")
-        self._check_steps(where, vec.get("steps"))
+        app = vec.get("applicability") if isinstance(vec.get("applicability"), dict) else {}
+        closure_case = CLOSURE_CAPABILITY in (app.get("requires") or [])
+        self._check_steps(where, vec.get("steps"), closure_case)
         variants = vec.get("variants")
         then = vec.get("then")
         # T-4796: the equivalent alternates are per variant; at vector level they would be
@@ -179,7 +188,8 @@ class Checker:
                         self.err(vw, f"unknown capability '{cap}'")
                 if "given" in var and not isinstance(var["given"], dict):
                     self.err(vw, "variant given must be a mapping")
-                self._check_steps(vw, var.get("steps"))
+                self._check_steps(vw, var.get("steps"),
+                                  closure_case or CLOSURE_CAPABILITY in (var.get("requires") or []))
                 self._check_equivalent_alternates(vw, var)
                 if not var.get("steps") and not vec.get("steps"):
                     self.err(vw, "variant has no steps and the vector has no shared steps")
@@ -239,7 +249,7 @@ class Checker:
             if not set(requires) & NA_CAPABILITIES:
                 self.err(where, f"N2: n/a allowed only when requires names one of {sorted(NA_CAPABILITIES)}")
 
-    def _check_steps(self, where: str, steps) -> None:
+    def _check_steps(self, where: str, steps, closure_case: bool = False) -> None:
         if steps is None:
             self.err(where, "steps missing")
             return
@@ -247,9 +257,9 @@ class Checker:
             self.err(where, "steps must be a list")
             return
         for k, step in enumerate(steps):
-            self._check_step(f"{where}/steps[{k}]", step)
+            self._check_step(f"{where}/steps[{k}]", step, closure_case)
 
-    def _check_step(self, sw: str, step) -> None:
+    def _check_step(self, sw: str, step, closure_case: bool = False) -> None:
         if not isinstance(step, dict):
             self.err(sw, "step must be a mapping")
             return
@@ -270,9 +280,10 @@ class Checker:
                 self.err(sw, "expect_equivalent is not offered on concurrent")
             else:
                 self._check_expect(sw, step["expect_equivalent"])
-        if self._reasons(step["expect"]) & EQUIVALENT_ONLY_REASONS:
+        if self._reasons(step["expect"]) & EQUIVALENT_ONLY_REASONS and not closure_case:
             self.err(sw, "dispatch_closed belongs only in an expect_equivalent (a backend that "
-                         "keeps dispatches open is judged on the plain expect)")
+                         "keeps dispatches open is judged on the plain expect), or in a case that "
+                         "requires closure_supported")
         if op == "concurrent":
             inner = (step.get("args") or {}).get("step")
             count = (step.get("args") or {}).get("count")
