@@ -72,9 +72,21 @@ AEF has a risk type in its concerns register (.context/project/concerns.yaml) bu
 ## Open Questions
 
 - **IW-1: What exactly is ring20's matrix template and rule set, and how did it work on their option-B review (14 risks)?** (ring20 to send)
+  confidence: 3
+  disposition: answered
+  rationale: ring20 msg c06b5f30: scales, summary and actor-split tables, rule "any actor >= 6 gets a mitigation task", worked example (14 risks, net five controls); docs/reports/T-5310-standing-risk-arc.md
 - **IW-2: How does it fit what AEF has: the concerns register's risk type, arcs (an arc that never closes), and audit — extend, or replace?**
+  confidence: 2
+  disposition: answered
+  rationale: extend: risks stay in .context/project/concerns.yaml type risk with added score fields; one standing arc "risk" holds the mitigation tasks; fw audit reports any risk scoring 6+ without a mitigation task (report §Fit with AEF)
 - **IW-3: When is a matrix required (every change, or changes of a certain kind), and who scores it (agent, reviewer, operator)?**
+  confidence: 2
+  disposition: answered
+  rationale: only changes that alter a trust boundary (new sandbox, credential use, network path, unattended automation; ring20); the agent drafts and scores, an independent reviewer checks, the operator decides only risk acceptance: a NEW risk still 6+ after mitigation, or any 15+ (agent's challenge to ring20's per-risk walkthrough, after the operator's objection to rubber-stamping on 2026-11-20)
 - **IW-4: How does it reach consumer projects (template, fw verb, audit check), and what is the cost per change?**
+  confidence: 2
+  disposition: answered
+  rationale: template, register fields and the audit check ship with fw upgrade; cost is one matrix per trust-boundary change (rare), not per change
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
@@ -152,17 +164,17 @@ AEF has a risk type in its concerns register (.context/project/concerns.yaml) bu
 
 ## Recommendation
 
-**Recommendation:** EXPLORING
+**Recommendation:** GO
 
 **Rationale:**
 
-ring20 (msg a6cdde77, 2026-11-20, operator request): they created a standing arc 'risk' (arc-012, never closed) and used a 14-risk matrix for their pool's option B (their T-2794). The operator noted AEF has a risk process that is not actively used: the concerns register supports type: risk, but only 5 risks exist (R-018..R-037), unscored, with no mitigation rule. Question: adopt ring20's method as a framework practice (standing-arc type plus matrix template), for AEF and for consumers.
+Adopt ring20's risk matrix as a framework practice, with two changes. (1) Trigger: a matrix only for a change that alters a trust boundary (new sandbox, new credential use, new network path, new unattended automation), not for every change. (2) Who decides: the agent drafts and scores, an independent reviewer agent checks the scores and the actor split, and the operator decides only risk acceptance (a risk the change INTRODUCES that stays at 6 or more after mitigation, or anything at 15+), not every score: the operator objected today to being asked to rubber-stamp. Risks stay in the concerns register (type risk) with new fields (likelihood, impact, per-actor scores before and after mitigation, introduced by, exists anyway, mitigation task); one standing arc "risk" that never closes holds the mitigation tasks; `fw audit` reports any risk at 6+ without a mitigation task, so the practice cannot go quiet the way the current risk type did. Consumers get template, fields and audit check with `fw upgrade`. Build slices: (1) register fields plus template plus the standing arc; (2) the audit check; (3) the reviewer check of a matrix; (4) the first two matrices on today's trust-boundary changes (T-5309 codex image attachment, T-5300 job withdrawal).
 
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- AEF today: concerns register supports type risk, 5 risks ever (R-018..R-037), unscored, no mitigation rule, against 136 gaps.
+- ring20 template, rule and worked example (msgs a6cdde77, c06b5f30), docs/reports/T-5310-standing-risk-arc.md: 14 risks, the "introduced by this change?" column narrowed option B to five controls.
+- Reflection and challenge in the same report: cost (trigger keeps it rare), operator load (decide acceptance only), fake precision (bands and "new?" carry the decision), register drift (audit check).
 
 ## Decisions
 
