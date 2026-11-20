@@ -100,11 +100,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] One function decides whether a recorded `verdict/1` vote is checkable from its `check` field, and names every reason it is not.
-- [ ] Wherever the ledger decides whether a row counts (close gate apply, panel completeness, audit), a not-checkable `verdict/1` row does not count as green or red; old-format rows are unaffected (existing ledger and close-path tests stay green; ledger audit still exits 3 or lower).
-- [ ] `judge_with_reassign` treats a not-checkable vote like not-evaluated: that seat kind is excluded for the criterion and another kind is seated; when none is left, the result says "OPERATOR" with the not-checkable reasons.
-- [ ] The judge's printed summary shows not-checkable votes with their reasons, so the operator sees why a seat did not count.
-- [ ] Tests: the T-5262 case (red vote, image never opened → not counted, reassigned); a green vote quoting a line that does not exist → not counted; a fully checked vote → counts; an old free-text row → counts as before; all seats not checkable → OPERATOR.
+- [x] One function decides whether a recorded `verdict/1` vote is checkable from its `check` field, and names every reason it is not.
+- [x] Wherever the ledger decides whether a row counts (close gate apply, panel completeness, audit), a not-checkable `verdict/1` row does not count as green or red; old-format rows are unaffected (existing ledger and close-path tests stay green; ledger audit still exits 3 or lower).
+- [x] `judge_with_reassign` treats a not-checkable vote like not-evaluated: that seat kind is excluded for the criterion and another kind is seated; when none is left, the result says "OPERATOR" with the not-checkable reasons.
+- [x] The judge's printed summary shows not-checkable votes with their reasons, so the operator sees why a seat did not count.
+- [x] Tests: the T-5262 case (red vote, image never opened → not counted, reassigned); a green vote quoting a line that does not exist → not counted; a fully checked vote → counts; an old free-text row → counts as before; all seats not checkable → OPERATOR.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
