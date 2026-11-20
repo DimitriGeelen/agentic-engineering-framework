@@ -100,17 +100,18 @@ bvp_scores_proposed:
 
 **Problem / hypothesis:** Checked 2026-11-20: EVERY AEF inbox read goes through `default_reader` (lib/sidecar/inbox.py ~332), a plain `termlink channel subscribe <topic> --json --cursor N --limit M` with no read proof: `fw sidecar inbox --peek`, the advancing `fw sidecar inbox`, the session-start check (alerts.collect / strict_reader) and the receiver. So after a bind all of them are refused, not only --peek. Peek covers the read-only case; the route for a consuming read is not known yet (asked 010).
 
-**Goal:** All of AEF's own-inbox reads use a signed route, so binding an inbox does not cut AEF off from its mail.
+**Goal (re-scoped 2026-11-20, operator chose option a after 010's answer msg 14f83f2d):** Do not change how AEF reads its inbox (no peek consumer, reads stay unsigned while nothing is bound). Instead, make sure a bind can never cut AEF off from its mail without anyone noticing.
 
-**Expected outcome:** `default_reader` reads the agent's own inbox through `termlink sidecar peek --from <cursor> --limit <n> --json` (AEF keeps its own cursor as today), falls back to `channel subscribe` only when the installed termlink has no peek; other topics (not our own inbox) keep the old route; tests cover both routes.
+**Expected outcome:** A read refused because the inbox is bound (JSON-RPC error -32049, INBOX_BOUND, per 010 msg 7e6087e5) is reported as "inbox locked (bound to <agent>): our reads are unsigned", never as an empty inbox or a generic error; the session-start mail check (`fw sidecar alerts`) and `fw doctor` WARN when our own inbox shows `bound` in `termlink hub inbox consumers <topic> --json` (field `bound`, null today).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] 010 has answered how a consuming read is signed and whether peek's JSON matches channel subscribe's envelopes; the answer is recorded under ## Updates and the build follows it.
-- [ ] Reads of the agent's own inbox go through the signed route (peek) with AEF's cursor; when termlink lacks `sidecar peek`, the old route is used and the fallback is logged once.
-- [ ] Tests: peek route used for own inbox; fallback on an older termlink; output envelopes parsed the same as before; `fw sidecar inbox`, `--peek` and `fw sidecar alerts` work against a fake termlink for both routes.
+- [x] 010 has answered how a consuming read is signed and whether peek's JSON matches channel subscribe's envelopes; the answer is recorded under ## Updates and the build follows it.
+- [ ] `default_reader` turns a refusal with error code -32049 into a ReadFailed whose reason says the inbox is locked (bound) and that AEF's reads are unsigned.
+- [ ] `fw sidecar alerts` and `fw doctor` WARN when our own inbox's `termlink hub inbox consumers --json` shows a non-null `bound`; silent when null; "not checked" (not OK) when the command fails.
+- [ ] Tests with a fake termlink: -32049 read → locked reason; bound non-null → WARN in both places; bound null → no warning; command missing → not checked.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -297,6 +298,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5281_inbox_bound_alarm.py -q > /tmp/.t5281a 2>&1 && grep -q passed /tmp/.t5281a
+python3 -m pytest tests/unit/ -q -k "sidecar and (alerts or inbox)" > /tmp/.t5281b 2>&1 && grep -q passed /tmp/.t5281b && ! grep -q failed /tmp/.t5281b
+bin/fw vendor self --check --task T-5281
 
 ## RCA
 
