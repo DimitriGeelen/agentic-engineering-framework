@@ -8,10 +8,10 @@ description: >
   project these copy-paste commands do not run. Running fw stays as T-3952 (absolute
   FRAMEWORK_ROOT path). Render-surface task: needs screenshots. Depends on slice 1.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T13:49:53Z
-last_update: '2026-11-20T14:01:18Z'
+last_update: 2026-11-20T17:58:52Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,20 +88,29 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5302 GO; T-5303 added the Watchtower template global `fw_cmd(args)` (same output as lib/fw-command.sh and lib/fw_command.py); T-5304 moved the shell and Python printers. Watchtower is the last surface that prints hand-written commands.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Five templates (arcs_index.html, arc_detail.html, designer_ghosts.html, embeddings.html, orchestrator.html) and web/blueprints/inception.py:815 print literal `bin/fw …` for people to copy; in a vendored project those commands do not run.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Every command Watchtower shows for copying comes from `fw_cmd`.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** The five templates and the blueprint string use the builder; in this repo the pages show `cd /opt/999-Agentic-Engineering-Framework && bin/fw …`; a vendored fixture shows `.agentic-framework/bin/fw`; nothing else on the pages changes.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The five templates and web/blueprints/inception.py print copyable fw commands through `fw_cmd` / the Python builder; no literal `bin/fw ` remains in web/templates or web/blueprints printed text (comments excepted).
+- [ ] A test renders each changed page (or its template) for a framework-repo and a vendored fixture and finds the builder's output, not a literal `bin/fw`.
+- [ ] Watchtower restarted; `bin/fw watchtower current` passes; the changed pages answer 200.
+
+### Human
+- [ ] [REVIEW] The changed Watchtower pages show the copyable commands in the builder's form and otherwise look as before
+  **Steps:**
+  1. Open the screenshots in .context/visual/T-5305/ (taken from the arcs, arc detail, designer ghosts, embeddings and orchestrator pages on http://192.168.10.107:3000/ after the restart)
+  2. Check each shot at 1024, 1440 and 1920 px
+  **Expected:** each page shows its command text starting `cd /opt/999-Agentic-Engineering-Framework && bin/fw`, and nothing is clipped, overlapping or missing compared with the page's normal layout
+  **If not:** note the page and width
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,6 +297,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/web/test_t5305_fw_cmd_templates.py -q > /tmp/.t5305a 2>&1 && grep -q passed /tmp/.t5305a
+bin/fw vendor self --check --task T-5305
+bin/fw watchtower current
 
 ## RCA
 
@@ -385,3 +397,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5305-printed-fw-commands-slice-3-watchtower-t.md
 - **Context:** Initial task creation
+
+### 2026-11-20T17:58:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
