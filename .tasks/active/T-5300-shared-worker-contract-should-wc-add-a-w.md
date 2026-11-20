@@ -8,7 +8,7 @@ description: >
   -> done, never-started jobs only) so a submitter can withdraw a queued pool job?
   (ring20 T-2790)
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: human
 horizon: now
@@ -18,7 +18,7 @@ related_tasks: []
 waiting_on: agent
 revisit_at: 2026-11-27
 created: 2026-11-20T12:45:49Z
-last_update: '2026-11-20T13:01:07Z'
+last_update: 2026-11-20T16:24:20Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -70,8 +70,17 @@ A job submitted to the shared worker pool cannot be taken back before it starts.
 ## Open Questions
 
 - **IW-1: Does TermLink (co-owner of wc) agree to a `withdrawn` outcome and the `dispatched -> done` transition, and as which spec revision (v0.3.4)?**
+  confidence: 3
+  disposition: answered
+  rationale: 010 msg ab85e88e: agrees, as a T3b variant (to=done, expected_prior=dispatched, withdrawn flag); v0.3.4 must define the evidence (sha256 of the reason, result_kind none) and that a withdrawal closes open questions; TermLink builds it with conformance vectors once v0.3.4 exists
 - **IW-2: Who may withdraw (submitter only? hub? operator?), and how is the submitter proven, given the worker's nonce/credential model?**
+  confidence: 3
+  disposition: answered
+  rationale: 010 msg ab85e88e: only the holder of the attempt's credentials (nonce plus the supervisor token dispatch.allocate returns once), on an Execute-scope connection; the hub's sweep never withdraws; an operator path would be a separate command and decision
 - **IW-3: What happens if withdraw races a worker's start (the attempt moves to `running` between check and write) — is the existing compare-and-set enough?**
+  confidence: 3
+  disposition: answered
+  rationale: 010 msg ab85e88e: yes, T2 and the withdrawal each run in one IMMEDIATE transaction checking the actual state; one wins, the other gets cas_mismatch; v0.3.4 must state that a supervisor starts the worker only after its T2 succeeded
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
@@ -149,17 +158,17 @@ A job submitted to the shared worker pool cannot be taken back before it starts.
 
 ## Recommendation
 
-**Recommendation:** EXPLORING
+**Recommendation:** GO
 
 **Rationale:**
 
-ring20 (T-2790, msg 3d5e1fda, 2026-11-20, operator-requested via 1409): today a dispatched attempt can only end by start+complete, or move to unknown past deadline_dispatched and raise an operator-resolve notice; 9 judge jobs of 1409 sat 5 h on two nodes. lib/dispatch_records.py implements the shared contract wc/0.3.3 (docs/specs/shared-worker-contract-transitions.md), owned jointly by AEF, TermLink and ring20, so a new transition and outcome is a spec change those owners agree, not an AEF-only edit.
+Add a `withdrawn` outcome to the shared worker contract as v0.3.4, on the shape all three owners now agree on. A job that never started can be taken back by whoever holds that attempt's credentials (the nonce plus the supervisor token returned once at allocation), nobody else; the hub's sweep never withdraws; there is no operator path in this change. It is a `dispatched -> done` transition with outcome `withdrawn`, allowed only from `dispatched` with the current attempt (cas_mismatch from `running`, forbidden_transition from `done`/`lost`/`unknown`, a repeat deduped), carrying sha256 of the reason as evidence with `result_kind: none`, closing the attempt's open questions, logged with actor and reason, raising no notice. The race with a starting worker is safe because both writes are compare-and-set in one transaction; v0.3.4 adds the rule that a supervisor starts the worker only after its start transition succeeded. Build: (1) write v0.3.4 in docs/specs/shared-worker-contract-transitions.md and send it to TermLink and ring20; (2) AEF's lib/dispatch_records.py `Store.withdraw` with the four conformance cases 010 named (from dispatched; race with start; from running; repeat); TermLink and ring20 build theirs against the same vectors.
 
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- ring20 request (msg 3d5e1fda): 9 jobs held 5 h with no way back.
+- TermLink's answer from its backend (msg ab85e88e): agreement, the T3b-variant shape, credentials-only, CAS race safety, two spec points (evidence digest, close open questions) and one supervisor rule; docs/reports/T-5300-withdraw-outcome.md.
+- Contract ownership: docs/reports/T-4752/spec-proposal.md (AEF, TermLink, ring20).
 
 ## Decisions
 
@@ -180,3 +189,6 @@ ring20 (T-2790, msg 3d5e1fda, 2026-11-20, operator-requested via 1409): today a 
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-11-20T16:24:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
