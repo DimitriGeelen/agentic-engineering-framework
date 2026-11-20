@@ -1,8 +1,16 @@
 ---
 id: T-5297
-name: "claude-fw terminator kills a turn started during the banner/grace window: re-check _turn_state right before kill -TERM (ring20 T-2784, G-236)"
+name: "claude-fw terminator kills a turn started during the banner/grace window: re-check
+  _turn_state right before kill -TERM (ring20 T-2784, G-236)"
 description: >
-  ring20 (T-2784, their gap G-236, DM 2026-11-20): bin/claude-fw _terminator_watch re-checks _turn_state only right after the handover (~line 907), then shows the banner, sleeps banner seconds and sends SIGTERM (~line 923-927) without checking again. A prompt typed in that window is killed mid-turn and never answered. Verified in our source. ring20 patched it locally (re-check before kill -TERM; their .fwvendor-preserve.yaml marker 'a prompt arrived before the kill'). Fix upstream: re-check _turn_state after the banner sleep and before each signal; on a busy turn go back to waiting; test it.
+  ring20 (T-2784, their gap G-236, DM 2026-11-20): bin/claude-fw _terminator_watch
+  re-checks _turn_state only right after the handover (~line 907), then shows the
+  banner, sleeps banner seconds and sends SIGTERM (~line 923-927) without checking
+  again. A prompt typed in that window is killed mid-turn and never answered. Verified
+  in our source. ring20 patched it locally (re-check before kill -TERM; their .fwvendor-preserve.yaml
+  marker 'a prompt arrived before the kill'). Fix upstream: re-check _turn_state after
+  the banner sleep and before each signal; on a busy turn go back to waiting; test
+  it.
 
 status: captured
 workflow_type: build
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T09:50:30Z
-last_update: 2026-11-20T09:50:30Z
-date_finished: null
+last_update: '2026-11-20T10:00:42Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-20T10:00:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5297: claude-fw terminator kills a turn started during the banner/grace window: re-check _turn_state right before kill -TERM (ring20 T-2784, G-236)
