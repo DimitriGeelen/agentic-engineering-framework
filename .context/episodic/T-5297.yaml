@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5297: claude-fw terminator kills a turn started during the banner/grace window: re-check _turn_state right before kill -TERM (ring20 T-2784, G-236)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T11:04:43Z
+# ============================================================================
+
+task_id: T-5297
+task_name: "claude-fw terminator kills a turn started during the banner/grace window: re-check _turn_state right before kill -TERM (ring20 T-2784, G-236)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-20T09:50:30Z
+completed: 2026-11-20T11:02:27Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-20T10:50:41+01:00
+last_commit: 2026-11-20T12:02:25+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed (ring20 T-2784). claude-fw terminator re-checks the turn state after the pre-kill banner (ring20 T-2784, G-236). vendor bin/claude-fw. criteria ticked, RCA
+
+# Key outcomes
+outcomes:
+  - 'On the idle path, `_terminator_watch` re-checks `_turn_state` after the banner sleep and before `kill -TERM`; on a busy turn it logs "a prompt arrived before the kill" to .compact-log and goes back to waiting.'
+  - 'Test in tests/unit/t3918_terminator_handover.bats: a turn that starts during the banner is not killed; the existing T-3918/T-4032 tests stay green.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - '.tasks/active/T-5297-claude-fw-terminator-kills-a-turn-starte.md'
+  - 'bin/claude-fw'
+  - 'tests/unit/t3918_terminator_handover.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T10:50:41'
+    action: 'T-5297: filed (ring20 T-2784)'
+  - time: '2026-11-20T12:01:46'
+    action: 'T-5297: claude-fw terminator re-checks the turn state after the pre-kill banner (ring20 T-2784, G-236)'
+  - time: '2026-11-20T12:02:07'
+    action: 'T-5297: vendor bin/claude-fw'
+  - time: '2026-11-20T12:02:25'
+    action: 'T-5297: criteria ticked, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 71 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 71
+  commits: 5
+  files_changed: 7
+  lines_added: 546
+  lines_removed: 15
+  footprint_refreshed_at: '2026-11-20T11:05:00Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5297-claude-fw-terminator-kills-a-turn-starte.md
+generated_by: context-agent-hybrid
