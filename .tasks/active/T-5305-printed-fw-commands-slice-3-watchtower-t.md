@@ -112,7 +112,6 @@ bvp_scores_proposed:
   **Expected:** each page shows its command text starting `cd /opt/999-Agentic-Engineering-Framework && bin/fw`, and nothing is clipped, overlapping or missing compared with the page's normal layout
   **If not:** note the page and width
 
-### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
