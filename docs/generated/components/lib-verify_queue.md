@@ -6,11 +6,10 @@
 
 ## What It Does
 
-Lines we refuse to execute. CTL-013 already skips nested audit invocations
-(L-391); scaling from 3 tasks to the whole queue widens the blast radius
-enough that "skip and say so" beats "run and hope". Reported as SKIPPED, never
-as PASS — a skip that reads as a pass is the vacuous-green class this rail
-exists to remove.
+T-5268: the refusal rule (UNSAFE_PATTERNS, process control, the
+`# needs: fixture` marker) lives in lib/unattended_verification.py and is
+shared with CTL-013 — one predicate for both unattended rails. Skips are
+reported as SKIPPED, never as PASS.
 
 ## Dependencies (1)
 
