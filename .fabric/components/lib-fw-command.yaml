@@ -1,0 +1,21 @@
+id: lib/fw-command.sh
+name: fw-command
+type: script
+subsystem: framework-core
+location: lib/fw-command.sh
+tags: []
+
+purpose: "lib/fw-command.sh — the shell builder for every fw command the framework PRINTS (rule T-5302 GO; builder T-5303; moved here T-5304)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-20
+created_by: unknown

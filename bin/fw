@@ -1735,6 +1735,16 @@ source "$FW_LIB_DIR/compat.sh" 2>/dev/null || true
 # cannot order it and must not be re-derived per site.
 source "$FW_LIB_DIR/version-relation.sh" 2>/dev/null || true
 
+# --- Printed fw command builder (T-5303, T-5304) ---
+# Every command bin/fw PRINTS for a person or agent goes through _emit_user_command
+# (`cd <root> && <fw path> <args>`). Side-effect free, so it is sourced here even
+# though lib/paths.sh (which also sources it) cannot be.
+source "$FW_LIB_DIR/fw-command.sh" 2>/dev/null || true
+if ! declare -F _emit_user_command >/dev/null; then   # lib older than bin/fw
+    _fw_cmd() { if [ -f "${1:-$PROJECT_ROOT}/FRAMEWORK.md" ]; then echo bin/fw; else echo .agentic-framework/bin/fw; fi; }
+    _emit_user_command() { printf 'cd %s && %s%s\n' "$PROJECT_ROOT" "$(_fw_cmd)" "${1:+ $1}"; }
+fi
+
 # --- Help ---
 
 show_help() {

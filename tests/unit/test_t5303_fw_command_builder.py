@@ -44,8 +44,11 @@ def _vendored_fixture(tmp: Path) -> Path:
     return root
 
 
-def _shell(root: Path, func: str, *args: str) -> str:
-    script = f'. "{ROOT}/lib/paths.sh" >/dev/null 2>&1; PROJECT_ROOT="$1"; shift; {func} "$@"'
+SHELL_LIBS = ["lib/paths.sh", "lib/fw-command.sh"]  # T-5304: paths.sh sources fw-command.sh
+
+
+def _shell(root: Path, func: str, *args: str, lib: str = "lib/paths.sh") -> str:
+    script = f'. "{ROOT}/{lib}" >/dev/null 2>&1; PROJECT_ROOT="$1"; shift; {func} "$@"'
     env = dict(os.environ, PROJECT_ROOT=str(root), FRAMEWORK_ROOT=str(ROOT))
     r = subprocess.run(["bash", "-c", script, "_", str(root), *args],
                        capture_output=True, text=True, env=env, check=True)
@@ -61,23 +64,53 @@ def _template_global(root: Path, args: str) -> tuple[str, str]:
     return env.globals["fw_cmd"](args), html.unescape(rendered)
 
 
+@pytest.mark.parametrize("lib", SHELL_LIBS)
 @pytest.mark.parametrize("kind", ["framework", "vendored"])
 @pytest.mark.parametrize("args", ARGS)
-def test_shell_python_template_parity(tmp_path, kind, args):
+def test_shell_python_template_parity(tmp_path, kind, args, lib):
     root = (_framework_fixture if kind == "framework" else _vendored_fixture)(tmp_path)
     expected_fw = "bin/fw" if kind == "framework" else ".agentic-framework/bin/fw"
 
     assert fw_command.fw_path(root) == expected_fw
-    assert _shell(root, "_fw_cmd") == expected_fw
+    assert _shell(root, "_fw_cmd", lib=lib) == expected_fw
 
     py = fw_command.user_command(args, root)
-    sh = _shell(root, "_emit_user_command", args) if args else _shell(root, "_emit_user_command")
+    sh = (_shell(root, "_emit_user_command", args, lib=lib) if args
+          else _shell(root, "_emit_user_command", lib=lib))
+    assert _shell(root, "_emit_user_command_in", str(root), args, lib=lib) == sh
     tg, rendered = _template_global(root, args)
     assert py == sh == tg == rendered
 
     assert py.startswith("cd '")  # both fixture roots need quoting
     assert py.endswith(f"{expected_fw} {args}" if args else expected_fw)
     assert " fw " not in f" {py.split(' && ', 1)[1]} ".replace(expected_fw, "")
+
+
+def test_fw_command_lib_is_side_effect_free(tmp_path):
+    """T-5304: bin/fw sources lib/fw-command.sh before anything is resolved, so
+    sourcing it must define functions only: no output, no exports, no variables
+    beyond its load guard, PROJECT_ROOT/FRAMEWORK_ROOT untouched."""
+    script = (
+        'unset PROJECT_ROOT FRAMEWORK_ROOT; set -u; '
+        'before_env="$(env | sort)"; before_vars="$(compgen -v | sort)"; '
+        f'out="$(. "{ROOT}/lib/fw-command.sh"; echo x)"; '
+        f'. "{ROOT}/lib/fw-command.sh"; '
+        '[ "$out" = x ] || { echo "OUTPUT:$out"; exit 1; }; '
+        '[ "$(env | sort)" = "$before_env" ] || { echo ENV; exit 1; }; '
+        'extra="$(comm -13 <(echo "$before_vars") <(compgen -v | sort) | grep -vx -e before_vars -e before_env -e out)"; '
+        '[ "$extra" = _FW_COMMAND_LOADED ] || { echo "VARS:$extra"; exit 1; }; '
+        'declare -F _fw_cmd _fw_quote_word _emit_user_command _emit_user_command_in >/dev/null; '
+        'echo ok'
+    )
+    r = subprocess.run(["bash", "-c", script], capture_output=True, text=True,
+                       env={"PATH": os.environ["PATH"], "HOME": str(tmp_path)}, cwd=tmp_path)
+    assert r.stdout.strip() == "ok", r.stdout + r.stderr
+
+
+def test_bin_fw_sources_the_builder():
+    src = (ROOT / "bin" / "fw").read_text()
+    assert 'source "$FW_LIB_DIR/fw-command.sh"' in src
+    assert "_fw_cmd()" not in (ROOT / "lib" / "paths.sh").read_text()
 
 
 def test_printed_root_round_trips_through_the_shell(tmp_path):
