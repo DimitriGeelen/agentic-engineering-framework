@@ -10,18 +10,18 @@ description: >
   by this change or existing anyway?') and a mitigation task for every medium-or-higher
   risk? (ring20 proposal)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 waiting_on: agent
 revisit_at: 2026-11-27
 created: 2026-11-20T15:50:53Z
-last_update: '2026-11-20T16:00:33Z'
-date_finished:
+last_update: 2026-11-20T16:27:51Z
+date_finished: 2026-11-20T16:27:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -124,15 +124,15 @@ AEF has a risk type in its concerns register (.context/project/concerns.yaml) bu
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -189,7 +189,11 @@ Adopt ring20's risk matrix as a framework practice, with two changes. (1) Trigge
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Adopt ring20's risk matrix as a framework practice, with two changes. (1) Trigger: a matrix only for a change that alters a trust boundary (new sandbox, new credential use, new network path, new unattended automation), not for every change. (2) Who decides: the agent drafts and scores, an independent reviewer agent checks the scores and the actor split, and the operator decides only risk acceptance (a risk the change INTRODUCES that stays at 6 or more after mitigation, or anything at 15+), not every score: the operator objected today to being asked to rubber-stamp. Risks stay in the concerns register (type risk) with new fields (likelihood, impact, per-actor scores before and after mitigation, introduced by, exists anyway, mitigation task); one standing arc "risk" that never closes holds the mitigation tasks; `fw audit` reports any risk at 6+ without a mitigation task, so the practice cannot go quiet the way the current risk type did. Consumers get template, fields and audit check with `fw upgrade`. Build slices: (1) register fields plus template plus the standing arc; (2) the audit check; (3) the reviewer check of a matrix; (4) the first two matrices on today's trust-boundary changes (T-5309 codex image attachment, T-5300 job withdrawal).
+
+**Date**: 2026-11-20T16:27:50Z
 
 ## Updates
 
@@ -198,3 +202,43 @@ Adopt ring20's risk matrix as a framework practice, with two changes. (1) Trigge
 
 ### 2026-11-20T15:57:23Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-20T16:27:50Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Adopt ring20's risk matrix as a framework practice, with two changes. (1) Trigger: a matrix only for a change that alters a trust boundary (new sandbox, new credential use, new network path, new unattended automation), not for every change. (2) Who decides: the agent drafts and scores, an independent reviewer agent checks the scores and the actor split, and the operator decides only risk acceptance (a risk the change INTRODUCES that stays at 6 or more after mitigation, or anything at 15+), not every score: the operator objected today to being asked to rubber-stamp. Risks stay in the concerns register (type risk) with new fields (likelihood, impact, per-actor scores before and after mitigation, introduced by, exists anyway, mitigation task); one standing arc "risk" that never closes holds the mitigation tasks; `fw audit` reports any risk at 6+ without a mitigation task, so the practice cannot go quiet the way the current risk type did. Consumers get template, fields and audit check with `fw upgrade`. Build slices: (1) register fields plus template plus the standing arc; (2) the audit check; (3) the reviewer check of a matrix; (4) the first two matrices on today's trust-boundary changes (T-5309 codex image attachment, T-5300 job withdrawal).
+
+### 2026-11-20T16:27:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-68f42bdc
+- **Timestamp:** 2026-11-20T16:27:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
+     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-6e17dc81
+- **Timestamp:** 2026-11-20T16:27:53Z
+- **Overall:** CONFIRMED
+- **Claims:** 2
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-5309` | task | ✓ pass |
+| `T-5300` | task | ✓ pass |
