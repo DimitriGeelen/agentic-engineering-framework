@@ -98,3 +98,39 @@ print(json.load(sys.stdin)["hookSpecificOutput"]["additionalContext"])
     [ "$status" -eq 0 ]
     [[ "$output" == *"S-2026-1013-0101"* ]]
 }
+
+# ── T-5298 (ring20 T-2784): the banner names the cause the restart signal gave ──
+@test "T-5298: startup with by= in the sentinel names that cause, not the budget" {
+    printf 'by=login-switch T-2764\n' > "$TEST_TEMP_DIR/.context/working/.auto-restart-pending"
+    run context_for startup
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"restart requested by: login-switch T-2764"* ]]
+    [[ "$output" != *"budget restart"* ]]
+    [[ "$output" != *"reached its context budget"* ]]
+}
+
+@test "T-5298: continue-mode resume with by= names that cause" {
+    printf 'by=operator\n' > "$TEST_TEMP_DIR/.context/working/.auto-restart-pending"
+    run context_for resume
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"FW_RESTART_MODE=continue; restart requested by: operator"* ]]
+}
+
+@test "T-5298: an empty sentinel keeps today's budget-restart banner exactly" {
+    : > "$TEST_TEMP_DIR/.context/working/.auto-restart-pending"
+    run context_for startup
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Fresh session started by claude-fw after the previous one reached its context budget (budget restart). No compaction happened."* ]]
+}
+
+@test "T-5298: shell and markdown characters in by= are stripped" {
+    printf 'by=evil`rm -rf`$(x)<b>**\n' > "$TEST_TEMP_DIR/.context/working/.auto-restart-pending"
+    run context_for startup
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"restart requested by: evilrm -rfxb"* ]]
+}
+
+@test "T-5298: claude-fw copies the signal's by into the sentinel" {
+    grep -q 'T-5298' "$FRAMEWORK_ROOT/bin/claude-fw"
+    grep -q "printf 'by=%s\\\\n'" "$FRAMEWORK_ROOT/bin/claude-fw"
+}

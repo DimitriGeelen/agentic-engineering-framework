@@ -1778,6 +1778,16 @@ while true; do
         echo "  Press Ctrl+C to cancel."
         echo ""
 
+        # T-5298 (ring20 T-2784): the signal may name its cause in a `by` field; carry it
+        # into the sentinel so the next session's banner can say why it restarted.
+        # Safe characters only, at most 60; absent = budget restart (the default banner).
+        restart_by=$(python3 -c 'import json,sys
+try:
+    v=json.load(open(sys.argv[1])).get("by")
+except Exception:
+    v=None
+print(v if isinstance(v,str) else "")' "$signal_file" 2>/dev/null | head -1 | tr -cd 'A-Za-z0-9 ._:-' | cut -c1-60)
+
         # Clean up signal before restart
         rm -f "$signal_file"
 
@@ -1799,7 +1809,11 @@ while true; do
         # read as a loop continuation: counter advanced, an old directive injected
         # into a session that never asked for one. On disk, a cancelled restart is
         # now indistinguishable from a restart that never fired.
-        : > "$restart_sentinel" 2>/dev/null || true
+        if [ -n "${restart_by:-}" ]; then
+            printf 'by=%s\n' "$restart_by" > "$restart_sentinel" 2>/dev/null || true
+        else
+            : > "$restart_sentinel" 2>/dev/null || true
+        fi
 
         # T-3166 (arc-012 S2): start a FRESH session, not `claude -c`.
         #

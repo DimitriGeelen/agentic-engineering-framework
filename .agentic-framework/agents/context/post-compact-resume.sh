@@ -59,6 +59,18 @@ RESTART_SENTINEL="$PROJECT_ROOT/.context/working/.auto-restart-pending"
 # went to sleep — steered the next cold start days later. Stale is treated as absent,
 # and removed rather than left to mislead the start after this one too.
 RESTART_SENTINEL_TTL="${FW_RESTART_SENTINEL_TTL:-300}"
+# T-5298 (ring20 T-2784): claude-fw copies the restart signal's `by` into the
+# sentinel as a `by=<cause>` line. Read it before the sentinel is consumed, keep
+# only a safe character set, and name it in the banner; empty = budget restart.
+RESTART_BY=""
+if [ -f "$RESTART_SENTINEL" ]; then
+    RESTART_BY=$(sed -n 's/^by=//p' "$RESTART_SENTINEL" 2>/dev/null | head -1 | tr -cd 'A-Za-z0-9 ._:-' | cut -c1-60)
+fi
+if [ -n "$RESTART_BY" ]; then
+    RESTART_CAUSE="restart requested by: ${RESTART_BY}"
+else
+    RESTART_CAUSE="budget restart"
+fi
 if [ "$SOURCE_TAG" = "startup" ]; then
     if [ -f "$RESTART_SENTINEL" ]; then
         _sentinel_mt=$(stat -c %Y "$RESTART_SENTINEL" 2>/dev/null || echo 0)
@@ -165,15 +177,26 @@ if [ -f "$LATEST" ]; then
         compact) RECOVERY_HEADER="# Post-Compaction Context Recovery (automatic)
 
 ${HANDOVER_LINE}" ;;
-        startup) RECOVERY_HEADER="# Auto-Restart Context Recovery (automatic)
+        startup)
+            if [ -n "$RESTART_BY" ]; then
+                _why="Fresh session started by claude-fw (${RESTART_CAUSE})."
+            else
+                _why="Fresh session started by claude-fw after the previous one reached its context budget (budget restart)."
+            fi
+            RECOVERY_HEADER="# Auto-Restart Context Recovery (automatic)
 
-Fresh session started by claude-fw after the previous one reached its context budget (budget restart). No compaction happened.
+${_why} No compaction happened.
 ${HANDOVER_LINE}" ;;
         *)
             if [ "$BUDGET_RESTART_CONTINUE" = "1" ]; then
+                if [ -n "$RESTART_BY" ]; then
+                    _why="claude-fw relaunched the previous conversation (FW_RESTART_MODE=continue; ${RESTART_CAUSE})."
+                else
+                    _why="claude-fw relaunched the previous conversation (FW_RESTART_MODE=continue) after it reached its context budget (budget restart)."
+                fi
                 RECOVERY_HEADER="# Auto-Restart Context Recovery (automatic)
 
-claude-fw relaunched the previous conversation (FW_RESTART_MODE=continue) after it reached its context budget (budget restart). Transcript restored, context not freed. No compaction happened.
+${_why} Transcript restored, context not freed. No compaction happened.
 ${HANDOVER_LINE}"
             else
                 RECOVERY_HEADER="# Session Resume Context Recovery (automatic)

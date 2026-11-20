@@ -8,7 +8,7 @@ description: >
   requested by other causes. The restart signal file carries a 'by' field; label the
   banner from it (fallback: 'restart'). Verified in our source.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T09:50:30Z
-last_update: '2026-11-20T10:01:39Z'
+last_update: 2026-11-20T11:05:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,20 +88,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** proxmox-ring20-management (their T-2784), DM relayed by the operator 2026-11-20: agents/context/post-compact-resume.sh lines 170 and 176 call every claude-fw restart a "budget restart". ring20 also restarts sessions for other reasons (e.g. their login switch, T-2764) and writes a `by` field into the restart signal.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** In AEF every writer of `.restart-requested` (budget-gate.sh, checkpoint.sh) is budget-related and none writes `by`, so the label is right for us today. But claude-fw deletes the signal before the new session starts and leaves an empty `.auto-restart-pending` marker, so the resume hook cannot know any other cause even when a writer names one.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** The resume banner names the cause the restart signal gave.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** claude-fw copies a sanitised `by` value from the signal into the `.auto-restart-pending` marker; post-compact-resume.sh reads it before consuming the marker and labels the banner from it; with no `by`, the text stays "budget restart" exactly as today.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] claude-fw reads an optional `by` string from the restart signal (JSON), keeps only `[A-Za-z0-9 ._:-]`, at most 60 chars, and writes it into `.auto-restart-pending` (both the fresh and the continue restart paths); a signal without `by` leaves the marker as today.
+- [x] post-compact-resume.sh reads the marker's `by` before removing it and uses it in both restart banners ("restart requested by: <by>"); without it the banners read exactly as today ("budget restart").
+- [x] Tests: banner with `by` set, banner without `by` unchanged, and a value with shell/markdown characters is sanitised.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,8 +289,19 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t4172_restart_cause_label.bats tests/unit/t4353_resume_header_by_source.bats > /tmp/.t5298a 2>&1 && ! grep -q "^not ok" /tmp/.t5298a
+cmp bin/claude-fw .agentic-framework/bin/claude-fw
+bin/fw vendor self --check --task T-5298
 
 ## RCA
+
+**Symptom:** ring20 (T-2784): every claude-fw restart was labelled "budget restart" in the next session's banner, including restarts their own tooling requests for other reasons.
+
+**Root cause:** claude-fw deletes the restart signal and leaves an empty `.auto-restart-pending` marker, so the cause the signal could carry never reached the resume hook, which hard-coded "budget restart".
+
+**Why structurally allowed:** in AEF every signal writer is budget-related (budget-gate.sh, checkpoint.sh), so the label was true here; the marker was designed as presence-only and consumers who add restart causes were not considered.
+
+**Prevention:** the marker now carries `by=<cause>` (sanitised); the banner names it; five tests in t4172 pin both the new label and the unchanged default.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -385,3 +397,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5298-post-compact-resumesh-labels-every-claud.md
 - **Context:** Initial task creation
+
+### 2026-11-20T11:05:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
