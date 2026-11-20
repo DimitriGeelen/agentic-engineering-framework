@@ -22,6 +22,7 @@
 # Read-only: NEVER writes to disk. Mutating verbs land in T-1920 (weight/driver).
 # Confirmation of proposed scores lands in T-1924 (`fw bvp confirm`).
 
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 set -eo pipefail
 
 # Resolved by bin/fw before sourcing.
@@ -2678,7 +2679,7 @@ EOF
                 ;;
         esac
         echo "ERROR: unknown estimate-cost subverb: $sub" >&2
-        echo "Try: fw bvp estimate-cost --help" >&2
+        echo "Try: $(_emit_user_command "bvp estimate-cost --help")" >&2
         return 2
     fi
     # T-2335: `driver --propose` fires a push notification on success so the

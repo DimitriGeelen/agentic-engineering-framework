@@ -32,6 +32,7 @@
 #    the same anti-pattern the port-3000 rule exists to prevent: a host-specific
 #    literal that reads as a constant.
 
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 set -o pipefail
 
 # bin/fw sources lib/config.sh only in a couple of subcommands, not globally, so
@@ -267,7 +268,7 @@ rail_post_exec() {
 
     if [ -z "${_RAIL_POST_HOST_WARNED:-}" ]; then
         _RAIL_POST_HOST_WARNED=1
-        echo "rail-identity: WARNING — no RAIL_IDENTITY_FILE configured; this post is host-signed (set one: fw config set RAIL_IDENTITY_FILE .context/rail-identity.key)" >&2
+        echo "rail-identity: WARNING — no RAIL_IDENTITY_FILE configured; this post is host-signed (set one: $(_emit_user_command "config set RAIL_IDENTITY_FILE .context/rail-identity.key"))" >&2
     fi
     "${run[@]}" channel post "$@" "${extra[@]}"
 }
@@ -303,7 +304,7 @@ do_rail() {
             case "$state" in
                 host)
                     echo "  ⚠ posts are attributed to the HOST — indistinguishable from co-resident agents."
-                    echo "    Set one with: bin/fw config set RAIL_IDENTITY_FILE .context/rail-identity.key"
+                    echo "    Set one with: $(_emit_user_command "config set RAIL_IDENTITY_FILE .context/rail-identity.key")"
                     ;;
                 project) echo "  ✓ posts carry a project-owned producer identity." ;;
             esac
@@ -365,7 +366,7 @@ surface, and its header comment for why identity is not re-gated there.
 EOF
             ;;
         *)
-            echo "fw rail: unknown subcommand '$sub' (try: fw rail --help)" >&2
+            echo "fw rail: unknown subcommand '$sub' (try: $(_emit_user_command "rail --help"))" >&2
             return 1
             ;;
     esac

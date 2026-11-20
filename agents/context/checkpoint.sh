@@ -319,7 +319,7 @@ _auto_handover_at_critical() {
                       _ "${FW_BIN:-$FRAMEWORK_ROOT/bin/fw}" >> "$_ah_push_log" 2>&1 < /dev/null & ) 2>/dev/null || true
                 _ah_note=" (commit $_ah_sha landed; push did not finish within ${_ah_total_timeout}s — retrying detached, log .handover-push-retry.log)"
             else
-                _ah_note=" (commit $_ah_sha landed; push did not finish within ${_ah_total_timeout}s — run 'fw push')"
+                _ah_note=" (commit $_ah_sha landed; push did not finish within ${_ah_total_timeout}s — run: $(_emit_user_command push))"
             fi
         fi
         if [ "$(stat -c %s "$_ah_capture" 2>/dev/null || echo 0)" -ge "$_ah_cap" ]; then

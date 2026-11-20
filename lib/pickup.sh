@@ -11,6 +11,7 @@
 #   do_pickup                Main entry point (subcommand router)
 
 # Colors (inherited from caller, define fallbacks)
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 RED="${RED:-}"
 GREEN="${GREEN:-}"
 YELLOW="${YELLOW:-}"
@@ -421,7 +422,7 @@ pickup_create_inception() {
         [ -z "$source_project" ] && missing_fields="${missing_fields:+$missing_fields, }source.project"
         echo "pickup_create_inception: refusing to create a task from $(basename "$file") — empty field(s): ${missing_fields}" >&2
         echo "  The envelope passed key-presence validation but the value(s) extracted empty." >&2
-        echo "  Inspect the envelope and re-run \`fw pickup process\` once the field(s) carry a value." >&2
+        echo "  Inspect the envelope and re-run \`$(_emit_user_command "pickup process")\` once the field(s) carry a value." >&2
         return 1
     fi
 
@@ -780,7 +781,7 @@ PYEOF
     # only in this project's own inbox says so, and a failed push fails the verb.
     if [ "$local_only" = true ]; then
         echo -e "${YELLOW}NOT delivered:${NC} --local — saved in $PICKUP_UNDELIVERED only." >&2
-        echo "  To deliver: fw pickup send ... --remote HUB --session SESSION" >&2
+        echo "  To deliver: $(_emit_user_command "pickup send ... --remote HUB --session SESSION")" >&2
     else
         # T-3763: deliver through the one channel (T-3631 GO, T-3758) — a sidecar
         # notice to the recipient, body = the envelope. `termlink remote push`
@@ -948,7 +949,7 @@ do_pickup() {
                     ;;
                 *)
                     echo -e "${RED}Unknown auto-deferred action: $action${NC}" >&2
-                    echo "Use: fw pickup auto-deferred [list]" >&2
+                    echo "Use: $(_emit_user_command "pickup auto-deferred [list]")" >&2
                     return 1
                     ;;
             esac
@@ -990,7 +991,7 @@ do_pickup() {
             ;;
         *)
             echo -e "${RED}Unknown pickup command: $subcmd${NC}" >&2
-            echo "Run 'fw pickup' for usage" >&2
+            echo "Run: $(_emit_user_command "pickup")  for usage" >&2
             return 1
             ;;
     esac

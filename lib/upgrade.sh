@@ -11,6 +11,7 @@
 # and what degrades is the loudest line in the output. Source it here too, next
 # to the code that needs it (L-399: a contract split across files drifts).
 # Idempotent — skipped when bin/fw already provided it.
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 if ! declare -f fw_version_relation >/dev/null 2>&1; then
     # shellcheck source=version-relation.sh
     source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/version-relation.sh"
@@ -224,8 +225,8 @@ _sv_is_withheld() {
         echo -e "  ${YELLOW}Self-vendor: withholding uncommitted file(s) not named by this caller${NC}" >&2
         echo "  Each differs from HEAD, so vendoring it would ship another task's" >&2
         echo "  unfinished work to consumers under your commit." >&2
-        echo "    if one is YOURS:  FW_VENDOR_ONLY=\"<path> <path>\" bin/fw vendor self" >&2
-        echo "    sync anyway:      FW_VENDOR_ALL=1 bin/fw vendor self   (logged Tier-2)" >&2
+        echo "    if one is YOURS:  cd $(_fw_quote_word "$PROJECT_ROOT") && FW_VENDOR_ONLY=\"<path> <path>\" $(_fw_cmd) vendor self" >&2
+        echo "    sync anyway:      cd $(_fw_quote_word "$PROJECT_ROOT") && FW_VENDOR_ALL=1 $(_fw_cmd) vendor self   (logged Tier-2)" >&2
     fi
     echo "      withheld: $rel" >&2
     return 0
@@ -1628,10 +1629,10 @@ do_upgrade() {
             echo "" >&2
             echo "  1. Add the upstream URL to .framework.yaml (one-time, persists):" >&2
             echo "       echo 'upstream_repo: https://github.com/OWNER/REPO.git' >> $target_dir/.framework.yaml" >&2
-            echo "       fw upgrade" >&2
+            echo "       $(_emit_user_command_in "$target_dir" "upgrade")" >&2
             echo "" >&2
             echo "  2. Specify upstream URL inline:" >&2
-            echo "       fw upgrade --from-upstream https://github.com/OWNER/REPO.git" >&2
+            echo "       $(_emit_user_command_in "$target_dir" "upgrade --from-upstream https://github.com/OWNER/REPO.git")" >&2
             echo "" >&2
             echo "  3. Run from an upstream framework checkout with explicit target:" >&2
             echo "       cd /path/to/agentic-engineering-framework && bin/fw upgrade $target_dir" >&2

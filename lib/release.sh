@@ -13,6 +13,7 @@
 # lib/colors.sh set off a terminal or under NO_COLOR. The old `${RED:=...}`
 # treated empty as unset and put escape codes back into piped output (T-5048).
 # Sourced standalone (NC unset): take the guarded set from lib/colors.sh.
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 if [ -z "${NC+x}" ]; then
     # shellcheck source=colors.sh
     source "$(dirname "${BASH_SOURCE[0]}")/colors.sh"
@@ -344,7 +345,7 @@ release_issue_leg() {
     if [ "$dry" = true ]; then args+=(--dry-run); fi
     echo -e "${CYAN}GitHub issues (stages 8-9)...${NC}"
     if ! env "${envs[@]}" python3 "$here/issues.py" "${args[@]}"; then
-        echo -e "  ${YELLOW}WARN: issue step did not finish (non-fatal). Retry: bin/fw issues release $next --range ${latest}..HEAD${NC}" >&2
+        echo -e "  ${YELLOW}WARN: issue step did not finish (non-fatal). Retry: $(_emit_user_command "issues release $next --range ${latest}..HEAD")${NC}" >&2
     fi
     return 0
 }
@@ -520,11 +521,11 @@ release_tag_and_release() {
             echo -e "${RED}REFUSING to release $next:${NC} unattended run (no TTY / cron / FW_UNATTENDED) with no recorded release decision." >&2
             echo "  Policy: CLAUDE.md §Release-Train — only verified-working fixes reach master (T-4020, T-4146);" >&2
             echo "  a release needs the operator's yes or positive field-test evidence, and no scheduled release exists." >&2
-            echo "  Record one: bin/fw release decide $next --by operator|field-evidence --ref \"<operator's words | T-XXXX>\"" >&2
+            echo "  Record one: $(_emit_user_command "release decide $next --by operator|field-evidence --ref \"<operator's words | T-XXXX>\"")" >&2
             echo "  No tag, VERSION or master change was made." >&2
             return 1
         else
-            echo -e "${YELLOW}WARN: no recorded release decision for $next${NC} — record one: bin/fw release decide $next --by operator --ref \"...\"" >&2
+            echo -e "${YELLOW}WARN: no recorded release decision for $next${NC} — record one: $(_emit_user_command "release decide $next --by operator --ref \"...\"")" >&2
         fi
     fi
 
@@ -809,7 +810,7 @@ release_tag_and_release() {
     # (v1.8.15-be.4 reached origin but never GitHub). Read it back everywhere.
     if [ "$pub_attempted" -gt 0 ] && ! release_tag_verify_remotes "$root" "$next"; then
         echo -e "${RED}RELEASE INCOMPLETE:${NC} $next is missing on the remote(s) above." >&2
-        echo "  Push it there: git -C $root push <remote> refs/tags/${next}:refs/tags/${next}  (or fw mirror sync)" >&2
+        echo "  Push it there: git -C $root push <remote> refs/tags/${next}:refs/tags/${next}  (or $(_emit_user_command "mirror sync"))" >&2
         failed=1
     fi
 
@@ -938,7 +939,7 @@ EOF
             ;;
         *)
             echo "Unknown release subcommand: $subcmd" >&2
-            echo "Run: fw release --help" >&2
+            echo "Run: $(_emit_user_command "release --help")" >&2
             return 2
             ;;
     esac

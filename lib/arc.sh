@@ -68,6 +68,7 @@
 #
 # Source order (PROJECT_ROOT must be set by caller — bin/fw or test harness).
 
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 set -u
 
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
@@ -430,7 +431,7 @@ arc_create() {
     if [ -z "$headline_mechanic" ]; then
         echo "Error: --headline-mechanic is required (§ACD/G-062)." >&2
         echo "  Describe the user-observable deliverable in one sentence:" >&2
-        echo "    fw arc create $id --name \"$name\" \\" >&2
+        echo "    $(_emit_user_command "arc create $id --name \"$name\"") \\" >&2
         echo "      --headline-mechanic \"<who> <does what> <observes what user-visible result>\"" >&2
         echo "  Example: \"agent dispatches a task without --model → orchestrator picks based on task_type and history → user watches the decision on /orchestrator\"" >&2
         return 2
@@ -553,7 +554,7 @@ YAML
     _arc_validate_id "$id" || return 2
 
     if ! _arc_exists "$id"; then
-        echo "Error: arc '$id' not found. Create it with: fw arc create $id --name \"...\"" >&2
+        echo "Error: arc '$id' not found. Create it with: $(_emit_user_command "arc create $id --name \"...\"")" >&2
         return 1
     fi
 
@@ -891,14 +892,14 @@ arc_close() {
         echo "" >&2
         echo "  Correct flow:" >&2
         if [ -n "$anchor" ]; then
-            echo "    1. Agent: bin/fw task review ${anchor}" >&2
+            echo "    1. Agent: $(_emit_user_command "task review ${anchor}")" >&2
         else
-            echo "    1. Agent: bin/fw task review <arc-anchor-task>" >&2
+            echo "    1. Agent: $(_emit_user_command "task review <arc-anchor-task>")" >&2
         fi
         echo "    2. Human: open the Watchtower URL, review the demo evidence," >&2
-        echo "       run 'bin/fw arc close ${id} --demo <path> --decision \"...\"'" >&2
+        echo "       run '$(_emit_user_command "arc close ${id} --demo <path> --decision \"...\"")'" >&2
         echo "" >&2
-        if [ -n "$wt_url" ]; then echo "  Arc detail: ${wt_url}/arcs/${id}" >&2; else echo "  No Watchtower reachable for this project (start one with: fw serve)." >&2; fi
+        if [ -n "$wt_url" ]; then echo "  Arc detail: ${wt_url}/arcs/${id}" >&2; else echo "  No Watchtower reachable for this project (start one with: $(_emit_user_command "serve"))." >&2; fi
         echo "" >&2
         echo "  Overrides (mirror T-1259 inception-decide): --i-am-human (human typing" >&2
         echo "  into an agent session, rare); --from-watchtower (Flask backend)." >&2
@@ -929,10 +930,10 @@ arc_close() {
     if [ -z "$demo" ]; then
         echo "Error: --demo is required to close an arc (§ACD/G-062)." >&2
         echo "  Provide wire-level evidence the headline mechanic fired:" >&2
-        echo "    fw arc close $id --demo <path-to-meta.json|stream-json|screencast> --decision \"...\"" >&2
-        echo "    fw arc close $id --demo <https://watchtower-url-showing-mechanic-state> --decision \"...\"" >&2
+        echo "    $(_emit_user_command "arc close $id --demo <path-to-meta.json|stream-json|screencast> --decision \"...\"")" >&2
+        echo "    $(_emit_user_command "arc close $id --demo <https://watchtower-url-showing-mechanic-state> --decision \"...\"")" >&2
         echo "  Or — if this arc has no runtime mechanic — bypass with explicit justification:" >&2
-        echo "    fw arc close $id --demo none --justification \"<≥30 chars explaining why no demo applies>\" --decision \"...\"" >&2
+        echo "    $(_emit_user_command "arc close $id --demo none --justification \"<≥30 chars explaining why no demo applies>\" --decision \"...\"")" >&2
         if grep -q "^headline_mechanic:" "$f" 2>/dev/null; then
             echo "  Headline mechanic for this arc:" >&2
             grep "^headline_mechanic:" "$f" | sed 's/^/    /' >&2
@@ -1039,14 +1040,14 @@ arc_abandon() {
         echo "" >&2
         echo "  Correct flow:" >&2
         if [ -n "$anchor" ]; then
-            echo "    1. Agent: bin/fw task review ${anchor}" >&2
+            echo "    1. Agent: $(_emit_user_command "task review ${anchor}")" >&2
         else
-            echo "    1. Agent: bin/fw task review <arc-anchor-task>" >&2
+            echo "    1. Agent: $(_emit_user_command "task review <arc-anchor-task>")" >&2
         fi
         echo "    2. Human: open the Watchtower URL, review the reasoning," >&2
-        echo "       run 'bin/fw arc abandon ${id} --reason \"...\"'" >&2
+        echo "       run '$(_emit_user_command "arc abandon ${id} --reason \"...\"")'" >&2
         echo "" >&2
-        if [ -n "$wt_url" ]; then echo "  Arc detail: ${wt_url}/arcs/${id}" >&2; else echo "  No Watchtower reachable for this project (start one with: fw serve)." >&2; fi
+        if [ -n "$wt_url" ]; then echo "  Arc detail: ${wt_url}/arcs/${id}" >&2; else echo "  No Watchtower reachable for this project (start one with: $(_emit_user_command "serve"))." >&2; fi
         echo "" >&2
         echo "  Overrides (mirror T-1259 inception-decide): --i-am-human (human typing" >&2
         echo "  into an agent session, rare); --from-watchtower (Flask backend)." >&2
@@ -1059,7 +1060,7 @@ arc_abandon() {
         echo "Error: --reason \"<≥30 chars>\" is required." >&2
         echo "  Abandonment is a final-state event — capture WHY in enough detail" >&2
         echo "  that a reader 6 months from now can understand the call:" >&2
-        echo "    fw arc abandon $id --reason \"<detailed rationale, ≥30 chars>\"" >&2
+        echo "    $(_emit_user_command "arc abandon $id --reason \"<detailed rationale, ≥30 chars>\"")" >&2
         return 2
     fi
 
@@ -1119,7 +1120,7 @@ arc_migrate() {
     done
     [ -n "$id" ] || { echo "Usage: fw arc migrate <arc-id> --anchor T-XXXX" >&2; return 2; }
     _arc_validate_id "$id" || return 2
-    _arc_exists "$id" || { echo "Error: arc '$id' not found — create first with 'fw arc create'" >&2; return 1; }
+    _arc_exists "$id" || { echo "Error: arc '$id' not found — create first with: $(_emit_user_command "arc create <id>")" >&2; return 1; }
 
     local seeded=0
     # 1. Pull anchor's related_tasks.
@@ -1331,7 +1332,7 @@ arc_demo_check() {
         http://*|https://*)
             echo "indeterminate: demo_evidence is a URL ($demo)." >&2
             echo "  Validating it needs the network, which this check does not use." >&2
-            echo "  Verify at close time: bin/fw arc close $id --demo '$demo'" >&2
+            echo "  Verify at close time: $(_emit_user_command "arc close $id --demo '$demo'")" >&2
             return 2 ;;
     esac
 
@@ -1464,7 +1465,7 @@ arc_review() {
             echo "    **Recommendation:** CLOSE | KEEP-OPEN" >&2
             echo "    **Rationale:** why — what shipped, what remains" >&2
             echo "    **Evidence:** the demo (docs/reports/... or URL) and the checks behind it" >&2
-            echo "  Bypass (logged Tier-2): FW_ALLOW_EMPTY_RECOMMENDATION=1 fw arc review $id" >&2
+            echo "  Bypass (logged Tier-2): cd $(_fw_quote_word "$PROJECT_ROOT") && FW_ALLOW_EMPTY_RECOMMENDATION=1 $(_fw_cmd) arc review $id" >&2
             return 1
         fi
     fi
@@ -1576,7 +1577,7 @@ arc_journal() {
         | python3 -c 'import json,sys; print("1" if json.load(sys.stdin).get("journal") else "0")' 2>/dev/null)
     if [ "$enabled" != "1" ]; then
         echo "Error: arc '$id' is not switched on for the owner role, so it keeps no journal." >&2
-        echo "       Switch it on first: fw arc owner $id on" >&2
+        echo "       Switch it on first: $(_emit_user_command "arc owner $id on")" >&2
         return 1
     fi
     local by="" args=()
@@ -1619,7 +1620,7 @@ arc_resume() {
         if PROJECT_ROOT="$PROJECT_ROOT" "${_ARC_FW_ROOT}/agents/context/context.sh" focus "$focus_task" >/dev/null 2>&1; then
             echo "Task focus → ${focus_task} (named by the latest next step)"
         else
-            echo "Warning: could not set task focus to ${focus_task}; run: fw context focus ${focus_task}" >&2
+            echo "Warning: could not set task focus to ${focus_task}; run: $(_emit_user_command "context focus ${focus_task}")" >&2
         fi
     fi
     return "$rc"
@@ -1635,7 +1636,7 @@ arc_approve() {
     local id="${1:-}" ref="${2:-}"
     if [ -z "$id" ] || [ -z "$ref" ] || [ "$id" = "--help" ] || [ "$id" = "-h" ]; then
         echo "Usage: fw arc approve <arc-id> <entry-id> --words \"<operator's words>\" [--i-am-human]" >&2
-        echo "       fw arc approve <arc-id> <entry-id> --dispatch-id <review dispatch> --outcome green" >&2
+        echo "       $(_emit_user_command "arc approve <arc-id> <entry-id> --dispatch-id <review dispatch> --outcome green")" >&2
         echo "  Operator route: operator-only (refused under agent control)." >&2
         echo "  Reviewer route: only when the arc's owner.decision_review is reviewer or either." >&2
         return 2
@@ -1809,7 +1810,7 @@ PY
     if [ -n "$existing_ts" ]; then
         echo "Error: driver '$name' already in scoped_drivers (approved at $existing_ts)." >&2
         echo "  To re-approve with a different weight, first remove it:" >&2
-        echo "    fw arc remove-driver $id \"$name\" --rationale \"<≥30 chars why>\"" >&2
+        echo "    $(_emit_user_command "arc remove-driver $id \"$name\" --rationale \"<≥30 chars why>\"")" >&2
         return 1
     fi
 
@@ -1874,7 +1875,7 @@ for r in d.get("reviewed") or []:
 PYREPORT
             echo "" >&2
             echo "  Re-run the review after fixing it:" >&2
-            echo "    fw arc review-driver $id \"$name\" --dry-run" >&2
+            echo "    $(_emit_user_command "arc review-driver $id \"$name\" --dry-run")" >&2
             echo "" >&2
             echo "  Overrides (the operator-approval path, now the exception — T-3429/D-586):" >&2
             echo "    --i-am-human       human typing into an agent session" >&2
@@ -1974,7 +1975,7 @@ PY
     # weight immediately. Failure surfaces a WARN but does NOT roll back the
     # approval — sovereignty boundary is the approval, not the rescore.
     if ! arc_rescore "$id"; then
-        echo "  WARN: rescore reported a failure (driver approval stands). Re-run: fw arc rescore $id" >&2
+        echo "  WARN: rescore reported a failure (driver approval stands). Re-run: $(_emit_user_command "arc rescore $id")" >&2
     fi
     return 0
 }
@@ -2205,7 +2206,7 @@ else:
         if [ "$_wrev_rc" -ne 0 ]; then
             echo "Error: scoped driver '$name' did not pass review — weight unchanged." >&2
             echo "  A weight change is a calibration change; the reviewer gates it (D-586 pattern)." >&2
-            echo "  Preview the verdict: fw arc review-driver $id \"$name\" --dry-run" >&2
+            echo "  Preview the verdict: $(_emit_user_command "arc review-driver $id \"$name\" --dry-run")" >&2
             echo "  Override as yourself: --i-am-human / --from-watchtower" >&2
             return 1
         fi
@@ -2894,7 +2895,7 @@ arc_instantiate() {
             rm -f "$(_arc_path "$slug")"
             echo "Error: no task was created; arc '$slug' removed again (${gone_id:-its id} stays retired)" >&2
         else
-            echo "Error: some tasks of arc '$slug' were not created; see fw task id reconcile" >&2
+            echo "Error: some tasks of arc '$slug' were not created; see: $(_emit_user_command "task id reconcile")" >&2
         fi
         return "$rc"
     fi

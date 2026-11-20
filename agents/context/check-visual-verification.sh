@@ -181,7 +181,7 @@ Problems:
 $CHECK_OUT
 
 Each listed state needs screenshots at every width in UX_SHOT_WIDTHS (default
-1024,1440,1920), taken with \`fw ux shots $TASK_ID <state>=<URL>\`, and a
+1024,1440,1920), taken with \`$(_emit_user_command "ux shots $TASK_ID <state>=<URL>")\`, and a
 \`## Visual Verification\` checklist table
   | state | control | 1024 | 1440 | 1920 | note |
 where each width cell is ok / clipped / hidden / overlap / unreachable, and any

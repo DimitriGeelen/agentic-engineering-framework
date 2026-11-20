@@ -968,7 +968,7 @@ if [ -n "$WT_URL" ]; then
     echo "  Or approve this exact command text in Watchtower:" >&2
     echo "    ${WT_URL}/approvals" >&2
 else
-    echo "  No Watchtower reachable for this project (start one with: fw serve)." >&2
+    echo "  No Watchtower reachable for this project (start one with: $(_emit_user_command "serve"))." >&2
 fi
 echo "" >&2
 echo "  Policy: 011-EnforcementConfig.md §Tier 0" >&2

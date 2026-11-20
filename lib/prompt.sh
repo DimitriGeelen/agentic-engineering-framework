@@ -23,6 +23,7 @@
 #   ---
 #   <prompt body, may contain {{var}} placeholders>
 
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 set -uo pipefail
 
 _prompt_dir() {
@@ -583,7 +584,7 @@ EOF
             ;;
         *)
             echo "Unknown subcommand: $sub" >&2
-            echo "Run 'fw prompt --help' for usage." >&2
+            echo "Run: $(_emit_user_command "prompt --help")  for usage." >&2
             return 2
             ;;
     esac

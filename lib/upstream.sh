@@ -3,6 +3,7 @@
 # Part of the Agentic Engineering Framework
 # Inception: T-451 | Build: T-454
 
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 set -euo pipefail
 
 # Colors: the guarded set (terminal only, NO_COLOR respected) — T-5048.
@@ -58,7 +59,7 @@ _upstream_get_config() {
 
     if [ -z "$repo" ]; then
         echo -e "${RED}ERROR: Cannot determine upstream repo.${NC}" >&2
-        echo -e "Set it explicitly: ${GREEN}fw upstream config --repo OWNER/REPO${NC}" >&2
+        echo -e "Set it explicitly: ${GREEN}$(_emit_user_command "upstream config --repo OWNER/REPO")${NC}" >&2
         return 1
     fi
 
@@ -399,7 +400,7 @@ do_upstream() {
             ;;
         *)
             echo -e "${RED}Unknown upstream subcommand: $subcmd${NC}" >&2
-            echo -e "Run ${GREEN}fw upstream help${NC} for usage." >&2
+            echo -e "Run ${GREEN}$(_emit_user_command "upstream help")${NC} for usage." >&2
             return 1
             ;;
     esac

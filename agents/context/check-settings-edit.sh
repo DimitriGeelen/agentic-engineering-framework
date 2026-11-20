@@ -14,6 +14,10 @@
 set -uo pipefail
 
 INPUT=$(cat)
+PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-${PROJECT_ROOT:-$(pwd)}}"
+# Printed-command builder (T-5304): side-effect free, safe to source in a hook.
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/lib/fw-command.sh" 2>/dev/null || _emit_user_command() { printf 'bin/fw %s\n' "$1"; }
+export FW_HINT_BASELINE="$(_emit_user_command "enforcement baseline")"
 
 echo "$INPUT" | python3 -c "
 import sys, json, os
@@ -46,7 +50,7 @@ if basename != 'settings.json' or parent != '.claude':
 
 msg = (
     'L-398 reminder: you just edited .claude/settings.json. '
-    'Add \`bin/fw enforcement baseline\` to your current task\\'s ## Verification block '
+    'Add \`' + os.environ.get('FW_HINT_BASELINE', 'bin/fw enforcement baseline') + '\` to your current task\\'s ## Verification block '
     'so the canonical hash refreshes at task close. Otherwise fw doctor will report '
     '\"Enforcement baseline CHANGED\" until somebody cleans up (origin: T-1886, T-1887).'
 )

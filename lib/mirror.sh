@@ -17,6 +17,7 @@
 #   status                       Print parity vs origin per remote
 #   help                         Usage
 
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 mirror_log_event() {
     local file="$1" remote="$2" outcome="$3" mirror="${4:-}" origin="${5:-}"
     mkdir -p "$(dirname "$file")"
@@ -394,7 +395,7 @@ USAGE
             ;;
         *)
             echo "Unknown mirror subcommand: $subcmd" >&2
-            echo "Run 'fw mirror help' for usage" >&2
+            echo "Run: $(_emit_user_command "mirror help")  for usage" >&2
             return 2
             ;;
     esac

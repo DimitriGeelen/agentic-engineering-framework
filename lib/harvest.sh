@@ -9,6 +9,7 @@
 #   2+ projects = candidate (proposed for framework)
 #   3+ projects = practice (promoted to framework)
 
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 do_harvest() {
     local project_dir=""
     local dry_run=false
@@ -79,7 +80,7 @@ do_harvest() {
     # Validate project has context
     if [ ! -d "$project_context" ]; then
         echo -e "${RED}ERROR: No .context/project/ found in $project_dir${NC}" >&2
-        echo "Initialize the project first: fw init $project_dir" >&2
+        echo "Initialize the project first: $(_emit_user_command "init $project_dir")" >&2
         return 1
     fi
 

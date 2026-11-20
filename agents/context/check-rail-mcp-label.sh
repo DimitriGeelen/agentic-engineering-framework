@@ -112,7 +112,7 @@ Fix (pick one):
        metadata: {..., "from_project": "$LABEL"}
 
   2. Post anyway, accepting no label (logged Tier-2):
-       bin/fw rail allow-unlabeled-mcp
+       $(_emit_user_command "rail allow-unlabeled-mcp")
      then retry the SAME call once, within ${BYPASS_TTL}s.
 
 NOTE on identity: this hook enforces the LABEL only. The MCP surface's
@@ -120,6 +120,6 @@ signing identity is not re-verified per call — termlink's MCP server
 resolves its key once, at process start, in an environment this hook cannot
 re-introspect. T-2908 measured this surface signing with a project key at one
 point in time; that is an observation, not a structural guarantee. Re-check
-with 'bin/fw rail identity' if you depend on this surface's attribution.
+with '$(_emit_user_command "rail identity")' if you depend on this surface's attribution.
 EOF
 exit 2

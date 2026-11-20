@@ -13,6 +13,7 @@
 
 # T-4431: every tag lookup below excludes -be pre-release tags.
 # shellcheck source=release-tags.sh
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 source "$(dirname "${BASH_SOURCE[0]}")/release-tags.sh"
 
 # Version staleness threshold (commits since last tag)
@@ -44,7 +45,7 @@ do_version_bump() {
     # Guard: only in framework repo
     if [ "$PROJECT_ROOT" != "$FRAMEWORK_ROOT" ]; then
         echo -e "${RED}ERROR: fw version bump is only available in the framework repo${NC}" >&2
-        echo "Use 'fw update' to get the latest version from upstream." >&2
+        echo "Use: $(_emit_user_command "update")  to get the latest version from upstream." >&2
         return 1
     fi
 
@@ -305,7 +306,7 @@ do_version_sync() {
         echo -e "${YELLOW}REFUSING to sync VERSION files down to $fw_version:${NC} below the latest release tag v$tag_floor (tag-as-canonical, T-3242)" >&2
         echo "  FW_VERSION is a resetting commit counter, not the canonical version." >&2
         echo "  The VERSION files follow the tag; cut a release to advance them:" >&2
-        echo "  bin/fw release tag-and-release" >&2
+        echo "  $(_emit_user_command "release tag-and-release")" >&2
         return 1
     fi
 

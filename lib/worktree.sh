@@ -39,6 +39,7 @@
 # landed yet; reporting them as landed would be the dangerous direction of
 # this error, and preferring the remote gets that right too. The local refs
 # stay as fallback for repos with no remote at all.
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 _wt_master_ref() {
     local r
     for r in refs/remotes/origin/master refs/remotes/origin/main refs/heads/master refs/heads/main; do
@@ -726,7 +727,7 @@ do_worktree_remove() {
     local _WT_REMOVE_PATH="" _WT_REMOVE_BRANCH=""
     if ! _wt_remove_resolve "$target"; then
         echo "worktree remove: no linked worktree matches '$target'" >&2
-        echo "  Run 'fw worktree status' to see registered worktrees." >&2
+        echo "  Run: $(_emit_user_command "worktree status")  to see registered worktrees." >&2
         return 1
     fi
 
@@ -792,7 +793,7 @@ do_worktree_remove() {
         echo "  from -- origin: T-2428/T-2825, a branch that sat unpushed for 5 weeks this way)." >&2
         echo "" >&2
         echo "  Push first:   git -C $_WT_REMOVE_PATH push origin $_WT_REMOVE_BRANCH" >&2
-        echo "  Or override:  fw worktree remove $target --force   (logged Tier-2)" >&2
+        echo "  Or override:  $(_emit_user_command "worktree remove $target --force")   (logged Tier-2)" >&2
         return 1
     fi
 

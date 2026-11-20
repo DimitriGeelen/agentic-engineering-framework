@@ -173,7 +173,7 @@ fi
     echo "      <re-run the same Write/Edit against $MAIN_ROOT/$REL_PATH>"
     echo ""
     echo "  Keep using this worktree for SOURCE. Build here, then land with"
-    echo "  \`fw integrate run bleeding-edge --push\` from the main checkout. Only"
+    echo "  \`$(_emit_user_command_in "$MAIN_ROOT" "integrate run bleeding-edge --push")\`. Only"
     echo "  .context/ and .tasks/ writes are refused."
     echo ""
     case "$REL_PATH" in
@@ -182,7 +182,7 @@ fi
             # checkout's (lib/paths.sh fw_focus_file), so set focus there.
             echo "  Setting focus? This worktree reads the main checkout's focus file"
             echo "  ($MAIN_ROOT/.context/working/focus.yaml). Set it with:"
-            echo "    fw context focus T-XXX     (runs from here; writes that file)"
+            echo "    $(_emit_user_command "context focus T-XXX")     (writes that file)"
             echo ""
             ;;
     esac

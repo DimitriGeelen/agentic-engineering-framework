@@ -22,7 +22,7 @@ BLOCKED_TOOLS="SendMessage SendToProject SendToProjectContext"
 # Context-aware fw path (G-033/T-1182)
 FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 source "$FRAMEWORK_ROOT/lib/paths.sh" 2>/dev/null || true
-_fw=$(_fw_cmd 2>/dev/null || echo "bin/fw")
+_fw() { _emit_user_command "$1" 2>/dev/null || printf 'bin/fw %s\n' "$1"; }  # printed-command builder (T-5304)
 
 payload=$(cat 2>/dev/null || true)
 tool_name=$(printf '%s' "$payload" | python3 -c '
@@ -51,6 +51,6 @@ echo "FW-DENY: cross-session-messaging (T-5225)" >&2
 echo "BLOCKED: $shown — Claude Code's own cross-session messaging is forbidden in this project." >&2
 echo "Operator rule (2026-11-17, confirmed 2026-11-18): agent-to-agent messages always go over TermLink." >&2
 echo "Refused tools: $BLOCKED_TOOLS." >&2
-echo "Send it this way instead:  $_fw sidecar send --to <peer> --body \"...\"" >&2
-echo "(peers: 'termlink list'; reply on a thread with --conversation <id>; read yours with '$_fw sidecar inbox')" >&2
+echo "Send it this way instead:  $(_fw 'sidecar send --to <peer> --body "..."')" >&2
+echo "(peers: 'termlink list'; reply on a thread with --conversation <id>; read yours with: $(_fw 'sidecar inbox'))" >&2
 exit 2

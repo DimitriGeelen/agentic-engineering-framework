@@ -12,6 +12,7 @@
 #
 # Origin: T-889 (foundation for T-885 service registry)
 
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 [[ -n "${_FW_CONFIG_FILE_LOADED:-}" ]] && return 0
 _FW_CONFIG_FILE_LOADED=1
 
@@ -135,9 +136,9 @@ _config_set() {
             local near
             near="$(_config_closest_key "$key")"
             echo -e "${RED:-}Unknown config key: $key${NC:-}" >&2
-            echo "  It is not in the config registry, so nothing reads it (see: fw config overrides)." >&2
-            [ -n "$near" ] && echo "  Did you mean: fw config set $near $value" >&2
-            echo "  To write it anyway: fw config set $key $value --force" >&2
+            echo "  It is not in the config registry, so nothing reads it (see: $(_emit_user_command "config overrides"))." >&2
+            [ -n "$near" ] && echo "  Did you mean: $(_emit_user_command "config set $near $value")" >&2
+            echo "  To write it anyway: $(_emit_user_command "config set $key $value --force")" >&2
             exit 1
         fi
     fi
@@ -155,7 +156,7 @@ _config_set() {
 
     if [ ! -f "$target_yaml" ]; then
         echo -e "${RED:-}No config file found at $target_yaml${NC:-}" >&2
-        echo "Run 'fw init' first to create a project configuration." >&2
+        echo "Run: $(_emit_user_command "init")  first to create a project configuration." >&2
         exit 1
     fi
 
