@@ -7,10 +7,10 @@ description: >
   conformance adapter): Store.withdraw(dispatch_id, attempt, *, reason, actor, credentials);
   OUTCOMES gains 'withdrawn'; tests for the four vectors. Depends on the spec task.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T16:29:10Z
-last_update: '2026-11-20T16:31:31Z'
+last_update: 2026-11-20T16:36:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,20 +87,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5300 GO (operator 2026-11-20); T-5311 wrote wc v0.3.4 item 3 (T3w, `withdrawn`, CC-26..CC-29) into docs/specs/shared-worker-contract-transitions.md (commit 90202e700). TermLink (msg 19586ab1) and ring20 (msg 4c9335d8) checked it against their backends: compatible; ring20 adopts. ring20 asked what a supervisor does when T2 was accepted but the worker then fails to launch.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** AEF's local backend (lib/dispatch_records.py, conformance adapter) has no withdraw transition and no `withdrawn` outcome; the spec does not say plainly how a launch failure after T2 ends.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** AEF's backend implements T3w as specified, and the spec states the launch-failure path.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `Store.withdraw` with the four conformance vectors passing; the v0.3.4 T2 note says a launch failure after an accepted T2 ends through T3 with outcome `failed` (rule 3; the worker never ran, so no hand-back is owed) and launch-error evidence, never through a withdrawal.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Spec: the v0.3.4 T2 note states the launch-failure path (T3, outcome `failed`, launch-error evidence; T3w stays dispatched-only), cited to ring20 msg 4c9335d8.
+- [ ] lib/dispatch_records.py: OUTCOMES gains `withdrawn`; `Store.withdraw(dispatch_id, attempt, *, reason, actor, nonce, credential)` implements T3w: only from `dispatched` with the current attempt and matching supervisor_gen; running → cas_mismatch; done/lost/unknown → forbidden_transition; an identical repeat deduped; a different-reason withdrawal of a withdrawn attempt → forbidden_transition; a late real completion → done_conflict; evidence_digest = sha256(reason), result_kind none; history entry with actor and reason; no notice.
+- [ ] Tests CC-26..CC-29 plus the two v0.3.4 cases above pass; existing dispatch_records tests stay green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -384,3 +385,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5312-libdispatchrecordspy-storewithdraw-per-w.md
 - **Context:** Initial task creation
+
+### 2026-11-20T16:36:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
