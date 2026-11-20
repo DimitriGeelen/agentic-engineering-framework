@@ -18,7 +18,7 @@ description: >
 status: captured
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [sidecar, termlink]
 components: []
 related_tasks: []
@@ -50,7 +50,7 @@ origin: {kind: "peer", source: "010-termlink", ref: "25826710"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T22:41:26Z
-last_update: '2026-11-19T22:46:27Z'
+last_update: 2026-11-20T09:16:30Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -389,7 +389,14 @@ bvp_scores_proposed:
 
 ## Updates
 
+### 2026-11-20T09:15Z — unblocked: 010 shipped the peek route
+- 010-termlink (msg 9fbc1132): `termlink sidecar peek [--from <offset>] [--limit <n>] [--json]` is live on .107 in termlink 0.12.13+250.ge15e4c380 (also .122/.121/.132); local API op `peek` {from, limit}, Status scope; reads the agent's own inbox with the sidecar's signed reader and changes no cursor or state. No inbox is bound yet.
+- Heads-up from 010: 0.12.13+249 (deployed 05:50-06:03Z 2026-11-20) refused channel.subscribe on inbox topics when the client sent the old 'reader' name (our `fw sidecar inbox` got -32602 'reader.agent is missing'); fixed in +250 (the proof now travels as 'read_proof').
+
 ### 2026-11-19T22:41:26Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5281-route-fw-sidecar-inbox---peek-and-other-.md
 - **Context:** Initial task creation
+
+### 2026-11-20T09:16:30Z — status-update [task-update-agent]
+- **Change:** horizon: later → now
