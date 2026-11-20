@@ -1,0 +1,116 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5267: Pid-file kills without an identity check can terminate an unrelated process that reused the pid (sidecar receiver/watcher/supervisor, Watchtower stop with its children)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T10:03:40Z
+# ============================================================================
+
+task_id: T-5267
+task_name: "Pid-file kills without an identity check can terminate an unrelated process that reused the pid (sidecar receiver/watcher/supervisor, Watchtower stop with its children)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-19T15:40:14Z
+completed: 2026-11-20T10:02:07Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-19T16:40:40+01:00
+last_commit: 2026-11-20T11:02:04+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file + register G-135 — pid-file kills without identity check can kill an unrelated process (0506 report). scope — context, criteria, verification. pid-file kills check process identity before signalling (G-135). vendor sync — pid identity helper and identity-checked kill sites. identity temp file named by BASHPID, not $$ alone (T-5067 lint). vendor sync — pid-alive.sh temp name. criteria ticked, RCA
+
+# Key outcomes
+outcomes:
+  - 'One shared identity helper (Python module plus a shell function that calls or mirrors it, with a parity test) records `pid`, `start_ticks` and `cmd_marker` and answers "is this pid still that process".'
+  - 'Every pid file written by the sidecar receiver, supervisor, watcher and Watchtower carries the identity, in a way old readers still parse (or all readers updated in the same change).'
+  - 'Every kill site listed in the Problem part checks identity before signalling, including Watchtower''s child kill (`pkill -P`), and refuses with a logged reason on mismatch; a legacy pid file without identity is killed only when the process''s cmdline matches the expected marker.'
+  - 'Tests: a reused pid (a live unrelated process whose pid is written into the pid file) is NOT signalled at each kill site; the real process is still stopped; legacy pid file with matching and non-matching cmdline.'
+  - 'Existing sidecar and Watchtower lifecycle tests stay green.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/watchtower.sh'
+  - '.agentic-framework/lib/integrate.py'
+  - '.agentic-framework/lib/pid-alive.sh'
+  - '.agentic-framework/lib/proc_identity.py'
+  - '.agentic-framework/lib/sidecar/lifecycle.py'
+  - '.agentic-framework/lib/sidecar/watcher.py'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/templates/scripts/be-reachable.sh'
+  - '.agentic-framework/lib/working-gitignore.sh'
+  - '.context/project/concerns.yaml'
+  - '.context/sidecar/.gitignore'
+  - '.context/working/.gitignore'
+  - '.fabric/components/lib-proc_identity.yaml'
+  - '.tasks/active/T-5267-pid-file-kills-without-an-identity-check.md'
+  - 'bin/watchtower.sh'
+  - 'lib/integrate.py'
+  - 'lib/pid-alive.sh'
+  - 'lib/proc_identity.py'
+  - 'lib/sidecar/lifecycle.py'
+  - 'lib/sidecar/watcher.py'
+  - 'lib/sidecar_cli.py'
+  - 'lib/templates/scripts/be-reachable.sh'
+  - 'lib/working-gitignore.sh'
+  - 'tests/unit/t4706_watchtower_live_guard.bats'
+  - 'tests/unit/test_t5267_pid_identity.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-19T16:40:40'
+    action: 'T-5267: file + register G-135 — pid-file kills without identity check can kill an unrelated process (0506 report)'
+  - time: '2026-11-20T10:14:30'
+    action: 'T-5267: scope — context, criteria, verification'
+  - time: '2026-11-20T10:43:20'
+    action: 'T-5267: pid-file kills check process identity before signalling (G-135)'
+  - time: '2026-11-20T10:43:39'
+    action: 'T-5267: vendor sync — pid identity helper and identity-checked kill sites'
+  - time: '2026-11-20T10:44:51'
+    action: 'T-5267: identity temp file named by BASHPID, not $$ alone (T-5067 lint)'
+  - time: '2026-11-20T10:45:11'
+    action: 'T-5267: vendor sync — pid-alive.sh temp name'
+  - time: '2026-11-20T11:02:04'
+    action: 'T-5267: criteria ticked, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 1101 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, safety]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1101
+  commits: 8
+  files_changed: 28
+  lines_added: 2183
+  lines_removed: 138
+  footprint_refreshed_at: '2026-11-20T10:03:55Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5267-pid-file-kills-without-an-identity-check.md
+generated_by: context-agent-hybrid

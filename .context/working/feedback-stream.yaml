@@ -57458,3 +57458,21 @@ scan_id: R-16102e31
 task_id: T-5292
 payload:
   task_file: .tasks/active/T-5292-structured-verdicts-slice-1-verdict-form.md
+---
+kind: scan_emitted
+timestamp: '2026-11-20T10:03:18Z'
+scan_id: R-1a0766f3
+task_id: T-5267
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-20T10:03:18Z'
+scan_id: R-1a0766f3
+task_id: T-5267
+payload:
+  task_file: .tasks/active/T-5267-pid-file-kills-without-an-identity-check.md
