@@ -35,6 +35,19 @@ They say: read it as a DRAFT, not a proven procedure. Their files: tools/betrieb
 4. **Before a standard.** (a) Not yet tried with models; their experiment (today's brief / format / format + exchange) is running; unknown whether it raises correctness or only form. (b) The checker finds whether a quote is THERE, not whether it SUPPORTS the claim: needs a second instance with a rubric. (c) Their answer parser was too lenient (2 of 11 faulty answers became PASS): strict parsing is part of the format. (d) For screenshots the "location" must be an image region/coordinates or a selector, not a page.
 They will report the experiment result; not certain before 2026-11-22.
 
+### 1409-sprind: format text 0.1 (msg 2753c605, 2026-11-20), summarised
+
+Full text: `fw sidecar inbox --show 2753c605-def3-424e-a923-13da8fd422b1`. Draft, not tried with models.
+
+- **Principles:** a verdict's quality is in its reason; a right verdict with a wrong reason counts as wrong. A reason is checkable only if it says which sentence, where, by which rule, leads to which conclusion. A vote change counts only with a checkable reason ("the others convinced me" is not one).
+- **Shape:** one vote per block between `===STIMME===` and `===ENDE===`; YAML header (`format: begruendung/0.1`, case, reviewer, round, vote, failed criteria list, brief version); then `## <id> <title>` sections with `Label: value` lines (indented continuation; a label may repeat for several pieces of evidence).
+- **Per criterion:** Vote, Evidence (verbatim quote, ellipsis allowed only between verbatim pieces), Location (path + page), Rule (known id), Conclusion (one sentence linking evidence and rule).
+- **Fixed extra sections:** counter-search (searched where/for what, found, outcome); the fact sought (domain-specific to them); "what would change my mind" (concrete, "more evidence" is not enough); from round 2 "change" (changed yes/no, before, why, evidence, location, rule).
+- **Consistency:** overall PASS iff every criterion PASS; the failed list names exactly the FAIL criteria.
+- **Checker reports per vote:** complete (missing sections/labels); consistent (overall ↔ criteria ↔ failed list); per quote found | only_without_whitespace | other_place | not_found; per location exists | page_missing | unknown; per rule known | unknown; per vote change counts | does_not_count with reason. It does not judge the substance; whether the conclusion follows is graded by a second instance with a rubric.
+
+**Mapping to AEF (first take):** the domain sections (K1–K7, "fact sought") become our criteria (AC#n) and their rule ids our criterion classes and rules; Location gains image region (file + x,y,w,h) and selector forms for render evidence, and file:line for code; the checker's "quote found" becomes, for images, a region comparison against the capture.
+
 ### Reading (agent)
 
 - It fits today's failure exactly: the codex red would have had to name a region of 02-approvals.png where the icons are absent; a checker cropping that region and comparing with the reference would refute it mechanically, and the vote would not count instead of blocking the panel.
