@@ -57,3 +57,15 @@ Actor split for risk 1: own agents unintentional 3×4=12 → 2×2=4; human unint
 
 - 2026-11-20, ring20 (relaying the operator): proposal and questions (msg a6cdde77).
 - 2026-11-20, agent: filed T-5310, asked for the template; ring20 sent template, worked example and their view (msg c06b5f30).
+
+## Reflection and challenge (agent, 2026-11-20)
+
+**For it.** It fills a real hole: changes that cross a trust boundary (new review seats, sandboxes, hooks that run unattended, new routes to the hub) are discussed in task text and then forgotten. Today alone produced two such cases (T-5309 attaches screenshots to codex; T-5300 lets a submitter withdraw a pool job). "Introduced by this change, or there anyway?" is the strongest part: it stops a change being blocked for risks it does not add, and it stops a change hiding a risk it does add.
+
+**Against it, or where to be careful.**
+- *Cost.* A 14-row matrix for every change would bury real work. ring20's trigger (only changes that alter a trust boundary) keeps it rare; the trigger must be written so an agent can tell.
+- *Operator load.* ring20's operator confirmed every score in a walkthrough. Today the operator pushed back hard on being asked to rubber-stamp screenshots. Scores are judgement, but most are not risk acceptance. Proposed split: the agent drafts and scores; an independent reviewer agent checks the scores and the actor split (as for other reviewer-judged criteria); the operator decides only what is risk acceptance: a NEW risk that stays at 6 or more after mitigation, or anything high (15+).
+- *Fake precision.* L × I invites arguing about 3 versus 4. The bands and the "new?" column carry the decision; the exact number matters less. Keep the scale, do not build machinery on exact scores.
+- *Register drift.* AEF's gaps register works because audit reads it. A risk with score 6+ and no mitigation task must show in `fw audit`, or the arc becomes the next unused process.
+
+**Fit with AEF.** Risks stay in `.context/project/concerns.yaml` (type risk) with added fields: likelihood, impact, actors (per-actor L/I and mitigated L/I), introduced_by (task), exists_anyway, mitigation_task. One standing arc "risk" that never closes holds the mitigation tasks. A matrix template under `.tasks/templates/` or `docs/templates/`. Consumers get template, fields and the audit check through `fw upgrade`.
