@@ -209,6 +209,15 @@ def create_app() -> Flask:
             # only fires on state-changing methods.)
             if (request.endpoint or "").startswith("designer_api."):
                 return
+            # T-5262: the project's csrf-exemption entries, applied only to endpoints
+            # whose startup probe proved they refuse requests without a valid
+            # credential (web/project_extensions.py). The probe's own requests carry
+            # a per-startup secret in the WSGI environ, never settable by a client.
+            from web import project_extensions as _pext_csrf
+            if request.endpoint and request.endpoint in _pext_csrf.exempt_endpoints(app):
+                return
+            if _pext_csrf.probe_request(app, request.environ):
+                return
             # T-1343 / G-048: /api/* blanket exemption removed. State-mutating
             # /api/* endpoints now require X-CSRF-Token header or _csrf_token
             # form field (read-only GET /api/* are untouched — CSRF only fires
@@ -285,7 +294,7 @@ def create_app() -> Flask:
     # T-5261: the project's menu entries (`nav`), merged for rendering only:
     # NAV_GROUPS itself stays the framework's list.
     _pext.build_project_nav(app, PROJECT_ROOT, _fw_root, NAV_GROUPS, entries=_pext_entries)
-    _pext.save_state(app, PROJECT_ROOT, _pext_entries)
+    # (state saved at the end of create_app, after the T-5262 CSRF probe)
 
     # -------------------------------------------------------------------
     # Flask-SocketIO for web terminal (T-964)
@@ -565,6 +574,12 @@ def create_app() -> Flask:
             error_message="An unexpected error occurred. Check the server logs.",
             **_error_context(),
         ), 500
+
+    # T-5262: the project's CSRF exemptions, each proven by a startup probe. Last,
+    # so every route, before_request hook and error handler is in place when the
+    # probe requests run (web/project_extensions.py probe_csrf_exemptions).
+    _pext.probe_csrf_exemptions(app, _pext_entries)
+    _pext.save_state(app, PROJECT_ROOT, _pext_entries)
 
     return app
 
