@@ -68,8 +68,17 @@ cost_estimate_proposed:
 ## Open Questions
 
 - **IW-1: Does ring20 (the source of item 2, whose poold closes dispatches) accept TermLink's amendments A1-A6, or need changes?**
+  confidence: 3
+  disposition: answered
+  rationale: ring20 msg 0e5516a8: adopt with A1-A6; their closing backend is orch-supervisor (poold never closes); three small changes on their side (A2 late completion, A4 policy id, A5 retry link) plus the A6 response shape
 - **IW-2: What were the six weaknesses TermLink's two reviewers found (the reasons, not only the amendments)?** (asked 010, msg cb77d7c4)
+  confidence: 3
+  disposition: answered
+  rationale: 010 msg c2d29013: W1-W6 (five high, one medium), found independently by two reviewers; A1-A6 answer them in order; docs/reports/T-5318-dispatch-closure-amendments.md
 - **IW-3: What does AEF's own backend (lib/dispatch_records.py) need to change: declare closure never or supported, and the cost of each?**
+  confidence: 3
+  disposition: answered
+  rationale: lib/dispatch_records.py:19 keeps dispatches open, so AEF declares closure: never; cost is a typed refusal of close and tolerating the new fence reason
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
@@ -147,17 +156,18 @@ cost_estimate_proposed:
 
 ## Recommendation
 
-**Recommendation:** EXPLORING
+**Recommendation:** GO
 
 **Rationale:**
 
-010-termlink msg e9015b84, 2026-11-20: TermLink's operator ADOPTS v0.3.4 items 1 and 3 as drafted, and item 2 only with amendments A1-A6 (two independent reviewers found the same six weaknesses: close as one fenced CAS transaction racing T1; closure fences T1 only, attempt transitions stay legal; backends declare closure never|supported, dispatch_closed only with a readable record, CC-15/19 split; close authenticated by the last supervisor credential or a declared policy; closure terminal, recovery by a new dispatch with retry_of_dispatch_id; first close wins, repeats return the stored record, history rows). Item 2 came from ring20 (closure findings); ring20 must agree, then AEF's operator decides. Proposed vectors CC-30..43, CC-15a/b, 19a/b.
+Adopt v0.3.4 item 2 (optional dispatch closure) with TermLink's amendments A1-A6, and with it items 1 and 3, so all three owners adopt the same v0.3.4. Two independent reviewers on TermLink's side found the same six weaknesses in item 2 as drafted (W1-W6: five high), each a way three backends could disagree or a caller could block someone else's retries; each amendment is the smallest fix for one. ring20, whose orchestrator is the only backend that closes, accepts all six with three small changes on its side. For AEF the cost is small: our backend never closes dispatches, so it declares `closure: never` and answers a close with a typed refusal. Build after a GO: write A1-A6 and vectors CC-30..CC-43 (CC-15a/b, CC-19a/b) into the spec, then AEF's typed refusal.
 
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- TermLink operator rulings (010 msg e9015b84): items 1 and 3 adopted; item 2 only with A1-A6.
+- The six weaknesses, found independently by two reviewers (010 msg c2d29013); docs/reports/T-5318-dispatch-closure-amendments.md.
+- ring20: adopt with A1-A6 (msg 0e5516a8).
+- AEF backend: lib/dispatch_records.py:19 keeps dispatches open (closure: never).
 
 ## Decisions
 
