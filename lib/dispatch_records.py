@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Local backend of the shared dispatched-worker contract, wc/0.3.3 (T-4802).
+"""Local backend of the shared dispatched-worker contract, wc/0.3.3 plus v0.3.4 T3w (T-4802, T-5312).
 
 The §6.2 dispatch-records store: one JSON record per dispatch, every write under
 an exclusive flock, crash-atomic by temp file + fsync + rename + directory fsync.
 It implements the §3 transition table (T1, T2, T3, T3b, T-RECLAIM, T4, T5, T6,
-T6b, T7a-T7d, T8), the closed fence_reject list, per-attempt fencing, the no-overlap
+T6b, T7a-T7d, T8, and the v0.3.4 withdrawal T3w), the closed fence_reject list, per-attempt fencing, the no-overlap
 rule of §4.3 and the §3.3 outcome derivation with refusal ahead of rule 1.
 
 Scope (T-4801 option A): store plus conformance adapter only. Nothing in
@@ -44,7 +44,14 @@ CONTRACT_VERSION = "wc/0.3"
 BACKEND = "local"
 
 STATES = ("dispatched", "running", "done", "lost", "unknown")
-OUTCOMES = ("succeeded", "failed", "refused", "handback-malformed", "paused")
+OUTCOMES = ("succeeded", "failed", "refused", "handback-malformed", "paused", "withdrawn")
+#: Outcomes a consumer may count as finished work (success or failure). `paused`,
+#: `withdrawn` and any outcome this reader does not know are terminal and NOT finished
+#: work (§2 reader rule, v0.3.4).
+FINISHED_OUTCOMES = ("succeeded", "failed", "refused", "handback-malformed")
+#: Writers that may withdraw (§3.2 `submitter`: the holder of the attempt's credentials).
+#: The sweep writer never withdraws; there is no operator path in v0.3.4.
+WITHDRAW_WRITERS = ("submitter", "dispatcher", "supervisor")
 FENCE_REASONS = ("stale_attempt", "bad_nonce", "bad_credential", "stale_gen",
                  "cas_mismatch", "forbidden_transition", "done_conflict", "dispatch_closed")
 STOP_CAUSES = ("deadline_stop", "revoked", "operator_stop")
@@ -307,6 +314,11 @@ class Store:
         att["state"] = to
         if to != "done":
             att["outcome"] = None
+        else:
+            # §5.5: a terminal attempt closes its open questions (the answer channel itself,
+            # and so the bounce of un-acked answers, is not implemented by this backend)
+            for q in att.get("questions", []):
+                q.setdefault("closed_at", entry["ts"])
         if to in ("running", "unknown", "lost", "done"):
             att["probe"]["absent_since"] = None
 
@@ -427,6 +439,9 @@ class Store:
                 raise _Reject(_fence("stale_attempt"))
             self._check_proof(record, att, nonce=nonce, credential=credential, writer=writer, op="start",
                               gen=supervisor_gen, running_path=True, backend=backend)
+            if att["state"] == "done" and att["outcome"] == "withdrawn":
+                # CC-27: T2 lost the race to T3w through the CAS; the supervisor launches nothing
+                raise _Reject(self._log_reject(record, attempt, "cas_mismatch", writer, "start"))
             if att["state"] != "dispatched":
                 self._cas_fail(record, att, "running", writer, "start")
             self._move(att, "running", writer, "T2")
@@ -500,6 +515,45 @@ class Store:
             result = self._complete_from_state(record, att, evidence, writer, "complete")
             box["changed"] = result.get("response") != "T8"
             return result
+        return self._mutate(dispatch_id, fn)
+
+    # ── T3w: withdrawal (v0.3.4) ───────────────────────────────────────
+    def withdraw(self, dispatch_id, attempt, *, reason, actor, nonce, credential, supervisor_gen,
+                 writer="submitter", backend=None) -> dict:
+        """T3w dispatched -> done{withdrawn}: the submitter takes back an attempt that never started.
+
+        Fenced like any lifecycle write (nonce, credential, supervisor_gen, CAS on `dispatched`,
+        all under the dispatch lock). running -> cas_mismatch; done/lost/unknown ->
+        forbidden_transition, except an identical repeat of this withdrawal, which is T8."""
+        if not isinstance(reason, str) or not reason or not isinstance(actor, str) or not actor:
+            return {"error": "bad_withdraw"}
+        digest = _sha256(reason)
+
+        def fn(record, box):
+            att = self._attempt(record, attempt)
+            if att is None:
+                raise _Reject(_fence("stale_attempt"))
+            if writer not in WITHDRAW_WRITERS:
+                # the sweep writer (hub) and the worker never withdraw (§3.2)
+                raise _Reject(self._log_reject(record, attempt, "bad_credential", writer, "withdraw"))
+            self._check_proof(record, att, nonce=nonce, credential=credential, writer=writer, op="withdraw",
+                              backend=backend)
+            if supervisor_gen != att["supervisor_gen"]:
+                raise _Reject(self._log_reject(record, attempt, "stale_gen", writer, "withdraw"))
+            state = att["state"]
+            if state == "done" and att["outcome"] == "withdrawn" and att["evidence_digest"] == digest:
+                return {"ok": True, "response": "T8", "notices": 0}           # T8: nothing appended
+            if state == "running":
+                raise _Reject(self._log_reject(record, attempt, "cas_mismatch", writer, "withdraw"))
+            if state != "dispatched":                                        # done, lost, unknown
+                raise _Reject(self._log_reject(record, attempt, "forbidden_transition", writer, "withdraw"))
+            # dispatched implies the current attempt (I6: every earlier attempt is terminal)
+            self._move(att, "done", writer, "T3w", evidence_digest=digest, actor=actor, reason=reason)
+            att.update({"outcome": "withdrawn", "exit_code": None, "handback": None, "attested": False,
+                        "attested_by": None, "evidence_digest": digest,
+                        "result": {"kind": "none", "value": None, "persisted_at": None}})
+            box["changed"] = True
+            return _accepted("T3w")                                          # no operator notice
         return self._mutate(dispatch_id, fn)
 
     # ── sweep writer: T4, T6, T6b, T7a, T7c ────────────────────────────
@@ -646,7 +700,7 @@ class Store:
                 self._finish(record, att, evidence, "operator", "T7d")
                 att["history"][-1].update(log)
             else:
-                if outcome not in OUTCOMES:
+                if outcome not in OUTCOMES or outcome == "withdrawn":   # only T3w writes withdrawn
                     return {"error": "bad_resolve"}
                 self._move(att, "done", "operator", "T7d", **log)
                 att.update({"outcome": outcome, "attested": True, "attested_by": actor,
@@ -659,10 +713,14 @@ class Store:
 
     # ── consumers and reads ────────────────────────────────────────────
     def consume(self, dispatch_id, attempt, *, consumer) -> dict:
-        """An evaluation-layer consumer naming (dispatch, attempt, result): paused or attested is refused."""
+        """An evaluation-layer consumer naming (dispatch, attempt, result).
+
+        Refused: paused, attested, withdrawn, and any outcome this reader does not know
+        (§2 reader rule: terminal, never finished work)."""
         record = self.load(dispatch_id)
         att = self._attempt(record, attempt) if record else None
-        if att is None or att["state"] != "done" or att["outcome"] == "paused" or att["attested"]:
+        if att is None or att["state"] != "done" or att["outcome"] not in FINISHED_OUTCOMES \
+                or att["attested"]:
             return {"refused": "not_finished_work", "notices": 0}
         return {"ok": True, "notices": 0, "values": {"dispatch_id": dispatch_id, "attempt": attempt,
                                                      "result": att["result"]}}
@@ -875,6 +933,12 @@ class _Adapter:
                                        supervisor_gen=step.get("supervisor_gen"),
                                        backend=None if backend is None else
                                        (BACKEND if backend == "under_test" else backend))
+        if op == "withdraw":
+            return self.store.withdraw(did, n, reason=args.get("reason"), actor=args.get("actor", "submitter"),
+                                       nonce=self._sym(step.get("nonce")),
+                                       credential=self._sym(step.get("credential")),
+                                       supervisor_gen=step.get("supervisor_gen", 1),
+                                       writer=writer or "submitter")
         if op == "confirm_end":
             return self.store.confirm_end(did, n)
         if op == "sweep":
