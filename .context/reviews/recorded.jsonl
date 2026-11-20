@@ -185,3 +185,4 @@
 {"ac":1,"outcome":"green","task":"T-5261","ts":"2026-11-20T00:06:05Z","verdict_id":"V-20261120-f5952e91"}
 {"ac":1,"outcome":"green","task":"T-5261","ts":"2026-11-20T00:07:55Z","verdict_id":"V-20261120-f26149c6"}
 {"ac":1,"outcome":"green","task":"T-5261","ts":"2026-11-20T00:11:19Z","verdict_id":"V-20261120-67560666"}
+{"ac":1,"outcome":"not-evaluated","task":"T-5260","ts":"2026-11-20T00:14:12Z","verdict_id":"V-20261120-2476978b"}
