@@ -9,18 +9,18 @@ description: >
   verdict can be checked and refuted from its own content, and delivered to all consumer
   projects?
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 waiting_on: agent
 revisit_at: 2026-11-27
 created: 2026-11-20T07:11:50Z
-last_update: '2026-11-20T07:15:24Z'
-date_finished:
+last_update: 2026-11-20T08:38:37Z
+date_finished: 2026-11-20T08:38:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -125,15 +125,15 @@ Reviewer verdicts (`fw reviewer judge`, verdict ledger) are free text: VERDICT /
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -195,7 +195,11 @@ Adopt 1409's verdict structure (draft 0.1) as the framework's reviewer verdict f
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Adopt 1409's verdict structure (draft 0.1) as the framework's reviewer verdict format, for new verdicts only, delivered to every project by fw upgrade. Every vote, pass or fail, has the same shape: per criterion a vote, evidence, where it is, the rule, and a one-sentence conclusion, plus a counter-search and "what would change my mind". A program checks each vote mechanically; a vote that fails the check does not count and the seat is replaced, so a misreading like T-5262's no longer blocks a panel or forces a bypass. Operator chose to start now rather than wait for 1409's experiment (2026-11-20, option 1); we measure on our own ledger. Build in slices: (1) format in the judge's brief plus a strict reader that refuses a malformed vote instead of coercing it; (2) the checker (quote found in the named file and line; for screenshots, the named region exists and its crop is attached for the other seats; rule known; overall vote consistent with the criteria); (3) "not checkable" votes do not count and the panel reassigns the seat, else the operator; (4) later: the exchange round. Old ledger rows are untouched.
+
+**Date**: 2026-11-20T08:38:36Z
 
 ## Updates
 
@@ -204,3 +208,42 @@ Adopt 1409's verdict structure (draft 0.1) as the framework's reviewer verdict f
 
 ### 2026-11-20T07:12:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-20T08:38:36Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Adopt 1409's verdict structure (draft 0.1) as the framework's reviewer verdict format, for new verdicts only, delivered to every project by fw upgrade. Every vote, pass or fail, has the same shape: per criterion a vote, evidence, where it is, the rule, and a one-sentence conclusion, plus a counter-search and "what would change my mind". A program checks each vote mechanically; a vote that fails the check does not count and the seat is replaced, so a misreading like T-5262's no longer blocks a panel or forces a bypass. Operator chose to start now rather than wait for 1409's experiment (2026-11-20, option 1); we measure on our own ledger. Build in slices: (1) format in the judge's brief plus a strict reader that refuses a malformed vote instead of coercing it; (2) the checker (quote found in the named file and line; for screenshots, the named region exists and its crop is attached for the other seats; rule known; overall vote consistent with the criteria); (3) "not checkable" votes do not count and the panel reassigns the seat, else the operator; (4) later: the exchange round. Old ledger rows are untouched.
+
+### 2026-11-20T08:38:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e6ab59ee
+- **Timestamp:** 2026-11-20T08:38:39Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-57856b29
+- **Timestamp:** 2026-11-20T08:38:39Z
+- **Overall:** CONFIRMED
+- **Claims:** 3
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-5262` | task | ✓ pass |
+| `T-5289` | task | ✓ pass |
+| `T-4649` | task | ✓ pass |
