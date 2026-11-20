@@ -73,10 +73,48 @@ PY
     run _ext add page abs --path /etc/passwd --words w
     [ "$status" -eq 2 ]
     # Every later-slice kind is accepted.
-    for k in nav csrf-exemption event-hook reviewer-brief gate-check; do
+    for k in nav event-hook reviewer-brief gate-check; do
         run _ext add "$k" "k-$k" --path p --words w
         [ "$status" -eq 0 ]
     done
+    run _ext add csrf-exemption k-csrf --path bp.view --auth bearer --test t/test_x.py --words w
+    [ "$status" -eq 0 ]
+}
+
+@test "validation (T-5262): csrf-exemption needs --auth and --test; other kinds refuse them" {
+    run _ext add csrf-exemption c1 --path bp.view --words w
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"needs auth"* ]]
+    run _ext add csrf-exemption c1 --path bp.view --auth bearer --words w
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"needs test"* ]]
+    run _ext add csrf-exemption c1 --path bp.view --auth "basic" --test t.py --words w
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"header:<Name>"* ]]
+    run _ext add csrf-exemption c1 --path bp.view --auth "header:X Bad" --test t.py --words w
+    [ "$status" -eq 2 ]
+    run _ext add csrf-exemption c1 --path bp.view --auth bearer --test ../t.py --words w
+    [ "$status" -eq 2 ]
+    run _ext add csrf-exemption c1 --path "web/x.py?" --auth bearer --test t.py --words w
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"endpoint name"* ]]
+    run _ext add page p1 --path web/p.py --auth bearer --words w
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"csrf-exemption only"* ]]
+    run _ext add csrf-exemption c1 --path bp.view --path blueprint:vpn --auth header:X-Key \
+        --test tests/t.py --words w
+    [ "$status" -eq 0 ]
+    python3 - "$PROJ/.framework-extensions.yaml" <<'PY2'
+import sys, yaml
+e = yaml.safe_load(open(sys.argv[1]))["extensions"][0]
+assert e["auth"] == "header:X-Key" and e["test"] == "tests/t.py", e
+assert e["paths"] == ["bp.view", "blueprint:vpn"], e
+PY2
+    # Not yet checked by Watchtower: audit WARNs; the proving test is missing: FAIL.
+    run _ext audit
+    [[ "$output" == *"WARN"*"c1: not checked yet"* ]]
+    [[ "$output" == *"FAIL"*"proving test tests/t.py does not exist"* ]]
+    [[ "$output" != *"registered path"* ]]
 }
 
 # ------------------------------------------------------------ operator-only

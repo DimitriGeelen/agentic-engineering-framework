@@ -1,4 +1,5 @@
-"""Project Watchtower pages (T-5260) and menu entries (T-5261) — T-4649 slices 1, 2.
+"""Project Watchtower pages (T-5260), menu entries (T-5261) and CSRF exemptions
+(T-5262) — T-4649 slices 1, 2, 3.
 
 A project's own pages live in the PROJECT, not in the vendored framework copy,
 so `fw upgrade` never overwrites them. A page is loaded only when the project's
@@ -123,6 +124,7 @@ def _state(app):
     return app.extensions.setdefault(APP_KEY, {
         "pages": {"loaded": [], "skipped": []},
         "nav": {"added": [], "dropped": []},
+        "csrf": {"entries": []},
         "register_error": None,
     })
 
@@ -131,7 +133,8 @@ def save_state(app, project_root, entries):
     st = {k: v for k, v in _state(app).items() if k != "nav_groups"}
     st["ts"] = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     st["pid"] = os.getpid()
-    has = any(e.get("kind") in ("page", "nav") for e in entries) or bool(st.get("register_error"))
+    has = any(e.get("kind") in ("page", "nav", "csrf-exemption") for e in entries) \
+        or bool(st.get("register_error"))
     _write_state(project_root, st, force=has)
 
 
@@ -314,3 +317,152 @@ def nav_groups(base_groups, app=None):
         except Exception:  # noqa: BLE001 - no app context
             return base_groups
     return (app.extensions.get(APP_KEY) or {}).get("nav_groups") or base_groups
+
+
+# ------------------------------------------------------- CSRF exemptions (T-5262)
+#
+# A `csrf-exemption` entry names endpoints (`bp.view`) or a whole blueprint
+# (`blueprint:<name>`) that authenticate themselves, the credential they check
+# (`auth: bearer` or `auth: header:<Name>`) and the project's proving test. The
+# exemption is applied to an endpoint only when, at startup, every one of its
+# state-changing URL rules answers 401 or 403 to two requests: one with no
+# credential and one with a wrong random credential. An endpoint that answers
+# anything else (e.g. 200: it checks only that the header is present) is refused
+# and stays CSRF-protected.
+#
+# How the probe gets past csrf_protect without weakening it: each probe request
+# carries a WSGI environ key (PROBE_ENVIRON_KEY) holding a random per-app secret.
+# Only app.test_client() can set a non-HTTP_ environ key; a real client's headers
+# arrive as HTTP_* keys and can never produce it. csrf_protect skips the check
+# for a request carrying the matching secret (probe_request()). The probe runs
+# once, from create_app(); the probe requests never trigger probing themselves.
+# NOTE: a probe request executes the endpoint. An endpoint that does not check
+# its credential acts on that request; that is how it is caught.
+
+PROBE_ENVIRON_KEY = "fw.csrf_probe"
+EXEMPT_KEY = "fw_csrf_exempt"
+_SECRET_KEY = "fw_csrf_probe_secret"
+STATE_METHODS = ("POST", "PUT", "PATCH", "DELETE")
+
+
+def probe_request(app, environ):
+    """True when this request is one of the startup probe's own requests."""
+    secret = app.extensions.get(_SECRET_KEY)
+    got = environ.get(PROBE_ENVIRON_KEY)
+    import hmac
+    return bool(secret) and isinstance(got, str) and hmac.compare_digest(got, secret)
+
+
+def exempt_endpoints(app):
+    return app.extensions.get(EXEMPT_KEY) or frozenset()
+
+
+def _dummy(conv):
+    """A value a URL converter accepts, for building a probe URL."""
+    name = type(conv).__name__
+    if name == "IntegerConverter":
+        return max(1, int(getattr(conv, "min", None) or 1))
+    if name == "FloatConverter":
+        return 1.0
+    if name == "UUIDConverter":
+        import uuid
+        return uuid.UUID(int=0)
+    if name == "AnyConverter":
+        return sorted(conv.items)[0]
+    return "x"
+
+
+def _build_url(rule):
+    values = {arg: _dummy(conv) for arg, conv in rule._converters.items()}
+    try:
+        built = rule.build(values, append_unknown=False)
+    except Exception as exc:  # noqa: BLE001
+        return None, f"cannot build a probe URL for {rule.rule}: {type(exc).__name__}: {exc}"
+    if not built:
+        return None, f"cannot build a probe URL for {rule.rule}"
+    return built[1], None
+
+
+def _credential_header(auth, value):
+    if auth == "bearer":
+        return {"Authorization": f"Bearer {value}"}
+    return {auth.split(":", 1)[1]: value}
+
+
+def _probe_endpoint(app, client, secret, endpoint, auth):
+    """None when the endpoint enforces its credential, else the reason it does not."""
+    rules = [r for r in app.url_map.iter_rules(endpoint) if set(r.methods or ()) & set(STATE_METHODS)]
+    if not rules:
+        return "accepts no POST/PUT/PATCH/DELETE, so there is nothing to exempt"
+    for rule in rules:
+        url, err = _build_url(rule)
+        if err:
+            return err
+        for method in sorted(set(rule.methods) & set(STATE_METHODS)):
+            for label, headers in (("no credential", {}),
+                                   ("a wrong credential",
+                                    _credential_header(auth, os.urandom(16).hex()))):
+                try:
+                    resp = client.open(url, method=method, headers=headers,
+                                       environ_base={PROBE_ENVIRON_KEY: secret})
+                    code = resp.status_code
+                    resp.close()
+                except Exception as exc:  # noqa: BLE001
+                    return f"{method} {url} with {label} raised {type(exc).__name__}: {exc}"
+                if code not in (401, 403):
+                    hint = " -- it checks header presence only" if label == "a wrong credential" else ""
+                    return f"{method} {url} answered {code} to a request with {label}{hint}"
+    return None
+
+
+def probe_csrf_exemptions(app, entries):
+    """Probe every csrf-exemption entry; store the applied endpoint set on the app
+    (exempt_endpoints) and the per-entry result in the state (`csrf`)."""
+    st = _state(app)
+    records, applied_all = [], set()
+    wanted = [e for e in entries if e.get("kind") == "csrf-exemption"]
+    if wanted:
+        secret = os.urandom(24).hex()
+        app.extensions[_SECRET_KEY] = secret
+        client = app.test_client()
+        # The probe's requests are not the app's "first request": Flask would
+        # otherwise refuse any later setup call (a route, a hook) on this app.
+        was_first = getattr(app, "_got_first_request", False)
+        try:
+            for e in wanted:
+                rec = {"id": e["id"], "auth": e.get("auth"), "decided_by": e.get("decided_by"),
+                       "sig": {"paths": list(e["paths"]), "auth": e.get("auth")},
+                       "applied": [], "refused": [], "missing": []}
+                for p in e["paths"]:
+                    if p.startswith("blueprint:"):
+                        name = p.split(":", 1)[1]
+                        if name not in app.blueprints:
+                            rec["missing"].append(p)
+                            continue
+                        eps = sorted({r.endpoint for r in app.url_map.iter_rules()
+                                      if r.endpoint.startswith(name + ".")
+                                      and set(r.methods or ()) & set(STATE_METHODS)})
+                        if not eps:
+                            rec["refused"].append({"endpoint": p, "reason":
+                                                   "blueprint has no POST/PUT/PATCH/DELETE endpoint"})
+                            continue
+                    elif p not in app.view_functions:
+                        rec["missing"].append(p)
+                        continue
+                    else:
+                        eps = [p]
+                    for ep in eps:
+                        reason = _probe_endpoint(app, client, secret, ep, e.get("auth") or "bearer")
+                        if reason is None:
+                            rec["applied"].append(ep)
+                            applied_all.add(ep)
+                        else:
+                            logger.warning("CSRF exemption %s: %s refused: %s", e["id"], ep, reason)
+                            rec["refused"].append({"endpoint": ep, "reason": reason})
+                records.append(rec)
+        finally:
+            app.extensions.pop(_SECRET_KEY, None)  # no probe request is accepted after startup
+            app._got_first_request = was_first
+    app.extensions[EXEMPT_KEY] = frozenset(applied_all)
+    st["csrf"] = {"entries": records}
+    return st["csrf"]

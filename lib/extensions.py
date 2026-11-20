@@ -22,6 +22,31 @@ Kinds: vendored-override (a file, or an in-file block when markers are given,
 under .agentic-framework/), and the kinds later slices use: page, nav,
 csrf-exemption, event-hook, reviewer-brief, gate-check (T-5260..T-5265).
 
+csrf-exemption (T-5262): endpoints the project authenticates itself, exempted
+from Watchtower's form-safety (CSRF) check. Two extra fields, required for this
+kind and refused on every other:
+
+      - id: approvals-tap
+        kind: csrf-exemption
+        paths: ["approvals.tap_decide", "blueprint:vpn_proxy"]   # endpoint names,
+                                  # or every endpoint of one blueprint
+        auth: "bearer"            # or "header:X-Ring20-Key" -- the credential
+                                  # the endpoint checks itself
+        test: "tests/test_tap_auth.py"   # the project's test that proves it
+        words: "tap links carry an HMAC bearer token"
+        decided_by: operator
+        date: "2026-11-20"
+
+    fw extension add csrf-exemption approvals-tap --path approvals.tap_decide \
+        --auth bearer --test tests/test_tap_auth.py --words "..."
+
+Watchtower honours an entry only after a startup probe (web/project_extensions.py
+`probe_csrf_exemptions`): every state-changing URL rule of each endpoint must
+answer 401 or 403 both without the credential and with a wrong one. What it
+applied, refused and could not find is written to the Watchtower state file
+under `csrf`; `fw audit` FAILs on a refused or missing endpoint and on a missing
+test file, and WARNs while Watchtower has not checked the entry yet.
+
 Protection is NOT a second mechanism: a vendored-override entry is mirrored into
 `.fwvendor-preserve.yaml` (lib/vendor_preserve.py, T-3850/T-4870) as `files:`
 items (whole file) or `in_file:` items (markers), each carrying
@@ -57,7 +82,10 @@ VENDOR_DIR = ".agentic-framework"
 HISTORY = os.path.join(".context", "project", "extension-decisions.jsonl")
 KINDS = ("vendored-override", "page", "nav", "csrf-exemption", "event-hook",
          "reviewer-brief", "gate-check")
-FIELDS = ("id", "kind", "paths", "markers", "words", "decided_by", "date")
+FIELDS = ("id", "kind", "paths", "markers", "auth", "test", "words", "decided_by", "date")
+CSRF_KIND = "csrf-exemption"
+AUTH_RE = re.compile(r"^(bearer|header:[A-Za-z0-9-]+)$")
+ENDPOINT_RE = re.compile(r"^(blueprint:[A-Za-z0-9_.-]+|[A-Za-z0-9_][A-Za-z0-9_.-]*)$")
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 HEADER = (
     "# Project extensions register (T-5259). Project-owned: fw vendor / fw upgrade\n"
@@ -178,6 +206,25 @@ def validate(e, where="entry"):
         raise ExtensionError(f"{where}: markers must be a list of strings")
     if markers and e["kind"] != "vendored-override":
         raise ExtensionError(f"{where}: markers apply to vendored-override only")
+    if e["kind"] == CSRF_KIND:
+        for k in ("auth", "test"):
+            if not isinstance(e.get(k), str) or not e[k].strip():
+                raise ExtensionError(f"{where}: csrf-exemption needs {k} "
+                                     "(auth: bearer | header:<Name>; test: the proving test file)")
+        if not AUTH_RE.match(e["auth"]):
+            raise ExtensionError(f"{where}: auth {e['auth']!r} must be `bearer` or `header:<Name>` "
+                                 "(Name: letters, digits, -)")
+        t = e["test"]
+        if os.path.isabs(t) or ".." in t.split("/"):
+            raise ExtensionError(f"{where}: test {t!r} must be relative, without '..'")
+        for p in e["paths"]:
+            if not ENDPOINT_RE.match(p):
+                raise ExtensionError(f"{where}: path {p!r} must be an endpoint name (bp.view) "
+                                     "or blueprint:<name>")
+    else:
+        for k in ("auth", "test"):
+            if k in e:
+                raise ExtensionError(f"{where}: {k} applies to csrf-exemption only")
     unknown = set(e) - set(FIELDS)
     if unknown:
         raise ExtensionError(f"{where}: unknown field(s) {', '.join(sorted(unknown))}")
@@ -378,6 +425,10 @@ def cmd_add(a):
         by += " (--i-am-human in an agent session)"
     e = {"id": a.id, "kind": a.kind, "paths": paths, "markers": list(a.marker or []),
          "words": a.words, "decided_by": by, "date": _now_date()}
+    if a.auth is not None:
+        e["auth"] = a.auth
+    if a.test is not None:
+        e["test"] = a.test
     validate(e)
     mirrored = mirror_add(root, e)
     try:
@@ -479,7 +530,7 @@ def _is_framework_repo(root):
 
 
 def audit_findings(root):
-    """[(level, title, evidence, mitigation)]. Levels: INFO, WARN."""
+    """[(level, title, evidence, mitigation)]. Levels: INFO, WARN, FAIL (csrf, T-5262)."""
     out = []
     try:
         entries = load(root)
@@ -491,6 +542,8 @@ def audit_findings(root):
         ids = ", ".join(f"{e['id']} [{e['kind']}]" for e in entries)
         out.append(("INFO", f"Project extensions ({len(entries)}): {ids}", "", ""))
     for e in entries:
+        if e["kind"] == CSRF_KIND:
+            continue  # endpoint names, checked by Watchtower's probe (csrf_findings)
         for p in e["paths"]:
             if not _exists(root, e, p):
                 where = f"{VENDOR_DIR}/{p}" if e["kind"] == "vendored-override" else p
@@ -509,6 +562,7 @@ def audit_findings(root):
                         f"Operator: fw extension add vendored-override <id> --path {rel} --words \"...\" "
                         f"(then drop the hand-written {PRESERVE} item)"))
     out.extend(web_status_findings(root, entries))
+    out.extend(csrf_findings(root, entries))
     if _is_framework_repo(root):
         return out
     sp = os.path.join(root, VENDOR_DIR, STAMP)
@@ -586,8 +640,64 @@ def web_status_findings(root, entries=None):
     return out
 
 
+def _csrf_sig(e):
+    """What the probe verified for an entry; a register edit since makes it stale."""
+    return {"paths": list(e["paths"]), "auth": e.get("auth")}
+
+
+def csrf_findings(root, entries=None):
+    """csrf-exemption entries (T-5262): the proving test file, and what Watchtower's
+    startup probe did with each entry (state file, `csrf` key)."""
+    if entries is None:
+        try:
+            entries = load(root)
+        except ExtensionError:
+            return []
+    wanted = [e for e in entries if e["kind"] == CSRF_KIND]
+    if not wanted:
+        return []
+    try:
+        st = json.load(open(os.path.join(root, WEB_STATE), encoding="utf-8"))
+    except (OSError, ValueError):
+        st = {}
+    records = {r.get("id"): r for r in ((st.get("csrf") or {}).get("entries") or [])
+               if isinstance(r, dict)}
+    out = []
+    remove = "the operator removes it: fw extension remove {id} --words \"...\""
+    for e in wanted:
+        eid = e["id"]
+        where = f"{REGISTER} entry {eid} (csrf-exemption, auth {e['auth']})"
+        if not os.path.isfile(os.path.join(root, e["test"])):
+            out.append(("FAIL", f"CSRF exemption {eid}: proving test {e['test']} does not exist",
+                        where, f"Add the test that proves the {e['auth']} check, or "
+                        + remove.format(id=eid)))
+        rec = records.get(eid)
+        if rec is None or rec.get("sig") != _csrf_sig(e):
+            why = "not checked yet" if rec is None else "changed since it was checked"
+            out.append(("WARN", f"CSRF exemption {eid}: {why} -- Watchtower has not started since, "
+                                "so it is not applied", where, "fw watchtower restart"))
+            continue
+        applied = rec.get("applied") or []
+        if applied:
+            out.append(("INFO", f"CSRF exemption {eid} applied (auth {e['auth']}, decided by "
+                                f"{e['decided_by']} on {e['date']}): {', '.join(applied)}", "", ""))
+        for r in rec.get("refused") or []:
+            out.append(("FAIL", f"CSRF exemption {eid}: endpoint {r.get('endpoint')} refused at "
+                                "Watchtower startup, still CSRF-protected",
+                        str(r.get("reason")),
+                        f"Make the endpoint reject requests without a valid {e['auth']} credential "
+                        "(401/403), then: fw watchtower restart; or " + remove.format(id=eid)))
+        for m in rec.get("missing") or []:
+            out.append(("FAIL", f"CSRF exemption {eid}: {m} does not exist in Watchtower",
+                        where, "Fix the endpoint name, or " + remove.format(id=eid)))
+    return out
+
+
 def cmd_web_status(a):
-    for row in web_status_findings(a.project):
+    rows = web_status_findings(a.project)
+    # fw doctor reads INFO/WARN only; a csrf FAIL shows there as WARN (fw audit keeps FAIL).
+    rows += [("WARN" if r[0] == "FAIL" else r[0],) + tuple(r[1:]) for r in csrf_findings(a.project)]
+    for row in rows:
         print("\t".join(x.replace("\t", " ").replace("\n", " ") for x in row))
     return 0
 
@@ -626,6 +736,8 @@ def main(argv=None):
     p.add_argument("id")
     p.add_argument("--path", action="append", required=True)
     p.add_argument("--marker", action="append", help="vendored-override: in-file block marker")
+    p.add_argument("--auth", help="csrf-exemption: bearer | header:<Name>")
+    p.add_argument("--test", help="csrf-exemption: the project's test file proving the auth check")
     p.add_argument("--words", required=True, help="the operator's own words for the decision")
     p.add_argument("--by", help="who decided (default: operator)")
     p.add_argument("--i-am-human", action="store_true")

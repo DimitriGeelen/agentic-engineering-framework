@@ -6262,6 +6262,8 @@ fi
 # INFO lists the register; WARN: a registered path that does not exist, a
 # .fwvendor-preserve.yaml entry with no decision behind it, a vendored file the
 # vendor stamp shows locally modified with no decision. Silent with nothing to say.
+# FAIL (T-5262): a csrf-exemption refused or missing at Watchtower startup, or
+# whose proving test file does not exist.
 if [ -f "$FRAMEWORK_ROOT/lib/extensions.py" ]; then
     _ext_rows=$(python3 "$FRAMEWORK_ROOT/lib/extensions.py" --project "$PROJECT_ROOT" audit 2>&1) && _ext_rc=0 || _ext_rc=$?
     if [ "$_ext_rc" -ne 0 ]; then
@@ -6273,6 +6275,7 @@ if [ -f "$FRAMEWORK_ROOT/lib/extensions.py" ]; then
             case "$_ext_lvl" in
                 INFO) info "$_ext_title" ;;
                 WARN) warn "$_ext_title" "$_ext_ev" "$_ext_mit" ;;
+                FAIL) fail "$_ext_title" "$_ext_ev" "$_ext_mit" ;;  # T-5262: csrf-exemption
             esac
         done <<< "$_ext_rows"
     fi
