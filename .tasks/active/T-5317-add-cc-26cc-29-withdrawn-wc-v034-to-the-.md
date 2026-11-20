@@ -100,9 +100,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] vectors.yaml has CC-26..CC-29 in the existing vector format, matching docs/specs/shared-worker-contract-transitions.md §9.
-- [ ] check_vectors.py (and check_mapping.py if it enumerates vectors) accept CC-01..CC-29.
-- [ ] run_local.py runs all vectors, CC-26..CC-29 included, green against lib/dispatch_records.py.
+- [x] vectors.yaml has CC-26..CC-29 in the existing vector format, matching docs/specs/shared-worker-contract-transitions.md §9.
+- [x] check_vectors.py (and check_mapping.py if it enumerates vectors) accept CC-01..CC-29.
+- [x] run_local.py runs all vectors, CC-26..CC-29 included, green against lib/dispatch_records.py. (ea8379a56, fca29b20f: "summary: n/a=3, pass=26"; one CC-26 variant n/a because the local backend has no answer channel. Note for TermLink/ring20: CC-26 reads last_actor/last_reason from the adapter snapshot.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
