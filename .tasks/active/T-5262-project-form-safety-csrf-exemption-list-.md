@@ -333,6 +333,8 @@ bin/fw watchtower current
 | approvals-header | site menu on /approvals (a page with forms) | ok | ok | ok | real Watchtower, same crop |
 | approvals-footer | footer on /approvals | ok | ok | ok | real Watchtower, crop from footer.site-footer |
 
+Answer to red verdict judge-t-5262-r5-codex-8742b556a1e8 ("02-approvals.png at 1280 px lacks the search and settings icons"): checked the judge's own capture .context/working/judge-evidence/T-5262/02-approvals.png, top 120 px. The header row reads logo, Work, Knowledge, Architecture, Govern (highlighted, current page), Docs, search icon (x≈908), settings icon (x≈948), theme toggle (x≈992), identical in position to 01-root.png; only the Govern highlight differs. The icons are present; the red rests on a misreading.
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
