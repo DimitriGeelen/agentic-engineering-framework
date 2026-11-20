@@ -792,6 +792,19 @@ After fixing any problem discovered by the human (not found during development):
 
 **Trigger:** Human corrects the agent's escalation level, or agent discovers a problem that existed undetected for >7 days.
 
+### Risk Assessment for Trust-Boundary Changes (T-5313)
+Risks live in `.context/project/concerns.yaml` as `type: risk` entries. A change that **alters a trust boundary** needs a risk matrix before it ships:
+- a **new sandbox** or isolation boundary;
+- a **new credential use** (a token, key or login used by something new, or in a new place);
+- a **new network path** (a new route to a host, hub, API or the internet, or a new listener);
+- **new unattended automation** (a cron job, hook, daemon or worker acting without a person watching).
+
+Copy `.agentic-framework/.tasks/templates/risk-matrix.md` to `docs/reports/T-XXX-risk-matrix.md` and fill it: scales 1-5, score = likelihood × impact, bands low 1-5 / medium 6-12 / high 15-25, a summary table, and a per-risk split over five actors (own-agent-unintentional, human-unintentional, outsider-intentional, provider-host, intruder). The decision rests on what the change **introduces**, not on risks that exist anyway.
+
+**Rule:** any actor scoring 6 or more → a `type: risk` entry in `concerns.yaml` (fields `likelihood`, `impact`, `score`, `actors`, `introduced_by`, `exists_anyway`, `mitigation_task`) and a mitigation task in the standing arc `risk` (`arc_id: risk`). The arc never closes: it carries `standing: true`, which makes `fw arc close`/`abandon` refuse it and the stale-arc audit skip it. If the project has no `risk` arc yet, create it once (`fw arc create risk --name "Standing risk arc" --headline-mechanic "…" --start`) and add `standing: true` to `.context/arcs/risk.yaml`. `fw audit` FAILs on invalid risk fields and WARNs on an open scored risk at 6+ without a `mitigation_task`.
+
+**Who decides:** the agent drafts and scores; an independent reviewer agent checks the scores and the actor split; the operator decides only **risk acceptance** — an introduced risk still at 6 or more after mitigation, or any risk at 15 or more.
+
 ## Plan Mode Prohibition
 
 **NEVER use the built-in `EnterPlanMode` tool.** It bypasses all framework governance:

@@ -182,6 +182,22 @@ _arc_path() {
     echo "${ARCS_DIR}/$1.yaml"
 }
 
+# T-5313: a standing arc (`standing: true`, e.g. the risk arc) never closes —
+# it holds mitigation tasks for as long as the project lives. close and
+# abandon refuse it for every caller; un-standing it is an edit to the arc
+# YAML, which is the operator's decision.
+_arc_refuse_standing() {
+    local id="$1" verb="$2" f
+    f="$(_arc_path "$id")"
+    if grep -qE '^standing:[[:space:]]*true[[:space:]]*(#.*)?$' "$f" 2>/dev/null; then
+        echo "Error: 'fw arc ${verb}' refused — arc '$id' is a standing arc (standing: true) and never closes (T-5313)." >&2
+        echo "       It holds mitigation tasks; finish or move those tasks instead." >&2
+        echo "       To retire it, the operator removes 'standing: true' from $(_arc_path "$id") first." >&2
+        return 1
+    fi
+    return 0
+}
+
 _arc_exists() {
     [ -f "$(_arc_path "$1")" ]
 }
@@ -841,6 +857,7 @@ arc_close() {
     # draft → closed is REFUSED — start the arc first (or abandon it via
     # fw arc abandon, T-1854). closed/abandoned arcs cannot be re-closed.
     _arc_require_status "$id" "close" "in-progress" || return 1
+    _arc_refuse_standing "$id" "close" || return 1
 
     # T-1671 §ACD/G-062 Default-to-OPEN agent gate. Mirrors lib/inception.sh
     # do_inception_decide (T-1259/T-1260): closure decisions belong to the
@@ -1018,6 +1035,7 @@ arc_abandon() {
     # T-1852 state-machine guard: draft and in-progress can be abandoned.
     # closed and abandoned arcs cannot be re-abandoned.
     _arc_require_status "$id" "abandon" "draft" "in-progress" || return 1
+    _arc_refuse_standing "$id" "abandon" || return 1
 
     # T-1671 §ACD/G-062 Default-to-OPEN agent gate. Abandonment is a closure
     # decision — same authority weight as arc_close + inception decide. Mirror
