@@ -106,8 +106,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] docs/specs/shared-worker-contract-transitions.md §9 CC-26 has no open question on a dispatched attempt; its answer-channel case is one un-acked dispatcher answer with no question_id.
-- [ ] tests/conformance/worker-contract/vectors.yaml CC-26 matches (answer with no question_id, deadline clock+600 or none); the local run stays green.
+- [x] docs/specs/shared-worker-contract-transitions.md §9 CC-26 has no open question on a dispatched attempt; its answer-channel case is one un-acked dispatcher answer with no question_id.
+- [x] tests/conformance/worker-contract/vectors.yaml CC-26 matches (answer with no question_id, deadline clock+600 or none); the local run stays green. (4b1d2304e; local "pass 26, n/a 3"; the answer-channel variant is n/a locally, so TermLink's run is the real test; expected state is now `undelivered`, the §5.5 name, instead of `bounced`.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
