@@ -57922,3 +57922,21 @@ task_id: T-5318
 payload:
   overall: UNVERIFIED
   claim_count: 0
+---
+kind: scan_emitted
+timestamp: '2026-11-20T20:13:44Z'
+scan_id: R-b3790993
+task_id: T-5319
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-20T20:13:44Z'
+scan_id: R-b3790993
+task_id: T-5319
+payload:
+  task_file: .tasks/active/T-5319-cc-26-contradicts-wc-v034-it-gives-a-dis.md

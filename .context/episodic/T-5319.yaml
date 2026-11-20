@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5319: CC-26 contradicts wc v0.3.4: it gives a dispatched attempt an open question, but no worker exists before T2 (TermLink T-3837)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T20:14:09Z
+# ============================================================================
+
+task_id: T-5319
+task_name: "CC-26 contradicts wc v0.3.4: it gives a dispatched attempt an open question, but no worker exists before T2 (TermLink T-3837)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-20T19:44:40Z
+completed: 2026-11-20T20:13:40Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-11-20T20:44:47+01:00
+last_commit: 2026-11-20T21:13:37+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed — CC-26 contradicts v0.3.4 (TermLink finding). 010's two facts for the fix recorded. scope. CC-26 answer-channel variant — un-acked dispatcher answer, no open question. criteria ticked. RCA
+
+# Key outcomes
+outcomes:
+  - 'docs/specs/shared-worker-contract-transitions.md §9 CC-26 has no open question on a dispatched attempt; its answer-channel case is one un-acked dispatcher answer with no question_id.'
+  - 'tests/conformance/worker-contract/vectors.yaml CC-26 matches (answer with no question_id, deadline clock+600 or none); the local run stays green. (4b1d2304e; local "pass 26, n/a 3"; the answer-channel variant is n/a locally, so TermLink''s run is the real test; expected state is now `undelivered`, the §5.5 name, instead of `bounced`.)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: '010''s two facts for the fix recorded'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5319-cc-26-contradicts-wc-v034-it-gives-a-dis.md'
+  - 'docs/specs/shared-worker-contract-transitions.md'
+  - 'tests/conformance/worker-contract/vectors.yaml'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T20:44:47'
+    action: 'T-5319: filed — CC-26 contradicts v0.3.4 (TermLink finding)'
+  - time: '2026-11-20T20:49:12'
+    action: 'T-5319: 010''s two facts for the fix recorded'
+  - time: '2026-11-20T21:10:50'
+    action: 'T-5319: scope'
+  - time: '2026-11-20T21:12:35'
+    action: 'T-5319: CC-26 answer-channel variant — un-acked dispatcher answer, no open question'
+  - time: '2026-11-20T21:13:15'
+    action: 'T-5319: criteria ticked'
+  - time: '2026-11-20T21:13:37'
+    action: 'T-5319: RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 29 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 29
+  commits: 7
+  files_changed: 6
+  lines_added: 524
+  lines_removed: 23
+  footprint_refreshed_at: '2026-11-20T20:14:43Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5319-cc-26-contradicts-wc-v034-it-gives-a-dis.md
+generated_by: context-agent-hybrid
