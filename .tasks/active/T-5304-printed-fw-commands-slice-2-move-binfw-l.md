@@ -9,10 +9,10 @@ description: >
   full: bin/fw task list' (ring20) and the runme / Human-AC hook 'fw task review'
   lines (1409). Depends on slice 1.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T13:49:53Z
-last_update: '2026-11-20T14:01:18Z'
+last_update: 2026-11-20T15:15:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,20 +89,23 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5302 GO (operator 2026-11-20); T-5303 built the builder (`_fw_cmd` / `_emit_user_command` in lib/paths.sh, lib/fw_command.py, Watchtower `fw_cmd`). All four consulted vendored projects rewrite AEF's printed `bin/fw` by hand. GitHub #68: the outside contributor's PR will make fw doctor's two `bin/watchtower.sh` lines call the builder.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** About 99 user-facing lines in bin/fw, lib/ and agents/ still spell `bin/fw` (or bare `fw`, or `bin/watchtower.sh`) by hand, wrong in every vendored project. And bin/fw cannot source lib/paths.sh (it resolves and exports paths on source, bin/fw:5125), so bin/fw's own printers cannot reach the shell builder yet.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Every printed command in bin/fw, lib/ and agents/ comes from the builder.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A side-effect-free shell lib with the builder, sourced by lib/paths.sh and bin/fw; fw doctor remedies, gate block messages, the handover's "Regenerate in full" line, runme and Human-AC hook lines (`fw task review`) use it. #68's two lines are left for the contributor's PR (they call the builder); everything else here.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A side-effect-free shell lib (e.g. lib/fw-command.sh) defines the builder; lib/paths.sh and bin/fw source it; sourcing it exports and changes nothing else; the T-5303 parity test covers it.
+- [ ] fw doctor "Run:" remedies and gate block messages print through the builder, except bin/fw's two `bin/watchtower.sh` lines (#68, left for the contributor's PR).
+- [ ] The handover's "Regenerate in full" line, the runme start gate and the Human-AC hook's `fw task review` lines print through the builder.
+- [ ] A count of hand-spelled `bin/fw ` in user-facing echo/print lines in bin/fw, lib/ and agents/ is recorded before and after in ## Updates; the after count is only lines that are not printed for a person or agent to run (listed with why).
+- [ ] Existing tests that pin printed text are updated to the builder's output and stay green; `bats tests/lint/` green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,6 +292,11 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5303_fw_command_builder.py -q > /tmp/.t5304a 2>&1 && grep -q passed /tmp/.t5304a
+bash -n bin/fw
+out=$(bash -c 'set -u; . lib/fw-command.sh; declare -p PROJECT_ROOT 2>/dev/null; echo ok'); grep -q "^ok$" <<<"$out"
+timeout 600 bats tests/lint/ > /tmp/.t5304b 2>&1 && ! grep -q "^not ok" /tmp/.t5304b
+bin/fw vendor self --check --task T-5304
 
 ## RCA
 
@@ -382,7 +390,14 @@ bvp_scores_proposed:
 
 ## Updates
 
+### 2026-11-20 — first step: a builder bin/fw can source
+- bin/fw cannot source lib/paths.sh (it resolves and exports paths on source; bin/fw:5125), so the fw doctor remedies cannot call `_emit_user_command` from T-5303. First move the builder into a side-effect-free lib (precedent: lib/worktree-identity.sh, T-3111), sourced by both lib/paths.sh and bin/fw, with the T-5303 parity test extended to it. Only then can the #68 contributor's two lines (bin/fw:3429, 3434) call it; tell them on #68 when that lands (operator runs the comment, as for the first answer).
+
 ### 2026-11-20T13:49:53Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5304-printed-fw-commands-slice-2-move-binfw-l.md
 - **Context:** Initial task creation
+
+### 2026-11-20T15:15:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
