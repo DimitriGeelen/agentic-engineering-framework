@@ -107,9 +107,9 @@ bvp_scores_proposed:
 ### Human
 - [ ] [REVIEW] The changed Watchtower pages show the copyable commands in the builder's form and otherwise look as before
   **Steps:**
-  1. Open the screenshots in .context/visual/T-5305/ (taken from the arcs, arc detail, designer ghosts, embeddings and orchestrator pages on http://192.168.10.107:3000/ after the restart)
+  1. Open the screenshots in .context/visual/T-5305/ (taken from http://192.168.10.107:3000/designer/ghosts after the restart: the claim card and the page header). The other changed pages (arcs, arc detail, embeddings, orchestrator) show their command only in states not present on this host today; their output is pinned by tests/web/test_t5305_fw_cmd_templates.py.
   2. Check each shot at 1024, 1440 and 1920 px
-  **Expected:** each page shows its command text starting `cd /opt/999-Agentic-Engineering-Framework && bin/fw`, and nothing is clipped, overlapping or missing compared with the page's normal layout
+  **Expected:** the claim card shows the whole command `cd /opt/999-Agentic-Engineering-Framework && bin/fw bpmn claim <id> <project>` (wrapped if needed, nothing cut off at the card's edge), and the header shows every menu element without clipping or overlap (at 1024 px the theme toggle on a second row is the existing layout, T-5261)
   **If not:** note the page and width
 
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -299,6 +299,13 @@ bvp_scores_proposed:
 python3 -m pytest tests/web/test_t5305_fw_cmd_templates.py -q > /tmp/.t5305a 2>&1 && grep -q passed /tmp/.t5305a
 bin/fw vendor self --check --task T-5305
 bin/fw watchtower current
+
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| ghosts-claim | claim command card on the designer ghosts page | ok | ok | ok | real Watchtower http://192.168.10.107:3000/designer/ghosts, crop div.ghost-claim; the command wraps (CSS changed from nowrap/scroll to wrap in this task) |
+| ghosts-header | site menu on the designer ghosts page | ok | ok | ok | same page, crop nav.site-nav to div.ambient-strip |
 
 ## RCA
 
