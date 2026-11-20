@@ -1,10 +1,21 @@
 ---
 id: T-5299
-name: "Sidecar inject: dead headless worker records knock the main session out of delivery (inject.py headless_tl ignores alive; ring20 T-2788)"
+name: "Sidecar inject: dead headless worker records knock the main session out of
+  delivery (inject.py headless_tl ignores alive; ring20 T-2788)"
 description: >
-  ring20 (T-2788, msg 2b2ee4d6, 2026-11-20): lib/sidecar/inject.py select() builds headless_tl = {termlink_session for r in records if r.headless} (line 478) without filtering dead records. Headless claude -p workers inherit the main session's TERMLINK_SESSION_ID, so after any worker has run, the main session's TermLink session is removed from 'tagged' and every peer reply waits with 'agent not ready: main-only delivery: no candidate here is the main session' (ring20: 4 injections OK until 07:58, workers 08:12-08:14, then 0 injections, 19 waiting) although 'termlink main am-i' says the session is main. Verified line 478 in our source. Fix: count only headless records whose alive is not False (as lines 165 and 415 already do). Deeper (separate decision): a dispatched headless worker should not inherit the parent's TERMLINK_SESSION_ID at all (same family as ring20 T-2430).
+  ring20 (T-2788, msg 2b2ee4d6, 2026-11-20): lib/sidecar/inject.py select() builds
+  headless_tl = {termlink_session for r in records if r.headless} (line 478) without
+  filtering dead records. Headless claude -p workers inherit the main session's TERMLINK_SESSION_ID,
+  so after any worker has run, the main session's TermLink session is removed from
+  'tagged' and every peer reply waits with 'agent not ready: main-only delivery: no
+  candidate here is the main session' (ring20: 4 injections OK until 07:58, workers
+  08:12-08:14, then 0 injections, 19 waiting) although 'termlink main am-i' says the
+  session is main. Verified line 478 in our source. Fix: count only headless records
+  whose alive is not False (as lines 165 and 415 already do). Deeper (separate decision):
+  a dispatched headless worker should not inherit the parent's TERMLINK_SESSION_ID
+  at all (same family as ring20 T-2430).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T11:52:15Z
-last_update: 2026-11-20T11:52:15Z
-date_finished: null
+last_update: '2026-11-20T11:55:43Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-20T11:55:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5299: Sidecar inject: dead headless worker records knock the main session out of delivery (inject.py headless_tl ignores alive; ring20 T-2788)
@@ -57,20 +85,20 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** proxmox-ring20-management (their T-2788, msg 2b2ee4d6, 2026-11-20): after headless `claude -p` workers ran (08:12-08:14), their main session received 0 peer replies (19 waiting, "agent not ready: main-only delivery: no candidate here is the main session"), though `termlink main am-i` said it was main. Patched locally by them.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** lib/sidecar/inject.py select() line 478 builds `headless_tl` from every headless record, dead ones included. A headless worker inherits the main session's TERMLINK_SESSION_ID, so its record names the main session's TermLink session; that session is then removed from `tagged` and the live main record is never a candidate, until the dead record ages out. Lines 165 and 415 already filter `alive is not False`; 478 does not.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A finished (dead) headless worker no longer blocks delivery to the main session.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Only live headless records exclude a TermLink session; a live headless worker in a tagged PTY is still never a target (T-3745 tests unchanged).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `headless_tl` in lib/sidecar/inject.py counts only headless records whose `alive` is not False.
+- [x] Test: a dead headless record naming the same TermLink session as the live main record does not stop the main session being chosen; a live headless record still excludes its session; the existing headless tests stay green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,8 +285,18 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_sidecar_untagged_record_t4481.py tests/unit/test_sidecar_session_ready_t3745.py -q > /tmp/.t5299a 2>&1 && grep -q passed /tmp/.t5299a
+bin/fw vendor self --check --task T-5299
 
 ## RCA
+
+**Symptom:** ring20 (T-2788): after headless workers ran, the main session received no peer replies (19 waiting, "no candidate here is the main session").
+
+**Root cause:** inject.py select() excluded every TermLink session named by a headless record, dead or alive; workers inherit the main session's TERMLINK_SESSION_ID, so a finished worker's record excluded the main session.
+
+**Why structurally allowed:** the alive filter was added at the two candidate sites (lines 165, 415) but not at the exclusion set; tests only covered live headless workers.
+
+**Prevention:** exclusion counts only live headless records; tests pin both the dead (must deliver) and live (must exclude) cases; the first fails without the fix. The deeper cause (workers inheriting the parent's TERMLINK_SESSION_ID) is noted in the task description as a separate decision.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -354,3 +392,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5299-sidecar-inject-dead-headless-worker-reco.md
 - **Context:** Initial task creation
+
+### 2026-11-20T11:55:39Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

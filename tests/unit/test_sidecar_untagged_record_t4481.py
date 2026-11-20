@@ -75,3 +75,33 @@ def test_headless_record_does_not_pull_in_untagged_session(proj, monkeypatch):
     monkeypatch.setattr(inject, "_choose_tmux", lambda *a, **k: (None, ""))
     target, _ = inject.choose_target(True, _runner([{"id": "tl-5otlbnoj", "tags": []}], []))
     assert target is None
+
+
+# ── T-5299 (ring20 T-2788): a DEAD headless worker that inherited the main session's
+# TERMLINK_SESSION_ID must not knock the live main session out of delivery.
+def _recs(monkeypatch, *extra):
+    main = {"session_id": "main", "termlink_session": "tl-main", "claude_pid": 4242,
+            "headless": False, "ready": True, "alive": True,
+            "updated_at": datetime.now(timezone.utc).isoformat()}
+    monkeypatch.setattr(adapter, "session_records", lambda: [main, *extra])
+
+
+def _worker(alive):
+    return {"session_id": "worker", "termlink_session": "tl-main", "claude_pid": 5151,
+            "headless": True, "ready": True, "alive": alive,
+            "updated_at": datetime.now(timezone.utc).isoformat()}
+
+
+def test_dead_headless_worker_does_not_block_the_main_session(proj, monkeypatch):
+    _recs(monkeypatch, _worker(alive=False))
+    monkeypatch.setattr(inject, "_choose_tmux", lambda *a, **k: (None, ""))
+    target, why = inject.choose_target(False, _runner([{"id": "tl-main", "tags": []}], []))
+    assert target is not None, why
+    assert target["termlink_session"] == "tl-main"
+
+
+def test_live_headless_worker_still_excludes_its_session(proj, monkeypatch):
+    _recs(monkeypatch, _worker(alive=True))
+    monkeypatch.setattr(inject, "_choose_tmux", lambda *a, **k: (None, ""))
+    target, _ = inject.choose_target(False, _runner([{"id": "tl-main", "tags": []}], []))
+    assert target is None

@@ -475,7 +475,11 @@ def _choose_termlink(urgent: bool, runner=subprocess.run) -> tuple[dict | None, 
     # not even for an urgent bypass: it has no next prompt to surface the
     # message, and it is nobody's interactive agent (adapter._is_headless).
     # Its TermLink session does not count as "registered" either.
-    headless_tl = {r.get("termlink_session") for r in records if r.get("headless")}
+    # T-5299 (ring20 T-2788): only a LIVE worker excludes its session. A worker inherits
+    # the main session's TERMLINK_SESSION_ID, so a dead worker record used to knock the
+    # live main session out of delivery until the record aged out.
+    headless_tl = {r.get("termlink_session") for r in records
+                   if r.get("headless") and r.get("alive") is not False}
     tagged = [s for s in tagged if str(s.get("id")) not in headless_tl]
     tagged_ids = {str(s.get("id")) for s in tagged}
     candidates = [r for r in records
