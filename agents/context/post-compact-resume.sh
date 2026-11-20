@@ -306,7 +306,7 @@ fi
 if [ "$PARTIAL_COUNT" -gt 0 ]; then
     CONTEXT="${CONTEXT}
 ## Partial-Complete — awaiting human (${PARTIAL_COUNT} tasks)
-Agent ACs done. Human ACs pending — see Watchtower /review/T-XXX or run \`bin/fw task review T-XXX\`.
+Agent ACs done. Human ACs pending — see Watchtower /review/T-XXX or run \`$(_emit_user_command "task review T-XXX")\`.
 ${PARTIAL_SUMMARY}
 "
 fi

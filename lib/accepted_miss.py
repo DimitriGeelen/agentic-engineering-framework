@@ -60,6 +60,17 @@ from lib.verdict_ledger import criterion_digest as _vl_criterion_digest  # noqa:
 from lib.verdict_ledger import history_fault as _vl_history_fault  # noqa: E402
 from comment_strip import strip_html_comment_lines  # noqa: E402
 
+
+def _fwc(args, root=None):
+    """Printed fw command, `cd <root> && <fw path> <args>` (T-5304, lib/fw_command.py)."""
+    try:
+        from lib.fw_command import user_command
+    except ImportError:
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from lib.fw_command import user_command
+    return user_command(args, root)
+
+
 LEDGER = ".context/reviews/accepted-misses.jsonl"
 
 #: Any one-character box. P-010 counts every one of these as a criterion (T-5181): before,
@@ -541,7 +552,7 @@ def main(argv: list[str] | None = None) -> int:
         print("REFUSED: accepting a missed criterion is the operator's act and is never recorded "
               "under agent control (CLAUDECODE/AI_AGENT set; --i-am-human does not apply). "
               "Propose it instead: add `**Miss proposed:** <why, with evidence>` under the "
-              f"criterion, and hand the task over with: fw task review {args.task_id}",
+              f"criterion, and hand the task over with: {_fwc('task review ' + args.task_id)}",
               file=sys.stderr)
         return 2
     by = os.environ.get("USER") or "operator"

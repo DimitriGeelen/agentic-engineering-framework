@@ -248,7 +248,7 @@ runme_pending() {
         pgrep -f "$d/runme.sh" >/dev/null 2>&1 && running=1
         if _runme_marks "$d" START >/dev/null; then
             if [ -n "$running" ]; then
-                echo "RUN IN FLIGHT  $name — started, no EXIT yet; watch it: fw runme watch $name"
+                echo "RUN IN FLIGHT  $name — started, no EXIT yet; watch it: $(_emit_user_command "runme watch $name")"
             else
                 echo "RUN ENDED WITHOUT RECORD  $name — started, no EXIT, nothing runs it (killed or rebooted?); read $log and ask the operator"
             fi
@@ -258,7 +258,7 @@ runme_pending() {
             wpid=$(sed -n 's/.*"watch_pid": *\([0-9]*\).*/\1/p' "$rec")
             cpid=$(sed -n 's/.*"arming_claude_pid": *\([0-9]*\).*/\1/p' "$rec")
             if ! _runme_alive "$wpid" || { [ -n "$cpid" ] && ! _runme_alive "$cpid"; }; then
-                echo "WATCH LOST  $name — the session that armed it is gone; re-arm: fw runme watch $name"
+                echo "WATCH LOST  $name — the session that armed it is gone; re-arm: $(_emit_user_command "runme watch $name")"
                 found=1
             fi
         fi

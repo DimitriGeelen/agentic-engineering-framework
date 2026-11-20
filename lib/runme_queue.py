@@ -87,6 +87,14 @@ def root():
     return os.environ.get("PROJECT_ROOT") or os.getcwd()
 
 
+def fwc(args):
+    """Printed fw command, `cd <root> && <fw path> <args>` (T-5304, lib/fw_command.py)."""
+    if FRAMEWORK_ROOT not in sys.path:
+        sys.path.insert(0, FRAMEWORK_ROOT)
+    from lib.fw_command import user_command
+    return user_command(args, root())
+
+
 def jobs_dir():
     return os.path.join(root(), ".context", "runme", "jobs")
 
@@ -475,7 +483,7 @@ def cmd_new(a):
     with open(os.path.join(d, "job.json"), "w", encoding="utf-8") as f:
         json.dump(m, f, indent=1, ensure_ascii=False)
         f.write("\n")
-    print(f"job {os.path.basename(d)} written (NOT REHEARSED). Next: bin/fw runme job dry-run {os.path.basename(d)}")
+    print(f"job {os.path.basename(d)} written (NOT REHEARSED). Next: {fwc('runme job dry-run ' + os.path.basename(d))}")
     return 0
 
 
@@ -558,7 +566,7 @@ class Answers:
             return
         if os.environ.get("CLAUDECODE") == "1" and not (test and not is_real_project(root())):
             raise Refused("the queue is the operator's command, run from their own terminal "
-                          "(CLAUDECODE=1 here); hand over: bin/fw runme queue")
+                          f"(CLAUDECODE=1 here); hand over: {fwc('runme queue')}")
         try:
             self.f, self.tty = open("/dev/tty", "r", encoding="utf-8"), True
         except OSError:
@@ -657,7 +665,7 @@ def run_job(d, ans):
         what = changed_files(d) if st.startswith("CHANGED") else []
         if what:
             log.say("changed since dry-run: " + "; ".join(what))
-        return stop(f"{name} is {st}; nothing run. The agent runs: bin/fw runme job dry-run {name}")
+        return stop(f"{name} is {st}; nothing run. The agent runs: {fwc('runme job dry-run ' + name)}")
     m, sha = load(d)
     if kv(os.path.join(d, "dryrun.ok")).get("sha") != sha:
         return stop(f"{name} changed while loading; nothing run")
@@ -688,7 +696,7 @@ def run_job(d, ans):
         moved = recheck(d, m, i)
         if moved:
             return stop(f"step {i}/{n}: {'; '.join(moved)} since dry-run; this step and {later}. "
-                        f"The agent runs: bin/fw runme job dry-run {name}")
+                        f"The agent runs: {fwc('runme job dry-run ' + name)}")
         log.say(f"Step {i}/{n}: {s['title']}")
         log.say("  runs:")
         for ln in text.splitlines():
@@ -789,7 +797,7 @@ def run_batch(dirs, ans):
         print("REFUSED: the batch holds job(s) that are not ready; nothing run.")
         for b in bad:
             print(f"  - {b}")
-        print("The agent runs: bin/fw runme job dry-run <name>   (or drop the job from the batch)")
+        print(f"The agent runs: {fwc('runme job dry-run <name>')}   (or drop the job from the batch)")
         return 1
     names = [os.path.basename(d) for d in dirs]
     print("Batch, in this order: " + " -> ".join(names))
