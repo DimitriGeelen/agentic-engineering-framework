@@ -384,6 +384,9 @@ bvp_scores_proposed:
 
 ## Updates
 
+### 2026-11-20T09:46Z — design note from 010 (msgs 8db94e3b, ed47e529)
+- inbox.consumers lists readers seen in the last 24 h only; a reader marked claimed (unnamed) may be a diagnostic read such as `termlink channel info` (their T-3830), not a real reader. So: count a reader only when it is named and signed (proven) or its cursor is at the head; an unnamed claimed read alone is not a reader.
+
 ### 2026-11-20T09:42:57Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5296-orphan-inbox-check-calls-an-inbox-unread.md
