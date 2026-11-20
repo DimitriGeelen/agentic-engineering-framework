@@ -14,7 +14,7 @@ description: >
   answer if a backend allows an answer before start, else move the bounce check to
   a case where it can happen. AEF local run must stay green; tell 010 and ring20.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T19:44:40Z
-last_update: '2026-11-20T19:45:52Z'
+last_update: 2026-11-20T20:10:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,20 +94,20 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** TermLink ran CC-26..29 on its hub (010 msg 77878a68): only CC-26's answer-channel variant fails, because it gives a dispatched attempt an open question.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** v0.3.4's T2 note says the worker is launched only after T2, so no question can exist while dispatched; spec §9 CC-26's Given and the vector contradict it.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** CC-26 tests only what the spec allows.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Spec CC-26 and its vector use one un-acked dispatcher answer with no question_id (deadline clock+600 or none, per 010 msg d1c228b0) instead of an open question; AEF's local run stays green.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] docs/specs/shared-worker-contract-transitions.md §9 CC-26 has no open question on a dispatched attempt; its answer-channel case is one un-acked dispatcher answer with no question_id.
+- [ ] tests/conformance/worker-contract/vectors.yaml CC-26 matches (answer with no question_id, deadline clock+600 or none); the local run stays green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -294,6 +294,7 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+out=$(python3 tests/conformance/worker-contract/run_local.py 2>&1); grep -q "CC-26" <<<"$out" && ! grep -qi "fail" <<<"$out"
 
 ## RCA
 
@@ -395,3 +396,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5319-cc-26-contradicts-wc-v034-it-gives-a-dis.md
 - **Context:** Initial task creation
+
+### 2026-11-20T20:10:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
