@@ -109,10 +109,12 @@ bvp_scores_proposed:
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] 010 has answered how a consuming read is signed and whether peek's JSON matches channel subscribe's envelopes; the answer is recorded under ## Updates and the build follows it.
-- [ ] `default_reader` turns a refusal with error code -32049 into a ReadFailed whose reason says the inbox is locked (bound) and that AEF's reads are unsigned.
-- [ ] `fw sidecar alerts` and `fw doctor` WARN when our own inbox's `termlink hub inbox consumers --json` shows a non-null `bound`; silent when null; "not checked" (not OK) when the command fails.
-- [ ] Tests with a fake termlink: -32049 read → locked reason; bound non-null → WARN in both places; bound null → no warning; command missing → not checked.
-- [ ] (010 msg a0e9e80e, 2026-11-20) Also WARN, ahead of any bind, when an inbox AEF's receiver reads also lists a proven (signed) reader such as the agent's own Rust sidecar while AEF's reads appear as an unproven reader: that inbox is the one likely to be bound first.
+- [x] `default_reader` turns a refusal with error code -32049 into a ReadFailed whose reason says the inbox is locked (bound) and that AEF's reads are unsigned.
+- [x] `fw sidecar alerts` and `fw doctor` WARN when our own inbox's `termlink hub inbox consumers --json` shows a non-null `bound`; silent when null; "not checked" (not OK) when the command fails.
+- [x] Tests with a fake termlink: -32049 read → locked reason; bound non-null → WARN in both places; bound null → no warning; command missing → not checked.
+- [x] (010 msg a0e9e80e, 2026-11-20) Also WARN, ahead of any bind, when an inbox AEF's receiver reads also lists a proven (signed) reader such as the agent's own Rust sidecar while AEF's reads appear as an unproven reader: that inbox is the one likely to be bound first.
+
+**Scope note (2026-11-20):** the alarm checks this session's own inbox only (in the main session, the project inbox). Live state at close: `unbound`. Inboxes of other agents that AEF's receiver serves (010 named itself) are not checked by this alarm; their own sessions run the same check.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
