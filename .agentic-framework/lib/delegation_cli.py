@@ -708,8 +708,13 @@ def cmd_reroute(args, path: Path, text: str, task_id: str) -> int:
         # Every criterion the conversion moved is back, so the reviewer-PASS line it wrote
         # has no job left. An authored `[REVIEWER]` Agent criterion was never delegation's
         # and carries its own verification, so it does not keep this line alive.
+        # T-5304: the line was written with whatever fw spelling applied then (bin/fw before
+        # T-5303, the builder's path since); remove it in any of the spellings it has had.
         want = verification_line(task_id)
-        out = [ln for ln in out if ln.strip() != want]
+        head = want.split(" reviewer ", 1)[0]
+        tail = want[len(head):]
+        wants = {want} | {sp + tail for sp in ("bin/fw", ".agentic-framework/bin/fw", "fw")}
+        out = [ln for ln in out if ln.strip() not in wants]
     out = _append_updates(out, [
         "",
         f"### {_now()} — delegate reroute [fw-task-delegate]",

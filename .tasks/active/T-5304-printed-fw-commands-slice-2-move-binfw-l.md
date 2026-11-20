@@ -101,11 +101,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A side-effect-free shell lib (e.g. lib/fw-command.sh) defines the builder; lib/paths.sh and bin/fw source it; sourcing it exports and changes nothing else; the T-5303 parity test covers it.
-- [ ] fw doctor "Run:" remedies and gate block messages print through the builder, except bin/fw's two `bin/watchtower.sh` lines (#68, left for the contributor's PR).
-- [ ] The handover's "Regenerate in full" line, the runme start gate and the Human-AC hook's `fw task review` lines print through the builder.
-- [ ] A count of hand-spelled `bin/fw ` in user-facing echo/print lines in bin/fw, lib/ and agents/ is recorded before and after in ## Updates; the after count is only lines that are not printed for a person or agent to run (listed with why).
-- [ ] Existing tests that pin printed text are updated to the builder's output and stay green; `bats tests/lint/` green.
+- [x] A side-effect-free shell lib (e.g. lib/fw-command.sh) defines the builder; lib/paths.sh and bin/fw source it; sourcing it exports and changes nothing else; the T-5303 parity test covers it.
+- [x] fw doctor "Run:" remedies and gate block messages print through the builder, except bin/fw's two `bin/watchtower.sh` lines (#68, left for the contributor's PR).
+- [x] The handover's "Regenerate in full" line, the runme start gate and the Human-AC hook's `fw task review` lines print through the builder.
+- [x] A count of hand-spelled `bin/fw ` in user-facing echo/print lines in bin/fw, lib/ and agents/ is recorded before and after in ## Updates; the after count is only lines that are not printed for a person or agent to run (listed with why).
+- [x] Existing tests that pin printed text are updated to the builder's output and stay green; `bats tests/lint/` green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -389,6 +389,13 @@ bin/fw vendor self --check --task T-5304
      legacy tasks lacking this section. -->
 
 ## Updates
+
+### 2026-11-20 — counts and what remains
+- Commits: aef902e26 (lib/fw-command.sh, sourced by lib/paths.sh and bin/fw), e1efcc9ab (vendored), ac8866b24 (fw doctor remedies), 04ae2aae4 (gate block messages), 5d3a07c78 (handover, runme hints, Human-AC tick guard), a39059272 (the rest + vendored), c6ff5098b (prescribed-commands lint reads the builder form).
+- Hand-spelled `bin/fw ` in user-facing echo/print lines: **117 before** (99 shell, 18 Python), **42 after** (41 shell, 1 Python).
+- What remains and why: 24 in git hook bodies (agents/git/lib/hooks.sh and the two *-hook-lines.txt snapshots; self-contained, installed into .git/hooks, need their own slice); about 12 name a file or describe rather than give a command (version.sh x2, update.sh, upgrade.sh x2, vendor-visibility.sh, bin/fw x5, provision.sh); about 5 deliberate (framework-repo-only "bin/fw vendor self" asides, the `cd /path/to/framework` placeholder, Verification-block snippets in update-task.sh:1593 and check-review-links.py).
+- Not done here, follow-up needed: bare `fw` in prose ("Do NOT run 'fw …'", "run fw init" when no project exists, the config.sh text box); Python embedded in shell scripts (about 12 lines in lib/bvp.sh and others print bare `fw`); git hook bodies.
+- Regression found and fixed by the parent: T-5303 changed `delegation_cli._fw()` to the builder, so `--reroute-converted` no longer removed a reviewer-PASS line written with the old `bin/fw` spelling (t4916 test 3 red). Removal now matches every spelling the line has had (lib/delegation_cli.py); t4916 green.
 
 ### 2026-11-20 — first step: a builder bin/fw can source
 - bin/fw cannot source lib/paths.sh (it resolves and exports paths on source; bin/fw:5125), so the fw doctor remedies cannot call `_emit_user_command` from T-5303. First move the builder into a side-effect-free lib (precedent: lib/worktree-identity.sh, T-3111), sourced by both lib/paths.sh and bin/fw, with the T-5303 parity test extended to it. Only then can the #68 contributor's two lines (bin/fw:3429, 3434) call it; tell them on #68 when that lands (operator runs the comment, as for the first answer).
