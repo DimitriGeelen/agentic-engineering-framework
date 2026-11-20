@@ -4434,6 +4434,29 @@ print(" ".join(sorted(dm.host_shared_address_keys())))' "$FRAMEWORK_ROOT" 2>/dev
                     warnings=$((warnings + 1))
                 done <<< "$_oi_rows"
             fi
+            # T-5281: our inbox reads are unsigned; once the hub binds the inbox
+            # to an agent's key it refuses them (-32049) and mail stops. One
+            # bounded hub call (hub inbox consumers). WARN-only; "unknown" is a
+            # SKIP that says it was not checked, never an OK.
+            local _lk _lk_state _lk_detail
+            _lk=$(PROJECT_ROOT="$PROJECT_ROOT" python3 -c '
+import sys
+sys.path.insert(0, sys.argv[1])
+from lib.sidecar import inbox
+s, d = inbox.own_inbox_bound()
+print(s + "\t" + d.replace("\t", " ").replace("\n", " "))' "$FRAMEWORK_ROOT" 2>/dev/null) || _lk=""
+            IFS=$'\t' read -r _lk_state _lk_detail <<< "$_lk"
+            case "$_lk_state" in
+                unbound) : ;;
+                bound)
+                    echo -e "  ${YELLOW}WARN${NC}  Our inbox is locked (bound to $_lk_detail): AEF's reads are unsigned, so the hub refuses them and no mail arrives (T-5281)"
+                    echo "         Ask the operator who bound it; see: fw sidecar alerts"
+                    warnings=$((warnings + 1))
+                    ;;
+                *)
+                    echo -e "  ${CYAN}SKIP${NC}  Inbox lock: not checked (${_lk_detail:-could not ask the hub})"
+                    ;;
+            esac
         fi
         fi  # T-2452/F6-style --quick guard
     elif _doctor_absent_by_choice termlink; then
