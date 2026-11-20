@@ -104,8 +104,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] On the idle path, `_terminator_watch` re-checks `_turn_state` after the banner sleep and before `kill -TERM`; on a busy turn it logs "a prompt arrived before the kill" to .compact-log and goes back to waiting.
-- [ ] Test in tests/unit/t3918_terminator_handover.bats: a turn that starts during the banner is not killed; the existing T-3918/T-4032 tests stay green.
+- [x] On the idle path, `_terminator_watch` re-checks `_turn_state` after the banner sleep and before `kill -TERM`; on a busy turn it logs "a prompt arrived before the kill" to .compact-log and goes back to waiting.
+- [x] Test in tests/unit/t3918_terminator_handover.bats: a turn that starts during the banner is not killed; the existing T-3918/T-4032 tests stay green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -297,6 +297,14 @@ grep -q "a prompt arrived before the kill" bin/claude-fw
 bin/fw vendor self --check --task T-5297
 
 ## RCA
+
+**Symptom:** ring20 (T-2784, G-236): a prompt typed after the budget handover, while claude-fw's "Ending in Ns" banner showed, was killed mid-turn and never answered.
+
+**Root cause:** `_terminator_watch` checked the turn state once, right after the handover (T-4032), then slept through the banner (T-4170) and signalled without checking again. The banner added a window the T-4032 check did not cover.
+
+**Why structurally allowed:** T-4170 added the banner sleep after T-4032's check; no test started a turn during the banner (the test harness did not even load the banner function), so the gap had no failing test.
+
+**Prevention:** the turn state is checked again right before the signal; test "T-5297: a turn that starts during the pre-kill banner is not killed" waits for the banner text, starts a turn, and fails without the fix (3/3 measured), passes with it (8/8 under parallel load).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
