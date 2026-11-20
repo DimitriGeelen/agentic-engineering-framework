@@ -1,10 +1,22 @@
 ---
 id: T-5311
-name: "Shared worker contract v0.3.4: specify the 'withdrawn' outcome and send it to TermLink and ring20 (T-5300)"
+name: "Shared worker contract v0.3.4: specify the 'withdrawn' outcome and send it
+  to TermLink and ring20 (T-5300)"
 description: >
-  T-5300 GO (operator 2026-11-20, commit 5c8a51295). Write v0.3.4 into docs/specs/shared-worker-contract-transitions.md: a T3b variant dispatched -> done with outcome 'withdrawn'; allowed only from dispatched for the current attempt (sgen match); running -> cas_mismatch; done/lost/unknown -> forbidden_transition, a repeated identical withdrawal deduped (T8); only the holder of the attempt's credentials (nonce plus supervisor token from dispatch.allocate) on an Execute-scope connection; the hub sweep never withdraws, no operator path in this revision; evidence_digest = sha256(reason), result_kind none; closes the attempt's open questions; logged with actor and reason, no notice; new rule: a supervisor starts the worker only after its T2 succeeded. Conformance vectors: withdraw from dispatched; withdraw vs T2 race (one wins); withdraw from running = cas_mismatch; repeat = deduped. Send to 010-termlink and proxmox-ring20-management. Sources: docs/reports/T-5300-withdraw-outcome.md (010 msg ab85e88e).
+  T-5300 GO (operator 2026-11-20, commit 5c8a51295). Write v0.3.4 into docs/specs/shared-worker-contract-transitions.md:
+  a T3b variant dispatched -> done with outcome 'withdrawn'; allowed only from dispatched
+  for the current attempt (sgen match); running -> cas_mismatch; done/lost/unknown
+  -> forbidden_transition, a repeated identical withdrawal deduped (T8); only the
+  holder of the attempt's credentials (nonce plus supervisor token from dispatch.allocate)
+  on an Execute-scope connection; the hub sweep never withdraws, no operator path
+  in this revision; evidence_digest = sha256(reason), result_kind none; closes the
+  attempt's open questions; logged with actor and reason, no notice; new rule: a supervisor
+  starts the worker only after its T2 succeeded. Conformance vectors: withdraw from
+  dispatched; withdraw vs T2 race (one wins); withdraw from running = cas_mismatch;
+  repeat = deduped. Send to 010-termlink and proxmox-ring20-management. Sources: docs/reports/T-5300-withdraw-outcome.md
+  (010 msg ab85e88e).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T16:29:09Z
-last_update: 2026-11-20T16:29:09Z
-date_finished: null
+last_update: '2026-11-20T16:29:34Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +62,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-20T16:29:34Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5311: Shared worker contract v0.3.4: specify the 'withdrawn' outcome and send it to TermLink and ring20 (T-5300)
@@ -57,20 +86,22 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5300 GO (operator 2026-11-20, commit 5c8a51295). ring20 (T-2790) needs a way to take back a pool job that never started (9 jobs held 5 h); TermLink agreed the shape from its backend (msg ab85e88e); docs/reports/T-5300-withdraw-outcome.md.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The shared worker contract (docs/specs/shared-worker-contract-transitions.md, wc/0.3.3 agreed; v0.3.4 a draft pending adoption by all three owners) has no transition that ends a `dispatched` attempt on the submitter's request.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** The withdrawn outcome is specified once, in the draft all three owners will adopt, with conformance vectors, and sent to TermLink and ring20.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A third item in the v0.3.4 changelog plus the matching edits in the body (§3 transition table, §3.3 outcomes and fence reasons, credentials, open-question closing, the supervisor-starts-after-T2 rule) and four conformance vectors; TermLink and ring20 have the text.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] v0.3.4 changelog item 3 "withdrawn" with sources [ring20 T-2790 3d5e1fda] and [termlink ab85e88e], and the body edits it names: T3b variant dispatched -> done outcome withdrawn; allowed only from dispatched for the current attempt; running -> cas_mismatch; done/lost/unknown -> forbidden_transition; repeat deduped (T8); only the holder of the attempt's credentials on an Execute-scope connection; hub sweep never withdraws; no operator path; evidence_digest = sha256(reason), result_kind none; closes open questions; logged with actor and reason; no notice; a supervisor starts the worker only after its T2 succeeded.
+- [ ] Four conformance vectors (withdraw from dispatched; withdraw vs T2 race, one wins; withdraw from running = cas_mismatch; repeat = deduped), in the same form as the existing CC vectors.
+- [ ] The version-field question is answered in the text (does a new outcome stay `wc/0.3` as a patch revision, or not), with the reason.
+- [ ] The text is sent to 010-termlink and proxmox-ring20-management over the sidecar (parent sends, after review).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,6 +288,8 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+grep -q "withdrawn" docs/specs/shared-worker-contract-transitions.md
+grep -q "ab85e88e" docs/specs/shared-worker-contract-transitions.md
 
 ## RCA
 
@@ -354,3 +387,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5311-shared-worker-contract-v034-specify-the-.md
 - **Context:** Initial task creation
+
+### 2026-11-20T16:29:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
