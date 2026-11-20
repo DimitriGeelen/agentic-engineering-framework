@@ -1,0 +1,99 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5294: Structured verdicts slice 3: a vote that fails the check does not count; the panel reassigns the seat, else the operator (T-5290)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T14:00:44Z
+# ============================================================================
+
+task_id: T-5294
+task_name: "Structured verdicts slice 3: a vote that fails the check does not count; the panel reassigns the seat, else the operator (T-5290)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-20T08:47:59Z
+completed: 2026-11-20T13:55:35Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-20T09:48:22+01:00
+last_commit: 2026-11-20T14:55:32+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed (T-5290 GO slice). scope — context, criteria, verification. a verdict/1 vote that fails its check counts neither green nor red; judge reassigns, else OPERATOR. vendor sync — checkable votes. criteria ticked after verification
+
+# Key outcomes
+outcomes:
+  - 'One function decides whether a recorded `verdict/1` vote is checkable from its `check` field, and names every reason it is not.'
+  - 'Wherever the ledger decides whether a row counts (close gate apply, panel completeness, audit), a not-checkable `verdict/1` row does not count as green or red; old-format rows are unaffected (existing ledger and close-path tests stay green; ledger audit still exits 3 or lower).'
+  - '`judge_with_reassign` treats a not-checkable vote like not-evaluated: that seat kind is excluded for the criterion and another kind is seated; when none is left, the result says "OPERATOR" with the not-checkable reasons.'
+  - 'The judge''s printed summary shows not-checkable votes with their reasons, so the operator sees why a seat did not count.'
+  - 'Tests: the T-5262 case (red vote, image never opened → not counted, reassigned); a green vote quoting a line that does not exist → not counted; a fully checked vote → counts; an old free-text row → counts as before; all seats not checkable → OPERATOR.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/arc_journal.py'
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/verdict_format.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.agentic-framework/lib/vote_checker.py'
+  - '.tasks/active/T-5294-structured-verdicts-slice-3-a-vote-that-.md'
+  - 'lib/arc_journal.py'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/verdict_format.py'
+  - 'lib/verdict_ledger.py'
+  - 'lib/vote_checker.py'
+  - 'tests/unit/test_t5294_checkable_votes.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T09:48:22'
+    action: 'T-5294: filed (T-5290 GO slice)'
+  - time: '2026-11-20T13:41:13'
+    action: 'T-5294: scope — context, criteria, verification'
+  - time: '2026-11-20T14:03:37'
+    action: 'T-5294: a verdict/1 vote that fails its check counts neither green nor red; judge reassigns, else OPERATOR'
+  - time: '2026-11-20T14:03:51'
+    action: 'T-5294: vendor sync — checkable votes'
+  - time: '2026-11-20T14:55:32'
+    action: 'T-5294: criteria ticked after verification'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 307 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 307
+  commits: 6
+  files_changed: 15
+  lines_added: 1183
+  lines_removed: 59
+  footprint_refreshed_at: '2026-11-20T14:01:10Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5294-structured-verdicts-slice-3-a-vote-that-.md
+generated_by: context-agent-hybrid
