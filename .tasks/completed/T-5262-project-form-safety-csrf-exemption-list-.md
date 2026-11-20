@@ -13,12 +13,12 @@ description: >
   audit fails on unproven or stale entries (ring20 c). Replaces ring20's header-presence
   exemption. Depends on slice 0.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [extension-points]
-components: []
+components: [agents/audit/audit.sh, lib/extensions.py, tests/unit/t5259_project_extensions.bats, web/app.py, web/project_extensions.py]
 related_tasks: [T-4649]
 origin: {kind: "operator", source: "T-4649"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -48,8 +48,8 @@ origin: {kind: "operator", source: "T-4649"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T15:30:57Z
-last_update: '2026-11-20T05:57:34Z'
-date_finished:
+last_update: 2026-11-20T17:07:54Z
+date_finished: 2026-11-20T17:07:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -130,7 +130,7 @@ bvp_scores_proposed:
 - [x] Tests cover: valid entry applied; header-presence-only endpoint refused; missing endpoint refused; blueprint form; audit FAIL rows; non-listed endpoint still protected.
 
 ### Human
-- [ ] [REVIEW] Watchtower pages still render the same after the web/app.py form-safety change
+- [x] [REVIEW] Watchtower pages still render the same after the web/app.py form-safety change
   **Steps:**
   1. Open the screenshots in .context/visual/T-5262/ (home and /approvals header, /approvals footer, taken from http://192.168.10.107:3000/ and http://192.168.10.107:3000/approvals after the restart)
   2. Check each shot at 1024, 1440 and 1920 px
@@ -180,6 +180,7 @@ bvp_scores_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261120-f1eebc8f — reviewer-judge-t-5262-r5-antigravity-a4575715ea23:antigravity (rung rung-5-panel:antigravity), digest 5758b9ffbcd7; dispatch judge-t-5262-r5-antigravity-a4575715ea23; evidence: .context/reviews/evidence/T-5262/AC1-judge-t-5262-r5-antigravity-a4575715ea23.md, .context/reviews/evidence/T-5262/01-root-judge-t-5262-r5-antigravity-a4575715ea23.png, .context/reviews/evidence/T-5262/02-approvals-judge-t-5262-r5-antigravity-a4575715ea23.png, .context/reviews/evidence/T-5262/home-header@1024-judge-t-5262-r5-antigravity-a4575715ea23.png, .context/reviews/evidence/T-5262/home-header@1440-judge-t-5262-r5-antigravity-a4575715ea23.png, .context/reviews/evidence/T-5262/home-header@1920-judge-t-5262-r5-antigravity-a4575715ea23.png, .context/reviews/evidence/T-5262/approvals-header@1024-judge-t-5262-r5-antigravity-a4575715ea23.png, .context/reviews/evidence/T-5262/approvals-header@1440-judge-t-5262-r5-antigravity-a4575715ea23.png, .context/reviews/evidence/T-5262/approvals-header@1920-judge-t-5262-r5-antigravity-a4575715ea23.png, .context/reviews/evidence/T-5262/approvals-footer@1024-judge-t-5262-r5-antigravity-a4575715ea23.png, .context/reviews/evidence/T-5262/approvals-footer@1440-judge-t-5262-r5-antigravity-a4575715ea23.png, .context/reviews/evidence/T-5262/approvals-footer@1920-judge-t-5262-r5-antigravity-a4575715ea23.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
@@ -441,3 +442,16 @@ Answer to red verdict judge-t-5262-r5-codex-8742b556a1e8 ("02-approvals.png at 1
 ### 2026-11-20T05:57:32Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-20T17:07:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e0321088
+- **Timestamp:** 2026-11-20T17:11:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

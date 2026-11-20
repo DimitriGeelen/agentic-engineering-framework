@@ -57788,3 +57788,21 @@ scan_id: R-5b6be01b
 task_id: T-5309
 payload:
   task_file: .tasks/active/T-5309-restore-reviewer-judged-screenshot-check.md
+---
+kind: scan_emitted
+timestamp: '2026-11-20T17:11:00Z'
+scan_id: R-e0321088
+task_id: T-5262
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-20T17:11:00Z'
+scan_id: R-e0321088
+task_id: T-5262
+payload:
+  task_file: .tasks/active/T-5262-project-form-safety-csrf-exemption-list-.md
