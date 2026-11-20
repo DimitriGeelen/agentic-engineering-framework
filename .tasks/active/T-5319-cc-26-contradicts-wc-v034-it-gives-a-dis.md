@@ -387,6 +387,10 @@ bvp_scores_proposed:
 
 ## Updates
 
+### 2026-11-20T19:48Z — two facts from 010 for the fix (msg d1c228b0)
+- Pre-start answers: TermLink's hub accepts a dispatcher answer on a dispatched attempt when it names no question_id (an answer is allowed while dispatched, running or unknown; one naming a question_id needs that question to exist). So "one un-acked dispatcher answer, no question" runs on their backend, and the T3w bounce check works on it.
+- Deadline: the current variant's append_answer uses deadline 100 at clock 20; their store fixes the answer TTL at 600 s (the spec's ANSWER_TTL default), so any other deadline is reported not-implemented. Use clock+600 (620) or no deadline.
+
 ### 2026-11-20T19:44:40Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5319-cc-26-contradicts-wc-v034-it-gives-a-dis.md
