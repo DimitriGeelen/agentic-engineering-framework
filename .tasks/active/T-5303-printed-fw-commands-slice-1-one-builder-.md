@@ -390,7 +390,7 @@ bin/fw watchtower current
 - 20 builder tests pass (tests/unit/test_t5303_fw_command_builder.py); shell and Python print the same line (`cd /opt/999-Agentic-Engineering-Framework && bin/fw doctor`; `.agentic-framework/bin/fw` for a vendored project).
 - `fw doctor` live: "fw on PATH is the router (T-2793)".
 - Watchtower restarted, `bin/fw watchtower current` passes.
-- Screenshots: .context/visual/T-5303/ (home and /approvals header, /approvals footer, 1024/1440/1920 px); claude seat green and checkable.
+- Screenshots: .context/visual/T-5303/ (header of http://192.168.10.107:3000/ and http://192.168.10.107:3000/approvals, footer of http://192.168.10.107:3000/approvals, 1024/1440/1920 px); claude seat green and checkable.
 
 ## Decisions
 
