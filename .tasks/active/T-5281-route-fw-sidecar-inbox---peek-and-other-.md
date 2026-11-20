@@ -15,7 +15,7 @@ description: >
   t3700-peek-route: route --peek and any other diagnostic inbox read through it, keep
   a fallback for older termlink, and test. Nothing changes until an inbox is bound.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -50,7 +50,7 @@ origin: {kind: "peer", source: "010-termlink", ref: "25826710"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T22:41:26Z
-last_update: 2026-11-20T09:16:30Z
+last_update: 2026-11-20T11:49:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,20 +96,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 010-termlink (msg 25826710, 2026-11-19, their T-3700): once an inbox is bound to its agent (operator runme), the hub refuses every read not signed by that agent's key. 010 shipped `termlink sidecar peek [--from N] [--limit N] [--json]` (msg 9fbc1132, 2026-11-20; termlink 0.12.13+250): own inbox, signed read, changes nothing.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Checked 2026-11-20: EVERY AEF inbox read goes through `default_reader` (lib/sidecar/inbox.py ~332), a plain `termlink channel subscribe <topic> --json --cursor N --limit M` with no read proof: `fw sidecar inbox --peek`, the advancing `fw sidecar inbox`, the session-start check (alerts.collect / strict_reader) and the receiver. So after a bind all of them are refused, not only --peek. Peek covers the read-only case; the route for a consuming read is not known yet (asked 010).
 
-**Goal:** <what we are trying to achieve>
+**Goal:** All of AEF's own-inbox reads use a signed route, so binding an inbox does not cut AEF off from its mail.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `default_reader` reads the agent's own inbox through `termlink sidecar peek --from <cursor> --limit <n> --json` (AEF keeps its own cursor as today), falls back to `channel subscribe` only when the installed termlink has no peek; other topics (not our own inbox) keep the old route; tests cover both routes.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] 010 has answered how a consuming read is signed and whether peek's JSON matches channel subscribe's envelopes; the answer is recorded under ## Updates and the build follows it.
+- [ ] Reads of the agent's own inbox go through the signed route (peek) with AEF's cursor; when termlink lacks `sidecar peek`, the old route is used and the fallback is logged once.
+- [ ] Tests: peek route used for own inbox; fallback on an older termlink; output envelopes parsed the same as before; `fw sidecar inbox`, `--peek` and `fw sidecar alerts` work against a fake termlink for both routes.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -400,3 +401,6 @@ bvp_scores_proposed:
 
 ### 2026-11-20T09:16:30Z — status-update [task-update-agent]
 - **Change:** horizon: later → now
+
+### 2026-11-20T11:49:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
