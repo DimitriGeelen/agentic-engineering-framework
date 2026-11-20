@@ -69,8 +69,12 @@ reader of `outcome` sees; it too keeps `wc/0.3`, for the reasons given in the it
    and adopts item 2 with them. A1 and A3 already fit; the changes on its side are: a late completion after close
    is recorded without reopening, not refused (A2); each close row records the policy id
    `backend:ring20-orch-supervisor` (A4); a re-commission carries `retry_of_dispatch_id` (A5); a repeated close
-   returns the stored record with `created: false` (A6). ring20's pool daemon stays `closure: never`; their orchestrator declares
-   `supported`. AEF's local backend and TermLink's hub are `closure: never`. [ring20 0e5516a8]
+   returns the stored record with `created: false` (A6); and a commission whose attempt never launched is no longer
+   closed directly, because that close is `dispatch_not_terminal` (A1, A2): the attempt is ended first (T3w
+   `withdrawn` for a release, T3 `done{failed}` with the launch error for a failed launch) and the dispatch closed
+   after. ring20's pool daemon stays `closure: never`; their orchestrator declares `supported`. AEF's local backend
+   and TermLink's hub are `closure: never`. ring20 adopts v0.3.4 on this text with no objection to the choices
+   T-5320 made. [ring20 0e5516a8] [ring20 a2e5c72b]
    **Version field stays `wc/0.3`:** every amendment is additive. A `closure: never` backend sees only two things: it
    answers a close with a typed refusal, and it tolerates the new reasons. No record becomes unreadable.
 3. **The `withdrawn` outcome (§2, §3.1, §3.2, §3.3 T2, T3w, T8 and `fence_reject`, §5.5, Open questions 7, CC-26 to
