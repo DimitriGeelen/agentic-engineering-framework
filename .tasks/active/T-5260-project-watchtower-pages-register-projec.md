@@ -333,7 +333,9 @@ bin/fw vendor self --check --task T-5260
 | state | control | 1024 | 1440 | 1920 | note |
 |-------|---------|------|------|------|------|
 | home-header | header and menu of http://192.168.10.107:3000/ (no project pages registered here) | ok | ok | ok | cropped to the nav and status strip (the page is ~65,000 px tall); menu Work, Knowledge, Architecture, Govern, Docs unchanged; steps file .context/visual/T-5260/home-header.steps.yaml |
-| cron-header | header and menu of http://192.168.10.107:3000/cron | ok | ok | ok | cropped the same way; identical header |
+| cron-header | header and menu of http://192.168.10.107:3000/cron | ok | ok | ok | cropped the same way; identical header. Before-change comparison for the 1024 px second header row (theme toggle): .context/visual/T-5241/no-questions@1024.png was captured from this Watchtower at 2026-11-19 23:52, before the T-5260 commit 722718588 (2026-11-20 00:21), and shows the same wrap, so it predates this task |
+| home-footer | footer of http://192.168.10.107:3000/ | ok | ok | ok | cropped to the footer (version line and bug-report hint) |
+| cron-footer | footer of http://192.168.10.107:3000/cron | ok | ok | ok | same footer |
 | project-page | fixture project page /hosts (header, menu, status strip, table, footer) | ok | ok | ok | Fixture, not the real Watchtower: tests/fixtures/project_ext copied to /tmp/t5260-fixture with a register naming web_ext/hosts.py, served by a second Watchtower on 127.0.0.1:3977 (PROJECT_ROOT=/tmp/t5260-fixture); the real register was never written. At 1024 the theme toggle wraps to a second header row; that is the framework header at that width, not the project page (same on /cron of the real Watchtower, see T-5261 state menu-no-extension). |
 
 ## RCA
