@@ -1,10 +1,19 @@
 ---
 id: T-5313
-name: "Risk practice slice 1: risk fields in the concerns register, matrix template, standing arc 'risk' (T-5310)"
+name: "Risk practice slice 1: risk fields in the concerns register, matrix template,
+  standing arc 'risk' (T-5310)"
 description: >
-  T-5310 GO (operator 2026-11-20, commit 203f8822b). Risks stay in .context/project/concerns.yaml type risk with added fields: likelihood, impact (1-5 each, score = L x I, bands low 1-5 / medium 6-12 / high 15-25), actors (own agent unintentional / human unintentional / outsider intentional / provider-host / intruder, each with L, I, mitigated L, mitigated I), introduced_by (task), exists_anyway, mitigation_task. A matrix template (summary table + per-risk actor split, ring20's columns) under .tasks/templates/ or docs/templates/. One standing arc 'risk' that never closes. Trigger written so an agent can tell: a change that alters a trust boundary (new sandbox, new credential use, new network path, new unattended automation). Source: docs/reports/T-5310-standing-risk-arc.md.
+  T-5310 GO (operator 2026-11-20, commit 203f8822b). Risks stay in .context/project/concerns.yaml
+  type risk with added fields: likelihood, impact (1-5 each, score = L x I, bands
+  low 1-5 / medium 6-12 / high 15-25), actors (own agent unintentional / human unintentional
+  / outsider intentional / provider-host / intruder, each with L, I, mitigated L,
+  mitigated I), introduced_by (task), exists_anyway, mitigation_task. A matrix template
+  (summary table + per-risk actor split, ring20's columns) under .tasks/templates/
+  or docs/templates/. One standing arc 'risk' that never closes. Trigger written so
+  an agent can tell: a change that alters a trust boundary (new sandbox, new credential
+  use, new network path, new unattended automation). Source: docs/reports/T-5310-standing-risk-arc.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T16:31:28Z
-last_update: 2026-11-20T16:31:28Z
-date_finished: null
+last_update: '2026-11-20T16:32:47Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-20T16:32:47Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5313: Risk practice slice 1: risk fields in the concerns register, matrix template, standing arc 'risk' (T-5310)
@@ -57,20 +83,22 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5310 GO (operator 2026-11-20, commit 203f8822b) on ring20's proposal (msgs a6cdde77, c06b5f30); research and agent challenge in docs/reports/T-5310-standing-risk-arc.md.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** AEF's concerns register supports `type: risk` but holds 5 risks ever, unscored, with no rule that a risk gets a mitigation task; risks a change introduces are discussed in task text and forgotten.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A scored risk entry shape in the register, a matrix template agents fill for trust-boundary changes, and one standing arc that holds mitigation tasks.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Register validation accepts the new risk fields (and still accepts the 5 old risks); a template with ring20's summary and actor-split tables and the trigger rule; a standing arc "risk" (never closes) that audit's stale-arc check does not flag; documentation of when a matrix is required and who decides what.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Risk entries in .context/project/concerns.yaml may carry likelihood, impact (1-5), score (L × I), actors (list of {actor, how, likelihood, impact, mitigated_likelihood, mitigated_impact}; actor one of own-agent-unintentional, human-unintentional, outsider-intentional, provider-host, intruder), introduced_by, exists_anyway, mitigation_task; whatever validates the register checks the ranges and actor names; the 5 existing risks still validate.
+- [ ] A matrix template (e.g. .tasks/templates/risk-matrix.md or docs/templates/risk-matrix.md): header (change, baseline), scales and bands, summary table, per-risk actor split, and the rule (any actor ≥ 6 → mitigation task in the standing arc; the decision rests on what the change introduces).
+- [ ] A standing arc "risk" in .context/arcs/ that is marked never-closing, and the stale-arc audit check does not WARN on it.
+- [ ] Documentation (where the concerns register is described) of the trigger (trust-boundary changes: new sandbox, credential use, network path, unattended automation) and the split: agent drafts and scores, reviewer agent checks, operator decides only risk acceptance (introduced risk still ≥ 6 after mitigation, or any ≥ 15).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,6 +285,9 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -c "import yaml; yaml.safe_load(open('.context/project/concerns.yaml'))"
+python3 -m pytest tests/unit/test_t5313_risk_fields.py -q > /tmp/.t5313a 2>&1 && grep -q passed /tmp/.t5313a
+bin/fw vendor self --check --task T-5313
 
 ## RCA
 
@@ -354,3 +385,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5313-risk-practice-slice-1-risk-fields-in-the.md
 - **Context:** Initial task creation
+
+### 2026-11-20T16:32:44Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
