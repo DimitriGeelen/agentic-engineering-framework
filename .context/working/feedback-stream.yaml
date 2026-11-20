@@ -57628,3 +57628,21 @@ scan_id: R-d1b696a8
 task_id: T-5294
 payload:
   task_file: .tasks/active/T-5294-structured-verdicts-slice-3-a-vote-that-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-20T14:43:18Z'
+scan_id: R-c325a1de
+task_id: T-5308
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-20T14:43:18Z'
+scan_id: R-c325a1de
+task_id: T-5308
+payload:
+  task_file: .tasks/active/T-5308-vote-checker-reports-a-quote-not-found-w.md
