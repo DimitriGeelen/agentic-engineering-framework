@@ -717,10 +717,19 @@ def orphan_inboxes(*, runner=None) -> list[dict] | None:
             if not topic_is_unread(r):
                 continue
             count = r.get("count")
-        out.append({"topic": topic, "count": count,
-                    "unread_since_ms": a.get("unread_since_ms"),
-                    "last_writer": a.get("last_writer"),
-                    "nickname_of": nickname_candidates(rest)})
+        # T-5296 (010 msg 13d7f876): another project's reader is invisible to the
+        # checks above; ask the hub who reads the topic before calling it an orphan.
+        state, detail = inbox.inbox_readers(topic, runner=runner)
+        if state == "read":
+            continue
+        row = {"topic": topic, "count": count,
+               "unread_since_ms": a.get("unread_since_ms"),
+               "last_writer": a.get("last_writer"),
+               "nickname_of": nickname_candidates(rest)}
+        if state == "unknown":
+            row["readers_checked"] = False
+            row["readers_reason"] = detail
+        out.append(row)
     return out
 
 
