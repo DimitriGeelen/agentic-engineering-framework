@@ -2143,9 +2143,17 @@ elif [ -n "$HARNESS" ]; then
         # T-4933: the export has no `.context/`, so the screenshots the brief cites were not
         # there, and opencode refuses reads outside its directory: every render judge ended
         # with no verdict. Copy exactly the cited evidence files in, before the fingerprint.
+        # T-5309: for codex, also write attached-images.json (the copied screenshots, sha256, which
+        # are attached) in the dispatch dir; every attached one goes on the command line as -i.
+        SEAT_MANIFEST_ARGS=()
+        [ "$WORKER_KIND" = "codex" ] && SEAT_MANIFEST_ARGS=(--manifest "$WDIR/attached-images.json")
         if [ -f "$FRAMEWORK_ROOT/lib/review_seat_evidence.py" ] && [ -f "$WDIR/brief.md" ]; then
-            python3 "$FRAMEWORK_ROOT/lib/review_seat_evidence.py" "$WDIR/brief.md" "$PROJECT_DIR" "$TREE" >> "$WDIR/stderr.log" 2>&1 \
+            python3 "$FRAMEWORK_ROOT/lib/review_seat_evidence.py" "$WDIR/brief.md" "$PROJECT_DIR" "$TREE" ${SEAT_MANIFEST_ARGS[@]+"${SEAT_MANIFEST_ARGS[@]}"} >> "$WDIR/stderr.log" 2>&1 \
                 || echo "WARN: cited evidence not copied into the export (T-4933)" >> "$WDIR/stderr.log"
+        fi
+        CODEX_IMAGE_ARGS=()
+        if [ "$WORKER_KIND" = "codex" ] && [ -f "$WDIR/attached-images.json" ]; then
+            mapfile -d '' CODEX_IMAGE_ARGS < <(python3 "$FRAMEWORK_ROOT/lib/review_seat_evidence.py" --codex-args "$WDIR/attached-images.json" 2>> "$WDIR/stderr.log")
         fi
         chmod -R a+rX "$WDIR" 2>/dev/null
         # T-3986 (832 T-1082): a seat whose sandbox could not write a temp file could not run a
@@ -2174,8 +2182,10 @@ elif [ -n "$HARNESS" ]; then
                 # exclude_slash_tmp keeps /tmp out, and network stays off (the sandbox default).
                 # --ignore-user-config and --ignore-rules: no ~/.codex/config.toml or execpolicy
                 # rules (auth still loads); project_doc_max_bytes=0: AGENTS.md is not injected;
-                # --ephemeral: no session files.
-                ( cd "$TREE" && _fw_seat_env && TMPDIR="$SEAT_TMP" exec ${SEAT_PIDNS[@]+"${SEAT_PIDNS[@]}"} "$WORKER_BIN" exec -s workspace-write --add-dir "$SEAT_TMP" -c sandbox_workspace_write.exclude_slash_tmp=true -c sandbox_workspace_write.network_access=false --skip-git-repo-check --ignore-user-config --ignore-rules --ephemeral --color never -c project_doc_max_bytes=0 ${MODEL:+-m "$MODEL"} --json -o "$WDIR/result.md" "$PROMPT_TEXT" < /dev/null > "$WDIR/result.jsonl" 2>> "$WDIR/stderr.log" ) &
+                # --ephemeral: no session files. T-5309: CODEX_IMAGE_ARGS (-i <file> per cited
+                # screenshot) come right after `exec`, so a later flag ends -i's value list and the
+                # prompt is never read as an image.
+                ( cd "$TREE" && _fw_seat_env && TMPDIR="$SEAT_TMP" exec ${SEAT_PIDNS[@]+"${SEAT_PIDNS[@]}"} "$WORKER_BIN" exec ${CODEX_IMAGE_ARGS[@]+"${CODEX_IMAGE_ARGS[@]}"} -s workspace-write --add-dir "$SEAT_TMP" -c sandbox_workspace_write.exclude_slash_tmp=true -c sandbox_workspace_write.network_access=false --skip-git-repo-check --ignore-user-config --ignore-rules --ephemeral --color never -c project_doc_max_bytes=0 ${MODEL:+-m "$MODEL"} --json -o "$WDIR/result.md" "$PROMPT_TEXT" < /dev/null > "$WDIR/result.jsonl" 2>> "$WDIR/stderr.log" ) &
                 ;;
             opencode)
                 # --agent plan: opencode's built-in no-edit agent; --pure: no external plugins;
@@ -2192,7 +2202,9 @@ elif [ -n "$HARNESS" ]; then
                 # other seats get through /usr/bin/env inside sudo: TMPDIR (its scratch space, which
                 # the brief tells it to run project code from) and PYTHONDONTWRITEBYTECODE (T-4835).
                 # Without them it ran Python in place and its own .pyc files voided the seat.
-                ( cd "$TREE" && _fw_seat_env && exec ${SEAT_PIDNS[@]+"${SEAT_PIDNS[@]}"} /usr/bin/sudo -n -u dimitri-mint-dev -H /usr/bin/env TMPDIR="$SEAT_TMP" PYTHONDONTWRITEBYTECODE=1 "$WORKER_BIN" -p "$PROMPT_TEXT" --mode plan --sandbox < /dev/null > "$WDIR/result.md" 2>> "$WDIR/stderr.log" ) &
+                # T-5309: --output-format stream-json; result.jsonl is the seat's run record (its
+                # read_file steps show which screenshots it opened); result.md is derived below.
+                ( cd "$TREE" && _fw_seat_env && exec ${SEAT_PIDNS[@]+"${SEAT_PIDNS[@]}"} /usr/bin/sudo -n -u dimitri-mint-dev -H /usr/bin/env TMPDIR="$SEAT_TMP" PYTHONDONTWRITEBYTECODE=1 "$WORKER_BIN" -p "$PROMPT_TEXT" --mode plan --sandbox --output-format stream-json < /dev/null > "$WDIR/result.jsonl" 2>> "$WDIR/stderr.log" ) &
                 ;;
         esac
         HARNESS_PID=$!
@@ -2242,6 +2254,27 @@ if kind == "opencode":
         if isinstance(ev, dict) and ev.get("type") == "text":
             parts.append(str((ev.get("part") or {}).get("text") or ""))
     (w / "result.md").write_text("\n".join(p for p in parts if p).strip() + "\n")
+elif kind == "antigravity":
+    # T-5309: stream-json. The final text is the `result` event's response; without one (a run cut
+    # short), the agent_response text deltas. A non-SUCCESS result is named on stderr.
+    final, deltas = None, []
+    for line in (w / "result.jsonl").read_text(errors="replace").splitlines() if (w / "result.jsonl").is_file() else []:
+        try:
+            ev = json.loads(line)
+        except ValueError:
+            continue
+        if not isinstance(ev, dict):
+            continue
+        if ev.get("event") == "result" and isinstance(ev.get("result"), dict):
+            r = ev["result"]
+            final = str(r.get("response") or "")
+            if str(r.get("status") or "SUCCESS") != "SUCCESS":
+                print(f"HARNESS ERROR ({kind}): result status {r.get('status')}", file=sys.stderr)
+        su = ev.get("step_update") if ev.get("event") == "step_update" else None
+        if isinstance(su, dict) and su.get("step_type") == "agent_response" and su.get("text_delta"):
+            deltas.append(str(su["text_delta"]))
+    text = final if final is not None else "".join(deltas)
+    (w / "result.md").write_text(ansi.sub("", text).strip() + "\n" if text.strip() else "")
 elif (w / "result.md").is_file():
     (w / "result.md").write_text(ansi.sub("", (w / "result.md").read_text(errors="replace")))
 PYEOF

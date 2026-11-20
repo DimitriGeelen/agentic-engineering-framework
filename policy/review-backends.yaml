@@ -86,12 +86,12 @@ backends:
     description: "Codex review via subscription account (ChatGPT login, ~/.codex/auth.json)"
     worker_kind: codex
     vendor: openai
-    # T-5289 / G-136 (operator 2026-11-20, "go record it"): false until a review run is shown to
-    # view the images. The T-4944 probe showed codex CAN answer from an image via view_image, but
-    # in real judge runs (T-5226, T-5236, T-5260, T-5261, T-5262) it never called view_image and
-    # still voted on screenshot criteria ("Opened all 11 screenshots"). Not seated on render
-    # criteria until the T-5290 checker proves a seat viewed the evidence.
-    vision: false
+    # T-5309: true again — the review runtime now ATTACHES every screenshot the brief cites at
+    # launch (`codex exec -i <file>`, listed with sha256 in the dispatch's attached-images.json),
+    # and lib/vote_checker.py counts an attached image as viewed. History: T-5289 / G-136 set this
+    # false because in judge runs (T-5226, T-5236, T-5260, T-5261, T-5262) codex never called
+    # view_image yet voted on screenshot criteria; the T-4944 probe showed it CAN see an image.
+    vision: true
     credential:
       source: cli-login
       note: "codex login with the ChatGPT account (~/.codex/auth.json) — the CLI authenticates itself"
