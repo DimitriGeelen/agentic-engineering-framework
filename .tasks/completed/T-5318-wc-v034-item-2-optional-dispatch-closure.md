@@ -6,18 +6,18 @@ description: >
   Inception: wc v0.3.4 item 2 (optional dispatch closure): adopt TermLink's six amendments
   (A1-A6) so all three owners can adopt the item?
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 waiting_on: agent
 revisit_at: 2026-11-27
 created: 2026-11-20T18:00:32Z
-last_update: '2026-11-20T18:15:41Z'
-date_finished:
+last_update: 2026-11-20T19:52:59Z
+date_finished: 2026-11-20T19:52:59Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -116,15 +116,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -182,7 +182,11 @@ Adopt v0.3.4 item 2 (optional dispatch closure) with TermLink's amendments A1-A6
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Adopt v0.3.4 item 2 (optional dispatch closure) with TermLink's amendments A1-A6, and with it items 1 and 3, so all three owners adopt the same v0.3.4. Two independent reviewers on TermLink's side found the same six weaknesses in item 2 as drafted (W1-W6: five high), each a way three backends could disagree or a caller could block someone else's retries; each amendment is the smallest fix for one. ring20, whose orchestrator is the only backend that closes, accepts all six with three small changes on its side. For AEF the cost is small: our backend never closes dispatches, so it declares `closure: never` and answers a close with a typed refusal. Build after a GO: write A1-A6 and vectors CC-30..CC-43 (CC-15a/b, CC-19a/b) into the spec, then AEF's typed refusal.
+
+**Date**: 2026-11-20T19:52:59Z
 
 ## Updates
 
@@ -191,3 +195,35 @@ Adopt v0.3.4 item 2 (optional dispatch closure) with TermLink's amendments A1-A6
 
 ### 2026-11-20T18:01:03Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-20T19:52:59Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Adopt v0.3.4 item 2 (optional dispatch closure) with TermLink's amendments A1-A6, and with it items 1 and 3, so all three owners adopt the same v0.3.4. Two independent reviewers on TermLink's side found the same six weaknesses in item 2 as drafted (W1-W6: five high), each a way three backends could disagree or a caller could block someone else's retries; each amendment is the smallest fix for one. ring20, whose orchestrator is the only backend that closes, accepts all six with three small changes on its side. For AEF the cost is small: our backend never closes dispatches, so it declares `closure: never` and answers a close with a typed refusal. Build after a GO: write A1-A6 and vectors CC-30..CC-43 (CC-15a/b, CC-19a/b) into the spec, then AEF's typed refusal.
+
+### 2026-11-20T19:52:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c9e31a52
+- **Timestamp:** 2026-11-20T19:53:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-b33ef9f9
+- **Timestamp:** 2026-11-20T19:53:01Z
+- **Overall:** UNVERIFIED
+- **Claims:** 0
+- No verifiable claims found in ## Recommendation
