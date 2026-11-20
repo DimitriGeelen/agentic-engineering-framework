@@ -8,18 +8,18 @@ description: >
   projects, so every printed remedy, page and hand-off runs as written, without path
   rewriting that keeps breaking?
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 waiting_on: agent
 revisit_at: 2026-11-27
 created: 2026-11-20T13:38:57Z
-last_update: '2026-11-20T13:45:46Z'
-date_finished:
+last_update: 2026-11-20T13:49:00Z
+date_finished: 2026-11-20T13:49:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -124,15 +124,15 @@ The framework prints commands for people and agents to run: fw doctor remedies, 
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -189,7 +189,11 @@ One rule, one builder, used everywhere a command is printed for someone to run. 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: One rule, one builder, used everywhere a command is printed for someone to run. The builder returns `cd <absolute project root> && <path to this project's fw> <args>`: `bin/fw` in the framework repo, `.agentic-framework/bin/fw` in a vendored project. It never prints bare `fw` and never `bin/watchtower.sh` (Watchtower is reached as `<fw> watchtower …`). The same builder serves people and agents (one spelling, documented, as 832 asked), because bare `fw` is not safe everywhere: ring20's host .122 still has the old fw-shim, not the router, and 1409 measured sessions and workers running without the login PATH. Nothing new goes into a vendored project's root (no shim): the isolation stays inside `.agentic-framework/`, and the run-time router (T-2793) stays as it is for people typing `fw` themselves. This fixes the cause the operator named: not one wrong line, but ~100 printers each spelling the command by hand, with Python and Watchtower keeping their own rules. Build slices: (1) the builder in shell (fix `_fw_cmd`, which today returns bare `fw` whenever any fw is on PATH) and Python, with a parity test, plus a Watchtower template global; `fw doctor` reports whether the PATH `fw` is the router, an old shim, or absent; (2) move the printers in bin/fw, lib/, agents/ to the builder (fw doctor remedies and gate messages first, including #68's two lines); (3) Watchtower templates and blueprint strings; (4) a lint that fails on a new hand-written `bin/fw` or `bin/watchtower.sh` in printed text (ratchet the rest); (5) skills, handover text and the consumer CLAUDE.md template. For #68: the contributor's PR becomes the first user of the builder (their two lines call it), so their answer is none of a, b, c as asked, but the resolved path through one function.
+
+**Date**: 2026-11-20T13:48:59Z
 
 ## Updates
 
@@ -198,3 +202,47 @@ One rule, one builder, used everywhere a command is printed for someone to run. 
 
 ### 2026-11-20T13:39:05Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-20T13:48:59Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** One rule, one builder, used everywhere a command is printed for someone to run. The builder returns `cd <absolute project root> && <path to this project's fw> <args>`: `bin/fw` in the framework repo, `.agentic-framework/bin/fw` in a vendored project. It never prints bare `fw` and never `bin/watchtower.sh` (Watchtower is reached as `<fw> watchtower …`). The same builder serves people and agents (one spelling, documented, as 832 asked), because bare `fw` is not safe everywhere: ring20's host .122 still has the old fw-shim, not the router, and 1409 measured sessions and workers running without the login PATH. Nothing new goes into a vendored project's root (no shim): the isolation stays inside `.agentic-framework/`, and the run-time router (T-2793) stays as it is for people typing `fw` themselves. This fixes the cause the operator named: not one wrong line, but ~100 printers each spelling the command by hand, with Python and Watchtower keeping their own rules. Build slices: (1) the builder in shell (fix `_fw_cmd`, which today returns bare `fw` whenever any fw is on PATH) and Python, with a parity test, plus a Watchtower template global; `fw doctor` reports whether the PATH `fw` is the router, an old shim, or absent; (2) move the printers in bin/fw, lib/, agents/ to the builder (fw doctor remedies and gate messages first, including #68's two lines); (3) Watchtower templates and blueprint strings; (4) a lint that fails on a new hand-written `bin/fw` or `bin/watchtower.sh` in printed text (ratchet the rest); (5) skills, handover text and the consumer CLAUDE.md template. For #68: the contributor's PR becomes the first user of the builder (their two lines call it), so their answer is none of a, b, c as asked, but the resolved path through one function.
+
+### 2026-11-20T13:49:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7ef8d129
+- **Timestamp:** 2026-11-20T13:49:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
+     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-fcad5b99
+- **Timestamp:** 2026-11-20T13:49:03Z
+- **Overall:** CONFIRMED
+- **Claims:** 8
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `bin/watchtower.sh` | file | ✓ pass |
+| `T-2793` | task | ✓ pass |
+| `T-147` | task | ✓ pass |
+| `T-609` | task | ✓ pass |
+| `T-1257` | task | ✓ pass |
+| `T-1633` | task | ✓ pass |
+| `T-3952` | task | ✓ pass |
+| `T-4250` | task | ✓ pass |
