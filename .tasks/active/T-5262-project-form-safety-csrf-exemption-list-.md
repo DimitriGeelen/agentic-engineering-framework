@@ -13,10 +13,10 @@ description: >
   audit fails on unproven or stale entries (ring20 c). Replaces ring20's header-presence
   exemption. Depends on slice 0.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [extension-points]
 components: []
 related_tasks: [T-4649]
@@ -48,7 +48,7 @@ origin: {kind: "operator", source: "T-4649"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T15:30:57Z
-last_update: '2026-11-19T15:45:53Z'
+last_update: '2026-11-20T05:57:34Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,6 +87,23 @@ bvp_scores_proposed:
       (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-20T05:57:34Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=0
+      (no-signal); D4=0 (no-signal); F-RECALL=2 (body:lightly-promoted); 
+      F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5262: Project form-safety (CSRF) exemption list: owned by the project's operator, each entry proven by its auth check and a test, verified at startup, failing fw audit when unproven or stale (T-4649 slice 3)
@@ -94,20 +111,23 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-4649 GO (operator, 2026-11-19), point 3. ring20 edits the vendored `web/app.py` `csrf_protect()` to exempt two of its own endpoints (approvals.tap_decide, HMAC bearer; the vpn_proxy blueprint, header X-Ring20-Key), and that exemption only checks the header is *present*. Consultation answers (docs/reports/T-4649-ring20-patch-triage.md): an operator-owned list (1409 c, ring20 c); each entry names the endpoint's own authentication and the test that proves it (832 c, 055 c); Watchtower checks at startup that the endpoint really enforces it and refuses the exemption otherwise; `fw audit` fails on unproven or stale entries (ring20 c).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** A project has no way to exempt its own token-authenticated endpoints from the form-safety check except editing a framework file, which the next upgrade overwrites. The edit it makes today is weaker than it looks: a header-presence check lets any request carrying the header name through.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A `csrf-exemption` entry in the project's `.framework-extensions.yaml` (added by the project's operator) that names endpoints or a whole blueprint, the authentication they enforce, and the proving test; Watchtower honours it only after a startup probe shows the endpoint refuses requests without valid credentials; `fw audit` FAILs when an entry is unproven, refused, or stale.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** ring20 can delete its app.py edit and declare its two exemptions instead; a header-presence-only endpoint is caught at startup and stays protected; every exemption is listed in `fw audit` with who decided it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Register: a `csrf-exemption` entry carries `paths` (endpoint names like `bp.view`, or `blueprint:<name>`), `auth` (`bearer` or `header:<Name>`) and `test` (relative path to the proving test file); `validate()` refuses the entry without them, and `fw extension add csrf-exemption` takes `--auth` and `--test`; other kinds refuse those fields.
+- [ ] Startup: Watchtower probes each listed endpoint (every state-changing URL rule) twice, once without the credential and once with a wrong random credential; the exemption is applied only when both answers are 401 or 403; the result (applied / refused with reason / endpoint missing) is written to the Watchtower extensions state file.
+- [ ] `csrf_protect()` skips the check only for endpoints whose exemption was applied; a refused or unlisted endpoint still gets 403 without a token.
+- [ ] `fw audit` lists every applied exemption (INFO, with who decided it), and FAILs for an entry that was refused at startup, names an endpoint that no longer exists, or names a test file that does not exist; WARN while Watchtower has not started since the entry was added.
+- [ ] Tests cover: valid entry applied; header-presence-only endpoint refused; missing endpoint refused; blueprint form; audit FAIL rows; non-listed endpoint still protected.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -293,6 +313,11 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/web/test_t5262_csrf_exemptions.py -q > /tmp/.t5262a 2>&1 && grep -q passed /tmp/.t5262a
+python3 -m pytest tests/web/test_t5260_project_pages.py tests/web/test_t5261_project_nav.py -q > /tmp/.t5262b 2>&1 && grep -q passed /tmp/.t5262b
+timeout 300 bats tests/unit/t5259_project_extensions.bats > /tmp/.t5262c 2>&1 && ! grep -q "^not ok" /tmp/.t5262c
+bin/fw vendor self --check --task T-5262
+bin/fw watchtower current
 
 ## RCA
 
@@ -390,3 +415,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5262-project-form-safety-csrf-exemption-list-.md
 - **Context:** Initial task creation
+
+### 2026-11-20T05:57:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
