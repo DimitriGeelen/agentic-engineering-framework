@@ -10,10 +10,10 @@ description: >
   closed task and an incomplete panel, and report each result; a red reopens follow-up
   work.
 
-status: captured
+status: started-work
 workflow_type: test
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T08:42:06Z
-last_update: '2026-11-20T08:46:50Z'
+last_update: 2026-11-20T17:30:52Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,20 +90,20 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** G-136 / T-5289 (2026-11-20): the codex seat voted on screenshot criteria without opening any image; its greens on the render criteria of T-5260, T-5226 and T-5236 rest on nothing. Operator chose to re-check them (option a, recorded in T-5289).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** These tasks are closed and `fw reviewer judge` refuses a completed task ("Task T-5260 not found"), so a straight re-judge is not possible. Each criterion may still have had a sound green from a seat that did open the images (claude).
 
-**Goal:** <what we are trying to achieve>
+**Goal:** For each of the three, know whether the render criterion had at least one green from a seat whose run log shows it opened the screenshots.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Per task: the claude (and any other) seat's verdict and whether it viewed the images, from the saved dispatch logs with lib/vote_checker.py seat_viewed_images; a finding recorded here; where no sound green exists, a follow-up task to re-check that page.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] For T-5260, T-5226 and T-5236, the seats' verdicts and whether each viewed the screenshots are recorded under ## Updates, from the saved dispatch logs.
+- [ ] Each criterion is marked sound (at least one green from a seat that viewed the images) or not; for any that is not, a follow-up task exists.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,6 +290,7 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+grep -q "T-5291 finding" .tasks/active/T-5291-re-judge-the-render-criteria-of-t-5260-t.md
 
 ## RCA
 
@@ -387,3 +388,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5291-re-judge-the-render-criteria-of-t-5260-t.md
 - **Context:** Initial task creation
+
+### 2026-11-20T17:30:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
