@@ -54,3 +54,4 @@ CLAUDE.md §Copy-Pasteable Commands still says bare `fw` "may resolve to a stale
 ## Dialogue Log
 
 - 2026-11-20, operator: questioned the `bin/fw` path in vendored projects as a buggy artifact of path rewriting and missing isolation; asked for reflection, research and consultation before answering the contributor on #68.
+- 2026-11-20, agent: consultation sent to proxmox-ring20-management (b0e5a55b), 1409-sprind (bc92f5c9), 055-agentic-fleet-cockpit (504306b4), 832-Workflow-designer (6aec9304): how they run fw, whether PATH fw is the router, which printed commands failed, what they want printed. Revisit 2026-11-24. The outside contributor on #68 has not been consulted (a GitHub comment needs the operator's OK).
