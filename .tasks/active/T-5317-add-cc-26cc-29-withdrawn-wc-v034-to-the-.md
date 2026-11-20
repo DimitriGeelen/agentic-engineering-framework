@@ -8,10 +8,10 @@ description: >
   that file; add the four vectors from docs/specs/shared-worker-contract-transitions.md
   §9 and extend the checker.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T17:13:57Z
-last_update: '2026-11-20T17:16:03Z'
+last_update: 2026-11-20T18:32:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,20 +88,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5312 implemented wc v0.3.4 T3w (withdrawn) in lib/dispatch_records.py with unit tests; TermLink's operator adopted item 3 (010 msg 90070ce7) and builds it as their T-3837 against CC-26..CC-29.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The machine-readable vectors (tests/conformance/worker-contract/vectors.yaml) and their checker still stop at CC-25, so the backends cannot run the new vectors from the shared file.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** CC-26..CC-29 are in the shared vectors file and pass on AEF's local backend.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** vectors.yaml holds CC-26 (withdraw from dispatched), CC-27 (withdraw vs T2 race, one wins), CC-28 (withdraw from running = cas_mismatch), CC-29 (repeat deduped), worded as spec §9; check_vectors.py accepts them; run_local.py runs them green against lib/dispatch_records.py.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] vectors.yaml has CC-26..CC-29 in the existing vector format, matching docs/specs/shared-worker-contract-transitions.md §9.
+- [ ] check_vectors.py (and check_mapping.py if it enumerates vectors) accept CC-01..CC-29.
+- [ ] run_local.py runs all vectors, CC-26..CC-29 included, green against lib/dispatch_records.py.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,6 +289,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+grep -q "CC-29" tests/conformance/worker-contract/vectors.yaml
+out=$(python3 tests/conformance/worker-contract/run_local.py 2>&1); grep -q "CC-29" <<<"$out" && ! grep -qi "fail" <<<"$out"
 
 ## RCA
 
@@ -385,3 +388,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5317-add-cc-26cc-29-withdrawn-wc-v034-to-the-.md
 - **Context:** Initial task creation
+
+### 2026-11-20T18:32:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
