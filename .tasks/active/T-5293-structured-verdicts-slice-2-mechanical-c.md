@@ -104,11 +104,13 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A checker (one function over a parsed `verdict/1` vote plus the reviewed revision's files) returns per-item results: quote found at the named path:line / found elsewhere in that file / not found; path:line exists; image file exists and region lies inside it; selector named; rule present; overall consistent.
-- [ ] For an image region that lies inside the image, the checker writes the crop as a PNG beside the seat's evidence (`.context/reviews/evidence/<task>/`) and the check result names it.
-- [ ] Seat-viewed-evidence: for a vote citing an image, the checker reads the seat's run record (harness `result.jsonl` events, or the claude seat's transcript/tool events) and reports whether that image (or its copy) was actually opened by an image-viewing tool; "cannot tell" is reported as such, never as yes.
-- [ ] New `verdict/1` rows carry the check result as an added field (old rows and old-format rows unchanged; ledger audit still exits 3 or lower).
-- [ ] Tests: each outcome above, including the T-5262 case (red vote citing a region where the reference shows the icons, from a seat whose log has no image view → reported "not viewed").
+- [x] A checker (one function over a parsed `verdict/1` vote plus the reviewed revision's files) returns per-item results: quote found at the named path:line / found elsewhere in that file / not found; path:line exists; image file exists and region lies inside it; selector named; rule present; overall consistent.
+- [x] For an image region that lies inside the image, the checker writes the crop as a PNG beside the seat's evidence (`.context/reviews/evidence/<task>/`) and the check result names it.
+- [x] Seat-viewed-evidence: for a vote citing an image, the checker reads the seat's run record (harness `result.jsonl` events, or the claude seat's transcript/tool events) and reports whether that image (or its copy) was actually opened by an image-viewing tool; "cannot tell" is reported as such, never as yes.
+- [x] New `verdict/1` rows carry the check result as an added field (old rows and old-format rows unchanged; ledger audit still exits 3 or lower).
+- [x] Tests: each outcome above, including the T-5262 case (red vote citing a region where the reference shows the icons, from a seat whose log has no image view → reported "not viewed").
+
+**Checked by the parent on the real T-5262 logs (2026-11-20):** codex seat judge-t-5262-r5-codex-cc747b0f5d67 → no image viewed (`{}`); claude seat judge-t-5262-r5-claude-code-f0d41eb50cda → all 11 screenshots viewed. The ledger takes each seat's run dir from its dispatch record (`wdir`), which is /tmp/tl-dispatch/<id> for harness seats and .context/dispatch/<id> for claude seats. Open: no real codex log that opens an image exists yet, so the codex "viewed" rule (a view_image-type event) is untested on real data; antigravity leaves no event log, so it is always "cannot tell".
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
