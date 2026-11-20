@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5309: Restore reviewer-judged screenshot checks: attach screenshots to codex at launch (-i) and log antigravity's tool calls (stream-json), so three seats can give countable render votes again
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T16:56:18Z
+# ============================================================================
+
+task_id: T-5309
+task_name: "Restore reviewer-judged screenshot checks: attach screenshots to codex at launch (-i) and log antigravity's tool calls (stream-json), so three seats can give countable render votes again"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-20T15:41:43Z
+completed: 2026-11-20T16:55:18Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-20T16:41:52+01:00
+last_commit: 2026-11-20T17:55:16+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed — restore reviewer-judged screenshot checks (codex -i, antigravity stream-json). scope — codex -i attachment, antigravity stream-json record, checker, codex vision back. attach cited screenshots to codex at launch (-i), antigravity stream-json run record, checker counts attached/read images. antigravity launch-form test names --output-format stream-json. vendor sync. criteria ticked — three-seat checked panel closed T-5303 without the operator
+
+# Key outcomes
+outcomes:
+  - 'The review runtime (agents/termlink/termlink.sh codex branch) passes every screenshot the brief names to codex with `-i`, and the dispatch record lists the attached files with their hashes.'
+  - 'lib/vote_checker.py treats a cited image as viewed when it (or its copy, by content hash) was attached at launch; a cited image that was neither attached nor opened stays "not viewed".'
+  - 'Antigravity seats run with `--output-format stream-json`; the output is kept as the seat''s run record; the checker recognises its image reads; "cannot tell" remains only when the record is missing.'
+  - 'policy/review-backends.yaml codex `vision: true` again, with the comment pointing to this task; the T-4944 test updated.'
+  - 'A real review run (fw reviewer judge on T-5303) shows codex and antigravity votes as checkable; T-5303''s render criterion closes on reviewer verdicts without the operator. (2026-11-20: claude judge-t-5303-r5-claude-code-f1650be45568, codex judge-t-5303-r5-codex-8471300cab08, antigravity judge-t-5303-r5-antigravity-2b034fabd918, all green and checkable; T-5303 closed with owner_before human, owner_after agent.)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/lib/review_seat_evidence.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.agentic-framework/lib/vote_checker.py'
+  - '.agentic-framework/policy/review-backends.yaml'
+  - '.tasks/active/T-5309-restore-reviewer-judged-screenshot-check.md'
+  - 'agents/termlink/termlink.sh'
+  - 'lib/review_seat_evidence.py'
+  - 'lib/verdict_ledger.py'
+  - 'lib/vote_checker.py'
+  - 'policy/review-backends.yaml'
+  - 'tests/unit/t3582_harness_kinds_test.py'
+  - 'tests/unit/test_t4944_vision_gated_citation.py'
+  - 'tests/unit/test_t5309_seat_image_proof.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T16:41:52'
+    action: 'T-5309: filed — restore reviewer-judged screenshot checks (codex -i, antigravity stream-json)'
+  - time: '2026-11-20T16:42:48'
+    action: 'T-5309: scope — codex -i attachment, antigravity stream-json record, checker, codex vision back'
+  - time: '2026-11-20T17:29:28'
+    action: 'T-5309: attach cited screenshots to codex at launch (-i), antigravity stream-json run record, checker counts attached/read images'
+  - time: '2026-11-20T17:30:46'
+    action: 'T-5309: antigravity launch-form test names --output-format stream-json'
+  - time: '2026-11-20T17:35:03'
+    action: 'T-5309: vendor sync'
+  - time: '2026-11-20T17:55:16'
+    action: 'T-5309: criteria ticked — three-seat checked panel closed T-5303 without the operator'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 73 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 73
+  commits: 7
+  files_changed: 17
+  lines_added: 1195
+  lines_removed: 75
+  footprint_refreshed_at: '2026-11-20T16:56:31Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5309-restore-reviewer-judged-screenshot-check.md
+generated_by: context-agent-hybrid
