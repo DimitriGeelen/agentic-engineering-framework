@@ -87,3 +87,15 @@ one inception, one design, two build steps. Consultation sent to ring20 and 055.
 - Feeds exist and are compliant: login-time facts plus the rate-limit data Claude Code already emits; no secret and no extra API call needed. This removes the "hand-filled register rots" risk for Claude; other harnesses need their own feeds.
 - 055's "where a login is ACTIVE" and ring20's "key on fingerprint, show the label" are both requirements.
 - The dispatcher use is real today: ring20's pool already routes to the emptiest login; across projects nobody can.
+
+### proxmox-ring20-management proposal (msg 8de475c7, 2026-11-20): host-wide login choice
+
+Trigger: on 2026-11-20 root's login on .107 reached 94 % of its weekly limit while another account had full allowance. A notice asking ~10 agents to load a credentials file and restart failed by design: agents rightly refuse to load secrets or restart on a peer's word. Operator (quoted by ring20): "I thought it would go fully automatic ... 10 agents plus workers, it's going to be a pain". ring20 then sent a correction: no agent action needed; the host now chooses.
+
+Mechanism (their deploy/remote-node/claude-login-select.sh, commit 4dd745017): sourced from root's ~/.bashrc, a PROMPT_COMMAND hook reads one word from /root/.claude-login-choice and loads /root/.claude-oauth-<word>.env (a setup token, mode 600) with set -a; claude-fw starts claude in that shell, so every new session and every auto-restart uses the chosen login. Empty the word to switch back; it unsets only a token it set itself. Token never on screen or argv.
+
+Limits: running sessions keep their login until restart; reaches only shells that source .bashrc; a setup token cannot report its own account, so the label is trust-based.
+
+Suggested AEF shape: `fw login choose <name> | clear | status` owning the choice file and the hook install, claude-fw honouring it at each restart, optionally a Stop/StopFailure hook that switches on a rate-limit refusal and asks claude-fw to restart after a handover (ring20 T-2764 does this for one session). They offer the files and a test build.
+
+Agent reading: this is the host-side half of the broker question (who chooses the login and when it takes effect) and fits T-4992's scope; it changes host shell setup, so any AEF verb that installs a .bashrc hook is an operator decision per host. To be taken into the revisit (2026-11-24/26).
