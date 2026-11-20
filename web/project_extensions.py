@@ -110,7 +110,7 @@ def _write_state(project_root, state, force=False):
         return
     try:
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        tmp = f"{path}.tmp.{os.getpid()}"
+        tmp = f"{path}.tmp.{os.getpid()}-{os.urandom(4).hex()}"
         with open(tmp, "w", encoding="utf-8") as fh:
             json.dump(state, fh, indent=2, sort_keys=True)
             fh.write("\n")

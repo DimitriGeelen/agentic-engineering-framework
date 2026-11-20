@@ -188,7 +188,7 @@ def save(root, entries):
     for i, e in enumerate(entries):
         validate(e, where=f"entry {i + 1}")
     path = register_path(root)
-    tmp = f"{path}.tmp.{os.getpid()}"
+    tmp = f"{path}.tmp.{os.getpid()}-{os.urandom(4).hex()}"
     with open(tmp, "w", encoding="utf-8") as fh:
         fh.write(_emit(entries))
     os.replace(tmp, path)
