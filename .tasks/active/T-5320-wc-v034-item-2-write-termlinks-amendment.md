@@ -13,7 +13,7 @@ description: >
   (W1-W6, ring20's three changes). Then send to 010-termlink and proxmox-ring20-management.
   Do after T-5319 (same files).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T19:53:27Z
-last_update: '2026-11-20T20:01:52Z'
+last_update: 2026-11-20T20:45:31Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,20 +93,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** The operator ruled GO on T-5318 (2026-11-20): adopt wc v0.3.4 item 2 (optional dispatch closure) only with TermLink's amendments A1-A6 (010 msg e9015b84; weaknesses W1-W6 in 010 msg c2d29013; ring20 agrees in msg 0e5516a8). TermLink (T-3840) keeps its RPC withdraw off until this text is published and ring20 confirms it.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The spec's item 2 still reads as drafted ("MAY close", CC-15/CC-19 "accept either"), which the reviewers showed is unsafe: close races T1, post-close attempt writes are undefined, close is not authenticated, terminality and the reader view are unspecified, and repeats and history are undefined. TermLink sent only the vector group names (CC-30..32 race, 33..34 post-close attempts, 15a/b, 19a/b, 35 capability, 36..37 credentials, 38..40 terminal/recovery, 41..43 idempotency/history/ownership), so the vectors must be written here from A1-A6.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Write A1-A6 into the spec (changelog item 2 and the body sections it names) and add vectors CC-15a/b, CC-19a/b and CC-30..CC-43 to the shared vectors, with the checkers and the local run still green.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** One published v0.3.4 text that the three owners can check; TermLink and ring20 receive it; AEF's own local run passes (closure vectors n/a for a `closure: never` backend until T-5321 adds the typed refusal).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Spec changelog item 2 rewritten as amended by A1-A6 (each amendment cited), and the body sections it touches (§2 record schema incl. `closure` declaration and dispatch-level close record, §3.3 close transaction and `fence_reject(dispatch_closed)`, §4.7, §8.4, CC-15, CC-19) carry the same rules
+- [ ] §9 has CC-15a, CC-15b, CC-19a, CC-19b and CC-30..CC-43, each with setup, steps and expected result, grouped as TermLink named them
+- [ ] tests/conformance/worker-contract/vectors.yaml has the same cases; check_vectors.py and check_mapping.py pass; run_local.py shows no failure (closure-supported cases n/a for AEF)
+- [ ] Text sent to 010-termlink and proxmox-ring20-management for their check
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -293,6 +295,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+out=$(python3 tests/conformance/worker-contract/check_vectors.py 2>&1); grep -q "OK" <<<"$out"
+out=$(python3 tests/conformance/worker-contract/run_local.py 2>&1); grep -q "CC-43" <<<"$out" && grep -q "CC-15a" <<<"$out" && ! grep -q "fail" <<<"$out"
+bash -c 'for c in CC-15a CC-15b CC-19a CC-19b CC-30 CC-31 CC-32 CC-33 CC-34 CC-35 CC-36 CC-37 CC-38 CC-39 CC-40 CC-41 CC-42 CC-43; do grep -q "^### $c " docs/specs/shared-worker-contract-transitions.md || exit 1; done'
 
 ## RCA
 
@@ -390,3 +395,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5320-wc-v034-item-2-write-termlinks-amendment.md
 - **Context:** Initial task creation
+
+### 2026-11-20T20:45:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
