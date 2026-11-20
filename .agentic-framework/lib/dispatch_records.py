@@ -1026,6 +1026,9 @@ class _Adapter:
                 "result_kind": (att["result"] or {}).get("kind"),
                 "evidence_digest": att["evidence_digest"],
                 "questions": len(att["questions"]), "answers": {},
+                # T-5317: who wrote the latest history entry and why (a T3w carries actor, reason)
+                "last_actor": att["history"][-1].get("actor") if att["history"] else None,
+                "last_reason": att["history"][-1].get("reason") if att["history"] else None,
             }
             for e in att["history"]:
                 if e.get("cause"):
