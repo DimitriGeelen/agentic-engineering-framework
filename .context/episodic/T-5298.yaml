@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5298: post-compact-resume.sh labels every claude-fw restart 'budget restart': label by the restart signal's 'by' field (ring20 T-2784)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T11:08:58Z
+# ============================================================================
+
+task_id: T-5298
+task_name: "post-compact-resume.sh labels every claude-fw restart 'budget restart': label by the restart signal's 'by' field (ring20 T-2784)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-20T09:50:30Z
+completed: 2026-11-20T11:08:12Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-20T10:50:46+01:00
+last_commit: 2026-11-20T12:08:09+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed (ring20 T-2784). restart banner names the cause from the signal's by field (ring20 T-2784)
+
+# Key outcomes
+outcomes:
+  - 'claude-fw reads an optional `by` string from the restart signal (JSON), keeps only `[A-Za-z0-9 ._:-]`, at most 60 chars, and writes it into `.auto-restart-pending` (both the fresh and the continue restart paths); a signal without `by` leaves the marker as today.'
+  - 'post-compact-resume.sh reads the marker''s `by` before removing it and uses it in both restart banners ("restart requested by: <by>"); without it the banners read exactly as today ("budget restart").'
+  - 'Tests: banner with `by` set, banner without `by` unchanged, and a value with shell/markdown characters is sanitised.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/post-compact-resume.sh'
+  - '.agentic-framework/bin/claude-fw'
+  - '.tasks/active/T-5298-post-compact-resumesh-labels-every-claud.md'
+  - 'agents/context/post-compact-resume.sh'
+  - 'bin/claude-fw'
+  - 'tests/unit/t4172_restart_cause_label.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T10:50:46'
+    action: 'T-5298: filed (ring20 T-2784)'
+  - time: '2026-11-20T12:08:09'
+    action: 'T-5298: restart banner names the cause from the signal''s by field (ring20 T-2784)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 77 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 77
+  commits: 3
+  files_changed: 9
+  lines_added: 618
+  lines_removed: 21
+  footprint_refreshed_at: '2026-11-20T11:09:09Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5298-post-compact-resumesh-labels-every-claud.md
+generated_by: context-agent-hybrid
