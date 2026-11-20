@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5318: wc v0.3.4 item 2 (optional dispatch closure): adopt TermLink's six amendments (A1-A6) so all three owners can adopt the item?
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T19:53:25Z
+# ============================================================================
+
+task_id: T-5318
+task_name: "wc v0.3.4 item 2 (optional dispatch closure): adopt TermLink's six amendments (A1-A6) so all three owners can adopt the item?"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-20T18:00:32Z
+completed: 2026-11-20T19:52:59Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-20T19:01:47+01:00
+last_commit: 2026-11-20T20:53:02+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception filed — item 2 amendments (TermLink A1-A6). research — A1-A6, ring20 adopts with them, AEF is closure: never. TermLink's six weaknesses recorded. questions disposed, recommendation GO (adopt item 2 with A1-A6). inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/reviews/human-ac-ticks.jsonl'
+  - '.tasks/active/T-5318-wc-v034-item-2-optional-dispatch-closure.md'
+  - '.tasks/completed/T-5318-wc-v034-item-2-optional-dispatch-closure.md'
+  - 'docs/reports/T-5318-dispatch-closure-amendments.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T19:01:47'
+    action: 'T-5318: inception filed — item 2 amendments (TermLink A1-A6)'
+  - time: '2026-11-20T19:04:15'
+    action: 'T-5318: research — A1-A6, ring20 adopts with them, AEF is closure: never'
+  - time: '2026-11-20T19:34:00'
+    action: 'T-5318: TermLink''s six weaknesses recorded'
+  - time: '2026-11-20T19:34:52'
+    action: 'T-5318: questions disposed, recommendation GO (adopt item 2 with A1-A6)'
+  - time: '2026-11-20T20:53:02'
+    action: 'T-5318: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 112 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 112
+  commits: 6
+  files_changed: 6
+  lines_added: 394
+  lines_removed: 14
+  footprint_refreshed_at: '2026-11-20T19:53:33Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5318-wc-v034-item-2-optional-dispatch-closure.md
+generated_by: context-agent-hybrid
