@@ -27,3 +27,18 @@ lib/dispatch_records.py line 19: "dispatch closure (v0.3.4 draft §4.7): dispatc
 ## Dialogue Log
 
 - 2026-11-20, 010: rulings and A1-A6 (msg e9015b84). Agent: filed T-5318, asked 010 for the reviewers' six weaknesses (msg cb77d7c4), sent A1-A6 to ring20 (msg 7a38565c). ring20: adopt with A1-A6, three small changes on their side (msg 0e5516a8).
+
+## TermLink's reviewers: the six weaknesses of item 2 as drafted (010 msg c2d29013)
+
+Both reviewers (claude-code, opencode) found the same six independently; A1-A6 answer W1-W6 in order. claude-code: "A1-A3 are the minimum".
+
+- **W1 (high)** close is not a fenced write, so close vs T1 is decided by accident: a sweeper sees attempt 1 lost and decides to close, a T1 commits attempt 2, then the close commits — closed with a live attempt; three backends resolve it three ways.
+- **W2 (high)** attempt writes after close are undefined: a late lost→done with evidence is accepted by one backend and refused by another; evidence dropped, finished work re-dispatched.
+- **W3 (high)** "MAY" plus "accept either" guts CC-15/CC-19: a backend refusing T1 by bug passes; a wc/0.3 client with an exhaustive fence-reason list errors or retries forever on dispatch_closed.
+- **W4 (high)** the closing actor is recorded but not authenticated: anyone who can reach close can veto all retries of someone else's dispatch under a name nobody verified.
+- **W5 (high)** terminality and the reader view are unspecified: closed + paused is a limbo with no successor path; readers disagree on whether closed means finished.
+- **W6 (medium)** idempotency, audit and cross-backend disagreement are unspecified: retried closes, two closers, refusals with no trace, a dispatch closed on one backend and open on another.
+
+## Agent reading
+
+The weaknesses are real and each amendment is the minimal fix for one; all are additive and cost nothing to a backend that never closes (AEF, TermLink's hub) beyond a typed refusal. ring20, whose orchestrator is the one that closes, accepts all six with three small changes on their side. Recommendation: adopt item 2 with A1-A6.
