@@ -66,6 +66,9 @@ if "from cmd_classify import classify" not in gate_src:
 prescribed = set()
 for line in blocker_src.splitlines():
     line = re.sub(r'#.*', '', line)                       # comments are not remedies (L-519)
+    # T-5304: block messages print through the builder, $(_emit_user_command "ARGS")
+    # (lib/fw-command.sh). Read it as the fw invocation it prints.
+    line = re.sub(r'\$\(_emit_user_command(?:_in "[^"]*")? "([^"]*)"\)', r'fw \1', line)
     for s in re.findall(r'"([^"]*)"', line):
         s = s.strip()
         m2 = re.match(r'^\d+\.\s+(?:[A-Z][^:]{0,30}:\s*)?(.+)$', s)
@@ -85,7 +88,14 @@ if not prescribed:
     print("FAIL: extracted no prescribed commands — the extraction broke, not the gate.")
     sys.exit(1)
 
-denied = [c for c in sorted(prescribed) if not cc.classify("fw " + c)[0]]
+# T-5304: what the reader actually types is the builder's full form,
+# `cd <root> && bin/fw <cmd>`; it must be allowed too, not only bare `fw <cmd>`.
+import os
+_root = os.path.dirname(os.path.dirname(os.path.abspath(sys.argv[1])))
+denied = [c for c in sorted(prescribed)
+          if not cc.classify("fw " + c)[0]
+          or not cc.classify("cd %s && bin/fw %s" % (_root, c), cwd="/tmp",
+                             framework_root=_root, project_root=_root)[0]]
 if denied:
     print("Commands a block message tells the agent to run, which budget-gate")
     print("refuses at critical (deadlock — prescribed and denied at once):")
