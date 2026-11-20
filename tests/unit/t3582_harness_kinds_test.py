@@ -234,7 +234,7 @@ class TestKindsAndVendors:
         # T-5177 (operator 2026-11-16): TMPDIR and PYTHONDONTWRITEBYTECODE pass through env inside sudo.
         assert ('exec ${SEAT_PIDNS[@]+"${SEAT_PIDNS[@]}"} /usr/bin/sudo -n -u dimitri-mint-dev -H '
                 '/usr/bin/env TMPDIR="$SEAT_TMP" PYTHONDONTWRITEBYTECODE=1 "$WORKER_BIN" -p "$PROMPT_TEXT" '
-                '--mode plan --sandbox < /dev/null' in body)
+                '--mode plan --sandbox --output-format stream-json < /dev/null' in body)
 
 
 # ── 2. launch pinning: forged vendor, wrong binary, no committed binary ────────────────────────
