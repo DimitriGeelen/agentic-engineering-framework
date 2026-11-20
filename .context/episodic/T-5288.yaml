@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5288: Orphan TermLink inboxes: ~30 old worker nickname inboxes (t3684d-*, t3693a-*, t3782a-*, termlink with 69 posts) hold unread posts no agent reads
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T11:54:10Z
+# ============================================================================
+
+task_id: T-5288
+task_name: "Orphan TermLink inboxes: ~30 old worker nickname inboxes (t3684d-*, t3693a-*, t3782a-*, termlink with 69 posts) hold unread posts no agent reads"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-20T05:58:48Z
+completed: 2026-11-20T11:53:34Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-20T09:29:30+01:00
+last_commit: 2026-11-20T12:53:31+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed. orphan inboxes traced — 91 dead test/old inboxes acknowledged (nothing deleted), 010/1409/ring20 asked about the other 8. orphan inbox acknowledgements. 010's three inboxes acknowledged (they have readers). 1409's three finished workers and our old smk-b sends acknowledged. outcome — 99 orphan inboxes down to 1 (010's, being fixed by 010; false alarm covered by T-5296). verification line
+
+# Key outcomes
+outcomes:
+  - 'Every orphan inbox is grouped by name pattern and last writer, and each writer is identified (project or test identity) in ## Decisions.'
+  - 'A live sender writing to a wrong address is told the real address over the sidecar.'
+  - 'Inboxes of dead test/worker identities are acknowledged with `fw sidecar orphan-inboxes --ack` (no message deleted); `fw sidecar alerts` no longer lists them.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'outcome — 99 orphan inboxes down to 1 (010''s, being fixed by 010; false alarm covered by T-5296)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-20 — who wrote to the orphan inboxes, and what was done'
+    chose: 'acknowledge (T-5149, deletes nothing) the 90 test inboxes and our own old `aef-greenfield-test`; ask 010, 1409 and ring20 about the rest (msgs 9c8fcc9e, 19b55f16, e30eb816).'
+    rationale: 'the test ones have no live sender; the others may be live senders using a wrong address, which only the sender can tell.'
+    alternatives_rejected: ['reading the posts to find the sender: a key-less read shows as a second identity in 010''s new reader tracking (T-5281 background); deleting anything: not needed, and deletes are the operator''s.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/sidecar/orphan-acks.json'
+  - '.tasks/active/T-5288-orphan-termlink-inboxes-30-old-worker-ni.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T09:29:30'
+    action: 'T-5288: filed'
+  - time: '2026-11-20T10:41:09'
+    action: 'T-5288: orphan inboxes traced — 91 dead test/old inboxes acknowledged (nothing deleted), 010/1409/ring20 asked about the other 8'
+  - time: '2026-11-20T10:41:23'
+    action: 'T-5288: orphan inbox acknowledgements'
+  - time: '2026-11-20T10:43:03'
+    action: 'T-5288: 010''s three inboxes acknowledged (they have readers)'
+  - time: '2026-11-20T10:43:51'
+    action: 'T-5288: 1409''s three finished workers and our old smk-b sends acknowledged'
+  - time: '2026-11-20T12:52:58'
+    action: 'T-5288: outcome — 99 orphan inboxes down to 1 (010''s, being fixed by 010; false alarm covered by T-5296)'
+  - time: '2026-11-20T12:53:31'
+    action: 'T-5288: verification line'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 354 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 354
+  commits: 8
+  files_changed: 5
+  lines_added: 612
+  lines_removed: 17
+  footprint_refreshed_at: '2026-11-20T11:54:44Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5288-orphan-termlink-inboxes-30-old-worker-ni.md
+generated_by: context-agent-hybrid
