@@ -8,10 +8,10 @@ description: >
   Ends the T-5262 situation where one false red blocks a unanimous panel. Depends
   on slice 2.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T08:47:59Z
-last_update: '2026-11-20T09:01:16Z'
+last_update: 2026-11-20T12:40:44Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,20 +88,23 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5290 GO (operator 2026-11-20); operator chose to start this slice 2026-11-20 ("a"). On T-5262 the codex seat voted red twice on screenshots it never opened, and one false vote blocked a panel that needs every seat green. Slice 1 (T-5292) fixed the vote's shape; slice 2 (T-5293) records a `check` on every new `verdict/1` row (quotes found, regions inside the image, whether the seat opened the image), but the check changes nothing yet.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** A vote whose own evidence does not hold still counts as green or red, so a seat that never looked can still block or pass a criterion.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A vote that fails the mechanical check does not count, and the judge seats another reviewer for that criterion; if none can give a checkable vote, the criterion goes to the operator.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** One rule decides "checkable": for every cited quote, found (at the line or elsewhere in the file); every location exists; every image region inside its image; for a render criterion citing an image, the seat's log shows it opened that image ("cannot tell" is not "opened"); rule present; vote consistent. A not-checkable vote is recorded as such, never counted as green or red, and is treated like not-evaluated by the reassignment (the seat kind is excluded for that criterion). Rows without `format: verdict/1` (old rows) are counted exactly as before.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] One function decides whether a recorded `verdict/1` vote is checkable from its `check` field, and names every reason it is not.
+- [ ] Wherever the ledger decides whether a row counts (close gate apply, panel completeness, audit), a not-checkable `verdict/1` row does not count as green or red; old-format rows are unaffected (existing ledger and close-path tests stay green; ledger audit still exits 3 or lower).
+- [ ] `judge_with_reassign` treats a not-checkable vote like not-evaluated: that seat kind is excluded for the criterion and another kind is seated; when none is left, the result says "OPERATOR" with the not-checkable reasons.
+- [ ] The judge's printed summary shows not-checkable votes with their reasons, so the operator sees why a seat did not count.
+- [ ] Tests: the T-5262 case (red vote, image never opened → not counted, reassigned); a green vote quoting a line that does not exist → not counted; a fully checked vote → counts; an old free-text row → counts as before; all seats not checkable → OPERATOR.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,6 +291,11 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5294_checkable_votes.py -q > /tmp/.t5294a 2>&1 && grep -q passed /tmp/.t5294a
+python3 -m pytest tests/unit/test_t5293_vote_checker.py tests/unit/test_t5292_structured_verdict.py tests/unit/t3580_judge_cli_test.py -q > /tmp/.t5294b 2>&1 && grep -q passed /tmp/.t5294b
+timeout 600 bats tests/unit/t3579_verdict_close_path.bats > /tmp/.t5294c 2>&1 && ! grep -q "^not ok" /tmp/.t5294c
+python3 lib/verdict_ledger.py audit > /tmp/.t5294d 2>&1; test $? -le 3
+bin/fw vendor self --check --task T-5294
 
 ## RCA
 
@@ -385,3 +393,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5294-structured-verdicts-slice-3-a-vote-that-.md
 - **Context:** Initial task creation
+
+### 2026-11-20T12:40:44Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
