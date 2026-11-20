@@ -55,5 +55,5 @@ _check() {   # run Check 2b on the fixture root, as doctor runs it on FRAMEWORK_
 @test "fw doctor: drift output names Run: fw vendor" {
     echo "# T-1434 drift sentinel" >> "$FIX/.agentic-framework/lib/colors.sh"
     run _check
-    [[ "$output" == *"Run: fw vendor"* ]]
+    [[ "$output" == *"Run: cd "*" && "*"bin/fw vendor"* ]]
 }

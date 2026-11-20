@@ -114,7 +114,7 @@ for ((k = 0; k < N; k++)); do
         task_rule_name "$name" || exit 1
         task_rule_fields "$name" "$wtype" "$horizon" "$owner" || exit 1
         if [ "$wtype" = "inception" ]; then
-            echo "inception tasks are refused in a batch — file them with fw inception start (they need a recommendation)"
+            echo "inception tasks are refused in a batch — file them with $(_emit_user_command "inception start") (they need a recommendation)"
             exit 1
         fi
         # T-2543/T-2577: gated writers' origin rule, same as create-task.

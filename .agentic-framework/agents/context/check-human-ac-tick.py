@@ -50,6 +50,7 @@ _FW_ROOT = os.environ.get("FRAMEWORK_ROOT") or str(Path(__file__).resolve().pare
 if os.path.join(_FW_ROOT, "lib") not in sys.path:
     sys.path.insert(0, os.path.join(_FW_ROOT, "lib"))
 from comment_strip import strip_html_comment_lines  # noqa: E402
+from fw_command import user_command as _fwc  # noqa: E402  printed commands (T-5304)
 
 
 def extract_human_section(text: str) -> str:
@@ -228,8 +229,8 @@ def check_bash(data: dict) -> int:
     w("  control. `### Human` boxes are the operator's (CLAUDE.md §Agent/Human AC Split).\n\n")
     w("  To proceed, choose ONE:\n")
     w("    1. Change the task file with the Edit tool (diffed; Agent ACs, prose: fine).\n")
-    w("    2. Use the framework verb: fw task update T-XXX ... / fw inception ...\n")
-    w("    3. Hand Human criteria to the operator: fw task review T-XXX\n")
+    w(f"    2. Use the framework verb: {_fwc('task update T-XXX ...')} / {_fwc('inception ...')}\n")
+    w(f"    3. Hand Human criteria to the operator: {_fwc('task review T-XXX')}\n")
     w("    4. Reading only? cat / grep / sed -n / awk without redirects pass.\n\n")
     w("  Scope (same boundary as Tier 0, T-2742): this is a TEXT gate. A script file the\n")
     w("  command runs, or a path built at run time, is not inspected — such a tick is\n")
@@ -265,7 +266,7 @@ def main() -> int:
             "\nBLOCKED: .context/reviews/human-ac-ticks.jsonl records that a HUMAN ticked a\n"
             "### Human criterion. Only the operator writes it (Watchtower, inception decide, or\n"
             "`python3 lib/human_ac_ticks.py ack T-XXX --ac N` in their own terminal).\n"
-            "Hand the task over instead: fw task review T-XXX\n"
+            f"Hand the task over instead: {_fwc('task review T-XXX')}\n"
             "Policy: T-3695 (Human-AC tick guard)\n\n")
         return 2
 
@@ -397,7 +398,7 @@ def main() -> int:
         sys.stderr.write("  To proceed, choose ONE:\n")
         sys.stderr.write("\n")
         sys.stderr.write("    1. Hand to human via Watchtower (recommended):\n")
-        sys.stderr.write(f"       fw task review {task_id}\n")
+        sys.stderr.write(f"       {_fwc('task review ' + task_id)}\n")
         sys.stderr.write("\n")
         sys.stderr.write("    2. Override with explicit env (logged Tier 2):\n")
         sys.stderr.write("       FW_ALLOW_HUMAN_AC_TICK=1 <retry your edit>\n")

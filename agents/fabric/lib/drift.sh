@@ -2,6 +2,7 @@
 # Fabric Agent - drift detection commands
 # Implements: fw fabric drift, fw fabric validate
 
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../../../lib/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 do_drift() {
     ensure_fabric_dirs
 
@@ -220,7 +221,7 @@ PYEOF
         echo "  (none)"
     else
         echo "  TODO purpose: $up_todo, unknown subsystem: $up_unknown, no edges: $up_noedges"
-        echo "  Fix: bin/fw fabric enrich --describe-only"
+        echo "  Fix: $(_emit_user_command "fabric enrich --describe-only")"
     fi
 
     echo ""
@@ -256,6 +257,6 @@ do_validate() {
         echo "Validating: $component"
         # TODO: deep validation for specific component
     fi
-    echo -e "${YELLOW}Deep validation not yet implemented — use 'fw fabric drift' for basic checks${NC}"
+    echo -e "${YELLOW}Deep validation not yet implemented — use: $(_emit_user_command "fabric drift")  for basic checks${NC}"
     return 0
 }

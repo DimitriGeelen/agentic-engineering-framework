@@ -788,7 +788,7 @@ USAGE
                 # (its endpoint above is still stopped) until `fw termlink result` collects it.
                 if [ ! -f "$wdir/collected" ] && { [ -s "$wdir/result.md" ] || [ -s "$wdir/result.jsonl" ]; }; then
                     uncollected+=("$wdir")
-                    echo -e "${YELLOW}KEPT${NC}    Worker '$wname' has an uncollected result — collect it with: fw termlink result $wname"
+                    echo -e "${YELLOW}KEPT${NC}    Worker '$wname' has an uncollected result — collect it with: $(_emit_user_command "termlink result $wname")"
                     kept_count=$((kept_count + 1))
                 else
                     remove+=("$wdir")
@@ -2641,7 +2641,7 @@ cmd_update() {
         echo -e "${YELLOW}UPDATE${NC}  TermLink update available"
         echo "  Local:  $(git log --oneline -1)"
         echo "  Remote: $(git log --oneline -1 '@{u}')"
-        echo "  Run: fw termlink update"
+        echo "  Run: $(_emit_user_command "termlink update")"
         return 0
     fi
 

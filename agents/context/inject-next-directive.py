@@ -34,6 +34,21 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+
+def _fwc(args, root=None):
+    """Printed fw command, `cd <root> && <fw path> <args>` (T-5304, lib/fw_command.py)."""
+    try:
+        from lib.fw_command import user_command
+    except ImportError:
+        import os as _os
+        import sys as _sys
+        _base = _os.path.abspath(__file__)
+        for _ in range(3):
+            _base = _os.path.dirname(_base)
+        _sys.path.insert(0, _base)
+        from lib.fw_command import user_command
+    return user_command(args, root)
+
 # T-2367 (S5): first task reference in a directive, used to resolve the
 # "planned next action" when the directive has no explicit `next_task:` field.
 TASK_REF_RE = re.compile(r"\bT-(\d+)\b")
@@ -370,7 +385,7 @@ def evaluate(directive_data, state_data, now_utc, source="resume", blast_lookup=
         if task_ref:
             bootstrap = (
                 f"Invoke `/resume` to surface project state, then "
-                f"`bin/fw work-on {task_ref}` to set focus before any edit. "
+                f"`{_fwc('work-on ' + str(task_ref))}` to set focus before any edit. "
                 f"The task gate (G-020) refuses Write/Edit without an active task."
             )
         else:

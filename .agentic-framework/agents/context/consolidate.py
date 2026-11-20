@@ -27,6 +27,21 @@ from datetime import datetime, timezone
 import yaml
 
 
+def _fwc(args, root=None):
+    """Printed fw command, `cd <root> && <fw path> <args>` (T-5304, lib/fw_command.py)."""
+    try:
+        from lib.fw_command import user_command
+    except ImportError:
+        import os as _os
+        import sys as _sys
+        _base = _os.path.abspath(__file__)
+        for _ in range(3):
+            _base = _os.path.dirname(_base)
+        _sys.path.insert(0, _base)
+        from lib.fw_command import user_command
+    return user_command(args, root)
+
+
 # ---------------------------------------------------------------------------
 # Text similarity (Jaccard on word tokens)
 # ---------------------------------------------------------------------------
@@ -428,7 +443,7 @@ def display_report(report_path):
         for i, rec in enumerate(recs, 1):
             print(f"  {i}. [{rec.get('action', '?')}] {rec.get('reason', '?')}")
         print()
-        print("Run 'fw consolidate apply' to execute merge recommendations.")
+        print(f"Run: {_fwc('consolidate apply')}  to execute merge recommendations.")
 
     return 0
 

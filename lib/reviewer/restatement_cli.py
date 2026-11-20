@@ -34,6 +34,21 @@ from pathlib import Path
 from lib import verdict_ledger as vl
 from lib.delegation import human_criteria
 
+
+def _fwc(args, root=None):
+    """Printed fw command, `cd <root> && <fw path> <args>` (T-5304, lib/fw_command.py)."""
+    try:
+        from lib.fw_command import user_command
+    except ImportError:
+        import os as _os
+        import sys as _sys
+        _base = _os.path.abspath(__file__)
+        for _ in range(3):
+            _base = _os.path.dirname(_base)
+        _sys.path.insert(0, _base)
+        from lib.fw_command import user_command
+    return user_command(args, root)
+
 DECISIONS = Path(".context/reviews/restatements.jsonl")
 MARKER_RE = re.compile(r"PROPOSED RESTATEMENT:[ \t]*(.*)")
 _BOX_RE = re.compile(r"^(\s*[-*]\s*\[[ xX]\]\s*)(.*)$")
@@ -332,7 +347,7 @@ def main(argv: list[str] | None = None) -> int:
                     print(f"  after:  {ln}")
                 return 0
             print(f"Accepted {a.verdict_id}: {res['task']} AC {res['ac']} restated in {res['file']}")
-            print(f"Next: commit the task file, then re-run: fw reviewer judge {res['task']}")
+            print(f"Next: commit the task file, then re-run: {_fwc('reviewer judge ' + str(res['task']))}")
             return 0
         res = reject(root, a.verdict_id, a.reason, dry_run=a.dry_run, i_am_human=a.i_am_human)
         print(("DRY RUN: would record " if a.dry_run else "Recorded ")

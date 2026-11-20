@@ -66,5 +66,5 @@ teardown() {
         --headline-mechanic "user runs default create and observes the draft-state nudge firing on the page in full view"
     [ "$status" -eq 0 ]
     echo "$output" | grep -q "status: draft"
-    echo "$output" | grep -q "use 'fw arc start"
+    echo "$output" | grep -qE "use: cd .* && [^ ]*bin/fw arc start $ARC_DEFAULT"
 }

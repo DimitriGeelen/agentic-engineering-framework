@@ -77,7 +77,7 @@ yaml.safe_dump(d, open(p,'w'), sort_keys=False)
     [ "$TS" -nt "$MF" ]
     _mcp_check
     [[ "$output" == *"framework MCP manifest stale relative to tool-set.yaml"* ]]
-    [[ "$output" == *"Run: fw mcp emit-manifest"* ]]
+    [[ "$output" == *"Run: cd "*" && "*"bin/fw mcp emit-manifest"* ]]
     [[ "$output" == *"warnings=1"* ]]
 }
 
@@ -87,7 +87,7 @@ yaml.safe_dump(d, open(p,'w'), sort_keys=False)
     rm -f "$MF"
     _mcp_check
     [[ "$output" == *"framework MCP manifest absent"* ]]
-    [[ "$output" == *"run: fw mcp emit-manifest"* ]]
+    [[ "$output" == *"run: cd "*" && "*"bin/fw mcp emit-manifest"* ]]
 }
 
 @test "t4: doctor calls the lib check" {

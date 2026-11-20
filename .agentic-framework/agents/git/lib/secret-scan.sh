@@ -22,6 +22,7 @@
 #   If `gitleaks` is on PATH, run it as a second pass and treat any finding
 #   as a match. The baseline regex catalogue is the always-on guarantee.
 
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../../../lib/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 set -u
 set -o pipefail
 
@@ -124,7 +125,7 @@ _secret_scan_run_patterns() {
             echo "  $patterns_file"
             echo "Every commit is going through WITHOUT secret pattern matching."
             echo "Fix: refresh the vendored framework payload (ships .secret-scan-patterns):"
-            echo "  .agentic-framework/bin/fw upgrade   (framework repo: bin/fw vendor self)"
+            echo "  $(_emit_user_command "upgrade")   (framework repo: bin/fw vendor self)"
             echo "Strict mode: set FW_SECRET_SCAN_STRICT=1 to make this block commits."
             echo ""
         } >&2

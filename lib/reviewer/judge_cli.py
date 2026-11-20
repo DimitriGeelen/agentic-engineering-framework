@@ -78,6 +78,21 @@ sys.path.insert(0, str(_HERE.parent / "agents" / "context"))
 import ux_shots  # noqa: E402
 import visual_checklist  # noqa: E402
 
+
+def _fwc(args, root=None):
+    """Printed fw command, `cd <root> && <fw path> <args>` (T-5304, lib/fw_command.py)."""
+    try:
+        from lib.fw_command import user_command
+    except ImportError:
+        import os as _os
+        import sys as _sys
+        _base = _os.path.abspath(__file__)
+        for _ in range(3):
+            _base = _os.path.dirname(_base)
+        _sys.path.insert(0, _base)
+        from lib.fw_command import user_command
+    return user_command(args, root)
+
 COST_LEDGER = review_policy.COST_LEDGER
 EVIDENCE_DIR = Path(".context/working/judge-evidence")
 REPORT_DIR = ".context/reviews/evidence"
@@ -947,7 +962,7 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
         "refuses a report that is not a valid vote, writing the reason into it. Copy (`cp`) any screenshot you cite into the same directory "
         "as `<name>-$FW_SIDECAR_AGENT_ID.png` and cite that copy. Files already in that directory "
         "are other runs' recorded evidence: never move, rename, overwrite or delete them (T-4514).",
-        f"2. Compute the digest you read: `bin/fw reviewer verdict digest {task_id} --ac <N>`",
+        f"2. Compute the digest you read: `{_fwc('reviewer verdict digest ' + str(task_id) + ' --ac <N>')}`",
         "3. Record it (replace <N>, <OUTCOME>, <DIGEST>, <REPORT>; run it exactly as written, so "
         "the shell expands `$FW_SIDECAR_AGENT_ID`):",
         "",

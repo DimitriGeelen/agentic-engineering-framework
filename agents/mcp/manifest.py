@@ -21,6 +21,21 @@ from typing import Any
 import yaml
 
 
+def _fwc(args, root=None):
+    """Printed fw command, `cd <root> && <fw path> <args>` (T-5304, lib/fw_command.py)."""
+    try:
+        from lib.fw_command import user_command
+    except ImportError:
+        import os as _os
+        import sys as _sys
+        _base = _os.path.abspath(__file__)
+        for _ in range(3):
+            _base = _os.path.dirname(_base)
+        _sys.path.insert(0, _base)
+        from lib.fw_command import user_command
+    return user_command(args, root)
+
+
 def framework_root() -> Path:
     """Where the framework's own assets live (bin/fw, agents/, policy/).
 
@@ -206,7 +221,7 @@ def _check_drift() -> int:
     import hashlib
     target = manifest_path()
     if not target.exists():
-        sys.stderr.write(f"ABSENT: {target} — run `fw mcp emit-manifest`\n")
+        sys.stderr.write(f"ABSENT: {target} — run `{_fwc('mcp emit-manifest')}`\n")
         return 2
     try:
         on_disk = target.read_bytes()

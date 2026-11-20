@@ -45,6 +45,21 @@ import keylock
 import worker_identity
 from ac_placeholder import is_placeholder_item  # T-3528: one placeholder reader
 
+
+def _fwc(args, root=None):
+    """Printed fw command, `cd <root> && <fw path> <args>` (T-5304, lib/fw_command.py)."""
+    try:
+        from lib.fw_command import user_command
+    except ImportError:
+        import os as _os
+        import sys as _sys
+        _base = _os.path.abspath(__file__)
+        for _ in range(2):
+            _base = _os.path.dirname(_base)
+        _sys.path.insert(0, _base)
+        from lib.fw_command import user_command
+    return user_command(args, root)
+
 PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", os.getcwd()))
 WORKFLOWS_DIR = PROJECT_ROOT / ".context" / "project" / "workflows"
 DISPATCHES_LOG = PROJECT_ROOT / ".context" / "dispatches.jsonl"
@@ -2077,7 +2092,7 @@ def cmd_pick(args: argparse.Namespace) -> int:
                     print(f"    {tid:8s} refused: {why}")
             print()
             print(f"Top pick:  {pick['id']}  →  workflow '{chosen_type}'")
-            print(f"Dispatch:  bin/fw resolver pick --dispatch")
+            print(f"Dispatch:  {_fwc('resolver pick --dispatch')}")
         return 0
 
     # --dispatch: fire the top pick via resolve + spawn (parity with cmd_run).

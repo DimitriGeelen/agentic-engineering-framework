@@ -13,6 +13,7 @@
 # Requires: PROJECT_ROOT (from paths.sh chain), config.sh for fw_config
 
 # Source config for PORT setting (guard protects double-source)
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 source "${FRAMEWORK_ROOT:-.}/lib/config.sh"
 # T-4337: zombie-aware liveness (bare kill -0 succeeds on a zombie)
 source "${FRAMEWORK_ROOT:-.}/lib/pid-alive.sh"
@@ -239,7 +240,7 @@ _watchtower_url() {
     # Layer 3 — fail loud (no silent wrong answer)
     # -----------------------------------------------------------------
     echo "No Watchtower reachable for project: ${_our_root:-(unknown)}" >&2
-    echo "  Start one with: fw serve" >&2
+    echo "  Start one with: $(_emit_user_command "serve")" >&2
     echo "  Or set WATCHTOWER_URL explicitly." >&2
     return 1
 }

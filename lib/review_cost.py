@@ -40,6 +40,21 @@ from pathlib import Path
 
 import yaml
 
+
+def _fwc(args, root=None):
+    """Printed fw command, `cd <root> && <fw path> <args>` (T-5304, lib/fw_command.py)."""
+    try:
+        from lib.fw_command import user_command
+    except ImportError:
+        import os as _os
+        import sys as _sys
+        _base = _os.path.abspath(__file__)
+        for _ in range(2):
+            _base = _os.path.dirname(_base)
+        _sys.path.insert(0, _base)
+        from lib.fw_command import user_command
+    return user_command(args, root)
+
 PINNED_PAID = ("openrouter",)
 CLASSES = ("internal", "paid")
 REQUIRED = ("id", "name", "harness_class", "cost_class", "approval_required", "cost_estimate_method")
@@ -632,12 +647,12 @@ def check_command(command: str, task: str | None) -> tuple[int, str]:
         if b["approval_required"]:
             if not task:
                 return 2, (f"Paid backend {b['id']} ({b['cost_class']}) needs an approved proposal, "
-                           f"and no task is focused. bin/fw work-on T-XXX, then "
+                           f"and no task is focused. {_fwc('work-on T-XXX')}, then "
                            f"bin/fw review propose --task T-XXX --backend {b['id']} --why '...' --estimate-cost N")
             if not open_approval(task, b["id"]):
                 return 2, (f"Paid backend {b['id']} needs an approved, unused proposal for {task}.\n"
-                           f"  bin/fw review propose --task {task} --backend {b['id']} --why 'value/risk' --estimate-cost N\n"
-                           f"  The operator approves it: bin/fw review approve RP-XXXX (their terminal, or --i-am-human).\n"
+                           "  " + _fwc("review propose --task " + str(task) + " --backend " + b['id'] + " --why 'value/risk' --estimate-cost N") + "\n"
+                           f"  The operator approves it: {_fwc('review approve RP-XXXX')} (their terminal, or --i-am-human).\n"
                            f"  Propose when value or risk is high: cost is not a reason not to ask.")
             msgs.append(f"Paid backend {b['id']}: approved proposal on file — log it afterwards with "
                         f"bin/fw review cost log --task {task} --backend {b['id']} --purpose ... --proposal-id <id>")

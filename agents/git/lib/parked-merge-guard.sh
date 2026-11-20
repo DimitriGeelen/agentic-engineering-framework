@@ -58,6 +58,7 @@
 # rejects it is a silent governance failure, because the agent then reaches for a
 # path the gate cannot see.
 
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../../../lib/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 set -uo pipefail
 
 cmd="${1:-check}"
@@ -162,7 +163,7 @@ if [ ! -f "$TP" ]; then
     echo "WARNING: parked-merge-guard is NOT running (T-3511) — predicate not found at:" >&2
     echo "  $TP" >&2
     echo "Merges of deliberately-parked branches are unguarded." >&2
-    echo "Fix: cd $PROJECT_ROOT && bin/fw upgrade   (framework repo: bin/fw vendor self)" >&2
+    echo "Fix: $(_emit_user_command "upgrade")   (framework repo: bin/fw vendor self)" >&2
     exit 0
 fi
 # shellcheck source=lib/task-parked.sh

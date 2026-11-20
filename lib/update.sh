@@ -15,6 +15,7 @@
 # pre-release sorts below its release (semver §11). This replaced a bare
 # string inequality that offered any difference — a downgrade included — as
 # an update.
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 _fw_version_cmp() {
     local re='^v?([0-9]+)\.([0-9]+)\.([0-9]+)(-([0-9A-Za-z.-]+))?$'
     local a="$1" b="$2" i
@@ -264,7 +265,7 @@ _do_update_vendored() {
     if [ "$check_only" = true ]; then
         echo -e "${CYAN}Update available:${NC} v${old_version} → v${new_version}"
         echo ""
-        echo "Run 'fw update' to apply."
+        echo "Run: $(_emit_user_command "update")  to apply."
         rm -rf "$tmpdir"
         trap - EXIT
         return 0
@@ -367,7 +368,7 @@ _do_rollback() {
 
         echo -e "${GREEN}Rolled back to v${rollback_version}${NC}"
         echo ""
-        echo "The rollback backup has been consumed. Run 'fw update' again to re-fetch upstream."
+        echo "The rollback backup has been consumed. Run: $(_emit_user_command "update")  again to re-fetch upstream."
         return 0
     fi
 

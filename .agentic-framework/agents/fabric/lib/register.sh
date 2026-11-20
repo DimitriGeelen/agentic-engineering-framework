@@ -4,6 +4,7 @@
 
 
 # Excluded directories for recursive registration
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../../../lib/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 _REGISTER_EXCLUDE_DIRS="node_modules|.git|__pycache__|.venv|venv|.env|dist|build|.next|.nuxt|.cache|.tox|.mypy_cache|.pytest_cache|vendor|target"
 
 # Eligible file extensions for recursive registration
@@ -386,7 +387,7 @@ EOF
     # field unfilled). The old wording said "REFUSED", which read as "nothing was registered"
     # while the exit code said success; re-registering after a fix only finds the card exists.
     if [ -n "$refusal" ]; then
-        echo -e "  ${YELLOW}NOT FILLED: purpose${NC} — $refusal; then run: fw fabric enrich"
+        echo -e "  ${YELLOW}NOT FILLED: purpose${NC} — $refusal; then run: $(_emit_user_command "fabric enrich")"
     else
         echo "  Purpose: (from $FW_PURPOSE_SOURCE)"
     fi

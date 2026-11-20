@@ -95,6 +95,7 @@
 # every healthy branch. "Nobody has touched this in N days" is the question that
 # actually separates a strand from work in progress. Same unit and default as
 # FW_STALE_ARC_DAYS (T-1855).
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 _bh_days_since_commit() {
     local repo="$1" ref="$2" last now
     last=$(git -C "$repo" log -1 --format=%ct "$ref" 2>/dev/null) || return 0
@@ -616,11 +617,11 @@ fw_go_live() {
 
     if [ "$behind" -gt "$warn" ]; then
         echo "behind-threshold (ahead=$ahead behind=$behind, threshold $warn) — a lag with unique commits, not a fork."
-        echo "Land your unique commits with 'fw integrate run $_gl_dev --push' (one-way) rather than merging origin/$_gl_dev in."
+        echo "Land your unique commits with: $(_emit_user_command "integrate run $_gl_dev --push") (one-way) rather than merging origin/$_gl_dev in."
         return 0
     fi
 
-    echo "minor divergence (ahead=$ahead behind=$behind, threshold $warn) — reconcile with 'fw sync' (rebase+push) when ready."
+    echo "minor divergence (ahead=$ahead behind=$behind, threshold $warn) — reconcile with: $(_emit_user_command "sync") (rebase+push) when ready."
     return 0
 }
 

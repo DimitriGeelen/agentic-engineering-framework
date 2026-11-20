@@ -10,6 +10,7 @@
 #
 
 # Ensure _fw_cmd/_emit_user_command are available (T-1143)
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 [[ -z "${_FW_PATHS_LOADED:-}" ]] && source "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/lib/paths.sh" 2>/dev/null || true
 # Requires: PROJECT_ROOT, BOLD, NC, CYAN (from colors.sh/paths.sh chain)
 
@@ -496,7 +497,7 @@ emit_review() {
                     echo -e "         **Rationale:** <evidence-cited reasoning>" >&2
                     echo "" >&2
                     echo -e "    2. Override (logged Tier 2):" >&2
-                    echo -e "         FW_ALLOW_EMPTY_RECOMMENDATION=1 fw task review ${task_id}" >&2
+                    echo -e "         cd $(_fw_quote_word "$PROJECT_ROOT") && FW_ALLOW_EMPTY_RECOMMENDATION=1 $(_fw_cmd) task review ${task_id}" >&2
                     echo "" >&2
                     return 1
                 fi
@@ -530,7 +531,7 @@ emit_review() {
         # T-2922 AC5: name the prerequisite (fw serve) rather than only
         # printing a URL that presumes a server the user hasn't started.
         echo -e "  ${YELLOW}No Watchtower is running for this project yet.${NC}"
-        echo -e "  ${YELLOW}Start one with: fw serve${NC}  (then open the link below)"
+        echo -e "  ${YELLOW}Start one with: $(_emit_user_command "serve")${NC}  (then open the link below)"
         echo -e ""
     fi
     echo "  ${review_url}"
@@ -742,7 +743,7 @@ emit_review_batch() {
                 echo -e "         **Rationale:** <evidence-cited reasoning>" >&2
                 echo "" >&2
                 echo -e "    2. Override (logged Tier 2):" >&2
-                echo -e "         FW_ALLOW_EMPTY_RECOMMENDATION=1 fw task review-batch$* " >&2
+                echo -e "         cd $(_fw_quote_word "$PROJECT_ROOT") && FW_ALLOW_EMPTY_RECOMMENDATION=1 $(_fw_cmd) task review-batch$* " >&2
                 echo "" >&2
                 echo -e "  Origin: T-2204 (recommendation-completeness gate has bypass paths)," >&2
                 echo -e "  T-2205 (Slice B, Write/Edit hook), T-2206 (this Slice C)." >&2

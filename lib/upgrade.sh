@@ -1560,7 +1560,7 @@ do_upgrade() {
     # Must have .framework.yaml
     if [ ! -f "$target_dir/.framework.yaml" ]; then
         echo -e "${RED}ERROR: Not a framework project — no .framework.yaml found in $target_dir${NC}" >&2
-        echo "Run 'fw init $target_dir' first."
+        echo "Run: $(_emit_user_command "init $target_dir")  first."
         return 1
     fi
 
@@ -2461,13 +2461,13 @@ CRONREGEOF
             _t4697_wrote "$_cg_src"
             if _cg_out=$(cd "$target_dir" && PROJECT_ROOT="$target_dir" FW_REEXEC_DEPTH=1 "$FRAMEWORK_ROOT/bin/fw" cron generate 2>&1); then
                 if [ "$_cs_added" -gt 0 ]; then
-                    echo -e "  ${GREEN}OK${NC}  Cron source regenerated — run 'fw cron install' to deploy"
+                    echo -e "  ${GREEN}OK${NC}  Cron source regenerated — run: $(_emit_user_command_in "$target_dir" "cron install")  to deploy"
                 elif [ "$(cat "$_cg_src" 2>/dev/null)" != "$_cg_before" ]; then
                     changes=$((changes + 1))
-                    echo -e "  ${GREEN}REGENERATED${NC}  Cron source (framework cron renderer changed) — run 'fw cron install' to deploy"
+                    echo -e "  ${GREEN}REGENERATED${NC}  Cron source (framework cron renderer changed) — run: $(_emit_user_command_in "$target_dir" "cron install")  to deploy"
                 fi
             else
-                echo -e "  ${YELLOW}WARN${NC}  'fw cron generate' failed — run it manually, then 'fw cron install'"
+                echo -e "  ${YELLOW}WARN${NC}  'fw cron generate' failed — run it manually: $(_emit_user_command_in "$target_dir" "cron generate") && $(_fw_cmd) cron install"
                 printf '%s\n' "$_cg_out" | sed 's/^/        /'
             fi
         fi
@@ -3591,7 +3591,7 @@ EOF
                 echo -e "  ${GREEN}${_ef_verb}${NC}  Enforcement baseline${_ef_why}"
                 changes=$((changes + 1))
             else
-                echo -e "  ${YELLOW}SKIP${NC}  Could not write enforcement baseline — run: fw enforcement baseline"
+                echo -e "  ${YELLOW}SKIP${NC}  Could not write enforcement baseline — run: $(_emit_user_command_in "$target_dir" "enforcement baseline")"
                 skipped=$((skipped + 1))
             fi ;;
         warn-drift)
@@ -3708,7 +3708,7 @@ EOF
             echo -e "${BOLD}Next steps:${NC}"
             echo "  1. Review changes: cd $target_dir && git diff"
             _t4704_commit_next_step "$target_dir"
-            echo "  3. Run: fw doctor  # Verify health"
+            echo "  3. Run: $(_emit_user_command_in "$target_dir" "doctor")  # Verify health"
             _t3882_cron_next_step "$target_dir" "$_cron_added_ids"
 
             # T-2094 F10 (T-2078 V1-C): post-upgrade fw doctor advisory.
@@ -4040,7 +4040,7 @@ _t3113_emit_worktree_advisory() {
     else
         echo ""
         echo -e "  $stale of $count linked worktree(s) run older enforcement than this project."
-        echo -e "  Land and remove:  fw integrate run bleeding-edge --push  (then fw worktree gc)"
+        echo -e "  Land and remove:  $(_emit_user_command "integrate run bleeding-edge --push")  (then $(_fw_cmd) worktree gc)"
         echo -e "  Or refresh in place: fw upgrade <worktree-path>"
     fi
     return 0  # always 0 — advisory, never blocks the upgrade

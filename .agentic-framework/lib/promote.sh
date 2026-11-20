@@ -14,6 +14,7 @@
 #   fw promote status
 #   fw promote L-008 --name "Avoid ((x++)) in set -e scripts" --directive D1
 
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 do_promote() {
     local subcmd="${1:-}"
     shift || true
@@ -383,7 +384,7 @@ PYPROMOTE
             ;;
         *)
             echo -e "${RED}Unknown promote subcommand: $subcmd${NC}" >&2
-            echo "Run 'fw promote' for usage" >&2
+            echo "Run: $(_emit_user_command "promote")  for usage" >&2
             exit 1
             ;;
     esac

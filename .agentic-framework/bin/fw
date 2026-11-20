@@ -1152,7 +1152,7 @@ do_vendor() {
                     echo -e "  ${GREEN}✓${NC} pruned superseded designer file $(basename "$_vd_old")"
                 done
             elif [ -n "$_vd_rel" ]; then
-                echo -e "  ${YELLOW}⊘${NC} $_vd_rel ($_vd_what absent at source — run: fw designer sync --from-tag)"
+                echo -e "  ${YELLOW}⊘${NC} $_vd_rel ($_vd_what absent at source — run: $(_emit_user_command "designer sync --from-tag"))"
             fi
         done
     fi
@@ -5825,7 +5825,7 @@ except Exception as e:
             echo -e "  ${GREEN}OK${NC}  Full-audit headroom: last run ${_at_total}s of ${_at_ceiling}s ceiling (${_at_pct}%)"
             ;;
         *)
-            echo -e "  ${CYAN}INFO${NC}  Full-audit timing not measured yet — run 'fw audit' (no --section) once to populate .context/audits/full-audit-timing.yaml"
+            echo -e "  ${CYAN}INFO${NC}  Full-audit timing not measured yet — run: $(_emit_user_command "audit") (no --section) once to populate .context/audits/full-audit-timing.yaml"
             ;;
     esac
 
@@ -5854,7 +5854,7 @@ except Exception as e:
     # bare capture aborted doctor here, one check before its summary.
     _sts_ts=$(fw_audit_timing_last_measured_at "$PROJECT_ROOT" "structure" 2>/dev/null) || _sts_ts=""
     if [ -z "$_sts_ts" ]; then
-        echo -e "  ${CYAN}INFO${NC}  Structure-section timing not measured yet — run 'fw audit --section structure' (or push) once to populate it"
+        echo -e "  ${CYAN}INFO${NC}  Structure-section timing not measured yet — run: $(_emit_user_command "audit --section structure") (or push) once to populate it"
     elif fw_audit_timing_is_stale "$PROJECT_ROOT" "structure" "$_sts_days"; then
         local _sts_age_days
         _sts_age_days=$(( ( $(date +%s) - $(date -d "$_sts_ts" +%s 2>/dev/null || echo 0) ) / 86400 ))
@@ -7356,7 +7356,7 @@ case "$cmd" in
                 echo "Subcommands:"
                 echo "  recover    Free VRAM by killing heaviest non-ollama consumer"
                 echo ""
-                echo "Run 'fw gpu recover --help' for recover-specific options."
+                echo "Run: $(_emit_user_command "gpu recover --help")  for recover-specific options."
                 exit 0
                 ;;
             *)
@@ -8093,7 +8093,7 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
                         echo "empty ('jobs: []') relative to what is actually deployed and running." >&2
                         echo "" >&2
                         echo "To migrate: populate .context/cron-registry.yaml with jobs: matching the" >&2
-                        echo "schedule already deployed at $_cron_target, then re-run 'fw cron install'." >&2
+                        echo "schedule already deployed at $_cron_target, then re-run: $(_emit_user_command "cron install")" >&2
                         echo "" >&2
                         echo "If you are certain overwriting is safe, bypass with:" >&2
                         echo "  FW_CRON_ALLOW_UNMIGRATED_OVERWRITE=1 fw cron install" >&2
@@ -8196,7 +8196,7 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
                 if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
                     echo "Usage: fw index reindex"
                     echo "Incrementally re-embeds changed/added/removed corpus files."
-                    echo "Run 'fw index --help' for the full description."
+                    echo "Run: $(_emit_user_command "index --help")  for the full description."
                     exit 0
                 fi
                 # T-3783 (010 T-3336): web/ is FRAMEWORK-owned — in a vendored consumer it
@@ -8265,7 +8265,7 @@ except Exception as exc:
                 ;;
             *)
                 echo -e "${RED}Unknown index subcommand:${NC} $idx_subcmd"
-                echo "Run 'fw index reindex' or 'fw index --help'"
+                echo "Run: $(_emit_user_command "index reindex")  (or: $(_fw_cmd) index --help)"
                 exit 1
                 ;;
         esac
@@ -8387,7 +8387,7 @@ except Exception as exc:
         echo -e "  ${CYAN}→${NC} git pull --rebase origin ${_sync_dev}"
         git -C "$PROJECT_ROOT" pull --rebase origin "$_sync_dev" 2>&1 | sed 's/^/    /'
         if [ "${PIPESTATUS[0]}" -ne 0 ]; then
-            echo -e "  ${RED}✗${NC} rebase blocked/conflicted — commit or stash local changes (or 'git rebase --continue'), then re-run 'fw sync'." >&2
+            echo -e "  ${RED}✗${NC} rebase blocked/conflicted — commit or stash local changes (or 'git rebase --continue'), then re-run: $(_emit_user_command "sync")" >&2
             exit 1
         fi
         echo -e "  ${CYAN}→${NC} git push origin ${_sync_branch}"
@@ -9118,7 +9118,7 @@ EOF
                 ;;
             *)
                 echo "fw orchestrator: unknown subcommand '$_orch_subcmd'" >&2
-                echo "Try: fw orchestrator --help" >&2
+                echo "Try: $(_emit_user_command "orchestrator --help")" >&2
                 exit 1
                 ;;
         esac
@@ -9269,7 +9269,7 @@ EOF
                     echo "manifest:    $_mcp_manifest"
                     echo "tools:       ${_tools} (gated: ${_gated})"
                 else
-                    echo "manifest:    ABSENT — run 'fw mcp emit-manifest'"
+                    echo "manifest:    ABSENT — run: $(_emit_user_command "mcp emit-manifest")"
                 fi
                 if [ -f "$_mcp_pid_file" ] && kill -0 "$(cat "$_mcp_pid_file" 2>/dev/null)" 2>/dev/null; then
                     echo "server:      running (pid $(cat "$_mcp_pid_file"))"
@@ -9523,7 +9523,7 @@ DEPLOYEOF
                 echo ""
                 if [ -f "$PENDING_FILE" ]; then
                     echo -e "  ${YELLOW}Pending block:${NC} A command is waiting for approval"
-                    echo "    Run 'fw tier0 approve' to allow it"
+                    echo "    Run: $(_emit_user_command "tier0 approve")  to allow it"
                 elif [ -f "$APPROVAL_FILE" ]; then
                     echo -e "  ${GREEN}Active approval:${NC} One command approved (not yet used)"
                 else
@@ -10378,7 +10378,7 @@ PYREVQ
                 echo "" >&2
                 echo "  Recovery options:" >&2
                 echo "    1. Anchor on a DIFFERENT active task and commit the orphaned changes:" >&2
-                echo "         bin/fw work-on T-<other-active>" >&2
+                echo "         $(_emit_user_command "work-on T-<other-active>")" >&2
                 echo "         git add <files>" >&2
                 echo "         FW_SWITCH_FOCUS=1 git commit -m \"$wo_target: ...\"" >&2
                 echo "    2. If the close was premature (work not actually done), reopen by hand:" >&2
@@ -10423,8 +10423,8 @@ PYREVQ
                     echo "  before the worker spawns (origin OBS-057, prevented by T-2286)." >&2
                     echo "" >&2
                     echo "  If you ARE the demo orchestrator, bypass with EITHER:" >&2
-                    echo "    flag (CLI direct):   bin/fw work-on $wo_target --i-am-demo-orchestrator" >&2
-                    echo "    env  (git/wrapper):  FW_I_AM_DEMO_ORCHESTRATOR=1 bin/fw work-on $wo_target" >&2
+                    echo "    flag (CLI direct):   $(_emit_user_command "work-on $wo_target --i-am-demo-orchestrator")" >&2
+                    echo "    env  (git/wrapper):  cd $(_fw_quote_word "$PROJECT_ROOT") && FW_I_AM_DEMO_ORCHESTRATOR=1 $(_fw_cmd) work-on $wo_target" >&2
                     echo "" >&2
                     echo "  Both log Tier-2 bypass entries to .context/working/.gate-bypass-log.yaml." >&2
                     echo "" >&2
@@ -10678,7 +10678,7 @@ PYREVQ
                     exit 0
                 fi
                 echo -e "${YELLOW}Skipping onboarding tasks.${NC}"
-                echo "You can still complete them later: fw task list --tag onboarding (promote one with: fw task update T-XXX --horizon now)"
+                echo "You can still complete them later: $(_emit_user_command "task list --tag onboarding") (promote one with: $(_fw_cmd) task update T-XXX --horizon now)"
                 mkdir -p "$(dirname "$ONBOARDING_MARKER")"
                 echo "skipped: $(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$ONBOARDING_MARKER"
                 echo "reason: manual skip via fw onboarding skip" >> "$ONBOARDING_MARKER"
@@ -11707,7 +11707,7 @@ PYSEARCH
             [ "$_vs_check" = true ] || _fw_stale_wrapper_notice "$PROJECT_ROOT"
             if [ "$_vs_check" = true ]; then
                 if printf '%s' "$_vs_out" | grep -q "would sync"; then
-                    echo "Self-vendor: DRIFT — vendored .agentic-framework/ is out of sync. Run 'fw vendor self' to sync." >&2
+                    echo "Self-vendor: DRIFT — vendored .agentic-framework/ is out of sync. Run: $(_emit_user_command "vendor self")  to sync." >&2
                     exit 1
                 fi
                 echo "Self-vendor: vendored .agentic-framework/ in sync with source."
@@ -11857,7 +11857,7 @@ for event, entries in hooks.items():
                 if [ -f "$EF_BASELINE" ]; then
                     echo -e "  ${GREEN}✓${NC} Baseline set ($(cut -c1-16 < "$EF_BASELINE")...)"
                 else
-                    echo -e "  ${YELLOW}!${NC} No baseline — run 'fw enforcement baseline'"
+                    echo -e "  ${YELLOW}!${NC} No baseline — run: $(_emit_user_command "enforcement baseline")"
                 fi
                 ;;
             *)
@@ -12646,7 +12646,7 @@ YAMLEOF
                 echo "  setup     Setup guide and prerequisite check"
                 echo ""
                 echo "Notifications use ntfy via the skills-manager alert dispatcher."
-                echo "Disabled by default — run 'fw notify enable' to activate."
+                echo "Disabled by default — run: $(_emit_user_command "notify enable")  to activate."
                 ;;
             *)
                 echo -e "${RED}Unknown notify subcommand: $_notify_sub${NC}" >&2

@@ -3,6 +3,7 @@
 # Append-only ledger of cross-project / cross-machine actions an agent could
 # not complete in-session. Resolved entries are flagged, not deleted.
 
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 PENDING_FILE="$PROJECT_ROOT/.context/working/pending-updates.yaml"
 
 do_pending() {
@@ -168,7 +169,7 @@ do_pending_list() {
     done
 
     if [ ! -f "$PENDING_FILE" ]; then
-        echo "(no pending-updates registry — use 'fw pending register' to create the first entry)"
+        echo "(no pending-updates registry — use: $(_emit_user_command "pending register")  to create the first entry)"
         return 0
     fi
 
@@ -335,7 +336,7 @@ PYREMIND
     echo "Stale pending entries (>= ${stale_hours}h, status=pending):"
     echo "$rest"
     echo ""
-    echo "Total: $count. Resolve with: fw pending resolve <U-NNN>"
+    echo "Total: $count. Resolve with: $(_emit_user_command "pending resolve <U-NNN>")"
 
     # Fire notification if enabled
     if [ "${NTFY_ENABLED:-}" = "true" ]; then

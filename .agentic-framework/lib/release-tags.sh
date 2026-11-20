@@ -13,6 +13,7 @@
 # VERSION stamp in agents/git/lib/hooks.sh. tests/unit/t4431_be_tags.bats pins
 # that every `describe --tags` in lib/, bin/fw and agents/ carries the exclude.
 
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 RELEASE_PRERELEASE_TAG_EXCLUDE='*-be.*'
 
 # release_tags_describe <root> [git-describe args...]
@@ -187,7 +188,7 @@ release_be_tag() {
     echo -e "${GREEN}Tagged${NC} $tag at ${head:0:12} on $dev (base release: ${latest:-none})"
     if [ "$push" = true ]; then
         if ! release_tag_publish "$root" "$tag"; then
-            echo -e "${RED}$tag is NOT on every remote${NC} — re-run: fw release be-tag --push (or fw mirror sync)" >&2
+            echo -e "${RED}$tag is NOT on every remote${NC} — re-run: $(_emit_user_command "release be-tag --push") (or $(_emit_user_command "mirror sync"))" >&2
             return 1
         fi
         echo -e "${GREEN}$tag verified on:${NC} $(release_tag_remotes "$root" | tr '\n' ' ')"

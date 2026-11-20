@@ -297,13 +297,13 @@ _push_to_remotes() {
                         # trained into noise.
                         _push_kind="success"
                         echo -e "  ${GREEN}Pushed to $remote_name ✓ (local git was killed at ${_push_timeout}s, but the remote had already accepted the ref — resolved via ls-remote, tracking ref repaired)${NC}"
-                        echo -e "  ${YELLOW}NOTE: the push timeout is too tight for this repo — the work landed, but nothing else about this run was verified. Measure it: time bin/fw audit --section structure${NC}" >&2
+                        echo -e "  ${YELLOW}NOTE: the push timeout is too tight for this repo — the work landed, but nothing else about this run was verified. Measure it: cd $(_fw_quote_word "$PROJECT_ROOT") && time $(_fw_cmd) audit --section structure${NC}" >&2
                         ;;
                     not-landed)
                         _push_kind="killed"
                         _push_failed=true
                         echo -e "  ${YELLOW}WARNING: Push to $remote_name was KILLED at ${_push_timeout}s (${_push_timeout_source}) — the pre-push gate did not finish, so NO verdict was produced (T-3063). The remote confirms it does NOT carry HEAD, so nothing landed.${NC}" >&2
-                        echo -e "  ${YELLOW}         This is not 'the gate refused you'. Measure it: time bin/fw audit --section structure${NC}" >&2
+                        echo -e "  ${YELLOW}         This is not 'the gate refused you'. Measure it: cd $(_fw_quote_word "$PROJECT_ROOT") && time $(_fw_cmd) audit --section structure${NC}" >&2
                         ;;
                     *)
                         # We could not ask. That is a third state and it gets
@@ -1079,6 +1079,7 @@ EOF
 # Add active tasks sorted by horizon (now > next > later)
 TASKS_DIR_PY="$TASKS_DIR" WT_URL_PY="$WT_URL" PROJECT_ROOT_PY="$PROJECT_ROOT" \
 FRAMEWORK_ROOT_PY="$FRAMEWORK_ROOT" \
+FW_REGEN_CMD="$(_emit_user_command "task list --status started-work")" \
 HANDOVER_DIGEST="$HANDOVER_DIGEST" DIGEST_TOP_N="$DIGEST_TOP_N" python3 << 'PYEOF' >> "$HANDOVER_FILE"
 # T-1825: heredoc delimiter quoted ('PYEOF') so shellcheck doesn't lint Python
 # `==` as bash (SC2284 false-positive). Shell vars now come in via env; no \$
@@ -1257,7 +1258,7 @@ if digest and wip:
           f'(captured, horizon now; ready bugs always shown), then most recently '
           f'touched. Every in-flight task ID is in frontmatter `tasks_active:`, '
           f'every ready one in `tasks_ready:`.')
-    print(f'Regenerate in full: `bin/fw task list --status started-work`')
+    print(f'Regenerate in full: `{os.environ.get("FW_REGEN_CMD") or "bin/fw task list --status started-work"}`')  # T-5304 builder
     print()
 
 current_horizon = None

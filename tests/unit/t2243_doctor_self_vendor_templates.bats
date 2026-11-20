@@ -81,7 +81,7 @@ _vdrift() {
 @test "t2243 t4: drift message stays class-agnostic — 'fw vendor' remediation" {
     echo "<!-- T-2243 remediation-check sentinel -->" >> "$TPL_SENTINEL"
     _vdrift
-    [[ "$output" == *"Run: fw vendor"* ]]
+    [[ "$output" == *"Run: cd "*" && "*"bin/fw vendor"* ]]
 }
 
 @test "t2243 t5: doctor calls the lib check for the framework repo only" {

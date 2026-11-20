@@ -33,6 +33,21 @@ from pathlib import Path
 
 import yaml
 
+
+def _fwc(args, root=None):
+    """Printed fw command, `cd <root> && <fw path> <args>` (T-5304, lib/fw_command.py)."""
+    try:
+        from lib.fw_command import user_command
+    except ImportError:
+        import os as _os
+        import sys as _sys
+        _base = _os.path.abspath(__file__)
+        for _ in range(2):
+            _base = _os.path.dirname(_base)
+        _sys.path.insert(0, _base)
+        from lib.fw_command import user_command
+    return user_command(args, root)
+
 HARNESSES = ("claude", "glm", "codex", "antigravity", "openrouter", "other")
 UNASSIGNED = "unassigned"
 UNKNOWN = "unknown"   # T-5201: the registry could not be read — recorded, never blocking
@@ -324,7 +339,7 @@ def audit_lines() -> list[tuple[str, str]]:
 def _print_list(reg: dict) -> None:
     if not reg["subscriptions"]:
         print(f"No subscriptions registered ({policy_path()}). The operator adds them:")
-        print("  bin/fw quota subscription add <id> --harness <harness> --description \"...\"")
+        print("  " + _fwc('quota subscription add <id> --harness <harness> --description "..."'))
         return
     for s in reg["subscriptions"]:
         kinds = [a["kind"] + (f"@{a['host']}" if a.get("host") else "")

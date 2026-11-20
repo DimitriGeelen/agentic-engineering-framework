@@ -67,6 +67,17 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from comment_strip import strip_html_comment_lines  # noqa: E402
 
+
+def _fwc(args, root=None):
+    """Printed fw command, `cd <root> && <fw path> <args>` (T-5304, lib/fw_command.py)."""
+    try:
+        from lib.fw_command import user_command
+    except ImportError:
+        sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        from lib.fw_command import user_command
+    return user_command(args, root)
+
+
 LEDGER = ".context/reviews/human-ac-ticks.jsonl"
 # Forward-looking (T-2232 pattern): history before the detector shipped is not re-judged —
 # Watchtower ticks committed by sessions before the ledger existed have no row to find.
@@ -723,7 +734,7 @@ def audit(root: Path, since: str | None = None) -> tuple[int, list[str]]:
             f"FAIL {f['task']} {f['kind']} in {'merge ' if f.get('merge') else ''}{f['commit'][:10]} by "
             f"{'AGENT ' if f['agent'] else ''}{f['who']}: \"{f['criterion']}\" — no Watchtower/"
             f"operator record and no reviewer verdict. Ticked in Watchtower? Then the server is "
-            f"stale (bin/fw watchtower restart) or the tick predates T-4070: the operator "
+            f"stale ({_fwc('watchtower restart')}) or the tick predates T-4070: the operator "
             f"records it with: python3 lib/human_ac_ticks.py ack {f['task']} --ac N. Recorded "
             f"in another checkout? A row counts only where it exists: commit {LEDGER} there")
     lines.append(f"{len(findings)} unprovenanced ### Human tick(s) since {since}{tail}")
@@ -923,7 +934,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if _under_agent_control() and not args.i_am_human:
         print("REFUSED: recording a Human tick is the operator's act (CLAUDECODE/AI_AGENT set). "
-              "Hand the task over with: fw task review " + args.task_id, file=sys.stderr)
+              "Hand the task over with: " + _fwc("task review " + args.task_id, root), file=sys.stderr)
         return 2
     key = _human_criterion(root, args.task_id, args.ac)
     if key is None:

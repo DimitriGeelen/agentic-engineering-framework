@@ -41,6 +41,21 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+
+def _fwc(args, root=None):
+    """Printed fw command, `cd <root> && <fw path> <args>` (T-5304, lib/fw_command.py)."""
+    try:
+        from lib.fw_command import user_command
+    except ImportError:
+        import os as _os
+        import sys as _sys
+        _base = _os.path.abspath(__file__)
+        for _ in range(2):
+            _base = _os.path.dirname(_base)
+        _sys.path.insert(0, _base)
+        from lib.fw_command import user_command
+    return user_command(args, root)
+
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
@@ -257,7 +272,7 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         print(f"Recorded {row['id']}: {a.task_id} AC#{a.ac} (digest {row['ac_digest']}) in "
               f"{RULINGS}")
-        print(f"Next: commit {RULINGS}; then fw reviewer judge {a.task_id}")
+        print(f"Next: commit {RULINGS}; then {_fwc('reviewer judge ' + str(a.task_id))}")
         return 0
     except Refused as e:
         print(f"REFUSED: {e}", file=sys.stderr)

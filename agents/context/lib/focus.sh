@@ -2,6 +2,7 @@
 # Context Agent - focus command
 # Set or show current task focus
 
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../../../lib/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 do_focus() {
     ensure_context_dirs
 
@@ -110,8 +111,8 @@ do_focus() {
                 echo "  a completed id would succeed here and then block every Write/Edit/Bash" >&2
                 echo "  after it, because the gate resolves focus against active/ only." >&2
                 echo "" >&2
-                echo "  To resume this task:    bin/fw work-on ${task_id}" >&2
-                echo "  To start something new: bin/fw work-on \"<name>\" --type build" >&2
+                echo "  To resume this task:    $(_emit_user_command "work-on ${task_id}")" >&2
+                echo "  To start something new: $(_emit_user_command "work-on \"<name>\" --type build")" >&2
             else
                 echo -e "${RED}Task not found: $task_id${NC}" >&2
                 echo "  No task with that id in .tasks/active/ or .tasks/completed/." >&2

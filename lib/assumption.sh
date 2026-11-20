@@ -2,6 +2,7 @@
 # fw assumption - Assumption tracking
 # Manages project assumptions: register, validate, invalidate, list
 
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 ASSUMPTIONS_FILE="$PROJECT_ROOT/.context/project/assumptions.yaml"
 
 do_assumption() {
@@ -241,7 +242,7 @@ do_assumption_list() {
 
     if [ ! -f "$ASSUMPTIONS_FILE" ]; then
         echo -e "${YELLOW}No assumptions registered yet${NC}"
-        echo "Create one with: fw assumption add '<statement>' --task T-XXX"
+        echo "Create one with: $(_emit_user_command "assumption add '<statement>' --task T-XXX")"
         exit 0
     fi
 

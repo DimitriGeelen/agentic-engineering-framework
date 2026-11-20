@@ -22,6 +22,7 @@
 #
 # Inputs: $1 — target project dir
 # Return: 0 always (advisory step)
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 fw_init_install_designer() {
     local target_dir="$1"
     local fw_bin="$target_dir/.agentic-framework/bin/fw"
@@ -680,7 +681,7 @@ CYAML
         if PROJECT_ROOT="$target_dir" "$git_sh" install-hooks 2>/dev/null; then
             echo -e "  ${GREEN}✓${NC}  Git hooks installed (commit traceability active)"
         else
-            echo -e "  ${YELLOW}⚠${NC}   Git hooks install failed — run 'fw git install-hooks' manually"
+            echo -e "  ${YELLOW}⚠${NC}   Git hooks install failed — run manually: $(_emit_user_command_in "$target_dir" "git install-hooks")"
         fi
     fi
 
@@ -718,7 +719,7 @@ CYAML
         if si_err="$(PROJECT_ROOT="$target_dir" "$si_fw" context init 2>&1 >/dev/null)"; then
             echo -e "  ${GREEN}✓${NC}  Session initialized (governance active)"
         else
-            echo -e "  ${YELLOW}⚠${NC}  Session init failed — run 'fw context init' manually"
+            echo -e "  ${YELLOW}⚠${NC}  Session init failed — run manually: $(_emit_user_command_in "$target_dir" "context init")"
             [ -n "$si_err" ] && echo "$si_err" | sed 's/^/      /' >&2
         fi
         # T-4259: the registry above is seeded with framework jobs (T-3673), so
@@ -729,9 +730,9 @@ CYAML
             && [ ! -f "$target_dir/.context/cron/agentic-audit.crontab" ]; then
             local cg_err
             if cg_err="$(PROJECT_ROOT="$target_dir" "$si_fw" cron generate 2>&1 >/dev/null)"; then
-                echo -e "  ${GREEN}✓${NC}  Cron crontab generated (not installed — run: fw cron install)"
+                echo -e "  ${GREEN}✓${NC}  Cron crontab generated (not installed — run: $(_emit_user_command_in "$target_dir" "cron install"))"
             else
-                echo -e "  ${YELLOW}⚠${NC}  Cron generate failed — run 'fw cron generate' manually"
+                echo -e "  ${YELLOW}⚠${NC}  Cron generate failed — run manually: $(_emit_user_command_in "$target_dir" "cron generate")"
                 [ -n "$cg_err" ] && echo "$cg_err" | sed 's/^/      /' >&2
             fi
         fi

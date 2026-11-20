@@ -361,7 +361,7 @@ _bootstrap_shape_hint() {
     echo "    command on the line (or is just capturing output)." >&2
     echo "" >&2
     echo "    Run the bootstrap command BARE and alone first, then re-run the rest:" >&2
-    echo "      $(_fw_cmd) work-on T-XXX          <- nothing else on the line" >&2
+    echo "      $(_emit_user_command "work-on T-XXX")          <- no redirect, rm, tee or heredoc on the line" >&2
     echo "" >&2
     echo "    (Chaining itself is fine — 'fw work-on T-X && fw doctor' is allowed." >&2
     echo "     It is the write pattern that voids the exemption, not the ';' or '&&'.)" >&2
@@ -535,18 +535,8 @@ case "$FILE_PATH" in
             # tripped it escalated to the operator for a JSON paste-in — for a
             # capability that has shipped since T-1189. A gate with no exit is a
             # gate people route around.
-            # Not `local` — this case block is at script top level, not in a
-            # function. Consumer projects have no bin/ at their root (T-1257),
-            # and the framework repo ALSO vendors itself at .agentic-framework/,
-            # so test for the framework repo FIRST or it advertises the consumer
-            # path to itself. FRAMEWORK.md + bin/fw at root is the discriminator.
-            if [ -f "$PROJECT_ROOT/FRAMEWORK.md" ] && [ -x "$PROJECT_ROOT/bin/fw" ]; then
-                _fw="bin/fw"
-            elif [ -x "$PROJECT_ROOT/.agentic-framework/bin/fw" ]; then
-                _fw=".agentic-framework/bin/fw"
-            else
-                _fw="fw"
-            fi
+            # The remedy below comes from the printed-command builder (T-5304,
+            # lib/fw-command.sh): framework repo first, never bare fw (T-1257).
             echo "" >&2
             echo "BLOCKED: Cannot hand-edit .claude/settings.json — it registers the enforcement hooks." >&2
             echo "" >&2
@@ -557,8 +547,8 @@ case "$FILE_PATH" in
             echo "To ADD a hook, use the governed path — it is idempotent, validates the event name," >&2
             echo "writes atomically, and survives regeneration by fw upgrade:" >&2
             echo "" >&2
-            echo "  cd $PROJECT_ROOT && $_fw hook-enable --name <hook> --event PreToolUse --matcher 'Write|Edit'" >&2
-            echo "  cd $PROJECT_ROOT && $_fw hook-enable --script /abs/path/to/hook.sh --event PreToolUse --matcher 'Bash'" >&2
+            echo "  $(_emit_user_command "hook-enable --name <hook> --event PreToolUse --matcher 'Write|Edit'")" >&2
+            echo "  $(_emit_user_command "hook-enable --script /abs/path/to/hook.sh --event PreToolUse --matcher 'Bash'")" >&2
             echo "" >&2
             echo "  --name   for framework hooks under agents/context/;  --script for project-local ones." >&2
             echo "  Add --dry-run first to print the resulting JSON without writing." >&2
@@ -921,8 +911,8 @@ if [ -n "$CURRENT_TASK" ]; then
                 echo "work touches source it has stopped being workflow management." >&2
                 echo "" >&2
                 echo "To unblock:" >&2
-                echo "  $(_fw_cmd) work-on '<what you are actually building>' --type build" >&2
-                echo "  $(_fw_cmd) work-on T-XXX     (resume an existing task)" >&2
+                echo "  $(_emit_user_command "work-on '<what you are actually building>' --type build")" >&2
+                echo "  $(_emit_user_command "work-on T-XXX")     (resume an existing task)" >&2
                 echo "" >&2
                 echo "Writes to .context/, .tasks/, .claude/ and .git/ are permitted here —" >&2
                 echo "that is what workflow management legitimately records — except .git/config," >&2
@@ -945,11 +935,11 @@ if [ -z "$CURRENT_TASK" ]; then
     echo "  (project root: $PROJECT_ROOT; focus file: $FOCUS_FILE)" >&2
     echo "" >&2
     echo "To unblock:" >&2
-    echo "  1. Create a task:  $(_fw_cmd) task create --name '...' --type build --start" >&2
-    echo "  2. Set focus:      $(_fw_cmd) context focus T-XXX" >&2
-    echo "  3. Workflow work?  $(_fw_cmd) context focus WM-001   (selection/discovery)" >&2
-    echo "                     $(_fw_cmd) context focus WM-002   (close-out, trailing work)" >&2
-    echo "                     $(_fw_cmd) context focus WM-003   (session lifecycle)" >&2
+    echo "  1. Create a task:  $(_emit_user_command "task create --name '...' --type build --start")" >&2
+    echo "  2. Set focus:      $(_emit_user_command "context focus T-XXX")" >&2
+    echo "  3. Workflow work?  $(_emit_user_command "context focus WM-001")   (selection/discovery)" >&2
+    echo "                     $(_emit_user_command "context focus WM-002")   (close-out, trailing work)" >&2
+    echo "                     $(_emit_user_command "context focus WM-003")   (session lifecycle)" >&2
     _bootstrap_shape_hint "${BASH_CMD:-}"
     _commit_shape_hint "${BASH_CMD:-}"
     echo "" >&2
@@ -980,10 +970,10 @@ if [ -n "$CURRENT_SESSION" ] && [ -n "$FOCUS_SESSION" ] && [ "$FOCUS_SESSION" !=
     echo "  Current session: $CURRENT_SESSION" >&2
     echo "" >&2
     echo "  Focus was set in a previous session. To continue this task:" >&2
-    echo "    $(_fw_cmd) work-on $CURRENT_TASK" >&2
+    echo "    $(_emit_user_command "work-on $CURRENT_TASK")" >&2
     echo "" >&2
     echo "  To start different work:" >&2
-    echo "    $(_fw_cmd) work-on 'New task name' --type build" >&2
+    echo "    $(_emit_user_command "work-on 'New task name' --type build")" >&2
     _bootstrap_shape_hint "${BASH_CMD:-}"
     echo "" >&2
     echo "  $(_blocked_subject)" >&2
@@ -1137,7 +1127,7 @@ if [ "$TOOL_NAME" = "Bash" ] && [ -n "$BASH_CMD" ] && [ -n "$CURRENT_TASK" ]; th
             # --switch-focus in one branch and FW_SWITCH_FOCUS=1 in the other.
             if [ -n "$(find_task_file "$TARGET_TASK" active)" ]; then
                 echo "    1. Switch focus first:" >&2
-                echo "       $(_fw_cmd) context focus $TARGET_TASK" >&2
+                echo "       $(_emit_user_command "context focus $TARGET_TASK")" >&2
                 echo "" >&2
             else
                 echo "    ($TARGET_TASK is not active, so focus cannot point at it —" >&2
@@ -1176,8 +1166,8 @@ if [ -z "$ACTIVE_FILE" ]; then
     echo "BLOCKED: Task $CURRENT_TASK is not active (may be completed or missing)." >&2
     echo "" >&2
     echo "To unblock:" >&2
-    echo "  $(_fw_cmd) work-on T-XXX   (resume an active task)" >&2
-    echo "  $(_fw_cmd) work-on 'name'  (create a new task)" >&2
+    echo "  $(_emit_user_command "work-on T-XXX")   (resume an active task)" >&2
+    echo "  $(_emit_user_command "work-on 'name'")  (create a new task)" >&2
     _bootstrap_shape_hint "${BASH_CMD:-}"
     echo "" >&2
     echo "$(_blocked_subject)" >&2
@@ -1198,7 +1188,7 @@ case "$TASK_STATUS" in
         echo "BLOCKED: Task $CURRENT_TASK has status 'captured' (work not started)." >&2
         echo "" >&2
         echo "To unblock:" >&2
-        echo "  $(_fw_cmd) work-on $CURRENT_TASK   (sets status to started-work)" >&2
+        echo "  $(_emit_user_command "work-on $CURRENT_TASK")   (sets status to started-work)" >&2
         _bootstrap_shape_hint "${BASH_CMD:-}"
         echo "" >&2
         echo "$(_blocked_subject)" >&2
@@ -1314,14 +1304,14 @@ case "$TASK_STATUS" in
         echo "run the commit bare; write patterns void the allowance." >&2
         echo "" >&2
         echo "To make ANOTHER EDIT on THIS task while it stays partial-complete" >&2
-        echo "(Tier-2, logged). Note: '$(_fw_cmd) work-on $CURRENT_TASK' will NOT" >&2
+        echo "(Tier-2, logged). Note: '$(_emit_user_command "work-on $CURRENT_TASK")' will NOT" >&2
         echo "work here — status-transitions.yaml has no outgoing edge from" >&2
         echo "work-completed, so that command exits 1 with 'Invalid transition'." >&2
         echo "  FW_ALLOW_PARTIAL_COMPLETE_EDIT=1 <command>" >&2
         echo "" >&2
         echo "To work on something else instead:" >&2
-        echo "  $(_fw_cmd) work-on T-XXX   (resume a DIFFERENT active task)" >&2
-        echo "  $(_fw_cmd) work-on 'name'  (create a new task)" >&2
+        echo "  $(_emit_user_command "work-on T-XXX")   (resume a DIFFERENT active task)" >&2
+        echo "  $(_emit_user_command "work-on 'name'")  (create a new task)" >&2
         _bootstrap_shape_hint "${BASH_CMD:-}"
         echo "" >&2
         echo "$(_blocked_subject)" >&2
@@ -1395,10 +1385,10 @@ if [ ! -f "$ONBOARDING_MARKER" ]; then
             echo "Remaining onboarding tasks:" >&2
             echo -e "$INCOMPLETE_ONBOARDING" >&2
             echo "To work on onboarding:" >&2
-            echo "  $(_fw_cmd) work-on T-001" >&2
+            echo "  $(_emit_user_command "work-on T-001")" >&2
             echo "" >&2
             echo "To skip onboarding (not recommended):" >&2
-            echo "  $(_fw_cmd) onboarding skip" >&2
+            echo "  $(_emit_user_command "onboarding skip")" >&2
             _bootstrap_shape_hint "${BASH_CMD:-}"
             echo "" >&2
             echo "$(_blocked_subject)" >&2
@@ -1564,9 +1554,9 @@ if [ -n "$ACTIVE_FILE" ]; then
                 echo "     stay blocked by design — the write scanner cannot prove a shell" >&2
                 echo "     write's sole target is the task file (T-3299)." >&2
                 echo "  2. Or change to inception (allowed from this blocked state):" >&2
-                echo "     $(_fw_cmd) task update $CURRENT_TASK --type inception" >&2
+                echo "     $(_emit_user_command "task update $CURRENT_TASK --type inception")" >&2
                 echo "  3. Or shelve it (also allowed from here):" >&2
-                echo "     $(_fw_cmd) task update $CURRENT_TASK --horizon later" >&2
+                echo "     $(_emit_user_command "task update $CURRENT_TASK --horizon later")" >&2
                 _bootstrap_shape_hint "${BASH_CMD:-}"
                 echo "" >&2
                 echo "$(_blocked_subject)" >&2
@@ -1614,7 +1604,7 @@ if [ -n "$ACTIVE_FILE" ] && [ "${WORKFLOW_TYPE:-}" != "inception" ] && \
         echo "  **Problem / hypothesis:** what we think is wrong and why" >&2
         echo "  **Goal:** what we are trying to achieve" >&2
         echo "  **Expected outcome:** what will be different when this is done" >&2
-        echo "Or shelve it: $(_fw_cmd) task update $CURRENT_TASK --horizon later" >&2
+        echo "Or shelve it: $(_emit_user_command "task update $CURRENT_TASK --horizon later")" >&2
         echo "" >&2
         echo "$(_blocked_subject)" >&2
         echo "Policy: T-4907 (task context gate)" >&2
@@ -1662,7 +1652,7 @@ else:
     print(count)
 " 2>/dev/null || echo 0)
     if [ "$DEP_COUNT" -gt 0 ]; then
-        echo "FABRIC: $REL_PATH has $DEP_COUNT downstream dependent(s). Consider: $(_fw_cmd) fabric blast-radius after commit." >&2
+        echo "FABRIC: $REL_PATH has $DEP_COUNT downstream dependent(s). Consider: $(_emit_user_command "fabric blast-radius") after commit." >&2
     fi
 fi
 

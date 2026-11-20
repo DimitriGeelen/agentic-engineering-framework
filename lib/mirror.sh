@@ -333,7 +333,7 @@ mirror_status() {
         tmissing=$(awk '$1 == "missing" {print $2}' <<< "$tdiff")
         tdiffers=$(awk '$1 == "differs" {print $2}' <<< "$tdiff")
         if [ -n "$tmissing" ]; then
-            echo "  $remote: $(grep -c . <<< "$tmissing") release tag(s) missing (on origin): $(tr '\n' ' ' <<< "$tmissing")— run: fw mirror sync"
+            echo "  $remote: $(grep -c . <<< "$tmissing") release tag(s) missing (on origin): $(tr '\n' ' ' <<< "$tmissing")— run: $(_emit_user_command "mirror sync")"
         fi
         if [ -n "$tdiffers" ]; then
             echo "  $remote: release tag(s) differ from origin (not auto-moved): $(tr '\n' ' ' <<< "$tdiffers")"

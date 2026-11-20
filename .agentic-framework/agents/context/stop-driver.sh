@@ -55,6 +55,8 @@ yield() {
 trap 'yield' ERR
 
 PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-${PROJECT_ROOT:-$(pwd)}}"
+# Printed-command builder (T-5304): side-effect free, safe to source in a hook.
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/lib/fw-command.sh" 2>/dev/null || _emit_user_command() { printf 'bin/fw %s\n' "$1"; }
 WORKING_DIR="${PROJECT_ROOT}/.context/working"
 STATE_FILE="${WORKING_DIR}/.continuous-mode.yaml"
 HALT_FILE="${FW_CONTINUOUS_HALT:-${WORKING_DIR}/.continuous-halt}"
@@ -255,7 +257,7 @@ log continue "$reason"
 # T-2404 wrote was never unreadable, it simply never got a turn.
 next_reason="Continuous mode is armed (${reason}). Continue the run: take the next \
 action toward the current arc without waiting for operator input. If you have lost \
-context, invoke /resume first. Set focus with bin/fw work-on T-NNNN before any edit — \
+context, invoke /resume first. Set focus with $(_emit_user_command "work-on T-NNNN") before any edit — \
 the task gate refuses Write/Edit without an active task. Stop and surface to the \
 operator if you reach a Tier-0 action, a human-owned decision, or an unchecked \
 [REVIEW] acceptance criterion; never force past a gate to keep the loop alive."

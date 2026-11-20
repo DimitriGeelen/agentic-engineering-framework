@@ -34,6 +34,7 @@
 # DELIVERED artifact (file_send fallback); --from-tag fetches a frozen annotated tag from
 # the read-only origin — 832's working tree is never read. The artifact is untrusted until
 # its sha256 matches the pin — that check is the whole point of the command.
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../../lib/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 set -euo pipefail
 
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
@@ -393,7 +394,7 @@ do_url() {
     local base
     base="$("${FRAMEWORK_ROOT:-$PROJECT_ROOT}/bin/fw" watchtower url 2>/dev/null || true)"
     if [ -z "$base" ]; then
-        echo "No Watchtower reachable for this project — start one with: fw serve" >&2
+        echo "No Watchtower reachable for this project — start one with: $(_emit_user_command "serve")" >&2
         return 1
     fi
     printf '%s/designer\n' "$base"
@@ -464,7 +465,7 @@ do_check_currency() {
             # the pin must be updated from 832's rail announce first.
             echo -e "         1. Edit policy/designer-pin.yaml from 832's rail announce for $latest"
             echo -e "            (version, sha256, bytes, source_artifact, source_tag, vendored_path)"
-            echo -e "         2. Then run: fw designer sync --from-tag   (sha256-verify at the tag + install)"
+            echo -e "         2. Then run: $(_emit_user_command "designer sync --from-tag")   (sha256-verify at the tag + install)"
         else
             echo -e "${_c_grn}OK${_c_off}  designer pin current with origin (newest released $latest)"
         fi
@@ -491,7 +492,7 @@ do_draft_new() {
     local base
     base="$("${FRAMEWORK_ROOT:-$PROJECT_ROOT}/bin/fw" watchtower url 2>/dev/null || true)"
     if [ -z "$base" ]; then
-        echo "No Watchtower reachable for this project — start one with: fw serve" >&2
+        echo "No Watchtower reachable for this project — start one with: $(_emit_user_command "serve")" >&2
         return 1
     fi
     local link="$base/designer/app?load=%2Fapi%2Fversion%3Fid%3D$name%26v%3D1"

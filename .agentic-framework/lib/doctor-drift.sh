@@ -28,6 +28,7 @@
 # tracked policy/designer-pin.yaml is never mutated (T-2547 hermetic-test fix).
 # vendored_path still resolves against PROJECT_ROOT, so the real vendor dir is used
 # regardless of which pin file is read.
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 doctor_check_designer_pin() {
     local _dz_pin="${FW_DESIGNER_PIN_FILE:-$PROJECT_ROOT/policy/designer-pin.yaml}"
     [ -f "$_dz_pin" ] || return 0
@@ -45,7 +46,7 @@ doctor_check_designer_pin() {
         # unremarkable while mere pin-drift (the *less* serious condition, below)
         # got the louder verdict. Same false-green shape as T-3062.
         echo -e "  ${YELLOW}WARN${NC}  designer pinned but not vendored — /designer will render an error page"
-        echo -e "         Run: fw designer sync --from-tag   (or --from <build> for a delivered file)"
+        echo -e "         Run: $(_emit_user_command "designer sync --from-tag")   (or --from <build> for a delivered file)"
         warnings=$((warnings + 1))
     else
         _dz_have=$(sha256sum "$_dz_file" 2>/dev/null | cut -d' ' -f1)
@@ -53,7 +54,7 @@ doctor_check_designer_pin() {
             echo -e "  ${GREEN}OK${NC}  designer vendored build matches pin (${_dz_want:0:12}...)"
         else
             echo -e "  ${YELLOW}WARN${NC}  designer vendored build drifted from pin"
-            echo -e "         pin=${_dz_want:0:12}... vendored=${_dz_have:0:12}... — run: fw designer sync --from <build>"
+            echo -e "         pin=${_dz_want:0:12}... vendored=${_dz_have:0:12}... — run: $(_emit_user_command "designer sync --from <build>")"
             warnings=$((warnings + 1))
         fi
     fi
@@ -140,7 +141,7 @@ doctor_check_mcp_manifest() {
                 echo -e "  ${GREEN}OK${NC}  framework MCP $_mcp_tools tools (gated: $_mcp_gated) — $_mcp_msg"
             else
                 echo -e "  ${YELLOW}WARN${NC}  framework MCP manifest stale relative to tool-set.yaml"
-                echo -e "         Run: fw mcp emit-manifest"
+                echo -e "         Run: $(_emit_user_command "mcp emit-manifest")"
                 warnings=$((warnings + 1))
             fi
         else
@@ -151,9 +152,9 @@ doctor_check_mcp_manifest() {
         # (FRAMEWORK_ROOT vendored under .agentic-framework) the manifest ships
         # vendored, so absence means a broken/stale vendor → re-vendor via upgrade.
         if [ "$_fw_root" != "$PROJECT_ROOT" ]; then
-            echo -e "  ${CYAN}SKIP${NC}  framework MCP manifest absent in vendored framework — run: fw upgrade"
+            echo -e "  ${CYAN}SKIP${NC}  framework MCP manifest absent in vendored framework — run: $(_emit_user_command "upgrade")"
         else
-            echo -e "  ${CYAN}SKIP${NC}  framework MCP manifest absent — run: fw mcp emit-manifest"
+            echo -e "  ${CYAN}SKIP${NC}  framework MCP manifest absent — run: $(_emit_user_command "mcp emit-manifest")"
         fi
     fi
 }
@@ -219,7 +220,7 @@ doctor_check_vendored_drift() {
         echo -e "  ${GREEN}OK${NC}  No vendored-source drift"
     else
         echo -e "  ${YELLOW}WARN${NC}  Vendored-source drift: $_vdrift file(s) out of sync"
-        echo -e "         Run: fw vendor  (sync .agentic-framework/ with source)"
+        echo -e "         Run: $(_emit_user_command "vendor")  (sync .agentic-framework/ with source)"
         if [ "$_vdrift_libs" -gt 0 ]; then
             echo -e "         libs ($_vdrift_libs) — first $([ $_vdrift_libs -gt 5 ] && echo 5 || echo $_vdrift_libs):$_vdrift_libs_list"
         fi

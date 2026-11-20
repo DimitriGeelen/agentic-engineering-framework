@@ -61,6 +61,8 @@
 #         exit 1 — refused (block message on stderr)
 #         exit 2 — usage error
 
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../../../lib/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
+
 # Sourced or executed? Decided once, up front, because both entry points are
 # real: fw doctor / audit source this for the predicate (AC #2), the pre-commit
 # hook executes it. `return` outside a function is an error in the executed case,
@@ -235,7 +237,7 @@ _fw_wcg_main() {
         echo ""
         echo "  Then make the corpus change at the authority, where it belongs:"
         echo ""
-        echo "    cd $authority && bin/fw task update T-XXX --status <status>"
+        echo "    $(_emit_user_command_in "$authority" "task update T-XXX --status <status>")"
         echo ""
         echo "  Source commits from this worktree are unaffected — build here and"
         echo "  land with \`fw integrate run bleeding-edge --push\` from the main checkout."

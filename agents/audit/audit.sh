@@ -263,7 +263,7 @@ CRONEOF
                         echo "  Source: $CRON_SOURCE (in sync)"
                     fi
                 else
-                    echo "  ⚠ No project source file — run 'fw audit schedule install' to generate"
+                    echo "  ⚠ No project source file — run: $(_emit_user_command "audit schedule install")  to generate"
                 fi
 
                 echo ""
@@ -283,9 +283,9 @@ CRONEOF
                 echo "Cron schedule: NOT INSTALLED"
                 if [ -f "$CRON_SOURCE" ]; then
                     echo "  Project source exists: $CRON_SOURCE"
-                    echo "  Install with: fw audit schedule install"
+                    echo "  Install with: $(_emit_user_command "audit schedule install")"
                 else
-                    echo "  Install with: fw audit schedule install"
+                    echo "  Install with: $(_emit_user_command "audit schedule install")"
                 fi
             fi
             ;;
@@ -9832,7 +9832,7 @@ else
         done
         echo ""
         echo -e "${CYAN}Consider creating a practice to address these recurring issues.${NC}"
-        echo "Run: fw context add-learning \"description\" --task T-XXX"
+        echo "Run: $(_emit_user_command "context add-learning \"description\" --task T-XXX")"
     else
         echo -e "${GREEN}No repeated issues in last ${TREND_WINDOW_DAYS} days (across ${#past_audits[@]} audits).${NC}"
     fi

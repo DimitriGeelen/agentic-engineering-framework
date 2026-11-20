@@ -531,7 +531,7 @@ emit_review() {
         # T-2922 AC5: name the prerequisite (fw serve) rather than only
         # printing a URL that presumes a server the user hasn't started.
         echo -e "  ${YELLOW}No Watchtower is running for this project yet.${NC}"
-        echo -e "  ${YELLOW}Start one with: fw serve${NC}  (then open the link below)"
+        echo -e "  ${YELLOW}Start one with: $(_emit_user_command "serve")${NC}  (then open the link below)"
         echo -e ""
     fi
     echo "  ${review_url}"

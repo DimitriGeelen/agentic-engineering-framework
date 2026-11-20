@@ -36,6 +36,21 @@ from pathlib import Path
 from . import delivery, inbox, outbox
 from . import termlink_transport as transport
 
+
+def _fwc(args, root=None):
+    """Printed fw command, `cd <root> && <fw path> <args>` (T-5304, lib/fw_command.py)."""
+    try:
+        from lib.fw_command import user_command
+    except ImportError:
+        import os as _os
+        import sys as _sys
+        _base = _os.path.abspath(__file__)
+        for _ in range(3):
+            _base = _os.path.dirname(_base)
+        _sys.path.insert(0, _base)
+        from lib.fw_command import user_command
+    return user_command(args, root)
+
 NONCE_PREFIX = "SIDECAR-E2E"
 ACK_PREFIX = "SIDECAR-E2E-ACK"
 DONE_MARKER = "DONE"
@@ -137,9 +152,9 @@ def explicit_prompt(cfg: Config) -> str:
         f"You are the RESPONDER in an automated end-to-end test of the AEF "
         f"peer-consult sidecar (task {cfg.task}, run {cfg.run_id}). Do exactly "
         f"this and nothing else — no tasks, no file edits, no commits:\n"
-        f"1. Run:  bin/fw sidecar inbox --json\n"
+        f"1. Run:  {_fwc('sidecar inbox --json')}\n"
         f"2. For every consult whose body contains \"{cfg.nonce}\", run:\n"
-        f"   bin/fw sidecar send --to <its \"from\" field> "
+        "   " + _fwc('sidecar send --to <its "from" field>') + " "
         f"--conversation <its \"conversation_id\" field> --body \"{cfg.ack}\"\n"
         f"3. If step 1 printed an empty list, run `sleep 10` and go back to "
         f"step 1 — at most 8 times.\n"

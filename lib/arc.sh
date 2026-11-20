@@ -501,7 +501,7 @@ YAML
     if [ "$start_now" = "1" ]; then
         echo "  status: in-progress (created with --start)"
     else
-        echo "  status: draft (use 'fw arc start ${id}' to begin)"
+        echo "  status: draft (use: $(_emit_user_command "arc start ${id}")  to begin)"
     fi
     return 0
 }
@@ -572,7 +572,7 @@ arc_list() {
     current="$(_arc_current_focus)"
 
     if [ ! -d "$ARCS_DIR" ] || ! ls "$ARCS_DIR"/*.yaml >/dev/null 2>&1; then
-        echo "No arcs registered. Create one with: fw arc create <id> --name \"...\""
+        echo "No arcs registered. Create one with: $(_emit_user_command "arc create <id> --name \"...\"")"
         return 0
     fi
 

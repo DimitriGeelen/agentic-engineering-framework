@@ -11,9 +11,13 @@
 set -uo pipefail
 
 INPUT=$(cat)
+PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-${PROJECT_ROOT:-$(pwd)}}"
+# Printed-command builder (T-5304): side-effect free, safe to source in a hook.
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/lib/fw-command.sh" 2>/dev/null || _emit_user_command() { printf 'bin/fw %s\n' "$1"; }
+export FW_HINT_WORKON="$(_emit_user_command "work-on")"
 
 echo "$INPUT" | python3 -c "
-import sys, json
+import sys, json, os
 
 try:
     data = json.load(sys.stdin)
@@ -28,7 +32,7 @@ if tool not in BANNED:
 
 msg = (
     f'WARNING: Built-in {tool} tool was invoked. This bypasses framework governance. '
-    f'Use bin/fw work-on to create real tasks. '
+    f'Use {os.environ.get(\"FW_HINT_WORKON\", \"bin/fw work-on\")} to create real tasks. '
     f'If the PreToolUse block did not fire, check .claude/settings.json for the '
     f'TodoWrite matcher (T-1117). This may indicate a sub-agent bypass (issue 45427 FM1).'
 )

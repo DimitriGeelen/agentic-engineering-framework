@@ -25,6 +25,21 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import describe as _describe  # noqa: E402
 
 
+def _fwc(args, root=None):
+    """Printed fw command, `cd <root> && <fw path> <args>` (T-5304, lib/fw_command.py)."""
+    try:
+        from lib.fw_command import user_command
+    except ImportError:
+        import os as _os
+        import sys as _sys
+        _base = _os.path.abspath(__file__)
+        for _ in range(4):
+            _base = _os.path.dirname(_base)
+        _sys.path.insert(0, _base)
+        from lib.fw_command import user_command
+    return user_command(args, root)
+
+
 # ---------------------------------------------------------------------------
 # YAML helpers
 # ---------------------------------------------------------------------------
@@ -1715,7 +1730,7 @@ def main():
                            if _describe.card_edge_count(c) == 0)
             print(f"Fabric: {len(targets)} cards · {todo_after} TODO purpose · "
                   f"{unknown_after} unknown subsystem · {no_edges} no edges · "
-                  f"{len(refusals)} refused this run (bin/fw fabric drift for ids)")
+                  f"{len(refusals)} refused this run ({_fwc('fabric drift')} for ids)")
             return 0
 
         print(f"=== Describe pass ===")

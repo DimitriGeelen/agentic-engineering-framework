@@ -9,6 +9,7 @@
 # Check types: dir, file, yaml, json, exec, hookpaths
 # Conditions: ?git (requires .git), ?claude,generic (provider match)
 
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 do_validate_init() {
     local target_dir=""
     local provider=""
@@ -468,7 +469,7 @@ print(','.join(broken))
             failed=$((failed + 1))
             [ "$quiet" = false ] && {
                 echo -e "  ${RED}✗${NC} func-vendor Vendored framework INCOMPLETE — missing: $missing_vendor"
-                echo -e "       Re-vendor with: fw init --force  (or: fw vendor)"
+                echo -e "       Re-vendor with: $(_emit_user_command "init --force")  (or: $(_fw_cmd) vendor)"
             }
         fi
     fi

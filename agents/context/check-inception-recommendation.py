@@ -58,6 +58,21 @@ if str(_FW_T2468) not in sys.path:
 from lib.hook_paths import reanchor_project_root  # noqa: E402
 
 
+def _fwc(args, root=None):
+    """Printed fw command, `cd <root> && <fw path> <args>` (T-5304, lib/fw_command.py)."""
+    try:
+        from lib.fw_command import user_command
+    except ImportError:
+        import os as _os
+        import sys as _sys
+        _base = _os.path.abspath(__file__)
+        for _ in range(3):
+            _base = _os.path.dirname(_base)
+        _sys.path.insert(0, _base)
+        from lib.fw_command import user_command
+    return user_command(args, root)
+
+
 _FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---", re.DOTALL)
 _WORKFLOW_TYPE_RE = re.compile(r"^workflow_type:\s*(.*?)\s*$", re.MULTILINE)
 # Match the `**Recommendation:**` line under the `## Recommendation` heading.
@@ -255,7 +270,7 @@ def main() -> int:
     sys.stderr.write("  To proceed, choose ONE:\n")
     sys.stderr.write("\n")
     sys.stderr.write("    1. Canonical filing path — re-file via:\n")
-    sys.stderr.write("         bin/fw inception start \"<name>\" \\\n")
+    sys.stderr.write("         " + _fwc('inception start "<name>"') + " \\\n")
     sys.stderr.write("             --rationale '<reason>'\n")
     sys.stderr.write("       (the inception body is generated with Recommendation populated)\n")
     sys.stderr.write("\n")

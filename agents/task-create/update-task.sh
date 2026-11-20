@@ -177,7 +177,7 @@ enforce_bypass_policy() {
         echo "  Instead:" >&2
         echo "    1. Finish the work, tick each criterion as it is met, and retry." >&2
         echo "    2. If part of it genuinely belongs elsewhere: file it as its own task" >&2
-        echo "       (bin/fw task create --name \"...\"), then ask the operator to rule on" >&2
+        echo "       ($(_emit_user_command "task create --name \"...\"")), then ask the operator to rule on" >&2
         echo "       narrowing this one. Do not narrow it yourself." >&2
         echo "    3. Otherwise stop and report what refused and why — that is a valid outcome." >&2
         echo "  The operator can pass --i-am-human with --reason from their own terminal." >&2
@@ -272,13 +272,13 @@ check_human_sovereignty() {
             if [ "$_route" = "delegate" ]; then
                 echo "This task has no Human criteria and every Agent AC is ticked, so the" >&2
                 echo "review page has nothing to approve. Route it to the reviewer ladder (T-4156):" >&2
-                echo "  cd $PROJECT_ROOT && bin/fw task delegate $TASK_ID && bin/fw reviewer judge $TASK_ID" >&2
+                echo "  $(_emit_user_command "task delegate $TASK_ID") && $(_fw_cmd) reviewer judge $TASK_ID" >&2
                 echo "A green verdict closes it on the next --status work-completed (owner unchanged)." >&2
                 exit 1
             elif [ "${_route%%$'\t'*}" = "operator" ]; then
                 echo "This task has no Human criteria, but it stays with the operator (${_route#*$'\t'})." >&2
                 echo "Operator, from your own terminal:" >&2
-                echo "  cd $PROJECT_ROOT && bin/fw task update $TASK_ID --status work-completed --skip-sovereignty --reason \"<why it is done>\"" >&2
+                echo "  $(_emit_user_command "task update $TASK_ID --status work-completed --skip-sovereignty --reason \"<why it is done>\"")" >&2
             fi
             echo "The human must review and approve via Watchtower:" >&2
             # T-1156: Show Watchtower review link instead of bare commands (PL-007)
@@ -463,7 +463,7 @@ check_acceptance_criteria() {
             # T-2624 read-value wiring: this gate IS the tl_archive edge of the
             # task-lifecycle map — point the tripping agent at the process picture.
             if [ -f "$PROJECT_ROOT/.context/designer/projects/aef-task-lifecycle/meta.json" ]; then
-                echo "Map: aef-task-lifecycle node tl_archive enforces this — bin/fw corpus explain aef-task-lifecycle" >&2
+                echo "Map: aef-task-lifecycle node tl_archive enforces this — $(_emit_user_command "corpus explain aef-task-lifecycle")" >&2
             fi
             exit 1
         fi
@@ -608,7 +608,7 @@ PYREC
             echo "  1. Add the Recommendation block, then retry" >&2
             echo "  2. Operator only: --skip-recommendation --reason \"...\" (refused for agents, T-3586)" >&2
             echo "  3. Bypass via env var (logged Tier 2, T-1890 parity):" >&2
-            echo "       FW_ALLOW_EMPTY_RECOMMENDATION=1 bin/fw task update T-XXX --status work-completed" >&2
+            echo "       cd $(_fw_quote_word "$PROJECT_ROOT") && FW_ALLOW_EMPTY_RECOMMENDATION=1 $(_fw_cmd) task update T-XXX --status work-completed" >&2
             exit 1
             ;;
     esac
@@ -871,7 +871,7 @@ check_inception_decision() {
     echo "decision queue and loses visibility into pending exploration outcomes." >&2
     echo "" >&2
     echo "Options:" >&2
-    echo "  1. Record the decision: bin/fw inception decide $(basename "$TASK_FILE" .md | grep -oE '^T-[0-9]+') go|no-go|defer --rationale '...'" >&2
+    echo "  1. Record the decision: $(_emit_user_command "inception decide $(basename "$TASK_FILE" .md | grep -oE '^T-[0-9]+') go|no-go|defer --rationale '...'")" >&2
     echo "  2. Operator only: --skip-inception-decision --reason \"...\" (refused for agents, T-3586)" >&2
     exit 1
 }
@@ -1257,7 +1257,7 @@ check_reviewer_severe() {
     done <<< "$found"
     echo "" >&2
     echo "To resolve: fix the line named above (e.g. make the Verification command assert" >&2
-    echo "something), or suppress a false positive: bin/fw reviewer override add $_tid --pattern <id> --reason '...'" >&2
+    echo "something), or suppress a false positive: $(_emit_user_command "reviewer override add $_tid --pattern <id> --reason '...'")" >&2
     echo "" >&2
     echo "Operator override (Tier-2 logged, refused under CLAUDECODE=1 without --i-am-human):" >&2
     echo "  --skip-reviewer-severe \"reason\"   (direct fw task update)" >&2
@@ -1304,7 +1304,7 @@ check_vendor_sync() {
     if [ "${FW_SKIP_VENDOR_SYNC:-0}" = "1" ]; then
         if [ "${CLAUDECODE:-}" = "1" ] && [ "$I_AM_HUMAN" != true ]; then
             echo -e "${RED}ERROR: FW_SKIP_VENDOR_SYNC=1 is refused in an agent session (CLAUDECODE=1) — T-3586, T-4791${NC}" >&2
-            echo "  The fix is one command: cd $PROJECT_ROOT && bin/fw vendor self" >&2
+            echo "  The fix is one command: $(_emit_user_command "vendor self")" >&2
             exit 1
         fi
         echo -e "${YELLOW}WARNING: vendored copy out of sync (FW_SKIP_VENDOR_SYNC=1 bypass)${NC}"
@@ -1329,8 +1329,8 @@ check_vendor_sync() {
     done <<< "$_paths"
     echo "" >&2
     echo "To resolve:" >&2
-    echo "  cd $PROJECT_ROOT && bin/fw vendor self && bin/fw vendor self --check --task $TASK_ID" >&2
-    echo "  (a new file: FW_VENDOR_ONLY=\"path1 path2\" bin/fw vendor self), commit, and retry." >&2
+    echo "  $(_emit_user_command "vendor self") && $(_fw_cmd) vendor self --check --task $TASK_ID" >&2
+    echo "  (a new file: cd $(_fw_quote_word "$PROJECT_ROOT") && FW_VENDOR_ONLY=\"path1 path2\" $(_fw_cmd) vendor self), commit, and retry." >&2
     echo "" >&2
     echo "Operator override (Tier-2 logged, refused under CLAUDECODE=1 without --i-am-human):" >&2
     echo "  --skip-vendor-sync \"reason\"   (direct fw task update)" >&2
@@ -2540,7 +2540,7 @@ PY
                     echo "$_l387_findings"
                     echo "  Safe pattern: out=\$(cmd 2>&1); echo \"\$out\" | grep -q \"PATTERN\""
                     echo "  Or:           cmd > /tmp/.out 2>&1; grep -q \"PATTERN\" /tmp/.out"
-                    echo "  Suppress (does not block):  FW_SKIP_L387_ADVISORY=1 bin/fw task update ..."
+                    echo "  Suppress (does not block):  cd $(_fw_quote_word "$PROJECT_ROOT") && FW_SKIP_L387_ADVISORY=1 $(_fw_cmd) task update ..."
                     echo "  Reviewer pattern: l387-sigpipe-risk (policy/anti-patterns.yaml)"
                     echo ""
                 fi
@@ -2592,7 +2592,7 @@ PY
                     echo "$_decay_findings"
                     echo "  These lines can no longer pass — the task they name has moved to completed/."
                     echo "  Safe form (matches either tray):  grep -l PATTERN .tasks/*/T-XXXX-*.md"
-                    echo "  Suppress (does not block):  FW_SKIP_DECAY_ADVISORY=1 bin/fw task update ..."
+                    echo "  Suppress (does not block):  cd $(_fw_quote_word "$PROJECT_ROOT") && FW_SKIP_DECAY_ADVISORY=1 $(_fw_cmd) task update ..."
                     echo "  Reviewer pattern: decaying-task-path-ref (policy/anti-patterns.yaml)"
                     echo ""
                 fi
@@ -2896,7 +2896,7 @@ sys.exit(0 if ok else 1)' 2>/dev/null; then
             echo -e "${RED}ERROR: Cannot change owner from 'human' — human ownership is protected (R-033)${NC}" >&2
             echo "Only the operator can hand over a human-owned task:" >&2
             echo "  - in Watchtower: the task's Ownership field" >&2
-            echo "  - on the CLI, in the operator's own terminal: bin/fw task update $TASK_ID --owner $NEW_OWNER --i-am-human" >&2
+            echo "  - on the CLI, in the operator's own terminal: $(_emit_user_command "task update $TASK_ID --owner $NEW_OWNER --i-am-human")" >&2
             exit 1
         fi
         if ! T4969_TASK="$TASK_ID" T4969_TO="$NEW_OWNER" T4969_VIA="$_ho_via" T4969_AGENT="${CLAUDECODE:-}" \

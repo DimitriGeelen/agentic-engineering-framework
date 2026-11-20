@@ -2,6 +2,7 @@
 # Fabric Agent - query commands
 # Implements: fw fabric search, fw fabric get, fw fabric deps
 
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/../../../lib/fw-command.sh" 2>/dev/null || true  # printed-command builder (T-5304)
 do_search() {
     ensure_fabric_dirs
 
@@ -65,7 +66,7 @@ do_get() {
 
     if [ -z "$card_file" ]; then
         echo -e "${RED}No component found matching: $query${NC}"
-        echo "Try: fw fabric search $query"
+        echo "Try: $(_emit_user_command "fabric search $query")"
         return 1
     fi
 
