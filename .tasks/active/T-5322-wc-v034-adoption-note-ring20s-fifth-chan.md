@@ -70,7 +70,7 @@ date_finished: null
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] Adoption note in docs/specs/shared-worker-contract-transitions.md lists the fifth ring20 change and cites [ring20 a2e5c72b]
-- [ ] check_vectors.py still OK and ring20 told
+- [x] check_vectors.py still OK and ring20 told
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
