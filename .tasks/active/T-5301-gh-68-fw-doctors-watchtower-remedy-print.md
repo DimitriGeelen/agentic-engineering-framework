@@ -1,8 +1,18 @@
 ---
 id: T-5301
-name: "GH #68: fw doctor's Watchtower remedy prints bin/watchtower.sh, which does not exist in a vendored project (outside PR 2)"
+name: "GH #68: fw doctor's Watchtower remedy prints bin/watchtower.sh, which does
+  not exist in a vendored project (outside PR 2)"
 description: >
-  GitHub #68, picked by contributor MikeEchoVoid as their second pilot PR (agreed in #114). fw doctor's two Watchtower remedies (bin/fw:3429 'Run: bin/watchtower.sh restart' and bin/fw:3434 'Run: bin/watchtower.sh stop && bin/watchtower.sh start', plus the vendored copy) name bin/watchtower.sh, which does not exist in a vendored project (it is under .agentic-framework/bin/). Reproduced by the contributor on v1.8.16-be.55 in a fresh fw init project (comment 2026-11-17). Proposed fix (theirs, with a bats test failing before and passing after): print 'bin/fw watchtower restart' like the neighbouring branches. Open question on the issue: print (a) bin/fw, (b) bare fw, or (c) the resolved path. The change arrives as an outside pull request against bleeding-edge; this task is its intake.
+  GitHub #68, picked by contributor MikeEchoVoid as their second pilot PR (agreed
+  in #114). fw doctor's two Watchtower remedies (bin/fw:3429 'Run: bin/watchtower.sh
+  restart' and bin/fw:3434 'Run: bin/watchtower.sh stop && bin/watchtower.sh start',
+  plus the vendored copy) name bin/watchtower.sh, which does not exist in a vendored
+  project (it is under .agentic-framework/bin/). Reproduced by the contributor on
+  v1.8.16-be.55 in a fresh fw init project (comment 2026-11-17). Proposed fix (theirs,
+  with a bats test failing before and passing after): print 'bin/fw watchtower restart'
+  like the neighbouring branches. Open question on the issue: print (a) bin/fw, (b)
+  bare fw, or (c) the resolved path. The change arrives as an outside pull request
+  against bleeding-edge; this task is its intake.
 
 status: captured
 workflow_type: build
@@ -40,8 +50,8 @@ related_tasks: [T-5006]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T13:09:24Z
-last_update: 2026-11-20T13:09:24Z
-date_finished: null
+last_update: '2026-11-20T13:15:36Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -52,6 +62,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-20T13:15:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5301: GH #68: fw doctor's Watchtower remedy prints bin/watchtower.sh, which does not exist in a vendored project (outside PR 2)
