@@ -1,8 +1,17 @@
 ---
 id: T-5320
-name: "wc v0.3.4 item 2: write TermLink's amendments A1-A6 and vectors CC-30..CC-43 (CC-15a/b, CC-19a/b) into the spec and the shared vectors (T-5318)"
+name: "wc v0.3.4 item 2: write TermLink's amendments A1-A6 and vectors CC-30..CC-43
+  (CC-15a/b, CC-19a/b) into the spec and the shared vectors (T-5318)"
 description: >
-  T-5318 GO (operator 2026-11-20). Write A1-A6 into docs/specs/shared-worker-contract-transitions.md v0.3.4 item 2 and the body (close as one fenced CAS transaction; closure fences T1 only; closure never|supported declared, dispatch_closed only with a readable record, CC-15/19 split; close authenticated by the last attempt's supervisor credential or a declared backend policy; closure terminal, recovery via retry_of_dispatch_id; first close wins, repeat returns the stored record, history rows). Add the vectors to tests/conformance/worker-contract/vectors.yaml and the checkers. Sources: docs/reports/T-5318-dispatch-closure-amendments.md (W1-W6, ring20's three changes). Then send to 010-termlink and proxmox-ring20-management. Do after T-5319 (same files).
+  T-5318 GO (operator 2026-11-20). Write A1-A6 into docs/specs/shared-worker-contract-transitions.md
+  v0.3.4 item 2 and the body (close as one fenced CAS transaction; closure fences
+  T1 only; closure never|supported declared, dispatch_closed only with a readable
+  record, CC-15/19 split; close authenticated by the last attempt's supervisor credential
+  or a declared backend policy; closure terminal, recovery via retry_of_dispatch_id;
+  first close wins, repeat returns the stored record, history rows). Add the vectors
+  to tests/conformance/worker-contract/vectors.yaml and the checkers. Sources: docs/reports/T-5318-dispatch-closure-amendments.md
+  (W1-W6, ring20's three changes). Then send to 010-termlink and proxmox-ring20-management.
+  Do after T-5319 (same files).
 
 status: captured
 workflow_type: build
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T19:53:27Z
-last_update: 2026-11-20T19:53:27Z
-date_finished: null
+last_update: '2026-11-20T20:00:57Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-20T20:00:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5320: wc v0.3.4 item 2: write TermLink's amendments A1-A6 and vectors CC-30..CC-43 (CC-15a/b, CC-19a/b) into the spec and the shared vectors (T-5318)
