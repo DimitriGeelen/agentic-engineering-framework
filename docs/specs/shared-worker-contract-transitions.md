@@ -54,6 +54,8 @@ reader of `outcome` sees; it too keeps `wc/0.3`, for the reasons given in the it
    This item adds that reader rule (§2), and no backend emits `withdrawn` before all three owners adopt v0.3.4, so no
    adopted reader meets it unprepared. A bump would instead make every v0.3.3 reader refuse every record, including
    the many that never carry the value. [ring20 T-2790 3d5e1fda] [termlink ab85e88e]
+   *Corrected:* CC-26 first gave the dispatched attempt an open question, which the T2 rule above makes impossible; it
+   now uses one un-acked dispatcher answer with no `question_id`. [termlink 77878a68]
 
 ## Changelog v0.3.2 → v0.3.3
 
@@ -923,12 +925,12 @@ limits of §6.6: `n/a` only for a capability it does not offer, never for a §3 
   (`cause: revoked`) behaves the same. [ring20 v0.2 review §9] [ring20 v0.3 check N5]
 
 ### CC-26 Withdraw from dispatched (v0.3.4)
-- **Given** A1 `dispatched`, nonce n1, supervisor credential c1, `supervisor_gen` g1; one open question, one un-acked
-  answer.
+- **Given** A1 `dispatched`, nonce n1, supervisor credential c1, `supervisor_gen` g1; one un-acked dispatcher answer
+  that names no `question_id` (deadline clock + `ANSWER_TTL`, or none). No question: no worker exists before T2 (§3.3),
+  so nobody can ask while A1 is `dispatched`.
 - **When** the submitter presents n1, c1 and g1 and withdraws A1 with actor `a` and reason `r`.
 - **Then** `dispatched → done{withdrawn}` (T3w); `evidence_digest = sha256(r)`, `result.kind: none`, `exit_code` null;
-  the `history` entry carries actor `a` and reason `r`; no operator notice; the answer bounces and the question is
-  closed (§5.5). The same request without c1 is `fence_reject(bad_credential)` and A1 stays `dispatched`; a request
+  the `history` entry carries actor `a` and reason `r`; no operator notice; the answer bounces (§5.5). The same request without c1 is `fence_reject(bad_credential)` and A1 stays `dispatched`; a request
   from the sweep writer is refused, A1 unchanged. A consumer counting finished work, success or failure refuses
   `(D, A1)`. A later T1 may allocate A2. [ring20 T-2790 3d5e1fda] [termlink ab85e88e]
 

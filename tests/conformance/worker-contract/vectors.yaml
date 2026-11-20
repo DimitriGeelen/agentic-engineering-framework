@@ -1562,14 +1562,15 @@ vectors:
           admissible_histories_equivalent:
             A1: [[dispatched, done]]
       - name: answer-channel
-        # the withdrawal closes the open question and bounces the un-acked answer (§5.5)
+        # the withdrawal bounces the un-acked answer (§5.5). No question: no worker exists before T2 (§3.3),
+        # so the only answer a dispatched attempt can hold names no question_id. Deadline = clock + ANSWER_TTL
+        # (20 + 600); a backend with a fixed TTL may omit it. [termlink 77878a68, d1c228b0]
         requires: [answer_channel]
         steps:
-          - {op: append_question, writer: worker, attempt: 1, nonce: n1, args: {question_id: q1, body: which branch}, expect: {ok: true}}
-          - {op: append_answer, writer: dispatcher, attempt: 1, args: {question_id: q1, body: bleeding-edge, deadline: 100}, expect: {ok: true}}
+          - {op: append_answer, writer: dispatcher, attempt: 1, args: {cmd_id: c1-answer, body: bleeding-edge, deadline: 620}, expect: {ok: true}}
           - {op: withdraw, writer: submitter, attempt: 1, nonce: n1, credential: c1, supervisor_gen: 1, args: {actor: a, reason: superseded by D2}, expect: {accepted: T3w, notices: 0}}
         then:
-          final: {A1: {state: done, outcome: withdrawn, questions_open: 0, answers: {q1: bounced}}}
+          final: {A1: {state: done, outcome: withdrawn, answers: {c1-answer: undelivered}}}
           operator_notices: 0
           admissible_histories: {A1: [[dispatched, done]]}
 
