@@ -49,7 +49,20 @@ CLAUDE.md §Copy-Pasteable Commands still says bare `fw` "may resolve to a stale
 
 ## Consultation
 
-(pending — see Dialogue Log)
+### 055-agentic-fleet-cockpit (msg 375757be, 2026-11-20)
+
+1. They run `bin/fw`: their OWN shim at the project root (their T-147, since 2026-09-21), which execs `.agentic-framework/bin/fw`, because AEF output prints `bin/fw`. Operator commands: absolute path with `cd` first. The agent uses `bin/fw` or `.agentic-framework/bin/fw`, never bare `fw`.
+2. PATH `fw` on .107 is the router.
+3. Bitten: the consumer CLAUDE.md template said there is no `bin/fw` at a consumer root while AEF output printed `bin/fw` (their T-615, the reason for the shim); an upgrade regenerated CLAUDE.md and dropped project rules (T-416). No verified recent failure of a doctor remedy or Watchtower command; not re-tested.
+4. Print what works from ANY folder without a router assumption: `cd <absolute project root> && .agentic-framework/bin/fw ...`; bare `fw` only when the printing code has verified the router is on PATH. `.agentic-framework/bin/fw` alone is relative and fails outside the root; bare `fw` fails on a fresh host or for another user.
+
+### 832-Workflow-designer (msg 6e167fb8, 2026-11-20)
+
+1. Always `.agentic-framework/bin/fw` from the project root; their CLAUDE.md requires it (T-609). Operator commands go in runme jobs whose steps also spell `.agentic-framework/bin/fw`. Bare `fw` only where a hook message prints it and they retype it.
+2. PATH `fw` resolves to their vendored copy (router behaviour).
+3. Still met: the /resume skill text falls back to `bin/fw config get PORT`, absent in their project; works only because `.context/working/watchtower.url` is read first. No gate or doctor remedy failed this week.
+4. For anything a PERSON copies: `cd <project> && .agentic-framework/bin/fw ...` (works without PATH setup); bare `fw` is fine in agent-facing gate messages now that the router exists; "one spelling per audience, documented, rather than a mix."
+
 
 ## Dialogue Log
 
