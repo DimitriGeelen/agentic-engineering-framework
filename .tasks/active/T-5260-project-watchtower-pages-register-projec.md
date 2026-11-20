@@ -133,7 +133,7 @@ bvp_scores_proposed:
 ### Human
 - [ ] [REVIEW] A project page sits in Watchtower like a framework page
   **Steps:**
-  1. Open the screenshots in .context/visual/T-5260/ (or the fixture URL named in the Visual Verification table)
+  1. Open the fixture project page http://127.0.0.1:3977/hosts (a second Watchtower serving the test project tests/fixtures/project_ext; screenshots at three widths in .context/visual/T-5260/)
   **Expected:** the project page uses the normal Watchtower header, menu and footer, and its own content renders without layout breaks at 1024, 1440 and 1920 px
   **If not:** note the width and what breaks
 
