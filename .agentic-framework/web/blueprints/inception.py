@@ -601,12 +601,14 @@ def _filtered_refusal(task_id):
     )
 
 
-def _decide_failure_reason(raw, task_id):
+def _decide_failure_reason(raw, task_id, limit=None):
     """Operator-facing reason for a failed decide: the filtered text when any
-    survives; otherwise name WHY nothing is shown (filtered vs truly empty)."""
+    survives; otherwise name WHY nothing is shown (filtered vs truly empty).
+    ``limit`` clips only the CLI's own text: the fixed refusal texts end in a
+    copy-paste command (T-5305) and are never cut."""
     shown = _operator_facing_stderr(raw)
     if shown:
-        return shown
+        return shown[:limit] if limit else shown
     return _filtered_refusal(task_id) if raw.strip() else _silent_refusal(task_id)
 
 
@@ -856,7 +858,7 @@ def record_decision(task_id):
         return redirect(url_for("inception.inception_detail", task_id=task_id, warning=warn))
     if outcome == _dr.NOT_LANDED:
         # T-4190: name the filtered-to-empty and truly-empty shapes, not "Unknown error".
-        err = _decide_failure_reason((chain_err or chain_out or "")[:3000], task_id)[:300]
+        err = _decide_failure_reason((chain_err or chain_out or "")[:3000], task_id, limit=300)
         return redirect(url_for("inception.inception_detail", task_id=task_id, error=err))
 
     # T-2053: success — surface a commit failure as a warning (no silent failure).
