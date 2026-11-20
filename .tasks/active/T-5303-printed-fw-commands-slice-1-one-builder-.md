@@ -112,7 +112,7 @@ bvp_scores_proposed:
 ### Human
 - [ ] [REVIEW] Watchtower pages render as before after the web/app.py change (a template global was added; nothing visible should change)
   **Steps:**
-  1. Open the screenshots in .context/visual/T-5303/ (home and /approvals header, /approvals footer, taken from http://192.168.10.107:3000/ and http://192.168.10.107:3000/approvals after the restart)
+  1. Open the screenshots in .context/visual/T-5303/ (home page header, approvals page header and footer, taken from http://192.168.10.107:3000/ and http://192.168.10.107:3000/approvals after the restart)
   2. Check each shot at 1024, 1440 and 1920 px
   **Expected:** every framework menu element (logo, Work, Knowledge, Architecture, Govern, Docs, search, settings, theme toggle) and the footer text are present, with no clipping or overlap. At 1024 px the theme toggle on a second header row is the existing layout (T-5261, state menu-no-extension), not a change.
   **If not:** note the page and width that differs
