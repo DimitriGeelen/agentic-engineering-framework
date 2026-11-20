@@ -50,7 +50,10 @@ def _case(doc, cid):
 
 def test_table_comes_from_vectors():
     assert sorted(TABLE) == check_mapping.REQUIRED_IDS_V034
-    assert {cid for cid, ok in TABLE.items() if ok} == {"CC-11", "CC-12", "CC-17", "CC-18"}
+    # T-5320: closure cases may be n/a on a backend they do not apply to; CC-15a, CC-19a and CC-39
+    # (no close record / foreign closure) run on every backend
+    closure_na = set(check_mapping.CLOSURE_IDS) - {"CC-15a", "CC-19a", "CC-39"}
+    assert {cid for cid, ok in TABLE.items() if ok} == {"CC-11", "CC-12", "CC-17", "CC-18"} | closure_na
 
 
 def test_valid_fixture_passes():
@@ -128,17 +131,18 @@ def test_proposal_table_matches_vectors():
     assert [cid for cid, _ in rows] == check_mapping.REQUIRED_IDS
     # the proposal predates v0.3.4; CC-26..CC-29 (T3w) are transition cases, never n/a (T-5317)
     assert {cid: ans == "yes" for cid, ans in rows} == {c: TABLE[c] for c in check_mapping.REQUIRED_IDS}
-    assert not any(TABLE[c] for c in check_mapping.REQUIRED_IDS_V034[25:])
+    assert not any(TABLE[c] for c in ("CC-26", "CC-27", "CC-28", "CC-29"))
 
 
 def test_v034_mapping_must_cover_withdrawal_cases():
-    """T-5317: a mapping that claims wc/0.3.4 must cover CC-26..CC-29; an earlier one need not."""
+    """T-5317: a mapping that claims wc/0.3.4 must cover CC-26..CC-29 and, since T-5320, the closure cases; an earlier one need not."""
     doc = _fixture("valid")
     assert _errors(doc) == []
     doc["spec_version"] = "wc/0.3.4"
     errs = _errors(doc)
-    assert any("cases: missing CC-26, CC-27, CC-28, CC-29" in e for e in errs), errs
-    for cid in ("CC-26", "CC-27", "CC-28", "CC-29"):
-        doc["cases"].append({"id": cid, "verdict": "GAP", "rationale": "T3w not built yet",
+    new_ids = sorted(["CC-26", "CC-27", "CC-28", "CC-29"] + check_mapping.CLOSURE_IDS)
+    assert any(f"cases: missing {', '.join(new_ids)}" in e for e in errs), errs
+    for cid in new_ids:
+        doc["cases"].append({"id": cid, "verdict": "GAP", "rationale": "v0.3.4 not built yet",
                              "tasks": ["ring20:T-2790"]})
     assert _errors(doc) == []

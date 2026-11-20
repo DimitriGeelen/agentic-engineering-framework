@@ -21,6 +21,12 @@ DIR = ROOT / "tests" / "conformance" / "worker-contract"
 VECTORS = DIR / "vectors.yaml"
 
 
+
+# wc v0.3.4 (T-5320): CC-15a/b and CC-19a/b sit beside CC-15 and CC-19; CC-30..CC-43 follow CC-29.
+EXPECTED_IDS = ([f"CC-{i:02d}" for i in range(1, 16)] + ["CC-15a", "CC-15b"]
+                + [f"CC-{i:02d}" for i in range(16, 20)] + ["CC-19a", "CC-19b"]
+                + [f"CC-{i:02d}" for i in range(20, 44)])
+
 def _load(name: str):
     sys.path.insert(0, str(DIR))
     spec = importlib.util.spec_from_file_location(name, DIR / f"{name}.py")
@@ -50,7 +56,7 @@ def _vec(doc, vid):
 # ── schema check ──────────────────────────────────────────────────────────
 def test_shipped_file_is_valid(doc):
     assert _errors(doc) == []
-    assert [v["id"] for v in doc["vectors"]] == [f"CC-{i:02d}" for i in range(1, 30)]
+    assert [v["id"] for v in doc["vectors"]] == EXPECTED_IDS
 
 
 def test_cli_exit_codes(tmp_path, doc):
@@ -120,7 +126,7 @@ def no_backend(monkeypatch, tmp_path):
 def test_runner_without_backend_reports_not_implemented(doc, no_backend):
     assert not run_local.LOCAL_BACKEND.exists()
     results = [run_local.run_vector(v, None, "no local backend") for v in doc["vectors"]]
-    assert len(results) == 29
+    assert len(results) == len(EXPECTED_IDS)
     assert {r["status"] for r in results} == {"not-implemented"}
     cc17 = next(r for r in results if r["id"] == "CC-17")
     assert "capability:registry_epoch" in cc17["missing"]
@@ -132,7 +138,7 @@ def test_runner_cli_never_passes_without_backend(capsys, no_backend):
     import json
     out = json.loads(capsys.readouterr().out)
     assert out["backend_found"] is False
-    assert out["counts"] == {"not-implemented": 29}
+    assert out["counts"] == {"not-implemented": len(EXPECTED_IDS)}
     assert run_local.main(["--require-implemented"]) == 3
 
 
