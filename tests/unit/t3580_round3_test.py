@@ -179,7 +179,9 @@ dg = subprocess.run(["bin/fw", "reviewer", "verdict", "digest", task, "--ac", "1
                     capture_output=True, text=True, check=True).stdout.strip()
 rep = f".context/reviews/evidence/{task}/AC1-{did}.md"
 os.makedirs(os.path.dirname(rep), exist_ok=True)
-open(rep, "w").write("checked\n")
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.environ["LEDGER"])))
+from lib import verdict_format   # T-5292: the brief asks for a verdict/1 vote in the report
+open(rep, "w").write(verdict_format.example_vote(task, {1: "green"}, reviewer=did))
 if mode == "forge":   # try to sign its own completion from inside the worker
     r = subprocess.run([sys.executable, os.environ["LEDGER"], "complete", "--dispatch-id", did,
                         "--wdir", os.environ["WDIR_EXPECTED"], "--exit-code", "0"],

@@ -64,6 +64,7 @@ from lib import review_model_preflight  # noqa: E402
 from lib import review_policy  # noqa: E402
 from lib import task_commits  # noqa: E402
 from lib import verdict_ledger as vl  # noqa: E402
+from lib import verdict_format  # noqa: E402
 from lib.delegation import (  # noqa: E402
     OPERATOR_ONLY,
     REVIEWER_JUDGES,
@@ -910,20 +911,15 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
             "",
             "When you finish, the dispatch runtime records the verdicts you PRINT, under your own "
             "reviewer identity, with your full output as the evidence report, and signs your "
-            "completion. Only the format below is read: a criterion you do not print exactly once, "
-            "or print twice with different verdicts, gets no verdict at all.",
+            "completion. Only the vote format below is read (T-5292): print exactly ONE vote "
+            "block; a criterion whose section is missing or malformed gets no verdict at all.",
             "",
             "## Output format (printed — this IS your record)",
             "",
-            "For each criterion print, starting at the beginning of a line:",
-            "```",
-            "N. [AC] <criterion short>",
-            "VERDICT: green | amber | red | escalate | not-evaluated",
-            "WHY: <what you checked, with evidence; why a human is needed; or why you could not evaluate>",
-            "GUIDANCE: <what is needed next, mandatory for non-green>",
-            "```",
-            "N is the criterion number above (`### Criterion N`). End with: 'Summary: N green, M "
-            "amber, K red, J escalate, I not-evaluated'. A green from a run that fails or times out "
+            *verdict_format.brief_lines(task_id, [c["ac_index"] for c in criteria], printed=True),
+            "Each vote is one of: green | amber | red | escalate | not-evaluated (the same five "
+            "outcomes as above). After `===END===` you may end with: 'Summary: N green, M amber, "
+            "K red, J escalate, I not-evaluated'. A green from a run that fails or times out "
             "does not count.",
         ]
         if operator_only:
@@ -945,8 +941,10 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
         "",
         *[f"- Criterion {c['index']} → `--ac {c['ac_index']}`" for c in criteria],
         "",
-        f"1. Write your evidence report to `{REPORT_DIR}/{task_id}/AC<N>-$FW_SIDECAR_AGENT_ID.md` "
-        "(what you checked and found). Copy (`cp`) any screenshot you cite into the same directory "
+        f"1. Write your evidence report to `{REPORT_DIR}/{task_id}/AC<N>-$FW_SIDECAR_AGENT_ID.md`: "
+        "your vote in the verdict/1 format below (section `## AC<N>`, whose Vote is the outcome "
+        "you record), then any free notes after `===END===`. `record` reads it strictly and "
+        "refuses a report that is not a valid vote, writing the reason into it. Copy (`cp`) any screenshot you cite into the same directory "
         "as `<name>-$FW_SIDECAR_AGENT_ID.png` and cite that copy. Files already in that directory "
         "are other runs' recorded evidence: never move, rename, overwrite or delete them (T-4514).",
         f"2. Compute the digest you read: `bin/fw reviewer verdict digest {task_id} --ac <N>`",
@@ -969,18 +967,13 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
         "Do not edit the task file, do not tick anything, do not touch any file outside "
         f"`{REPORT_DIR}/{task_id}/` and the ledger. Never use a bypass flag.",
         "",
+        *verdict_format.brief_lines(task_id, [c["ac_index"] for c in criteria], printed=False),
         "## Output format (printed)",
         "",
-        "After recording, print for each criterion:",
-        "```",
-        "N. [AC] <criterion short>",
-        "VERDICT: green | amber | red | escalate | not-evaluated",
-        "WHY: <what you checked, with evidence; why a human is needed; or why you could not evaluate>",
-        "GUIDANCE: <what is needed next, mandatory for non-green>",
-        "```",
-        "End with: 'Summary: N green, M amber, K red, J escalate, I not-evaluated'. The printed "
-        "text is for the "
-        "operator's reading only; the ledger row is the record.",
+        "After recording, print your vote once more, as ONE block in the same format covering "
+        "every criterion above, and end with: 'Summary: N green, M amber, K red, J escalate, "
+        "I not-evaluated'. The printed text is for the operator's reading only; the ledger row "
+        "is the record.",
     ]
     if operator_only:
         lines += ["", "Not yours (operator-only, never judge): " +
@@ -1091,7 +1084,15 @@ _VERDICT_LINE = re.compile(r"^\s*(\d+)\.\s*\[[^\]]*\].*?\n\s*VERDICT:\s*([\w-]+)
 
 def _parse_printed(output: str, criteria: list[dict]) -> dict[int, str]:
     """Printed verdict per criterion `index`, for REPORTING only. Anything not exactly one
-    of the outcomes (vl.OUTCOMES) is `unknown`."""
+    of the outcomes (vl.OUTCOMES) is `unknown`. Output holding a verdict/1 block is read with the
+    strict reader (T-5292): a refused criterion is `unknown`."""
+    if verdict_format.BEGIN in (output or ""):
+        parsed, problems = verdict_format.parse_vote(
+            output, expected_acs=[c.get("ac_index", c["index"]) for c in criteria])
+        ok = verdict_format.accepted(parsed, problems)
+        return {c["index"]: (ok[c.get("ac_index", c["index"])]["criterion"]["vote"]
+                             if c.get("ac_index", c["index"]) in ok else UNKNOWN)
+                for c in criteria}
     found = {int(n): v.lower() for n, v in _VERDICT_LINE.findall(output or "")}
     return {c["index"]: (found.get(c["index"]) if found.get(c["index"]) in vl.OUTCOMES else UNKNOWN)
             for c in criteria}

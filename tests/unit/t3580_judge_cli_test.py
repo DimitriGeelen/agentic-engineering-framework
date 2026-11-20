@@ -191,6 +191,11 @@ import subprocess  # noqa: E402
 from datetime import datetime, timezone  # noqa: E402
 
 from lib import verdict_ledger as vl  # noqa: E402
+from lib import verdict_format as vf  # noqa: E402  (T-5292)
+
+
+def task_id_of(brief: str) -> str:
+    return re.search(r"^Task: (T-\d+)$", brief, re.M).group(1)
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _review_runtime as rt  # noqa: E402
@@ -292,7 +297,8 @@ class FakeWorker:
             ev_dir = root / ".context/reviews/evidence" / task_id
             ev_dir.mkdir(parents=True, exist_ok=True)
             rep = ev_dir / f"AC{c.index}-{did}.md"
-            rep.write_text("checked it\n")
+            # T-5292: the brief asks for verdict/1; the report holds the vote.
+            rep.write_text(vf.example_vote(task_id, {c.index: outcome}, reviewer=did))
             evidence = [str(rep.relative_to(root))]
             for sh in shots:
                 cp = ev_dir / f"AC{c.index}-{did}-{Path(sh).name}"
@@ -320,10 +326,10 @@ class FakeWorker:
 
     def _harness(self, root, did, brief, outcome):
         w = rt.wdir_for(root, did)
-        blocks = [f"{n}. [AC] criterion\nVERDICT: {outcome}\nWHY: checked it\n"
-                  f"GUIDANCE: {'none' if outcome == 'green' else 'needs work'}\n"
-                  for n, _ac in re.findall(r"^### Criterion (\d+) \(Human AC#(\d+)\)$", brief, re.M)]
-        (w / "result.md").write_text("\n".join(blocks) + "Summary: done\n")
+        # T-5292: the brief asks for verdict/1, keyed by the Human AC number.
+        acs = [int(ac) for _n, ac in re.findall(r"^### Criterion (\d+) \(Human AC#(\d+)\)$", brief, re.M)]
+        (w / "result.md").write_text(vf.example_vote(task_id_of(brief), {a: outcome for a in acs},
+                                                     reviewer=did) + "Summary: done\n")
         (w / "result.jsonl").write_text('{"type":"thread.started","thread_id":"t"}\n')
         (w / "exit_code").write_text(f"{self.exit_code}\n")
         secret = rt.take_secret(root, did)

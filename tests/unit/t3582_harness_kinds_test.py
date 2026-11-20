@@ -47,9 +47,15 @@ if "+" in mode:                      # T-3986: "<verdict>+touch" also writes int
     open("INJECTED", "w").write("x")
 if os.environ.get("TMPDIR"):         # T-3986: the seat's own temp dir is writable
     open(os.path.join(os.environ["TMPDIR"], "harness.tmp"), "w").write("x")
-blocks = "".join(f"**{n}. [AC] criterion**\nVERDICT: {mode}\nWHY: read the export\n"
-                 f"GUIDANCE: {'none' if mode == 'green' else 'fix it'}\n\n"
-                 for n, _ac in re.findall(r"^### Criterion (\d+) \(Human AC#(\d+)\)$", prompt, re.M))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.environ["LEDGER"])))
+from lib import verdict_format   # T-5292: the brief asks for a verdict/1 vote
+_task = re.search(r"^Task: (T-\d+)$", prompt, re.M).group(1)
+_acs = [int(ac) for _n, ac in re.findall(r"^### Criterion (\d+) \(Human AC#(\d+)\)$", prompt, re.M)]
+blocks = verdict_format.example_vote(_task, {a: mode for a in _acs}, reviewer="codex",
+                                     why="read the export", guidance="fix it")
+if mode == "prose":                  # T-5292: free text that only says the criteria hold
+    blocks = "".join(f"{n}. [AC] criterion\nVERDICT: green\nWHY: all criteria hold\n\n"
+                     for n in range(1, len(_acs) + 1))
 open(out, "w").write(blocks + "Summary: done\n")
 print(json.dumps({"type": "thread.started", "thread_id": "th-1"}))
 print(json.dumps({"type": "item.completed", "item": {"type": "agent_message", "text": blocks}}))
@@ -70,9 +76,13 @@ if os.path.isdir(".opencode") and os.environ.get("OPENCODE_DISABLE_PROJECT_CONFI
 prompt = a[-1]
 mode = os.environ.get("STUB_MODE", "green")
 print(json.dumps({"type": "step_start", "sessionID": "ses_1", "part": {}}))
-for n, _ac in re.findall(r"^### Criterion (\d+) \(Human AC#(\d+)\)$", prompt, re.M):
-    print(json.dumps({"type": "text", "sessionID": "ses_1", "part": {"type": "text", "text":
-          f"{n}. [AC] criterion\nVERDICT: {mode}\nWHY: read it\nGUIDANCE: {'none' if mode == 'green' else 'fix'}"}}))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.environ["LEDGER"])))
+from lib import verdict_format   # T-5292: the brief asks for a verdict/1 vote
+_task = re.search(r"^Task: (T-\d+)$", prompt, re.M).group(1)
+_acs = [int(ac) for _n, ac in re.findall(r"^### Criterion (\d+) \(Human AC#(\d+)\)$", prompt, re.M)]
+print(json.dumps({"type": "text", "sessionID": "ses_1", "part": {"type": "text", "text":
+      verdict_format.example_vote(_task, {a: mode for a in _acs}, reviewer="opencode",
+                                  why="read it", guidance="fix")}}))
 print(json.dumps({"type": "step_finish", "sessionID": "ses_1", "part": {"reason": "stop"}}))
 '''
 
@@ -304,7 +314,7 @@ class TestRealRuntimeHarness:
         assert c["worker_kind"] == kind and c["exit_code"] == 0 and c["worker_session"]
         assert c["result_sha256"] == vl._result_sha(w)
         # the verdict file the runtime normalised, and the row it recorded on the worker's behalf
-        assert "VERDICT: green" in (w / "result.md").read_text()
+        assert "vote: green" in (w / "result.md").read_text()   # T-5292: verdict/1
         rows = [r for r in vl._read(vl.VERDICTS, hrepo) if r.get("dispatch_id") == did]
         assert len(rows) == 1 and rows[0]["outcome"] == "green"
         assert rows[0]["worker"] == vl.worker_identity(did)

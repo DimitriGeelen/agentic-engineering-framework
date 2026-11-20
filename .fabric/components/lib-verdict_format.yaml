@@ -1,0 +1,21 @@
+id: lib/verdict_format.py
+name: verdict_format
+type: script
+subsystem: framework-core
+location: lib/verdict_format.py
+tags: []
+
+purpose: "T-5292 (T-5290 GO): `verdict/1`, the fixed shape of a reviewer's vote, and its strict reader."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-20
+created_by: unknown
