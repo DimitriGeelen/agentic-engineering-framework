@@ -1,10 +1,19 @@
 ---
 id: T-5292
-name: "Structured verdicts slice 1: verdict format in the judge's brief plus a strict reader that refuses a malformed vote (T-5290)"
+name: "Structured verdicts slice 1: verdict format in the judge's brief plus a strict
+  reader that refuses a malformed vote (T-5290)"
 description: >
-  T-5290 GO (operator 2026-11-20). Every reviewer vote, pass or fail, in one fixed shape adapted from 1409's begruendung/0.1: header (format version, task, reviewer, round, overall vote, failed criteria); per criterion vote, evidence (verbatim quote, or for an image: file plus region x,y,w,h or selector), location (file:line, or image region), rule, one-sentence conclusion; counter-search; what would change my mind. lib/reviewer/judge_cli.py brief and lib/verdict_ledger.py parse_harness_verdicts: new rows carry the format version; a vote missing a section or label is refused, never coerced (1409 caveat c: 2 of 11 faulty answers became PASS under a lenient reader). Old rows without a format version are read as today. Research: docs/reports/T-5290-structured-reviewer-verdicts.md.
+  T-5290 GO (operator 2026-11-20). Every reviewer vote, pass or fail, in one fixed
+  shape adapted from 1409's begruendung/0.1: header (format version, task, reviewer,
+  round, overall vote, failed criteria); per criterion vote, evidence (verbatim quote,
+  or for an image: file plus region x,y,w,h or selector), location (file:line, or
+  image region), rule, one-sentence conclusion; counter-search; what would change
+  my mind. lib/reviewer/judge_cli.py brief and lib/verdict_ledger.py parse_harness_verdicts:
+  new rows carry the format version; a vote missing a section or label is refused,
+  never coerced (1409 caveat c: 2 of 11 faulty answers became PASS under a lenient
+  reader). Old rows without a format version are read as today. Research: docs/reports/T-5290-structured-reviewer-verdicts.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T08:47:57Z
-last_update: 2026-11-20T08:47:57Z
-date_finished: null
+last_update: '2026-11-20T08:48:42Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-20T08:48:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5292: Structured verdicts slice 1: verdict format in the judge's brief plus a strict reader that refuses a malformed vote (T-5290)
@@ -57,20 +83,22 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5290 GO (operator, 2026-11-20, commit 13a838d32). On T-5262 a reviewer seat voted red twice on screenshots it never opened (G-136, T-5289), and its free-text verdict (VERDICT / WHY / GUIDANCE) gave nothing to check the claim against. 1409-sprind built a fixed verdict structure (begruendung/0.1, summarised in docs/reports/T-5290-structured-reviewer-verdicts.md). The operator wants it in the framework for every project.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** A verdict that need not say which evidence, where, and by which rule cannot be checked; a pass without evidence looks the same as a pass with it. 1409 also found a lenient reader turns faulty answers into passes (2 of 11).
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Every new reviewer vote, pass or fail, uses one fixed structure, and the reader refuses a vote that does not follow it.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** The judge's brief asks for the structure; new ledger rows carry the format version and the parsed structure; a malformed vote gives no verdict for that criterion (the same as today's "ambiguous" case), never a coerced one; old rows read exactly as today. Slice 2 (T-5293) then checks the content mechanically.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The brief (lib/reviewer/judge_cli.py, both the harness and the self-recording variant) asks for the structured vote: a header (format `verdict/1`, task, reviewer, round, overall vote, failed criteria) and per criterion vote, evidence (verbatim quote, or for an image the file plus region `x,y,w,h` or a CSS selector), location (file:line, or image file plus region), rule, one-sentence conclusion, counter-search (searched for / found), and what would change my mind; pass and fail have the same form, and a non-green vote still carries guidance.
+- [ ] A strict reader (one function, used by the harness path and by `verdict record` for self-recording seats) returns the parsed structure or a list of what is missing; a vote missing any required label, with an outcome outside the allowed set, or whose overall vote disagrees with its per-criterion votes, yields no verdict for that criterion and says why in the evidence report.
+- [ ] New rows carry `format: verdict/1` and the parsed structure; rows without a format version are read and validated exactly as before (existing ledger tests stay green, the committed ledger audits the same).
+- [ ] Tests: a complete pass and a complete fail are accepted; each missing label is refused; a lenient-reader case (prose that only says "all criteria hold") is refused; an old free-text row still validates.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,6 +285,11 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5292_structured_verdict.py -q > /tmp/.t5292a 2>&1 && grep -q passed /tmp/.t5292a
+python3 -m pytest tests/unit/t3580_judge_cli_test.py tests/unit/t3949_judge_real_ac_number_test.py tests/unit/t4960_judge_capture_notes_test.py -q > /tmp/.t5292b 2>&1 && grep -q passed /tmp/.t5292b
+timeout 600 bats tests/unit/t3579_verdict_close_path.bats > /tmp/.t5292c 2>&1 && ! grep -q "^not ok" /tmp/.t5292c
+python3 lib/verdict_ledger.py audit > /tmp/.t5292d 2>&1; test $? -le 3
+bin/fw vendor self --check --task T-5292
 
 ## RCA
 
@@ -354,3 +387,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5292-structured-verdicts-slice-1-verdict-form.md
 - **Context:** Initial task creation
+
+### 2026-11-20T08:48:39Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
