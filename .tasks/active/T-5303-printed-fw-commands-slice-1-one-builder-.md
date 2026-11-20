@@ -310,8 +310,8 @@ bin/fw watchtower current
 | state | control | 1024 | 1440 | 1920 | note |
 |-------|---------|------|------|------|------|
 | home-header | site menu on the home page | ok | ok | ok | real Watchtower http://192.168.10.107:3000/, cropped nav.site-nav to div.ambient-strip |
-| approvals-header | site menu on /approvals | ok | ok | ok | real Watchtower, same crop |
-| approvals-footer | footer on /approvals | ok | ok | ok | real Watchtower, crop from footer.site-footer |
+| approvals-header | site menu on the approvals page | ok | ok | ok | real Watchtower http://192.168.10.107:3000/approvals, same crop |
+| approvals-footer | footer on the approvals page | ok | ok | ok | real Watchtower http://192.168.10.107:3000/approvals, crop from footer.site-footer |
 
 ## RCA
 
