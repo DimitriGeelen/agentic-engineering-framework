@@ -12,10 +12,10 @@ description: >
   event). Result stored on the row. Does not judge whether the conclusion follows
   (1409 caveat b). Depends on slice 1.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T08:47:58Z
-last_update: '2026-11-20T09:01:16Z'
+last_update: 2026-11-20T11:47:53Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,20 +92,23 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5290 GO (operator 2026-11-20). Slice 1 (T-5292, closed) made every new vote follow `verdict/1` (lib/verdict_format.py) and refuses malformed votes. On T-5262 the codex seat voted red twice on screenshots it never opened; its run logs show no image was viewed (G-136, T-5289). 1409's caveat: a checker can establish whether evidence is THERE, not whether it supports the claim.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** A well-formed vote can still cite a quote that is not in the file, a line that does not exist, an image region outside the image, or a screenshot the seat never opened. Nothing checks this today, so such a vote counts.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Every `verdict/1` vote is checked mechanically against what it cites, and the result is stored on the row.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Per vote, a check result: complete; consistent; per quote found / found elsewhere / not found; per location exists or not; per image region inside the image (with the crop written next to the evidence so other seats and the operator can see it); per rule named; and, for a render criterion, whether the seat's run log shows it viewed the image. Slice 3 (T-5294) then decides what a failed check means for the panel; this slice only measures and records.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A checker (one function over a parsed `verdict/1` vote plus the reviewed revision's files) returns per-item results: quote found at the named path:line / found elsewhere in that file / not found; path:line exists; image file exists and region lies inside it; selector named; rule present; overall consistent.
+- [ ] For an image region that lies inside the image, the checker writes the crop as a PNG beside the seat's evidence (`.context/reviews/evidence/<task>/`) and the check result names it.
+- [ ] Seat-viewed-evidence: for a vote citing an image, the checker reads the seat's run record (harness `result.jsonl` events, or the claude seat's transcript/tool events) and reports whether that image (or its copy) was actually opened by an image-viewing tool; "cannot tell" is reported as such, never as yes.
+- [ ] New `verdict/1` rows carry the check result as an added field (old rows and old-format rows unchanged; ledger audit still exits 3 or lower).
+- [ ] Tests: each outcome above, including the T-5262 case (red vote citing a region where the reference shows the icons, from a seat whose log has no image view → reported "not viewed").
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -292,6 +295,11 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5293_vote_checker.py -q > /tmp/.t5293a 2>&1 && grep -q passed /tmp/.t5293a
+python3 -m pytest tests/unit/test_t5292_structured_verdict.py tests/unit/t3580_judge_cli_test.py -q > /tmp/.t5293b 2>&1 && grep -q passed /tmp/.t5293b
+timeout 600 bats tests/unit/t3579_verdict_close_path.bats > /tmp/.t5293c 2>&1 && ! grep -q "^not ok" /tmp/.t5293c
+python3 lib/verdict_ledger.py audit > /tmp/.t5293d 2>&1; test $? -le 3
+bin/fw vendor self --check --task T-5293
 
 ## RCA
 
@@ -389,3 +397,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5293-structured-verdicts-slice-2-mechanical-c.md
 - **Context:** Initial task creation
+
+### 2026-11-20T11:47:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
