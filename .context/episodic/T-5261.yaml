@@ -1,0 +1,166 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5261: Project menu entries: new Watchtower nav groups and items appended to existing groups (T-4649 slice 2)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T00:15:37Z
+# ============================================================================
+
+task_id: T-5261
+task_name: "Project menu entries: new Watchtower nav groups and items appended to existing groups (T-4649 slice 2)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-19T15:30:56Z
+completed: 2026-11-20T00:12:18Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-20T00:51:17+01:00
+last_commit: 2026-11-20T01:11:19+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  project menu entries — nav extensions add a group or append items, merged at render time. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (antigravity seat antigravity, recorded by the runtime)
+
+# Key outcomes
+outcomes:
+  - 'A `nav` extension declares items {label, endpoint or path} and either a new group name or the name of an existing group to append to; NAV_GROUPS stays the framework''s list and the project''s entries are merged at render time'
+  - 'Merging only adds: framework groups and items keep their order; an item pointing at a missing endpoint is dropped with one logged line and a `fw doctor` WARN'
+  - 'Tests (t5261_*): new group shown; items appended to an existing group after the framework''s own; missing endpoint dropped; no extension → menu identical to today; existing web tests stay green'
+  - 'Watchtower restarted and `bin/fw watchtower current` passes; vendored copies synced'
+  - 'Visual Verification: the menu with a fixture project group and appended items, at the three widths'
+  - '[REVIEW] Project menu entries look like the framework''s own'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-19 — where a `nav` extension declares its group and items'
+    chose: 'the register entry''s `paths:` names a YAML file in the project (`group:`, optional `section:`, `items:` of `{label, endpoint | path}`), read with the register''s own YAML loader.'
+    rationale: 'the T-5259 register refuses unknown fields and `fw extension add` takes `--path` only, so the operator registers a menu with the existing verb; the T-5259 audit already checks that the file exists.'
+    alternatives_rejected: ['new `group:`/`items:` fields on the register entry (changes the T-5259 schema, its emitter and its CLI for one kind).']
+  - decision: '2026-11-19 — appending to a group that has sub-headings (Govern)'
+    chose: 'project items go under their own sub-heading at the end of the group (`section:`, default "Project").'
+    rationale: 'appended bare, they would read as part of the framework''s last sub-heading (Operations).'
+    alternatives_rejected: ['inserting into a framework sub-heading (changes what the framework''s own block contains).']
+  - decision: '2026-11-19 — not done here'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/app.py'
+  - '.agentic-framework/web/project_extensions.py'
+  - '.agentic-framework/web/shared.py'
+  - '.agentic-framework/web/templates/base.html'
+  - '.context/reviews/evidence/T-5261/01-docs-generated-judge-t-5261-r5-antigravity-29c163386c37.png'
+  - '.context/reviews/evidence/T-5261/01-docs-generated-judge-t-5261-r5-claude-code-2ed02e0f75e8.png'
+  - '.context/reviews/evidence/T-5261/01-docs-generated-judge-t-5261-r5-codex-6236b6ece187.png'
+  - '.context/reviews/evidence/T-5261/02-settings-judge-t-5261-r5-antigravity-29c163386c37.png'
+  - '.context/reviews/evidence/T-5261/02-settings-judge-t-5261-r5-claude-code-2ed02e0f75e8.png'
+  - '.context/reviews/evidence/T-5261/02-settings-judge-t-5261-r5-codex-6236b6ece187.png'
+  - '.context/reviews/evidence/T-5261/03-settings-models-judge-t-5261-r5-antigravity-29c163386c37.png'
+  - '.context/reviews/evidence/T-5261/03-settings-models-judge-t-5261-r5-claude-code-2ed02e0f75e8.png'
+  - '.context/reviews/evidence/T-5261/03-settings-models-judge-t-5261-r5-codex-6236b6ece187.png'
+  - '.context/reviews/evidence/T-5261/04-settings-appearance-judge-t-5261-r5-antigravity-29c163386c37.png'
+  - '.context/reviews/evidence/T-5261/04-settings-appearance-judge-t-5261-r5-claude-code-2ed02e0f75e8.png'
+  - '.context/reviews/evidence/T-5261/04-settings-appearance-judge-t-5261-r5-codex-6236b6ece187.png'
+  - '.context/reviews/evidence/T-5261/AC1-judge-t-5261-r5-antigravity-29c163386c37.md'
+  - '.context/reviews/evidence/T-5261/AC1-judge-t-5261-r5-claude-code-2ed02e0f75e8.md'
+  - '.context/reviews/evidence/T-5261/AC1-judge-t-5261-r5-codex-6236b6ece187.md'
+  - '.context/reviews/evidence/T-5261/menu-govern-open@1024-judge-t-5261-r5-antigravity-29c163386c37.png'
+  - '.context/reviews/evidence/T-5261/menu-govern-open@1024-judge-t-5261-r5-claude-code-2ed02e0f75e8.png'
+  - '.context/reviews/evidence/T-5261/menu-govern-open@1024-judge-t-5261-r5-codex-6236b6ece187.png'
+  - '.context/reviews/evidence/T-5261/menu-govern-open@1440-judge-t-5261-r5-antigravity-29c163386c37.png'
+  - '.context/reviews/evidence/T-5261/menu-govern-open@1440-judge-t-5261-r5-claude-code-2ed02e0f75e8.png'
+  - '.context/reviews/evidence/T-5261/menu-govern-open@1440-judge-t-5261-r5-codex-6236b6ece187.png'
+  - '.context/reviews/evidence/T-5261/menu-govern-open@1920-judge-t-5261-r5-antigravity-29c163386c37.png'
+  - '.context/reviews/evidence/T-5261/menu-govern-open@1920-judge-t-5261-r5-claude-code-2ed02e0f75e8.png'
+  - '.context/reviews/evidence/T-5261/menu-govern-open@1920-judge-t-5261-r5-codex-6236b6ece187.png'
+  - '.context/reviews/evidence/T-5261/menu-knowledge-open@1024-judge-t-5261-r5-antigravity-29c163386c37.png'
+  - '.context/reviews/evidence/T-5261/menu-knowledge-open@1024-judge-t-5261-r5-claude-code-2ed02e0f75e8.png'
+  - '.context/reviews/evidence/T-5261/menu-knowledge-open@1024-judge-t-5261-r5-codex-6236b6ece187.png'
+  - '.context/reviews/evidence/T-5261/menu-knowledge-open@1440-judge-t-5261-r5-antigravity-29c163386c37.png'
+  - '.context/reviews/evidence/T-5261/menu-knowledge-open@1440-judge-t-5261-r5-claude-code-2ed02e0f75e8.png'
+  - '.context/reviews/evidence/T-5261/menu-knowledge-open@1440-judge-t-5261-r5-codex-6236b6ece187.png'
+  - '.context/reviews/evidence/T-5261/menu-knowledge-open@1920-judge-t-5261-r5-antigravity-29c163386c37.png'
+  - '.context/reviews/evidence/T-5261/menu-knowledge-open@1920-judge-t-5261-r5-claude-code-2ed02e0f75e8.png'
+  - '.context/reviews/evidence/T-5261/menu-knowledge-open@1920-judge-t-5261-r5-codex-6236b6ece187.png'
+  - '.context/reviews/evidence/T-5261/menu-no-extension@1024-judge-t-5261-r5-antigravity-29c163386c37.png'
+  - '.context/reviews/evidence/T-5261/menu-no-extension@1024-judge-t-5261-r5-claude-code-2ed02e0f75e8.png'
+  - '.context/reviews/evidence/T-5261/menu-no-extension@1024-judge-t-5261-r5-codex-6236b6ece187.png'
+  - '.context/reviews/evidence/T-5261/menu-no-extension@1440-judge-t-5261-r5-antigravity-29c163386c37.png'
+  - '.context/reviews/evidence/T-5261/menu-no-extension@1440-judge-t-5261-r5-claude-code-2ed02e0f75e8.png'
+  - '.context/reviews/evidence/T-5261/menu-no-extension@1440-judge-t-5261-r5-codex-6236b6ece187.png'
+  - '.context/reviews/evidence/T-5261/menu-no-extension@1920-judge-t-5261-r5-antigravity-29c163386c37.png'
+  - '.context/reviews/evidence/T-5261/menu-no-extension@1920-judge-t-5261-r5-claude-code-2ed02e0f75e8.png'
+  - '.context/reviews/evidence/T-5261/menu-no-extension@1920-judge-t-5261-r5-codex-6236b6ece187.png'
+  - '.context/reviews/evidence/T-5261/menu-ring20-open@1024-judge-t-5261-r5-antigravity-29c163386c37.png'
+  - '.context/reviews/evidence/T-5261/menu-ring20-open@1024-judge-t-5261-r5-claude-code-2ed02e0f75e8.png'
+  - '.context/reviews/evidence/T-5261/menu-ring20-open@1024-judge-t-5261-r5-codex-6236b6ece187.png'
+  - '.context/reviews/evidence/T-5261/menu-ring20-open@1440-judge-t-5261-r5-antigravity-29c163386c37.png'
+  - '.context/reviews/evidence/T-5261/menu-ring20-open@1440-judge-t-5261-r5-claude-code-2ed02e0f75e8.png'
+  - '.context/reviews/evidence/T-5261/menu-ring20-open@1440-judge-t-5261-r5-codex-6236b6ece187.png'
+  - '.context/reviews/evidence/T-5261/menu-ring20-open@1920-judge-t-5261-r5-antigravity-29c163386c37.png'
+  - '.context/reviews/evidence/T-5261/menu-ring20-open@1920-judge-t-5261-r5-claude-code-2ed02e0f75e8.png'
+  - '.context/reviews/evidence/T-5261/menu-ring20-open@1920-judge-t-5261-r5-codex-6236b6ece187.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.fabric/components/tests-web-test_t5261_project_nav.yaml'
+  - '.tasks/active/T-5261-project-menu-entries-new-watchtower-nav-.md'
+  - 'tests/fixtures/project_ext/README.md'
+  - 'tests/fixtures/project_ext/web_ext/nav.yaml'
+  - 'tests/fixtures/project_ext/web_ext/nav_append.yaml'
+  - 'tests/fixtures/project_ext/web_ext/nav_govern.yaml'
+  - 'tests/fixtures/project_ext/web_ext/nav_missing.yaml'
+  - 'tests/web/test_t5261_project_nav.py'
+  - 'web/app.py'
+  - 'web/project_extensions.py'
+  - 'web/shared.py'
+  - 'web/templates/base.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T00:51:17'
+    action: 'T-5261: project menu entries — nav extensions add a group or append items, merged at render time'
+  - time: '2026-11-20T01:06:05'
+    action: 'T-5261: reviewer verdict'
+  - time: '2026-11-20T01:07:55'
+    action: 'T-5261: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-20T01:11:19'
+    action: 'T-5261: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 521 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [extension-points]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 521
+  commits: 5
+  files_changed: 75
+  lines_added: 926
+  lines_removed: 31
+  footprint_refreshed_at: '2026-11-20T00:16:04Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5261-project-menu-entries-new-watchtower-nav-.md
+generated_by: context-agent-hybrid

@@ -9,12 +9,12 @@ description: >
   Point 2 (ring20 b5). A slot in an existing page (832 b3) is a follow-up. Depends
   on slice 0.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [extension-points]
-components: []
+components: [tests/web/test_t5261_project_nav.py, web/app.py, web/project_extensions.py, web/shared.py, web/templates/base.html]
 related_tasks: [T-4649]
 origin: {kind: "operator", source: "T-4649"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -44,8 +44,8 @@ origin: {kind: "operator", source: "T-4649"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T15:30:56Z
-last_update: '2026-11-19T23:22:40Z'
-date_finished:
+last_update: 2026-11-20T00:12:18Z
+date_finished: 2026-11-20T00:12:18Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -125,11 +125,12 @@ bvp_scores_proposed:
 - [x] Visual Verification: the menu with a fixture project group and appended items, at the three widths
 
 ### Human
-- [ ] [REVIEW] Project menu entries look like the framework's own
+- [x] [REVIEW] Project menu entries look like the framework's own
   **Steps:**
   1. Open the screenshots in .context/visual/T-5261/
   **Expected:** the project group and appended items use the same style as framework entries, and the menu still fits at 1024, 1440 and 1920 px
   **If not:** note the width and what breaks
+  **Reviewer verdict:** green V-20261120-67560666 — reviewer-judge-t-5261-r5-antigravity-29c163386c37:antigravity (rung rung-5-panel:antigravity), digest 3f7dbb48740b; dispatch judge-t-5261-r5-antigravity-29c163386c37; evidence: .context/reviews/evidence/T-5261/AC1-judge-t-5261-r5-antigravity-29c163386c37.md, .context/reviews/evidence/T-5261/01-docs-generated-judge-t-5261-r5-antigravity-29c163386c37.png, .context/reviews/evidence/T-5261/02-settings-judge-t-5261-r5-antigravity-29c163386c37.png, .context/reviews/evidence/T-5261/03-settings-models-judge-t-5261-r5-antigravity-29c163386c37.png, .context/reviews/evidence/T-5261/04-settings-appearance-judge-t-5261-r5-antigravity-29c163386c37.png, .context/reviews/evidence/T-5261/menu-ring20-open@1024-judge-t-5261-r5-antigravity-29c163386c37.png, .context/reviews/evidence/T-5261/menu-ring20-open@1440-judge-t-5261-r5-antigravity-29c163386c37.png, .context/reviews/evidence/T-5261/menu-ring20-open@1920-judge-t-5261-r5-antigravity-29c163386c37.png, .context/reviews/evidence/T-5261/menu-knowledge-open@1024-judge-t-5261-r5-antigravity-29c163386c37.png, .context/reviews/evidence/T-5261/menu-knowledge-open@1440-judge-t-5261-r5-antigravity-29c163386c37.png, .context/reviews/evidence/T-5261/menu-knowledge-open@1920-judge-t-5261-r5-antigravity-29c163386c37.png, .context/reviews/evidence/T-5261/menu-govern-open@1024-judge-t-5261-r5-antigravity-29c163386c37.png, .context/reviews/evidence/T-5261/menu-govern-open@1440-judge-t-5261-r5-antigravity-29c163386c37.png, .context/reviews/evidence/T-5261/menu-govern-open@1920-judge-t-5261-r5-antigravity-29c163386c37.png, .context/reviews/evidence/T-5261/menu-no-extension@1024-judge-t-5261-r5-antigravity-29c163386c37.png, .context/reviews/evidence/T-5261/menu-no-extension@1440-judge-t-5261-r5-antigravity-29c163386c37.png, .context/reviews/evidence/T-5261/menu-no-extension@1920-judge-t-5261-r5-antigravity-29c163386c37.png; ledger .context/reviews/verdicts.jsonl
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -444,3 +445,21 @@ bin/fw vendor self --check --task T-5261
 ### 2026-11-19T23:22:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-20T00:12:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d3370d9f
+- **Timestamp:** 2026-11-20T00:15:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Human)** — [REVIEW] Project menu entries look like the framework's own
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='appended' in Expected: the project group and appended items use the same style as framework entries, and the menu still fits at 1024, 1440 and 1920 px`
