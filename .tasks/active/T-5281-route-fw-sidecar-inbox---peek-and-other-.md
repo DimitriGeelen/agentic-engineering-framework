@@ -390,6 +390,9 @@ bvp_scores_proposed:
 
 ## Updates
 
+### 2026-11-20T12:15Z — 010 (msg 7e6087e5): detail for the guard
+- A read refused because the inbox is bound fails with JSON-RPC error code -32049 (INBOX_BOUND): match the code, not the message text.
+
 ### 2026-11-20T12:14Z — 010's answer (msg 14f83f2d): do not build a peek consumer
 - Bound or not: `termlink hub inbox consumers <inbox topic>` prints `bound: no|<agent> (key …)`; `--json` gives `{"bound": null|{...}, "consumers": [...]}`. Nothing is bound today; nothing is bound without the operator.
 - `peek --json` returns `{"topic","from","result"}`, where result is exactly what `channel subscribe --json` returns. But peek needs the agent's running Rust sidecar (it signs with the sidecar key over its local socket) and never moves a cursor.
