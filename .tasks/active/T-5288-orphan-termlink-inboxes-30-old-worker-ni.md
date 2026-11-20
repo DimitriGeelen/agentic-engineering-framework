@@ -291,6 +291,7 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -c "import json; d=json.load(open('.context/sidecar/orphan-acks.json')); assert len(d) >= 90, len(d)"
 
 ## RCA
 
