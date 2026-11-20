@@ -8,10 +8,10 @@ description: >
   senders the real address, and decide with the operator whether the old inboxes can
   be cleared (clearing deletes messages: operator call).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T05:58:48Z
-last_update: '2026-11-20T08:31:16Z'
+last_update: 2026-11-20T09:37:54Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,20 +88,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** `fw sidecar alerts` at session start 2026-11-20 listed about 30 "orphan inbox" lines (inbox:cacc73ea32b121dd/t3684d-*, t3693a-*, t3782a-*, termlink with 69 posts, and others): unread posts in inboxes no known agent reads. They bury real mail in the session-start check.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Most are inboxes of short-lived test or worker identities (T-3684, T-3693, T-3782 era) that were written to and then abandoned; some (e.g. `termlink`) may be a nickname a live sender uses instead of the real address, which would mean mail is being lost.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Know who writes to each orphan inbox; tell any live sender the real address; settle the dead ones with the existing non-destructive acknowledge (`fw sidecar orphan-inboxes --ack TOPIC`, T-5149), which deletes nothing.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** The session-start check shows only orphans that need action; every remaining one has a named sender and a reason.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Every orphan inbox is grouped by name pattern and last writer, and each writer is identified (project or test identity) in ## Decisions.
+- [ ] A live sender writing to a wrong address is told the real address over the sidecar.
+- [ ] Inboxes of dead test/worker identities are acknowledged with `fw sidecar orphan-inboxes --ack` (no message deleted); `fw sidecar alerts` no longer lists them.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -369,6 +370,12 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-11-20 — who wrote to the orphan inboxes, and what was done
+- **Found:** 99 orphan inboxes on hub cacc73ea32b121dd. 97 written with .107's shared TermLink key `d1993c2c3ec44c94` (~/.termlink/identity.key, used by any process here without its own key), so the writer key does not name the sender. By name: t3684b-* (47 inboxes, 159 posts), t3684d-* (39), t3782a-* (2), t3693a-* (1), e2e-* (1): AEF sidecar test identities (T-3684, T-3693, T-3782 era). `aef-greenfield-test` (28): written with OUR key bdd184bd89f318e4: old sends to the laptop agent at a wrong hub, before its address was corrected to aef925c6d2f4ac54/aef-greenfield-test. `termlink` (69), `claude-termlink` (9, key 84c04584abd5cf88), `claude-termlink-alt` (8, key 6738c073bbcc587a): likely 010's. `nachlauf-c2`, `smk-b`, `t2336-zwei-stellen`, `entlastung-e1b`: German names, likely 1409's. `proxmox-ring20-management` (14): someone on .107 addressed ring20 at this hub; ring20's real address is 22c19fedafd73da2/proxmox-ring20-management.
+- **Chose:** acknowledge (T-5149, deletes nothing) the 90 test inboxes and our own old `aef-greenfield-test`; ask 010, 1409 and ring20 about the rest (msgs 9c8fcc9e, 19b55f16, e30eb816).
+- **Why:** the test ones have no live sender; the others may be live senders using a wrong address, which only the sender can tell.
+- **Rejected:** reading the posts to find the sender: a key-less read shows as a second identity in 010's new reader tracking (T-5281 background); deleting anything: not needed, and deletes are the operator's.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -385,3 +392,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5288-orphan-termlink-inboxes-30-old-worker-ni.md
 - **Context:** Initial task creation
+
+### 2026-11-20T09:37:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
