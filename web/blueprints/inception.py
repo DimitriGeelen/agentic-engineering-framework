@@ -567,13 +567,24 @@ def resolve_assumption(assumption_id):
 from web.shared import operator_facing_stderr as _operator_facing_stderr
 
 
+def _review_cmd(task_id):
+    """Printed (copy-paste) form of `fw task review <id>` for this project (T-5305):
+    `cd <root> && bin/fw ...` in the framework repo, `.agentic-framework/bin/fw` vendored."""
+    import sys
+    _fwroot = str(FRAMEWORK_ROOT)
+    if _fwroot not in sys.path:
+        sys.path.insert(0, _fwroot)
+    from lib.fw_command import user_command
+    return user_command(f"task review {task_id}", str(PROJECT_ROOT))
+
+
 def _silent_refusal(task_id):
     # T-3539: the CLI exited non-zero having written NOTHING to either stream.
     return (
         "fw inception decide failed and produced NO output on either stream.\n"
         "That is a CLI-side failure, not a Watchtower one — the command died "
         "before it could report a reason, so there is nothing to show here.\n"
-        f"Reproduce on the host: bin/fw task review {task_id}"
+        f"Reproduce on the host: {_review_cmd(task_id)}"
     )
 
 
@@ -586,7 +597,7 @@ def _filtered_refusal(task_id):
         "fw inception decide refused with a message written for agents "
         "(bypass instructions only), so it is not shown here.\n"
         "The full reason is in the Watchtower server log, or reproduce on the "
-        f"host: bin/fw task review {task_id}"
+        f"host: {_review_cmd(task_id)}"
     )
 
 
@@ -812,7 +823,7 @@ def record_decision(task_id):
             # is indistinguishable from a message that simply stops making sense.
             reason += _html.escape(
                 f"\n\n… output truncated at 1500 chars. Full text: "
-                f"bin/fw task review {task_id}"
+                f"{_review_cmd(task_id)}"
             )
         return (
             f'<div class="go-decision" style="border:1px solid #ef4444; border-radius:6px; padding:0.6rem;">'

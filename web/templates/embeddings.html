@@ -127,7 +127,7 @@
     {% if not happiness.recent %}
         <p class="emb-unavailable">
             No ratings recorded yet. Rate a retrieval with
-            <code>bin/fw task update T-XXX --happiness +3 --happiness-reason "..."</code>
+            <code>{{ fw_cmd('task update T-XXX --happiness +3 --happiness-reason "..."') }}</code>
         </p>
     {% else %}
         <div class="emb-scroll">

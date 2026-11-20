@@ -119,7 +119,7 @@
 
         <div class="ghost-claim">
             Created the workflow? Bind its identity:
-            <code>cd {{ project_root | default('/opt/999-Agentic-Engineering-Framework') }} &amp;&amp; bin/fw bpmn claim {{ g.uuid }} &lt;project&gt;</code>
+            <code>{{ fw_cmd('bpmn claim ' ~ g.uuid ~ ' <project>') }}</code>
         </div>
         <div class="ghost-meta">first seen {{ g.first_seen_h }}</div>
     </article>

@@ -101,6 +101,16 @@ class Busy(Exception):
     """A decide chain for this task is already running."""
 
 
+
+def _printed_fw(project_root, args):
+    """Copy-paste fw command for this project (T-5305, lib/fw_command.py)."""
+    _fwroot = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    if _fwroot not in sys.path:
+        sys.path.insert(0, _fwroot)
+    from lib.fw_command import user_command
+    return user_command(args, str(project_root))
+
+
 @dataclass
 class Launch:
     proc: subprocess.Popen
@@ -286,7 +296,7 @@ def surface(project_root, task_id: str):
             parts = []
             if st.get("episodic_ok") is False:
                 parts.append(f"no episodic memory was generated — recover with: "
-                             f"bin/fw context generate-episodic {task_id}")
+                             f"{_printed_fw(project_root, 'context generate-episodic ' + task_id)}")
             if st.get("rc") != 0:
                 parts.append(f"the decide command exited with code {st.get('rc')} — "
                              f"check that the task is where you expect it")
