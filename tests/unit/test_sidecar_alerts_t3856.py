@@ -125,6 +125,9 @@ def test_cli_prints_not_checked_and_exits_3(proj, monkeypatch):
     def boom(**_):
         raise alerts.Unreadable("hub down")
     monkeypatch.setattr(alerts, "collect", boom)
+    # T-5281: the inbox-lock line is tested in test_t5281_inbox_bound_alarm.py.
+    monkeypatch.setattr(alerts, "inbox_lock",
+                        lambda: {"state": "unbound", "detail": "", "lines": []})
     buf = io.StringIO()
     with redirect_stdout(buf):
         rc = cli.cmd_alerts(SimpleNamespace(limit=10, json=False, mark_seen=False))
@@ -137,6 +140,9 @@ def test_cli_not_checked_still_reports_the_orphan_check(proj, monkeypatch):
     def boom(**_):
         raise alerts.Unreadable("hub down")
     monkeypatch.setattr(alerts, "collect", boom)
+    # T-5281: the inbox-lock line is tested in test_t5281_inbox_bound_alarm.py.
+    monkeypatch.setattr(alerts, "inbox_lock",
+                        lambda: {"state": "unbound", "detail": "", "lines": []})
     monkeypatch.setattr(cli.addressing, "orphan_inboxes", lambda **_: None)
     monkeypatch.setattr("shutil.which", lambda *_: "/usr/bin/termlink")
     buf = io.StringIO()

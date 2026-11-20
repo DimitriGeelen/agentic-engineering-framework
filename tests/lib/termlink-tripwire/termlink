@@ -31,6 +31,8 @@ esac
 case "$verb" in
     ""|discover|whoami|version|help|info|list) kind=probe ;;
 esac
+# T-5281: who read/bound an inbox — a read-only question to the hub.
+if [ "$verb $sub ${words[2]:-}" = "hub inbox consumers" ]; then kind=probe; fi
 
 printf '%s %s\n' "$kind" "$*" >> "$log"
 # T-5014: `main am-i` is a read-only question (is this session the project's main?).

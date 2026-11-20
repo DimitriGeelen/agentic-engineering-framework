@@ -443,14 +443,19 @@ def cmd_alerts(args) -> int:
     from lib.sidecar import alerts
     import shutil
     orphans = addressing.orphan_inboxes() if shutil.which("termlink") else []
+    lock = alerts.inbox_lock()  # T-5281: a bind cuts our unsigned reads off
+    lock_json = {"state": lock["state"], "detail": lock["detail"]}
     try:
         rows = alerts.collect(limit=args.limit)
     except Exception as e:
         reason = str(e) or type(e).__name__
         if args.json:
-            print(json.dumps({"checked": False, "reason": reason, "orphan_inboxes": orphans}))
+            print(json.dumps({"checked": False, "reason": reason, "orphan_inboxes": orphans,
+                              "inbox_lock": lock_json}))
         else:
             print(f"NOT CHECKED: {reason}")
+            for line in lock["lines"]:
+                print(line)
             for line in _orphan_lines(orphans):
                 print(line)
         return 3
@@ -458,7 +463,8 @@ def cmd_alerts(args) -> int:
     if args.json:
         print(json.dumps({"checked": True, "mail": [
             {k: v for k, v in r.items() if not k.startswith("_")} for r in rows],
-            "orphan_inboxes": orphans, "host_shared": shared}, indent=2))
+            "orphan_inboxes": orphans, "host_shared": shared,
+            "inbox_lock": lock_json}, indent=2))
     elif not rows:
         for line in shared:
             print(line)
@@ -485,6 +491,8 @@ def cmd_alerts(args) -> int:
         print(f"  dm mail stays listed until this project posts on that rail; if it was "
               f"answered another way, add '<topic> <offset>' to {dm.HANDLED_FILE}")
     if not args.json:
+        for line in lock["lines"]:
+            print(line)
         for line in _orphan_lines(orphans):
             print(line)
         for line in _issue_reply_lines():

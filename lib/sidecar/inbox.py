@@ -306,6 +306,86 @@ del _kept
 #: termlink's refusal for a topic that has never been created: no mail yet.
 _NO_TOPIC = ("unknown topic", "no such topic", "topic not found")
 
+#: T-5281: the hub's JSON-RPC code for a read refused because the inbox is bound
+#: to its agent's key (010-termlink, INBOX_BOUND). Matched on the code, never on
+#: the message text. termlink prints it as "JSON-RPC error -32049: ..." on stderr.
+_INBOX_BOUND = re.compile(r"(?<![\d-])-32049(?!\d)")
+
+#: Seconds `termlink hub inbox consumers` may take (T-5281). Short: it is one
+#: extra call on the session-start check and on doctor, and must stay cheap.
+CONSUMERS_TIMEOUT = 5
+
+
+def _bound_holder(bound) -> str:
+    """Name who an inbox is bound to, from the `bound` object of `hub inbox
+    consumers --json`. The object's field names are 010's; read the likely ones
+    and fall back to the raw value rather than guess."""
+    if isinstance(bound, dict):
+        agent = next((str(bound[k]) for k in ("agent", "agent_name", "name", "agent_id")
+                      if bound.get(k)), "")
+        key = next((str(bound[k]) for k in ("key", "key_fp", "fingerprint", "card_key", "pubkey")
+                    if bound.get(k)), "")
+        if agent and key:
+            return f"{agent} (key {key[:16]})"
+        if agent or key:
+            return agent or f"key {key[:16]}"
+        return json.dumps(bound, sort_keys=True)[:120]
+    return str(bound)[:120]
+
+
+def inbox_bound(topic: str, *, binary: str | None = None,
+                timeout: float | None = None) -> tuple[str, str]:
+    """Is `topic` bound to an agent's key? (T-5281)
+
+    Returns (state, detail), state one of "unbound", "bound", "unknown":
+    "bound" names the holder in detail; "unknown" says why the hub could not be
+    asked. One subprocess, no shell, bounded by CONSUMERS_TIMEOUT.
+    """
+    binary = binary or _binary()
+    if not (shutil.which(binary) or binary.startswith("/")):
+        return "unknown", f"termlink binary not found ({binary})"
+    argv = [binary, "hub", "inbox", "consumers", topic, "--json"]
+    try:
+        proc = subprocess.run(argv, capture_output=True, text=True,
+                              timeout=CONSUMERS_TIMEOUT if timeout is None else timeout)
+    except subprocess.TimeoutExpired:
+        return "unknown", f"termlink hub inbox consumers timed out on {topic}"
+    except (OSError, subprocess.SubprocessError) as e:
+        return "unknown", f"termlink hub inbox consumers: {type(e).__name__}: {e}"
+    if proc.returncode != 0:
+        err = (proc.stderr or proc.stdout or "").strip().splitlines()
+        return "unknown", (f"termlink hub inbox consumers rc={proc.returncode} "
+                           f"{err[-1] if err else ''}").strip()
+    try:
+        data = json.loads(proc.stdout or "")
+    except json.JSONDecodeError:
+        return "unknown", "termlink hub inbox consumers: output is not JSON"
+    if not isinstance(data, dict) or "bound" not in data:
+        return "unknown", "termlink hub inbox consumers: no 'bound' field (older termlink?)"
+    if data["bound"] is None:
+        return "unbound", topic
+    return "bound", _bound_holder(data["bound"])
+
+
+def own_inbox_bound(**kw) -> tuple[str, str]:
+    """`inbox_bound` for our own inbox topic (T-5281). Never raises."""
+    try:
+        topic = inbox_topic()
+    except Exception as e:  # noqa: BLE001 — a circuit error is "could not ask"
+        return "unknown", f"own inbox topic: {type(e).__name__}: {e}"
+    return inbox_bound(topic, **kw)
+
+
+def _locked_reason(topic: str, binary: str | None) -> str:
+    """The ReadFailed reason for a -32049 refusal (T-5281)."""
+    who = ""
+    if topic.startswith("inbox:"):
+        state, detail = inbox_bound(topic, binary=binary)
+        if state == "bound":
+            who = f" to {detail}"
+    return (f"reading {topic}: inbox locked (bound{who}): AEF's reads are unsigned, "
+            f"so the hub refuses them (INBOX_BOUND -32049) — see T-5281")
+
 
 #: Seconds one `channel subscribe` may take. SIDECAR_READ_TIMEOUT overrides it
 #: (a loaded hub, or a test that must not wait 15 s per topic).
@@ -339,6 +419,8 @@ def default_reader(topic: str, cursor: int, limit: int = DEFAULT_LIMIT,
         return ReadFailed(f"reading {topic}: {type(e).__name__}: {e}")
     if proc.returncode != 0:
         err = (proc.stderr or proc.stdout or "").strip().splitlines()
+        if any(_INBOX_BOUND.search(l) for l in err):
+            return ReadFailed(_locked_reason(topic, binary))
         if any(s in l.lower() for l in err for s in _NO_TOPIC):
             return []
         return ReadFailed(f"reading {topic}: rc={proc.returncode} "
