@@ -99,9 +99,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Spec: the v0.3.4 T2 note states the launch-failure path (T3, outcome `failed`, launch-error evidence; T3w stays dispatched-only), cited to ring20 msg 4c9335d8.
-- [ ] lib/dispatch_records.py: OUTCOMES gains `withdrawn`; `Store.withdraw(dispatch_id, attempt, *, reason, actor, nonce, credential)` implements T3w: only from `dispatched` with the current attempt and matching supervisor_gen; running → cas_mismatch; done/lost/unknown → forbidden_transition; an identical repeat deduped; a different-reason withdrawal of a withdrawn attempt → forbidden_transition; a late real completion → done_conflict; evidence_digest = sha256(reason), result_kind none; history entry with actor and reason; no notice.
-- [ ] Tests CC-26..CC-29 plus the two v0.3.4 cases above pass; existing dispatch_records tests stay green.
+- [x] Spec: the v0.3.4 T2 note states the launch-failure path (T3, outcome `failed`, launch-error evidence; T3w stays dispatched-only), cited to ring20 msg 4c9335d8.
+- [x] lib/dispatch_records.py: OUTCOMES gains `withdrawn`; `Store.withdraw(dispatch_id, attempt, *, reason, actor, nonce, credential)` implements T3w: only from `dispatched` with the current attempt and matching supervisor_gen; running → cas_mismatch; done/lost/unknown → forbidden_transition; an identical repeat deduped; a different-reason withdrawal of a withdrawn attempt → forbidden_transition; a late real completion → done_conflict; evidence_digest = sha256(reason), result_kind none; history entry with actor and reason; no notice.
+- [x] Tests CC-26..CC-29 plus the two v0.3.4 cases above pass; existing dispatch_records tests stay green. (aab7522cb, e3dad4b6e: 18 new tests incl. a 20-round threaded T2-vs-withdraw race; 28 with t4802. Not done here: CC-26..CC-29 are not yet in tests/conformance/worker-contract/vectors.yaml, whose checker lists CC-01..CC-25; follow-up filed.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
