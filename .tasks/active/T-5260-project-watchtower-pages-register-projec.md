@@ -131,10 +131,10 @@ bvp_scores_proposed:
 - [x] Visual Verification: a fixture project page at the three widths (`fw ux shots`)
 
 ### Human
-- [ ] [REVIEW] A project page sits in Watchtower like a framework page
+- [ ] [REVIEW] Framework pages are unchanged by the project-page loader
   **Steps:**
-  1. Open the fixture project page http://127.0.0.1:3977/hosts (a second Watchtower serving the test project tests/fixtures/project_ext; screenshots at three widths in .context/visual/T-5260/)
-  **Expected:** the project page uses the normal Watchtower header, menu and footer, and its own content renders without layout breaks at 1024, 1440 and 1920 px
+  1. Open http://192.168.10.107:3000/ and http://192.168.10.107:3000/cron (this project registers no project pages, so only the loader itself is in play)
+  **Expected:** both pages render as before: normal header, menu and footer, no extra or missing menu items, no layout breaks at 1024, 1440 and 1920 px. (How a project page itself looks inside Watchtower was judged green under T-5261, verdict V-20261120-67560666, on the fixture page http://127.0.0.1:3977/hosts; the review tooling only captures this project's own Watchtower, which has no project page registered.)
   **If not:** note the width and what breaks
 
 ### Human
@@ -332,6 +332,8 @@ bin/fw vendor self --check --task T-5260
 
 | state | control | 1024 | 1440 | 1920 | note |
 |-------|---------|------|------|------|------|
+| home-header | header and menu of http://192.168.10.107:3000/ (no project pages registered here) | ok | ok | ok | cropped to the nav and status strip (the page is ~65,000 px tall); menu Work, Knowledge, Architecture, Govern, Docs unchanged; steps file .context/visual/T-5260/home-header.steps.yaml |
+| cron-header | header and menu of http://192.168.10.107:3000/cron | ok | ok | ok | cropped the same way; identical header |
 | project-page | fixture project page /hosts (header, menu, status strip, table, footer) | ok | ok | ok | Fixture, not the real Watchtower: tests/fixtures/project_ext copied to /tmp/t5260-fixture with a register naming web_ext/hosts.py, served by a second Watchtower on 127.0.0.1:3977 (PROJECT_ROOT=/tmp/t5260-fixture); the real register was never written. At 1024 the theme toggle wraps to a second header row; that is the framework header at that width, not the project page (same on /cron of the real Watchtower, see T-5261 state menu-no-extension). |
 
 ## RCA
