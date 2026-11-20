@@ -2,6 +2,8 @@
  "inbox:cacc73ea32b121dd/aef-greenfield-test": 27,
  "inbox:cacc73ea32b121dd/agentic-engineering-framework": 0,
  "inbox:cacc73ea32b121dd/claude-shared-toolkit": 11,
+ "inbox:cacc73ea32b121dd/claude-termlink": 8,
+ "inbox:cacc73ea32b121dd/claude-termlink-alt": 7,
  "inbox:cacc73ea32b121dd/e2e-1fc080c8-sender": 7,
  "inbox:cacc73ea32b121dd/ring20-dashboard": 0,
  "inbox:cacc73ea32b121dd/t3684b-0gl096": 3,
@@ -92,5 +94,6 @@
  "inbox:cacc73ea32b121dd/t3684d-zkuc8n": 0,
  "inbox:cacc73ea32b121dd/t3693a-7gybgt": 0,
  "inbox:cacc73ea32b121dd/t3782a-0ndtp4": 0,
- "inbox:cacc73ea32b121dd/t3782a-99x8ur": 0
+ "inbox:cacc73ea32b121dd/t3782a-99x8ur": 0,
+ "inbox:cacc73ea32b121dd/termlink": 68
 }
