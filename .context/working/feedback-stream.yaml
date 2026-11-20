@@ -57369,3 +57369,56 @@ scan_id: R-003a9d6d
 task_id: T-5287
 payload:
   task_file: .tasks/active/T-5287-temp-names-keyed-on-the-process-id-alone.md
+---
+kind: scan_emitted
+timestamp: '2026-11-20T06:22:02Z'
+scan_id: R-10f0b621
+task_id: T-3046
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-20T06:22:02Z'
+scan_id: R-10f0b621
+task_id: T-3046
+payload:
+  task_file: .tasks/active/T-3046-message-triage-slice-1--static-msgtype-r.md
+---
+kind: override_expired
+timestamp: '2026-11-20T06:22:02Z'
+scan_id: R-10f0b621
+task_id: T-3046
+payload:
+  id: OV-d067b2d0
+  pattern_id: human-ac-mechanical-signal
+  expired_at: '2026-11-14T19:59:19Z'
+---
+kind: scan_emitted
+timestamp: '2026-11-20T08:38:39Z'
+scan_id: R-e6ab59ee
+task_id: T-5290
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-20T08:38:39Z'
+scan_id: R-e6ab59ee
+task_id: T-5290
+payload:
+  task_file: .tasks/active/T-5290-structured-reviewer-verdicts-should-ever.md
+---
+kind: recommendation_claims_verdict
+timestamp: '2026-11-20T08:38:39Z'
+scan_id: RC-57856b29
+task_id: T-5290
+payload:
+  overall: CONFIRMED
+  claim_count: 3
