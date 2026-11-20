@@ -13,12 +13,12 @@ description: >
   (W1-W6, ring20's three changes). Then send to 010-termlink and proxmox-ring20-management.
   Do after T-5319 (same files).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/conformance/worker-contract/README.md, tests/conformance/worker-contract/check_mapping.py, tests/conformance/worker-contract/check_vectors.py, tests/conformance/worker-contract/run_local.py, tests/conformance/worker-contract/vectors.yaml, tests/unit/test_worker_contract_mapping.py, tests/unit/test_worker_contract_vectors.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -47,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T19:53:27Z
-last_update: 2026-11-20T20:45:31Z
-date_finished:
+last_update: 2026-11-20T21:18:47Z
+date_finished: 2026-11-20T21:18:47Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -398,3 +398,21 @@ bash -c 'for c in CC-15a CC-15b CC-19a CC-19b CC-30 CC-31 CC-32 CC-33 CC-34 CC-3
 
 ### 2026-11-20T20:45:31Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-20T21:18:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-67d098ca
+- **Timestamp:** 2026-11-20T21:19:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — tests/conformance/worker-contract/vectors.yaml has the same cases; check_vectors.py and check_mapping.py pass; run_local.py shows no failure (closure-supported cases n/a for AEF)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/conformance/worker-contract/vectors.yaml in: tests/conformance/worker-contract/vectors.yaml has the same cases; check_vectors.py and check_mapping.py pass; run_local.py shows no failure (closure-`

@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5320: wc v0.3.4 item 2: write TermLink's amendments A1-A6 and vectors CC-30..CC-43 (CC-15a/b, CC-19a/b) into the spec and the shared vectors (T-5318)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-20T21:19:45Z
+# ============================================================================
+
+task_id: T-5320
+task_name: "wc v0.3.4 item 2: write TermLink's amendments A1-A6 and vectors CC-30..CC-43 (CC-15a/b, CC-19a/b) into the spec and the shared vectors (T-5318)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-20T19:53:27Z
+completed: 2026-11-20T21:18:47Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-20T20:53:28+01:00
+last_commit: 2026-11-20T22:18:42+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed (T-5318 GO). scope, criteria, verification. wc v0.3.4 item 2 amended by A1-A6 — spec text and closure vectors CC-15a/b, CC-19a/b, CC-30..CC-43. unit pins follow the 47 v0.3.4 cases. criteria ticked
+
+# Key outcomes
+outcomes:
+  - 'Spec changelog item 2 rewritten as amended by A1-A6 (each amendment cited), and the body sections it touches (§2 record schema incl. `closure` declaration and dispatch-level close record, §3.3 close transaction and `fence_reject(dispatch_closed)`, §4.7, §8.4, CC-15, CC-19) carry the same rules'
+  - '§9 has CC-15a, CC-15b, CC-19a, CC-19b and CC-30..CC-43, each with setup, steps and expected result, grouped as TermLink named them'
+  - 'tests/conformance/worker-contract/vectors.yaml has the same cases; check_vectors.py and check_mapping.py pass; run_local.py shows no failure (closure-supported cases n/a for AEF)'
+  - 'Text sent to 010-termlink and proxmox-ring20-management for their check'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5320-wc-v034-item-2-write-termlinks-amendment.md'
+  - 'docs/specs/shared-worker-contract-transitions.md'
+  - 'tests/conformance/worker-contract/README.md'
+  - 'tests/conformance/worker-contract/check_mapping.py'
+  - 'tests/conformance/worker-contract/check_vectors.py'
+  - 'tests/conformance/worker-contract/run_local.py'
+  - 'tests/conformance/worker-contract/vectors.yaml'
+  - 'tests/unit/test_worker_contract_mapping.py'
+  - 'tests/unit/test_worker_contract_vectors.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T20:53:28'
+    action: 'T-5320: filed (T-5318 GO)'
+  - time: '2026-11-20T21:46:06'
+    action: 'T-5320: scope, criteria, verification'
+  - time: '2026-11-20T21:58:15'
+    action: 'T-5320: wc v0.3.4 item 2 amended by A1-A6 — spec text and closure vectors CC-15a/b, CC-19a/b, CC-30..CC-43'
+  - time: '2026-11-20T22:02:27'
+    action: 'T-5320: unit pins follow the 47 v0.3.4 cases'
+  - time: '2026-11-20T22:18:42'
+    action: 'T-5320: criteria ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 85 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 85
+  commits: 6
+  files_changed: 12
+  lines_added: 1437
+  lines_removed: 85
+  footprint_refreshed_at: '2026-11-20T21:20:37Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5320-wc-v034-item-2-write-termlinks-amendment.md
+generated_by: context-agent-hybrid
