@@ -103,9 +103,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The orphan check consults `termlink hub inbox consumers <topic> --json` (one call per candidate, bounded timeout) and drops a candidate that has a named or proven reader.
-- [ ] An unnamed `claimed` reader alone does not clear the orphan state; a failed consumers call keeps today's behaviour and says the check was partial.
-- [ ] Tests with a fake termlink: proven reader → not orphan; named claimed reader → not orphan; only unnamed claimed → orphan; consumers call fails → orphan, marked partial.
+- [x] The orphan check consults `termlink hub inbox consumers <topic> --json` (one call per candidate, bounded timeout) and drops a candidate that has a named or proven reader.
+- [x] An unnamed `claimed` reader alone does not clear the orphan state; a failed consumers call keeps today's behaviour and says the check was partial.
+- [x] Tests with a fake termlink: proven reader → not orphan; named claimed reader → not orphan; only unnamed claimed → orphan; consumers call fails → orphan, marked partial. (73376f61d, f3af89f4b; 4 new + 56 existing pass. Live: claude-termlink(-alt) no longer reported; `termlink` still reported, correctly: its only reader is unnamed/claimed and 010 is moving its last sender.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
