@@ -4,10 +4,10 @@ name: "wc v0.3.4 adoption note: ring20's fifth change (end a never-launched atte
 description: >
   wc v0.3.4 adoption note: ring20's fifth change (end a never-launched attempt before close)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T21:21:20Z
-last_update: 2026-11-20T21:21:20Z
-date_finished: null
+last_update: 2026-11-20T21:23:40Z
+date_finished: 2026-11-20T21:23:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -356,3 +356,16 @@ out=$(python3 tests/conformance/worker-contract/check_vectors.py 2>&1); grep -q 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5322-wc-v034-adoption-note-ring20s-fifth-chan.md
 - **Context:** Initial task creation
+
+### 2026-11-20T21:23:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-127c4842
+- **Timestamp:** 2026-11-20T21:23:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

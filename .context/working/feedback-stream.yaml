@@ -57958,3 +57958,21 @@ scan_id: R-67d098ca
 task_id: T-5320
 payload:
   task_file: .tasks/active/T-5320-wc-v034-item-2-write-termlinks-amendment.md
+---
+kind: scan_emitted
+timestamp: '2026-11-20T21:23:55Z'
+scan_id: R-127c4842
+task_id: T-5322
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-20T21:23:55Z'
+scan_id: R-127c4842
+task_id: T-5322
+payload:
+  task_file: .tasks/active/T-5322-wc-v034-adoption-note-ring20s-fifth-chan.md
