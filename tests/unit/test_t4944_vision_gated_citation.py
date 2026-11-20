@@ -43,7 +43,8 @@ def test_vision_must_be_boolean(tmp_path):
 
 def test_committed_registry_declares_the_probed_kinds():
     got = rc.worker_vision(REG)
-    assert got["codex"] is True and got["opencode"] is False
+    # T-5289 / G-136: codex is set false until a review run shows it viewing the images.
+    assert got["codex"] is False and got["opencode"] is False and got["claude"] is True
 
 
 def test_absent_vision_is_unknown_not_false(tmp_path):

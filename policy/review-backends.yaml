@@ -86,7 +86,12 @@ backends:
     description: "Codex review via subscription account (ChatGPT login, ~/.codex/auth.json)"
     worker_kind: codex
     vendor: openai
-    vision: true   # T-4944 probe: answered from the image via view_image (docs/reports/T-4944-harness-seat-vision.md)
+    # T-5289 / G-136 (operator 2026-11-20, "go record it"): false until a review run is shown to
+    # view the images. The T-4944 probe showed codex CAN answer from an image via view_image, but
+    # in real judge runs (T-5226, T-5236, T-5260, T-5261, T-5262) it never called view_image and
+    # still voted on screenshot criteria ("Opened all 11 screenshots"). Not seated on render
+    # criteria until the T-5290 checker proves a seat viewed the evidence.
+    vision: false
     credential:
       source: cli-login
       note: "codex login with the ChatGPT account (~/.codex/auth.json) — the CLI authenticates itself"

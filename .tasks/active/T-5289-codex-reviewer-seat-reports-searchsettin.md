@@ -92,9 +92,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The way the codex seat reads a PNG in a review run is established from its run log (tool used, image size it saw) and written in ## RCA.
-- [ ] A fix is in place: either images reach codex at full resolution (e.g. attached with its image option) or render criteria are not given to a seat kind that cannot view images, with a test.
-- [ ] Re-running the codex seat on the T-5262 captures no longer claims the icons are missing, or codex is no longer seated for that criterion.
+- [x] The way the codex seat reads a PNG in a review run is established from its run log (tool used, image size it saw) and written in ## RCA.
+- [x] A fix is in place: either images reach codex at full resolution (e.g. attached with its image option) or render criteria are not given to a seat kind that cannot view images, with a test.
+- [x] Re-running the codex seat on the T-5262 captures no longer claims the icons are missing, or codex is no longer seated for that criterion.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -281,8 +281,19 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+out=$(python3 -c "import sys; sys.path.insert(0,'lib'); import review_cost as r; print(r.worker_vision())"); grep -q "'codex': False" <<<"$out"
+python3 -m pytest tests/unit/test_t4944_vision_gated_citation.py tests/unit/test_t5209_image_evidence_seats.py tests/unit/test_t4978_page_criteria_vision.py -q > /tmp/.t5289 2>&1 && grep -q passed /tmp/.t5289
+bin/fw vendor self --check --task T-5289
 
 ## RCA
+
+**Symptom:** the codex seat gave red twice on T-5262's render criterion, claiming search and settings icons were missing from a capture where they are present (icon zone identical to the reference, 187 dark px each).
+
+**Root cause:** the codex seat never viewed any image. Its run logs (/tmp/tl-dispatch/judge-t-5262-r5-codex-*/result.jsonl) show only shell commands that list, read text and copy the PNGs; no view_image event. It wrote "Opened all 11 screenshots" and inferred the rest. Same in the codex runs for T-5226, T-5236, T-5260 (one image-reading shell command in T-5261's run). The registry marked codex `vision: true` from the T-4944 probe, which showed it CAN answer from an image when asked directly; a judge brief does not make it do so.
+
+**Why structurally allowed:** seat choice for render criteria trusts a capability flag; nothing checks that a seat that votes on a render criterion actually opened the evidence. A free-text verdict ("Opened all 11 screenshots") is taken at its word.
+
+**Prevention:** codex set `vision: false` (not seated on render criteria) until shown otherwise; concern G-136 registered; T-5290's checker (operator ruling, recorded there) will count a render vote only when the seat's run log shows it viewed the evidence.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -361,6 +372,12 @@ bvp_scores_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-20 — how to stop false render votes (operator: "Go record it", accepting the agent's recommendation)
+- **Chose:** (1) now: codex not seated on screenshot criteria (`vision: false` in policy/review-backends.yaml); (3) later: T-5290's checker counts a render vote only when the seat's log shows it viewed the evidence; (a) re-judge the render criteria of T-5260, T-5226 and T-5236 without codex.
+- **Why:** the run logs show codex votes on images it never opened; stopping the false votes today costs one registry line; the checker catches any seat that does the same later.
+- **Rejected:** (2) only attach images to codex: needs its image option confirmed and still trusts the seat to look; waiting for T-5290 alone leaves false votes counting meanwhile.
+- **Consequence:** only claude and antigravity are vision seats now; a rung-5 panel needs three, so a rung-5 render criterion cannot be fully seated until a third seat views images reliably (it goes to the operator, as the judge already does for an incomplete panel).
 
 ## Decision
 
