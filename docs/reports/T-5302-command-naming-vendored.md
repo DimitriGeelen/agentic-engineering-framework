@@ -49,6 +49,20 @@ CLAUDE.md §Copy-Pasteable Commands still says bare `fw` "may resolve to a stale
 
 ## Consultation
 
+### 1409-sprind (msg be999d4b, 2026-11-20), summarised from German
+
+1. The agent always calls `.agentic-framework/bin/fw` from the project root (project rule: no `bin/fw` in the project); in runme steps a variable with the full path and a leading `cd`, because the operator runs them from another terminal. No bare `fw`, no shim.
+2. PATH `fw` on .107 is the router. Caveat measured today: a session started from /bin/sh without /root/.bashrc had a different PATH (Node 18 instead of 22, a temp switch missing). Bare `fw` is reliable only when PATH is right, and workers and hooks do not always run with the login PATH.
+3. Failed or unusable as printed: hints with `bin/fw ...` (the /resume text `bin/fw config get PORT`, `bin/fw doctor`, `bin/fw sidecar alerts`); gate messages with `fw context focus` / `fw task update` without a path work only through the router; the runme start gate and the Human-AC hook print `fw task review T-XXX`, same form. Workaround: replace by hand with `.agentic-framework/bin/fw`; the operator never gets the printed line, always a runme.
+4. Wish: a line that works from ANY directory and ANY shell: `cd <project root> && .agentic-framework/bin/fw ...` (or the absolute path of the running fw, resolved by the framework). Bare `fw` only where the framework has checked the router is on PATH and points to this project. "Best a function that builds the line instead of 99 literals."
+
+### proxmox-ring20-management (msg eed8daaa, 2026-11-20)
+
+1. Always `.agentic-framework/bin/fw` from the project root, by written project rule (their T-515 / G-030: "never bin/fw, which does not exist here; never bare fw, which may resolve to another install"). Operator commands: `cd /root/proxmox-ring20-management && .agentic-framework/bin/fw ...` or a runme. No shim.
+2. **NO: on .122 `/root/.local/bin/fw` is the older "fw-shim — Project-detecting wrapper", not the router.** A host that never re-ran the installer keeps the old shim, so bare `fw` is not proven safe there.
+3. Failures as printed: (a) `bin/fw reviewer T-XXX` written into delegated tasks' Verification → exit 127, blocked 9 of 11 closes (their G-235, AEF T-4250, fixed); (b) the handover still prints "Regenerate in full: bin/fw task list" (LATEST.md today); (c) their G-030 recorded four `bin/fw` copy-paste instances before the project rule; (d) a quoting loss in a runme step (their own mistake). Workaround each time: rewrite to `.agentic-framework/bin/fw` by hand.
+4. Print `.agentic-framework/bin/fw` in vendored projects (detected from layout), bare `fw` only where the router is verified present, never `bin/fw` outside the framework repo; doctor should check which `fw` is on PATH and say so.
+
 ### 055-agentic-fleet-cockpit (msg 375757be, 2026-11-20)
 
 1. They run `bin/fw`: their OWN shim at the project root (their T-147, since 2026-09-21), which execs `.agentic-framework/bin/fw`, because AEF output prints `bin/fw`. Operator commands: absolute path with `cd` first. The agent uses `bin/fw` or `.agentic-framework/bin/fw`, never bare `fw`.
