@@ -21,7 +21,7 @@ description: >
   plus a cmdline marker) when writing every pid file, and refuse any kill whose target
   no longer matches; one shared helper for shell and Python.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -56,7 +56,7 @@ origin: {kind: "peer", source: "0506-Voxtype-extention", ref: "b6b05a93"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T15:40:14Z
-last_update: '2026-11-19T15:45:53Z'
+last_update: 2026-11-20T09:14:00Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -102,20 +102,23 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 0506-Voxtype-extention reported SIGTERMs to long-lived processes during audit/doctor runs (msg b6b05a93, 2026-11-19). Their kills turned out to have another cause (T-5268), but checking it showed that every pid-file kill in AEF trusts the pid after a liveness check only. Registered as G-135 (medium).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Kill sites: lib/sidecar_cli.py ~945 and ~998 (receiver stop / stale-code restart), lib/sidecar/watcher.py ~922 (orphan watcher) and ~1060 (stop_processes), bin/watchtower.sh do_stop ~184-197 (SIGTERM plus `pkill -P` of the pid's children, then SIGKILL) and ~473/~520. Each reads a pid file, checks the number is alive (lib/sidecar/lifecycle.py pid_alive, lib/pid-alive.sh fw_pid_alive) and signals it. After a reboot or pid wrap the number can belong to an unrelated process, which then gets killed, with its children in Watchtower's case. Reached every minute (sidecar-ensure cron), every 5 minutes (watchtower-ensure cron) and at session start.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A pid-file kill signals only the process that wrote the pid file.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Every pid file is written with the process's identity (start time from /proc/<pid>/stat field 22, plus a short cmdline marker); every kill site checks the identity first and refuses, with a logged reason, when it no longer matches; one shared rule for shell and Python; legacy pid files without identity are handled conservatively (cmdline marker check, never a blind kill).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] One shared identity helper (Python module plus a shell function that calls or mirrors it, with a parity test) records `pid`, `start_ticks` and `cmd_marker` and answers "is this pid still that process".
+- [ ] Every pid file written by the sidecar receiver, supervisor, watcher and Watchtower carries the identity, in a way old readers still parse (or all readers updated in the same change).
+- [ ] Every kill site listed in the Problem part checks identity before signalling, including Watchtower's child kill (`pkill -P`), and refuses with a logged reason on mismatch; a legacy pid file without identity is killed only when the process's cmdline matches the expected marker.
+- [ ] Tests: a reused pid (a live unrelated process whose pid is written into the pid file) is NOT signalled at each kill site; the real process is still stopped; legacy pid file with matching and non-matching cmdline.
+- [ ] Existing sidecar and Watchtower lifecycle tests stay green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -301,6 +304,11 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5267_pid_identity.py -q > /tmp/.t5267a 2>&1 && grep -q passed /tmp/.t5267a
+python3 -m pytest tests/unit/test_t4216_pid_alive_eperm.py tests/unit/test_t4292_receiver_stop_same_process.py tests/unit/test_t4315_sidecar_stop_attribution.py -q > /tmp/.t5267b 2>&1 && grep -q passed /tmp/.t5267b
+timeout 600 bats tests/unit/t4306_watchtower_zombie_pid.bats tests/unit/t5078_pid_alive_reap_race.bats > /tmp/.t5267c 2>&1 && ! grep -q "^not ok" /tmp/.t5267c
+bin/fw vendor self --check --task T-5267
+bin/fw watchtower current
 
 ## RCA
 
@@ -398,3 +406,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5267-pid-file-kills-without-an-identity-check.md
 - **Context:** Initial task creation
+
+### 2026-11-20T09:14:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
