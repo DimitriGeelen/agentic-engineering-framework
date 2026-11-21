@@ -105,9 +105,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw designer sync --from-tag designer-v0.46.0` verifies the artifact (sha256 7f5f41f5…, 1439884 bytes) against 832's MANIFEST at the tag and against the pin, and installs it. Validator and kit are verified the same way.
-- [ ] `policy/designer-pin.yaml` pins 0.46.0. `fw designer status` reports the pin valid. `/designer/app` serves APP_VERSION 0.46.0 after a Watchtower restart, the designer tests pass, and the vendored copy is synced.
-- [ ] 832 is told the result on its thread (conversation 832-designer-release-0.46.0)
+- [x] `fw designer sync --from-tag designer-v0.46.0` verifies the artifact (sha256 7f5f41f5…, 1439884 bytes) against 832's MANIFEST at the tag and against the pin, and installs it. Validator and kit are verified the same way.
+- [x] `policy/designer-pin.yaml` pins 0.46.0. `fw designer status` reports the pin valid. `/designer/app` serves APP_VERSION 0.46.0 after a Watchtower restart, the designer tests pass, and the vendored copy is synced.
+- [x] 832 is told the result on its thread (conversation 832-designer-release-0.46.0)
 
 ### Human
 - [ ] [REVIEW] Designer 0.46.0 shows both fixes we asked for (T-1471, T-1472)
