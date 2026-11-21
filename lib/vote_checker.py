@@ -234,7 +234,8 @@ def write_crop(data: bytes, region: tuple[int, int, int, int], image_name: str, 
 
 def check_image(evidence: str, location: str, root: Path, revision: str, *, task: str,
                 extra_roots: list[Path] | None = None, views: dict | None = None,
-                views_known: bool = False, write_crops: bool = True) -> dict:
+                views_known: bool = False, write_crops: bool = True,
+                cited: list[str] | None = None) -> dict:
     """An `image:` Evidence paired with its Location: image exists; region inside it (and crop
     written) or selector named; location names the same image and region; seat viewed it."""
     em = _IMG_EVIDENCE_RE.match(evidence.strip())
@@ -272,7 +273,7 @@ def check_image(evidence: str, location: str, root: Path, revision: str, *, task
         res["selector"] = sm.group(1).strip()
         res["selector_named"] = bool(res["selector"])
     sha = hashlib.sha256(data).hexdigest() if data is not None else None
-    res["seat_viewed"] = image_viewed(views, img, sha) if views_known else None
+    res["seat_viewed"] = image_viewed(views, img, sha, cited) if views_known else None
     if views_known and views and sha and sha in (views.get("__attached_sha256__") or ()):
         res["seat_viewed_how"] = "attached at launch (T-5309)"
     if views_known and views is None:
@@ -349,9 +350,14 @@ def attached_images(record) -> list[dict] | None:
 def seat_viewed_images(record) -> dict | None:
     """Images a seat's run record shows it opened with an image-viewing tool.
 
-    `record`: a result.jsonl, or a dispatch dir holding one. Returns {image basename: True}
-    for an image viewed; {basename: None} for an image named by an event the reader does not
-    understand (cannot tell); an image absent from the dict was not viewed. Returns None when
+    `record`: a result.jsonl, or a dispatch dir holding one. Returns {image path: True}
+    for an image viewed; {path: None} for an image named by an event the reader does not
+    understand (cannot tell); an image absent from the dict was not viewed. T-5333 (G-137): keys
+    are the path as the record gives it (attached images: the evidence-relative manifest path;
+    logged views: the path the tool was given), never reduced to the basename, so a view of
+    `a/screen.png` is not a view of `b/screen.png`. Every image path the manifest names
+    (attached or not) is listed under '__cited_paths__' so image_viewed can tell when a
+    basename-only view is ambiguous. Returns None when
     the record is missing or in no known shape (cannot tell at all — e.g. antigravity, which
     left only its final text before T-5309). T-5309: images the runtime attached at launch
     (`attached-images.json` beside the record) count as viewed, by name and by content hash
@@ -379,13 +385,16 @@ def seat_viewed_images(record) -> dict | None:
         shas = sorted({str(a.get("sha256")) for a in attached if a.get("sha256")})
         for a in attached:
             if a.get("path") and _is_image(str(a["path"])):
-                out[Path(str(a["path"])).name] = True
+                out[_norm_path(a["path"])] = True
         out["__attached_sha256__"] = shas
+    cited = _manifest_paths(record)
+    if cited:
+        out["__cited_paths__"] = cited
 
     def mark(paths, val):
         for p in paths:
-            if p and _is_image(p):
-                n = Path(str(p)).name
+            if p and _is_image(str(p)):
+                n = _norm_path(p)
                 if out.get(n) is not True:
                     out[n] = val
 
@@ -500,19 +509,118 @@ def _stem_match(a: str, b: str, dispatch_id: str | None = None) -> bool:
     return bool(DISPATCH_ID_RE.fullmatch(suffix))
 
 
-def image_viewed(views: dict | None, image: str, sha256: str | None = None) -> bool | None:
-    """True / False / None (cannot tell) for one cited image, matched by stem: a seat's copy is
-    `<stem>-<dispatch id>.png`, and a cited copy may be the other way round (T-5324: no other
-    suffix matches; the seat's own id when the record names it, key '__dispatch_id__'). T-5309:
-    also True when the cited image's content hash is one the runtime attached at launch (a copy
-    has a new name but the same bytes)."""
+def _norm_path(p) -> str:
+    """A path as a comparable string: forward slashes, no leading `./`, no repeated slashes."""
+    s = str(p).replace("\\", "/")
+    while s.startswith("./"):
+        s = s[2:]
+    return re.sub(r"/{2,}", "/", s)
+
+
+def _parts(p) -> list[str]:
+    return [x for x in _norm_path(p).lower().split("/") if x and x != "."]
+
+
+def _evidence_rel(p) -> str | None:
+    """The evidence-relative path a recorded view identifies, or None when it identifies only a
+    basename. A relative path with a directory is taken as given (manifest paths are
+    evidence-relative); an absolute path is identified from its last `.context` component on
+    (`/x/wdir/tree/.context/working/…` → `.context/working/…`). A bare name, or an absolute path
+    outside `.context`, identifies no evidence path."""
+    s = _norm_path(p)
+    parts = _parts(s)
+    if not s.startswith("/"):
+        return "/".join(parts) if len(parts) > 1 else None
+    if ".context" in parts:
+        i = len(parts) - 1 - parts[::-1].index(".context")
+        return "/".join(parts[i:])
+    return None
+
+
+def _ends_with(p, q) -> bool:
+    a, b = _parts(p), _parts(q)
+    return bool(b) and a[-len(b):] == b
+
+
+def _manifest_paths(record) -> list[str]:
+    """Every image path the seat's attached-images.json names, attached or not (T-5333)."""
+    if not record:
+        return []
+    p = Path(record)
+    d = p if p.is_dir() else p.parent
+    try:
+        m = json.loads((d / ATTACHED_MANIFEST).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    if not isinstance(m, dict):
+        return []
+    got = []
+    for key in ("attached", "not_attached"):
+        for a in m.get(key) or []:
+            if isinstance(a, dict) and a.get("path") and _is_image(str(a["path"])):
+                got.append(_norm_path(a["path"]))
+    return list(dict.fromkeys(got))
+
+
+def _view_hit(key: str, image: str, cited: list[str], did: str | None):
+    """Does a recorded view `key` show `image`? Returns (matched, by_path).
+
+    By path (T-5333, G-137): the view names the cited path itself (equal evidence-relative path,
+    or a path ending with it). A view that names a DIFFERENT cited path with the same basename
+    is not a view of this one. Otherwise, basename-only: same name, or the seat's copy
+    `<stem>-<dispatch id>` (a copy's name carries no source directory)."""
+    kn, iname = Path(key).name.lower(), Path(image).name.lower()
+    same = kn == iname
+    copy = not same and _stem_match(key, image, did)
+    if not (same or copy):
+        return False, False
+    if same:
+        rel = _evidence_rel(key)
+        img_parts = _parts(image)
+        if len(img_parts) <= 1:                       # cited by bare name: the name is all we have
+            return True, True
+        if rel is not None:
+            return _ends_with(rel, image) or _ends_with(image, rel), True
+        if _ends_with(key, image):
+            return True, True
+        if any(_ends_with(key, c) for c in cited if _norm_path(c).lower() != _norm_path(image).lower()):
+            return False, True                        # it is another cited image of that name
+    return True, False
+
+
+def image_viewed(views: dict | None, image: str, sha256: str | None = None,
+                 cited: list[str] | None = None) -> bool | None:
+    """True / False / None (cannot tell) for one cited image.
+
+    T-5309: True when the cited image's content hash is one the runtime attached at launch (a
+    copy has a new name but the same bytes). T-5333 (G-137): otherwise a view counts only when
+    it names this image's path, or the seat's own copy `<stem>-<dispatch id>` of it (T-5324: no
+    other suffix; the seat's own id when the record names it, key '__dispatch_id__'). The same
+    basename in another directory never counts. A view that gives only a basename (a bare name,
+    a copy, a path outside `.context`) counts when that basename is unique among the cited
+    images (`cited`, plus the manifest's '__cited_paths__'); when two cited images share it,
+    the answer is None (cannot tell which), never True."""
     if views is None:
         return None
     if sha256 and sha256 in (views.get("__attached_sha256__") or ()):
         return True
     did = views.get("__dispatch_id__")
-    hits = [v for k, v in views.items()
-            if not k.startswith("__") and _stem_match(k, image, did)]
+    all_cited = list(dict.fromkeys(
+        [_norm_path(c) for c in (cited or [])] + list(views.get("__cited_paths__") or [])
+        + [_norm_path(image)]))
+    hits = []
+    for k, v in views.items():
+        if k.startswith("__"):
+            continue
+        matched, by_path = _view_hit(k, image, all_cited, did)
+        if not matched:
+            continue
+        if by_path:
+            hits.append(v)
+            continue
+        # basename-only: which cited images could this view be?
+        could = {c.lower() for c in all_cited if _view_hit(k, c, all_cited, did)[0]}
+        hits.append(v if len(could) <= 1 else (None if v is not False else v))
     if True in hits:
         return True
     if None in hits:
@@ -599,6 +707,12 @@ def check_vote(parsed_vote: dict, root, revision: str, seat_record=None, *, task
         out["inconsistent"] = why
 
     any_image = False
+    cited_images = []                         # T-5333: every image the vote cites
+    for c in crits.values():
+        for e in c.get("evidence") or []:
+            m = _IMG_EVIDENCE_RE.match(str(e).strip())
+            if m:
+                cited_images.append(m.group(1))
     for ac, c in crits.items():
         items = []
         ev, loc = list(c.get("evidence") or []), list(c.get("location") or [])
@@ -614,7 +728,7 @@ def check_vote(parsed_vote: dict, root, revision: str, seat_record=None, *, task
                     any_image = True
                     items.append(check_image(e, l_, root, revision, task=task, extra_roots=extra,
                                              views=views, views_known=bool(seat_record),
-                                             write_crops=write_crops))
+                                             write_crops=write_crops, cited=cited_images))
                 else:
                     items.append({"kind": "unknown", "evidence": e[:200], "result": "malformed"})
             except Exception as exc:  # noqa: BLE001 — one item's fault never sinks the check
