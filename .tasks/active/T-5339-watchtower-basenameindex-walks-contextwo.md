@@ -11,10 +11,10 @@ description: >
   git worktrees (a dir with a .git file) and scratch/ in the walk, cap the walk, or
   build off the request thread.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [watchtower, performance]
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ origin: {kind: "peer", source: "1409-sprind", ref: "P-011"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T15:09:17Z
-last_update: '2026-11-21T15:15:52Z'
+last_update: 2026-11-21T16:18:20Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,22 +92,32 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 1409 pickup P-011 (msg 016f8e0b, their T-7929, framework 1.8.15): Watchtower GET / took 52 s; profile shows web/shared.py `_auto_link_files` -> `_resolve_bare_name` -> `_basename_index` 79.2 s over 5 calls. `.context/working/` holds 3.85M files there: 73 review worktrees under `.context/working/scratch/review-wt/`, each a full repo copy.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `_build_basename_index` walks every VIEWABLE_DIR_PREFIXES entry, including `.context/working/`, and descends into git worktrees and scratch copies. bleeding-edge has walk bounds (T-5106: file and time budget) that 1.8.15 may lack, but even bounded, the walk spends its whole budget on worktree copies and then truncates, so real names stay unlinked; and a truncated build is redone every 30 s.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** The index walk never descends into a git worktree (a directory holding a `.git` file or dir) or into `.context/working/scratch/`; links to files in the project's own tree keep working.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** On a tree shaped like 1409's (many worktree copies under `.context/working/scratch/`), the index builds from the project's own files only, well inside the T-5106 budget, and does not truncate.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `_bounded_walk` (or the basename index walk) prunes any subdirectory that contains a `.git` entry (worktree or nested repo) and `.context/working/scratch/`, for every walk that uses it
+- [ ] Test: a temp project with a fake worktree copy (with `.git` file) and a scratch dir holding many files: the index excludes them, includes a real `.context/working/` file, and does not truncate
+- [ ] Existing web/shared tests stay green; Watchtower restarted and `bin/fw watchtower current` passes; vendored copy synced
+- [ ] 1409 told the task id and fix commit
 
 ### Human
+- [ ] File names in task text still render as working links after the index change (http://192.168.10.107:3000/tasks/T-5339)
+  **Steps:**
+  1. Open http://192.168.10.107:3000/tasks/T-5339 (Watchtower restarted after the change; `bin/fw watchtower current` passes).
+  2. In the Context section, find the file names `web/shared.py` and `.context/working/scratch/review-wt/`.
+  3. Click the `web/shared.py` link.
+  **Expected:** `web/shared.py` renders as a link and opens the file viewer for that file; the scratch path renders as plain text or a link that resolves, never a broken link; the page loads in a few seconds.
+  **If not:** note which name rendered wrong and what the link pointed to; the index walk pruned too much or the page fell back to plain text.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -292,6 +302,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5339_index_skips_worktrees.py -q > /tmp/.t5339 2>&1 && grep -q passed /tmp/.t5339 && ! grep -q failed /tmp/.t5339
+bin/fw watchtower current
+U="$(bin/fw watchtower url)"; curl -sf "$U/tasks/T-5339" -o /tmp/.t5339.html && grep -q 'href="/file/web/shared.py"' /tmp/.t5339.html
+bin/fw vendor self --check --task T-5339
 
 ## RCA
 
@@ -389,3 +403,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5339-watchtower-basenameindex-walks-contextwo.md
 - **Context:** Initial task creation
+
+### 2026-11-21T16:18:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
