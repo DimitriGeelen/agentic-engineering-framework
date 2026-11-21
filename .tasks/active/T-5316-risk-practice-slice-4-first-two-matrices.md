@@ -87,20 +87,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5310 GO (operator 2026-11-20): a risk matrix for any change that alters a trust boundary. Slices 1-3 are built (T-5313 fields and template, T-5314 audit, T-5315 matrix check and review split). Two changes from 2026-11-20 cross a trust boundary: T-5309 attaches screenshots to codex review seats (a new data path to an outside model; codex earlier voted on images it never opened, G-136), and T-5300/T-5311/T-5312 let a submitter withdraw a pool job that never started (new write path on the shared worker contract, credential-gated).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Neither change has been assessed with the matrix, so the practice is still untried on real work; risks those changes introduce may have no mitigation task.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** One filled matrix per change (docs/reports/T-5309-risk-matrix.md, docs/reports/T-5300-risk-matrix.md), each passing the machine check; every risk with any actor at 6+ entered in concerns.yaml (type risk) with a mitigation task in the standing arc `risk`; reviewer-judged review of each matrix; operator asked only for the acceptances the check lists.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** The practice has run end to end on two real changes, and the audit shows the register clean with both halves of the rule met.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] docs/reports/T-5309-risk-matrix.md and docs/reports/T-5300-risk-matrix.md filled from the template (header, summary, actor split per risk, Net); `python3 lib/risk_register.py --matrix <file>` prints 0 error(s) for both
+- [ ] Every risk with any actor scoring 6+ has an R-NNN entry in .context/project/concerns.yaml (type risk, scores, actors, introduced_by, exists_anyway, mitigation_task) and its mitigation task carries arc_id: risk; `python3 lib/risk_register.py` reports 0 errors and 0 warnings
+- [ ] The operator-acceptance list from both checks is recorded under ### Human as one [OPERATOR] criterion naming exactly those risks, or noted as "none" here
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -132,6 +133,23 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] Risk matrix scores, actor split and "introduced?" column are sound (docs/reports/T-5309-risk-matrix.md)
+  **Steps:**
+  1. Run `python3 lib/risk_register.py --matrix docs/reports/T-5309-risk-matrix.md` from the project root.
+  2. Read each risk in the Summary table and its actor-split table.
+  3. Check every L and I against the Scales table, each actor's "how" against its score, and each mitigated value against the mitigation it names.
+  4. Check the "Exists anyway?" and "Introduced by the change?" columns against the Baseline in the header.
+  **Expected:** the check prints 0 error(s); every score fits the scales; every actor that can plausibly cause the risk is scored; no risk the change adds is marked "no", and none it does not add is marked NEW.
+  **If not:** name the risk and row, state what the score or column should be and why, and return the matrix to the drafting agent; the operator-acceptance list may change after the fix.
+
+- [ ] Risk matrix scores, actor split and "introduced?" column are sound (docs/reports/T-5300-risk-matrix.md)
+  **Steps:**
+  1. Run `python3 lib/risk_register.py --matrix docs/reports/T-5300-risk-matrix.md` from the project root.
+  2. Read each risk in the Summary table and its actor-split table.
+  3. Check every L and I against the Scales table, each actor's "how" against its score, and each mitigated value against the mitigation it names.
+  4. Check the "Exists anyway?" and "Introduced by the change?" columns against the Baseline in the header.
+  **Expected:** the check prints 0 error(s); every score fits the scales; every actor that can plausibly cause the risk is scored; no risk the change adds is marked "no", and none it does not add is marked NEW.
+  **If not:** name the risk and row, state what the score or column should be and why, and return the matrix to the drafting agent; the operator-acceptance list may change after the fix.
 
 <!--
   Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
@@ -287,6 +305,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 lib/risk_register.py --matrix docs/reports/T-5309-risk-matrix.md > /tmp/.t5316a 2>&1 && grep -q " 0 error" /tmp/.t5316a
+python3 lib/risk_register.py --matrix docs/reports/T-5300-risk-matrix.md > /tmp/.t5316b 2>&1 && grep -q " 0 error" /tmp/.t5316b
+python3 lib/risk_register.py > /tmp/.t5316c 2>&1 && grep -q "0 error(s), 0 warning(s)" /tmp/.t5316c
 
 ## RCA
 
