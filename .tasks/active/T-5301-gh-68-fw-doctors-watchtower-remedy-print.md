@@ -14,7 +14,7 @@ description: >
   bare fw, or (c) the resolved path. The change arrives as an outside pull request
   against bleeding-edge; this task is its intake.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -50,7 +50,7 @@ related_tasks: [T-5006]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T13:09:24Z
-last_update: '2026-11-20T13:16:21Z'
+last_update: 2026-11-21T12:02:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,20 +96,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** GitHub #68, reported and reproduced by outside contributor MikeEchoVoid (be.55, fresh vendored `fw init` project): two `fw doctor` Watchtower remedies print `bin/watchtower.sh ...`, which does not exist in a vendored project. Mike takes it as his second pilot PR; this is the intake task he references. Our answers on #68 (runmes gh68-answer, gh68-ready, 2026-11-20) pointed him to the T-5304 helper.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `bin/fw` (now around lines 3439 and 3444) hard-codes `bin/watchtower.sh stop && start` / `restart`, so a vendored user gets a command that fails as printed.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Mike's PR switches both lines to `$(_emit_user_command "watchtower restart")` with a bats test that fails before and passes after; we coordinate, approve the checks and review it.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `fw doctor` prints a runnable `cd <project> && <this project's fw> watchtower restart` in both the framework repo and vendored projects; the contributor's PR is merged.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Contributor reminded on #68 of the helper, the rebase and this task id (operator runme gh68-nudge, run.log EXIT 0)
+- [ ] PR from the contributor against bleeding-edge reviewed by an independent reviewer: both lines use `_emit_user_command`, the new bats test fails on the parent commit and passes on the PR, tests/unit/test_t5303_fw_command_builder.py green
+- [ ] After merge: `grep -c "bin/watchtower.sh stop\|bin/watchtower.sh restart" bin/fw` is 0 and the vendored copy matches (`bin/fw vendor self --check`)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -393,3 +394,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5301-gh-68-fw-doctors-watchtower-remedy-print.md
 - **Context:** Initial task creation
+
+### 2026-11-21T12:02:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
