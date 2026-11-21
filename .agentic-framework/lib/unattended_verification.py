@@ -84,6 +84,24 @@ UNSAFE_PATTERNS = [
     # that greps a log for "shutdown" or tests reboot.log still runs.
     (re.compile(r"(?:^|[;&|(`]|\bsudo)\s*(?:shutdown|reboot)(?=\s|$|[;&|)])"),
      "process control (shutdown/reboot)"),
+    # T-5336 (1023 field report): a stored line that changes the repo changes it at EVERY
+    # unattended re-run (1023's `git add -A .context` staged the real .context each audit).
+    # Command position only, so a line that greps for the text "git add" still runs; global
+    # options (-C path, -c k=v, --git-dir=..) may sit between `git` and the verb. Read-only
+    # verbs (log, status, diff, show, rev-parse, ls-files, ...) stay runnable.
+    (re.compile(r"(?:^|[;&|(`$]|\bsudo)\s*git(?:\s+-[Cc]\s+\S+|\s+--[\w-]+(?:=\S+)?)*\s+"
+                r"(?:stash(?!\s+(?:list|show)\b)(?=\s|$|[;&|)'\"])|"
+                r"(?:add|commit|checkout|switch|restore|clean|rm|mv|merge|rebase|"
+                r"cherry-pick|revert|am|apply|reset|update-index|update-ref)(?=\s|$|[;&|)'\"])|"
+                r"tag\s+(?:-[a-zA-Z]*[dasfu]\b|--(?:delete|annotate|sign|force)\b|[^-\s])|"
+                r"branch\s+(?:-[a-zA-Z]*[dDmM]\b|--delete\b|--move\b))"),
+     "repo-mutating git command"),
+    # T-5336: a shell redirect that writes into framework state. Exempt: .context/working/
+    # (runtime state the framework rewrites constantly; stored lines park test output there)
+    # and .context/scratch/ (gitignored).
+    (re.compile(r">>?\s*['\"]?(?:\./)?(?:\$PROJECT_ROOT/|\$\{PROJECT_ROOT\}/)?"
+                r"\.(?:tasks/|context/(?!working/|scratch/))"),
+     "writes into .context/ or .tasks/"),
 ]
 
 

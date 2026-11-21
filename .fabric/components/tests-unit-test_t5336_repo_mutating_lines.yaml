@@ -1,0 +1,21 @@
+id: tests/unit/test_t5336_repo_mutating_lines.py
+name: test_t5336_repo_mutating_lines
+type: script
+subsystem: tests
+location: tests/unit/test_t5336_repo_mutating_lines.py
+tags: []
+
+purpose: "T-5336 (1023 field report): stored Verification lines that change the repo are refused when re-run unattended; read-only git and lines that merely mention a git verb still run."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-21
+created_by: unknown
