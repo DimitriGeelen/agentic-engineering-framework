@@ -105,16 +105,16 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A new config key (registry entry with description, default off) gates the path. Only when it is on, `adapter2.w1_hook_files()` is non-empty and `adapter2.socket_path()` is set, `prompt()` sends exactly one `termlink.adapter/2` `prompt_submit` report (same fields adapter/2 already sends) with a ~250 ms timeout. It reads `origin_checked`/`basis_checked` from the reply and passes them to `main_session.claim(...)` as origin/basis/kind=prompt.
-- [ ] Kept as is: `adapter2.enabled()` stays False (no BUSY and no other adapter/2 report), the headless early return, and `may_claim`. On any failure (no socket, timeout, malformed reply) the claim carries origin `unknown` and a basis naming the failure, with one error line. It is never origin-less and never `human`.
-- [ ] Tests, hermetic with a stub socket:
+- [x] A new config key (registry entry with description, default off) gates the path. Only when it is on, `adapter2.w1_hook_files()` is non-empty and `adapter2.socket_path()` is set, `prompt()` sends exactly one `termlink.adapter/2` `prompt_submit` report (same fields adapter/2 already sends) with a ~250 ms timeout. It reads `origin_checked`/`basis_checked` from the reply and passes them to `main_session.claim(...)` as origin/basis/kind=prompt.
+- [x] Kept as is: `adapter2.enabled()` stays False (no BUSY and no other adapter/2 report), the headless early return, and `may_claim`. On any failure (no socket, timeout, malformed reply) the claim carries origin `unknown` and a basis naming the failure, with one error line. It is never origin-less and never `human`.
+- [x] Tests, hermetic with a stub socket:
   1. W1 present and the stub answers human: exactly one claim with origin human, basis X, kind prompt.
   2. Guard pin: `adapter2.enabled()` stays False with W1 present.
   3. Socket absent, timeout or malformed reply: claim with origin unknown and one error line.
   4. A project without W1 hooks, or with the flag off: claim arguments byte-identical to today.
   5. Headless: no claim.
   The existing sidecar tests stay green, the config parity lint passes, and the vendored copy is synced.
-- [ ] 010-termlink is told the task id and, when done, the commit and the flag name
+- [x] 010-termlink is told the task id and, when done, the commit and the flag name
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -320,6 +320,11 @@ bin/fw vendor self --check --task T-5351
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** In W1-hook projects the main claim carried no origin. Once origin reporting is switched on, TermLink would ignore it (FCW-53), so such a project could never be switched.
+**Root cause:** `origin_kw` in `prompt()` came only from adapter/2, which the w1-guard correctly turns off in W1 projects.
+**Why structurally allowed:** The claim's origin and the adapter/2 enablement were one switch, and no test covered the W1-present case.
+**Prevention:** `adapter2.w1_prompt_origin()` (328a133cc), gated by `SIDECAR_W1_PROMPT_ORIGIN` (default 0). `tests/unit/test_t5351_w1_prompt_origin.py` (11 tests) pins the W1-present behaviour, the guard staying off, the failure origins, and the off path matching today's claim exactly. Separately, the worker's suite run surfaced a regression from T-5346 (`test_sidecar_receiver_t3693` expected `stop-driver.sh`), fixed in f9296834b.
 
 ## Evolution
 
