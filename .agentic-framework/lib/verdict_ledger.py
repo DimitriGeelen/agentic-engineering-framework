@@ -3572,7 +3572,7 @@ def satisfying_verdict(ctx: _Ctx, crit) -> tuple[dict | None, str]:
     # T-5294: a verdict/1 vote that fails its own mechanical check is no verdict either — it
     # counts neither green nor red — so it is passed over exactly like a not-evaluated row.
     k = len(mine) - 1
-    while k > 0 and not _counts(mine[k]):
+    while k > 0 and not _counts(mine[k], ctx, crit):
         k -= 1
     for row in mine[k + 1:]:
         f = _fault(ctx, row, crit, led.intro(row["id"]))
@@ -3587,7 +3587,7 @@ def satisfying_verdict(ctx: _Ctx, crit) -> tuple[dict | None, str]:
     if last.get("outcome") == NOT_EVALUATED:
         return None, (f"not-evaluated: no reviewer has evaluated this criterion ({last.get('id')}: "
                       f"{last.get('guidance', '')}) — reassign it to a seat kind that can")
-    ok, reasons = vote_checker.checkable(last)
+    ok, reasons = vote_checker.checkable(last, render=_is_render_review(ctx, crit))
     if not ok:
         return None, (f"{NOT_CHECKABLE}: the latest vote {last.get('id')} ({last.get('outcome')}) "
                       f"fails its check and counts neither green nor red — "
@@ -3600,15 +3600,19 @@ def satisfying_verdict(ctx: _Ctx, crit) -> tuple[dict | None, str]:
     return last, ""
 
 
-def _counts(row: dict) -> bool:
+def _counts(row: dict, ctx: "_Ctx | None" = None, crit=None) -> bool:
     """T-5294: does this (valid) row count as a verdict at all? A not-evaluated row and a verdict/1
     vote that fails its own check (vote_checker.checkable) count neither green nor red."""
-    return row.get("outcome") != NOT_EVALUATED and vote_checker.checkable(row)[0]
+    return row.get("outcome") != NOT_EVALUATED and not not_checkable_reasons(row, ctx, crit)
 
 
-def not_checkable_reasons(row: dict) -> list[str]:
-    """T-5294: why a verdict/1 row does not count ([] when it does, or for an old-format row)."""
-    return vote_checker.checkable(row)[1]
+def not_checkable_reasons(row: dict, ctx: "_Ctx | None" = None, crit=None) -> list[str]:
+    """T-5294: why a verdict/1 row does not count ([] when it does, or for an old-format row).
+    T-5327: given the task `ctx` and the row's criterion `crit`, a render criterion (the same
+    `_is_render_review` the run/page rules use) in a non-panel row also needs a logged view —
+    attached-at-launch alone is not checkable. Without them the render rule is not applied."""
+    render = bool(ctx is not None and crit is not None and _is_render_review(ctx, crit))
+    return vote_checker.checkable(row, render=render)[1]
 
 
 def _panel_fault(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> str:
@@ -3747,7 +3751,7 @@ def _panel_state(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> tuple[str, di
             # did evaluate decide, and there must be enough of them (checked below).
             not_evaluated.append(s["seat"])
             continue
-        nc = not_checkable_reasons(r)
+        nc = not_checkable_reasons(r, ctx, crit)
         if nc:
             # T-5294: the seat's vote fails its own check (the T-5262 seat that voted red on a
             # screenshot it never opened). Like not-evaluated: neither blocks nor counts.

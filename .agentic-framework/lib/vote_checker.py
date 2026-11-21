@@ -276,6 +276,11 @@ def check_image(evidence: str, location: str, root: Path, revision: str, *, task
     res["seat_viewed"] = image_viewed(views, img, sha, cited) if views_known else None
     if views_known and views and sha and sha in (views.get("__attached_sha256__") or ()):
         res["seat_viewed_how"] = "attached at launch (T-5309)"
+    if res["seat_viewed"] is True:
+        # T-5327: which proof shows the view — a logged view event (Read / read_file / codex's
+        # image tool) or only the attached-images.json manifest (in the prompt, not proof the
+        # model looked).
+        res["view_proof"] = "logged" if image_viewed(logged_views(views), img, None, cited) else "attached"
     if views_known and views is None:
         res["seat_viewed_why"] = "the seat's run record cannot tell"
     elif not views_known:
@@ -391,10 +396,14 @@ def seat_viewed_images(record) -> dict | None:
     if cited:
         out["__cited_paths__"] = cited
 
+    logged: set[str] = set()
+
     def mark(paths, val):
         for p in paths:
             if p and _is_image(str(p)):
                 n = _norm_path(p)
+                if val is True:
+                    logged.add(n)            # T-5327: a view event in the log itself
                 if out.get(n) is not True:
                     out[n] = val
 
@@ -472,6 +481,26 @@ def seat_viewed_images(record) -> dict | None:
         return None
     if named:
         out["__named_in_commands__"] = sorted(named)
+    out["__logged__"] = sorted(logged)
+    return out
+
+
+def logged_views(views: dict | None) -> dict | None:
+    """T-5327: `views` (seat_viewed_images) reduced to the images a logged view event shows the
+    seat opened — the attached-at-launch entries and content hashes dropped. A views dict from
+    before T-5327 (no '__logged__' key) is taken as all-logged only when it has no attached
+    hashes; otherwise nothing in it is known to be logged."""
+    if views is None:
+        return None
+    if "__logged__" in views:
+        keep = set(views.get("__logged__") or ())
+    elif views.get("__attached_sha256__"):
+        keep = set()
+    else:
+        keep = {k for k in views if not k.startswith("__")}
+    out = {k: v for k, v in views.items()
+           if k.startswith("__") and k not in ("__attached_sha256__", "__logged__")}
+    out.update({k: True for k in keep})
     return out
 
 
@@ -768,7 +797,41 @@ def _found(item: dict) -> bool:
             or item.get("normalised") in ("found-at-location", "found-elsewhere"))
 
 
-def check_reasons(check) -> list[str]:
+#: T-5327 (R-040): the reason a render vote in a single-seat run is not checkable.
+ATTACHED_ONLY = ("attached-only proof: a render vote in a single-seat run needs a seat that "
+                 "logged a view (T-5327)")
+
+
+def view_proof(item: dict) -> str | None:
+    """T-5327: 'logged' / 'attached' for an image item the seat viewed, None otherwise. A check
+    recorded before T-5327 has no `view_proof`: a view shown by the attached manifest is then
+    'attached' (whether a log also showed it was not recorded), any other view 'logged'."""
+    if not isinstance(item, dict) or item.get("seat_viewed") is not True:
+        return None
+    if item.get("view_proof") in ("logged", "attached"):
+        return item["view_proof"]
+    return "attached" if item.get("seat_viewed_how") else "logged"
+
+
+def attached_only_reasons(check, *, render: bool = False, panel: bool = False) -> list[str]:
+    """T-5327: [reason] per criterion of `check` whose cited images are ALL viewed and every one
+    proven only by the attached manifest — when the criterion is a render criterion (`render`)
+    and the vote is not a rung-5 panel seat (`panel`). [] otherwise: a panel is unchanged, a
+    non-render criterion is unaffected, and one logged view is enough."""
+    if not render or panel or not isinstance(check, dict):
+        return []
+    out = []
+    crits = check.get("criteria")
+    for ac, c in sorted((crits if isinstance(crits, dict) else {}).items(), key=lambda kv: str(kv[0])):
+        imgs = [it for it in ((c if isinstance(c, dict) else {}).get("items") or [])
+                if isinstance(it, dict) and it.get("kind") == "image"]
+        proofs = [view_proof(it) for it in imgs]
+        if imgs and all(p == "attached" for p in proofs):
+            out.append(f"AC{ac}: {ATTACHED_ONLY}")
+    return out
+
+
+def check_reasons(check, *, render: bool = False, panel: bool = False) -> list[str]:
     """Every reason the recorded `check` of a verdict/1 vote shows it is NOT checkable ([] when it
     is). Not checkable: the check is missing or errored; a cited quote is not in the file; a cited
     location does not exist; an image is missing, its region is outside it (or its size cannot be
@@ -832,16 +895,24 @@ def check_reasons(check) -> list[str]:
                 out.append(f"AC{ac}: the check errored on an evidence item: {it.get('error', '?')}")
             else:
                 out.append(f"AC{ac}: malformed evidence {str(it.get('evidence', ''))[:60]!r}")
-    return out
+    return out + attached_only_reasons(check, render=render, panel=panel)
 
 
-def checkable(row) -> tuple[bool, list[str]]:
+def is_panel_row(row) -> bool:
+    """T-5327: is this row a seat of a rung-5 panel (its recorded rung)?"""
+    return isinstance(row, dict) and str(row.get("rung") or "").startswith("rung-5")
+
+
+def checkable(row, *, render: bool = False) -> tuple[bool, list[str]]:
     """(True, []) when a recorded ledger row's vote holds up to its own mechanical check, else
     (False, reasons). Rows without `format: verdict/1` (old free-text rows) are always (True, [])
-    — they are counted exactly as before. A not-evaluated row has no vote to check."""
+    — they are counted exactly as before. A not-evaluated row has no vote to check.
+    `render` (T-5327): the row's criterion is a render criterion; then, unless the row is a rung-5
+    panel seat, a vote whose every cited image is proven only by "attached at launch" is not
+    checkable (ATTACHED_ONLY)."""
     if not isinstance(row, dict) or row.get("format") != FORMAT:
         return True, []
     if row.get("outcome") == "not-evaluated":
         return True, []
-    why = check_reasons(row.get("check"))
+    why = check_reasons(row.get("check"), render=render, panel=is_panel_row(row))
     return (not why), why
