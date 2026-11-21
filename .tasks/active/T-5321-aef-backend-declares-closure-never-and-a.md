@@ -88,20 +88,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5318 GO and T-5320 published wc v0.3.4 item 2 as amended by A1-A6; all three owners adopted it (TermLink msg a0cda487, ring20 msg a2e5c72b). A3 requires a `closure: never` backend to answer a close with a typed refusal, never a silent no-op, and every client to treat an unknown fence reason as a non-retryable typed refusal. AEF's local run reports CC-35 n/a ("lands in T-5321").
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** lib/dispatch_records.py (line 19) keeps dispatches open but has no close entry point and no declared closure, so a close request has no defined answer, and a reader meeting an unknown fence reason has no defined behaviour.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** AEF's backend declares `closure: never`, answers a close with the typed refusal `closure_not_supported` (no state change, nothing appended, a later T1 still accepted), and the client side treats an unknown `fence_reject` reason as non-retryable.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** CC-35 passes on AEF's local run (no longer n/a); no other case changes result.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] lib/dispatch_records.py declares `closure: never` and a close request returns the typed refusal `closure_not_supported` without changing or appending anything; a later allocate succeeds
+- [ ] An unknown `fence_reject` reason is reported as a non-retryable typed refusal naming the reason (no exception, no retry)
+- [ ] The local adapter declares `closure = "never"`, `LOCAL_PENDING` no longer lists CC-35, and run_local.py shows CC-35 pass with 0 fail
+- [ ] Unit tests cover both behaviours; existing dispatch_records and worker-contract tests stay green; vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,6 +290,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+out=$(python3 tests/conformance/worker-contract/run_local.py 2>&1); grep -qE "CC-35 +pass" <<<"$out" && ! grep -q "fail" <<<"$out"
+python3 -m pytest tests/unit/t4802_dispatch_records_test.py tests/unit/test_t5312_withdraw.py tests/unit/test_worker_contract_vectors.py tests/unit/test_worker_contract_mapping.py -q > /tmp/.t5321 2>&1 && grep -q passed /tmp/.t5321
+bin/fw vendor self --check --task T-5321
 
 ## RCA
 
