@@ -40,6 +40,14 @@ setup() {
     # otherwise every hook reports as a missing binary, doctor emits FAIL, and the
     # OK line carrying the counts is never printed at all.
     ln -s "$FRAMEWORK_ROOT/bin" "$FIXTURE/bin"
+    # T-5345: hooks may also point outside bin/ (e.g. Stop → agents/context/stop-driver.sh);
+    # a missing one makes doctor FAIL before the counted OK line. Link every top-level
+    # directory a ${CLAUDE_PROJECT_DIR}/… hook command names, derived, never typed.
+    local _d
+    for _d in $(grep -o '\${CLAUDE_PROJECT_DIR}/[A-Za-z0-9._-]*/' "$FRAMEWORK_ROOT/.claude/settings.json" \
+                | sed 's#^\${CLAUDE_PROJECT_DIR}/##; s#/$##' | sort -u); do
+        [ -e "$FIXTURE/$_d" ] || [ ! -d "$FRAMEWORK_ROOT/$_d" ] || ln -s "$FRAMEWORK_ROOT/$_d" "$FIXTURE/$_d"
+    done
     [ -f "$FRAMEWORK_ROOT/.framework.yaml" ] && cp "$FRAMEWORK_ROOT/.framework.yaml" "$FIXTURE/"
 
     python3 - "$FRAMEWORK_ROOT/.claude/settings.json" "$FIXTURE/.claude/settings.json" <<'PY'
@@ -116,7 +124,10 @@ run_doctor() {
     # the same thing. Disagreeing numbers are what made the output unreadable —
     # the operator could see they conflicted but not which one to believe.
     out=$(run_doctor)
-    a=$(echo "$out" | grep 'Hook path validation' | grep -oE '[0-9]+ hooks' | grep -oE '[0-9]+' | head -1)
+    # T-5345: the path line's label depends on its branch (validation / isolation /
+    # portability); every branch states the same whole-file total, as "N hooks" or "k/N hooks".
+    a=$(echo "$out" | grep -E 'Hook path (validation|isolation|portability)' \
+        | grep -oE '([0-9]+/)?[0-9]+ hooks' | grep -oE '[0-9]+ hooks' | grep -oE '[0-9]+' | head -1)
     b=$(echo "$out" | grep 'Hook configuration valid' | grep -oE '[0-9]+ hooks' | grep -oE '[0-9]+' | head -1)
     [ -n "$a" ]
     [ -n "$b" ]

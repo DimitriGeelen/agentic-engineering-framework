@@ -8,10 +8,10 @@ description: >
   across 7 events); inside the bats fixture it does not. Localise why the fixture
   path skips or changes the hook check, then fix.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T19:05:53Z
-last_update: '2026-11-21T19:15:54Z'
+last_update: 2026-11-21T21:01:00Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,20 +88,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** The T-5342 worker (2026-11-21) found `tests/unit/doctor_hook_counters.bats` tests 2–4 red. They were already red before T-5342 (still red with its `config.sh` line removed). In the live repo, `fw doctor --quick` prints `OK Hook configuration valid (41 hooks in 26 matchers across 7 events)`. In the bats fixture project it prints no such line.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Not yet known. The fixture copies the live `settings.json` and symlinks `bin/`. Something the hook check needs is missing from the fixture, so the check either takes a different branch (WARN/FAIL with no counts) or is skipped. To find out: run the fixture's doctor and read its hook lines.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Tests 2–4 test the counter wording again, against the real doctor.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `doctor_hook_counters.bats` is green. If the cause is in doctor, not in the fixture, doctor is fixed and the test still guards the T-2714 counts.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The cause is found and written in the RCA: what the fixture's doctor prints instead of the OK line, and why
+- [x] `doctor_hook_counters.bats` passes 7/7 with no skips, including tests 2–4. The fix does not weaken the T-2714 assertions: the counts are still derived from the fixture, and entries are still not equal to commands.
+- [x] If doctor itself changed, the vendored copy is synced (doctor did not change; only the test changed)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,6 +289,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/doctor_hook_counters.bats > /tmp/.t5345 2>&1 && ! grep -q "^not ok" /tmp/.t5345
+test "$(grep -c '# skip' /tmp/.t5345)" -eq 0
 
 ## RCA
 
@@ -304,6 +307,17 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `doctor_hook_counters.bats` tests 2–4 were red. The test project's `fw doctor --quick` printed no `Hook configuration valid` line.
+**Root cause:** Two assumptions in the test's own setup.
+- It linked only `bin/` into the test project. The live Stop hook calls `${CLAUDE_PROJECT_DIR}/agents/context/stop-driver.sh` (T-3164), so doctor printed `FAIL Hook config: Stop: script not found: stop-driver.sh` and never reached the counted OK line (tests 2–3).
+- Test 4 read only the `Hook path validation` label. That hook also counts as "hardcoded path" (it calls `/agents/context/` directly), so doctor prints the `Hook path isolation` WARN line instead (test 4).
+**Why structurally allowed:** The test copies the live `settings.json` on purpose, but it wired up only the folders the hooks used when it was written. Nothing re-checks those assumptions when hooks change.
+**Prevention:**
+- The test now links every top-level folder that a `${CLAUDE_PROJECT_DIR}/…` hook names, derived from the settings file, never typed.
+- Test 4 accepts any path-line label. Every branch prints the same total.
+- The negative control (test 6) still fails the pre-fix expression, so the assertions kept their strength.
+**Found on the way:** The live doctor WARNs `Hook path isolation: 1/41 hooks use hardcoded paths`. That is the Stop → `agents/context/stop-driver.sh` hook, not routed through `bin/fw hook`. Changing it is hook rewiring, which is the operator's call, so it is not fixed here.
 
 ## Evolution
 
@@ -385,3 +399,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5345-doctorhookcounters-tests-2-4-red-fixture.md
 - **Context:** Initial task creation
+
+### 2026-11-21T21:01:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
