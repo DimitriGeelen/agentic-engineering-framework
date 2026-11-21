@@ -103,9 +103,9 @@ bvp_scores_proposed:
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] Checked on bleeding-edge first: the defect is present (UNSAFE_PATTERNS lacks repo-mutating git verbs)
-- [ ] UNSAFE_PATTERNS refuses repo-mutating git commands in command position (add, commit, checkout, switch, restore, stash, clean, rm, mv, merge, rebase, cherry-pick, revert, am, apply, reset, tag, branch -d/-D) and shell redirects into `.context/` or `.tasks/`, each with a named reason
-- [ ] Tests: those lines are refused; read-only git (log, status, diff, show, rev-parse), `git -C <tmp> ...` in a temp repo is still refused (it is a write), and a grep for the text "git add" still runs
-- [ ] Existing t5268/t2765 tests stay green; vendored copy synced
+- [x] UNSAFE_PATTERNS refuses repo-mutating git commands in command position (add, commit, checkout, switch, restore, stash, clean, rm, mv, merge, rebase, cherry-pick, revert, am, apply, reset, tag, branch -d/-D) and shell redirects into `.context/` or `.tasks/`, each with a named reason
+- [x] Tests: those lines are refused; read-only git (log, status, diff, show, rev-parse), `git -C <tmp> ...` in a temp repo is still refused (it is a write), and a grep for the text "git add" still runs
+- [x] Existing t5268/t2765 tests stay green; vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -311,6 +311,14 @@ bin/fw vendor self --check --task T-5336
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** in 1023, a stored Verification line (`git add -A .context`) staged the real `.context` at every unattended re-run (census/audit).
+
+**Root cause:** lib/unattended_verification.py UNSAFE_PATTERNS listed destructive and outward commands (`rm -rf`, `git push`, `git reset --hard`, HTTP writes, process control) but no repo-mutating git verbs and no writes into framework state, so such lines were re-run daily.
+
+**Why structurally allowed:** the list grew one incident at a time (L-391, T-4026, T-5268); "changes the repo" was never a category of its own.
+
+**Prevention:** two patterns (repo-mutating git verbs in command position, with read-only forms of `tag`, `stash` and `merge-base` exempt; redirects into `.tasks/` or `.context/` except `.context/working/` and the gitignored `.context/scratch/`). tests/unit/test_t5336_repo_mutating_lines.py (49 cases). Measured on the whole corpus: 4 of 15,819 stored lines newly skipped, each a real write or a harmless over-refusal (a quoted string, a temp repo). Fix 9519dbd76.
 
 ## Evolution
 
