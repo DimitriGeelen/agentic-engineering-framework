@@ -5899,3 +5899,18 @@ concerns:
   created: 2026-11-20
   last_reviewed: 2026-11-20
   related_tasks: [T-5289, T-5290, T-5262, T-5260]
+- id: G-137
+  type: gap
+  title: "Vote checker counts an image as viewed when a different image shares its name prefix"
+  description: "Found 2026-11-21 by the first risk matrix (T-5316, docs/reports/T-5309-risk-matrix.md risk 4). lib/vote_checker.py _stem_match(a, b) returns True when one stem starts with the other plus '-', meant for a seat's copy named <stem>-<dispatch>.png. It also matches two different evidence images such as 01-file-scripts-agent.png and 01-file-scripts-agent-listeners.png, so viewing one counts as viewing the other, and image_viewed() returns True for an image the seat never opened. Same class as G-136: a render vote counted without the seat having seen the evidence. Also named in the matrix: images over the codex attachment cap must not count as attached."
+  spec_reference: "T-5316, T-5309, T-5290; lib/vote_checker.py _stem_match / image_viewed"
+  severity: medium
+  trigger_fired: true
+  trigger_event: "2026-11-21: risk matrix for T-5309 named the prefix match; code read confirmed it"
+  detection_lag_days: "1 (since T-5309, 2026-11-20)"
+  what_works_now: "Exact-name and content-hash (__attached_sha256__) matches are correct; most evidence sets have no shared prefixes."
+  what_remains: "Match a seat copy only as <stem>-<dispatch id suffix>, never a longer evidence stem; test with prefix-sharing images; check the attachment cap path."
+  mitigation_candidate: "Restrict the suffix after '<stem>-' to the dispatch-id shape; a test that viewing x-foo.png does not count x.png."
+  status: watching
+  created: 2026-11-21
+  last_reviewed: 2026-11-21
