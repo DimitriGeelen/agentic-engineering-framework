@@ -67,7 +67,7 @@ NA_CAPABILITIES = {"answer_channel", "registry_epoch", "caller_chosen_ids",
                    "closure_supported", "closure_never"}
 # Cases the default local backend (AEF, closure: never) applies but has not built yet, with the
 # task that builds them. Used only while the case is not-implemented on that backend (T-5320).
-LOCAL_PENDING = {"CC-35": "AEF typed refusal of close lands in T-5321"}
+LOCAL_PENDING: dict = {}
 LOCAL_REASON = "lib/dispatch_records.py"
 
 

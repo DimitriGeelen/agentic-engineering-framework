@@ -16,7 +16,9 @@ Not implemented, on purpose:
   running-path write), answers, waits and acks are not;
 - registry_epoch (I7): the local backend has no registry; its `lost` comes from
   a liveness probe plus absence of evidence after G (§6.3);
-- dispatch closure (v0.3.4 draft §4.7): dispatches stay open, as on the hub.
+- dispatch closure (v0.3.4 §4.7): this backend declares `closure: never` (CLOSURE), as the
+  hub does. Dispatches stay open; a close is answered with the typed refusal
+  `closure_not_supported` and changes nothing (A3, T-5321).
 
 Time, the lock clock, the liveness probe and the worker-dir evidence reader are
 all injected, so tests never sleep and never touch real processes.
@@ -54,6 +56,9 @@ FINISHED_OUTCOMES = ("succeeded", "failed", "refused", "handback-malformed")
 WITHDRAW_WRITERS = ("submitter", "dispatcher", "supervisor")
 FENCE_REASONS = ("stale_attempt", "bad_nonce", "bad_credential", "stale_gen",
                  "cas_mismatch", "forbidden_transition", "done_conflict", "dispatch_closed")
+#: §2 closure declaration (v0.3.4 A3): this backend never closes a dispatch.
+CLOSURE = "never"
+CLOSURE_REFUSAL = "closure_not_supported"
 STOP_CAUSES = ("deadline_stop", "revoked", "operator_stop")
 TERMINAL = ("done", "lost")
 RANK = {"dispatched": 0, "running": 1, "unknown": 2, "lost": 3, "done": 4}
@@ -161,6 +166,21 @@ def _none(notices=0, **values):
     if values:
         out["values"] = values
     return out
+
+
+def classify_fence_reject(reason) -> dict:
+    """The §2 client rule for a `fence_reject` this client received (v0.3.4 A3, T-5321).
+
+    Every fence_reject is a typed refusal of that write and is never retried: the spec defines
+    no retry for any reason, and a reason this client does not know (one added by a later
+    revision within wc/0.3) is in particular not retryable. Never raises on the value.
+    Returns {"ok": True, "values": {"typed_refusal": <reason>, "retryable": False, "known": bool}}.
+    """
+    if isinstance(reason, dict):
+        reason = reason.get("fence_reject")
+    name = reason if isinstance(reason, str) and reason else repr(reason)
+    return {"ok": True, "notices": 0,
+            "values": {"typed_refusal": name, "retryable": False, "known": name in FENCE_REASONS}}
 
 
 class _Reject(Exception):
@@ -517,6 +537,15 @@ class Store:
             return result
         return self._mutate(dispatch_id, fn)
 
+    # ── close (v0.3.4 §3.3, A3): closure: never ────────────────────────
+    closure = CLOSURE
+
+    def close(self, dispatch_id, attempt=None, *, credential=None, reason=None, writer=None) -> dict:
+        """A closure: never backend answers every close with the typed refusal
+        `closure_not_supported` (§3.3 close, A3): no lock, no read, no write, nothing appended,
+        so `closed` stays null and a later T1 is still accepted. Never a no-op success."""
+        return {"refused": CLOSURE_REFUSAL, "notices": 0}
+
     # ── T3w: withdrawal (v0.3.4) ───────────────────────────────────────
     def withdraw(self, dispatch_id, attempt, *, reason, actor, nonce, credential, supervisor_gen,
                  writer="submitter", backend=None) -> dict:
@@ -743,6 +772,7 @@ class _Adapter:
 
     capabilities = {"supervisor_gen", "caller_chosen_ids"}
     equivalent_routes: set = set()
+    closure = CLOSURE
 
     def __init__(self, params: dict | None = None):
         self.params = {**DEFAULTS, **(params or {})}
@@ -939,6 +969,11 @@ class _Adapter:
                                        credential=self._sym(step.get("credential")),
                                        supervisor_gen=step.get("supervisor_gen", 1),
                                        writer=writer or "submitter")
+        if op == "close":
+            return self.store.close(did, n, credential=self._sym(step.get("credential")),
+                                    reason=args.get("reason"), writer=writer)
+        if op == "client_reject":
+            return classify_fence_reject(args.get("reason"))
         if op == "confirm_end":
             return self.store.confirm_end(did, n)
         if op == "sweep":
@@ -1042,6 +1077,9 @@ class _Adapter:
             "dispatch_count": len(self.store.dispatch_ids()),
             "history_causes": causes,
             "new_dispatch_retry_of": (new_rec or {}).get("retry_of_dispatch_id"),
+            # v0.3.4 §2 reader fields: closure: never, so these are always null / empty
+            "closed": (record or {}).get("closed"),
+            "dispatch_history": list((record or {}).get("dispatch_history", [])),
         }
 
 
