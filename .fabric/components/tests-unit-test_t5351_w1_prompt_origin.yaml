@@ -1,0 +1,21 @@
+id: tests/unit/test_t5351_w1_prompt_origin.py
+name: test_t5351_w1_prompt_origin
+type: script
+subsystem: tests
+location: tests/unit/test_t5351_w1_prompt_origin.py
+tags: []
+
+purpose: "T-5351 — W1-hook projects send one adapter/2 prompt_submit for a checked main-claim origin."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-21
+created_by: unknown

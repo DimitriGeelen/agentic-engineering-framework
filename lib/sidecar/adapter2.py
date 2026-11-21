@@ -453,6 +453,74 @@ def enabled() -> bool:
     return True
 
 
+#: T-5351: one prompt_submit, sent only for the claim's origin, waits at most this long.
+W1_PROMPT_TIMEOUT_S = 0.25
+
+
+def w1_prompt_origin(hook_input: dict, timeout: float = W1_PROMPT_TIMEOUT_S) -> dict | None:
+    """T-5351 (010-termlink T-3694, operator ruling A): in a project running TermLink's own W1
+    sidecar hooks the adapter stays off (``enabled()`` is False), so the main claim would carry
+    no origin and, once origin reporting is on, be ignored (FCW-53). Behind
+    ``SIDECAR_W1_PROMPT_ORIGIN=1``, and only when W1 hooks run here and a socket is known, send
+    exactly ONE ``prompt_submit`` (no BUSY, nothing else) and return the claim's
+    ``{"origin", "basis", "kind": "prompt"}`` from the receiver's check. Any failure gives
+    origin ``unknown`` with a basis naming it, and one stderr line; never ``human`` by default.
+    None means the path does not apply: the claim stays exactly as today. Never raises."""
+    try:
+        if _config("SIDECAR_W1_PROMPT_ORIGIN") != "1":
+            return None
+        sock = socket_path()
+        if not sock or not w1_hook_files():
+            return None
+    except Exception:
+        return None
+    why = "error"
+    try:
+        agent = agent_id_for(sock)
+        if not agent:
+            why = "no-agent-id"
+            raise ValueError("cannot tell the sidecar's agent id from the socket name")
+        pid = _harness_pid()
+        reps = reports_for("prompt", hook_input, agent_id=agent, clock=Clock(), harness_pid=pid,
+                           interactive=_interactive(pid))
+        rep = next(r for r in reps if r.get("event") == "prompt_submit")
+        try:
+            reply = _exchange(sock, encode(rep), timeout)
+            if _old_sidecar_refusal(reply) and any(f in rep for f in ORDER_FIELDS):
+                reply = _exchange(sock, encode({k: v for k, v in rep.items() if k not in ORDER_FIELDS}),
+                                  timeout)
+        except (FileNotFoundError, ConnectionRefusedError):
+            why = "no-socket"
+            raise
+        except (socket.timeout, TimeoutError):
+            why = "timeout"
+            raise
+        except ValueError:
+            why = "malformed-reply"
+            raise
+        _log_reply(rep, reply)
+        if not isinstance(reply, dict):
+            why = "malformed-reply"
+            raise ValueError(f"reply is not an object: {type(reply).__name__}")
+        if reply.get("ok") is not True or reply.get("dropped"):
+            why = "refused"
+            raise ValueError(f"receiver did not apply the report: {str(reply.get('ignored') or reply.get('error') or reply)[:120]}")
+        o = reply.get("origin_checked")
+        if o not in VALID_ORIGIN:
+            why = "malformed-reply"
+            raise ValueError(f"reply has no valid origin_checked: {o!r}")
+        return {"origin": o, "basis": reply.get("basis_checked") if o != "unknown" else None,
+                "kind": "prompt"}
+    except Exception as e:
+        _log_error(f"w1-origin {why}")
+        try:
+            sys.stderr.write(f"sidecar: w1-origin {why}: {str(e)[:160] or type(e).__name__}; "
+                             "main claim carries origin unknown\n")
+        except Exception:
+            pass
+        return {"origin": "unknown", "basis": f"w1-origin: {why}", "kind": "prompt"}
+
+
 def agent_id_for(sock_path: str) -> str | None:
     """The sidecar's agent, from the socket name ``<agent>.send.sock``: the sidecar compares
     ``agent_id`` with exactly that name (010, meter.rs:657). ``TERMLINK_AGENT_ID`` is only a

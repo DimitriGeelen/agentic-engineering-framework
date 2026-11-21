@@ -336,6 +336,12 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
     # line saying mail waits. Unknown → nothing, plus one line. termlink without
     # the verb → today's delivery, said once per session. am-i is asked only when
     # mail waits.
+    # T-5351: W1-hook project (adapter/2 off by its w1-guard) with SIDECAR_W1_PROMPT_ORIGIN=1:
+    # one prompt_submit for a receiver-checked origin. Flag off / no W1 → None → claim as today.
+    if a2 is None and main_session.may_claim(me):
+        w1 = adapter2.w1_prompt_origin(hook_input)
+        if w1 is not None:
+            origin_kw = w1
     claimed = (main_session.claim(my_sid, **origin_kw) if main_session.may_claim(me)
                else main_session.INELIGIBLE)
     notice = None
