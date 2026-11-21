@@ -5916,6 +5916,20 @@ concerns:
   partial_fix: "T-5324 (3900dfbbf): suffix bound to the seat dispatch id; not_attached images never count. Reopened 2026-11-21: codex reviewer reproduced a same-basename collision across directories (21 PNGs); matching is by basename, not path. Follow-up T-5333."
   created: 2026-11-21
   last_reviewed: 2026-11-21
+- id: G-139
+  type: gap
+  title: "Agents recommend handover or stop at 200-500K tokens while the budget gauge says Green"
+  description: "Operator, 2026-11-21: agents push toward a handover at 200-500K, far below the bands (Amber 825K at 975K), and this has gone on for a long time. No code fires below Amber: checkpoint.sh and budget-gate.sh use lib/budget_ladder.py only. Causes found (T-5347): (A) this project's saved memory still said 'max 300K, do not suggest 1M' and 'warn >225K, wrap up >255K' from the 300K era, plus a 'budget-wrapped at 294K' precedent, loaded every session through MEMORY.md; (B) a stop recommendation made at ~750K survived compaction in the harness summary and was repeated 5 times at 260-300K. The T-1728 post-compact budget note that should catch this sits at byte 111,887 of a 112,928-byte SessionStart injection, and only ~2KB is shown, so it never reaches the agent; (C) the per-commit check-in plus numbered options puts a 'continue or stop?' slot after every commit, which the agent fills on volume (tasks closed, long day), not on the band."
+  spec_reference: "T-5347; CLAUDE.md §Work Proposal Rule; T-1728 (agents/context/post-compact-resume.sh); lib/budget_ladder.py"
+  severity: medium
+  trigger_fired: true
+  trigger_event: "2026-11-21: operator reported it across agents; this session recommended a stop 5 times in Green"
+  detection_lag_days: 150
+  what_works_now: "The gauge is correct (checkpoint.sh status/budget). This project's memory is corrected. CLAUDE.md and the consumer template carry the rule that a stop names the live band and is not taken in Green/Amber for volume reasons."
+  what_remains: "(1) Move the T-1728 budget note to the top of the SessionStart injection so it survives truncation (T-5348). (2) Other projects' saved memories may hold the same 300K-era thresholds; they are not read from here (each project's own files). (3) No measurement exists of stop recommendations by band; a prose rule binds on discipline only."
+  status: watching
+  created: 2026-11-21
+  last_reviewed: 2026-11-21
 - id: G-138
   type: gap
   title: "Pre-push unit ratchet grades the previous nightly report, so a day's commits push without their unit tests ever running"
