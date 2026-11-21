@@ -87,20 +87,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5310 GO (operator 2026-11-20): risks with any actor score of 6 or more get a mitigation task in the standing risk arc (arc-028, slug `risk`). Slice 1 (T-5313) added the fields and an audit WARN for an assessed risk at 6+ with no `mitigation_task` (agents/audit/audit.sh ~6713, lib/risk_register.py).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The second half of the rule is not checked: a risk can name a `mitigation_task` that does not exist or is not in the standing arc, so the arc silently misses work and the practice goes quiet like the old risk type (5 risks ever).
 
-**Goal:** <what we are trying to achieve>
+**Goal:** `fw audit` WARNs per risk whose `mitigation_task` does not resolve to a task, or resolves to a task whose `arc_id` is not the standing risk arc (`risk` or `arc-028`).
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Both halves of the matrix rule show in `fw audit`; the current register (no assessed risks yet) still passes clean.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] lib/risk_register.py reports a WARN for a `mitigation_task` that is not a task in .tasks/active or .tasks/completed, and one for a task whose `arc_id` is not `risk`/`arc-028` (arc identity read via the canonical arc-membership helper, not a new scan), each naming the risk id and task id
+- [ ] The audit section shows these WARNs through the existing risk-register block (no second block), with an accurate message for each kind
+- [ ] Unit tests cover: in-arc task (no warn), task outside the arc, missing task, slug and arc-NNN forms; the live register still passes; vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,6 +288,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 lib/risk_register.py > /tmp/.t5314 2>&1; test $? -eq 0
+python3 -m pytest tests/unit/ -q -k "risk_register or t5313 or t5314" > /tmp/.t5314b 2>&1 && grep -q passed /tmp/.t5314b
+bin/fw vendor self --check --task T-5314
 
 ## RCA
 
