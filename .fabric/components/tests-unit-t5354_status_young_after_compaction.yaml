@@ -1,0 +1,21 @@
+id: tests/unit/t5354_status_young_after_compaction.bats
+name: t5354_status_young_after_compaction
+type: script
+subsystem: tests
+location: tests/unit/t5354_status_young_after_compaction.bats
+tags: []
+
+purpose: "T-5354 (G-139, reported by 0506): right after a compaction the token counter has fewer than 2 usage entries since the compact_boundary and returns status `young`."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-21
+created_by: unknown

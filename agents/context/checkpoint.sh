@@ -647,9 +647,15 @@ except Exception: print('')
             # cannot see the units of is not tunable — naming the model it is
             # currently being applied to is what makes the number actionable.
             detail=$(tail -c 10000000 "$transcript" 2>/dev/null \
-                | python3 "$FRAMEWORK_ROOT/lib/context_tokens.py" "$(cat "$CONTEXT_DIR/working/.session-start-ts" 2>/dev/null | tr -d '[:space:]')" --with-model 2>/dev/null) || true
+                | python3 "$FRAMEWORK_ROOT/lib/context_tokens.py" "$(cat "$CONTEXT_DIR/working/.session-start-ts" 2>/dev/null | tr -d '[:space:]')" --with-model --with-status 2>/dev/null) || true
             tokens=$(printf '%s' "${detail:-}" | cut -f1)
             model=$(printf '%s' "${detail:-}" | cut -f2)
+            # T-5354 (G-139, 0506): right after a compaction or restart the counter is
+            # `young` (fewer than 2 usage entries since the boundary). A bare
+            # "unavailable" left the agent to fall back on the stale figure in the
+            # compaction summary; say what the state is and what to do instead.
+            mstate=$(printf '%s' "${detail:-}" | cut -f3)
+            provisional=$(printf '%s' "${detail:-}" | cut -f4)
             if [ "${tokens:-0}" -gt 0 ]; then
                 pct=$((tokens * 100 / CONTEXT_WINDOW))
                 echo "Context tokens: ${tokens} (~${pct}% of the ${CONTEXT_WINDOW}-token budget cap)"
@@ -657,6 +663,10 @@ except Exception: print('')
                 echo "To each band: Amber at ${TOKEN_WARN} used (+$(_tokens_to_go "$TOKEN_WARN" "$tokens")), Red at ${TOKEN_URGENT} (+$(_tokens_to_go "$TOKEN_URGENT" "$tokens")), Stop at ${TOKEN_CRITICAL} (+$(_tokens_to_go "$TOKEN_CRITICAL" "$tokens"))"
                 echo "Model: ${model:-unknown} — the cap is a configured dial, not this model's window."
                 echo "  Raise or lower it with: $(_fw_cmd) config set CONTEXT_WINDOW <tokens>"
+            elif [ "${mstate:-}" = "young" ]; then
+                _prov=""
+                [ "${provisional:-0}" -gt 0 ] 2>/dev/null && _prov=" (newest provisional reading: ${provisional})"
+                echo "Context tokens: not yet measured since this session (re)started${_prov}. Do NOT use budget figures from before the restart (handover, compaction summary); check again after your next tool call."
             else
                 echo "Context tokens: unavailable (no usage data)"
             fi
