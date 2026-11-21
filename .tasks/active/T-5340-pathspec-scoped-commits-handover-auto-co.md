@@ -105,9 +105,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] commit.sh honours an explicit opt-out (env var, documented) that skips the post-commit timestamp bump for a pathspec-scoped commit; handover.sh sets it for its auto-commit only
-- [ ] A bats test: a pathspec commit through the handover path leaves the task file clean; a pathspec commit without the opt-out still bumps (unchanged behaviour)
-- [ ] Existing commit/handover tests stay green; vendored copy synced
+- [x] commit.sh honours an explicit opt-out (env var, documented) that skips the post-commit timestamp bump for a pathspec-scoped commit; handover.sh sets it for its auto-commit only
+- [x] A bats test: a pathspec commit through the handover path leaves the task file clean; a pathspec commit without the opt-out still bumps (unchanged behaviour)
+- [x] Existing commit/handover tests stay green; vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -313,6 +313,14 @@ bin/fw vendor self --check --task T-5340
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** every handover left `.tasks/active/<handover task>.md` modified (055 T-759; AEF T-4648 after S-2026-1120-2125); in 055 a deploy `--check` in flight then failed with "tree changed" and cost a full e2e rerun.
+
+**Root cause:** for a pathspec-scoped commit, agents/git/lib/commit.sh bumps the task's `last_update` after the commit, so the bump is never part of it; the handover auto-commit is pathspec-scoped.
+
+**Why structurally allowed:** T-3466 kept the after-commit order on purpose to protect T-3090's rule that a scoped commit commits exactly the listed paths, and called the dirty file an accepted cost; no caller could opt out and no test checked the tree after a handover.
+
+**Prevention:** `FW_COMMIT_SKIP_TASK_BUMP=1` (read at agents/git/lib/commit.sh:229) lets a caller skip the bump without widening its pathspec; agents/handover/handover.sh:160 sets it for its own commit only. tests/unit/t5340_handover_no_dirty_task.bats pins the clean tree, the unchanged default (control leg) and the real handover call site. Fix 14fffe9eb.
 
 ## Evolution
 
