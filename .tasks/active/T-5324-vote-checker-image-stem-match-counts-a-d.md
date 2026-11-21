@@ -57,20 +57,22 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** The first real risk matrix (T-5316, docs/reports/T-5309-risk-matrix.md risk 4) named it; a code read confirmed it (G-137, 2026-11-21).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** lib/vote_checker.py `_stem_match(a, b)` returns True when either stem starts with the other plus `-`. It exists so a seat's copy `<stem>-<dispatch>.png` matches the cited image, but it also matches two different evidence images (`01-file-scripts-agent.png` vs `01-file-scripts-agent-listeners.png`). `image_viewed()` can then return True for an image the seat never opened, and a render vote counts without the evidence being seen (the G-136 class). The matrix also names images beyond the codex attachment cap.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A seat copy matches the cited image only when the extra suffix has the dispatch-id shape the runtime uses; a longer evidence name never matches. Images not attached (over the cap) never count as attached.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Viewing `x-foo.png` no longer counts as viewing `x.png`; real seat copies (`x-<dispatch id>.png`) still match; no existing reviewer verdict test changes result.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `_stem_match` accepts `<stem>-<suffix>` only when the suffix matches the dispatch-id shape the runtime writes (derived from the code that names seat copies, not guessed), in both directions
+- [ ] Tests: prefix-sharing evidence images do not match; a real seat copy matches; a content-hash match still counts; an image beyond the attachment cap is not reported attached
+- [ ] Existing vote_checker / verdict ledger / judge tests stay green; vendored copy synced
+- [ ] RCA filled; G-137 updated with the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,6 +259,8 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/ -q -k "vote_checker or verdict or t5324 or t5309 or t5308" > /tmp/.t5324 2>&1 && grep -q passed /tmp/.t5324
+bin/fw vendor self --check --task T-5324
 
 ## RCA
 
