@@ -22,12 +22,12 @@ description: >
   pinned (see docs/research/executable-workflow/contracts/v2/designer-0.43-mapping.md),
   verify the sha256 and size on arrival, tell 832 the task id.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [designer]
-components: []
+components: [policy/designer-pin.yaml]
 related_tasks: []
 origin: {kind: "peer", source: "832-Workflow-designer", ref: "d1184a3c"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -57,8 +57,8 @@ origin: {kind: "peer", source: "832-Workflow-designer", ref: "d1184a3c"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T17:13:36Z
-last_update: 2026-11-21T12:16:04Z
-date_finished:
+last_update: 2026-11-21T12:35:49Z
+date_finished: 2026-11-21T12:35:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -417,3 +417,21 @@ Screenshots: `.context/visual/T-5273/designer@{1024,1440,1920}.png` (`fw ux shot
 ### 2026-11-21T12:16:04Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-21T12:35:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8537e500
+- **Timestamp:** 2026-11-21T12:36:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — policy/designer-pin.yaml pins 0.45.0 (artifact and validator fields), build and validator installed under vendor/designer/, `fw designer status` reports the pin valid
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/designer-pin.yaml in: policy/designer-pin.yaml pins 0.45.0 (artifact and validator fields), build and validator installed under vendor/designer/, `fw designer status` repor`

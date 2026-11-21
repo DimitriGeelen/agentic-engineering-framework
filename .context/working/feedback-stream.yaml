@@ -57994,3 +57994,21 @@ scan_id: R-3c963d7f
 task_id: T-5321
 payload:
   task_file: .tasks/active/T-5321-aef-backend-declares-closure-never-and-a.md
+---
+kind: scan_emitted
+timestamp: '2026-11-21T12:36:09Z'
+scan_id: R-8537e500
+task_id: T-5273
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-21T12:36:09Z'
+scan_id: R-8537e500
+task_id: T-5273
+payload:
+  task_file: .tasks/active/T-5273-pick-up-workflow-designer-0440-from-832-.md
