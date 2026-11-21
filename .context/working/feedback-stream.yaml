@@ -58102,3 +58102,39 @@ scan_id: R-182d0d70
 task_id: T-5324
 payload:
   task_file: .tasks/active/T-5324-vote-checker-image-stem-match-counts-a-d.md
+---
+kind: scan_emitted
+timestamp: '2026-11-21T14:26:29Z'
+scan_id: R-92475cc2
+task_id: T-5316
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-21T14:26:29Z'
+scan_id: R-92475cc2
+task_id: T-5316
+payload:
+  task_file: .tasks/active/T-5316-risk-practice-slice-4-first-two-matrices.md
+---
+kind: scan_emitted
+timestamp: '2026-11-21T14:59:42Z'
+scan_id: R-c1eea0d1
+task_id: T-5333
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-21T14:59:42Z'
+scan_id: R-c1eea0d1
+task_id: T-5333
+payload:
+  task_file: .tasks/active/T-5333-vote-checker-same-named-images-in-differ.md

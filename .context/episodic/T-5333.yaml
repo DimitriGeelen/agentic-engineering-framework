@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5333: Vote checker: same-named images in different directories still collide (G-137 follow-up)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T14:59:56Z
+# ============================================================================
+
+task_id: T-5333
+task_name: "Vote checker: same-named images in different directories still collide (G-137 follow-up)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-21T13:55:07Z
+completed: 2026-11-21T14:57:52Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-21T15:44:53+01:00
+last_commit: 2026-11-21T15:57:51+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope, criteria, verification. vote_checker keys seat views by path, not basename (G-137). vendor vote_checker.py. RCA, criteria ticked; G-137 resolved; R-041 mitigated. evolution note
+
+# Key outcomes
+outcomes:
+  - '`image_viewed` / `seat_viewed_images` match a cited image by path identity or content hash (plus the seat''s own dispatch-id copy), never by basename alone across directories'
+  - 'A regression test reproduces the codex case (21 PNGs, first and last same basename, different directories and hashes): the last is not viewed; plus a test that the same file viewed by path still counts'
+  - 'Existing vote_checker / verdict / judge tests stay green; vendored copy synced'
+  - 'RCA filled; G-137 resolved (or its remainder named); R-041 updated'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/vote_checker.py'
+  - '.context/project/concerns.yaml'
+  - '.fabric/components/tests-unit-test_t5333_path_identity.yaml'
+  - '.tasks/active/T-5333-vote-checker-same-named-images-in-differ.md'
+  - 'lib/vote_checker.py'
+  - 'tests/unit/test_t5333_path_identity.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-21T15:44:53'
+    action: 'T-5333: scope, criteria, verification'
+  - time: '2026-11-21T15:52:18'
+    action: 'T-5333: vote_checker keys seat views by path, not basename (G-137)'
+  - time: '2026-11-21T15:55:08'
+    action: 'T-5333: vendor vote_checker.py'
+  - time: '2026-11-21T15:55:41'
+    action: 'T-5333: RCA, criteria ticked; G-137 resolved; R-041 mitigated'
+  - time: '2026-11-21T15:57:51'
+    action: 'T-5333: evolution note'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 62 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:risk, risk-mitigation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 62
+  commits: 6
+  files_changed: 9
+  lines_added: 570
+  lines_removed: 54
+  footprint_refreshed_at: '2026-11-21T15:00:08Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5333-vote-checker-same-named-images-in-differ.md
+generated_by: context-agent-hybrid
