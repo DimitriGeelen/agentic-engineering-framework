@@ -1,8 +1,16 @@
 ---
 id: T-5340
-name: "Pathspec-scoped commits (handover auto-commit) bump the task's last_update after the commit, leaving a dirty task file"
+name: "Pathspec-scoped commits (handover auto-commit) bump the task's last_update
+  after the commit, leaving a dirty task file"
 description: >
-  055 report (msg 448c2b31, their T-759): agents/git/lib/commit.sh ~222-227 bumps last_update AFTER a pathspec-scoped commit (T-3090 order), so every handover auto-commit (agents/handover/handover.sh ~1807) leaves .tasks/active/<handover task>.md modified. Confirmed in AEF: T-4648 is dirty after the latest handover. Cost in consumers: a deploy gate hashing the working tree is refused when a handover lands in the deploy window. Options: skip the bump for the handover commit, or bump before and include the task file in the pathspec when the caller is the handover; keep T-3090's rule that a scoped caller's path set is never silently widened.
+  055 report (msg 448c2b31, their T-759): agents/git/lib/commit.sh ~222-227 bumps
+  last_update AFTER a pathspec-scoped commit (T-3090 order), so every handover auto-commit
+  (agents/handover/handover.sh ~1807) leaves .tasks/active/<handover task>.md modified.
+  Confirmed in AEF: T-4648 is dirty after the latest handover. Cost in consumers:
+  a deploy gate hashing the working tree is refused when a handover lands in the deploy
+  window. Options: skip the bump for the handover commit, or bump before and include
+  the task file in the pathspec when the caller is the handover; keep T-3090's rule
+  that a scoped caller's path set is never silently widened.
 
 status: captured
 workflow_type: build
@@ -39,8 +47,8 @@ origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "448c2b31"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T15:29:03Z
-last_update: 2026-11-21T15:29:03Z
-date_finished: null
+last_update: '2026-11-21T15:30:28Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +59,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-21T15:30:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5340: Pathspec-scoped commits (handover auto-commit) bump the task's last_update after the commit, leaving a dirty task file
