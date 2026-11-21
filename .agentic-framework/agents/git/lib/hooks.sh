@@ -1662,6 +1662,29 @@ echo ""
 echo "=== Pre-Push Audit Check ==="
 echo ""
 
+# T-5342 (G-138): hand the audit the pushed range, so it can run the unit test
+# files those commits touch. One A..B per pushed branch update; tags and
+# deletions are skipped. A new branch ranges from the parent of its oldest
+# commit no remote has.
+FW_PUSH_RANGE=""
+while IFS=' ' read -r _pr_lref _pr_lsha _pr_rref _pr_rsha; do
+    [ -n "$_pr_lsha" ] || continue
+    [ "$_pr_lsha" = "$_zero" ] && continue
+    case "$_pr_lref" in refs/tags/*) continue ;; esac
+    if [ "$_pr_rsha" != "$_zero" ] && git cat-file -e "$_pr_rsha^{commit}" 2>/dev/null; then
+        FW_PUSH_RANGE="$FW_PUSH_RANGE $_pr_rsha..$_pr_lsha"
+    else
+        _pr_first=$(git rev-list --reverse "$_pr_lsha" --not --remotes 2>/dev/null | head -n 1)
+        if [ -n "$_pr_first" ] && git cat-file -e "$_pr_first^" 2>/dev/null; then
+            FW_PUSH_RANGE="$FW_PUSH_RANGE $_pr_first^..$_pr_lsha"
+        fi
+    fi
+done <<EOF
+${_stdin_buf}
+EOF
+FW_PUSH_RANGE="${FW_PUSH_RANGE# }"
+export FW_PUSH_RANGE
+
 # T-862: Run fast audit subset for pre-push (full audit takes >90s with 100+ tasks)
 # Structure checks: dirs exist, YAML parses, fabric valid — fast and catches real breaks
 #
