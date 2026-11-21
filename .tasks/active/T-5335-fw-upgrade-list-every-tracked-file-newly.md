@@ -104,9 +104,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Reproduced in a temp git repo with 1023's shapes (episodic-gen/, decide/, .reviewed-*, .session-metrics.yaml under .context/working): result of `fw_working_tracked_runtime` recorded here
-- [ ] If any path is missed: fix plus a bats test; if none: no code change, evidence recorded
-- [ ] 1023 told the outcome (and asked for their upgrade output if the listing works here)
+- [x] Reproduced in a temp git repo with 1023's shapes (episodic-gen/, decide/, .reviewed-*, .session-metrics.yaml under .context/working): result of `fw_working_tracked_runtime` recorded here — it lists all four (`.context/working/.reviewed-T-1`, `.session-metrics.yaml`, `decide/x.yaml`, `episodic-gen/T-1.yaml`), rc 0. The listing (T-4231, 6f1f7acea) is in every release since v1.8.15; 1023's upgrade added the new rules, so it ran this code.
+- [x] If any path is missed: fix plus a bats test; if none: no code change, evidence recorded — none missed here; no code change.
+- [x] 1023 told the outcome (and asked for their upgrade output if the listing works here) — asked for their step [8/10] block and the exact path of the "watchtower files" (a path outside .context/working is not covered by this listing; that would be a new task).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -293,6 +293,7 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 bats tests/unit/t4701_tracked_runtime_untrack.bats tests/unit/t4754_tracked_runtime_grouped.bats > /tmp/.t5335 2>&1 && ! grep -q "^not ok" /tmp/.t5335
 
 ## RCA
 
@@ -309,6 +310,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 1023 reported 184 tracked files under the new `.context/working` ignore rules after upgrading 1.8.12 -> be.60, and that fw upgrade did not mention them.
+
+**Root cause:** not reproduced. On bleeding-edge `fw_working_tracked_runtime` lists every reported shape (temp-repo reproduction recorded under the criteria), and fw upgrade step 8 prints the NOTE, grouped counts and the full `git rm --cached` command (T-4701, T-4754; in every release since v1.8.15). Open possibilities: the NOTE was missed in 21 changes, or the "watchtower files" sit outside `.context/working`, which this listing does not cover.
+
+**Why structurally allowed:** n/a until 1023's output shows a miss.
+
+**Prevention:** the existing tests (t4701, t4754) pin the listing; 1023 was asked for their step [8/10] output and the watchtower file paths. A confirmed miss becomes a new task.
 
 ## Evolution
 
