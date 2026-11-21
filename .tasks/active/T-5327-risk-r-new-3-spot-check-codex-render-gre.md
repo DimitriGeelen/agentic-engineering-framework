@@ -100,10 +100,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] In a non-panel run, a render-criterion vote whose only view proof is attached-at-launch is reported not-checkable with a named reason; the same vote in a rung-5 panel still counts; a seat with a logged view still counts in both
-- [ ] The judge reassigns such a criterion to another seat kind (existing not-checkable path), shown by a test through judge_cli's reassignment logic
-- [ ] Existing vote_checker / verdict / judge tests stay green; vendored copy synced
-- [ ] Option 1 (spot-check) filed as a follow-up task in arc risk
+- [x] In a non-panel run, a render-criterion vote whose only view proof is attached-at-launch is reported not-checkable with a named reason; the same vote in a rung-5 panel still counts; a seat with a logged view still counts in both
+- [x] The judge reassigns such a criterion to another seat kind (existing not-checkable path), shown by a test through judge_cli's reassignment logic
+- [x] Existing vote_checker / verdict / judge tests stay green; vendored copy synced
+- [x] Option 1 (spot-check) filed as a follow-up task in arc risk
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -332,6 +332,11 @@ bin/fw vendor self --check --task T-5327
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-21 — from spot-check to a closing rule
+- **What changed:** filed as a spot-check (option 1); the matrix showed the risk sits in single-seat runs, so the operator's go ("proceed as you see fit") went to option 2 first: attached-only proof no longer carries a render vote outside a rung-5 panel, and the existing not-checkable path reassigns it.
+- **Plan impact:** the render flag reaches the check through the ledger's existing `_is_render_review`; `fw audit`'s ledger walk has no criterion context, so it cannot apply the rule (close gate, panel and judge do).
+- **Triggered:** T-5341 (option 1, spot-check of panel codex greens, which also covers the audit gap).
 
 ## Recommendation
 
