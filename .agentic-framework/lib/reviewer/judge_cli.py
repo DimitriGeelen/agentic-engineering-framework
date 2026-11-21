@@ -180,9 +180,20 @@ def names_image(text: str) -> bool:
     return bool(_IMAGE_EVIDENCE_RE.search(text))
 
 
+def needs_screenshots(c: dict) -> bool:
+    """T-5352: the ONE test for "this criterion is judged on screenshots of pages": a render
+    criterion, or any criterion that names a page whatever its class (a designer re-pin names
+    /designer but changes no web/ file, so it is `unclassified`). `_gather_evidence` captures the
+    pages and gathers the Visual Verification shots for exactly these, the brief lists them, and
+    `is_image_evidence` (the brief's image section) builds on this test, so the section can never
+    again promise screenshots the capture did not take."""
+    return bool(c.get("render") or c.get("page"))
+
+
 def is_image_evidence(c: dict) -> bool:
-    """The judge's image-evidence test for a planned criterion (older dicts carry no `image`)."""
-    return bool(c.get("image") or c.get("render") or c.get("page"))
+    """The judge's image-evidence test for a planned criterion (older dicts carry no `image`):
+    screenshots of pages (`needs_screenshots`), or image files the criterion names."""
+    return bool(needs_screenshots(c) or c.get("image"))
 
 
 def _partition(task_data: dict, root: Path, task_id: str,
@@ -665,17 +676,17 @@ def _gather_evidence(root: Path, task_id: str, task_data: dict, criteria: list[d
     `captures` is the per-page result the ledger will be given: {'page', 'ok', 'sha256', 'path',
     'error'}. A page with no verified screenshot is `ok: False` whatever else was captured, so a
     partial capture is preserved rather than collapsed into a single pass/fail."""
-    needed = any(c["render"] for c in criteria)
+    screened = [c for c in criteria if needs_screenshots(c)]   # T-5352: render OR page
+    needed = bool(screened)
     ev = {"needed": needed, "pages": [], "shots": [], "error": "", "captures": [], "partial": []}
     if not needed:
         return ev
-    render = [c for c in criteria if c["render"]]
-    ev["pages"] = _pages_for(root, task_id, task_data["text"], render)
+    ev["pages"] = _pages_for(root, task_id, task_data["text"], screened)
     # T-5151: a route found only as a changed blueprint's GET route (not named by the
     # criterion) that answers a bare GET with 4xx needs a query or a body (/ask, /ask/stream,
     # /search/load-conversation): it is not a page on its own. Requiring a screenshot of it made
     # every seat return not-evaluated on T-3786. Pages the criterion names stay required.
-    named = {p for c in render for p in _criterion_pages(root, c.get("body") or "")}
+    named = {p for c in screened for p in _criterion_pages(root, c.get("body") or "")}
     ev["not_pages"] = _bare_get_refusals(_watchtower_url(root), [p for p in ev["pages"] if p not in named])
     ev["pages"] = [p for p in ev["pages"] if p not in ev["not_pages"]]
     ev["visual"] = _gather_visual(root, task_id, task_data)
@@ -1507,7 +1518,7 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
             seats=[{"seat": s["seat"], "vendor": s["vendor"],
                     "brief_sha256": vl.brief_digest(briefs[s["seat"]])} for s in seats],
             required_vendors=required,
-            pages={str(c["ac_index"]): evidence["pages"] for c in judged if c["render"]},
+            pages={str(c["ac_index"]): evidence["pages"] for c in judged if needs_screenshots(c)},
             captures=evidence["captures"], visual=evidence.get("visual"),
             inputs=imp["inputs"], reason=reason + (f"; {note}" if note else ""),
             degraded=degraded, rung_due=due, revision=revision, root=root)
