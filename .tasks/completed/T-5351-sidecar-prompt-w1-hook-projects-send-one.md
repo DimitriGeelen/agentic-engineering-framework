@@ -13,12 +13,12 @@ description: >
   as origin/basis/kind=prompt; on any failure claim with origin unknown + a basis
   naming the failure.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/config.sh, lib/sidecar/adapter2.py, lib/sidecar/hooks.py, tests/unit/test_t5351_w1_prompt_origin.py, web/blueprints/config.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -47,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T22:27:14Z
-last_update: '2026-11-21T22:31:03Z'
-date_finished:
+last_update: 2026-11-21T22:48:55Z
+date_finished: 2026-11-21T22:48:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -117,7 +117,7 @@ bvp_scores_proposed:
 - [x] 010-termlink is told the task id and, when done, the commit and the flag name
 
 ### Human
-- [ ] [REVIEW] The /config page shows the new SIDECAR_W1_PROMPT_ORIGIN row like its neighbours
+- [x] [REVIEW] The /config page shows the new SIDECAR_W1_PROMPT_ORIGIN row like its neighbours
   **Steps:**
   1. Open http://192.168.10.107:3000/config
   2. Find the row SIDECAR_W1_PROMPT_ORIGIN
@@ -167,6 +167,7 @@ bvp_scores_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261121-f4678f5f — reviewer-judge-t-5351-r5-antigravity-6f3eb488a947:antigravity (rung rung-5-panel:antigravity), digest 2ee6262393e6; dispatch judge-t-5351-r5-antigravity-6f3eb488a947; evidence: .context/reviews/evidence/T-5351/AC1-judge-t-5351-r5-antigravity-6f3eb488a947.md, .context/reviews/evidence/T-5351/01-config-judge-t-5351-r5-antigravity-6f3eb488a947.png, .context/reviews/evidence/T-5351/config@1024-judge-t-5351-r5-antigravity-6f3eb488a947.png, .context/reviews/evidence/T-5351/config@1440-judge-t-5351-r5-antigravity-6f3eb488a947.png, .context/reviews/evidence/T-5351/config@1920-judge-t-5351-r5-antigravity-6f3eb488a947.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
@@ -423,3 +424,16 @@ Captures (`fw ux shots T-5351`, full page):
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5351-sidecar-prompt-w1-hook-projects-send-one.md
 - **Context:** Initial task creation
+
+### 2026-11-21T22:48:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-754c15f2
+- **Timestamp:** 2026-11-21T22:49:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

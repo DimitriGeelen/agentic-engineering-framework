@@ -1,0 +1,135 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5351: Sidecar prompt(): W1-hook projects send one adapter/2 prompt_submit to get a checked origin for the main claim (TermLink T-3694, flag default off)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T22:49:40Z
+# ============================================================================
+
+task_id: T-5351
+task_name: "Sidecar prompt(): W1-hook projects send one adapter/2 prompt_submit to get a checked origin for the main claim (TermLink T-3694, flag default off)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-21T22:27:14Z
+completed: 2026-11-21T22:48:55Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-21T23:27:56+01:00
+last_commit: 2026-11-21T23:48:27+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope — W1-hook projects send one prompt_submit for a checked origin (010-termlink T-3694). W1-hook projects send one adapter/2 prompt_submit for a checked main-claim origin (SIDECAR_W1_PROMPT_ORIGIN, default 0; 010-termlink T-3694). criteria, RCA; 010-termlink told commit + flag. render-review criterion and /config captures (one registry row on the config page). visual note says what was checked. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (antigravity seat antigravity, recorded by the runtime)
+
+# Key outcomes
+outcomes:
+  - 'A new config key (registry entry with description, default off) gates the path. Only when it is on, `adapter2.w1_hook_files()` is non-empty and `adapter2.socket_path()` is set, `prompt()` sends exactly one `termlink.adapter/2` `prompt_submit` report (same fields adapter/2 already sends) with a ~250 ms timeout. It reads `origin_checked`/`basis_checked` from the reply and passes them to `main_session.claim(...)` as origin/basis/kind=prompt.'
+  - 'Kept as is: `adapter2.enabled()` stays False (no BUSY and no other adapter/2 report), the headless early return, and `may_claim`. On any failure (no socket, timeout, malformed reply) the claim carries origin `unknown` and a basis naming the failure, with one error line. It is never origin-less and never `human`.'
+  - 'Tests, hermetic with a stub socket:'
+  - '010-termlink is told the task id and, when done, the commit and the flag name'
+  - '[REVIEW] The /config page shows the new SIDECAR_W1_PROMPT_ORIGIN row like its neighbours'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/sidecar/adapter2.py'
+  - '.agentic-framework/lib/sidecar/hooks.py'
+  - '.agentic-framework/web/blueprints/config.py'
+  - '.context/reviews/evidence/T-5351/01-config-40_4375_1200_113-crop.png'
+  - '.context/reviews/evidence/T-5351/01-config-40_4375_1200_114-crop.png'
+  - '.context/reviews/evidence/T-5351/01-config-judge-t-5351-r5-antigravity-6f3eb488a947.png'
+  - '.context/reviews/evidence/T-5351/01-config-judge-t-5351-r5-claude-code-d49de631d0b8-40_4376_1200_112-crop.png'
+  - '.context/reviews/evidence/T-5351/01-config-judge-t-5351-r5-claude-code-d49de631d0b8.png'
+  - '.context/reviews/evidence/T-5351/01-config-judge-t-5351-r5-codex-390dcbbe1fe6.png'
+  - '.context/reviews/evidence/T-5351/AC1-judge-t-5351-r5-antigravity-6f3eb488a947.md'
+  - '.context/reviews/evidence/T-5351/AC1-judge-t-5351-r5-claude-code-d49de631d0b8.md'
+  - '.context/reviews/evidence/T-5351/AC1-judge-t-5351-r5-codex-390dcbbe1fe6.md'
+  - '.context/reviews/evidence/T-5351/config@1024-37_5493_950_162-crop.png'
+  - '.context/reviews/evidence/T-5351/config@1024-37_5494_950_161-crop.png'
+  - '.context/reviews/evidence/T-5351/config@1024-judge-t-5351-r5-antigravity-6f3eb488a947.png'
+  - '.context/reviews/evidence/T-5351/config@1024-judge-t-5351-r5-claude-code-d49de631d0b8-36_5493_952_162-crop.png'
+  - '.context/reviews/evidence/T-5351/config@1024-judge-t-5351-r5-claude-code-d49de631d0b8.png'
+  - '.context/reviews/evidence/T-5351/config@1024-judge-t-5351-r5-codex-390dcbbe1fe6.png'
+  - '.context/reviews/evidence/T-5351/config@1440-120_4375_1200_113-crop.png'
+  - '.context/reviews/evidence/T-5351/config@1440-120_4375_1200_114-crop.png'
+  - '.context/reviews/evidence/T-5351/config@1440-judge-t-5351-r5-antigravity-6f3eb488a947.png'
+  - '.context/reviews/evidence/T-5351/config@1440-judge-t-5351-r5-claude-code-d49de631d0b8-120_4376_1200_112-crop.png'
+  - '.context/reviews/evidence/T-5351/config@1440-judge-t-5351-r5-claude-code-d49de631d0b8.png'
+  - '.context/reviews/evidence/T-5351/config@1440-judge-t-5351-r5-codex-390dcbbe1fe6.png'
+  - '.context/reviews/evidence/T-5351/config@1920-235_3967_1450_90-crop.png'
+  - '.context/reviews/evidence/T-5351/config@1920-judge-t-5351-r5-antigravity-6f3eb488a947.png'
+  - '.context/reviews/evidence/T-5351/config@1920-judge-t-5351-r5-claude-code-d49de631d0b8-235_3967_1450_90-crop.png'
+  - '.context/reviews/evidence/T-5351/config@1920-judge-t-5351-r5-claude-code-d49de631d0b8.png'
+  - '.context/reviews/evidence/T-5351/config@1920-judge-t-5351-r5-codex-390dcbbe1fe6.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.fabric/components/tests-unit-test_t5351_w1_prompt_origin.yaml'
+  - '.tasks/active/T-5351-sidecar-prompt-w1-hook-projects-send-one.md'
+  - 'lib/config.sh'
+  - 'lib/sidecar/adapter2.py'
+  - 'lib/sidecar/hooks.py'
+  - 'tests/unit/test_t5351_w1_prompt_origin.py'
+  - 'web/blueprints/config.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-21T23:27:56'
+    action: 'T-5351: scope — W1-hook projects send one prompt_submit for a checked origin (010-termlink T-3694)'
+  - time: '2026-11-21T23:33:37'
+    action: 'T-5351: W1-hook projects send one adapter/2 prompt_submit for a checked main-claim origin (SIDECAR_W1_PROMPT_ORIGIN, default 0; 010-termlink T-3694)'
+  - time: '2026-11-21T23:40:24'
+    action: 'T-5351: criteria, RCA; 010-termlink told commit + flag'
+  - time: '2026-11-21T23:41:06'
+    action: 'T-5351: render-review criterion and /config captures (one registry row on the config page)'
+  - time: '2026-11-21T23:41:23'
+    action: 'T-5351: visual note says what was checked'
+  - time: '2026-11-21T23:42:58'
+    action: 'T-5351: reviewer verdict'
+  - time: '2026-11-21T23:45:02'
+    action: 'T-5351: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-21T23:48:27'
+    action: 'T-5351: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 21 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 21
+  commits: 9
+  files_changed: 45
+  lines_added: 1109
+  lines_removed: 11
+  footprint_refreshed_at: '2026-11-21T22:49:51Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5351-sidecar-prompt-w1-hook-projects-send-one.md
+generated_by: context-agent-hybrid
