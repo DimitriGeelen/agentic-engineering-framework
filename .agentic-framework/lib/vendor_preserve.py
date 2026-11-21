@@ -362,8 +362,16 @@ def cmd_pre(a):
     tag_cache = {}
 
     keep, at_risk, in_file_hits, released = [], [], [], []
+    both = []   # T-5337: listed under files: AND in_file:
     for rel in sorted(dst):
         if manifest and rel in manifest["in_file"] and rel in src:
+            if preserved(rel, manifest):
+                # T-5337 (1023): in_file: used to win silently and take upstream, dropping
+                # the lines the consumer wanted kept. files: now wins (the copy is kept) and
+                # the in_file: markers are still checked against that kept copy.
+                keep.append(rel)
+                both.append(rel)
+                continue
             in_file_hits.append(rel)
             continue
         if preserved(rel, manifest) or (manifest and rel in manifest["in_file"]):
@@ -410,6 +418,10 @@ def cmd_pre(a):
     for rel in in_file_hits:
         print(f"  IN-FILE   {rel}  (takes upstream; {len((manifest or {}).get('in_file', {}).get(rel, []))} marker(s) "
               "checked after the copy)")
+    for rel in both:
+        print(f"  WARN      {rel}  is listed under BOTH files: and in_file: in {MANIFEST}; "
+              f"files: wins (your copy is kept) and its {len(manifest['in_file'][rel])} in_file: "
+              "marker(s) are checked against the kept copy. List it under one key to silence this.")
     if at_risk:
         print(f"  {len(at_risk)} file(s) under {VENDOR_DIR}/ are not the framework's and are "
               f"not covered by {MANIFEST}:")
@@ -449,7 +461,8 @@ def cmd_pre(a):
     plan["restore"] = [{"rel": r, "local": digest(dst[r]),
                         "upstream": digest(src[r]) if r in src else None,
                         "stamp": (stamp or {}).get(r)} for r in keep]
-    plan["in_file"] = {r: manifest["in_file"][r] for r in in_file_hits} if manifest else {}
+    plan["in_file"] = ({r: manifest["in_file"][r] for r in in_file_hits + both}
+                       if manifest else {})
     if at_risk:
         log_bypass(a.target, f"{len(at_risk)} local file(s) lost: "
                    + ", ".join(r for r, _ in at_risk[:20]))

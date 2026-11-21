@@ -113,6 +113,33 @@ YAML
     [[ "$output" != *'MARKER MISSING'* ]]
 }
 
+@test "T-5337: a path under BOTH files: and in_file: keeps the local copy, checks its marker, warns" {
+    # 1023's exact shape: the same file under files: (keep my copy) and in_file: (check my line).
+    cat > "$PROJ/.fwvendor-preserve.yaml" <<'YAML'
+files:
+  - web/blueprints/approvals.py
+  - path: .agentic-framework/web/templates/ring20_*.html
+  - lib/a.sh
+  - web/app.py
+in_file:
+  - file: web/app.py
+    marker: "ring20-local: approvals"
+YAML
+    run _vendor --dry-run
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q "WARN      web/app.py  is listed under BOTH files: and in_file:"
+    echo "$output" | grep -q "files: wins"
+    [[ "$output" != *'IN-FILE   web/app.py  (takes upstream'* ]]
+    run _vendor
+    [ "$status" -eq 0 ]
+    # the local lines survive (before T-5337 upstream "app v2" replaced them)
+    grep -q "ring20-local: approvals" "$AF/web/app.py"
+    echo "$output" | grep -q "KEPT-LOCAL  web/app.py"
+    # the marker is still checked, against the kept copy
+    echo "$output" | grep -q "IN-FILE   1/1 marker(s) present after vendor"
+    [[ "$output" != *'MARKER MISSING'* ]]
+}
+
 @test "--allow-delete-locals: proceeds, logs Tier-2, keeps a copy" {
     run _vendor --allow-delete-locals
     [ "$status" -eq 0 ]
