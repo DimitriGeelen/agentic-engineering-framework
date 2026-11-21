@@ -2,7 +2,12 @@
 id: T-5341
 name: "Risk R-NEW-3 slice 2: spot-check codex render greens against the images"
 description: >
-  Option 1 of T-5327 (operator 2026-11-21: proceed as you see fit; agent chose both, option 2 first, done in T-5327). Periodically sample codex render greens that closed in a rung-5 panel (where attached-only proof still counts), re-judge them with a seat whose log shows a view, and report the disagreement rate in fw audit. Also covers the gap T-5327 left: fw audit cannot apply the attached-only rule because its ledger walk has no criterion context.
+  Option 1 of T-5327 (operator 2026-11-21: proceed as you see fit; agent chose both,
+  option 2 first, done in T-5327). Periodically sample codex render greens that closed
+  in a rung-5 panel (where attached-only proof still counts), re-judge them with a
+  seat whose log shows a view, and report the disagreement rate in fw audit. Also
+  covers the gap T-5327 left: fw audit cannot apply the attached-only rule because
+  its ledger walk has no criterion context.
 
 status: captured
 workflow_type: build
@@ -39,8 +44,8 @@ origin: {kind: "agent", source: "T-5327"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T15:40:20Z
-last_update: 2026-11-21T15:40:20Z
-date_finished: null
+last_update: '2026-11-21T15:45:27Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +56,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-21T15:45:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5341: Risk R-NEW-3 slice 2: spot-check codex render greens against the images
