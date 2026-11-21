@@ -87,20 +87,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5302 GO (operator, 2026-11-20): printed commands come from one builder (`lib/fw-command.sh` `_emit_user_command`/`_fw_cmd`, `lib/fw_command.py` `user_command`, Watchtower `fw_cmd`), never hand-written `bin/fw` or `bin/watchtower.sh`. The class recurred one printer at a time (T-609, T-1257, T-1633, T-3952, T-4250, GitHub #68), and #68 is still open for an outside contributor's PR (T-5301).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Nothing stops a new printer from hand-writing `bin/fw ...` or `bin/watchtower.sh ...` in text shown to a person or agent, so a vendored project gets a command that fails as printed. About 100 such places remain; fixing them all at once is slices 2, 3 and 5.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A lint that fails on any NEW hand-written `bin/fw` / `bin/watchtower.sh` command in printed text, with a committed baseline (ratchet) of the existing ones that can only shrink.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `bats tests/lint/<new file>` is green today, goes red when a new printed `bin/fw ...` line is added, and prints how to shrink the baseline when one is removed; it runs in `bin/fw test lint`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A detector finds printed hand-written `bin/fw <verb>` and `bin/watchtower.sh` commands in emitted text (shell echo/printf strings, Python print/f-string/message literals, Jinja templates) under bin/, lib/, agents/, web/, skipping comments, the builder implementations, internal exec/dispatch code that runs a path rather than printing it, and tests/docs
+- [ ] A committed baseline (file -> count) records today's instances; the lint fails when a file's count rises or a new file appears, and on a fall tells the author to regenerate the baseline (never auto-grows)
+- [ ] The lint has a control test: an injected new printed `bin/fw doctor` line turns it red, and the clean tree is green
+- [ ] The lint lives in tests/lint/ (run by the audit invariant suite, `bats tests/lint/`), is green there with no skips, and the vendored copy is synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,6 +289,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/lint/printed-fw-commands-ratchet.bats > /tmp/.t5306 2>&1 && ! grep -q "^not ok" /tmp/.t5306
+test "$(grep -c '# skip' /tmp/.t5306)" -eq 0
+bin/fw vendor self --check --task T-5306
 
 ## RCA
 
