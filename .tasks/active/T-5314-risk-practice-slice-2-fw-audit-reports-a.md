@@ -7,10 +7,10 @@ description: >
   (5 risks ever). WARN per risk with any actor score >= 6 and no mitigation_task,
   and per mitigation_task that is not in the standing arc. Depends on slice 1.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T16:31:29Z
-last_update: '2026-11-20T16:45:58Z'
+last_update: 2026-11-21T12:41:14Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,9 +99,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] lib/risk_register.py reports a WARN for a `mitigation_task` that is not a task in .tasks/active or .tasks/completed, and one for a task whose `arc_id` is not `risk`/`arc-028` (arc identity read via the canonical arc-membership helper, not a new scan), each naming the risk id and task id
-- [ ] The audit section shows these WARNs through the existing risk-register block (no second block), with an accurate message for each kind
-- [ ] Unit tests cover: in-arc task (no warn), task outside the arc, missing task, slug and arc-NNN forms; the live register still passes; vendored copy synced
+- [x] lib/risk_register.py reports a WARN for a `mitigation_task` that is not a task in .tasks/active or .tasks/completed, and one for a task whose `arc_id` is not `risk`/`arc-028` (arc identity read via the canonical arc-membership helper, not a new scan), each naming the risk id and task id
+- [x] The audit section shows these WARNs through the existing risk-register block (no second block), with an accurate message for each kind
+- [x] Unit tests cover: in-arc task (no warn), task outside the arc, missing task, slug and arc-NNN forms; the live register still passes; vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -388,3 +388,7 @@ bin/fw vendor self --check --task T-5314
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5314-risk-practice-slice-2-fw-audit-reports-a.md
 - **Context:** Initial task creation
+
+### 2026-11-21T12:41:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
