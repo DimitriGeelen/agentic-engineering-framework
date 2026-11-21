@@ -113,8 +113,8 @@ cost_estimate_proposed:
 - [ ] [REVIEW] Designer 0.46.0 shows both fixes we asked for (T-1471, T-1472)
   **Steps:**
   1. Open http://192.168.10.107:3000/designer at a 1920 px wide window: the Save button is on the first toolbar row, inside the frame
-  2. Open http://192.168.10.107:3000/designer/app at a 1024 px wide window: the starter map is readable (labels not clipped or overlapping)
-  **Expected:** Save on the first toolbar row at 1920; starter map readable at 1024
+  2. Open http://192.168.10.107:3000/designer/app at a 1024 px wide window: the starter map opens readable from its top-left corner (start event and first steps in view, labels sharp and not overlapping). The rest of the map lies beyond the canvas edge and is reached by scrolling or the toolbar's Fit. This is 832's design (msg 76a8c928), accepted by the operator on 2026-11-22 (see Decisions).
+  **Expected:** Save on the first toolbar row at 1920; at 1024 the starter map's visible part is readable with no overlapping labels, starting from the top-left; a map continuing beyond the canvas edge is expected, not a fault
   **If not:** Screenshot the width that fails and note what is wrong; it goes back to 832 on its thread
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
@@ -310,7 +310,7 @@ bin/fw vendor self --check --task T-5350
 | state | control | 1024 | 1440 | 1920 | note |
 |-------|---------|------|------|------|------|
 | designer | Save button (T-1471) | ok | ok | ok | 1920: Save on the first toolbar row at the right end, inside the frame. 1024: the toolbar wraps to two rows, Save on row 2 (T-1471 is about 1920) |
-| app | starter map (T-1472) | clipped | ok | ok | 1024: opens at 100%, labels sharp and not overlapping, but only the left part of the map is in view; the rest is under the properties panel and needs scrolling. Reviewer to judge whether this meets T-1472 |
+| app | starter map (T-1472) | clipped | clipped | ok | 1024: opens readable from the top-left, labels sharp and not overlapping; the rest of the map continues beyond the canvas edge (scroll or Fit), by 832's design. 1440: "Synthesize findings" is cut at the right canvas edge, same cause; I first marked 1440 "ok" without checking it, and codex's review (2026-11-22) caught that |
 
 **T-1472 intent, from 832 (msg 76a8c928, 2026-11-21):** at 1024, fitting the whole map draws its smallest text at 2.7 px, and 832's floor is 9 px. So the starter map opens at the zoom where the smallest text is 9 px, from the top-left: the start event and first steps are in view, and the rest is reached by scrolling. The toolbar's Fit still shows the whole map. Maps opened by `?load=` have behaved this way since 832's T-1256/T-1278; T-1472 gave the starter map the same rule. AEF accepted this as the right default (no host setting). So "clipped" at 1024 above means "scroll for the rest", by design.
 
@@ -401,6 +401,12 @@ Captures (`fw ux shots T-5350`, full page):
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-22 — starter map at 1024: accept 832's design (operator)
+- **Chose:** The review criterion now states 832's design: readable from the top-left, the rest reached by scrolling or Fit. The operator chose "Accept 832's design" when asked after codex's red verdict (2026-11-22; codex verdict for dispatch judge-t-5350-r3-c5de13c5aa5b).
+- **Why:** Fitting the whole map at 1024 draws its smallest text at 2.7 px, below 832's 9 px floor (msg 76a8c928). Every map opened by `?load=` already behaves this way. The old wording "labels not clipped" was my paraphrase of T-1472 and did not match it. codex's red was correct for that wording.
+- **Rejected:** Asking 832 for fit-to-frame (two of their reviewer rounds found fit-size text unreadable at 1024). Leaving it red (the Save fix works and the build is already live).
+- **Note:** The criterion was reworded after a red vote. That is goalpost-moving unless the operator decides it, which is why the operator's choice is recorded here.
 
 ## Decision
 
