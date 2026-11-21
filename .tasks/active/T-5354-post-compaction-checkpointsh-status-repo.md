@@ -9,7 +9,7 @@ description: >
   right after compaction (transcript not yet written? cache reset?) and make it either
   read the live figure or say plainly 'unknown — do not use earlier figures'.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T23:25:44Z
-last_update: '2026-11-21T23:30:54Z'
+last_update: 2026-11-21T23:39:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,20 +89,24 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 0506 reported on the G-139 thread (msg bf316c6c, 2026-11-21) that its early stop on 2026-11-19 came from the compaction summary's stale "~81% of 800k, propose only small work". `checkpoint.sh status` said "unavailable" on the first turns after compaction; the real figure was about 15%.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Confirmed by reading the code:
+- `post-compact-resume.sh:155` resets `.session-start-ts` to now.
+- `lib/context_tokens.py` discards everything before the `compact_boundary`.
+- So until two new usage entries exist, the counter returns tokens 0 with status `young` (T-4174, `--with-status`).
+- `checkpoint.sh status` (~650) calls only `--with-model`, so it prints "Context tokens: unavailable (no usage data)". That tells the agent nothing about what to do, and the agent falls back to the figure in the summary.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** In that state, `status` says what it is and what to do: not yet measured since this (re)start, do not use earlier figures, check again after the next tool call. The newest provisional reading is shown when there is one.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A resumed agent sees an explicit "young — do not use earlier figures" line instead of a bare "unavailable", so the stale summary number has nothing to fill in for.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `checkpoint.sh status` reads `lib/context_tokens.py --with-status`. For `young` it prints one line saying the session has not been measured since it (re)started, with the newest provisional reading if any, that budget figures from before the restart (handover, compaction summary) must not be used, and to check again after the next tool call. `measured` output is unchanged. A truly empty or failed scan still says unavailable.
+- [ ] A bats test feeds a transcript (via FW_TRANSCRIPT_PATH) holding only a compact_boundary plus one usage entry and asserts the young line. A measured transcript gives the same lines as before. The existing checkpoint/budget tests stay green, and the vendored copy is synced.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -386,3 +390,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5354-post-compaction-checkpointsh-status-repo.md
 - **Context:** Initial task creation
+
+### 2026-11-21T23:39:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
