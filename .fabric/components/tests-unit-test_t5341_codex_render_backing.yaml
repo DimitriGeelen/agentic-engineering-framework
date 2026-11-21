@@ -1,0 +1,21 @@
+id: tests/unit/test_t5341_codex_render_backing.py
+name: test_t5341_codex_render_backing
+type: script
+subsystem: tests
+location: tests/unit/test_t5341_codex_render_backing.py
+tags: []
+
+purpose: "T-5341: every committed codex render green must be backed by a peer seat in the same run that voted green with a logged view of the images (lib/vote_checker's view rule)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-21
+created_by: unknown

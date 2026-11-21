@@ -3308,6 +3308,8 @@ _audit_collect() {
 }
 [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ] && \
     _audit_prefetch vl env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" audit
+[ -f "$FRAMEWORK_ROOT/lib/codex_render_backing.py" ] && \
+    _audit_prefetch crb env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/codex_render_backing.py" audit
 [ -f "$FRAMEWORK_ROOT/lib/human_ac_ticks.py" ] && \
     _audit_prefetch hat env PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/human_ac_ticks.py" audit
 [ -f "$FRAMEWORK_ROOT/lib/accepted_miss.py" ] && \
@@ -3351,6 +3353,32 @@ else
     # T-3581: absent validation code is a failure, not a skip — nothing else checks the ledger.
     fail "Reviewer-verdict ledger: lib/verdict_ledger.py is missing — the ledger is UNVERIFIED" \
          "verdict validation code unavailable" \
+         "Restore it: bin/fw vendor self (or fw upgrade)"
+fi
+
+# T-5341 (Risk R-NEW-3): codex can vote green on a render criterion without opening the
+# screenshots; in a rung-5 panel attached-only proof still counts. Each committed codex render
+# green must have a peer seat in the same run, on the same criterion, that voted green with a
+# logged view of the images (vote_checker's rule). Read-only, WARN-only, starts no dispatch.
+if [ -f "$FRAMEWORK_ROOT/lib/codex_render_backing.py" ]; then
+    _audit_collect crb
+    _crb_out=$_PF_OUT
+    _crb_rc=$_PF_RC
+    if [ "$_crb_rc" -eq 0 ]; then
+        pass "Codex render greens: $(echo "$_crb_out" | tail -1 | sed 's/^codex render greens: //'), all backed by a viewing peer (T-5341)"
+    elif [ "$_crb_rc" -eq 1 ]; then
+        _crb_n=$(echo "$_crb_out" | grep -c '^UNBACKED' || true)
+        warn "Codex render greens: ${_crb_n} not backed by a viewing peer — $(echo "$_crb_out" | tail -1) (T-5341)" \
+             "$(echo "$_crb_out" | grep '^UNBACKED' | sed 's/^UNBACKED //' | tr '\n' ';')" \
+             "Re-judge each named task with a seat that logs a view: bin/fw reviewer judge T-XXX"
+    else
+        warn "Codex render greens: not checked (rc=$_crb_rc) (T-5341)" \
+             "$(echo "$_crb_out" | tail -2 | tr '\n' ';')" \
+             "Run: python3 lib/codex_render_backing.py audit"
+    fi
+else
+    warn "Codex render greens: not checked — lib/codex_render_backing.py is missing (T-5341)" \
+         "backing check code unavailable" \
          "Restore it: bin/fw vendor self (or fw upgrade)"
 fi
 

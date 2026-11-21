@@ -1,0 +1,24 @@
+id: lib/codex_render_backing.py
+name: codex_render_backing
+type: script
+subsystem: framework-core
+location: lib/codex_render_backing.py
+tags: []
+
+purpose: "T-5341 (Risk R-NEW-3): is every committed codex render green backed by a viewing peer?"
+purpose_source: docstring
+
+depends_on:
+  - target: lib/vote_checker.py
+    type: calls
+  - target: .context/reviews/verdicts.jsonl
+    type: reads
+  - target: .context/reviews/review-dispatches.jsonl
+    type: reads
+
+depended_by:
+  - target: agents/audit/audit.sh
+    type: calls
+
+last_verified: 2026-11-21
+created_by: unknown
