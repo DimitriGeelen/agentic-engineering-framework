@@ -9,10 +9,10 @@ description: >
   has no pattern for repo-mutating git commands. Add git add/commit/reset/checkout/stash
   and redirects into .context or .tasks to the skip patterns, logged like the others.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-5268]
@@ -44,7 +44,7 @@ origin: {kind: "peer", source: "1023-portable-encrypted-chromium-vault", ref: "b
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T15:07:54Z
-last_update: '2026-11-21T15:15:51Z'
+last_update: 2026-11-21T16:47:35Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,20 +90,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 1023 field report (msg bdb4fd8d, be.60 upgrade): a stored Verification line in their T-058 ran `git add -A .context`, so every unattended re-run (census/audit) staged the real `.context`. Checked on bleeding-edge before building (lesson from T-5339): lib/unattended_verification.py UNSAFE_PATTERNS refuses `git push` and `git reset --hard` only.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** AEF re-runs stored Verification lines unattended (fw audit CTL-013, verify-queue; T-2765, T-5268). A line that runs `git add/commit/checkout/stash/clean/...` or writes into `.context/` or `.tasks/` changes the real repo at every re-run, without anyone choosing it.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Such lines are SKIPPED (with a named reason) when re-run unattended, as other unsafe lines are; at close they still run.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `unattended_refusal("git add -A .context")` returns a reason; a line that only greps for the text "git add" or runs a read-only git command (log, status, diff, show) still runs.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Checked on bleeding-edge first: the defect is present (UNSAFE_PATTERNS lacks repo-mutating git verbs)
+- [ ] UNSAFE_PATTERNS refuses repo-mutating git commands in command position (add, commit, checkout, switch, restore, stash, clean, rm, mv, merge, rebase, cherry-pick, revert, am, apply, reset, tag, branch -d/-D) and shell redirects into `.context/` or `.tasks/`, each with a named reason
+- [ ] Tests: those lines are refused; read-only git (log, status, diff, show, rev-parse), `git -C <tmp> ...` in a temp repo is still refused (it is a write), and a grep for the text "git add" still runs
+- [ ] Existing t5268/t2765 tests stay green; vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,6 +292,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5336_repo_mutating_lines.py -q > /tmp/.t5336 2>&1 && grep -q passed /tmp/.t5336 && ! grep -q failed /tmp/.t5336
+timeout 600 bats tests/unit/t5268_unattended_verification.bats tests/unit/t2765_verify_queue.bats > /tmp/.t5336b 2>&1 && ! grep -q "^not ok" /tmp/.t5336b
+bin/fw vendor self --check --task T-5336
 
 ## RCA
 
@@ -387,3 +392,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5336-unattended-re-run-of-stored-verification.md
 - **Context:** Initial task creation
+
+### 2026-11-21T16:47:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
