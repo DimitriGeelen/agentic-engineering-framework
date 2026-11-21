@@ -962,10 +962,10 @@ When giving the human a command to run (Tier 0 approvals, inception decisions, v
 
 1. **Single-line, copy-pasteable** — works when pasted into any terminal, from any directory
 2. **Prefixed with `cd`** — always include `cd /path/to/project &&` so directory context is explicit
-3. **Use the right `fw` path for the project's context (T-1257):**
+3. **Use this project's `fw` path, never bare `fw` (T-1257, T-5302):** every printed command is `cd <absolute project root> && <fw path> <args>`.
    - **Framework repo** (contains `FRAMEWORK.md` + `bin/fw` at its root — e.g. `/opt/999-Agentic-Engineering-Framework`): use `bin/fw`
    - **Consumer project** (contains `.agentic-framework/bin/fw` — any project initialised via `fw init`): use `.agentic-framework/bin/fw`
-   - Bare `fw` only when you know the shim at `~/.local/bin/fw` is installed and routing works — otherwise it may resolve to a stale global install
+   - **Never bare `fw`**: the `fw` on PATH is not the router on every host, nor on every PATH a worker or hook runs with (T-5302). Code builds the line with `_emit_user_command` / `_fw_cmd` (`lib/fw-command.sh`; Python twin `lib/fw_command.py`, Watchtower global `fw_cmd`) — never spell it by hand.
 4. **Verify before suggesting** — before pasting a `fw` command into chat, confirm the chosen path exists in the target project (check for `bin/fw` OR `.agentic-framework/bin/fw`). Don't apply the framework-repo pattern to a consumer.
 5. **No bare multi-line** — if multiple commands are needed, chain with `&&` on one line. Never rely on the human copy-pasting multiple separate lines (line breaks cause partial execution errors)
 
@@ -1169,7 +1169,7 @@ Optionally prefix the criterion with a confidence marker:
 
 **Prerequisite awareness (T-358):** Steps must start from the human's actual environment, not the agent's dev context. If the feature requires deployment, upgrade, or setup before testing (e.g., `brew upgrade fw`, restart a service, push config), include those steps first. Ask: "What must the human do before step 1 is possible?" If the answer isn't "nothing," add prerequisite steps.
 
-**Full-path commands (T-609, T-1257):** Every command in Steps MUST be copy-pasteable from any directory. Include `cd /path/to/project &&` prefix. Use the project-appropriate `fw` path: `bin/fw` in the framework repo, `.agentic-framework/bin/fw` in consumer projects, bare `fw` only when the shim is confirmed. Chain multiple commands with `&&` on one line — never assume the human will paste lines separately. See §Copy-Pasteable Commands.
+**Full-path commands (T-609, T-1257):** Every command in Steps MUST be copy-pasteable from any directory. Include `cd /path/to/project &&` prefix. Use the project's `fw` path per T-5302: `bin/fw` in the framework repo, `.agentic-framework/bin/fw` in consumer projects, never bare `fw` (the builder `_emit_user_command` / `_fw_cmd` in `lib/fw-command.sh` produces exactly this line). Chain multiple commands with `&&` on one line — never assume the human will paste lines separately. See §Copy-Pasteable Commands.
 
 **Page links are literal full URLs — `$(bin/fw watchtower url)` is for machines (T-4624, G-123):** `$(bin/fw watchtower url)` belongs only in `## Verification`, where the gate runs it. In `### Human` Steps/Expected/If-not and in `## Recommendation` the operator clicks what you write, so every page reference is a literal `http(s)://` URL. Run `bin/fw watchtower url` once yourself and paste the result (e.g. `http://192.168.10.107:3000/review/T-4607`). Never write a `$(…)` expression, a bare `/route`, or "URL from `bin/fw watchtower url`". `lib/review_link_validator.py` enforces this as an allowlist at task-file Write/Edit (hook `check-review-links`), at the partial-complete transition and at `fw task review`. Bypass, operator only: `FW_ALLOW_REVIEW_LINK_HOMEWORK=1`, logged Tier-2.
 
