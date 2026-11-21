@@ -10,12 +10,12 @@ description: >
   a time budget, and treat a red as the ratchet treats a NEW red; print how old the
   graded nightly report is (option b) so a stale report is visible.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/audit.sh, agents/audit/unit_suite_range.py, agents/git/lib/hooks.sh, lib/config.sh, tests/unit/t5342_prepush_range_tests.bats]
 related_tasks: [T-5323, T-3621, T-4875]
 origin: {kind: "agent", source: "G-138"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -45,8 +45,8 @@ origin: {kind: "agent", source: "G-138"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T17:17:56Z
-last_update: '2026-11-21T17:30:31Z'
-date_finished:
+last_update: 2026-11-21T17:59:27Z
+date_finished: 2026-11-21T17:59:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -103,10 +103,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A selector lists the unit test files for a commit range (changed test files + test files naming a changed source basename), deterministic and bounded
-- [ ] Pre-push (structure scope) runs the selected files within a budget (config key, default a few minutes); a red is a FAIL like a NEW red; a selected file that passes clears that file's stale-report red for this push; an overrun is a WARN naming the files not run
-- [ ] The ratchet output states the graded report's commit and the number of pushed commits newer than it
-- [ ] Tests: selection, red-blocks, pass-clears-stale, budget overrun; existing unit-suite/ratchet tests stay green; vendored copy synced
+- [x] A selector lists the unit test files for a commit range (changed test files + test files naming a changed source basename), deterministic and bounded
+- [x] Pre-push (structure scope) runs the selected files within a budget (config key, default a few minutes); a red is a FAIL like a NEW red; a selected file that passes clears that file's stale-report red for this push; an overrun is a WARN naming the files not run
+- [x] The ratchet output states the graded report's commit and the number of pushed commits newer than it
+- [x] Tests: selection, red-blocks, pass-clears-stale, budget overrun; existing unit-suite/ratchet tests stay green; vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -314,6 +314,15 @@ bin/fw vendor self --check --task T-5342
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** On 2026-11-20, twelve unit reds were pushed without anyone seeing them. The next day the stale nightly report blocked the push of their fix (T-5323).
+**Root cause:** The pre-push ratchet only graded the nightly `LATEST.yaml`. It ran no tests, so commits made after the report were never tested at push.
+**Why structurally allowed:** Nothing showed which commit the graded report came from, or how many pushed commits were newer than it. So "graded" looked the same as "tested" (G-138).
+**Prevention:**
+- `agents/audit/unit_suite_range.py` plus `check_prepush_range_tests` run the unit test files the pushed range touches. A red FAILs. A pass clears that file's stale red. An overrun WARNs. Matches over the cap of 40 WARN and are never PASS (c909d3c0c).
+- The ratchet line now names the report's commit and how many pushed commits are newer.
+- Pinned by `tests/unit/t5342_prepush_range_tests.bats` (6 tests).
+- Measured limit: when 6c97f8ad8..ff5d9412a is pushed as one range, 0 of the 9 T-5323 red files reach the top 40. Pushed one commit at a time, 7 of 9 are caught. A big push is now a WARN with the cut files named, so it can no longer look green.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -378,6 +387,16 @@ bin/fw vendor self --check --task T-5342
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-11-21 — budget default
+- **Chose:** `PREPUSH_RANGE_TEST_BUDGET` is set to 120s, not the 240s in the brief.
+- **Why:** Handover sets the push timeout to 1.5× the measured structure-audit time (`lib/prepush-lock-wait.sh:267`): 272s measured gives 408s. An extra 240s would get the push killed (exit 124, the T-3062 class).
+- **Rejected:** 240s, because it would time out pushes. 0 (off), because that leaves G-138 open.
+
+### 2026-11-21 — over-cap matches
+- **Chose:** WARN when matching files were over the cap (parent change c909d3c0c).
+- **Why:** The worker's version graded PASS with a note. Partial coverage must not read green.
+- **Rejected:** Raising the cap. That costs push time and still leaves a cap.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -397,3 +416,16 @@ bin/fw vendor self --check --task T-5342
 
 ### 2026-11-21T17:18:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-21T17:59:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4507b30c
+- **Timestamp:** 2026-11-21T17:59:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

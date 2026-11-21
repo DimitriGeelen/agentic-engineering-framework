@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5342: Pre-push runs the unit test files the pushed range touches (G-138): a day's commits can no longer push untested
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T18:00:04Z
+# ============================================================================
+
+task_id: T-5342
+task_name: "Pre-push runs the unit test files the pushed range touches (G-138): a day's commits can no longer push untested"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-21T17:17:56Z
+completed: 2026-11-21T17:59:27Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-21T18:18:43+01:00
+last_commit: 2026-11-21T18:58:21+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope, criteria, verification (G-138 option a). pre-push runs the unit test files the pushed range touches (G-138). vendor self — sync range-test selector, audit, hook, config. over-cap matches grade WARN, not PASS — partial coverage never reads green
+
+# Key outcomes
+outcomes:
+  - 'A selector lists the unit test files for a commit range (changed test files + test files naming a changed source basename), deterministic and bounded'
+  - 'Pre-push (structure scope) runs the selected files within a budget (config key, default a few minutes); a red is a FAIL like a NEW red; a selected file that passes clears that file''s stale-report red for this push; an overrun is a WARN naming the files not run'
+  - 'The ratchet output states the graded report''s commit and the number of pushed commits newer than it'
+  - 'Tests: selection, red-blocks, pass-clears-stale, budget overrun; existing unit-suite/ratchet tests stay green; vendored copy synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-21 — budget default'
+    chose: '`PREPUSH_RANGE_TEST_BUDGET` is set to 120s, not the 240s in the brief.'
+    rationale: 'Handover sets the push timeout to 1.5× the measured structure-audit time (`lib/prepush-lock-wait.sh:267`): 272s measured gives 408s. An extra 240s would get the push killed (exit 124, the T-3062 class).'
+    alternatives_rejected: ['240s, because it would time out pushes. 0 (off), because that leaves G-138 open.']
+  - decision: '2026-11-21 — over-cap matches'
+    chose: 'WARN when matching files were over the cap (parent change c909d3c0c).'
+    rationale: 'The worker''s version graded PASS with a note. Partial coverage must not read green.'
+    alternatives_rejected: ['Raising the cap. That costs push time and still leaves a cap.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/audit/unit_suite_range.py'
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/lib/config.sh'
+  - '.fabric/components/agents-audit-unit_suite_range.yaml'
+  - '.fabric/components/tests-unit-t5342_prepush_range_tests.yaml'
+  - '.tasks/active/T-5342-pre-push-runs-the-unit-test-files-the-pu.md'
+  - 'agents/audit/audit.sh'
+  - 'agents/audit/unit_suite_range.py'
+  - 'agents/git/lib/hooks.sh'
+  - 'lib/config.sh'
+  - 'tests/unit/t5342_prepush_range_tests.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-21T18:18:43'
+    action: 'T-5342: scope, criteria, verification (G-138 option a)'
+  - time: '2026-11-21T18:52:29'
+    action: 'T-5342: pre-push runs the unit test files the pushed range touches (G-138)'
+  - time: '2026-11-21T18:52:48'
+    action: 'T-5342: vendor self — sync range-test selector, audit, hook, config'
+  - time: '2026-11-21T18:58:21'
+    action: 'T-5342: over-cap matches grade WARN, not PASS — partial coverage never reads green'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 41 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 41
+  commits: 5
+  files_changed: 16
+  lines_added: 1872
+  lines_removed: 22
+  footprint_refreshed_at: '2026-11-21T18:00:37Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5342-pre-push-runs-the-unit-test-files-the-pu.md
+generated_by: context-agent-hybrid

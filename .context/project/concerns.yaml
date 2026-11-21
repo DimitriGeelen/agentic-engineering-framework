@@ -5928,7 +5928,8 @@ concerns:
   what_works_now: "The next nightly catches the reds and the next push is refused; full-suite runs are available on demand."
   what_remains: "Choose prevention: (a) at pre-push run the test files touched by or referencing the pushed range; (b) WARN or refuse when LATEST.yaml revision is behind the pushed range by more than N source commits; (c) a mid-day suite run."
   mitigation_candidate: "(b) is cheapest and closes the blind window honestly; (a) is the strongest."
-  status: watching
+  mitigation: "T-5342 (d5a8360d8, f2378a952, c909d3c0c) built option (a) plus the staleness part of (b). Pre-push runs the unit test files the pushed range changes or names, within PREPUSH_RANGE_TEST_BUDGET (120s). A red FAILs. A pass clears that file's stale red. An overrun WARNs. Over-cap matches WARN. The ratchet line names the report commit and how many pushed commits are newer. Measured limit: as one 262-commit range, 0 of the 9 T-5323 red files reach the top 40, so a big push WARNs and does not catch them; pushed one commit at a time, 7 of 9 are caught. Still open: the partial-run-grades-WARN weakness, and the installed hooks only pass FW_PUSH_RANGE after fw git install-hooks (until then the fallback is @{upstream}..HEAD)."
+  status: mitigated
   created: 2026-11-21
   last_reviewed: 2026-11-21
 - id: R-038
