@@ -11,10 +11,10 @@ description: >
   tracked-but-ignored path with the untrack command, without untracking anything (consumer's
   choice).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: [T-4231, T-4701]
@@ -46,8 +46,8 @@ origin: {kind: "peer", source: "1023-portable-encrypted-chromium-vault", ref: "b
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T15:07:54Z
-last_update: 2026-11-21T17:05:42Z
-date_finished:
+last_update: 2026-11-21T17:07:34Z
+date_finished: 2026-11-21T17:07:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -403,3 +403,21 @@ timeout 900 bats tests/unit/t4701_tracked_runtime_untrack.bats tests/unit/t4754_
 ### 2026-11-21T17:05:42Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-21T17:07:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0376b4c5
+- **Timestamp:** 2026-11-21T17:09:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Reproduced in a temp git repo with 1023's shapes (episodic-gen/, decide/, .reviewed-*, .session-metrics.yaml under .context/working): result of `fw_working_tracked_runtime` recorded here — it lists al
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=decide/x.yaml in: Reproduced in a temp git repo with 1023's shapes (episodic-gen/, decide/, .reviewed-*, .session-metrics.yaml under .context/working): result of `fw_wo`

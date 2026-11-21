@@ -58228,3 +58228,21 @@ scan_id: R-dd478e29
 task_id: T-5337
 payload:
   task_file: .tasks/active/T-5337-vendor-preserve-one-path-under-both-file.md
+---
+kind: scan_emitted
+timestamp: '2026-11-21T17:09:05Z'
+scan_id: R-0376b4c5
+task_id: T-5335
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-21T17:09:05Z'
+scan_id: R-0376b4c5
+task_id: T-5335
+payload:
+  task_file: .tasks/active/T-5335-fw-upgrade-list-every-tracked-file-newly.md

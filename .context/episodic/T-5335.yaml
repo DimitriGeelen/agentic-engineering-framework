@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5335: fw upgrade: list every tracked file newly under ignore rules (not only .context/working and inbox/files)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T17:09:23Z
+# ============================================================================
+
+task_id: T-5335
+task_name: "fw upgrade: list every tracked file newly under ignore rules (not only .context/working and inbox/files)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-21T15:07:54Z
+completed: 2026-11-21T17:07:34Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-21T18:06:25+01:00
+last_commit: 2026-11-21T18:07:32+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope as reproduce-first, criteria. not reproduced — listing covers 1023's shapes; asked 1023 for output; RCA
+
+# Key outcomes
+outcomes:
+  - 'Reproduced in a temp git repo with 1023''s shapes (episodic-gen/, decide/, .reviewed-*, .session-metrics.yaml under .context/working): result of `fw_working_tracked_runtime` recorded here — it lists all four (`.context/working/.reviewed-T-1`, `.session-metrics.yaml`, `decide/x.yaml`, `episodic-gen/T-1.yaml`), rc 0. The listing (T-4231, 6f1f7acea) is in every release since v1.8.15; 1023''s upgrade added the new rules, so it ran this code.'
+  - 'If any path is missed: fix plus a bats test; if none: no code change, evidence recorded — none missed here; no code change.'
+  - '1023 told the outcome (and asked for their upgrade output if the listing works here) — asked for their step [8/10] block and the exact path of the "watchtower files" (a path outside .context/working is not covered by this listing; that would be a new task).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5335-fw-upgrade-list-every-tracked-file-newly.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-21T18:06:25'
+    action: 'T-5335: scope as reproduce-first, criteria'
+  - time: '2026-11-21T18:07:32'
+    action: 'T-5335: not reproduced — listing covers 1023''s shapes; asked 1023 for output; RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 119 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 119
+  commits: 3
+  files_changed: 4
+  lines_added: 146
+  lines_removed: 16
+  footprint_refreshed_at: '2026-11-21T17:09:33Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5335-fw-upgrade-list-every-tracked-file-newly.md
+generated_by: context-agent-hybrid
