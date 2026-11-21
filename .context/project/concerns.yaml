@@ -5911,8 +5911,8 @@ concerns:
   what_works_now: "Exact-name and content-hash (__attached_sha256__) matches are correct; most evidence sets have no shared prefixes."
   what_remains: "Match a seat copy only as <stem>-<dispatch id suffix>, never a longer evidence stem; test with prefix-sharing images; check the attachment cap path."
   mitigation_candidate: "Restrict the suffix after '<stem>-' to the dispatch-id shape; a test that viewing x-foo.png does not count x.png."
-  status: resolved
-  resolved_by: "T-5324 (3900dfbbf): suffix bound to the seat dispatch id; not_attached images never count; test_t5324_stem_match.py"
+  status: watching
+  partial_fix: "T-5324 (3900dfbbf): suffix bound to the seat dispatch id; not_attached images never count. Reopened 2026-11-21: codex reviewer reproduced a same-basename collision across directories (21 PNGs); matching is by basename, not path. Follow-up T-5333."
   created: 2026-11-21
   last_reviewed: 2026-11-21
 - id: G-138
@@ -6012,7 +6012,7 @@ concerns:
   type: risk
   title: Unattached cited image counted as viewed (cap or stem match)
   description: image_viewed() stem-matches cited names against attached names, so an image over the 20-image cap, or one whose name shares a stem prefix with an attached one, is marked viewed.
-  status: mitigated
+  status: watching
   likelihood: 2
   impact: 3
   score: 6
@@ -6024,7 +6024,8 @@ concerns:
     impact: 3
   introduced_by: T-5309
   exists_anyway: true
-  mitigated_by: T-5324
+  mitigation_task: T-5333
+  partly_mitigated_by: T-5324
   created: 2026-11-21
   last_reviewed: '2026-11-21'
 - id: R-042
@@ -6061,7 +6062,7 @@ concerns:
     likelihood: 2
     impact: 3
     mitigated_likelihood: 2
-    mitigated_impact: 2
+    mitigated_impact: 3
   introduced_by: T-5300
   exists_anyway: false
   mitigation_task: T-5329

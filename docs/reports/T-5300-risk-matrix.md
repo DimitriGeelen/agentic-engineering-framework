@@ -51,8 +51,8 @@ Actors (fixed list): `own-agent-unintentional`, `human-unintentional`, `outsider
 
 | # | Actor | How | L | I | Score | Mitigated L × I | Mitigated score |
 |---|-------|-----|--:|--:|------:|-----------------|----------------:|
-| 2.1 | own-agent-unintentional | a cleanup loop in a submitter (for example poold handling a batch withdraw) withdraws jobs still wanted; nothing tells the operator | 2 | 3 | 6 | 2 × 2 | 4 |
-| 2.2 | human-unintentional | the operator asks ring20 to withdraw "the stuck jobs" and a wanted one is among them | 2 | 2 | 4 | | |
+| 2.1 | own-agent-unintentional | a cleanup loop in a submitter (for example poold handling a batch withdraw) withdraws jobs still wanted; nothing tells the operator. Mitigated impact stays 3: no detection-and-recovery control exists yet that would make the loss a delay only (T-5329 would add the count) | 2 | 3 | 6 | 2 × 3 | 6 |
+| 2.2 | human-unintentional | the operator asks ring20 to withdraw "the stuck jobs" and a wanted one is among them (the same lost job as 2.1, so the same impact) | 2 | 3 | 6 | | |
 | 2.3 | outsider-intentional | needs the attempt credentials (risk 1) | 1 | 1 | 1 | | |
 | 2.4 | provider-host | not involved: the decision is the submitter's | 1 | 1 | 1 | | |
 | 2.5 | intruder | covered by risk 1.5 | 1 | 1 | 1 | | |
@@ -117,7 +117,7 @@ Mitigation for 6.1 and 6.2: T3w itself; the submitter releases the job and the n
 
 **Controls it needs:** (a) a supervisor conformance check that the agent child is launched only after T2 is accepted (the vectors test the store, not the supervisor); (b) withdraw requests that carry the credential only on the Execute-scope connection, never on a bus topic or in a log, checked when ring20 and TermLink build their paths; (c) an audit or status line that counts `withdrawn` per submitter, so a mass withdrawal is visible without an operator notice.
 
-**Needs operator acceptance:** risk 4 (attempt credential kept longer and carried on a new request path), PARTLY NEW and still 8 after mitigation: row 4.1 (an agent logs or persists the credential; the Execute-scope rule binds only the hub route, and control (b) is not built) and row 4.5 (an intruder on the submitter's host reads a persisted credential). That row mostly exists anyway, since the allocating caller already received the credential in the baseline; what is new is that it must now be kept until the job starts. It drops below 6 only when control (b) is built on every backend's withdraw path and the R-NEW-5 file-mode check ships. No risk reaches 15.
+**Needs operator acceptance:** risk 2 (a wanted job withdrawn unseen), NEW and still 6 after mitigation: no detection-and-recovery control exists yet (T-5329 adds the count); and risk 4 (attempt credential kept longer and carried on a new request path), PARTLY NEW and still 8 after mitigation: row 4.1 (an agent logs or persists the credential; the Execute-scope rule binds only the hub route, and control (b) is not built) and row 4.5 (an intruder on the submitter's host reads a persisted credential). That row mostly exists anyway, since the allocating caller already received the credential in the baseline; what is new is that it must now be kept until the job starts. It drops below 6 only when control (b) is built on every backend's withdraw path and the R-NEW-5 file-mode check ships. No risk reaches 15.
 
 ## Register entries to file
 
@@ -157,7 +157,7 @@ Risks with any actor at 6 or more (unmitigated): 1, 2, 3, 4, 5, 6. The parent fi
     likelihood: 2
     impact: 3
     mitigated_likelihood: 2
-    mitigated_impact: 2
+    mitigated_impact: 3
   introduced_by: T-5300
   exists_anyway: false
   mitigation_task: T-YYYY

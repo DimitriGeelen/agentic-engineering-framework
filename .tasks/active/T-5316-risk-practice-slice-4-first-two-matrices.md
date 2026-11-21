@@ -167,12 +167,12 @@ bvp_scores_proposed:
   **Expected:** the check prints 0 error(s); every score fits the scales; every actor that can plausibly cause the risk is scored; no risk the change adds is marked "no", and none it does not add is marked NEW.
   **If not:** name the risk and row, state what the score or column should be and why, and return the matrix to the drafting agent; the operator-acceptance list may change after the fix.
 
-- [ ] [OPERATOR] Accept the remaining risk of T-5309 risk 1 (screenshot content sent to OpenAI, 8), risk 2 (seat prompt-injected by text inside a screenshot, 6) and risk 3 (attached image counted as viewed though codex did not examine it, 9), and T-5300 risk 4 (attempt credential kept longer and carried on a new path, 8), as listed by the --matrix check
+- [ ] [OPERATOR] Accept the remaining risk of T-5309 risk 1 (screenshot content sent to OpenAI, 8), risk 2 (seat prompt-injected by text inside a screenshot, 6), risk 3 (attached image counted as viewed though codex did not examine it, 9) and risk 4 (unattached image counted as viewed through a same-name collision, 6), and T-5300 risk 2 (wanted job withdrawn unseen, 6) and risk 4 (attempt credential kept longer and carried on a new path, 8), as listed by the --matrix check
   **Steps:**
   1. Run `cd /opt/999-Agentic-Engineering-Framework && python3 lib/risk_register.py --matrix docs/reports/T-5309-risk-matrix.md && python3 lib/risk_register.py --matrix docs/reports/T-5300-risk-matrix.md` and read the two "needs operator acceptance" lists.
-  2. For each listed risk, read its actor-split table and the Net section in docs/reports/T-5309-risk-matrix.md or docs/reports/T-5300-risk-matrix.md: who, how, the mitigation and the mitigated score. Each has a mitigation task already filed in the standing arc `risk`: T-5325 (risk 1), T-5326 (risk 2), T-5327 (risk 3), T-5331 (T-5300 risk 4).
+  2. For each listed risk, read its actor-split table and the Net section in docs/reports/T-5309-risk-matrix.md or docs/reports/T-5300-risk-matrix.md: who, how, the mitigation and the mitigated score. Each has a mitigation task already filed in the standing arc `risk`: T-5325 (risk 1), T-5326 (risk 2), T-5327 (risk 3), T-5333 (risk 4, horizon now), T-5329 (T-5300 risk 2), T-5331 (T-5300 risk 4).
   3. Decide for each: accept it as it stands until its mitigation task lands, or ask for that mitigation to be done first.
-  **Expected:** every listed risk is accepted as it stands, and the list matches the four risks named here.
+  **Expected:** every listed risk is accepted as it stands, and the list matches the six risks named here.
   **If not:** name the risk and what you want first; the agent raises that mitigation task to `horizon: now`, updates the matrix and re-runs the check.
 
 <!--
