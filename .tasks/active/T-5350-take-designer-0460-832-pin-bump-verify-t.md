@@ -300,6 +300,25 @@ cost_estimate_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bin/fw designer status > /tmp/.t5350.out 2>&1 && grep -q "sha256 matches pin" /tmp/.t5350.out && grep -q "0.46.0" /tmp/.t5350.out
+U="$(bin/fw watchtower url)"; curl -sfL "$U/designer/app" -o /tmp/.t5350.html && grep -q "const APP_VERSION = '0.46.0'" /tmp/.t5350.html
+timeout 600 bats tests/unit/designer_sync_from_tag.bats > /tmp/.t5350b 2>&1 && ! grep -q "^not ok" /tmp/.t5350b
+bin/fw vendor self --check --task T-5350
+
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| designer | Save button (T-1471) | ok | ok | ok | 1920: Save on the first toolbar row at the right end, inside the frame. 1024: the toolbar wraps to two rows, Save on row 2 (T-1471 is about 1920) |
+| app | starter map (T-1472) | clipped | ok | ok | 1024: opens at 100%, labels sharp and not overlapping, but only the left part of the map is in view; the rest is under the properties panel and needs scrolling. Reviewer to judge whether this meets T-1472 |
+
+Captures (`fw ux shots T-5350`, full page):
+- .context/visual/T-5350/designer@1024.png
+- .context/visual/T-5350/designer@1440.png
+- .context/visual/T-5350/designer@1920.png
+- .context/visual/T-5350/app@1024.png
+- .context/visual/T-5350/app@1440.png
+- .context/visual/T-5350/app@1920.png
 
 ## RCA
 
