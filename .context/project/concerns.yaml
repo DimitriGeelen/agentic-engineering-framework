@@ -5930,3 +5930,233 @@ concerns:
   status: watching
   created: 2026-11-21
   last_reviewed: 2026-11-21
+- id: R-038
+  type: risk
+  title: Screenshot content sent to OpenAI via codex review seats
+  description: T-5309 attaches every screenshot a judge brief cites to the codex seat (codex exec -i). A screenshot of a page that shows a secret, token or internal addresses goes to one more outside provider;
+    nothing checks what the page shows.
+  status: watching
+  likelihood: 2
+  impact: 4
+  score: 8
+  ranking: medium
+  actors:
+  - actor: own-agent-unintentional
+    how: agent cites a screenshot of a settings/config page in a judge brief; the runtime attaches it to codex
+    likelihood: 2
+    impact: 4
+  - actor: human-unintentional
+    how: operator asks for screenshots of a page that shows a secret
+    likelihood: 1
+    impact: 4
+  - actor: provider-host
+    how: OpenAI retains or exposes attached images
+    likelihood: 1
+    impact: 4
+  introduced_by: T-5309
+  exists_anyway: true
+  mitigation_task: T-5325
+  created: 2026-11-21
+  last_reviewed: '2026-11-21'
+- id: R-039
+  type: risk
+  title: Review seat prompt-injected by text inside a screenshot
+  description: Outsider text (issue intake, peer messages) rendered on a Watchtower page reaches review seats as pixels and may sway a render vote. Image-borne injection existed for the other seats; T-5309
+    exposes codex to it and makes codex render votes count, where in the baseline codex could not sit render criteria. In a single-seat run (rung 1/3) a swayed codex green closes the criterion alone.
+  status: watching
+  likelihood: 2
+  impact: 3
+  score: 6
+  ranking: medium
+  actors:
+  - actor: outsider-intentional
+    how: text rendered on a page tells the seat to vote green
+    likelihood: 2
+    impact: 3
+    mitigated_likelihood: 2
+    mitigated_impact: 3
+  introduced_by: T-5309
+  exists_anyway: true
+  mitigation_task: T-5326
+  created: 2026-11-21
+  last_reviewed: '2026-11-21'
+- id: R-040
+  type: risk
+  title: Attached image counted as viewed although codex did not examine it
+  description: 'lib/vote_checker.py treats an image attached at launch as viewed. Codex can still answer from the text (the G-136 pattern) and its green now counts on render criteria: alone in a single-seat
+    run (rung 1/3), with one other vendor in a rung-5 panel closing on two.'
+  status: watching
+  likelihood: 3
+  impact: 3
+  score: 9
+  ranking: medium
+  actors:
+  - actor: own-agent-unintentional
+    how: codex has the image in its prompt but votes green on a broken render without examining it
+    likelihood: 3
+    impact: 3
+    mitigated_likelihood: 3
+    mitigated_impact: 3
+  - actor: provider-host
+    how: provider silently downscales or drops -i images
+    likelihood: 2
+    impact: 3
+    mitigated_likelihood: 2
+    mitigated_impact: 3
+  introduced_by: T-5309
+  exists_anyway: false
+  mitigation_task: T-5327
+  created: 2026-11-21
+  last_reviewed: '2026-11-21'
+- id: R-041
+  type: risk
+  title: Unattached cited image counted as viewed (cap or stem match)
+  description: image_viewed() stem-matches cited names against attached names, so an image over the 20-image cap, or one whose name shares a stem prefix with an attached one, is marked viewed.
+  status: mitigated
+  likelihood: 2
+  impact: 3
+  score: 6
+  ranking: medium
+  actors:
+  - actor: own-agent-unintentional
+    how: brief cites 21+ screenshots or two names sharing a stem prefix
+    likelihood: 2
+    impact: 3
+  introduced_by: T-5309
+  exists_anyway: true
+  mitigated_by: T-5324
+  created: 2026-11-21
+  last_reviewed: '2026-11-21'
+- id: R-042
+  type: risk
+  title: Forged withdrawal of another submitter's pool job
+  description: T3w ends a dispatched attempt for whoever presents its nonce, supervisor token and supervisor_gen. An intruder on the submitter's host can withdraw its jobs; the same credentials already
+    allow T2+T3 failed.
+  status: watching
+  likelihood: 2
+  impact: 3
+  score: 6
+  ranking: medium
+  actors:
+  - actor: intruder
+    how: reads the credentials from the dispatcher on the submitter's host and withdraws its jobs
+    likelihood: 2
+    impact: 3
+  exists_anyway: true
+  mitigation_task: T-5328
+  created: 2026-11-21
+  last_reviewed: '2026-11-21'
+- id: R-043
+  type: risk
+  title: Submitter withdraws a wanted job, unseen
+  description: T3w raises no operator notice; a cleanup loop or a batch withdraw can end jobs still wanted, visible only in history.
+  status: watching
+  likelihood: 2
+  impact: 3
+  score: 6
+  ranking: medium
+  actors:
+  - actor: own-agent-unintentional
+    how: a submitter's cleanup loop withdraws jobs still wanted
+    likelihood: 2
+    impact: 3
+    mitigated_likelihood: 2
+    mitigated_impact: 2
+  introduced_by: T-5300
+  exists_anyway: false
+  mitigation_task: T-5329
+  created: 2026-11-21
+  last_reviewed: '2026-11-21'
+- id: R-044
+  type: risk
+  title: Withdrawn job runs anyway (supervisor launches before T2)
+  description: The T2/T3w race is safe only if a supervisor launches after its T2 is accepted. A non-conforming supervisor runs a withdrawn job; its completion is refused as done_conflict, so the run is
+    wasted.
+  status: watching
+  likelihood: 2
+  impact: 3
+  score: 6
+  ranking: medium
+  actors:
+  - actor: own-agent-unintentional
+    how: a supervisor implementation launches the agent child before its T2 is accepted
+    likelihood: 2
+    impact: 3
+    mitigated_likelihood: 2
+    mitigated_impact: 2
+  - actor: provider-host
+    how: a backend store does not run T2 and T3w as one atomic CAS
+    likelihood: 1
+    impact: 3
+    mitigated_likelihood: 1
+    mitigated_impact: 2
+  introduced_by: T-5300
+  exists_anyway: false
+  mitigation_task: T-5330
+  created: 2026-11-21
+  last_reviewed: '2026-11-21'
+- id: R-045
+  type: risk
+  title: Attempt credential kept by the submitter and carried in withdraw requests
+  description: To withdraw, the submitter must keep nonce and supervisor token until the job starts and send them with the request (ring20.pool.withdraw/1). A request sent on a bus topic, logged or persisted
+    readable leaks the attempt's credential.
+  status: watching
+  likelihood: 2
+  impact: 4
+  score: 8
+  ranking: medium
+  actors:
+  - actor: own-agent-unintentional
+    how: withdraw request path sends or logs the credential outside the Execute-scope connection
+    likelihood: 2
+    impact: 4
+  - actor: intruder
+    how: reads a persisted credential on the submitter's host
+    likelihood: 2
+    impact: 4
+  introduced_by: T-5300
+  exists_anyway: true
+  mitigation_task: T-5331
+  created: 2026-11-21
+  last_reviewed: '2026-11-21'
+- id: R-046
+  type: risk
+  title: Reader misreads the new withdrawn outcome
+  description: withdrawn is added under the unchanged wc/0.3 version field. A caller wired before adoption, or a reader that counts any done as finished work, shows a withdrawn job as done.
+  status: watching
+  likelihood: 2
+  impact: 3
+  score: 6
+  ranking: medium
+  actors:
+  - actor: own-agent-unintentional
+    how: caller of Store.withdraw wired before v0.3.4 adoption, or reader counts any done as finished
+    likelihood: 2
+    impact: 3
+    mitigated_likelihood: 1
+    mitigated_impact: 3
+  introduced_by: T-5300
+  exists_anyway: false
+  mitigation_task: T-5332
+  created: 2026-11-21
+  last_reviewed: '2026-11-21'
+- id: R-047
+  type: risk
+  title: Abandoned pool job holds a node until it runs or times out
+  description: 'Baseline risk the change reduces: before T3w a dispatched job nobody wanted held its node for hours (ring20: 9 jobs, 5 h) and ended as unknown with an operator notice.'
+  status: mitigated
+  likelihood: 4
+  impact: 2
+  score: 8
+  ranking: medium
+  actors:
+  - actor: own-agent-unintentional
+    how: submitting agent's superseded jobs stay dispatched for hours
+    likelihood: 4
+    impact: 2
+    mitigated_likelihood: 2
+    mitigated_impact: 2
+  exists_anyway: true
+  mitigated_by: T-5312
+  created: 2026-11-21
+  last_reviewed: '2026-11-21'
