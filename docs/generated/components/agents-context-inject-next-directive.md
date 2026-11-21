@@ -6,9 +6,6 @@
 
 ## What It Does
 
-T-2367 (S5): first task reference in a directive, used to resolve the
-"planned next action" when the directive has no explicit `next_task:` field.
-
 ## Dependencies (2)
 
 | Component | Relationship | Description |

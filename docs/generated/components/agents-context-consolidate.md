@@ -6,8 +6,6 @@
 
 ## What It Does
 
-Text similarity (Jaccard on word tokens)
-
 ## Dependencies (2)
 
 | Component | Relationship | Description |

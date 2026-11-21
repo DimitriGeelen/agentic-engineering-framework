@@ -6,7 +6,7 @@
 
 ## What It Does
 
-§3.3 fence_reject reasons — fixed by the spec, not by the file.
+CC-26..CC-29: v0.3.4 T3w (T-5317). CC-15a/b, CC-19a/b, CC-30..CC-43: v0.3.4 closure, A1-A6 (T-5320).
 
 ---
 *Auto-generated from Component Fabric. Card: `tests-conformance-worker-contract-check_vectors.yaml`*
