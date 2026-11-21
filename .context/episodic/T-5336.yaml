@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5336: Unattended re-run of stored Verification lines must refuse lines that mutate the repo (git add/commit/reset, writes into .context)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T16:53:26Z
+# ============================================================================
+
+task_id: T-5336
+task_name: "Unattended re-run of stored Verification lines must refuse lines that mutate the repo (git add/commit/reset, writes into .context)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-21T15:07:54Z
+completed: 2026-11-21T16:51:55Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-21T17:48:19+01:00
+last_commit: 2026-11-21T17:51:52+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope, criteria, verification. unattended re-run refuses repo-mutating git commands and writes into .context/.tasks (1023 field report); 4 of 15,819 stored lines newly skipped. RCA, criteria ticked
+
+# Key outcomes
+outcomes:
+  - 'Checked on bleeding-edge first: the defect is present (UNSAFE_PATTERNS lacks repo-mutating git verbs)'
+  - 'UNSAFE_PATTERNS refuses repo-mutating git commands in command position (add, commit, checkout, switch, restore, stash, clean, rm, mv, merge, rebase, cherry-pick, revert, am, apply, reset, tag, branch -d/-D) and shell redirects into `.context/` or `.tasks/`, each with a named reason'
+  - 'Tests: those lines are refused; read-only git (log, status, diff, show, rev-parse), `git -C <tmp> ...` in a temp repo is still refused (it is a write), and a grep for the text "git add" still runs'
+  - 'Existing t5268/t2765 tests stay green; vendored copy synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/unattended_verification.py'
+  - '.fabric/components/tests-unit-test_t5336_repo_mutating_lines.yaml'
+  - '.tasks/active/T-5336-unattended-re-run-of-stored-verification.md'
+  - 'lib/unattended_verification.py'
+  - 'tests/unit/test_t5336_repo_mutating_lines.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-21T17:48:19'
+    action: 'T-5336: scope, criteria, verification'
+  - time: '2026-11-21T17:51:24'
+    action: 'T-5336: unattended re-run refuses repo-mutating git commands and writes into .context/.tasks (1023 field report); 4 of 15,819 stored lines newly skipped'
+  - time: '2026-11-21T17:51:52'
+    action: 'T-5336: RCA, criteria ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 104 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 104
+  commits: 5
+  files_changed: 9
+  lines_added: 994
+  lines_removed: 17
+  footprint_refreshed_at: '2026-11-21T16:53:40Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5336-unattended-re-run-of-stored-verification.md
+generated_by: context-agent-hybrid

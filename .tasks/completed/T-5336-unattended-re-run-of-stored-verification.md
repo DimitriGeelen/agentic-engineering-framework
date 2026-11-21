@@ -9,12 +9,12 @@ description: >
   has no pattern for repo-mutating git commands. Add git add/commit/reset/checkout/stash
   and redirects into .context or .tasks to the skip patterns, logged like the others.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/unattended_verification.py, tests/unit/test_t5336_repo_mutating_lines.py]
 related_tasks: [T-5268]
 origin: {kind: "peer", source: "1023-portable-encrypted-chromium-vault", ref: "bdb4fd8d"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -44,8 +44,8 @@ origin: {kind: "peer", source: "1023-portable-encrypted-chromium-vault", ref: "b
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T15:07:54Z
-last_update: 2026-11-21T16:47:35Z
-date_finished:
+last_update: 2026-11-21T16:51:55Z
+date_finished: 2026-11-21T16:51:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -404,3 +404,16 @@ bin/fw vendor self --check --task T-5336
 ### 2026-11-21T16:47:35Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-21T16:51:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3a98496d
+- **Timestamp:** 2026-11-21T16:52:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
