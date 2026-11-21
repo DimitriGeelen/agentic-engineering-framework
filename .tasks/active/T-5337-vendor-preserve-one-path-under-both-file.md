@@ -105,9 +105,9 @@ bvp_scores_proposed:
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] Checked on bleeding-edge first: the defect is present (lib/vendor_preserve.py in_file branch runs before preserved())
-- [ ] A path listed under both keys is kept (restored after the copy), its markers are checked against the kept copy, and the plan prints a WARN naming the file and that files: wins; in_file-only paths unchanged
-- [ ] Test with 1023's manifest shape: both-listed file keeps the consumer's content and passes its marker; in_file-only file still takes upstream and is marker-checked
-- [ ] Existing vendor-preserve tests stay green; vendored copy synced; 1023 told
+- [x] A path listed under both keys is kept (restored after the copy), its markers are checked against the kept copy, and the plan prints a WARN naming the file and that files: wins; in_file-only paths unchanged
+- [x] Test with 1023's manifest shape: both-listed file keeps the consumer's content and passes its marker; in_file-only file still takes upstream and is marker-checked
+- [x] Existing vendor-preserve tests stay green; vendored copy synced; 1023 told
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -314,6 +314,14 @@ bin/fw vendor self --check --task T-5337
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 1023 listed `.secret-scan-allowlist` under both `files:` and `in_file:`; the dry run said "IN-FILE ... (takes upstream ...)", i.e. their own lines would be overwritten with no warning.
+
+**Root cause:** in lib/vendor_preserve.py's plan loop the `in_file:` branch ran first and `continue`d, so `preserved()` (the `files:` check) was never consulted for that path.
+
+**Why structurally allowed:** the two keys were designed as alternatives (whole file vs patch); nothing validated that a path appears under only one, and no test listed a path under both.
+
+**Prevention:** a both-listed path is now kept (files: wins), its markers are checked against the kept copy, and a WARN names the double listing; tests/unit/t3850_vendor_preserve_locals.bats test 4 uses 1023's exact shape (dry run and real run). Fix 851d9b5ed.
 
 ## Evolution
 
