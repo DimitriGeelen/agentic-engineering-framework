@@ -57976,3 +57976,21 @@ scan_id: R-127c4842
 task_id: T-5322
 payload:
   task_file: .tasks/active/T-5322-wc-v034-adoption-note-ring20s-fifth-chan.md
+---
+kind: scan_emitted
+timestamp: '2026-11-21T12:09:49Z'
+scan_id: R-3c963d7f
+task_id: T-5321
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-21T12:09:49Z'
+scan_id: R-3c963d7f
+task_id: T-5321
+payload:
+  task_file: .tasks/active/T-5321-aef-backend-declares-closure-never-and-a.md

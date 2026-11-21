@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5321: AEF backend declares closure: never and answers a close with a typed refusal (wc v0.3.4 item 2 A3, T-5318)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T12:10:12Z
+# ============================================================================
+
+task_id: T-5321
+task_name: "AEF backend declares closure: never and answers a close with a typed refusal (wc v0.3.4 item 2 A3, T-5318)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-20T19:53:27Z
+completed: 2026-11-21T12:09:08Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-20T20:53:30+01:00
+last_commit: 2026-11-21T13:09:05+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed (T-5318 GO). scope, criteria, verification. local backend declares closure: never; close answers closure_not_supported; unknown fence reasons are non-retryable typed refusals (CC-35 passes). fabric card for the test, criteria ticked
+
+# Key outcomes
+outcomes:
+  - 'lib/dispatch_records.py declares `closure: never` and a close request returns the typed refusal `closure_not_supported` without changing or appending anything; a later allocate succeeds'
+  - 'An unknown `fence_reject` reason is reported as a non-retryable typed refusal naming the reason (no exception, no retry)'
+  - 'The local adapter declares `closure = "never"`, `LOCAL_PENDING` no longer lists CC-35, and run_local.py shows CC-35 pass with 0 fail'
+  - 'Unit tests cover both behaviours; existing dispatch_records and worker-contract tests stay green; vendored copy synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/dispatch_records.py'
+  - '.fabric/components/tests-unit-test_t5321_closure_never.yaml'
+  - '.tasks/active/T-5321-aef-backend-declares-closure-never-and-a.md'
+  - 'lib/dispatch_records.py'
+  - 'tests/conformance/worker-contract/run_local.py'
+  - 'tests/unit/test_t5321_closure_never.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T20:53:30'
+    action: 'T-5321: filed (T-5318 GO)'
+  - time: '2026-11-21T13:04:12'
+    action: 'T-5321: scope, criteria, verification'
+  - time: '2026-11-21T13:07:38'
+    action: 'T-5321: local backend declares closure: never; close answers closure_not_supported; unknown fence reasons are non-retryable typed refusals (CC-35 passes)'
+  - time: '2026-11-21T13:09:05'
+    action: 'T-5321: fabric card for the test, criteria ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 975 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 975
+  commits: 5
+  files_changed: 9
+  lines_added: 689
+  lines_removed: 21
+  footprint_refreshed_at: '2026-11-21T12:10:48Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5321-aef-backend-declares-closure-never-and-a.md
+generated_by: context-agent-hybrid
