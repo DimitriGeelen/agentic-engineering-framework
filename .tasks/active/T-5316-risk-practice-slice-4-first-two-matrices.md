@@ -7,10 +7,10 @@ description: >
   to codex review seats (T-5309) and letting a submitter withdraw a pool job (T-5300
   / T-5311 / T-5312). Depends on slices 1-3.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T16:31:30Z
-last_update: '2026-11-20T16:45:58Z'
+last_update: '2026-11-21T13:08:53Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -80,6 +80,22 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-21T13:08:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=0
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal);
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5316: Risk practice slice 4: first two matrices — T-5309 (codex screenshot attachment) and T-5300 (job withdrawal) (T-5310)
@@ -99,9 +115,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] docs/reports/T-5309-risk-matrix.md and docs/reports/T-5300-risk-matrix.md filled from the template (header, summary, actor split per risk, Net); `python3 lib/risk_register.py --matrix <file>` prints 0 error(s) for both
-- [ ] Every risk with any actor scoring 6+ has an R-NNN entry in .context/project/concerns.yaml (type risk, scores, actors, introduced_by, exists_anyway, mitigation_task) and its mitigation task carries arc_id: risk; `python3 lib/risk_register.py` reports 0 errors and 0 warnings
-- [ ] The operator-acceptance list from both checks is recorded under ### Human as one [OPERATOR] criterion naming exactly those risks, or noted as "none" here
+- [x] docs/reports/T-5309-risk-matrix.md and docs/reports/T-5300-risk-matrix.md filled from the template (header, summary, actor split per risk, Net); `python3 lib/risk_register.py --matrix <file>` prints 0 error(s) for both
+- [x] Every risk with any actor scoring 6+ has an R-NNN entry in .context/project/concerns.yaml (type risk, scores, actors, introduced_by, exists_anyway, mitigation_task) and its mitigation task carries arc_id: risk; `python3 lib/risk_register.py` reports 0 errors and 0 warnings
+- [x] The operator-acceptance list from both checks is recorded under ### Human as one [OPERATOR] criterion naming exactly those risks, or noted as "none" here
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -150,6 +166,14 @@ bvp_scores_proposed:
   4. Check the "Exists anyway?" and "Introduced by the change?" columns against the Baseline in the header.
   **Expected:** the check prints 0 error(s); every score fits the scales; every actor that can plausibly cause the risk is scored; no risk the change adds is marked "no", and none it does not add is marked NEW.
   **If not:** name the risk and row, state what the score or column should be and why, and return the matrix to the drafting agent; the operator-acceptance list may change after the fix.
+
+- [ ] [OPERATOR] Accept the remaining risk of T-5309 risk 1 (screenshot content sent to OpenAI, 8), risk 2 (seat prompt-injected by text inside a screenshot, 6) and risk 3 (attached image counted as viewed though codex did not examine it, 9), and T-5300 risk 4 (attempt credential kept longer and carried on a new path, 8), as listed by the --matrix check
+  **Steps:**
+  1. Run `cd /opt/999-Agentic-Engineering-Framework && python3 lib/risk_register.py --matrix docs/reports/T-5309-risk-matrix.md && python3 lib/risk_register.py --matrix docs/reports/T-5300-risk-matrix.md` and read the two "needs operator acceptance" lists.
+  2. For each listed risk, read its actor-split table and the Net section in docs/reports/T-5309-risk-matrix.md or docs/reports/T-5300-risk-matrix.md: who, how, the mitigation and the mitigated score. Each has a mitigation task already filed in the standing arc `risk`: T-5325 (risk 1), T-5326 (risk 2), T-5327 (risk 3), T-5331 (T-5300 risk 4).
+  3. Decide for each: accept it as it stands until its mitigation task lands, or ask for that mitigation to be done first.
+  **Expected:** every listed risk is accepted as it stands, and the list matches the four risks named here.
+  **If not:** name the risk and what you want first; the agent raises that mitigation task to `horizon: now`, updates the matrix and re-runs the check.
 
 <!--
   Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
@@ -405,3 +429,7 @@ python3 lib/risk_register.py > /tmp/.t5316c 2>&1 && grep -q "0 error(s), 0 warni
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5316-risk-practice-slice-4-first-two-matrices.md
 - **Context:** Initial task creation
+
+### 2026-11-21T13:08:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
