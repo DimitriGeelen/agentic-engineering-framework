@@ -44,7 +44,7 @@ Actors (fixed list): `own-agent-unintentional`, `human-unintentional`, `outsider
 | 1.1 | own-agent-unintentional | an agent cannot withdraw another submitter's job: it needs that attempt's nonce and token, which only the allocating caller received | 1 | 3 | 3 | | |
 | 1.2 | human-unintentional | the human has no path to T3w (no operator path in this revision) | 1 | 1 | 1 | | |
 | 1.3 | outsider-intentional | an outsider who has obtained the nonce and token of one attempt (credential theft only, no host control) can now withdraw that never-started job; this capability is new with T3w. Obtaining them is hard: they are returned once, the hub stores only their sha256, and the request needs an Execute-scope connection | 1 | 3 | 3 | | |
-| 1.4 | provider-host | a host running the hub sees only hashes (no credential); a host running the submitter has full host control, so it could already end the job by stopping the supervisor; T3w adds nothing for it (exists anyway) | 1 | 3 | 3 | | |
+| 1.4 | provider-host | the hub host receives the token in transit (row 4.4) but holds the store itself, so T3w adds nothing for it; a host running the submitter has full host control, so it could already end the job by stopping the supervisor; T3w adds nothing for it (exists anyway) | 1 | 3 | 3 | | |
 | 1.5 | intruder | an intruder with control of the submitter's host reads the credentials and withdraws its jobs; with that host control it could already kill the supervisor or end the jobs, so this row exists anyway (full host compromise, not credential theft alone, which is row 1.3) | 2 | 3 | 6 | | |
 
 ### Risk 2 — The submitter withdraws the wrong job or too many, unseen
@@ -77,7 +77,7 @@ Mitigation for 3.1 and 3.4: in AEF's store both writes run under the dispatch lo
 |---|-------|-----|--:|--:|------:|-----------------|----------------:|
 | 4.1 | own-agent-unintentional | an agent building the withdraw request path sends nonce and token in a bus or chat message, logs them, or persists them in a readable file so a later withdraw can be honoured (the spec rule that keeps the credential on the Execute-scope connection binds only the hub route; other backends such as ring20's pool use their own channel, and nothing yet forbids logging or persisting it) | 2 | 4 | 8 | 2 × 4 | 8 |
 | 4.2 | human-unintentional | the operator pastes a withdraw command, with its credential, into a shared channel | 1 | 4 | 4 | | |
-| 4.3 | outsider-intentional | an outsider reading a channel the credential was sent on can withdraw that never-started attempt; completing it (T3) also needs the supervisor's lease or generation, which a channel reader does not have | 1 | 4 | 4 | | |
+| 4.3 | outsider-intentional | an outsider reading a channel the credential was sent on can withdraw that never-started attempt; completing it (T3) also needs the signed completion of spec §6.5, which a channel reader cannot produce (the generation travels with the T3w request and is no barrier) | 1 | 4 | 4 | | |
 | 4.4 | provider-host | the hub host sees the credential in transit on the Execute-scope connection, as it already does for allocate and T2 | 1 | 4 | 4 | | |
 | 4.5 | intruder | an intruder reads a persisted credential and withdraws or completes that attempt (same stolen credential as 4.1, so the same impact); the supervisor's copy was already readable on that host | 2 | 4 | 8 | | |
 
@@ -128,7 +128,7 @@ Risks with any actor at 6 or more (unmitigated): 1, 2, 3, 4, 5, 6. The parent fi
 - id: R-NEW-5
   type: risk
   title: "Forged withdrawal of another submitter's pool job"
-  description: "T3w ends a dispatched attempt for whoever presents its nonce, supervisor token and supervisor_gen. An intruder on the submitter's host can withdraw its jobs; the same credentials already allow T2+T3 failed."
+  description: "T3w ends a dispatched attempt for whoever presents its nonce, supervisor token and supervisor_gen. An intruder controlling the submitter's host can withdraw its jobs (it could already stop them with that host control); a party holding only the credential can now withdraw a never-started job, which is new with T3w."
   status: watching
   likelihood: 2
   impact: 3
@@ -139,7 +139,8 @@ Risks with any actor at 6 or more (unmitigated): 1, 2, 3, 4, 5, 6. The parent fi
     how: "reads the credentials from the dispatcher on the submitter's host and withdraws its jobs"
     likelihood: 2
     impact: 3
-  exists_anyway: true         # not introduced by T-5300
+  exists_anyway: true
+  introduced_by: T-5300       # PARTLY NEW: credential-only withdrawal
   mitigation_task: T-YYYY
   created: 2026-11-21
 - id: R-NEW-6

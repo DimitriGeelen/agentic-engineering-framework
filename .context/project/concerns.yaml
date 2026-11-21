@@ -6031,8 +6031,7 @@ concerns:
 - id: R-042
   type: risk
   title: Forged withdrawal of another submitter's pool job
-  description: T3w ends a dispatched attempt for whoever presents its nonce, supervisor token and supervisor_gen. An intruder on the submitter's host can withdraw its jobs; the same credentials already
-    allow T2+T3 failed.
+  description: \"T3w ends a dispatched attempt for whoever presents its nonce, supervisor token and supervisor_gen. An intruder controlling the submitter's host can withdraw its jobs (it could already stop them with that host control); a party holding only the credential can now withdraw a never-started job, which is new with T3w.\"
   status: watching
   likelihood: 2
   impact: 3
