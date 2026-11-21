@@ -345,6 +345,11 @@ bin/fw vendor self --check --task T-5333
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-11-21 — basename matching was the deeper fault
+- **What changed:** filed as "same-named images collide"; the build showed the checker dropped directories when recording views at all, not only when matching names. Seats whose logs give only a file name cannot be made exact, so they now return None (cannot tell) when the name is shared, instead of guessing.
+- **Plan impact:** `image_viewed`/`check_image` gained an optional `cited` argument so a name-only match can see the other cited images; `check_vote` passes it.
+- **Triggered:** nothing new; closes the remaining route of G-137 and mitigates R-041 (T-5309 matrix risk 4).
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
