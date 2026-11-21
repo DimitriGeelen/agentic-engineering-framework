@@ -1,0 +1,21 @@
+id: tools/printed-fw-commands-lint.py
+name: printed-fw-commands-lint
+type: script
+subsystem: framework-core
+location: tools/printed-fw-commands-lint.py
+tags: []
+
+purpose: "printed-fw-commands-lint — T-5306 (slice 4 of T-5302)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-21
+created_by: unknown

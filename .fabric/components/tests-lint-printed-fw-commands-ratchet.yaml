@@ -1,0 +1,21 @@
+id: tests/lint/printed-fw-commands-ratchet.bats
+name: printed-fw-commands-ratchet
+type: script
+subsystem: tests
+location: tests/lint/printed-fw-commands-ratchet.bats
+tags: []
+
+purpose: "T-5306 (slice 4 of T-5302) — ratchet on hand-written `bin/fw <verb>` and `bin/watchtower.sh ...` in text printed to a person or an agent."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-21
+created_by: unknown

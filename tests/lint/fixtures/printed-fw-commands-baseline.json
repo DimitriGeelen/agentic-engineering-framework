@@ -1,0 +1,27 @@
+{
+ "_comment": "T-5306 ratchet: hand-written bin/fw / bin/watchtower.sh in printed text, per file. May only shrink. Regenerate: python3 tools/printed-fw-commands-lint.py --regenerate",
+ "total": 40,
+ "counts": {
+  "agents/context/check-human-ac-tick.py": 1,
+  "agents/context/check-inception-schema.py": 1,
+  "agents/context/inject-next-directive.py": 2,
+  "agents/git/lib/hooks.sh": 8,
+  "agents/git/lib/parked-merge-guard.sh": 2,
+  "agents/git/lib/secret-scan.sh": 1,
+  "agents/task-create/update-task.sh": 1,
+  "agents/ux-review/ux-review.py": 1,
+  "bin/fw": 3,
+  "lib/ac_placeholder.py": 1,
+  "lib/bvp_judge_dispatch_cli.py": 1,
+  "lib/issues.py": 1,
+  "lib/issues_lag.py": 3,
+  "lib/push-state.sh": 1,
+  "lib/rail-identity.sh": 3,
+  "lib/review_cost.py": 3,
+  "lib/review_link_validator.py": 3,
+  "lib/reviewer/dispatch_cli.py": 1,
+  "lib/reviewer/judge_cli.py": 1,
+  "lib/upgrade.sh": 1,
+  "web/blueprints/config.py": 1
+ }
+}
