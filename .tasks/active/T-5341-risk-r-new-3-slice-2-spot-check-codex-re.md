@@ -90,13 +90,18 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Risk R-NEW-3 (T-5316): codex can vote green on a render criterion without opening the screenshots. T-5327 made such a vote not-checkable in single-seat runs. In a rung-5 panel, attached-only proof still counts. T-5344 (2026-11-21) showed codex doing it again in a single-seat run: the vote was caught and did not count.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** A codex render green in a panel might wave through a page that is actually broken.
 
-**Goal:** <what we are trying to achieve>
+**Measured 2026-11-21 (ledger, 242 rows):** 9 codex render greens; 8 are rung-5.
+- In all 8 (T-5226, T-5236 ×2, T-5260, T-5261, T-5262, T-5303, T-5305), the other two seats on the same criterion, claude-code and antigravity, also voted green.
+- Disagreement: 0 of 8. In none of the 8 was codex's vote the deciding one.
+- The ninth (T-5344) was the single-seat case, already graded not-checkable.
 
-**Expected outcome:** <what will be different when this is done>
+**Goal:** Know, at audit time, if a codex render green ever stands without a peer that viewed the images, at no extra review cost.
+
+**Expected outcome:** One audit line reports codex render greens and how many a viewing peer agreed with. It WARNs on any green that no viewing peer backs.
 
 ## Acceptance Criteria
 
