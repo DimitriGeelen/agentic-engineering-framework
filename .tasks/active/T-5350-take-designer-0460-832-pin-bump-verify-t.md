@@ -1,10 +1,16 @@
 ---
 id: T-5350
-name: "Take designer 0.46.0 (832): pin bump; verify T-1471 Save on first toolbar row at 1920 and T-1472 starter map readable at 1024"
+name: "Take designer 0.46.0 (832): pin bump; verify T-1471 Save on first toolbar row
+  at 1920 and T-1472 starter map readable at 1024"
 description: >
-  832 msg d7048659 (2026-11-21): designer-v0.46.0, artifact aef-workflow-designer-0.46.0.html sha256 7f5f41f59ad991416862e6779895aa8383e81b3fa94bdfcae30a14bbbf4af7dd (1439884 bytes), kit aef-authoring-kit-0.46.0. Carries our two 0.45.0 notes (T-1471, T-1472) plus T-1465, T-1470, T-1477. No stored-format change; /api/validate unchanged. Verify the artifact hash ourselves, bump policy/designer-pin.yaml + vendor/designer, and check both fixes by screenshot (reviewer-judged).
+  832 msg d7048659 (2026-11-21): designer-v0.46.0, artifact aef-workflow-designer-0.46.0.html
+  sha256 7f5f41f59ad991416862e6779895aa8383e81b3fa94bdfcae30a14bbbf4af7dd (1439884
+  bytes), kit aef-authoring-kit-0.46.0. Carries our two 0.45.0 notes (T-1471, T-1472)
+  plus T-1465, T-1470, T-1477. No stored-format change; /api/validate unchanged. Verify
+  the artifact hash ourselves, bump policy/designer-pin.yaml + vendor/designer, and
+  check both fixes by screenshot (reviewer-judged).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T22:10:21Z
-last_update: 2026-11-21T22:10:21Z
-date_finished: null
+last_update: '2026-11-21T22:11:13Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-21T22:11:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5350: Take designer 0.46.0 (832): pin bump; verify T-1471 Save on first toolbar row at 1920 and T-1472 starter map readable at 1024
@@ -57,22 +80,32 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 832 released designer 0.46.0 (msg d7048659, 2026-11-21): tag designer-v0.46.0, artifact `dist/aef-workflow-designer-0.46.0.html`, sha256 7f5f41f59ad991416862e6779895aa8383e81b3fa94bdfcae30a14bbbf4af7dd, 1439884 bytes, kit `aef-authoring-kit-0.46.0`.
+- It carries our two notes on 0.45.0: T-1471 (Save on the first toolbar row inside the 1894 px frame at a 1920 window) and T-1472 (`/designer/app` opens its starter map readable at 1024).
+- It also adds T-1465, T-1470 and T-1477.
+- 832 says nothing stored changes and `/api/validate` is unchanged.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** We run 0.45.0, which has the two layout faults we reported.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Pin 0.46.0 through the pull-at-tag procedure (independent sha256 check against 832's MANIFEST at the tag), and confirm both fixes on our own screen.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `/designer` serves 0.46.0. Save is on the first toolbar row at 1920, and the starter map is readable at 1024. 832 is told the verdict.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw designer sync --from-tag designer-v0.46.0` verifies the artifact (sha256 7f5f41f5…, 1439884 bytes) against 832's MANIFEST at the tag and against the pin, and installs it. Validator and kit are verified the same way.
+- [ ] `policy/designer-pin.yaml` pins 0.46.0. `fw designer status` reports the pin valid. `/designer/app` serves APP_VERSION 0.46.0 after a Watchtower restart, the designer tests pass, and the vendored copy is synced.
+- [ ] 832 is told the result on its thread (conversation 832-designer-release-0.46.0)
 
 ### Human
+- [ ] [REVIEW] Designer 0.46.0 shows both fixes we asked for (T-1471, T-1472)
+  **Steps:**
+  1. Open http://192.168.10.107:3000/designer at a 1920 px wide window: the Save button is on the first toolbar row, inside the frame
+  2. Open http://192.168.10.107:3000/designer/app at a 1024 px wide window: the starter map is readable (labels not clipped or overlapping)
+  **Expected:** Save on the first toolbar row at 1920; starter map readable at 1024
+  **If not:** Screenshot the width that fails and note what is wrong; it goes back to 832 on its thread
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -354,3 +387,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5350-take-designer-0460-832-pin-bump-verify-t.md
 - **Context:** Initial task creation
+
+### 2026-11-21T22:11:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
