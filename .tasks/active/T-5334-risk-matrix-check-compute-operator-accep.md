@@ -91,20 +91,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** In the T-5316 review rounds, `lib/risk_register.py --matrix` (parse_matrix, about line 342) listed T-5300 risk 1 (PARTLY NEW) for operator acceptance with a mitigated score of 6. That 6 is the full-host-compromise row, which exists anyway. The part T3w actually adds scores 3.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** For a NEW or PARTLY NEW risk, acceptance uses the worst mitigated score across all actor rows. Rows that exist anyway inflate it. This breaks the T-5310 rule that the decision rests on what a change introduces.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Actor rows can say whether that row is introduced. A PARTLY NEW risk then needs acceptance only when an introduced row is still 6+ after mitigation. Any score of 15+ still always needs acceptance.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** The operator is asked only about the part a change adds. Old matrices without the new column behave exactly as today.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Actor tables accept an optional `introduced` column (yes/no). When present on a PARTLY NEW risk, acceptance uses the worst mitigated score of the `yes` rows only. When absent, the current behaviour is unchanged.
+- [ ] NEW risks and the 15+ rule are unchanged. A PARTLY NEW risk whose actor table has the column but no `yes` row is an error (a PARTLY NEW risk must name its introduced part).
+- [ ] `.tasks/templates/risk-matrix.md` and the `--matrix` help text describe the column.
+- [ ] Unit tests cover: introduced row at 3 next to an exists-anyway row at 6 (not listed); introduced row at 6 (listed); no column (unchanged); a column with no yes row (error); 15+ still listed. The existing risk tests stay green, and the vendored copy is synced.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,6 +293,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 python3 -m pytest tests/unit/test_t5334_matrix_introduced.py -q
+timeout 300 python3 -m pytest tests/unit/ -q -k "risk" -p no:cacheprovider
+python3 lib/risk_register.py --matrix docs/reports/T-5300-risk-matrix.md
+bin/fw vendor self --check --task T-5334
 
 ## RCA
 
