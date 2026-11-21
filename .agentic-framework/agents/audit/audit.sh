@@ -4780,7 +4780,13 @@ check_prepush_range_tests() {
              "Run them by hand before relying on this push, or raise PREPUSH_RANGE_TEST_BUDGET (bin/fw config set PREPUSH_RANGE_TEST_BUDGET <seconds>)"
     fi
     if [ "${_nnew:-0}" -eq 0 ] && [ "${_nfl:-0}" -eq 0 ] && [ "${_nbase:-0}" -eq 0 ] && [ "${_nun:-0}" -eq 0 ]; then
-        pass "$_rt_head: all $_npass green (T-5342)${_rt_cutnote:+ —$_rt_cutnote}"
+        if [ "${_ncut:-0}" -gt 0 ]; then
+            warn "$_rt_head: all $_npass selected green, but $_ncut matching file(s) were over the cap and not run (T-5342)" \
+                 "Partial coverage, not green:${_rt_cutnote}" \
+                 "Push in smaller ranges, or run the cut files by hand before relying on this push"
+        else
+            pass "$_rt_head: all $_npass green (T-5342)"
+        fi
     fi
     return 0
 }
