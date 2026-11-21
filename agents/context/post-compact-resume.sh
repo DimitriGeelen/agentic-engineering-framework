@@ -205,7 +205,11 @@ Resumed session (claude -c or /resume). No compaction happened.
 ${HANDOVER_LINE}"
             fi ;;
     esac
+    # T-5348 (G-139): the harness shows only ~2KB of this injection, so the T-1728 note at
+    # the end never reached the agent. A short copy goes first, where it is seen.
     CONTEXT="${RECOVERY_HEADER}
+
+**Budget (T-5348):** budget statements and stop/handover advice from before this start (handover text, compaction summary, earlier recommendations) are STALE. Read \`agents/context/checkpoint.sh budget\` and decide from its band; in Green or Amber, session length or tasks closed is no reason to stop.
 
 ## Where We Are
 ${WHERE}

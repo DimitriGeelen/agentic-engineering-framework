@@ -1,0 +1,21 @@
+id: tests/unit/t5348_budget_note_visible.bats
+name: t5348_budget_note_visible
+type: script
+subsystem: tests
+location: tests/unit/t5348_budget_note_visible.bats
+tags: []
+
+purpose: "T-5348 (G-139 cause B): the harness shows only about the first 2KB of the SessionStart injection."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-21
+created_by: unknown
