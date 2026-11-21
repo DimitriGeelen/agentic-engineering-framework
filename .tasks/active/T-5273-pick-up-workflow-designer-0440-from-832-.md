@@ -115,10 +115,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw designer sync --from-tag designer-v0.45.0 --dry-run` verifies the tag (sha256 ed2842652b83641bbede81666f246df30e265bbdfd76d235319a69ddb68f86f4, 1434483 bytes, matching 832's MANIFEST at the tag and msg c4c18fcf)
-- [ ] policy/designer-pin.yaml pins 0.45.0 (artifact and validator fields), build and validator installed under vendor/designer/, `fw designer status` reports the pin valid
-- [ ] /designer serves 0.45.0 after a Watchtower restart; the designer tests pass; the vendored copy carries 0.45.0
-- [ ] 832 told the result (pinned, or the exact mismatch)
+- [x] `fw designer sync --from-tag designer-v0.45.0 --dry-run` verifies the tag (sha256 ed2842652b83641bbede81666f246df30e265bbdfd76d235319a69ddb68f86f4, 1434483 bytes, matching 832's MANIFEST at the tag and msg c4c18fcf)
+- [x] policy/designer-pin.yaml pins 0.45.0 (artifact and validator fields), build and validator installed under vendor/designer/, `fw designer status` reports the pin valid
+- [x] /designer serves 0.45.0 after a Watchtower restart; the designer tests pass; the vendored copy carries 0.45.0
+- [x] 832 told the result (pinned, or the exact mismatch)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
