@@ -302,7 +302,9 @@ def test_hooks_registered_in_settings_and_consumer_template():
     def cmds(event):
         return [h["command"] for g in settings["hooks"].get(event, []) for h in g["hooks"]]
     stop = cmds("Stop")
-    assert any("stop-driver.sh" in c for c in stop)
+    # T-5346: the Stop driver runs through `fw hook stop-driver` (the form lib/init.sh
+    # writes for consumers); the old direct agents/context/stop-driver.sh call is accepted too.
+    assert any(c.endswith("hook stop-driver") or "stop-driver.sh" in c for c in stop)
     assert any(c.endswith("hook sidecar-receiver-ready") for c in stop)
     ups = cmds("UserPromptSubmit")
     assert any(c.endswith("hook sidecar-inbox") for c in ups)
