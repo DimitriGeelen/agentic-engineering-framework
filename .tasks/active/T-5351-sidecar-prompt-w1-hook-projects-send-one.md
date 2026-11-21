@@ -315,7 +315,7 @@ bin/fw vendor self --check --task T-5351
 
 | state | control | 1024 | 1440 | 1920 | note |
 |-------|---------|------|------|------|------|
-| config | SIDECAR_W1_PROMPT_ORIGIN row | ok | ok | ok | full-page shots |
+| config | SIDECAR_W1_PROMPT_ORIGIN row | ok | ok | ok | full-page shots; the row is in the served page (curl) and Watchtower is current; its layout is the reviewer's judgement |
 
 Captures (`fw ux shots T-5351`, full page):
 - .context/visual/T-5351/config@1024.png
