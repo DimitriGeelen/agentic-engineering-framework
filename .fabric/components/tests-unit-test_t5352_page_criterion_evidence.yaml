@@ -1,0 +1,21 @@
+id: tests/unit/test_t5352_page_criterion_evidence.py
+name: test_t5352_page_criterion_evidence
+type: script
+subsystem: tests
+location: tests/unit/test_t5352_page_criterion_evidence.py
+tags: []
+
+purpose: "T-5352: a criterion that names a page but is not render-class (T-5350: a designer re-pin names /designer, changes no web/ file, so it is `unclassified`) got an \"Image evidence\" brief that promised screenshots and listed none…"
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-21
+created_by: unknown
