@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5352: Judge: a page-naming criterion that is not render-class gets an 'Image evidence' brief with no screenshots (needed= checks render only)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T23:01:35Z
+# ============================================================================
+
+task_id: T-5352
+task_name: "Judge: a page-naming criterion that is not render-class gets an 'Image evidence' brief with no screenshots (needed= checks render only)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-21T22:43:55Z
+completed: 2026-11-21T23:01:06Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-21T23:44:24+01:00
+last_commit: 2026-11-22T00:01:03+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope — page-naming non-render criteria get no screenshots in judge briefs (found on T-5350). one predicate (needs_screenshots) — a page-naming non-render criterion gets captures and visual evidence. fabric card for the page-criterion evidence test. criteria, RCA; T-5353 filed for the vote-checker side
+
+# Key outcomes
+outcomes:
+  - '`_gather_evidence` treats a criterion with `page` true like a `render` one: its named pages are captured, and the Visual Verification captures are gathered and listed. One predicate decides "needs screenshots" for both the brief''s image section and the capture, so they cannot disagree again.'
+  - 'Unit tests:'
+  - 'The ledger accepts a green on such a criterion when the seat logged a view. If the ledger (`verdict_ledger` / `vote_checker`) asks only render criteria for captures, that is stated here, and the decision point stays single.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.fabric/components/tests-unit-test_t5352_page_criterion_evidence.yaml'
+  - '.tasks/active/T-5352-judge-a-page-naming-criterion-that-is-no.md'
+  - '.tasks/active/T-5353-vote-checker-page-naming-non-render-crit.md'
+  - 'lib/reviewer/judge_cli.py'
+  - 'tests/unit/test_t5352_page_criterion_evidence.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-21T23:44:24'
+    action: 'T-5352: scope — page-naming non-render criteria get no screenshots in judge briefs (found on T-5350)'
+  - time: '2026-11-21T23:59:27'
+    action: 'T-5352: one predicate (needs_screenshots) — a page-naming non-render criterion gets captures and visual evidence'
+  - time: '2026-11-21T23:59:33'
+    action: 'T-5352: fabric card for the page-criterion evidence test'
+  - time: '2026-11-22T00:01:03'
+    action: 'T-5352: criteria, RCA; T-5353 filed for the vote-checker side'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 17
+  commits: 5
+  files_changed: 9
+  lines_added: 1034
+  lines_removed: 22
+  footprint_refreshed_at: '2026-11-21T23:01:45Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5352-judge-a-page-naming-criterion-that-is-no.md
+generated_by: context-agent-hybrid
