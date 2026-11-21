@@ -4,7 +4,7 @@ When the user says `/resume`, "pick up", or "continue", execute this workflow.
 
 ## Step 1: Gather State
 
-Run these in parallel:
+Run these in parallel, from the project root (`.agentic-framework/bin/fw` exists in a vendored project and in the framework repo's self-vendored copy):
 
 1. Read `.context/handovers/LATEST.md`
 2. Run `git status --short` and `git log --oneline -5`
@@ -54,3 +54,4 @@ Then ask: "What would you like to work on?"
 - Keep output concise — no commentary
 - If LATEST.md has unfilled `[TODO]` sections, warn about stale handover
 - If tool counter > 0 at session start, the PostToolUse hook is working
+- Any command you print for the user to run (next steps, a command quoted from the handover) is one line, `cd <absolute project root> && <fw> <args>` (T-5302): `<fw>` is `bin/fw` when `FRAMEWORK.md` and `bin/fw` are at the project root (the framework repo), else `.agentic-framework/bin/fw` (a vendored project). Never bare `fw`; rewrite a handover's commands to this form before repeating them.

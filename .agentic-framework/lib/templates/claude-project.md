@@ -257,7 +257,7 @@ fw handover --commit # Generate and commit handover
 fw task create --name "Fix bug" --type build --owner human
 ```
 
-**Path resolution:** in this project the launcher is `.agentic-framework/bin/fw` (the vendored copy — there is no `bin/fw` at the project root). It finds the framework via its own location and `.framework.yaml` in the project root.
+**Path resolution:** in this project the launcher is `.agentic-framework/bin/fw` (the vendored copy — there is no `bin/fw` at the project root). It finds the framework via its own location and `.framework.yaml` in the project root. The `fw …` lines in this file are shorthand for that launcher: a command you run or print is `cd <absolute project root> && .agentic-framework/bin/fw <args>`, never bare `fw` (T-5302 — the framework's own output prints the same form).
 
 ## Agents
 
@@ -667,7 +667,7 @@ When giving the human a command to run (Tier 0 approvals, inception decisions, v
 
 1. **Single-line, copy-pasteable** — works when pasted into any terminal, from any directory
 2. **Prefixed with `cd`** — always include `cd /path/to/project &&` so directory context is explicit
-3. **Use `.agentic-framework/bin/fw` not `fw`** — the global `fw` may resolve to a different install, and this project has no `bin/fw` at its root (that path exists only in the framework repo)
+3. **Use `.agentic-framework/bin/fw` not `fw`** — every printed command is `cd <absolute project root> && .agentic-framework/bin/fw <args>` (T-5302). The `fw` on PATH is not the project router on every host or in every worker's PATH, and this project has no `bin/fw` at its root (that path exists only in the framework repo)
 4. **No bare multi-line** — if multiple commands are needed, chain with `&&` on one line
 
 ### Inception Discipline
