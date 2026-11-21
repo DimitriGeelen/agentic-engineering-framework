@@ -332,6 +332,48 @@ font-family: 'Outfit';
   .btn-primary { color: var(--accent); border-color: rgba(196,238,84,0.3); background: var(--accent-soft); }
   .btn-primary:hover { background: rgba(196,238,84,0.2); }
   .btn.active { background: var(--accent); color: #0d0f13; border-color: var(--accent); }
+  /* T-1439: Import / Export menus (toolbar). One list of formats, one item per format and direction. */
+  .tb-menu { position: relative; display: inline-flex; }
+  .tb-menu-list { position: absolute; top: calc(100% + 4px); left: 0; z-index: 60; min-width: 230px;
+    background: var(--surface-2); border: 1px solid var(--border-strong); border-radius: 6px; padding: 4px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45); }
+  .tb-menu-list.align-right { left: auto; right: 0; }
+  .tb-menu-list[hidden] { display: none; }
+  .tb-menu-item { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; width: 100%;
+    font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--text); text-align: left;
+    background: transparent; border: 0; border-radius: 4px; padding: 8px 10px; cursor: pointer; white-space: nowrap; }
+  .tb-menu-item:hover, .tb-menu-item:focus { background: var(--surface-3); outline: none; }
+  .tb-menu-item:focus-visible { box-shadow: 0 0 0 1px var(--accent) inset; }
+  .tb-menu-hint { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
+  /* T-1440 (operator ruling a, 2026-11-19): exported pictures and PDFs are a PAPER version — white background, dark
+     text — because they go to other people, into documents and onto printers. The screen stays dark. The class is set
+     only for the instant the export reads computed styles (no paint happens in between), then removed. */
+  body.export-paper {
+    --bg: #ffffff; --surface: #f5f7fa; --surface-2: #ffffff; --surface-3: #eef1f5;
+    --border: #c3cad6; --border-strong: #8f99aa;
+    --text: #1a1e26; --text-dim: #464d5c; --text-faint: #5f6675; --text-hint: #555c6b;
+    --accent: #557a00; --accent-soft: rgba(85,122,0,0.10);
+    --blue: #1f5fc9; --blue-soft: rgba(31,95,201,0.08);
+    --green: #1d7f45; --green-soft: rgba(29,127,69,0.08);
+    --orange: #a85a06; --orange-soft: rgba(168,90,6,0.08);
+    --red: #c02626; --red-soft: rgba(192,38,38,0.08);
+    --purple: #7136b8; --purple-soft: rgba(113,54,184,0.08);
+  }
+  /* T-1440: Export → PDF prints a sheet holding the paper picture of the map, and nothing else of the editor. */
+  #print-sheet { display: none; }
+  @media print {
+    @page { size: A4 landscape; margin: 10mm; }
+    html, body { height: auto; overflow: visible; background: #fff; }
+    body.printing-map > *:not(#print-sheet) { display: none !important; }
+    body.printing-map #print-sheet { display: block; }
+    #print-sheet h1 { font: 600 13pt var(--sans); color: #1a1e26; margin: 0 0 4mm; }
+    #print-sheet svg { display: block; width: 100%; height: auto; max-height: 175mm; }
+    #print-sheet.paper-a3 svg { max-height: 258mm; }   /* T-1446: the A3 size itself is set by printMapSheet */
+    /* T-1446: readable A4 pages: every part at one common scale (width/height set in mm on each svg) */
+    #print-sheet .print-part { break-after: page; break-inside: avoid; }
+    #print-sheet .print-part:last-child { break-after: auto; }
+    #print-sheet .print-part svg { width: auto; max-height: none; }
+  }
 
   /* ============ Main layout ============ */
   main {
@@ -505,6 +547,9 @@ font-family: 'Outfit';
      scroll container and the SVG element carries an explicit inline size
      (viewBox × zoom) — the viewBox itself stays content-driven (T-043 untouched). */
   .canvas-wrap.zoomed { overflow: auto; }
+  /* T-1447 review: room to scroll the lowest content clear of the "Mode" chip that sits over the canvas's bottom-left
+     (Greenfield's bottom row of notes ended under it at full scroll). Zoomed only: the fit view is unchanged. */
+  .canvas-wrap.zoomed #canvas { margin-bottom: 48px; }
   .canvas-wrap.pan-ready #canvas { cursor: grab; }
   .canvas-wrap.panning #canvas { cursor: grabbing; }
   #zoom-level {
@@ -697,6 +742,7 @@ font-family: 'Outfit';
   .node-label-sub { fill: var(--text-faint); font-family: var(--mono); font-size: 9px; pointer-events: none; }
   /* T-1369: a document's [state]: brighter and larger than a sub-label, it is what makes the document a trigger (sweep) */
   .data-state-label { fill: var(--text-dim); font-family: var(--mono); font-size: 10px; pointer-events: none; }
+  .note-text { fill: var(--text); font-family: var(--sans); font-size: 11px; pointer-events: none; }   /* T-1447 */
   /* Global label size (T-085): keyed off data-lsize on the svg root. The
      lane-fit ladder's explicit shrink steps use inline style, which wins
      over these rules by cascade priority. */
@@ -731,6 +777,12 @@ font-family: 'Outfit';
   /* The badge sits above the top-right corner, where incoming edges cross; a surface-coloured pill
      under the text keeps it legible over an edge line (read in the T-884 screenshots, not measured). */
   .node-instance-pill { fill: var(--surface); stroke: var(--border-strong); stroke-width: .5px; pointer-events: none; }
+  /* T-1428: the RECORDED route (AEF runtime projection v2 `traversed`): the edges the task took, in the done colour,
+     a little heavier than an untaken edge and quieter than the current node's accent halo; ×N where it took an edge
+     more than once. */
+  .edge[data-instance="traversed"] .edge-path { stroke: var(--green); stroke-width: 2px; opacity: .9; }
+  .edge-instance-count-bg { fill: var(--surface); stroke: var(--green); stroke-width: .75px; pointer-events: none; }
+  .edge-instance-count { fill: var(--green); font-family: var(--mono); font-size: 8px; font-weight: 600; pointer-events: none; }
   #instancePicker { font-size: 12px; max-width: 260px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 1px 4px; }
   /* T-355: the real tag of a foreign (out-of-allowlist) flow node, drawn above the shape.
      Mono because it is a literal from the source document, not prose; --text-dim rather
@@ -1525,7 +1577,7 @@ font-family: 'Outfit';
            current node, DERIVED completed path, and the node a refusal fired on with its rule.
            Present even when the API is absent — then it says so — because a picker that vanishes
            cannot tell "no instances" from "no server". Writes nothing to the model. -->
-      <select id="instancePicker" title="Instance overlay (T-884): where a governed entity is on this template. ● current node · ✓ completed path (DERIVED: the shortest flow path from the start, not a recorded history) · ⛔ the node a refusal fired on, with the rule that refused it (from .context/audits/instance-refusals.jsonl). Reads /api/instances; writes nothing."><option value="">instances: loading…</option></select>
+      <select id="instancePicker" title="Instance overlay (T-884): where a governed entity is on this template. ● current node · ✓ completed path (DERIVED: the shortest flow path from the start, not a recorded history). Reads /api/instances; writes nothing."><option value="">instances: loading…</option></select>
     </div>
     <div class="actions">
       <!-- T-245 view-chrome controls: per-panel hide/show (persisted in aefViewPrefs)
@@ -1558,7 +1610,11 @@ font-family: 'Outfit';
            alignColumnsMoves(). Functions kept for Clean/nudge/import/bake/verifiers. -->
       <button class="btn" id="btn-xml">View XML</button>
       <button class="btn" id="btn-settings" title="Editor settings — routing, snapping, grid">⚙ Settings</button>
-      <button class="btn" id="btn-load">Load…</button>
+      <!-- T-1439 (T-1093 GO, step 1): named Import and Export menus. "Load…" did BPMN import and Save's download did
+           BPMN export, but nothing said import, export or BPMN, so the operator could not find either. The items come
+           from one list (IO_FORMATS), so each later format (T-1440..T-1444) adds one entry. -->
+      <span class="tb-menu"><button class="btn" id="btn-import" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-import" title="Import a map from a file">Import ▾</button><div class="tb-menu-list" id="menu-import" role="menu" aria-labelledby="btn-import" hidden></div></span>
+      <span class="tb-menu"><button class="btn" id="btn-export" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="menu-export" title="Export this map to a file">Export ▾</button><div class="tb-menu-list" id="menu-export" role="menu" aria-labelledby="btn-export" hidden></div></span>
       <!-- T-154: "📂 Open project…" moved to the brand area (replacing the workflow-picker
            <select>); a single, duplicate-free entry point. -->
       <!-- T-962: hidden until detectSaveApi() confirms a server, like its neighbours — the
@@ -1787,12 +1843,18 @@ font-family: 'Outfit';
           <marker id="da-end" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
             <path d="M1,1 L9,5 L1,9" fill="none" stroke="var(--text-dim)" stroke-width="1.3" />
           </marker>
+          <!-- T-1447: an association's open arrowhead (associationDirection One at the target, Both at both ends) -->
+          <marker id="assoc-end" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+            <path d="M1,1 L9,5 L1,9" fill="none" stroke="var(--text-dim)" stroke-width="1.3" />
+          </marker>
         </defs>
         <g id="g-pool"></g>
         <!-- T-1120: the other pools of a collaboration and the message flows, read-only (no pointer events) -->
         <g id="g-collab" pointer-events="none"></g>
         <!-- T-1369: documents (BPMN data objects) with their state and associations, read-only (no pointer events) -->
         <g id="g-data" pointer-events="none"></g>
+        <!-- T-1447: imported text annotations and associations (notes on a workshop map), read-only, under edges and nodes -->
+        <g id="g-notes" pointer-events="none"></g>
         <!-- T-286: id badges paint BELOW edges by default (arrows carry flow semantics;
              badges are secondary metadata) — the selected element's badge raises into
              g-badges-top. Both layers are pointer-events:none so badges never swallow
@@ -2189,11 +2251,26 @@ function effectiveLaneDefault(lane) {
 // `refused` is the LATEST audit line for this task whose node is on this template, with its
 // rule and — when the refused hop named one and it is on this template — its target. Reads;
 // never writes.
-function instanceOverlayState(nodeIds, flows, startIds, instance, refusals) {
+function instanceOverlayState(nodeIds, flows, startIds, instance, refusals, edgeEnds) {
   const ids = new Set(nodeIds || []);
-  const out = { current: null, done: [], refused: null };
+  const out = { current: null, done: [], refused: null, mode: 'derived', traversed: {}, unmapped: 0, offMap: 0 };
   if (!instance) return out;
-  if (instance.state === 'NODE' && ids.has(instance.node)) {
+  // T-1428: AEF's runtime projection v2 (its T-5193) records the route: `traversed` is the ordered list of edge
+  // aef:uids the task took, repeats kept; `unmapped` the hops no single edge chain could place. When it is there, the
+  // overlay shows that route and nothing derived. edgeEnds maps an edge uid to [source display id, target display id].
+  if (Array.isArray(instance.traversed) && edgeEnds) {
+    out.mode = 'recorded';
+    if (instance.state === 'NODE' && ids.has(instance.node)) out.current = instance.node;
+    const done = new Set();
+    for (const uid of instance.traversed) {
+      const ends = edgeEnds.get(uid);
+      if (!ends) { out.offMap++; continue; }
+      out.traversed[uid] = (out.traversed[uid] || 0) + 1;
+      for (const n of ends) if (ids.has(n) && n !== out.current) done.add(n);
+    }
+    out.done = Array.from(done);
+    out.unmapped = Array.isArray(instance.unmapped) ? instance.unmapped.length : 0;
+  } else if (instance.state === 'NODE' && ids.has(instance.node)) {
     out.current = instance.node;
     let best = null;
     for (const s of (startIds || [])) {
@@ -2222,7 +2299,7 @@ function instanceOverlayState(nodeIds, flows, startIds, instance, refusals) {
     for (let i = refusals.length - 1; i >= 0; i--) {
       const r = refusals[i];
       if (!r || r.task !== instance.task || !ids.has(r.node)) continue;
-      out.refused = { node: r.node, rule: r.rule || '?', target: r.target && ids.has(r.target) ? r.target : null };
+      out.refused = { node: r.node, rule: r.rule || r.reason_code || '?', target: r.target && ids.has(r.target) ? r.target : null };
       break;
     }
   }
@@ -4554,7 +4631,16 @@ function renderNodes() {
       authCount.total++;
       if (mstate === 'missing' && !authDeclared) { authCount.missing++; mstate = 'none'; }
       const MARKER_CH = 4.9;                       // 8px monospace advance, rounded up
-      const avail = def.w / 2 - 2 - 7;             // from n.x+2 to top-centre, minus an arrowhead half-width
+      // From n.x+2 to the leftmost flow end on the top side (top-centre when there is none or it lies right of the
+      // centre), minus an arrowhead half-width. T-1456: ends on a side are not always at or right of the centre (a side
+      // mixing incoming and outgoing ends moves some 12 px aside), so the marker measures where they land.
+      let topLeft = 0;
+      const topEnds = buildEdgeGroups().get(`${n.id}:N`) || [];
+      for (const x of topEnds) {
+        const e = state.edges.find(z => z.id === x.edgeId);
+        if (e) topLeft = Math.min(topLeft, spreadOffset(e, x.role, 'N', n));
+      }
+      const avail = def.w / 2 + topLeft - 2 - 7;
       const fitMarker = (forms) => forms.find(t => t.length * MARKER_CH <= avail) || forms[forms.length - 1];
       const marker = (cls, kind, full, forms) => {
         const t = el('text', { x: n.x + 2, y: n.y - 3, class: cls, 'data-authority-marker': kind }, [text(fitMarker(forms))]);
@@ -4594,6 +4680,19 @@ function renderNodes() {
           else if (istate === 'refused-target') pill('node-instance-refused-badge', '✗ refused target', by, 'refused-target');
           if (isRefused) pill('node-instance-refused-badge', '⛔ ' + ov.refused.rule, istate === 'current' ? by - 13 : by, 'refused');
         }
+      } else if (instanceView.available === true && !instanceView.selected) {
+        // T-1438: the overview, with no instance selected: "● N" on each step holding N >= 1 live instances (state NODE),
+        // the task ids on hover. A step holding none shows nothing (a step that can never hold one, il_closed, must not
+        // read "0 stuck here"). Its own attribute, data-instance-count: [data-instance] stays the single-instance overlay's.
+        const here = instanceCountsByNode().get(displayIdOf(n));
+        if (here && here.length) {
+          const txt = '● ' + here.length, w = Math.round(txt.length * 5.1 + 8), bx = n.x + def.w + 2, by = n.y - 6;
+          const pr = el('rect', { x: bx - w, y: by - 8.5, width: w, height: 11.5, rx: 3, class: 'node-instance-pill', 'data-instance-count': here.length });
+          const tt = el('text', { x: bx - 4, y: by, class: 'node-instance-badge', 'text-anchor': 'end', 'data-instance-count-text': here.length }, [text(txt)]);
+          const tip = `${here.length} live instance${here.length === 1 ? '' : 's'} here: ${here.join(', ')}`;
+          pr.appendChild(el('title', {}, [text(tip)])); tt.appendChild(el('title', {}, [text(tip)]));
+          g.appendChild(pr); g.appendChild(tt);
+        }
       }
     }
     // T-962: validator finding marker. BOTTOM-RIGHT — the one free corner: top-left is
@@ -4629,8 +4728,10 @@ function renderNodes() {
   clearLabelsOfFlows();     // T-1256: last, off every drawn flow and clear of the flow labels just placed
   adjustEdgeLabelPlacements();   // T-1256: a flow label still on a line may find room the moved names left; strictly better only
   clearFlowLabels();             // T-1256: last word on flow labels: off other drawn flows and off every other label
+  placeInstanceMarks();          // T-1428: instance pills (×N, ✓, ●) off the settled flow labels and other flows
   addIdBadgeHalos();
   layerIdBadges();
+  fitNoteEnds();       // T-1447: a note's line clear of the captions just placed
   fitPoolToLabels();   // T-1154: last, after every label and badge is placed; most renderNodes() calls bypass renderAll
 }
 
@@ -5080,7 +5181,8 @@ function clearLabelsOfFlows() {
     const pl = polylineFromPath(p.getAttribute('d'));
     for (let i = 0; i < pl.length - 1; i++) segs.push([pl[i], pl[i + 1]]);
   }
-  if (!segs.length) return;
+  const notesOb = noteObstacles();   // T-1447
+  if (!segs.length && !notesOb.segs.length && !notesOb.boxes.length) return;
   // T-1277: a flow is not only its line. Its arrowheads (#arrow at the end, #arrow-source at the start, sized in
   // stroke widths) are 12 and 7.5 units wide, so a caption 6 units beside a vertical flow sat on the head of the flow
   // that ends on its node (agt_3_start, agt_6_completion on aef-task-lifecycle). Each head counts as an obstacle by its
@@ -5168,6 +5270,9 @@ function clearLabelsOfFlows() {
         for (const h of heads) if (inter(r, h)) { c += 10; hard++; }
         for (const o of others) if (inter(r, o)) { c += 10; hard++; }
         for (const s of shapes) if (inter(r, s)) c += 30;
+        // T-1447: a note's line, text or bracket is crossed like a flow or another label
+        for (const [a, b] of notesOb.segs) if (segHits(a, b, r)) { c += 10; hard++; }
+        for (const o of notesOb.boxes) if (inter(r, o)) { c += 10; hard++; }
         if (hasPool) {
           if (r.x1 < PX || r.x2 > PX + pw || r.y1 < bandTop || r.y2 > POOL_Y + ph) c += 1;
           if (r.x1 < PX + LANE_HEADER) c += 2;
@@ -5263,6 +5368,9 @@ function clearFlowLabels() {
   const allSegs = [];
   for (const [id, list] of segsOf) for (const s of list) allSegs.push([id, s[0], s[1]]);
   if (!allSegs.length) return;
+  // T-1447: a note's line is crossed like another flow, its text and bracket like a step's caption
+  const notesOb = noteObstacles();
+  notesOb.segs.forEach((s, i) => allSegs.push([`note-line:${i}`, s[0], s[1]]));
   const segHits = (a, b, r) => {
     let t0 = 0, t1 = 1;
     const dx = b.x - a.x, dy = b.y - a.y;
@@ -5281,7 +5389,7 @@ function clearFlowLabels() {
   const shapes = state.nodes.map(n => { const d = dims(n); return { x1: n.x - 2, y1: n.y - 2, x2: n.x + d.w + 2, y2: n.y + d.h + 2 }; });
   const nodeTextEls = Array.from(gNodes.querySelectorAll('text.node-label, text.node-id-badge, text.node-io-badge'))
     .filter(t => !t.closest('#g-sticky-lanes'));
-  const nodeBoxes = nodeTextEls.map(boxOf).filter(Boolean);
+  const nodeBoxes = nodeTextEls.map(boxOf).filter(Boolean).concat(notesOb.boxes);
   // Names and id captions as drawn (no pad), with their font size, for nearness.
   const nearRows = nodeTextEls.filter(t => !t.classList.contains('node-io-badge')).map(t => {
     const b = t.getBBox(); return b.width ? { x1: b.x, y1: b.y, x2: b.x + b.width, y2: b.y + b.height, em: parseFloat(getComputedStyle(t).fontSize) || 11 } : null;
@@ -5396,6 +5504,77 @@ function clearFlowLabels() {
 // otherwise the strictly best one. Runs after the node-label pass so node
 // labels are final obstacles. The halo rect is repositioned from the
 // MEASURED final bbox — estimated widths drifted off the text (PL-008).
+// T-1428 (review of the recorded route): instance pills are placed LAST, off what is already settled.
+//  - ×N on a traversed edge: the first segment midpoint, longest segment first, whose pill is clear of every flow
+//    label, every node shape, every other flow's segments and every other pill. A pill on a crossing reads as
+//    belonging to either flow, so other flows count as obstacles.
+//  - ✓ / ● / ⛔ / ✗ above a node: if the pill covers a flow label, it moves up in 12 px steps (at most three), then
+//    left along the node's top edge, keeping the first clear position.
+// It reads the overlay and moves only these marks; the model is never touched.
+function placeInstanceMarks() {
+  const ov = (typeof instanceView !== 'undefined' && instanceView.overlay) || null;
+  if (!ov) return;
+  const box = (x, y, w, h) => ({ x, y, w, h });
+  const grow = (b, m) => box(b.x - m, b.y - m, b.w + 2 * m, b.h + 2 * m);
+  const hits = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  const bb = elx => { try { const b = elx.getBBox(); return box(b.x, b.y, b.width, b.height); } catch (e) { aefRecordFault('instance-marks:bbox', e); return null; } };
+  const labels = Array.from(gEdges.querySelectorAll('text.edge-label')).map(bb).filter(Boolean).map(b => grow(b, 2));
+  const shapes = state.nodes.map(n => { const d = dims(n); return d ? box(n.x, n.y, d.w, d.h) : null; }).filter(Boolean);
+  // A segment as a thin box (axis-aligned routes; a diagonal one is boxed by its extent, which is conservative).
+  const segBoxes = poly => { const out = []; for (let i = 0; i + 1 < poly.length; i++) { const [a, b] = [poly[i], poly[i + 1]];
+    out.push(grow(box(Math.min(a.x, b.x), Math.min(a.y, b.y), Math.abs(a.x - b.x), Math.abs(a.y - b.y)), 1.5)); } return out; };
+  const placed = [];
+  // ×N pills
+  for (const g of gEdges.querySelectorAll('g.edge[data-instance="traversed"][data-instance-poly]')) {
+    const t = g.querySelector('text[data-instance-count]'), r = g.querySelector('rect.edge-instance-count-bg');
+    if (!t || !r) continue;
+    let poly; try { poly = JSON.parse(g.getAttribute('data-instance-poly')).map(([x, y]) => ({ x, y })); } catch (e) { aefRecordFault('instance-marks:poly', e); continue; }
+    const me = g.getAttribute('data-id');
+    const others = [];
+    for (const e of state.edges) {
+      if (e.id === me || !e._renderedPolyline || e._renderedPolyline.length < 2) continue;
+      others.push(...segBoxes(e._renderedPolyline));
+    }
+    const cands = [];
+    for (let i = 0; i + 1 < poly.length; i++) {
+      const a = poly[i], b = poly[i + 1], len = Math.hypot(b.x - a.x, b.y - a.y);
+      if (len < 26) continue;   // too short to carry a 22 px pill clear of its own corners
+      // The middle first, then a third of the way from either end: a short flow squeezed by a label still has room.
+      for (const [f, pref] of [[0.5, 0], [0.3, 1], [0.7, 1]]) cands.push({ len, pref, x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f });
+      // Last resort, a crowded short flow: beside its own segment, 15 px off the line (perpendicular), never on another.
+      const nx = -(b.y - a.y) / (len || 1), ny = (b.x - a.x) / (len || 1), mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+      for (const s of [15, -15]) cands.push({ len, pref: 2, x: mx + nx * s, y: my + ny * s });
+    }
+    cands.sort((p, q) => (p.pref - q.pref) || (q.len - p.len));
+    const clear = c => { const p = box(c.x - 13, c.y - 9, 26, 17);
+      return !labels.some(l => hits(p, l)) && !shapes.some(s => hits(p, s)) && !others.some(o => hits(p, o)) && !placed.some(q => hits(p, q)); };
+    const pick = cands.find(clear) || cands[0];
+    if (!pick) continue;
+    r.setAttribute('x', pick.x - 11); r.setAttribute('y', pick.y - 7);
+    t.setAttribute('x', pick.x); t.setAttribute('y', pick.y + 3);
+    t.setAttribute('data-instance-clear', cands.find(clear) ? '1' : '0');
+    placed.push(box(pick.x - 11, pick.y - 7, 22, 13));
+  }
+  // Node badges (✓ ● ⛔ ✗)
+  for (const r of gNodes.querySelectorAll('rect[data-instance-pill]')) {
+    const key = r.getAttribute('data-instance-pill');
+    const t = r.parentNode.querySelector(`text[data-instance-badge="${key}"]`);
+    if (!t) continue;
+    const x0 = +r.getAttribute('x'), y0 = +r.getAttribute('y'), w = +r.getAttribute('width'), h = +r.getAttribute('height');
+    const tx0 = +t.getAttribute('x'), ty0 = +t.getAttribute('y');
+    const clear = (dx, dy) => { const p = grow(box(x0 + dx, y0 + dy, w, h), 1); return !labels.some(l => hits(p, l)) && !placed.some(q => hits(p, q)); };
+    if (clear(0, 0)) { placed.push(box(x0, y0, w, h)); continue; }
+    const tries = [[0, -12], [0, -24], [0, -36], [-24, 0], [-48, 0], [-72, 0]];
+    const ok = tries.find(([dx, dy]) => clear(dx, dy));
+    if (!ok) { placed.push(box(x0, y0, w, h)); continue; }
+    const [dx, dy] = ok;
+    r.setAttribute('x', x0 + dx); r.setAttribute('y', y0 + dy);
+    t.setAttribute('x', tx0 + dx); t.setAttribute('y', ty0 + dy);
+    t.setAttribute('data-instance-moved', `${dx},${dy}`);
+    placed.push(box(x0 + dx, y0 + dy, w, h));
+  }
+}
+
 function adjustEdgeLabelPlacements() {
   const pad = 1;
   const inter = (a, b) => !(a.x2 < b.x1 || a.x1 > b.x2 || a.y2 < b.y1 || a.y1 > b.y2);
@@ -5578,6 +5757,7 @@ function wrapText(s, max) {
 function renderEdges() {
   renderCollab();   // T-1120: kept pools + message flows; on every edge redraw, so a flow follows a dragged node
   renderData();     // T-1369: documents and their associations, on every edge redraw, so a line follows a dragged task
+  renderNotes();    // T-1447: text annotations and associations, the same way
   gEdges.innerHTML = '';
   gHandles.innerHTML = '';
   for (const e of state.edges) {
@@ -5662,6 +5842,23 @@ function renderEdges() {
     const g = el('g', { class: 'edge' + (isSelected ? ' selected' : '') + (isBeingDragged ? ' dragging' : '') + (isFloating ? ' floating' : ''), 'data-id': e.id });
     g.appendChild(el('path', { d: path, class: 'edge-hit' }));
     g.appendChild(el('path', { d: path, class: 'edge-path', 'marker-start': isSelected ? 'url(#arrow-source-selected)' : 'url(#arrow-source)', 'marker-end': isSelected ? 'url(#arrow-selected)' : 'url(#arrow)' }));
+    // T-1428: an edge the selected instance actually took (AEF projection v2 `traversed`) is marked; one taken more
+    // than once carries ×N at its middle (a task sent back and restarted walks it again).
+    const _ov = (typeof instanceView !== 'undefined' && instanceView.overlay) || null;
+    const _taken = _ov && _ov.mode === 'recorded' ? (_ov.traversed[e.uid] || 0) : 0;
+    if (_taken && !isBeingDragged) {
+      g.setAttribute('data-instance', 'traversed');
+      if (_taken > 1) {
+        // Drawn at the middle segment for now; placeInstanceMarks() moves it, once every label is settled, to the
+        // first segment midpoint (longest first) clear of labels, nodes, other flows and other pills (T-1428 review).
+        const poly = (e._renderedPolyline && e._renderedPolyline.length >= 2) ? e._renderedPolyline : points;
+        const mid = poly[Math.floor((poly.length - 1) / 2)], nxt = poly[Math.floor((poly.length - 1) / 2) + 1] || mid;
+        const mx = (mid.x + nxt.x) / 2, my = (mid.y + nxt.y) / 2;
+        g.setAttribute('data-instance-poly', JSON.stringify(poly.map(p => [Math.round(p.x), Math.round(p.y)])));
+        g.appendChild(el('rect', { x: mx - 11, y: my - 7, width: 22, height: 13, rx: 6, class: 'edge-instance-count-bg' }));
+        g.appendChild(el('text', { x: mx, y: my + 3, 'text-anchor': 'middle', class: 'edge-instance-count', 'data-instance-count': String(_taken) }, [text('×' + _taken)]));
+      }
+    }
 
     if (e.name && labelPrefs.showEdge && !isBeingDragged) {
       // Place on the ACTUAL routed polyline (not the pre-route points) and lift
@@ -6124,6 +6321,9 @@ function nodeSideLength(node, side) {
 let _edgeGroupCache = null;
 let _edgeGroupCacheKey = '';
 
+let _edgeGroupBuilding = false;   // T-1456: re-entry guard (building the groups routes every flow; see barRunsAlongFlows)
+let _edgeNatPolys = new Map();      // T-1456: each flow's natural route (no spread, no channels), cached with the groups
+let _edgeNatPhase2 = false;         // T-1456 round 3: re-keying with the alongside cost, reading _edgeNatPolys as built
 function buildEdgeGroups() {
   // simple cache key based on edges + node positions (good enough for the demo)
   const key = state.edges.map(e => `${e.id}|${e.source}|${e.target}|${e.sourcePort || ''}|${e.targetPort || ''}`).join(';') +
@@ -6131,6 +6331,10 @@ function buildEdgeGroups() {
   if (_edgeGroupCache && _edgeGroupCacheKey === key) return _edgeGroupCache;
 
   const groups = new Map();
+  const natPolys = new Map();
+  const ends = [];   // T-1456 round 3: what phase 2 needs to re-key each edge
+  _edgeGroupBuilding = true;
+  try {
   for (const e of state.edges) {
     const src = findNode(e.source);
     const tgt = findNode(e.target);
@@ -6159,6 +6363,7 @@ function buildEdgeGroups() {
       const nat = routeOrthogonalSegment(sAnchor, tAnchor, sDir, tDir, src, tgt,
         { routingHints: e.routingHints, detourY: e.detourY });
       const poly = nat.polyline;
+      if (poly) natPolys.set(e.id, poly);
       if (poly && poly.length >= 4) {
         const first = poly[2], last = poly[poly.length - 3];
         sKey = (sDir === 'E' || sDir === 'W') ? first.y : first.x;
@@ -6170,15 +6375,40 @@ function buildEdgeGroups() {
     const tGroupKey = `${e.target}:${tDir}`;
     if (!groups.has(sGroupKey)) groups.set(sGroupKey, []);
     if (!groups.has(tGroupKey)) groups.set(tGroupKey, []);
-    groups.get(sGroupKey).push({ edgeId: e.id, role: 'source', sortKey: sKey });
-    groups.get(tGroupKey).push({ edgeId: e.id, role: 'target', sortKey: tKey });
+    const sEnt = { edgeId: e.id, role: 'source', sortKey: sKey }, tEnt = { edgeId: e.id, role: 'target', sortKey: tKey };
+    groups.get(sGroupKey).push(sEnt);
+    groups.get(tGroupKey).push(tEnt);
+    ends.push({ e, src, tgt, sAnchor, tAnchor, sDir, tDir, sEnt, tEnt });
   }
+  } finally { _edgeGroupBuilding = false; }
+  // T-1456 round 3 (reviewer amber, 'All gates passed?'): phase 1 routes every flow WITHOUT the alongside cost (it
+  // reads the other flows' routes, which do not exist yet), so a loop's natural route could detour one way while the
+  // drawn route, with the cost, detoured the other; the ends on a side were then ordered by the wrong route and a
+  // loop's leg crossed its neighbour. Phase 2 re-routes each flow WITH the cost, reading phase 1's routes, and orders
+  // the ends by that route: the order and the drawing agree. Map-only and deterministic (T-423).
+  _edgeNatPolys = natPolys;
+  _edgeNatPhase2 = true;
+  try {
+    for (const x of ends) {
+      try {
+        const nat = routeOrthogonalSegment(x.sAnchor, x.tAnchor, x.sDir, x.tDir, x.src, x.tgt,
+          { id: x.e.id, routingHints: x.e.routingHints, detourY: x.e.detourY });
+        const poly = nat.polyline;
+        if (poly && poly.length >= 4) {
+          const first = poly[2], last = poly[poly.length - 3];
+          x.sEnt.sortKey = (x.sDir === 'E' || x.sDir === 'W') ? first.y : first.x;
+          x.tEnt.sortKey = (x.tDir === 'E' || x.tDir === 'W') ? last.y : last.x;
+        }
+      } catch (err) { aefRecordFault('edge-groups-rekey', err); }   // phase 1's keys stay
+    }
+  } finally { _edgeNatPhase2 = false; }
   // Stable sort each group by sortKey
   for (const list of groups.values()) {
     list.sort((a, b) => a.sortKey - b.sortKey || a.edgeId.localeCompare(b.edgeId));
   }
   _edgeGroupCache = groups;
   _edgeGroupCacheKey = key;
+  _edgeNatPolys = natPolys;
   return groups;
 }
 
@@ -6212,6 +6442,43 @@ function spreadOffset(edge, role, dir, node) {
   const cap = sideLen * 0.7;
   const totalSpread = Math.min((n - 1) * spacing, cap);
   const actualSpacing = (n > 1) ? totalSpread / (n - 1) : 0;
+  // T-1456: a side holding both incoming and outgoing ends. At the tight 'middle' pitch an arrowhead landed 4 px from
+  // an outgoing start (Greenfield 'wel' at Opportunity/Solution). A flow that runs straight across is snapped back to
+  // the centre line anyway, and moving it would bend it. So on such a side the ends that run straight (their route's
+  // first turn, the group's sortKey, lies on the centre line) keep their places; when none does, the outgoing ones do.
+  // Every other end moves out beside them, at least an arrowhead (12 px) from the nearest, on the side its order puts
+  // it.
+  const outs = list.filter(x => x.role === 'source'), ins = list.filter(x => x.role === 'target');
+  if (routingPrefs.attach === 'middle' && outs.length && ins.length) {
+    const dd = dims(node), c = (dir === 'E' || dir === 'W') ? node.y + dd.h / 2 : node.x + dd.w / 2;   // the side's centre line
+    let fixed = list.filter(x => Math.abs(x.sortKey - c) <= 1);
+    // Only where the fault is: where the ends actually land (a straight end snapped onto the centre line, every
+    // other end at the even spread), an incoming and an outgoing end come closer than the pitch. Elsewhere the even
+    // spread stays (re-spreading every mixed side moved a flow label onto a line: aef-task-lifecycle 'shelved').
+    const landed = list.map((x, k) => ({ x, at: fixed.includes(x) ? 0 : (k - (n - 1) / 2) * actualSpacing }));
+    let closest = Infinity;
+    for (const a of landed) for (const b of landed) if (a.x.role === 'target' && b.x.role === 'source') closest = Math.min(closest, Math.abs(a.at - b.at));
+    if (closest >= spacing - 0.5) return (idx - (n - 1) / 2) * actualSpacing;
+    if (!fixed.length) fixed = outs;
+    // 12, not 16: 16 widened every such side and pushed a flow label onto a line (aef-task-lifecycle 'shelved', T-1456)
+    const half = (fixed.length - 1) / 2 * spacing, limit = cap / 2, ARROW = 12;
+    const first = list.indexOf(fixed[0]), last = list.indexOf(fixed[fixed.length - 1]);
+    const me = list[idx];
+    const before = list.filter((x, k) => k < first && !fixed.includes(x)), after = list.filter((x, k) => k > last && !fixed.includes(x));
+    const between = list.filter((x, k) => k > first && k < last && !fixed.includes(x));
+    const fi = fixed.findIndex(x => x.edgeId === edge.id && x.role === role);
+    const ruleFits = [before.length, after.length + between.length].every(m => !m || half + ARROW + (m - 1) * spacing <= limit);
+    if (fi >= 0 && ruleFits) return (fi - (fixed.length - 1) / 2) * spacing;
+    // The k-th of m ends moved to one side: an arrowhead beyond the fixed block, then a pitch apart. Only where that
+    // fits on the side: a short side (task-gate 'Block - exit 2': three ends on 48 px) keeps the even spread below,
+    // which there leaves more room between an incoming and an outgoing end than any squeezed arrowhead gap.
+    const after2 = after.concat(between);   // an end sorting between fixed ones goes to the far side (rare)
+    if (ruleFits) {
+      const bi = before.indexOf(me), ai = after2.indexOf(me);
+      if (bi >= 0) return -(half + ARROW + (before.length - 1 - bi) * spacing);
+      if (ai >= 0) return half + ARROW + ai * spacing;
+    }
+  }
   // Distribute symmetrically around the port center.
   return (idx - (n - 1) / 2) * actualSpacing;
 }
@@ -6557,6 +6824,28 @@ function polylineCrossesNodes(points, src, tgt, margin = 4) {
   return false;
 }
 
+// T-1456 (reviewer round 1): a detour bar laid on, or a few px beside, another flow's horizontal run reads as ONE line
+// (task-lifecycle 'gate failed — rework' shared 36 px with 'blocked / failing', so it seemed to end in the wrong
+// step). How many OTHER flows have a horizontal segment within 6 px of height y over at least 12 px of [xa, xb]?
+// Read from the flows' natural routes, which buildEdgeGroups computes from the map alone (never from what is drawn:
+// saved bytes must not depend on the screen, T-423). While those are being built, 0.
+function barRunsAlongFlows(y, xa, xb, edge) {
+  if (_edgeGroupBuilding || !edge || !edge.id) return 0;
+  if (!_edgeNatPhase2) buildEdgeGroups();   // in phase 2 the routes are those just built (no re-entry)
+  const lo = Math.min(xa, xb), hi = Math.max(xa, xb);
+  let count = 0;
+  for (const [id, poly] of _edgeNatPolys) {
+    if (id === edge.id) continue;
+    for (let k = 0; k < poly.length - 1; k++) {
+      const a = poly[k], b = poly[k + 1];
+      if (Math.abs(a.y - b.y) > 0.5 || Math.abs(a.y - y) > 6) continue;
+      const ov = Math.min(hi, Math.max(a.x, b.x)) - Math.max(lo, Math.min(a.x, b.x));
+      if (ov >= 12) { count++; break; }
+    }
+  }
+  return count;
+}
+
 // Route via a detour band above or below the bounding box of source+target.
 // Generalised over direction: from each stub, go vertically toward the chosen
 // detour Y, then horizontally across, then vertically to the other stub.
@@ -6580,10 +6869,11 @@ function orthoLoopBack(spA, spB, dirA, dirB, src, tgt, edge) {
   const TEXT_CLEARANCE = 6 + routeMargin;   // extra gap below a node's label/badge text
   const LANE_MARGIN = 12 + routeMargin;     // distance from the lane border to the detour line
   let belowMin, belowMax, aboveMin, aboveMax;
+  let topY = -Infinity, botY = Infinity;   // T-1456: the lanes the flow connects (no lane info: unbounded)
   const laneA = findLane(src.lane), laneB = findLane(tgt.lane);
   if (laneA && laneB) {
-    const topY = Math.min(laneTop(src.lane), laneTop(tgt.lane));
-    const botY = Math.max(laneTop(src.lane) + laneA.height, laneTop(tgt.lane) + laneB.height);
+    topY = Math.min(laneTop(src.lane), laneTop(tgt.lane));
+    botY = Math.max(laneTop(src.lane) + laneA.height, laneTop(tgt.lane) + laneB.height);
     belowMin = lowestBottom + TEXT_CLEARANCE;
     belowMax = botY - LANE_MARGIN;
     aboveMin = topY + LANE_MARGIN;
@@ -6654,7 +6944,14 @@ function orthoLoopBack(spA, spB, dirA, dirB, src, tgt, edge) {
     const closenessPenalty = c.kind === 'below'
       ? (c.y - lowestBottom) / 50
       : (highestTop - c.y) / 50;
-    const score = crossings * 100 + interiorPenalty + closenessPenalty + (c.kind === 'above' ? 0.05 : 0);
+    // T-1456: the two fallback heights (just below the lower step, just above the higher) are added even when they
+    // lie outside the lanes the flow connects. Leaving those lanes cost nothing, so a bar through a FOREIGN lane
+    // (nothing below it: no interior penalty) beat every bar inside the lane (Greenfield 'wel', corpus: blocked,
+    // re-issue, dry-run). It now costs more than an interior bar and less than cutting a step.
+    const foreignLane = (c.y < topY || c.y > botY) ? 50 : 0;
+    // T-1456 round 2: running along another flow is worse than leaving the lane (an ambiguous route reads worse)
+    const alongside = barRunsAlongFlows(c.y, spA.x, spB.x, edge) * 60;
+    const score = crossings * 100 + alongside + foreignLane + interiorPenalty + closenessPenalty + (c.kind === 'above' ? 0.05 : 0);
     if (score < bestScore) { bestScore = score; best = c; }
   }
 
@@ -11012,8 +11309,11 @@ function maybeShowLaneFixNotice() {
   if (pk && (pk.artifacts || []).length) {
     const count = tag => pk.artifacts.filter(a => new RegExp(`^<(?:[\\w.-]+:)?${tag}[\\s/>]`).test(a.xml)).length;
     const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
-    const kinds = [['textAnnotation', 'annotation'], ['group', 'group'], ['association', 'association']]
-      .map(([t, w]) => [count(t), w]).filter(([n]) => n).map(([n, w]) => plural(n, w));
+    // T-1447: annotations and associations are drawn now (renderNotes); groups, and an association whose ends are not
+    // on this map, are still only kept
+    const NL = notesLayout(state);
+    const kinds = [[count('group'), 'group'], [NL ? NL.undrawn.length : count('association'), 'association']]
+      .filter(([n]) => n).map(([n, w]) => plural(n, w));
     if (kinds.length) parts.push(`${kinds.join(', ')} kept unchanged and saved back, not shown yet`);
   }
   // T-1327: what a save of THIS file will not keep (T-1322 option C), stated last like the T-603 line.
@@ -11026,6 +11326,8 @@ function maybeShowLaneFixNotice() {
   // T-1264: unmoved shapes and lines keep the file's own geometry (a node moved back into its lane, or by the person,
   // is redrawn); pool and lane outlines are still not written back
   if (nk.diRedrawn) parts.push(`on save, shapes that neither you nor this import moved keep this file's sizes and labels, and lines between them keep their bends; the file's original pool and lane outlines are NOT kept`);
+  // T-1441: what a Mermaid or CSV import could not carry, named (a lossy bridge states its loss, never silently)
+  if (_bridgeImportNote) { parts.unshift(_bridgeImportNote); _bridgeImportNote = ''; }
   if (docsLine) parts.push(docsLine);   // T-1372: last, so the leading warning sign belongs to a warning
   const show = parts.length > 0;
   // T-1327: one part per line. Run together with semicolons, seven parts made a 300px-tall paragraph at 1024 that
@@ -12066,8 +12368,9 @@ $('btn-copy-xml').onclick = async () => {
   // failure an operator is most likely to blame themselves for.
   try { await navigator.clipboard.writeText(raw); } catch (e) { aefRecordFault('clipboard-write', e); }
 };
-$('btn-save').onclick = () => {
-  saveActiveToLibrary();
+// T-1439: the BPMN download is one function, used by Save (as before) and by Export → BPMN 2.0 / Camunda, so the two
+// can never write different bytes.
+function downloadBpmnFile() {
   const raw = buildBpmnXml(state);
   const blob = new Blob([raw], { type: 'application/xml' });
   const url = URL.createObjectURL(blob);
@@ -12079,6 +12382,10 @@ $('btn-save').onclick = () => {
   a.download = `${id}.v${v}.bpmn`;
   a.click();
   URL.revokeObjectURL(url);
+}
+$('btn-save').onclick = () => {
+  saveActiveToLibrary();
+  downloadBpmnFile();
 };
 
 // ── Save to project (B3 / T-130) — durable versioned save via the B2 sidecar ──
@@ -12146,7 +12453,14 @@ async function loadInstanceSnapshot() {
       if (!d || !Array.isArray(d.instances)) throw Object.assign(new Error('not a snapshot'), { aefFault: true });
       instanceView.available = true;
       instanceView.instances = d.instances;
-      instanceView.refusals = Array.isArray(d.refusals) ? d.refusals : [];
+      // T-1427: only TRANSITION refusals ({task, node, rule[, target]}, 832's tools/instance-node.py) are drawable.
+      // AEF's 'refusals' (runtime projection v1, its T-5185) are unplaceable task FILES {task: file, reason}: another
+      // thing under the same key. They are dropped here, so they can never reach the overlay, and the picker's title
+      // explains ⛔ only when a drawable refusal is actually present (renderInstancePicker).
+      // The rule is `rule` (832's audit lines) or `reason_code` (refusal.schema.json v2, the shape AEF's projection v2
+      // will serve, msg eba834d0); either names what refused, so either is read.
+      instanceView.refusals = (Array.isArray(d.refusals) ? d.refusals : [])
+        .filter(r => r && typeof r.node === 'string' && typeof (r.rule || r.reason_code) === 'string');
     } catch (e) {
       instanceView.available = false;   // additive overlay: absence is a state, never a fault
       // A network error (no server at all) carries no aefFault mark: also absence.
@@ -12165,7 +12479,24 @@ function selectInstance(task) {
   instanceView.notFound = !!task && !instanceView.instances.some(i => i.task === task);
   computeInstanceOverlay();
   renderInstancePicker();
-  if (state) renderNodes();
+  // T-1428: edges too, in renderAll's order: a recorded route marks the edges the instance took.
+  if (state) { renderEdges(); renderNodes(); }
+}
+// T-1438: node display id -> the task ids of the live instances on it (state NODE only), sorted; cached per snapshot
+// (a render pass asks once per node).
+let _instanceCountsCache = { src: null, map: new Map() };
+function instanceCountsByNode() {
+  const src = instanceView.instances;
+  if (_instanceCountsCache.src === src) return _instanceCountsCache.map;
+  const m = new Map();
+  for (const i of src || []) {
+    if (i.state !== 'NODE' || !i.node) continue;
+    if (!m.has(i.node)) m.set(i.node, []);
+    m.get(i.node).push(i.task);
+  }
+  for (const v of m.values()) v.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+  _instanceCountsCache = { src, map: m };
+  return m;
 }
 function computeInstanceOverlay() {
   const inst = instanceView.selected ? instanceView.instances.find(i => i.task === instanceView.selected) : null;
@@ -12178,7 +12509,13 @@ function computeInstanceOverlay() {
     if (src && tgt) (flows[src] = flows[src] || []).push(tgt);
   }
   const startIds = state.nodes.filter(n => n.type === 'startEvent').map(n => displayIdOf(n));
-  instanceView.overlay = instanceOverlayState(nodeIds, flows, startIds, inst, instanceView.refusals);
+  // T-1428: edge uid -> its two ends, for the recorded route (projection v2 `traversed`).
+  const edgeEnds = new Map();
+  for (const e of state.edges) {
+    const src = idOf.get(e.source), tgt = idOf.get(e.target);
+    if (src && tgt && e.uid) edgeEnds.set(e.uid, [src, tgt]);
+  }
+  instanceView.overlay = instanceOverlayState(nodeIds, flows, startIds, inst, instanceView.refusals, edgeEnds);
 }
 function renderInstancePicker() {
   const sel = $('instancePicker');
@@ -12186,12 +12523,32 @@ function renderInstancePicker() {
   sel.innerHTML = '';
   const opt = (value, label, selected) => { const o = document.createElement('option'); o.value = value; o.textContent = label; if (selected) o.selected = true; sel.appendChild(o); };
   const v = instanceView;
+  // T-1427: the legend names ⛔ only when this snapshot holds a refusal the overlay can draw. A host that serves none
+  // (AEF until its runtime projection v2, T-5193) is not promised a marker it cannot show.
+  // T-1428: with AEF's projection v2 the ✓ path is the RECORDED route; otherwise it is derived, and says so.
+  const ov = v.overlay;
+  const pathText = ov && ov.mode === 'recorded'
+    ? '✓ recorded path (the edges this task took, ×N where it took one more than once)'
+      + (ov.unmapped ? ' · ' + ov.unmapped + ' hop' + (ov.unmapped === 1 ? '' : 's') + ' not on this map' : '')
+      + (ov.offMap ? ' · ' + ov.offMap + ' recorded edge' + (ov.offMap === 1 ? '' : 's') + ' not in this map version' : '')
+    : '✓ derived path (the shortest flow path from the start, not a recorded history)';
+  sel.title = 'Instance overlay (T-884): where a governed entity is on this template. ● current node · ' + pathText
+    + (v.refusals && v.refusals.length
+      ? ' · ⛔ the node a refusal fired on, with the rule that refused it'
+      : '')
+    + '. Reads /api/instances; writes nothing.';
   // T-1241: 'n/a', not 'unavailable': the 45 px it saves keep the header one row in the 1894 px inline frame with the
   // lens select added; the picker's title still says what the overlay is and why it can be absent.
   if (v.available === false) opt('', 'instances: n/a', !v.selected);
   else if (v.available === null) opt('', 'instances: loading…', !v.selected);
   else if (!v.instances.length) opt('', 'instances: none for ' + (v.template || 'this map'), !v.selected);
   else opt('', 'instance: none (' + v.instances.length + ' on ' + (v.template || 'this map') + ')', !v.selected);
+  // T-1438: how many stand on a step (and so carry a "● N" on the map); STALE / NO-POSITION ones do not. In the title:
+  // the label has no room for it in the header (it was cut at 1440).
+  if (v.available === true && v.instances.length) {
+    const placed = v.instances.filter(i => i.state === 'NODE' && i.node).length;
+    sel.title += ' With none selected: ● N on each step holding N live instances (' + placed + ' of ' + v.instances.length + ' are on a step).';
+  }
   // Positioned instances first (they are what the overlay can draw), then STALE, then the
   // NO-POSITION majority — the corpus predates the mechanism, so most entities have no node.
   const rank = { NODE: 0, STALE: 1 };
@@ -13500,7 +13857,8 @@ function flashCleanFeedback(moved) {
   btn.textContent = `✨ Cleaned ${moved} node${moved === 1 ? '' : 's'} — Ctrl+Z reverts`;
   setTimeout(() => { btn.textContent = '✨ Clean layout'; }, 2500);
 }
-$('btn-load').onclick = () => {
+// T-1439: what the toolbar's "Load…" did, unchanged, now reached from Import → BPMN 2.0 / Camunda.
+function importBpmnFile() {
   // File picker — accepts .bpmn / .xml
   const input = document.createElement('input');
   input.type = 'file';
@@ -13519,7 +13877,639 @@ $('btn-load').onclick = () => {
     }
   };
   input.click();
+}
+
+// ── T-1440: pictures (SVG, PNG) and PDF of the map, in the paper palette ──
+// Editor controls drawn on the canvas that are not part of the map (measured on the corpus, T-1440): invisible click
+// targets, resize grips and the "+ Add another lane" strip.
+const EXPORT_CHROME = '.edge-hit, .lane-resize-hit, .lane-resize-grip, .lane-resize-handle, .pool-resize-handle, .pool-add-lane-strip';
+// The paint a standalone SVG needs: the designer colours the canvas through its stylesheet, which an exported file
+// does not carry (the T-1093 spike's first SVG came out solid black without this).
+const EXPORT_PAINT = ['fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'stroke-dasharray',
+  'stroke-linecap', 'stroke-linejoin', 'opacity', 'font-family', 'font-size', 'font-weight', 'font-style',
+  'text-anchor', 'dominant-baseline', 'letter-spacing',
+  'paint-order'];   // edge labels draw their halo UNDER the letters (paint-order: stroke); without it the halo hides the text
+
+// A standalone SVG of the map: every element's computed paint inlined in the paper palette, editor chrome left out,
+// the current selection not shown, no external reference. Returns { svg, width, height }.
+function buildExportSvg() {
+  const src = $('canvas');
+  const keepSel = (typeof selection !== 'undefined') ? selection : null;
+  const hadSel = !!keepSel;
+  if (hadSel) { selection = null; renderAll(); }
+  document.body.classList.add('export-paper');
+  try {
+    const clone = src.cloneNode(true);
+    const srcAll = [src, ...src.querySelectorAll('*')], cAll = [clone, ...clone.querySelectorAll('*')];
+    const drop = [];
+    // Arrowheads live in <marker> definitions, which the browser does not style until it draws them: their computed
+    // fill reads black. Their colour is written as fill="var(--text-dim)", so such attributes are resolved directly
+    // against the (paper) tokens instead.
+    const tokens = getComputedStyle(document.body);
+    const resolveVar = v => { const m = /^var\((--[\w-]+)\)$/.exec((v || '').trim()); return m ? tokens.getPropertyValue(m[1]).trim() : null; };
+    srcAll.forEach((el, i) => {
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden' || el.matches(EXPORT_CHROME)) { drop.push(cAll[i]); return; }
+      const paint = EXPORT_PAINT.map(p => [p, cs.getPropertyValue(p)]);
+      for (const a of ['fill', 'stroke']) {
+        const r = resolveVar(el.getAttribute(a));
+        if (r) paint.find(p => p[0] === a)[1] = r;
+      }
+      cAll[i].setAttribute('style', paint.map(([p, v]) => p + ':' + v).join(';'));
+      cAll[i].removeAttribute('class');
+    });
+    drop.forEach(el => el.remove());
+    // Own ids for the export: the print sheet puts this SVG inside the page, where the live canvas's identical ids
+    // (#arrow, …) come first, so url(#arrow) resolved to the canvas's markers, hidden while printing, and the PDF
+    // had no arrowheads (T-1440 review). Prefixing every id and every url(#…) reference keeps the copy self-sufficient.
+    const PFX = 'x-';
+    const ids = new Set();
+    clone.querySelectorAll('[id]').forEach(el => { ids.add(el.id); el.id = PFX + el.id; });
+    clone.querySelectorAll('*').forEach(el => {
+      for (const a of [...el.attributes]) {
+        if (a.value.includes('url(#')) el.setAttribute(a.name, a.value.replace(/url\(#([^)]+)\)/g, (m, id) => ids.has(id) ? `url(#${PFX}${id})` : m));
+        else if ((a.name === 'href' || a.name === 'xlink:href') && a.value.startsWith('#') && ids.has(a.value.slice(1))) el.setAttribute(a.name, '#' + PFX + a.value.slice(1));
+      }
+    });
+    const vb = src.viewBox.baseVal;
+    const w = Math.ceil(vb.width), h = Math.ceil(vb.height);
+    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    clone.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.width} ${vb.height}`);
+    clone.setAttribute('width', w); clone.setAttribute('height', h);
+    clone.removeAttribute('style'); clone.removeAttribute('id'); clone.removeAttribute('class');
+    const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    bg.setAttribute('x', vb.x); bg.setAttribute('y', vb.y); bg.setAttribute('width', vb.width); bg.setAttribute('height', vb.height);
+    bg.setAttribute('fill', getComputedStyle(document.body).getPropertyValue('--bg').trim() || '#ffffff');
+    clone.insertBefore(bg, clone.firstChild);
+    const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+    title.textContent = state.workflowMeta.title || state.workflowMeta.id;
+    clone.insertBefore(title, clone.firstChild);
+    return { svg: new XMLSerializer().serializeToString(clone), width: w, height: h, vb: { x: vb.x, y: vb.y, width: vb.width, height: vb.height } };
+  } finally {
+    document.body.classList.remove('export-paper');
+    if (hadSel) { selection = keepSel; renderAll(); }
+  }
+}
+
+function exportBaseName() {
+  return `${state.workflowMeta.id}.v${state.workflowMeta.version || '1'}`;
+}
+
+function downloadBlob(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function downloadSvgFile() {
+  const { svg } = buildExportSvg();
+  downloadBlob(new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + svg], { type: 'image/svg+xml' }), exportBaseName() + '.svg');
+}
+
+// PNG from the exported SVG through a canvas, at 1x, 2x or 4x of the map's own size.
+function renderPng(scale) {
+  const { svg, width, height } = buildExportSvg();
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = Math.round(width * scale); c.height = Math.round(height * scale);
+      const g = c.getContext('2d');
+      g.drawImage(img, 0, 0, c.width, c.height);
+      c.toBlob(b => (b ? resolve(b) : reject(new Error('the picture could not be encoded as PNG'))), 'image/png');
+    };
+    img.onerror = () => reject(new Error('the exported SVG could not be drawn'));
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  });
+}
+function downloadPngFile(scale) {
+  return renderPng(scale)
+    .then(b => downloadBlob(b, `${exportBaseName()}@${scale}x.png`))
+    .catch(e => { aefRecordFault('export-png', e); alert('PNG export failed:\n' + e.message); });
+}
+
+// PDF through the browser's own print ("Save as PDF"): a sheet with the title and the paper picture, and nothing else.
+// T-1446: three ways. 'a4' (T-1440's, unchanged): the whole map on one A4 landscape page. 'a3': the same on one A3
+// page. 'pages': A4 pages at a readable size, the map cut into parts so the smallest box text prints at 8 pt or more.
+const PRINT_A4 = { w: 277, h: 175 };          // mm for the picture on A4 landscape (10 mm margins, the heading above)
+const PRINT_MIN_PT = 8;                       // readable pages: box text at >= 8 pt
+let _lastPrintLayout = null;                  // the computed parts, for the test (T-1446)
+function printMapSheet(mode) {
+  mode = mode || 'a4';
+  const ex = buildExportSvg();
+  let sheet = $('print-sheet');
+  if (!sheet) { sheet = document.createElement('div'); sheet.id = 'print-sheet'; document.body.appendChild(sheet); }
+  sheet.textContent = '';
+  sheet.className = mode === 'a3' ? 'paper-a3' : '';
+  const title = (state.workflowMeta.title || state.workflowMeta.id) + '  ·  v' + (state.workflowMeta.version || '1');
+  if (mode !== 'pages') {
+    const h = document.createElement('h1');
+    h.textContent = title;
+    sheet.appendChild(h);
+    sheet.insertAdjacentHTML('beforeend', ex.svg);
+    _lastPrintLayout = { mode, parts: [{ x: ex.vb.x, y: ex.vb.y, w: ex.vb.width, h: ex.vb.height }] };
+  } else {
+    const L = printPartsLayout(ex.vb);
+    _lastPrintLayout = { mode, ...L };
+    L.parts.forEach((p, k) => {
+      const part = document.createElement('div');
+      part.className = 'print-part';
+      const h = document.createElement('h1');
+      h.textContent = L.parts.length > 1 ? `${title}  ·  page ${k + 1} of ${L.parts.length} (row ${p.row}, column ${p.col})` : title;
+      part.appendChild(h);
+      part.insertAdjacentHTML('beforeend', ex.svg);
+      const svg = part.querySelector('svg');
+      svg.setAttribute('viewBox', `${p.x} ${p.y} ${p.w} ${p.h}`);
+      svg.setAttribute('width', p.w); svg.setAttribute('height', p.h);
+      svg.style.width = (p.w * L.mmPerPx).toFixed(2) + 'mm';
+      svg.style.height = (p.h * L.mmPerPx).toFixed(2) + 'mm';
+      sheet.appendChild(part);
+    });
+  }
+  // T-1446: A3 by a temporary @page rule, not a named page. A named page (page: a3) made the pool's Chromium print
+  // two A3 pages (2026-11-20, pool-w2) where this host's printed one: a named-page boundary is browser-dependent.
+  let paper = null;
+  if (mode === 'a3') {
+    paper = document.createElement('style');
+    paper.id = 'print-paper-a3';
+    paper.textContent = '@media print { @page { size: A3 landscape; margin: 10mm; } }';
+    document.head.appendChild(paper);
+  }
+  document.body.classList.add('printing-map');
+  const done = () => { document.body.classList.remove('printing-map'); if (paper) paper.remove(); window.removeEventListener('afterprint', done); };
+  window.addEventListener('afterprint', done);
+  window.print();
+}
+// The parts of the readable A4 pages. Every step (its box with name, id and badges, measured on the drawn canvas)
+// prints whole on at least one page: parts end between steps where they can, and overlap where they cannot. All parts
+// share one scale, the largest that fits the biggest part on a page, never below 8 pt.
+function printPartsLayout(vb) {
+  const canvas = $('canvas'), inv = canvas.getScreenCTM().inverse();
+  const toUser = (x, y) => { const p = canvas.createSVGPoint(); p.x = x; p.y = y; return p.matrixTransform(inv); };
+  const boxes = [...$('g-nodes').children].map(g => {
+    const r = g.getBoundingClientRect();
+    if (!r.width && !r.height) return null;
+    const a = toUser(r.left, r.top), b = toUser(r.right, r.bottom);
+    return { id: g.dataset.id || '', x0: Math.min(a.x, b.x) - 4, x1: Math.max(a.x, b.x) + 4, y0: Math.min(a.y, b.y) - 4, y1: Math.max(a.y, b.y) + 4 };
+  }).filter(Boolean);
+  // the smallest box text actually drawn: 11 px by default, less where the lane-fit ladder shrank a long name
+  const sizes = [...$('g-nodes').querySelectorAll('.node-label')].map(t => parseFloat(getComputedStyle(t).fontSize)).filter(v => v > 0);
+  const textPx = sizes.length ? Math.min(...sizes) : 11;
+  const pt2mm = 25.4 / 72, minMmPerPx = PRINT_MIN_PT * pt2mm / textPx;
+  const maxW = PRINT_A4.w / minMmPerPx, maxH = PRINT_A4.h / minMmPerPx;   // px a page holds at 8 pt
+  // Spans along one axis. Each span ends in a gap between steps when one leaves at least 60% of a page; otherwise at
+  // the page's edge, and then the NEXT span starts where the first step that edge cut begins, so that step prints
+  // whole on the next page (overlapping labels can leave no gap at all: T-1446, cross-host-dispatch).
+  const spans = (lo, hi, max, ivals) => {
+    const out = [];
+    let s = lo;
+    while (hi - s > max) {
+      const limit = s + max, floor = s + max * 0.6;
+      const inside = c => ivals.some(([a, b]) => c > a && c < b);
+      let c = limit;
+      while (c > floor && inside(c)) c = Math.min(c - 1, ...ivals.filter(([a, b]) => c > a && c < b).map(([a]) => a));
+      if (!inside(c) && c > floor) { out.push([s, c]); s = c; continue; }
+      out.push([s, limit]);
+      const cutStarts = ivals.filter(([a, b]) => limit > a && limit < b && a > s).map(([a]) => a);
+      s = cutStarts.length ? Math.min(...cutStarts) : limit;
+    }
+    out.push([s, hi]);
+    return out;
+  };
+  // a box wider (taller) than half a page, such as a group around several steps, does not steer the spans
+  // the pool keeps an authored minimum width, mostly empty on a small map: the pages end 40 px after the last step
+  // (the left edge, with the lane names, and the full height of the lanes stay)
+  const right = boxes.length ? Math.min(vb.x + vb.width, Math.max(...boxes.map(b => b.x1)) + 40) : vb.x + vb.width;
+  const xs = spans(vb.x, right, maxW, boxes.filter(b => b.x1 - b.x0 < maxW * 0.5).map(b => [b.x0, b.x1]));
+  const ys = spans(vb.y, vb.y + vb.height, maxH, boxes.filter(b => b.y1 - b.y0 < maxH * 0.5).map(b => [b.y0, b.y1]));
+  const parts = [];
+  ys.forEach(([y0, y1], r) => xs.forEach(([x0, x1], c) => parts.push({ row: r + 1, col: c + 1, x: x0, y: y0, w: x1 - x0, h: y1 - y0 })));
+  const mmPerPx = Math.min(PRINT_A4.w / Math.max(...parts.map(p => p.w)), PRINT_A4.h / Math.max(...parts.map(p => p.h)));
+  return { parts, mmPerPx, xs, ys, boxes, textPx, maxW, maxH, extent: { x0: vb.x, x1: right, y0: vb.y, y1: vb.y + vb.height }, textPt: textPx * mmPerPx / pt2mm };
+}
+
+// ── T-1441: Mermaid and CSV, both ways ──
+// Both are lossy bridges: they carry steps (id, name, type, lane) and flows (with labels), nothing else. Import builds
+// BPMN WITHOUT the diagram part and hands it to the ordinary BPMN import, then Clean lays it out (T-1093 IW-5 spike:
+// VALID, no findings), and the import notice names what was not in the file.
+let _bridgeImportNote = '';
+const BRIDGE_LOSS = 'positions (laid out by Clean, so the step numbers in the visible ids follow the new layout), the conditions on flows out of a gateway, and each step\'s details such as inputs, outputs and roles';
+
+// The model every bridge reads. A step has TWO ids: `uid`, its permanent identity (aef:uid, what AEF keys on), and
+// `id`, the visible one under its box (computeDisplayId: the lane's short code + its number in the lane, counted left
+// to right + a word of its name). The visible number follows the layout, which these formats do not carry, so the
+// permanent uid travels too and the visible id is re-derived after Clean (named in the import notice).
+function bridgeModel() {
+  const laneName = id => { const l = (state.lanes || []).find(x => x.id === id); return l ? l.name : ''; };
+  const steps = state.nodes.map(n => ({ uid: n.uid, id: displayIdOf(n), name: n.name || '', type: n.type || 'task', lane: laneName(n.lane) }));
+  const flows = (state.edges || []).map(e => ({ from: e.source, to: e.target, label: e.name || '' }));
+  const laneMeta = {};
+  for (const l of state.lanes || []) laneMeta[l.name] = { abbr: l.abbr || '', authority: l.authority || '' };
+  return { title: state.workflowMeta.title || state.workflowMeta.id, lanes: (state.lanes || []).map(l => l.name), laneMeta, steps, flows };
+}
+
+// Mermaid: one subgraph per lane (its id carries the lane's short code), BPMN shapes mapped to Mermaid shapes,
+// labelled edges. Node ids are the steps' uids. `%% aef-step` / `%% aef-lane` comments keep the exact BPMN type, the
+// visible id and the lane's authority (renderers ignore comments), so a file we wrote comes back as it went out; a
+// foreign Mermaid file falls back to the shapes.
+function mermaidId(id) { return /^[A-Za-z_][\w]*$/.test(id) ? id : 'n_' + String(id).replace(/[^\w]/g, '_'); }
+function mermaidText(s) { return String(s).replace(/"/g, '#quot;').replace(/\n/g, ' '); }
+function buildMermaid() {
+  const m = bridgeModel();
+  const shape = st => /Gateway$/.test(st.type) ? `{"${mermaidText(st.name || st.id)}"}`
+    : /Event$/.test(st.type) ? `(("${mermaidText(st.name || st.id)}"))` : `["${mermaidText(st.name || st.id)}"]`;
+  const out = ['flowchart LR', `%% ${mermaidText(m.title)} — exported by AEF Workflow Designer (T-1441)`,
+    `%% aef-map ${String(state.workflowMeta.id || 'map').replace(/\s+/g, '_')} ${mermaidText(m.title)}`];   // the map id as is: ids never hold spaces
+  m.lanes.forEach((ln, i) => {
+    const inLane = m.steps.filter(st => st.lane === ln);   // an empty lane is written too, so it comes back
+    const lm = m.laneMeta[ln] || {};
+    out.push(`  subgraph ${lm.abbr && /^\w+$/.test(lm.abbr) ? 'lane_' + lm.abbr : 'lane_' + (i + 1)}["${mermaidText(ln)}"]`);
+    if (lm.abbr || lm.authority) out.push(`    %% aef-lane ${lm.abbr || '-'} ${lm.authority || '-'}`);
+    for (const st of inLane) out.push(`    ${mermaidId(st.uid)}${shape(st)}`);
+    out.push('  end');
+  });
+  for (const st of m.steps.filter(st => !st.lane || !m.lanes.includes(st.lane))) out.push(`  ${mermaidId(st.uid)}${shape(st)}`);
+  for (const f of m.flows) out.push(`  ${mermaidId(f.from)} -->${f.label ? `|"${mermaidText(f.label)}"|` : ''} ${mermaidId(f.to)}`);
+  for (const st of m.steps) out.push(`  %% aef-step ${mermaidId(st.uid)} ${st.type} ${st.uid} ${st.id}`);
+  return out.join('\n') + '\n';
+}
+function parseMermaid(text) {
+  const steps = new Map(), flows = [], meta = {}, laneMeta = {}, lanes = [];
+  let lane = '', mapId = '', mapTitle = '';
+  const unq = s => s.replace(/^"|"$/g, '').replace(/#quot;/g, '"');
+  const node = (mid, raw) => {
+    let st = steps.get(mid);
+    if (!st) { st = { mid, name: '', lane }; steps.set(mid, st); }
+    if (raw) {
+      const m = /^\(\((.*)\)\)$/.exec(raw) || /^\{(.*)\}$/.exec(raw) || /^\[(.*)\]$/.exec(raw) || /^\((.*)\)$/.exec(raw);
+      if (m) { st.name = unq(m[1]); st.shape = raw.startsWith('((') ? 'circle' : raw[0] === '{' ? 'diamond' : 'box'; }
+    }
+    return st;
+  };
+  const NODE = '([A-Za-z_][\\w]*)(\\(\\(.*?\\)\\)|\\{.*?\\}|\\[.*?\\]|\\(.*?\\))?';
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim();
+    let m;
+    if (!line || /^(flowchart|graph)\b/.test(line)) continue;
+    if ((m = /^%%\s*aef-step\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/.exec(line))) { meta[m[1]] = { type: m[2], uid: m[3], id: m[4] }; continue; }
+    if ((m = /^%%\s*aef-map\s+(\S+)\s*(.*)$/.exec(line))) { mapId = m[1]; mapTitle = unq(m[2].trim()); continue; }
+    if ((m = /^%%\s*aef-lane\s+(\S+)\s+(\S+)/.exec(line)) && lane) { laneMeta[lane] = { abbr: m[1] === '-' ? '' : m[1], authority: m[2] === '-' ? '' : m[2] }; continue; }
+    if (line.startsWith('%%') || /^(classDef|class|style|linkStyle|click|direction)\b/.test(line)) continue;
+    if ((m = /^subgraph\s+[\w-]+\s*\[(.*)\]\s*$/.exec(line)) || (m = /^subgraph\s+(.*)$/.exec(line))) { lane = unq(m[1].trim()); if (!lanes.includes(lane)) lanes.push(lane); continue; }
+    if (line === 'end') { lane = ''; continue; }
+    m = new RegExp(`^${NODE}\\s*-->\\s*(?:\\|(.*?)\\|\\s*)?${NODE}\\s*;?$`).exec(line);
+    if (m) { const a = node(m[1], m[2]), b = node(m[4], m[5]); flows.push({ from: a.mid, to: b.mid, label: m[3] ? unq(m[3].trim()) : '' }); continue; }
+    m = new RegExp(`^${NODE}\\s*;?$`).exec(line);
+    if (m) node(m[1], m[2]);
+  }
+  const incoming = new Set(flows.map(f => f.to)), outgoing = new Set(flows.map(f => f.from));
+  const out = [...steps.values()].map(st => {
+    const mt = meta[st.mid] || {};
+    const type = mt.type || (st.shape === 'diamond' ? 'exclusiveGateway'
+      : st.shape === 'circle' ? (!incoming.has(st.mid) ? 'startEvent' : !outgoing.has(st.mid) ? 'endEvent' : 'intermediateThrowEvent') : 'task');
+    return { uid: mt.uid || st.mid, id: mt.id || st.mid, name: st.name, type, lane: st.lane };
+  });
+  const uidOf = mid => (meta[mid] && meta[mid].uid) || mid;
+  return { mapId, mapTitle, lanes, laneMeta, steps: out, flows: flows.map(f => ({ ...f, from: uidOf(f.from), to: uidOf(f.to) })) };
+}
+
+// CSV: one row per step (RFC 4180 quoting). `next` names the next steps by their visible id, `next_labels` the flows'
+// labels, both ";"-separated and aligned. lane_code, lane_authority and uid keep what Mermaid keeps in its comments.
+const CSV_HEAD = ['id', 'name', 'type', 'lane', 'next', 'next_labels', 'lane_code', 'lane_authority', 'uid'];
+function csvCell(v) { v = String(v == null ? '' : v); return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+function buildCsv() { return stepRows().map(r => r.map(csvCell).join(',')).join('\r\n') + '\r\n'; }
+// The step table both CSV and Excel (T-1442) write: a header row, then one row per step, lane by lane.
+function stepRows() {
+  const m = bridgeModel();
+  const idOfUid = new Map(m.steps.map(st => [st.uid, st.id]));
+  const rows = [CSV_HEAD];
+  // Rows lane by lane: a CSV keeps no lane order but the order its rows appear in.
+  const laneRank = ln => { const i = m.lanes.indexOf(ln); return i < 0 ? m.lanes.length : i; };
+  for (const st of m.steps.slice().sort((a, b) => laneRank(a.lane) - laneRank(b.lane))) {
+    const out = m.flows.filter(f => f.from === st.uid);
+    const lm = m.laneMeta[st.lane] || {};
+    rows.push([st.id, st.name, st.type, st.lane, out.map(f => idOfUid.get(f.to) || f.to).join(';'),
+      out.map(f => f.label.replace(/;/g, ',')).join(';'), lm.abbr || '', lm.authority || '', st.uid]);
+  }
+  return rows;
+}
+function parseCsvRows(text) {
+  const rows = []; let row = [], cell = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; } else if (c === '"') q = false; else cell += c; }
+    else if (c === '"') q = true;
+    else if (c === ',') { row.push(cell); cell = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+    else cell += c;
+  }
+  if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(x => x.trim() !== ''));
+}
+function parseCsv(text) { return stepRowsToModel(parseCsvRows(text.replace(/^﻿/, ''))); }
+// A step table (first row = column names, any order, extra columns ignored) -> steps and flows. Shared by CSV and Excel.
+function stepRowsToModel(rows) {
+  rows = rows.map(r => r.map(c => String(c == null ? '' : c))).filter(r => r.some(x => x.trim() !== ''));
+  const head = (rows.shift() || []).map(h => h.trim().toLowerCase());
+  const col = k => head.indexOf(k);
+  if (col('id') < 0) throw new Error('the first row must name the columns, including "id"');
+  const steps = [], pending = [], laneMeta = {};
+  for (const r of rows) {
+    const g = k => (col(k) >= 0 ? (r[col(k)] || '').trim() : '');
+    if (!g('id')) continue;
+    steps.push({ uid: g('uid') || g('id'), id: g('id'), name: g('name'), type: g('type') || 'task', lane: g('lane') });
+    if (g('lane') && (g('lane_code') || g('lane_authority')) && !laneMeta[g('lane')]) laneMeta[g('lane')] = { abbr: g('lane_code'), authority: g('lane_authority') };
+    const nx = g('next') ? g('next').split(';').map(x => x.trim()) : [], lb = g('next_labels') ? g('next_labels').split(';') : [];
+    nx.forEach((to, i) => { if (to) pending.push({ from: g('uid') || g('id'), toId: to, label: (lb[i] || '').trim() }); });
+  }
+  const uidOfId = new Map(steps.map(st => [st.id, st.uid]));
+  return { laneMeta, steps, flows: pending.map(p => ({ from: p.from, to: uidOfId.get(p.toId) || p.toId, label: p.label })) };
+}
+
+// Steps and flows -> BPMN 2.0 WITHOUT a diagram part; the ordinary import and Clean do the rest. Element ids are the
+// visible ids; aef:uid carries the permanent identity.
+const BRIDGE_TYPES = new Set(['startEvent', 'endEvent', 'task', 'userTask', 'serviceTask', 'scriptTask', 'manualTask',
+  'businessRuleTask', 'sendTask', 'receiveTask', 'exclusiveGateway', 'parallelGateway', 'inclusiveGateway',
+  'eventBasedGateway', 'intermediateThrowEvent', 'intermediateCatchEvent', 'subProcess', 'callActivity']);
+function bridgeToBpmn(model, workflowId, title) {
+  const esc = v => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const xid = v => /^[A-Za-z_][\w.-]*$/.test(v) ? v : 'n_' + String(v).replace(/[^\w.-]/g, '_');
+  const byUid = new Map(model.steps.map(st => [st.uid, st]));
+  for (const f of model.flows) for (const end of [f.from, f.to]) if (!byUid.has(end)) {
+    const st = { uid: end, id: end, name: end, type: 'task', lane: '' }; model.steps.push(st); byUid.set(end, st); }
+  const used = new Set(), elId = new Map();
+  for (const st of model.steps) { let e = xid(st.id || st.uid), k = 2; while (used.has(e)) e = xid(st.id || st.uid) + '_' + k++; used.add(e); elId.set(st.uid, e); }
+  const lanes = [...new Set([...(model.lanes || []), ...model.steps.map(st => st.lane)].filter(Boolean))];
+  const W = esc(xid(workflowId));
+  const L = [`<?xml version="1.0" encoding="UTF-8"?>`,
+    `<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:aef="http://anchorpoint.framework/aef/extensions" id="Definitions_${W}" targetNamespace="http://bpmn.io/schema/bpmn">`,
+    `  <bpmn:collaboration id="Collaboration_${W}"><bpmn:participant id="Pool_${W}" name="${esc(title)}" processRef="Process_${W}"/></bpmn:collaboration>`,
+    `  <bpmn:process id="Process_${W}" isExecutable="false">`,
+    // the map's own identity (else the importer guesses it from the process id: "process_x")
+    `    <bpmn:extensionElements><aef:workflowMeta id="${esc(workflowId)}" title="${esc(title)}"/></bpmn:extensionElements>`];
+  if (lanes.length) {
+    L.push(`    <bpmn:laneSet id="LaneSet_${W}">`);
+    lanes.forEach((ln, i) => {
+      L.push(`      <bpmn:lane id="Lane_${i + 1}" name="${esc(ln)}">`);
+      const lm = (model.laneMeta || {})[ln];
+      if (lm && (lm.abbr || lm.authority)) L.push(`        <bpmn:extensionElements><aef:laneMeta${lm.abbr ? ` abbr="${esc(lm.abbr)}"` : ''}${lm.authority ? ` authority="${esc(lm.authority)}"` : ''}/></bpmn:extensionElements>`);
+      for (const st of model.steps.filter(x => x.lane === ln)) L.push(`        <bpmn:flowNodeRef>${esc(elId.get(st.uid))}</bpmn:flowNodeRef>`);
+      L.push(`      </bpmn:lane>`);
+    });
+    L.push(`    </bpmn:laneSet>`);
+  }
+  for (const st of model.steps) {
+    const t = BRIDGE_TYPES.has(st.type) ? st.type : 'task';
+    L.push(`    <bpmn:${t} id="${esc(elId.get(st.uid))}"${st.name ? ` name="${esc(st.name)}"` : ''}><bpmn:extensionElements><aef:uid value="${esc(st.uid)}"/></bpmn:extensionElements></bpmn:${t}>`);
+  }
+  model.flows.forEach((f, i) => L.push(`    <bpmn:sequenceFlow id="Flow_${i + 1}"${f.label ? ` name="${esc(f.label)}"` : ''} sourceRef="${esc(elId.get(f.from))}" targetRef="${esc(elId.get(f.to))}"/>`));
+  L.push(`  </bpmn:process>`, `</bpmn:definitions>`);
+  return L.join('\n') + '\n';
+}
+
+const BRIDGE_NAME = { mermaid: 'Mermaid', csv: 'CSV', xlsx: 'Excel' };
+function importBridgeText(kind, text, fileName) {
+  importBridgeModel(kind, kind === 'mermaid' ? parseMermaid(text) : parseCsv(text), fileName);
+}
+function importBridgeModel(kind, model, fileName) {
+  if (!model.steps.length) throw new Error(`no steps found in this ${BRIDGE_NAME[kind]} file`);
+  const base = String(fileName || 'imported').replace(/\.[^.]+$/, '').replace(/\.v\d+$/, '') || 'imported';
+  const id = (model.mapId && /^[\w.-]+$/.test(model.mapId) ? model.mapId : base).toLowerCase();
+  const title = model.mapTitle || id;
+  _bridgeImportNote = `imported from ${BRIDGE_NAME[kind]}: ${model.steps.length} steps and ` +
+    `${model.flows.length} flows; not in this format: ${BRIDGE_LOSS}${kind !== 'mermaid' ? ', and lanes that hold no step' : ''}`;
+  adoptImportedXml(bridgeToBpmn(model, id, title), { userImport: true });
+  if (typeof cleanLayoutAll === 'function') cleanLayoutAll(); else $('btn-clean').click();
+  openingZoom();
+}
+async function importXlsxBytes(u8, fileName) { importBridgeModel('xlsx', stepRowsToModel(await readXlsxRows(u8)), fileName); }
+function importBridgeFile(kind) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = kind === 'mermaid' ? '.mmd,.mermaid,.md,.txt,text/plain'
+    : kind === 'xlsx' ? '.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' : '.csv,text/csv,text/plain';
+  input.onchange = async ev => {
+    const file = ev.target.files[0];
+    if (!file) return;
+    try {
+      if (kind === 'xlsx') await importXlsxBytes(new Uint8Array(await file.arrayBuffer()), file.name);
+      else importBridgeText(kind, await file.text(), file.name);
+    }
+    catch (e) { _bridgeImportNote = ''; aefRecordFault('import-' + kind, e); alert(`Failed to import ${BRIDGE_NAME[kind]}:\n` + e.message); }
+  };
+  input.click();
+}
+
+// ── T-1442: the ZIP core (Excel now; Word and Visio reuse it) ──
+// Writer: deflate-raw through the browser's CompressionStream, CRC-32, local headers + central directory. Reader: the
+// central directory gives each entry's sizes (so entries written with a data descriptor read fine too).
+const ZIP_CRC = new Uint32Array(256).map((_, n) => { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; return c >>> 0; });
+function zipCrc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = ZIP_CRC[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+async function zipPipe(bytes, stream) { return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer()); }
+async function zipWrite(files) {   // files: [[name, text or Uint8Array], ...] -> Uint8Array
+  const enc = new TextEncoder(), parts = [], central = [];
+  let off = 0;
+  for (const [name, body] of files) {
+    const raw = typeof body === 'string' ? enc.encode(body) : body, nm = enc.encode(name), crc = zipCrc32(raw);
+    const data = await zipPipe(raw, new CompressionStream('deflate-raw'));
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(8, 8, true); lh.setUint16(12, 0x21, true);   // 1980-01-01: same bytes every time
+    lh.setUint32(14, crc, true); lh.setUint32(18, data.length, true); lh.setUint32(22, raw.length, true); lh.setUint16(26, nm.length, true);
+    parts.push(new Uint8Array(lh.buffer), nm, data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(10, 8, true); ch.setUint16(14, 0x21, true);
+    ch.setUint32(16, crc, true); ch.setUint32(20, data.length, true); ch.setUint32(24, raw.length, true); ch.setUint16(28, nm.length, true); ch.setUint32(42, off, true);
+    central.push(new Uint8Array(ch.buffer), nm);
+    off += 30 + nm.length + data.length;
+  }
+  const csize = central.reduce((n, p) => n + p.length, 0), end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+  end.setUint32(12, csize, true); end.setUint32(16, off, true);
+  return new Uint8Array(await new Blob([...parts, ...central, new Uint8Array(end.buffer)]).arrayBuffer());
+}
+async function zipRead(u8) {   // -> { name: Uint8Array }
+  if (u8.length >= 4 && u8[0] === 0xD0 && u8[1] === 0xCF && u8[2] === 0x11 && u8[3] === 0xE0)
+    throw new Error('this is an old-style Excel file (.xls); save it as .xlsx (Excel Workbook) and import that');
+  const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength), out = {}, dec = new TextDecoder();
+  let e = u8.length - 22;
+  while (e >= 0 && e > u8.length - 22 - 65557 && dv.getUint32(e, true) !== 0x06054b50) e--;
+  if (e < 0 || dv.getUint32(e, true) !== 0x06054b50) throw new Error('this file is not an .xlsx workbook (it is not a zip package)');
+  let p = dv.getUint32(e + 16, true);
+  for (let i = 0, n = dv.getUint16(e + 10, true); i < n; i++) {
+    if (p + 46 > u8.length || dv.getUint32(p, true) !== 0x02014b50) throw new Error('this .xlsx file is damaged (its zip directory is broken)');
+    const method = dv.getUint16(p + 10, true), csz = dv.getUint32(p + 20, true), nl = dv.getUint16(p + 28, true);
+    const xl = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), lo = dv.getUint32(p + 42, true);
+    const name = dec.decode(u8.subarray(p + 46, p + 46 + nl));
+    const ds = lo + 30 + dv.getUint16(lo + 26, true) + dv.getUint16(lo + 28, true), data = u8.subarray(ds, ds + csz);
+    if (method === 8) out[name] = await zipPipe(data, new DecompressionStream('deflate-raw'));
+    else if (method === 0) out[name] = data;
+    else throw new Error(`this .xlsx file uses a zip compression the designer cannot read (method ${method})`);
+    p += 46 + nl + xl + cl;
+  }
+  return out;
+}
+
+// ── T-1442: Excel (.xlsx): one sheet "Steps" with the CSV columns ──
+const XLSX_CT_MAIN = 'application/vnd.openxmlformats-officedocument.spreadsheetml';
+const XLSX_NS = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+const XLSX_REL = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+const XLSX_PKG_REL = 'http://schemas.openxmlformats.org/package/2006/relationships';
+function xlsxCol(i) { let s = ''; for (i++; i > 0; i = Math.floor((i - 1) / 26)) s = String.fromCharCode(65 + (i - 1) % 26) + s; return s; }
+function xlsxEsc(v) { return String(v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+async function buildXlsx() {
+  const rows = stepRows();
+  // Column widths from the longest value (capped), so the sheet opens readable; header row bold and frozen.
+  const widths = rows[0].map((_, ci) => Math.min(60, Math.max(8, ...rows.map(r => String(r[ci]).length + 2))));
+  // T-1464: built from plain pieces, not template literals nested inside ${...} (valid JavaScript, but the
+  // swallowed-failure census _t821 lost track of the backticks and read ~150 lines below as text).
+  const col = (w, i) => '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>';
+  const cell = (v, ci, ri) => '<c r="' + xlsxCol(ci) + (ri + 1) + '" t="inlineStr"' + (ri === 0 ? ' s="1"' : '') +
+    '><is><t xml:space="preserve">' + xlsxEsc(v) + '</t></is></c>';
+  const row = (r, ri) => '<row r="' + (ri + 1) + '">' + r.map((v, ci) => cell(v, ci, ri)).join('') + '</row>';
+  const sheet = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<worksheet xmlns="' + XLSX_NS + '">' +
+    '<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>' +
+    '<cols>' + widths.map(col).join('') + '</cols><sheetData>' + rows.map(row).join('') + '</sheetData></worksheet>';
+  const x = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
+  return zipWrite([
+    ['[Content_Types].xml', `${x}<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="${XLSX_CT_MAIN}.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="${XLSX_CT_MAIN}.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="${XLSX_CT_MAIN}.styles+xml"/></Types>`],
+    ['_rels/.rels', `${x}<Relationships xmlns="${XLSX_PKG_REL}"><Relationship Id="rId1" Type="${XLSX_REL}/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
+    ['xl/workbook.xml', `${x}<workbook xmlns="${XLSX_NS}" xmlns:r="${XLSX_REL}"><sheets><sheet name="Steps" sheetId="1" r:id="rId1"/></sheets></workbook>`],
+    ['xl/_rels/workbook.xml.rels', `${x}<Relationships xmlns="${XLSX_PKG_REL}"><Relationship Id="rId1" Type="${XLSX_REL}/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="${XLSX_REL}/styles" Target="styles.xml"/></Relationships>`],
+    ['xl/styles.xml', `${x}<styleSheet xmlns="${XLSX_NS}"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs></styleSheet>`],
+    ['xl/worksheets/sheet1.xml', sheet],
+  ]);
+}
+async function downloadXlsxFile() {
+  try { downloadBlob(new Blob([await buildXlsx()], { type: XLSX_CT_MAIN + '.sheet' }), `${exportBaseName()}.xlsx`); }
+  catch (e) { aefRecordFault('export-xlsx', e); alert('Failed to export Excel:\n' + e.message); }
+}
+// Reader for any .xlsx, not only ours: shared strings, inline strings, numbers, booleans, sparse cells (placed by their
+// r="C5" reference), sheets reached through workbook.xml and its relationships. The sheet named "Steps" is read if
+// there is one, else the first sheet whose first filled row has an "id" column.
+async function readXlsxRows(u8) {
+  const files = await zipRead(u8), dec = new TextDecoder();
+  const part = p => { p = p.replace(/^\//, ''); return files[p] ? new DOMParser().parseFromString(dec.decode(files[p]), 'application/xml') : null; };
+  const all = (doc, tag) => doc ? [...doc.getElementsByTagNameNS('*', tag)] : [];
+  const wb = part('xl/workbook.xml');
+  if (!wb) throw new Error('this zip file is not an Excel workbook (no xl/workbook.xml inside)');
+  const rels = new Map(all(part('xl/_rels/workbook.xml.rels'), 'Relationship').map(r => [r.getAttribute('Id'), r.getAttribute('Target')]));
+  const target = t => !t ? '' : t.startsWith('/') ? t.slice(1) : 'xl/' + t.replace(/^\.\//, '');
+  const shared = all(part('xl/sharedStrings.xml'), 'si').map(si =>
+    all(si, 't').filter(t => !(t.parentNode && t.parentNode.localName === 'rPh')).map(t => t.textContent).join(''));
+  const textOf = c => {
+    const t = c.getAttribute('t'), v = all(c, 'v')[0];
+    if (t === 'inlineStr') return all(c, 't').filter(x => !(x.parentNode && x.parentNode.localName === 'rPh')).map(x => x.textContent).join('');
+    if (!v) return '';
+    if (t === 's') return shared[+v.textContent] ?? '';
+    if (t === 'b') return v.textContent === '1' ? 'TRUE' : 'FALSE';
+    if (t === 'str' || t === 'e') return v.textContent;
+    const n = Number(v.textContent);   // a number: written as a person would type it (1, not 1.0)
+    return Number.isFinite(n) ? String(n) : v.textContent;
+  };
+  const colIx = ref => { const m = /^([A-Z]+)/.exec(ref || ''); if (!m) return -1; let n = 0; for (const ch of m[1]) n = n * 26 + ch.charCodeAt(0) - 64; return n - 1; };
+  const sheetRows = doc => all(doc, 'row').map(row => {
+    const out = []; let next = 0;
+    for (const c of all(row, 'c')) { const ix = colIx(c.getAttribute('r')); const at = ix >= 0 ? ix : next; out[at] = textOf(c); next = at + 1; }
+    return Array.from(out, x => x ?? '');
+  });
+  const sheets = all(wb, 'sheet').map(s => ({ name: s.getAttribute('name') || '', path: target(rels.get(s.getAttributeNS(XLSX_REL, 'id') || s.getAttribute('r:id'))) }));
+  if (!sheets.length) throw new Error('this Excel workbook has no sheets');
+  const named = sheets.find(s => s.name.trim().toLowerCase() === 'steps');
+  for (const s of named ? [named, ...sheets.filter(x => x !== named)] : sheets) {
+    const doc = part(s.path);
+    if (!doc) continue;
+    const rows = sheetRows(doc);
+    const head = rows.find(r => r.some(x => String(x).trim() !== ''));
+    if (head && head.some(h => String(h).trim().toLowerCase() === 'id')) return rows;
+  }
+  throw new Error(`no sheet in this workbook has an "id" column in its first row (sheets: ${sheets.map(s => s.name).join(', ')})`);
+}
+function downloadTextFile(text, ext, type) { downloadBlob(new Blob([text], { type }), `${exportBaseName()}.${ext}`); }
+
+// ── T-1439: Import / Export menus ──
+// One list of formats per direction. A later format (T-1440..T-1444) adds one entry here; the menus are built from it.
+const IO_FORMATS = {
+  import: [
+    { id: 'bpmn', label: 'BPMN 2.0 / Camunda', hint: '.bpmn, .xml', run: importBpmnFile },
+    { id: 'mermaid', label: 'Mermaid', hint: '.mmd', run: () => importBridgeFile('mermaid') },     // T-1441
+    { id: 'csv', label: 'CSV (step list)', hint: '.csv', run: () => importBridgeFile('csv') },
+    { id: 'xlsx', label: 'Excel (step list)', hint: '.xlsx', run: () => importBridgeFile('xlsx') },   // T-1442
+  ],
+  export: [
+    { id: 'bpmn', label: 'BPMN 2.0 / Camunda', hint: '.bpmn', run: downloadBpmnFile },
+    { id: 'pdf', label: 'PDF, one page', hint: 'A4', run: () => printMapSheet('a4') },              // T-1440
+    { id: 'pdf-a3', label: 'PDF, one page', hint: 'A3', run: () => printMapSheet('a3') },           // T-1446
+    { id: 'pdf-pages', label: 'PDF, readable pages', hint: 'A4', run: () => printMapSheet('pages') },
+    { id: 'svg', label: 'SVG picture', hint: '.svg', run: downloadSvgFile },
+    { id: 'png1', label: 'PNG picture', hint: '1x', run: () => downloadPngFile(1) },
+    { id: 'png2', label: 'PNG picture', hint: '2x', run: () => downloadPngFile(2) },
+    { id: 'png4', label: 'PNG picture', hint: '4x', run: () => downloadPngFile(4) },
+    { id: 'mermaid', label: 'Mermaid', hint: '.mmd', run: () => downloadTextFile(buildMermaid(), 'mmd', 'text/plain') },   // T-1441
+    { id: 'csv', label: 'CSV (step list)', hint: '.csv', run: () => downloadTextFile(buildCsv(), 'csv', 'text/csv') },
+    { id: 'xlsx', label: 'Excel (step list)', hint: '.xlsx', run: downloadXlsxFile },   // T-1442
+  ],
 };
+
+function ioMenuClose(dir, refocus) {
+  const btn = $('btn-' + dir), list = $('menu-' + dir);
+  if (!list || list.hidden) return;
+  list.hidden = true;
+  btn.setAttribute('aria-expanded', 'false');
+  if (refocus) btn.focus();
+}
+
+function ioMenuOpen(dir) {
+  ioMenuClose(dir === 'import' ? 'export' : 'import', false);   // at most one open
+  const btn = $('btn-' + dir), list = $('menu-' + dir);
+  list.textContent = '';
+  for (const f of IO_FORMATS[dir]) {
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'tb-menu-item';
+    item.setAttribute('role', 'menuitem');
+    item.dataset.format = f.id;
+    const label = document.createElement('span');
+    label.textContent = f.label;
+    const hint = document.createElement('span');
+    hint.className = 'tb-menu-hint';
+    hint.textContent = f.hint;
+    item.append(label, hint);
+    item.onclick = () => { ioMenuClose(dir, true); f.run(); };
+    list.appendChild(item);
+  }
+  list.classList.remove('align-right');
+  list.hidden = false;
+  btn.setAttribute('aria-expanded', 'true');
+  // Near the window's right edge the menu opens leftwards instead of running off-screen.
+  if (list.getBoundingClientRect().right > window.innerWidth - 8) list.classList.add('align-right');
+  const first = list.querySelector('.tb-menu-item');
+  if (first) first.focus();
+}
+
+for (const dir of ['import', 'export']) {
+  const btn = $('btn-' + dir), list = $('menu-' + dir);
+  btn.addEventListener('click', () => (list.hidden ? ioMenuOpen(dir) : ioMenuClose(dir, false)));
+  btn.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); ioMenuOpen(dir); }
+  });
+  list.addEventListener('keydown', e => {
+    const items = [...list.querySelectorAll('.tb-menu-item')];
+    const i = items.indexOf(document.activeElement);
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); ioMenuClose(dir, true); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+    else if (e.key === 'Home') { e.preventDefault(); items[0].focus(); }
+    else if (e.key === 'End') { e.preventDefault(); items[items.length - 1].focus(); }
+    else if (e.key === 'Tab') { ioMenuClose(dir, false); }
+  });
+}
+document.addEventListener('mousedown', e => {
+  for (const dir of ['import', 'export']) {
+    const wrap = $('btn-' + dir).parentElement;
+    if (!wrap.contains(e.target)) ioMenuClose(dir, false);
+  }
+}, true);
 // ?load=<same-origin path> — gallery deep-link: fetch a rendered .bpmn and open it.
 // Only useful when served over HTTP (fetch of file:// paths is blocked by browsers).
 // T-1061: one honest signal that the deep link has SETTLED, set on every exit of the handler below:
@@ -14070,7 +15060,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.43.0';
+const APP_VERSION = '0.45.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
@@ -15275,6 +16265,204 @@ function renderData() {
     lines.forEach((t, i) => grp.appendChild(el('text', { x: d.x + d.w / 2, y: d.y + d.h + 13 + i * DATA_LABEL_LINE, 'text-anchor': 'middle',
       class: i < lines.length - (d.state ? 1 : 0) ? 'node-label' : 'data-state-label', 'data-data-label': d.id }, [text(t)])));
     g.appendChild(grp);
+  }
+}
+// T-1447: the text annotations and associations the import kept (T-1326, state.procKept), drawn read-only. Nothing
+// here writes state: save keeps emitting the kept XML exactly as before. An annotation stands where the file put it;
+// an association is drawn along the file's waypoints while both ends are still where the file had them, and straight
+// between the ends' current outlines once the person moves one (it follows the step, like a document's link).
+const NOTE_PAD = 5, NOTE_LINE = 14, NOTE_CHAR_W = 5.9;
+const _notesParsed = new WeakMap();   // procKept -> parsed annotations/associations (parsing once, drawing every drag)
+function notesParse(pk) {
+  if (_notesParsed.has(pk)) return _notesParsed.get(pk);
+  const NS = 'xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"'
+    + ' xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI"'
+    + ' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"';
+  const parse = xml => {
+    const d = new DOMParser().parseFromString(`<r ${NS}>${xml}</r>`, 'application/xml');
+    return d.getElementsByTagName('parsererror').length ? null : d.documentElement.firstElementChild;
+  };
+  const shapes = new Map(), edges = new Map();
+  for (const d of pk.di || []) {
+    const e = parse(d.xml); if (!e) continue;
+    if (e.localName === 'BPMNShape') {
+      const b = Array.from(e.children).find(c => c.localName === 'Bounds');
+      const r = b && ['x', 'y', 'width', 'height'].map(a => parseFloat(b.getAttribute(a)));
+      if (r && r.every(Number.isFinite)) shapes.set(d.ref, { x: r[0], y: r[1], w: r[2], h: r[3] });
+    } else if (e.localName === 'BPMNEdge') {
+      const pts = Array.from(e.children).filter(c => c.localName === 'waypoint')
+        .map(p => ({ x: parseFloat(p.getAttribute('x')), y: parseFloat(p.getAttribute('y')) }));
+      if (pts.length >= 2 && pts.every(p => Number.isFinite(p.x) && Number.isFinite(p.y))) edges.set(d.ref, pts);
+    }
+  }
+  const notes = [], links = [];
+  for (const a of pk.artifacts || []) {
+    const e = parse(a.xml); if (!e) continue;
+    const id = e.getAttribute('id') || '';
+    if (e.localName === 'textAnnotation') {
+      const t = Array.from(e.children).find(c => c.localName === 'text');
+      const b = shapes.get(id);
+      if (b) notes.push({ id, text: t ? t.textContent : '', ...b });
+    } else if (e.localName === 'association') {
+      links.push({ id, dir: e.getAttribute('associationDirection') || 'None', ends: a.ends || {}, wps: edges.get(id) || null });
+    }
+  }
+  const out = { notes, links };
+  _notesParsed.set(pk, out);
+  return out;
+}
+// The lines of a note's text, wrapped to its box (the author's own line breaks kept).
+function noteLines(n) {
+  const max = Math.max(4, Math.floor((n.w - 2 * NOTE_PAD) / NOTE_CHAR_W));
+  return String(n.text).split(/\r?\n/).flatMap(p => p.trim() ? wrapText(p.trim().replace(/\s+/g, ' '), max) : ['']);
+}
+function notesLayout(s) {
+  const pk = s && s.procKept;
+  if (!pk || !(pk.artifacts || []).length) return null;
+  const { notes, links } = notesParse(pk);
+  if (!notes.length && !links.length) return null;
+  const byNote = new Map(notes.map(n => [n.id, n]));
+  const byUid = new Map(s.nodes.map(n => [n.uid, n]));
+  const rectOf = end => {
+    if (end && end.node) { const n = byUid.get(end.node); if (!n) return null; const d = dims(n); return { x: n.x, y: n.y, w: d.w, h: d.h }; }
+    if (end && end.id && byNote.has(end.id)) return byNote.get(end.id);
+    return null;   // a flow, or something not on this map: only the file's own waypoints can draw it
+  };
+  const near = (r, p) => p.x >= r.x - 3 && p.x <= r.x + r.w + 3 && p.y >= r.y - 3 && p.y <= r.y + r.h + 3;
+  const stepRects = s.nodes.map(n => { const d = dims(n); return { uid: n.uid, x: n.x, y: n.y, w: d.w, h: d.h }; });
+  // An end that touches ANOTHER step reads as attached to that one (Greenfield's note 7: its line ends on Open Order's
+  // corner, against the step drawn just below it, so it seems to point at Open VO).
+  const ambiguousAt = (p, end) => stepRects.some(r => r.uid !== (end && end.node) && p.x >= r.x - 8 && p.x <= r.x + r.w + 8 && p.y >= r.y - 8 && p.y <= r.y + r.h + 8);
+  const segHitsRect = (a, b, r) => {
+    let t0 = 0, t1 = 1; const dx = b.x - a.x, dy = b.y - a.y;
+    const P = [-dx, dx, -dy, dy], Q = [a.x - r.x, r.x + r.w - a.x, a.y - r.y, r.y + r.h - a.y];
+    for (let i = 0; i < 4; i++) {
+      if (P[i] === 0) { if (Q[i] < 0) return false; continue; }
+      const t = Q[i] / P[i];
+      if (P[i] < 0) { if (t > t1) return false; if (t > t0) t0 = t; } else { if (t < t0) return false; if (t < t1) t1 = t; }
+    }
+    return t0 < t1;
+  };
+  // A straight line from A to the middle of one of Z's sides, the nearest whose line passes no other step; else null.
+  const sideRoute = (A, Z, zEnd, aEnd) => {
+    const mids = [{ x: Z.x, y: Z.y + Z.h / 2 }, { x: Z.x + Z.w, y: Z.y + Z.h / 2 }, { x: Z.x + Z.w / 2, y: Z.y }, { x: Z.x + Z.w / 2, y: Z.y + Z.h }];
+    const cands = mids.map(m => ({ m, a: rectExit(A, m.x, m.y) })).sort((p, q) => Math.hypot(p.m.x - p.a.x, p.m.y - p.a.y) - Math.hypot(q.m.x - q.a.x, q.m.y - q.a.y));
+    const skip = new Set([zEnd && zEnd.node, aEnd && aEnd.node]);
+    for (const c of cands) {
+      if (stepRects.some(r => !skip.has(r.uid) && segHitsRect(c.a, c.m, { x: r.x - 4, y: r.y - 4, w: r.w + 8, h: r.h + 8 }))) continue;
+      return [c.a, c.m];
+    }
+    return null;
+  };
+  const drawn = [], undrawn = [];
+  for (const l of links) {
+    const A = rectOf(l.ends.sourceRef), Z = rectOf(l.ends.targetRef);
+    let pts = null;
+    if (l.wps && (!A || near(A, l.wps[0])) && (!Z || near(Z, l.wps[l.wps.length - 1]))
+        && (A || Z || (l.ends.sourceRef && l.ends.sourceRef.flow) || (l.ends.targetRef && l.ends.targetRef.flow))) pts = l.wps;
+    else if (A && Z) pts = [rectExit(A, Z.x + Z.w / 2, Z.y + Z.h / 2), rectExit(Z, A.x + A.w / 2, A.y + A.h / 2)];
+    if (pts && A && Z) {
+      // T-1447 review (note 7): an end that reads as attached to the wrong step is re-attached to a clear side
+      if (l.ends.targetRef && l.ends.targetRef.node && ambiguousAt(pts[pts.length - 1], l.ends.targetRef)) pts = sideRoute(A, Z, l.ends.targetRef, l.ends.sourceRef) || pts;
+      else if (l.ends.sourceRef && l.ends.sourceRef.node && ambiguousAt(pts[0], l.ends.sourceRef)) { const r = sideRoute(Z, A, l.ends.sourceRef, l.ends.targetRef); if (r) pts = r.slice().reverse(); }
+    }
+    (pts ? drawn : undrawn).push({ ...l, pts });
+  }
+  return { notes, links: drawn, undrawn };
+}
+// T-1447 review: the drawn notes as obstacles for the label passes (clearLabelsOfFlows, clearFlowLabels), so an id
+// caption or a flow label is not left on a note's text, bracket or line (Greenfield notes 5 and 8). Read off the DOM, as
+// those passes read the flows; empty when the map has no notes, so their placements are unchanged for every other map.
+function noteObstacles() {
+  const g = $('g-notes'), out = { segs: [], boxes: [] };
+  if (!g) return out;
+  for (const p of g.querySelectorAll('path[data-note-assoc]')) {
+    const pl = [...String(p.getAttribute('d')).matchAll(/(-?[\d.]+),(-?[\d.]+)/g)].map(m => ({ x: +m[1], y: +m[2] }));   // "x,y" pairs
+    for (let i = 0; i < pl.length - 1; i++) out.segs.push([pl[i], pl[i + 1]]);
+  }
+  for (const n of g.querySelectorAll('g[data-note]')) {
+    const b = n.getBBox();
+    if (b.width) out.boxes.push({ x1: b.x - 1, y1: b.y - 1, x2: b.x + b.width + 1, y2: b.y + b.height + 1 });
+  }
+  return out;
+}
+function renderNotes() {
+  const g = $('g-notes'); if (!g) return;
+  g.innerHTML = '';
+  const L = notesLayout(state); if (!L) return;
+  const byUid = new Map(state.nodes.map(n => [n.uid, n]));
+  // An arrowhead that lands on a step's bottom edge sits under the step's id badge (badges paint above this layer) and is
+  // hidden there (Greenfield's "Solution -> Product"). Move that end beside the badge, 8px in from the nearer corner, as
+  // the documents layer does (T-1381).
+  const clearBadge = (pts, at, end) => {
+    const n = end && end.node && byUid.get(end.node); if (!n) return pts;
+    const d = dims(n), p = pts[at], cx = n.x + d.w / 2, half = displayIdOf(n).length * 3.2 + 4;
+    if (Math.abs(p.y - (n.y + d.h)) > 3 || Math.abs(p.x - cx) > half) return pts;
+    const q = pts.slice(); q[at] = { x: p.x < cx ? n.x + 8 : n.x + d.w - 8, y: n.y + d.h };
+    return q;
+  };
+  for (const l0 of L.links) {
+    let l = l0;
+    if (l.dir === 'One' || l.dir === 'Both') l = { ...l, pts: clearBadge(l.pts, l.pts.length - 1, l.ends.targetRef) };
+    if (l.dir === 'Both') l = { ...l, pts: clearBadge(l.pts, 0, l.ends.sourceRef) };
+    const attrs = { d: 'M' + l.pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' L'), fill: 'none',
+      stroke: 'var(--text-dim)', 'stroke-width': '1.2', 'stroke-dasharray': '2 3', 'data-note-assoc': l.id, 'data-dir': l.dir,
+      ...(l.ends.sourceRef && l.ends.sourceRef.node ? { 'data-src-node': l.ends.sourceRef.node } : {}),
+      ...(l.ends.targetRef && l.ends.targetRef.node ? { 'data-tgt-node': l.ends.targetRef.node } : {}) };
+    if (l.dir === 'One' || l.dir === 'Both') attrs['marker-end'] = 'url(#assoc-end)';
+    if (l.dir === 'Both') attrs['marker-start'] = 'url(#assoc-end)';
+    g.appendChild(el('path', attrs));
+  }
+  for (const n of L.notes) {
+    const grp = el('g', { 'data-note': n.id });
+    // BPMN's text annotation: an open bracket on the left, the text inside the box
+    const arm = Math.min(15, n.w / 4);
+    grp.appendChild(el('path', { d: `M${n.x + arm},${n.y} H${n.x} V${n.y + n.h} H${n.x + arm}`, fill: 'none',
+      stroke: 'var(--text-dim)', 'stroke-width': '1.3' }));
+    noteLines(n).forEach((t, i) => grp.appendChild(el('text', { x: n.x + NOTE_PAD, y: n.y + NOTE_PAD + 10 + i * NOTE_LINE,
+      class: 'note-text', 'data-note-text': n.id }, [text(t)])));
+    g.appendChild(grp);
+  }
+  fitNoteEnds();   // against the captions as last placed (renderNodes runs it again once they are final)
+}
+// T-1447 review round 3: a step's caption (id caption, type tag, name) is placed after the notes, and may sit where a
+// note's line meets the step (Greenfield note 2: sal_2_knop on the top edge of Knop "Tacton", hiding the line's end).
+// Slide that end along the step's edge until it is clear of every caption, staying 8px inside the corners; render-only.
+function fitNoteEnds() {
+  const g = $('g-notes'); if (!g || !gNodes) return;
+  const caps = Array.from(svg.querySelectorAll('text.node-id-badge, text.node-foreign-tag, text.node-label'))
+    .filter(t => !t.closest('#g-sticky-lanes')).map(t => { const b = t.getBBox(); return b.width ? { x1: b.x - 3, y1: b.y - 2, x2: b.x + b.width + 3, y2: b.y + b.height + 2 } : null; })
+    .filter(Boolean);
+  if (!caps.length) return;
+  const byUid = new Map(state.nodes.map(n => [n.uid, n]));
+  const inCap = p => caps.find(c => p.x >= c.x1 && p.x <= c.x2 && p.y >= c.y1 && p.y <= c.y2);
+  for (const p of g.querySelectorAll('path[data-note-assoc]')) {
+    const pts = [...String(p.getAttribute('d')).matchAll(/(-?[\d.]+),(-?[\d.]+)/g)].map(m => ({ x: +m[1], y: +m[2] }));
+    if (pts.length < 2) continue;
+    let moved = false;
+    for (const [at, attr] of [[0, 'data-src-node'], [pts.length - 1, 'data-tgt-node']]) {
+      const n = byUid.get(p.getAttribute(attr)); if (!n) continue;
+      const prev = pts[at === 0 ? 1 : pts.length - 2];
+      // the line's last 30px before it meets the step (sampled every 2px): a caption there hides where it lands
+      const capNearEnd = (end) => {
+        const dx = prev.x - end.x, dy = prev.y - end.y, L = Math.hypot(dx, dy) || 1, k = Math.min(30, L);
+        for (let s = 0; s <= k; s += 2) { const c = inCap({ x: end.x + dx / L * s, y: end.y + dy / L * s }); if (c) return c; }
+        return null;
+      };
+      const d = dims(n), q = pts[at], c = capNearEnd(q); if (!c) continue;
+      const onH = Math.abs(q.y - n.y) <= 3 || Math.abs(q.y - (n.y + d.h)) <= 3;   // top or bottom edge, else a side
+      const lo = (onH ? n.x : n.y) + 8, hi = (onH ? n.x + d.w : n.y + d.h) - 8;
+      // every place along that edge, 4px apart, nearest first (a line arriving at a slant can still cross the caption
+      // from just beside it, so the two places either side of the caption are not enough; review round 4)
+      const v = onH ? q.x : q.y, opts = [];
+      for (let t = lo; t <= hi; t += 4) opts.push(t);
+      opts.sort((a, b) => Math.abs(a - v) - Math.abs(b - v));
+      for (const t of opts) {
+        const cand = onH ? { x: t, y: q.y } : { x: q.x, y: t };
+        if (!capNearEnd(cand)) { pts[at] = cand; moved = true; break; }
+      }
+    }
+    if (moved) p.setAttribute('d', 'M' + pts.map(q => `${q.x.toFixed(1)},${q.y.toFixed(1)}`).join(' L'));
   }
 }
 // T-1120: the DI the export writes for the kept pools — computed by collabLayout, so it equals the canvas.

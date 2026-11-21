@@ -22,10 +22,10 @@ description: >
   pinned (see docs/research/executable-workflow/contracts/v2/designer-0.43-mapping.md),
   verify the sha256 and size on arrival, tell 832 the task id.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [designer]
 components: []
 related_tasks: []
@@ -57,7 +57,7 @@ origin: {kind: "peer", source: "832-Workflow-designer", ref: "d1184a3c"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-19T17:13:36Z
-last_update: '2026-11-19T17:17:00Z'
+last_update: 2026-11-21T12:16:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -309,6 +309,14 @@ bin/fw designer status > /tmp/.t5273.out 2>&1 && grep -q "sha256 matches pin" /t
 U="$(bin/fw watchtower url)"; curl -sfL "$U/designer/app" -o /tmp/.t5273.html && grep -q "const APP_VERSION = '0.45.0'" /tmp/.t5273.html
 bin/fw vendor self --check --task T-5273
 
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| designer | /designer/app | ok | ok | ok | header shows v0.45.0; the investigate map opens and renders (lanes, tasks, gateways, flows); palette, canvas and properties panel present. 1920: Save wraps to a second toolbar row; 1024: map drawn small until zoomed (832's page layout, unchanged bytes) |
+
+Screenshots: `.context/visual/T-5273/designer@{1024,1440,1920}.png` (`fw ux shots`, 2026-11-21), read by the agent. The page is 832's released build, verified byte-for-byte (sha256 ed284265…); AEF changes none of its bytes.
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -405,3 +413,7 @@ bin/fw vendor self --check --task T-5273
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5273-pick-up-workflow-designer-0440-from-832-.md
 - **Context:** Initial task creation
+
+### 2026-11-21T12:16:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

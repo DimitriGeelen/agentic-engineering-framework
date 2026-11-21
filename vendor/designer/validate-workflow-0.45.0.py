@@ -7,8 +7,10 @@ the required-field tables in sections 3/4.1/5/6.1, and the XML mapping in 7.1/7.
 
 Two produced formats are supported and auto-detected:
 
-  * YAML canonical form (section 3) -- the AEF-canonical, source-controlled,
-    hand-authorable representation. Edges reference node `uid`s (not displayIds).
+  * YAML form (section 3) -- a hand-authorable authoring form, converted to BPMN by
+    tools/yaml-to-bpmn.py. It is NOT a stored canonical: AEF keeps a single stored
+    representation, the BPMN the designer saves (SD-1, SD-5; AEF T-5144 G3, 832 T-1424).
+    Edges reference node `uid`s (not displayIds).
   * BPMN 2.0 XML export (section 7) -- what the designer's Save action emits.
     Flow references use `bpmn:id` (displayId); `aef:uid` carries stable identity.
 
