@@ -84,7 +84,24 @@ _drift() {
     # DURABLE MUTATION of live source, deliberately not `git show HEAD~N:`: a git-ref teeth
     # check goes permanently inert the moment another commit lands, skipping while reporting
     # `ok` (T-2874 hit exactly that). Mutating the checked-in file has no expiry.
-    local mutant="$BATS_TEST_TMPDIR/hook-mutant.sh"
+    #
+    # T-5323: the mutant runs inside a framework-shaped tree (lib/, .fabric/ and its
+    # agents/context siblings symlinked to the real ones), because the hook resolves
+    # its libraries from its own location. Copied out alone it sourced nothing and ran
+    # degraded; that passed only while the remedy was a literal echo. Since T-5304 the
+    # remedy prints through _emit_user_command (lib/fw-command.sh), so a degraded mutant
+    # prints no remedy at all — the leg below now also refuses a degraded run.
+    local mroot="$BATS_TEST_TMPDIR/fwtree"
+    mkdir -p "$mroot/agents/context"
+    ln -s "$FRAMEWORK_ROOT/lib" "$mroot/lib"
+    ln -s "$FRAMEWORK_ROOT/.fabric" "$mroot/.fabric"
+    local entry
+    for entry in "$FRAMEWORK_ROOT"/agents/context/*; do
+        [ "$entry" = "$HOOK" ] && continue
+        ln -s "$entry" "$mroot/agents/context/$(basename "$entry")"
+    done
+    local mutant="$mroot/agents/context/check-active-task.sh"
+    [ ! -e "$mutant" ]     # never a symlink: sed must not write through to the live hook
     sed 's|if \[ -n "\$(find_task_file "\$TARGET_TASK" active)" \]; then|if true; then|' \
         "$HOOK" > "$mutant"
     local delta; delta=$(diff "$HOOK" "$mutant" || true)   # diff exits 1 on "differs" (L-387)
@@ -93,6 +110,9 @@ _drift() {
 
     local root; root=$(_sandbox z)
     run _drift "$root" T-9002 "$mutant"
+    # The mutant ran with its libraries, not degraded (see T-5323 note above).
+    [[ "$output" != *"command not found"* ]]
+    [[ "$output" != *"No such file or directory"* ]]
     # THE DEFECT: the completed target is offered a remedy the framework refuses.
     [[ "$output" == *"context focus T-9002"* ]]
 }

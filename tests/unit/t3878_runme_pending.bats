@@ -40,7 +40,25 @@ _dead_pid() { bash -c 'exit 0' & local p=$!; wait $p; echo $p; }
     d=$(_dead_pid)
     printf '{"watch_pid": %s, "arming_claude_pid": %s, "armed_at": "x"}\n' "$d" "$d" > "$R/upgrade/watch.json"
     run runme_pending
-    [[ "$output" == *"WATCH LOST  upgrade"*"re-arm: fw runme watch upgrade"* ]]
+    # T-5323: since T-5304 the re-arm line prints through the builder; this fixture
+    # project is not the framework repo, so the fw path is the vendored one.
+    [[ "$output" == *"WATCH LOST  upgrade"*"re-arm: cd $PROJECT_ROOT && .agentic-framework/bin/fw runme watch upgrade"* ]]
+    [[ "$output" != *"command not found"* ]]
+}
+
+@test "t3878: WATCH LOST through the session-start hook's own invocation names the command" {
+    # T-5323 (real regression): post-compact-resume.sh sources lib/runme.sh alone in
+    # a fresh `bash -c`, where the builder was not loaded, so the banner read
+    # "re-arm:" with nothing after it. Run it exactly that way.
+    _runme upgrade ""
+    d=$(_dead_pid)
+    printf '{"watch_pid": %s, "arming_claude_pid": %s, "armed_at": "x"}\n' "$d" "$d" > "$R/upgrade/watch.json"
+    hook="${BATS_TEST_DIRNAME}/../../agents/context/post-compact-resume.sh"
+    grep -qF "bash -c '. \"\$1/lib/runme.sh\" && runme_pending'" "$hook"   # still the hook's shape
+    run env PROJECT_ROOT="$PROJECT_ROOT" bash -c '. "$1/lib/runme.sh" && runme_pending' _ "${BATS_TEST_DIRNAME}/../.."
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"re-arm: cd $PROJECT_ROOT && .agentic-framework/bin/fw runme watch upgrade"* ]]
+    [[ "$output" != *"command not found"* ]]
 }
 
 @test "t3878: a live watch armed by a live session is NOT reported" {
@@ -56,7 +74,7 @@ _dead_pid() { bash -c 'exit 0' & local p=$!; wait $p; echo $p; }
     bash -c "exec -a '$R/fly/runme.sh' sleep 60" & BG=$!
     sleep 0.2
     run runme_pending
-    [[ "$output" == *"RUN IN FLIGHT  fly"* ]]
+    [[ "$output" == *"RUN IN FLIGHT  fly"*"watch it: cd $PROJECT_ROOT && .agentic-framework/bin/fw runme watch fly"* ]]
 }
 
 @test "t3878: RUN ENDED WITHOUT RECORD — started, no EXIT, nothing runs it" {

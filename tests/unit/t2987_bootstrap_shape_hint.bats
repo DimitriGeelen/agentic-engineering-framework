@@ -147,7 +147,14 @@ _gate() {
     #
     # Heuristic but honest — it fails loudly when a NEW block site is added that
     # advertises `work-on` and forgets the hint, which is the recurrence path.
-    advertise=$(grep -cE '_fw_cmd\) (work-on|context focus|task create)' "$HOOK")
+    #
+    # T-5323: since T-5304 the sites print through the builder,
+    # `$(_emit_user_command "work-on ...")`, not `$(_fw_cmd) work-on ...` (18 sites
+    # before and after). Count the builder spelling, and refuse any site that still
+    # prints the old cd-less one.
+    advertise=$(grep -cE '_emit_user_command "(work-on|context focus|task create)' "$HOOK")
+    run grep -nE '_fw_cmd\) (work-on|context focus|task create)' "$HOOK"
+    [ "$status" -ne 0 ]
     hints=$(grep -c '_bootstrap_shape_hint "\${BASH_CMD' "$HOOK")
     [ "$hints" -ge 5 ]
     [ "$advertise" -ge "$hints" ]

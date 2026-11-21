@@ -92,7 +92,9 @@ teardown() {
 }
 
 @test "t2461:t6 consumer SKIP hint points at fw upgrade (re-vendor), not emit-manifest" {
-    grep -q 'manifest absent in vendored framework — run: fw upgrade' "$CHECK_SRC"
+    # T-5323: since T-5304 the remedy prints through the builder (lib/fw-command.sh):
+    # `cd <project root> && .agentic-framework/bin/fw upgrade` in a consumer.
+    grep -qF 'manifest absent in vendored framework — run: $(_emit_user_command "upgrade")' "$CHECK_SRC"
 
     # Behavioural: call the real check in a consumer layout with no manifest.
     local proj="$TEST_TEMP_DIR/consumer"
@@ -100,6 +102,7 @@ teardown() {
     PROJECT_ROOT="$proj" FRAMEWORK_ROOT="$proj/.agentic-framework" CHECK_SRC="$CHECK_SRC" \
         run bash -c 'source "$CHECK_SRC"; doctor_check_mcp_manifest'
     [ "$status" -eq 0 ]
-    [[ "$output" == *"manifest absent in vendored framework — run: fw upgrade"* ]]
+    [[ "$output" == *"manifest absent in vendored framework — run: cd $proj && .agentic-framework/bin/fw upgrade"* ]]
+    [[ "$output" != *"run: fw upgrade"* ]]          # never the bare fw (T-1257)
     [[ "$output" != *"emit-manifest"* ]]
 }

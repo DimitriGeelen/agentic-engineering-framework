@@ -18,7 +18,10 @@ setup() {
     git -C "$R" config user.email op@example.com
     git -C "$R" config user.name op
     mkdir -p "$R/lib" "$R/.tasks/active" "$R/.context/reviews"
-    cp "$FRAMEWORK_ROOT/lib/human_ac_ticks.py" "$FRAMEWORK_ROOT/lib/comment_strip.py" "$R/lib/"
+    # T-5323: since T-5304 the FAIL lines print through lib/fw_command.py, which every
+    # install ships beside human_ac_ticks.py; the fixture must carry it too.
+    cp "$FRAMEWORK_ROOT/lib/human_ac_ticks.py" "$FRAMEWORK_ROOT/lib/comment_strip.py" \
+       "$FRAMEWORK_ROOT/lib/fw_command.py" "$R/lib/"
     git -C "$R" add -A && git -C "$R" commit -q -m "detector"
     T="$R/.tasks/active/T-9001-fixture.md"
     cat > "$T" <<'EOF'

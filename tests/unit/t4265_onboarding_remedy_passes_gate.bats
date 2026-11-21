@@ -64,9 +64,13 @@ print(json.dumps({'tool_name':'Bash','tool_input':{'command':sys.argv[1]},'cwd':
     hook_write
     [ "$status" -eq 2 ]
     echo "$output" | grep -q "Onboarding tasks incomplete"
-    remedies=$(echo "$output" | grep -E '^  [^ ]*fw (work-on|onboarding) ')
+    # T-5323: since T-5304 remedies print through the builder as
+    # `cd <abs project root> && <fw path> <args>`; the full line is what the agent
+    # pastes, so the full line is what must pass the gate below.
+    remedies=$(grep -E '^  cd [^ ]+ && [^ ]*fw (work-on|onboarding) ' <<< "$output")
     [ -n "$remedies" ]
-    echo "$remedies" | grep -q "onboarding skip"
+    grep -qxF "  cd $ROOT && .agentic-framework/bin/fw onboarding skip" <<< "$remedies"
+    [ "$(grep -c '' <<< "$remedies")" -ge 2 ]
     : > "$ROOT/.context/working/focus.yaml"
     while IFS= read -r cmd; do
         cmd="${cmd#"${cmd%%[![:space:]]*}"}"

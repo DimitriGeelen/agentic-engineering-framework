@@ -27,6 +27,26 @@ teardown() {
     rm -rf "$TMP"
 }
 
+# T-5323: build the hook-enable mutant inside a framework-shaped tree (lib/, .fabric/
+# and its agents/context siblings symlinked to the real ones). The hook sources its
+# libraries relative to its own path; copied to $TMP alone it ran degraded, and since
+# T-5304 a degraded run prints no remedy at all (the remedy goes through
+# _emit_user_command), so both A4 legs would pass or fail for the wrong reason.
+make_mutant() {  # prints the mutant's path
+    local mroot="$TMP/fwtree" entry
+    mkdir -p "$mroot/agents/context"
+    ln -s "$FRAMEWORK_ROOT/lib" "$mroot/lib"
+    ln -s "$FRAMEWORK_ROOT/.fabric" "$mroot/.fabric"
+    for entry in "$FRAMEWORK_ROOT"/agents/context/*; do
+        [ "$entry" = "$GATE" ] && continue
+        ln -s "$entry" "$mroot/agents/context/$(basename "$entry")"
+    done
+    local mutant="$mroot/agents/context/check-active-task.sh"
+    [ ! -e "$mutant" ] || return 1      # never a symlink: sed must not write through
+    sed 's/hook-enable/REDACTED-VERB/g' "$GATE" > "$mutant"
+    echo "$mutant"
+}
+
 # Drive the real hook the way Claude Code does: PreToolUse JSON on stdin.
 run_gate() {  # run_gate <gate-script> <project-root> <file-path>
     echo "{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"$3\"}}" \
@@ -97,9 +117,9 @@ run_gate() {  # run_gate <gate-script> <project-root> <file-path>
 }
 
 @test "A4 — mutation: dropping the hook-enable mention turns the check red" {
-    sed 's/hook-enable/REDACTED-VERB/g' "$GATE" > "$TMP/mutant.sh"
-    if cmp -s "$TMP/mutant.sh" "$GATE"; then false; fi          # the substitution must have landed
-    run run_gate "$TMP/mutant.sh" "$FRAMEWORK_ROOT" "$FRAMEWORK_ROOT/.claude/settings.json"
+    mutant=$(make_mutant)
+    if cmp -s "$mutant" "$GATE"; then false; fi          # the substitution must have landed
+    run run_gate "$mutant" "$FRAMEWORK_ROOT" "$FRAMEWORK_ROOT/.claude/settings.json"
     [[ "$output" != *"hook-enable"* ]]
 }
 
@@ -107,11 +127,14 @@ run_gate() {  # run_gate <gate-script> <project-root> <file-path>
     # Required by L-616. A mutant that failed to run would also print no
     # "hook-enable", which is indistinguishable from a detected mutation. This
     # proves the mutant is alive and only altered where intended.
-    sed 's/hook-enable/REDACTED-VERB/g' "$GATE" > "$TMP/mutant.sh"
-    run run_gate "$TMP/mutant.sh" "$FRAMEWORK_ROOT" "$FRAMEWORK_ROOT/.claude/settings.json"
+    mutant=$(make_mutant)
+    run run_gate "$mutant" "$FRAMEWORK_ROOT" "$FRAMEWORK_ROOT/.claude/settings.json"
     [ "$status" -eq 2 ]
     [[ "$output" == *"BLOCKED"* ]]
     [[ "$output" == *"REDACTED-VERB"* ]]
+    # Alive means it ran with its libraries, not degraded (T-5323).
+    [[ "$output" != *"command not found"* ]]
+    [[ "$output" != *"No such file or directory"* ]]
 }
 
 @test "A3 — an unrelated .claude/ file is still exempt (not swept up)" {

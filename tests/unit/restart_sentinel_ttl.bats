@@ -25,15 +25,20 @@ teardown() {
     [ -n "${ROOT:-}" ] && rm -rf "$ROOT"
 }
 
-# Extract the `if [ "$SOURCE_TAG" = "startup" ]` block plus the TTL line above it.
+# Extract from the TTL line through the end of the `if [ "$SOURCE_TAG" = "startup" ]`
+# block (everything between them — the T-5298 cause lines — comes along).
 extract_gate() {
     python3 - "$HOOK" <<'PY'
 import sys
 lines = open(sys.argv[1]).read().split('\n')
 start = next(n for n, l in enumerate(lines)
              if l.startswith('RESTART_SENTINEL_TTL='))
+# T-5323: T-5298 put the RESTART_BY/RESTART_CAUSE blocks between the TTL line and
+# the gate, so match depth from the startup gate itself, not from the first `if`.
+gate = next(n for n in range(start, len(lines))
+            if lines[n].startswith('if [ "$SOURCE_TAG" = "startup" ]'))
 depth = 0
-for end in range(start, len(lines)):
+for end in range(gate, len(lines)):
     s = lines[end].strip()
     if s.startswith('if ') or s.startswith('if['):
         depth += 1
