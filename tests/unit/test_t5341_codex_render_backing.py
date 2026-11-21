@@ -141,5 +141,24 @@ def test_live_ledger():
     assert res["count"] >= 9
     by_id = {g["id"]: g for g in res["greens"]}
     assert RUNG5 <= set(by_id)
-    assert all("backed_by" in by_id[i] for i in RUNG5), [by_id[i] for i in RUNG5 if "why" in by_id[i]]
-    assert "V-20261121-b5203aa7" in {u["id"] for u in res["unbacked"]}   # T-5344, single seat
+    # Backing for older rows comes from .context/dispatch/ (not committed), so the backed
+    # count is host-dependent and not asserted here; the hermetic tests above pin the logic.
+    nc = {u["id"] for u in res["not_counting"]}
+    assert "V-20261121-b5203aa7" in nc                                   # T-5344, single seat
+    assert "V-20261121-b5203aa7" not in {u["id"] for u in res["unbacked"]}  # reported, not WARNed
+
+
+def test_attached_only_single_seat_is_reported_not_warned(tmp_path, monkeypatch):
+    # T-5341: a vote T-5327 already refuses to count is listed apart, not as unbacked.
+    monkeypatch.setattr(crb.vote_checker, "checkable",
+                        lambda row, render=False: (False, ["AC1: " + crb.vote_checker.ATTACHED_ONLY]))
+    res = _an([_codex(run="run-solo")], tmp_path)
+    assert res["unbacked"] == [] and len(res["not_counting"]) == 1
+    assert "not counted (not checkable, T-5327): 1" in crb.report_lines(res)[-1]
+
+
+def test_other_check_failures_stay_unbacked(tmp_path, monkeypatch):
+    monkeypatch.setattr(crb.vote_checker, "checkable",
+                        lambda row, render=False: (False, ["AC1: rule missing"]))
+    res = _an([_codex(run="run-solo")], tmp_path)
+    assert len(res["unbacked"]) == 1 and res["not_counting"] == []

@@ -136,7 +136,7 @@ def analyse(rows: list[dict], root: Path, registry: dict[str, str] | None = None
     registry = wdirs(root) if registry is None else registry
     greens = [r for r in rows if seat_of(r) == CODEX and r.get("outcome") == "green"
               and r.get("criterion_class") == RENDER]
-    out = {"count": len(greens), "backed": 0, "unbacked": [], "greens": []}
+    out = {"count": len(greens), "backed": 0, "unbacked": [], "not_counting": [], "greens": []}
     for g in greens:
         peers = [r for r in rows if r is not g and r.get("run_id") and r.get("run_id") == g.get("run_id")
                  and str(r.get("ac")) == str(g.get("ac")) and seat_of(r) not in ("", CODEX)]
@@ -158,11 +158,15 @@ def analyse(rows: list[dict], root: Path, registry: dict[str, str] | None = None
             entry["backed_by"] = backer
         else:
             entry["why"] = "; ".join(whys) if whys else "no peer seat in the run"
-            ok, _ = vote_checker.checkable(g, render=True)
-            if not ok:
+            ok, reasons = vote_checker.checkable(g, render=True)
+            if not ok and any(vote_checker.ATTACHED_ONLY in r for r in reasons):
+                # T-5341: a vote T-5327 already refuses to count closes nothing, so it is
+                # reported, not WARNed — a WARN that can never clear teaches people to skip it.
                 entry["why"] += " (the vote is not checkable and does not count, T-5327)"
                 entry["counts"] = False
-            out["unbacked"].append(entry)
+                out["not_counting"].append(entry)
+            else:
+                out["unbacked"].append(entry)
         out["greens"].append(entry)
     return out
 
@@ -170,7 +174,10 @@ def analyse(rows: list[dict], root: Path, registry: dict[str, str] | None = None
 def report_lines(res: dict) -> list[str]:
     lines = [f"UNBACKED {u['task']} AC{u['ac']} ({u['id']}, {u['run_id']}): {u['why']}"
              for u in res["unbacked"]]
-    lines.append(f"codex render greens: {res['count']}, backed by a viewing peer: {res['backed']}")
+    tail = f"codex render greens: {res['count']}, backed by a viewing peer: {res['backed']}"
+    if res.get("not_counting"):
+        tail += f", not counted (not checkable, T-5327): {len(res['not_counting'])}"
+    lines.append(tail)
     return lines
 
 

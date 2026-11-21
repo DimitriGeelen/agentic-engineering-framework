@@ -3365,7 +3365,7 @@ if [ -f "$FRAMEWORK_ROOT/lib/codex_render_backing.py" ]; then
     _crb_out=$_PF_OUT
     _crb_rc=$_PF_RC
     if [ "$_crb_rc" -eq 0 ]; then
-        pass "Codex render greens: $(echo "$_crb_out" | tail -1 | sed 's/^codex render greens: //'), all backed by a viewing peer (T-5341)"
+        pass "Codex render greens: $(echo "$_crb_out" | tail -1 | sed 's/^codex render greens: //') — every counted one backed by a viewing peer (T-5341)"
     elif [ "$_crb_rc" -eq 1 ]; then
         _crb_n=$(echo "$_crb_out" | grep -c '^UNBACKED' || true)
         warn "Codex render greens: ${_crb_n} not backed by a viewing peer — $(echo "$_crb_out" | tail -1) (T-5341)" \
