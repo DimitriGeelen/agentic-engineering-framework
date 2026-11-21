@@ -401,6 +401,16 @@ python3 lib/risk_register.py > /tmp/.t5316c 2>&1 && grep -q "0 error(s), 0 warni
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+**Recommendation:** GO — accept the eight risks as they stand until their mitigation tasks land.
+
+**Rationale:** All eight are medium (6 to 9), none high (15+). Each has a mitigation task already filed in the standing arc `risk`. None is a reason to undo the change: risk 3 of T-5309 (codex counted as having looked, 9) is weakest on single-seat reviews and is the one worth doing first (T-5327); T-5309 risk 4 (same-name image collision) has a fix in progress (T-5333, horizon now). The matrices went through six review rounds by two vendors (claude-code and codex) before both turned green, and every correction made a score more honest, never lower without a control behind it.
+
+**Evidence:**
+- docs/reports/T-5309-risk-matrix.md and docs/reports/T-5300-risk-matrix.md: `python3 lib/risk_register.py --matrix` prints 0 error(s) on both; the acceptance lists match the eight risks in the operator criterion.
+- Reviewer verdicts: AC#1 and AC#2 green (dispatch judge-t-5316-r3-22da5927c143), after red/amber rounds whose guidance is in .context/reviews/verdicts.jsonl.
+- Register: R-038 to R-047 in .context/project/concerns.yaml; `python3 lib/risk_register.py` reports 15 risks, 0 errors, 0 warnings; mitigation tasks T-5325 to T-5333 carry `arc:risk`.
+- The practice found two real bugs on its first run: G-137 (fixed in T-5324; follow-up T-5333) and the matrix-check gap T-5334.
+- Review page: http://192.168.10.107:3000/review/T-5316
 
 ## Decisions
 
