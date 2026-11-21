@@ -27,8 +27,8 @@
 | # | Risk | Domain | How to detect the door is open | How to detect it happening | Impact | Likelihood | Exists anyway (baseline)? | Introduced by the change? | Key mitigation |
 |---|------|--------|--------------------------------|----------------------------|-------:|-----------:|---------------------------|---------------------------|----------------|
 | 1 | Screenshot content sent to an outside provider (OpenAI) | data leaving | `attached-images.json` in a codex dispatch dir lists files; review-backends.yaml codex `vision: true` | a cited screenshot shows a secret, a token or internal addresses (for example a `/config` or settings page) | 4 | 2 | yes (claude-code and antigravity seats already receive the same screenshots, so Anthropic and Google see them) | PARTLY NEW (one more provider receives every cited screenshot, pushed at launch rather than on the seat's choice) | only files under `.context/working/judge-evidence/` and `.context/visual/` are copied (lib/review_seat_evidence.py AREAS); no redaction of what a page shows |
-| 2 | Reviewer seat prompt-injected by text inside a screenshot | review integrity | a rendered page shows text an outsider wrote (task names from issue intake, peer messages) | a seat's verdict quotes or obeys instructions that appear only in an image | 3 | 2 | yes (the same text reaches codex as text in the export, and the claude seat already views the images) | no (same text, new medium; the seat is sandboxed: network off, writes only to the disposable export) | three-vendor panel at rung 5; structured verdicts checked by lib/vote_checker.py; seat sandbox |
-| 3 | An attached image is counted as viewed although the model did not examine it | review integrity | vote_checker `seat_viewed_how: attached at launch (T-5309)` on a codex vote | a codex green on a render criterion that the screenshot refutes (the G-136 pattern, now counted) | 3 | 3 | no (in the baseline a codex render vote did not count at all) | NEW (attachment is taken as proof of viewing; the panel's third seat was the operator or a paid seat) | rung-5 needs a three-vendor unanimous green, so a codex error alone cannot close a criterion; a codex red blocks (fail-safe direction) |
+| 2 | Reviewer seat prompt-injected by text inside a screenshot | review integrity | a rendered page shows text an outsider wrote (task names from issue intake, peer messages) | a seat's verdict quotes or obeys instructions that appear only in an image | 3 | 2 | yes (the same text reaches codex as text in the export, and the claude seat already views the images) | PARTLY NEW (codex now receives image-borne instructions, and its render votes now count where in the baseline it could not sit render criteria at all; text exposure and the seat sandbox do not remove that added review-integrity route) | at rung 5 a red from any seat blocks and a close needs at least two green vendors; structured verdicts checked by lib/vote_checker.py; seat sandbox (network off, writes only to the disposable export). No reduction for single-seat runs |
+| 3 | An attached image is counted as viewed although the model did not examine it | review integrity | vote_checker `seat_viewed_how: attached at launch (T-5309)` on a codex vote | a codex green on a render criterion that the screenshot refutes (the G-136 pattern, now counted) | 3 | 3 | no (in the baseline a codex render vote did not count at all) | NEW (attachment is taken as proof of viewing; the panel's third seat was the operator or a paid seat) | at rung 5 a codex red blocks, and a close needs at least one other vendor's green as well (two when the panel is whole); no reduction for a single-seat run (rung 1/3), where codex can be the only seat |
 | 4 | A cited image that was NOT attached is counted as viewed (cap of 20, or a stem match on the name) | review integrity | `attached-images.json` has a non-empty `not_attached` list, or two cited images share a stem prefix (`x.png` and `x-foo.png`) | a vote_checker report marks an image viewed that is in `not_attached` | 3 | 2 | yes (the T-5294 checker, a57af26c1, already matched logged views by stem, so a stem collision was already counted against a logged view) | PARTLY NEW (attached names now enter `_stem_match` in lib/vote_checker.py `image_viewed`, so a collision counts with no view at all) | none yet: match attached images by content hash only, and treat over-cap images as not viewed |
 | 5 | A forged `attached-images.json` makes a vote count | review integrity | the manifest is a plain file in the dispatch dir, readable and writable by the same user | a manifest whose sha256 list does not match the files in the export | 3 | 1 | yes (same-user forgery of the review ledgers is the T-3581 residual) | no (the codex sandbox cannot write the dispatch dir; only a same-user process can, as for every other ledger) | codex sandbox `workspace-write` limited to the export and its temp dir; `fw audit` provenance checks |
 
@@ -52,23 +52,29 @@ Actors (fixed list): `own-agent-unintentional`, `human-unintentional`, `outsider
 |---|-------|-----|--:|--:|------:|-----------------|----------------:|
 | 2.1 | own-agent-unintentional | an agent's test fixture or page text reads like an instruction and sways a seat's vote | 1 | 3 | 3 | | |
 | 2.2 | human-unintentional | the operator's own task text shown on a page is misread as an instruction | 1 | 3 | 3 | | |
-| 2.3 | outsider-intentional | text from GitHub issue intake or a peer message, rendered on a Watchtower page, tells the seat to vote green; it now reaches codex as pixels | 2 | 3 | 6 | 1 × 3 | 3 |
+| 2.3 | outsider-intentional | text from GitHub issue intake or a peer message, rendered on a Watchtower page, tells the seat to vote green; it now reaches codex as pixels. Mitigated score assumes the worst applicable mode, a single-seat run (rung 1/3) with codex as the only seat | 2 | 3 | 6 | 2 × 3 | 6 |
 | 2.4 | provider-host | a provider cannot plant text in our screenshots | 1 | 1 | 1 | | |
 | 2.5 | intruder | an intruder with write access can edit the task or ledger directly; injecting through an image adds nothing | 1 | 3 | 3 | | |
 
-Mitigation for 2.3: a rung-5 render criterion needs unanimous green from three vendors' seats, each verdict structured and checked; one seat swayed cannot close it, and swaying all three with one image is rare.
+Review modes, from the code (lib/review_policy.py, lib/reviewer/judge_cli.py `_plan_seats`, lib/verdict_ledger.py `_panel_state`):
+
+- **Single seat (rung 1 or 3, low or medium impact):** one seat closes the criterion on its own green. On an image run the seat is the first vision kind in registry order that can be dispatched, so codex is the only seat whenever claude is excluded (reassigned after a not-evaluated vote, model retired, or not dispatchable on the host). No panel control applies.
+- **Whole panel (rung 5):** three seats (claude-code, codex, antigravity; opencode is left off image runs as blind), three green votes from three vendors; any amber or red blocks.
+- **Panel closing on two vendors (rung 5):** when one seat is not-evaluated or not-checkable (vote_checker), or unavailable (GREEN-DEGRADED, T-4490), the panel closes on two green seats of distinct vendors (`MIN_EVALUATING_SEATS = 2`). Any red still blocks.
+
+Mitigation for 2.3: scored in the worst applicable mode, the single seat, so the mitigated value stays 2 × 3 = 6. In a panel, a wrong close needs at least two vendors swayed by the same image, and a red from any seat blocks: 1 × 3 = 3 for a whole panel or a two-vendor close. The structured, checked verdict and the sandbox do not stop a swayed green.
 
 ### Risk 3 — An attached image is counted as viewed although the model did not examine it
 
 | # | Actor | How | L | I | Score | Mitigated L × I | Mitigated score |
 |---|-------|-----|--:|--:|------:|-----------------|----------------:|
-| 3.1 | own-agent-unintentional | the codex model has the image in its prompt but answers from the brief text, or misreads a downscaled image, and votes green on a broken render; the checker counts it because it was attached | 3 | 3 | 9 | 2 × 3 | 6 |
+| 3.1 | own-agent-unintentional | the codex model has the image in its prompt but answers from the brief text, or misreads a downscaled image, and votes green on a broken render; the checker counts it because it was attached. Mitigated score assumes the worst applicable mode, a single-seat run (rung 1/3) with codex as the only seat | 3 | 3 | 9 | 3 × 3 | 9 |
 | 3.2 | human-unintentional | the human does not take part in a seat's vote | 1 | 1 | 1 | | |
 | 3.3 | outsider-intentional | an outsider cannot steer whether codex reads the image (beyond risk 2) | 1 | 1 | 1 | | |
-| 3.4 | provider-host | OpenAI changes how `-i` images are passed or downscaled, silently, and the model sees less than the file | 2 | 3 | 6 | 1 × 3 | 3 |
+| 3.4 | provider-host | OpenAI changes how `-i` images are passed or downscaled, silently, and the model sees less than the file. Mitigated score assumes the worst applicable mode, a single-seat run (rung 1/3) with codex as the only seat | 2 | 3 | 6 | 2 × 3 | 6 |
 | 3.5 | intruder | no added path beyond what an intruder can already write to the ledger | 1 | 1 | 1 | | |
 
-Mitigation for 3.1 and 3.4: a wrong close needs the other two vendors' seats to be wrong green on the same criterion as well; a codex red keeps the criterion open. It is still likely enough to stay at 6 for 3.1: the panel this replaces had the operator or a paid seat as the third vote, and G-136 showed codex asserting what it had not seen.
+Mitigation for 3.1 and 3.4, scored in the worst applicable mode (the review modes are listed under risk 2): in a single-seat run codex's green closes the criterion alone, so nothing reduces either score (3.1 stays 3 × 3 = 9, 3.4 stays 2 × 3 = 6). In a panel a codex red keeps the criterion open, and a wrong codex green closes only with another vendor's wrong green on the same criterion: one other vendor when the panel closes on two (a seat not-evaluated, not-checkable or unavailable), two when it is whole. Panel residuals: 3.1 is 2 × 3 = 6 for a two-vendor close (G-136 showed codex asserting what it had not seen, and the panel this replaces had the operator or a paid seat as the third vote) and 1 × 3 = 3 for a whole panel; 3.4 is 1 × 3 = 3 in either panel mode. The panel lowers the chance that a wrong result closes; it does not lower the impact of one, which stays moderate (3).
 
 ### Risk 4 — A cited image that was NOT attached is counted as viewed (cap of 20, or a stem match)
 
@@ -94,15 +100,24 @@ No mitigation exists yet: the content-hash match is exact, but the stem match ru
 
 ## Net
 
-**Adds:** one more outside provider (OpenAI) receives every cited screenshot, pushed at launch (risk 1, PARTLY NEW); the checker now treats "attached" as "viewed" for codex, which turns codex render votes back into countable votes (risk 3, NEW), and its stem match, already in the T-5294 checker for logged views, now also runs on attached names, so it can count an unattached image as viewed (risk 4, PARTLY NEW; fix T-5324).
+**Adds:** one more outside provider (OpenAI) receives every cited screenshot, pushed at launch (risk 1, PARTLY NEW); codex is now exposed to instructions inside images, and its render votes now count where in the baseline it could not sit render criteria (risk 2, PARTLY NEW); the checker now treats "attached" as "viewed" for codex, which turns codex render votes back into countable votes (risk 3, NEW), and its stem match, already in the T-5294 checker for logged views, now also runs on attached names, so it can count an unattached image as viewed (risk 4, PARTLY NEW; fix T-5324).
 
 **Reduces:** against the state before T-5289, it removes the worst case (codex votes counted on images it never opened, G-136): now every counted codex render vote had the pixels in its prompt. Against the T-5289 baseline it removes the operator from rung-5 render checks and the need for a paid OpenRouter seat, which is the goal.
 
-**Does not change:** prompt injection through rendered text (risk 2) and same-user forgery of run records (risk 5) exist anyway.
+**Does not change:** same-user forgery of run records (risk 5) exists anyway. Prompt injection through rendered text (risk 2) existed for the other seats; what is new is the codex route.
+
+**Review mode assumed:** mitigated scores are for the worst applicable mode, a single-seat run (rung 1 or 3) where codex can be the only seat; the rung-5 panel lowers likelihood only (see risk 2 and risk 3).
 
 **Controls it needs:** (a) match attached images by content hash only, and treat any image in `not_attached` as not viewed (risk 4); (b) a check before attachment that a cited screenshot is not of a page that can show secrets, or a redaction step (risk 1); (c) a periodic spot-check of codex render greens against the images, so attachment-as-proof is measured rather than assumed (risk 3).
 
-**Needs operator acceptance:** risk 1 (screenshot content sent to OpenAI, 8, no mitigation in place), risk 3 (attached counted as viewed, 9 → 6) and risk 4 (unattached image counted as viewed, 6, no mitigation yet). Risk 4 drops off the list once control (a) ships.
+**Needs operator acceptance** (from `lib/risk_register.py --matrix`):
+
+- risk 1 — Screenshot content sent to an outside provider (OpenAI): PARTLY NEW and still 8 after mitigation
+- risk 2 — Reviewer seat prompt-injected by text inside a screenshot: PARTLY NEW and still 6 after mitigation
+- risk 3 — An attached image is counted as viewed although the model did not examine it: NEW and still 9 after mitigation
+- risk 4 — A cited image that was NOT attached is counted as viewed (cap of 20, or a stem match on the name): PARTLY NEW and still 6 after mitigation
+
+Risk 4 drops off the list once control (a) ships. Risks 2 and 3 are scored for a single-seat run; a rung-5 panel lowers them to 3 (risk 2) and 6 (risk 3).
 
 ## Register entries to file
 
@@ -139,7 +154,7 @@ Risks with any actor at 6 or more (unmitigated): 1, 2, 3, 4. The parent files th
 - id: R-NEW-2
   type: risk
   title: "Review seat prompt-injected by text inside a screenshot"
-  description: "Outsider text (issue intake, peer messages) rendered on a Watchtower page reaches review seats as pixels and may sway a render vote. The same text reaches seats as text anyway; codex now also gets it as images."
+  description: "Outsider text (issue intake, peer messages) rendered on a Watchtower page reaches review seats as pixels and may sway a render vote. Image-borne injection existed for the other seats; T-5309 exposes codex to it and makes codex render votes count, where in the baseline codex could not sit render criteria. In a single-seat run (rung 1/3) a swayed codex green closes the criterion alone."
   status: watching
   likelihood: 2
   impact: 3
@@ -150,15 +165,16 @@ Risks with any actor at 6 or more (unmitigated): 1, 2, 3, 4. The parent files th
     how: "text rendered on a page tells the seat to vote green"
     likelihood: 2
     impact: 3
-    mitigated_likelihood: 1
+    mitigated_likelihood: 2   # worst mode: single seat; panel residual 1 x 3
     mitigated_impact: 3
-  exists_anyway: true         # not introduced by T-5309 (same text reaches seats as text)
+  introduced_by: T-5309       # PARTLY NEW: the codex route
+  exists_anyway: true         # image-borne injection already reached the other seats
   mitigation_task: T-YYYY
   created: 2026-11-21
 - id: R-NEW-3
   type: risk
   title: "Attached image counted as viewed although codex did not examine it"
-  description: "lib/vote_checker.py treats an image attached at launch as viewed. Codex can still answer from the text (the G-136 pattern) and its green now counts on rung-5 render criteria."
+  description: "lib/vote_checker.py treats an image attached at launch as viewed. Codex can still answer from the text (the G-136 pattern) and its green now counts on render criteria: alone in a single-seat run (rung 1/3), with one other vendor in a rung-5 panel closing on two."
   status: watching
   likelihood: 3
   impact: 3
@@ -169,14 +185,14 @@ Risks with any actor at 6 or more (unmitigated): 1, 2, 3, 4. The parent files th
     how: "codex has the image in its prompt but votes green on a broken render without examining it"
     likelihood: 3
     impact: 3
-    mitigated_likelihood: 2
+    mitigated_likelihood: 3   # worst mode: single seat; panel residual 2 x 3 (two-vendor close)
     mitigated_impact: 3
   - actor: provider-host
     how: "provider silently downscales or drops -i images"
     likelihood: 2
     impact: 3
-    mitigated_likelihood: 2
-    mitigated_impact: 2
+    mitigated_likelihood: 2   # worst mode: single seat; panel residual 1 x 3
+    mitigated_impact: 3
   introduced_by: T-5309
   exists_anyway: false
   mitigation_task: T-YYYY
