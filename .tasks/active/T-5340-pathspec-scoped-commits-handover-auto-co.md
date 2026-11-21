@@ -12,10 +12,10 @@ description: >
   the task file in the pathspec when the caller is the handover; keep T-3090's rule
   that a scoped caller's path set is never silently widened.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-3090, T-3466]
@@ -47,7 +47,7 @@ origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "448c2b31"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T15:29:03Z
-last_update: '2026-11-21T15:30:57Z'
+last_update: 2026-11-21T15:50:05Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,20 +93,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 055 report (msgs 448c2b31, 989cb3f0, their T-759): every handover leaves the handover task file modified. Confirmed in AEF (T-4648 dirty after the latest handover).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** agents/handover/handover.sh (~1807) commits with a pathspec (T-3090); for pathspec-scoped commits agents/git/lib/commit.sh (~222-227) bumps the task's `last_update` AFTER the commit, so the bump is never committed. In 055 this fails a deploy `--check` in flight ("tree changed") and costs a full e2e rerun.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** The handover's auto-commit leaves no modified task file behind, without widening any scoped caller's path set (T-3090). Chosen fix: the handover caller asks commit.sh to skip the post-commit bump (the handover file carries its own timestamp); other pathspec callers keep today's behaviour.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** After `fw handover --commit` (and the pre-compact handover), `git status --short .tasks/` shows nothing new for the handover task.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] commit.sh honours an explicit opt-out (env var, documented) that skips the post-commit timestamp bump for a pathspec-scoped commit; handover.sh sets it for its auto-commit only
+- [ ] A bats test: a pathspec commit through the handover path leaves the task file clean; a pathspec commit without the opt-out still bumps (unchanged behaviour)
+- [ ] Existing commit/handover tests stay green; vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -293,6 +294,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/unit/t5340_handover_no_dirty_task.bats > /tmp/.t5340 2>&1 && ! grep -q "^not ok" /tmp/.t5340
+test "$(grep -c '# skip' /tmp/.t5340)" -eq 0
+bin/fw vendor self --check --task T-5340
 
 ## RCA
 
@@ -390,3 +394,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5340-pathspec-scoped-commits-handover-auto-co.md
 - **Context:** Initial task creation
+
+### 2026-11-21T15:50:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
