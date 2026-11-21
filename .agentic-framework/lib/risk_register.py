@@ -24,9 +24,14 @@ is present is checked: ranges, actor names, score arithmetic, band names.
 
 Errors make the register invalid (`fw audit` FAILs). Warnings carry the rule
 from the matrix: an open risk assessed with the new fields whose score — or any
-actor's unmitigated score — is 6 or more needs a `mitigation_task`.
+actor's unmitigated score — is 6 or more needs a `mitigation_task`, and (T-5314)
+any `mitigation_task` must name a task in .tasks/active or .tasks/completed
+whose arc is the standing arc 'risk' (arc_id `risk` or its numeric id, read
+through lib/arc_membership.py).
 
-CLI:  python3 lib/risk_register.py [--path FILE] [--json]
+CLI:  python3 lib/risk_register.py [--path FILE] [--root DIR] [--json]
+      --root is the project whose .tasks/ resolves mitigation_task; default:
+      derived from a .context/project/concerns.yaml path, else PROJECT_ROOT/cwd.
 Exit: 0 valid (warnings allowed), 1 errors, 2 register unreadable.
 """
 
@@ -51,6 +56,11 @@ MITIGATION_THRESHOLD = 6
 CLOSED_STATUSES = {"resolved", "closed", "mitigated", "accepted", "retired"}
 NEW_FIELDS = ("actors", "introduced_by", "exists_anyway", "mitigation_task")
 _TASK_RE = re.compile(r"^T-\d+$")
+RISK_ARC = "risk"
+RISK_ARC_NUMERIC = "arc-028"
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from arc_membership import arc_identities, task_arc_membership  # noqa: E402
 
 
 def band(score: int) -> Optional[str]:
@@ -92,8 +102,40 @@ def _check_pair(where: str, obj: Dict[str, Any], lk: str, ik: str,
     return product
 
 
-def validate_risk(entry: Dict[str, Any]) -> Tuple[List[str], List[str]]:
-    """Return (errors, warnings) for one `type: risk` entry."""
+def _find_task_file(project_root: str, tid: str) -> Optional[str]:
+    """Path of task `tid` under .tasks/{active,completed}/, or None."""
+    for sub in ("active", "completed"):
+        d = os.path.join(project_root, ".tasks", sub)
+        if not os.path.isdir(d):
+            continue
+        for name in sorted(os.listdir(d)):
+            if name == f"{tid}.md" or (name.startswith(f"{tid}-") and name.endswith(".md")):
+                return os.path.join(d, name)
+    return None
+
+
+def check_mitigation_task(rid: str, tid: str, project_root: str) -> Optional[str]:
+    """T-5314: warning text when `tid` is missing or outside the standing arc, else None."""
+    path = _find_task_file(project_root, tid)
+    if path is None:
+        return (f"{rid}: mitigation_task {tid} not found in .tasks/active or .tasks/completed — "
+                "file it in the standing arc 'risk' (arc_id: risk) or correct the id")
+    membership = task_arc_membership(path)
+    arc_id, slugs = membership if membership is not None else (None, [])
+    slug, numeric = arc_identities(project_root, RISK_ARC)
+    accepted = {RISK_ARC, RISK_ARC_NUMERIC, (slug or "").lower(), (numeric or "").lower()} - {""}
+    if (arc_id or "").lower() in accepted or any(t.lower() in accepted for t in slugs):
+        return None
+    return (f"{rid}: mitigation_task {tid} is not in the standing arc 'risk' "
+            f"(arc_id: {arc_id or 'none'}) — set arc_id: risk on {tid}")
+
+
+def validate_risk(entry: Dict[str, Any],
+                  project_root: Optional[str] = None) -> Tuple[List[str], List[str]]:
+    """Return (errors, warnings) for one `type: risk` entry.
+
+    With `project_root`, a well-formed `mitigation_task` is also resolved
+    against that project's .tasks/ and its arc checked (T-5314)."""
     rid = entry.get("id", "(no id)")
     errors: List[str] = []
     warnings: List[str] = []
@@ -138,10 +180,16 @@ def validate_risk(entry: Dict[str, Any]) -> Tuple[List[str], List[str]]:
         warnings.append(
             f"{rid}: score {top} >= {MITIGATION_THRESHOLD} and no mitigation_task — "
             "file one in the standing arc 'risk' (arc_id: risk)")
+    mt = entry.get("mitigation_task")
+    if project_root and isinstance(mt, str) and _TASK_RE.match(mt):
+        w = check_mitigation_task(rid, mt, project_root)
+        if w:
+            warnings.append(w)
     return errors, warnings
 
 
-def validate_register(data: Any) -> Tuple[List[str], List[str], int]:
+def validate_register(data: Any,
+                      project_root: Optional[str] = None) -> Tuple[List[str], List[str], int]:
     """Validate every risk entry. Return (errors, warnings, risk_count)."""
     if not isinstance(data, dict):
         return ["register is not a mapping"], [], 0
@@ -153,7 +201,7 @@ def validate_register(data: Any) -> Tuple[List[str], List[str], int]:
         if not isinstance(entry, dict) or entry.get("type") != "risk":
             continue
         count += 1
-        e, w = validate_risk(entry)
+        e, w = validate_risk(entry, project_root)
         errors.extend(e)
         warnings.extend(w)
     return errors, warnings, count
@@ -164,9 +212,20 @@ def _default_path() -> str:
     return os.path.join(root, ".context", "project", "concerns.yaml")
 
 
+def _root_for(path: str) -> str:
+    """Project root for a register path: three levels up from
+    .context/project/concerns.yaml, else PROJECT_ROOT or cwd."""
+    parts = os.path.abspath(path).split(os.sep)
+    if len(parts) >= 3 and parts[-3:-1] == [".context", "project"]:
+        return os.sep.join(parts[:-3]) or os.sep
+    return os.environ.get("PROJECT_ROOT") or os.getcwd()
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     ap = argparse.ArgumentParser(description="Validate risk fields in the concerns register (T-5313)")
     ap.add_argument("--path", default=None)
+    ap.add_argument("--root", default=None,
+                    help="project root whose .tasks/ resolves mitigation_task")
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
     path = args.path or _default_path()
@@ -180,7 +239,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     except Exception as exc:  # unreadable or unparseable
         print(f"cannot read {path}: {exc}", file=sys.stderr)
         return 2
-    errors, warnings, count = validate_register(data)
+    errors, warnings, count = validate_register(data, args.root or _root_for(path))
     if args.json:
         print(json.dumps({"risks": count, "errors": errors, "warnings": warnings}))
     else:

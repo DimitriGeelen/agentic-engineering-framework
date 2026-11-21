@@ -179,6 +179,23 @@ def _membership_of(md: Path) -> tuple[str, str | None, list[str]] | None:
     return tid, aid, slugs
 
 
+def task_arc_membership(task_file: Path | str) -> tuple[str | None, list[str]] | None:
+    """T-5314: (arc_id or None, legacy arc slugs) for ONE task file, or None.
+
+    Public single-task form of the scan's per-file reader, for callers that
+    already know which task they need (lib/risk_register.py checks that a
+    risk's mitigation_task sits in the standing arc). None means the file is
+    missing or has no `id: T-NNNN` frontmatter line.
+    """
+    path = Path(task_file)
+    if not path.is_file():
+        return None
+    entry = _membership_of(path)
+    if entry is None:
+        return None
+    return entry[1], entry[2]
+
+
 def scan_tasks_by_arc_membership(
     project_root: Path | str,
     file_memo: dict | None = None,

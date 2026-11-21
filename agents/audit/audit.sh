@@ -6716,7 +6716,7 @@ PYEOF
     _rr_py="$FRAMEWORK_ROOT/lib/risk_register.py"
     if [ -f "$_rr_py" ]; then
         _rr_rc=0
-        _rr_out=$(python3 "$_rr_py" --path "$GAPS_FILE" 2>&1) || _rr_rc=$?
+        _rr_out=$(python3 "$_rr_py" --path "$GAPS_FILE" --root "$PROJECT_ROOT" 2>&1) || _rr_rc=$?
         _rr_errs=$(grep '^ERROR ' <<<"$_rr_out" || true)
         _rr_warns=$(grep '^WARN  ' <<<"$_rr_out" || true)
         _rr_sum=$(tail -1 <<<"$_rr_out")
@@ -6727,9 +6727,12 @@ PYEOF
                  "Fix the entries listed above (python3 lib/risk_register.py; template .tasks/templates/risk-matrix.md)"
         elif [ -n "$_rr_warns" ]; then
             echo "$_rr_warns" | sed 's/^/    /'
-            warn "Risk register: assessed risk(s) at score >= 6 without a mitigation task" \
-                 "The risk-matrix rule needs a mitigation task in the standing arc 'risk' for these" \
-                 "File the task with arc_id: risk and set mitigation_task: on the risk entry"
+            # T-5314: one block, three kinds of WARN line from risk_register.py —
+            # score >= 6 with no mitigation_task; mitigation_task not found;
+            # mitigation_task not in the standing arc 'risk'.
+            warn "Risk register: mitigation rule not met (see lines above)" \
+                 "Each risk at score >= 6 needs a mitigation_task, and that task must exist in the standing arc 'risk'" \
+                 "No mitigation_task: file one with arc_id: risk and set mitigation_task: on the risk. Not found: correct the id or file the task. Not in the arc: set arc_id: risk on that task"
         else
             pass "Risk register: $_rr_sum"
         fi
