@@ -7,10 +7,10 @@ description: >
   T-4250, #68); a lint stops new instances. Baseline the remaining ones and shrink
   it as slices 2, 3, 5 land. Depends on slice 1.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T13:49:54Z
-last_update: '2026-11-20T14:01:19Z'
+last_update: 2026-11-21T12:12:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,10 +99,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A detector finds printed hand-written `bin/fw <verb>` and `bin/watchtower.sh` commands in emitted text (shell echo/printf strings, Python print/f-string/message literals, Jinja templates) under bin/, lib/, agents/, web/, skipping comments, the builder implementations, internal exec/dispatch code that runs a path rather than printing it, and tests/docs
-- [ ] A committed baseline (file -> count) records today's instances; the lint fails when a file's count rises or a new file appears, and on a fall tells the author to regenerate the baseline (never auto-grows)
-- [ ] The lint has a control test: an injected new printed `bin/fw doctor` line turns it red, and the clean tree is green
-- [ ] The lint lives in tests/lint/ (run by the audit invariant suite, `bats tests/lint/`), is green there with no skips, and the vendored copy is synced
+- [x] A detector finds printed hand-written `bin/fw <verb>` and `bin/watchtower.sh` commands in emitted text (shell echo/printf strings, Python print/f-string/message literals, Jinja templates) under bin/, lib/, agents/, web/, skipping comments, the builder implementations, internal exec/dispatch code that runs a path rather than printing it, and tests/docs
+- [x] A committed baseline (file -> count) records today's instances; the lint fails when a file's count rises or a new file appears, and on a fall tells the author to regenerate the baseline (never auto-grows)
+- [x] The lint has a control test: an injected new printed `bin/fw doctor` line turns it red, and the clean tree is green
+- [x] The lint lives in tests/lint/ (run by the audit invariant suite, `bats tests/lint/`), is green there with no skips, and the vendored copy is synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -389,3 +389,7 @@ bin/fw vendor self --check --task T-5306
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5306-printed-fw-commands-slice-4-lint-fails-o.md
 - **Context:** Initial task creation
+
+### 2026-11-21T12:12:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
