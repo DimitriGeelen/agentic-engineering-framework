@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5353: Vote checker: page-naming non-render criteria still accept attached-only image proof (T-5327 rule reaches render class only)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T23:33:54Z
+# ============================================================================
+
+task_id: T-5353
+task_name: "Vote checker: page-naming non-render criteria still accept attached-only image proof (T-5327 rule reaches render class only)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-21T23:00:57Z
+completed: 2026-11-21T23:33:28Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-22T00:14:58+01:00
+last_commit: 2026-11-22T00:33:26+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope — one 'needs a proven view' predicate for judge, ledger and vote checker; diagnose claude-code missing views. one 'needs a proven view' predicate (lib/evidence_need.py) for judge, ledger and vote checker; brief keeps copied screenshot names. criteria, RCA (one view predicate; claude-code renamed its copies; T-5350 verdict would not count now)
+
+# Key outcomes
+outcomes:
+  - '`verdict_ledger` and `vote_checker` decide "needs a proven view" with the same predicate as `judge_cli.needs_screenshots` (imported or moved to one shared place, never copied). A page-naming non-render criterion is then treated like a render one, in `_run_fault` (captures) and in `checkable` (attached-only in a non-panel run is not checkable).'
+  - 'Unit tests:'
+  - 'The claude-code seat''s missing logged views are diagnosed from a real run record (e.g. `.context/dispatch/judge-t-5350-r3-8122f0683a86/`). The finding (prompt not telling it to Read, tool not available, or the view not logged) is written in the RCA, and a follow-up task is filed if it needs a separate fix.'
+  - 'Re-checking the ledger shows how T-5350''s closing verdict grades under the new rule. It is reported here, not rewritten; ledger rows are append-only.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/evidence_need.py'
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.agentic-framework/lib/vote_checker.py'
+  - '.fabric/components/lib-evidence_need.yaml'
+  - '.fabric/components/tests-unit-test_t5353_page_criterion_view_proof.yaml'
+  - '.tasks/active/T-5353-vote-checker-page-naming-non-render-crit.md'
+  - 'lib/evidence_need.py'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/verdict_ledger.py'
+  - 'lib/vote_checker.py'
+  - 'tests/unit/test_t5327_attached_only.py'
+  - 'tests/unit/test_t5353_page_criterion_view_proof.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-22T00:14:58'
+    action: 'T-5353: scope — one ''needs a proven view'' predicate for judge, ledger and vote checker; diagnose claude-code missing views'
+  - time: '2026-11-22T00:30:47'
+    action: 'T-5353: one ''needs a proven view'' predicate (lib/evidence_need.py) for judge, ledger and vote checker; brief keeps copied screenshot names'
+  - time: '2026-11-22T00:33:26'
+    action: 'T-5353: criteria, RCA (one view predicate; claude-code renamed its copies; T-5350 verdict would not count now)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 32 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 32
+  commits: 4
+  files_changed: 16
+  lines_added: 597
+  lines_removed: 110
+  footprint_refreshed_at: '2026-11-21T23:34:12Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5353-vote-checker-page-naming-non-render-crit.md
+generated_by: context-agent-hybrid
