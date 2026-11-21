@@ -21,6 +21,11 @@
 #
 # Exit codes: new 0 / 2 usage; watch = the script's exit code, 124 on timeout.
 
+# T-5323: the printed-command builder (T-5304). bin/fw has it loaded already, but the
+# session-start hook sources this file alone in a fresh `bash -c`, where an absent
+# builder printed "re-arm:" with no command after it.
+declare -F _emit_user_command >/dev/null 2>&1 || source "$(dirname "${BASH_SOURCE[0]}")/fw-command.sh"
+
 _runme_root() { echo "${PROJECT_ROOT:-$(pwd)}/.context/runme"; }
 
 # T-3767: a leading '-' is never a name — `fw runme watch --help` used to wait
