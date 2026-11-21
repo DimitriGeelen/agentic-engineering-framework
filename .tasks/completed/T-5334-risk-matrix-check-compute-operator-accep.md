@@ -10,12 +10,12 @@ description: >
   when an introduced row stays at 6+ after mitigation (or any row 15+). Keeps the
   T-5310 rule: the decision rests on what a change introduces.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: [arc:risk]
-components: []
+components: [lib/risk_register.py, lib/upgrade_template_shipped.py, tests/unit/test_t5334_matrix_introduced.py]
 related_tasks: [T-5315, T-5316]
 origin: {kind: "agent", source: "T-5316"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -45,8 +45,8 @@ origin: {kind: "agent", source: "T-5316"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T14:22:44Z
-last_update: '2026-11-21T14:30:51Z'
-date_finished:
+last_update: 2026-11-21T19:15:38Z
+date_finished: 2026-11-21T19:15:38Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -84,6 +84,22 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-21T19:10:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal);
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5334: Risk matrix check: compute operator acceptance from the introduced part, not the worst actor row
@@ -103,10 +119,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Actor tables accept an optional `introduced` column (yes/no). When present on a PARTLY NEW risk, acceptance uses the worst mitigated score of the `yes` rows only. When absent, the current behaviour is unchanged.
-- [ ] NEW risks and the 15+ rule are unchanged. A PARTLY NEW risk whose actor table has the column but no `yes` row is an error (a PARTLY NEW risk must name its introduced part).
-- [ ] `.tasks/templates/risk-matrix.md` and the `--matrix` help text describe the column.
-- [ ] Unit tests cover: introduced row at 3 next to an exists-anyway row at 6 (not listed); introduced row at 6 (listed); no column (unchanged); a column with no yes row (error); 15+ still listed. The existing risk tests stay green, and the vendored copy is synced.
+- [x] Actor tables accept an optional `introduced` column (yes/no). When present on a PARTLY NEW risk, acceptance uses the worst mitigated score of the `yes` rows only. When absent, the current behaviour is unchanged.
+- [x] NEW risks and the 15+ rule are unchanged. A PARTLY NEW risk whose actor table has the column but no `yes` row is an error (a PARTLY NEW risk must name its introduced part).
+- [x] `.tasks/templates/risk-matrix.md` and the `--matrix` help text describe the column.
+- [x] Unit tests cover: introduced row at 3 next to an exists-anyway row at 6 (not listed); introduced row at 6 (listed); no column (unchanged); a column with no yes row (error); 15+ still listed. The existing risk tests stay green, and the vendored copy is synced.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -338,6 +354,11 @@ bin/fw vendor self --check --task T-5334
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-11-21 — introduced rows decide acceptance
+- **What changed:** A filled actor row with an empty `Introduced` cell is an error, not "no". Every row must say yes or no once the column is present. The template edit also required regenerating `lib/upgrade_template_shipped.py`.
+- **Plan impact:** Existing reports keep today's result until they add the column. T-5300 risk 1 is still listed, because its report has no `Introduced` column. That is the agreed fallback, not a miss.
+- **Triggered:** No new task. The R-038..R-045 acceptances already stand, so the reviewed T-5300 report stays as it was reviewed. New matrices get the column from the template.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -394,3 +415,20 @@ bin/fw vendor self --check --task T-5334
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5334-risk-matrix-check-compute-operator-accep.md
 - **Context:** Initial task creation
+
+### 2026-11-21T19:10:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-21T19:15:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-712ade83
+- **Timestamp:** 2026-11-21T19:16:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

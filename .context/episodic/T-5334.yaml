@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5334: Risk matrix check: compute operator acceptance from the introduced part, not the worst actor row
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T19:16:16Z
+# ============================================================================
+
+task_id: T-5334
+task_name: "Risk matrix check: compute operator acceptance from the introduced part, not the worst actor row"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-21T14:22:44Z
+completed: 2026-11-21T19:15:38Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-21T20:10:16+01:00
+last_commit: 2026-11-21T20:13:46+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope, criteria, verification. risk matrix — PARTLY NEW acceptance from introduced actor rows
+
+# Key outcomes
+outcomes:
+  - 'Actor tables accept an optional `introduced` column (yes/no). When present on a PARTLY NEW risk, acceptance uses the worst mitigated score of the `yes` rows only. When absent, the current behaviour is unchanged.'
+  - 'NEW risks and the 15+ rule are unchanged. A PARTLY NEW risk whose actor table has the column but no `yes` row is an error (a PARTLY NEW risk must name its introduced part).'
+  - '`.tasks/templates/risk-matrix.md` and the `--matrix` help text describe the column.'
+  - 'Unit tests cover: introduced row at 3 next to an exists-anyway row at 6 (not listed); introduced row at 6 (listed); no column (unchanged); a column with no yes row (error); 15+ still listed. The existing risk tests stay green, and the vendored copy is synced.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/.tasks/templates/risk-matrix.md'
+  - '.agentic-framework/lib/risk_register.py'
+  - '.agentic-framework/lib/upgrade_template_shipped.py'
+  - '.fabric/components/tests-unit-test_t5334_matrix_introduced.yaml'
+  - '.tasks/active/T-5334-risk-matrix-check-compute-operator-accep.md'
+  - '.tasks/templates/risk-matrix.md'
+  - 'lib/risk_register.py'
+  - 'lib/upgrade_template_shipped.py'
+  - 'tests/unit/test_t5334_matrix_introduced.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-21T20:10:16'
+    action: 'T-5334: scope, criteria, verification'
+  - time: '2026-11-21T20:13:46'
+    action: 'T-5334: risk matrix — PARTLY NEW acceptance from introduced actor rows'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 292 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:risk]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 292
+  commits: 3
+  files_changed: 12
+  lines_added: 351
+  lines_removed: 25
+  footprint_refreshed_at: '2026-11-21T19:16:27Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5334-risk-matrix-check-compute-operator-accep.md
+generated_by: context-agent-hybrid
