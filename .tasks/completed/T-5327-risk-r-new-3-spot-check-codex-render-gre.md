@@ -7,12 +7,12 @@ description: >
   render greens, re-judge with a seat whose log shows a view, report the disagreement
   rate in fw audit. Source: docs/reports/T-5309-risk-matrix.md.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:risk, risk-mitigation]
-components: []
+components: [lib/verdict_ledger.py, lib/vote_checker.py, tests/unit/test_t5327_attached_only.py]
 related_tasks: [T-5316, T-5309]
 origin: {kind: "agent", source: "T-5316"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -42,8 +42,8 @@ origin: {kind: "agent", source: "T-5316"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T13:43:26Z
-last_update: 2026-11-21T15:01:40Z
-date_finished:
+last_update: 2026-11-21T15:40:58Z
+date_finished: 2026-11-21T15:40:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -398,3 +398,16 @@ bin/fw vendor self --check --task T-5327
 ### 2026-11-21T15:01:40Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-21T15:40:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-84e48262
+- **Timestamp:** 2026-11-21T15:45:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

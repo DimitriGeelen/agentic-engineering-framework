@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5327: Risk R-NEW-3: spot-check codex render greens against the images
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T15:45:31Z
+# ============================================================================
+
+task_id: T-5327
+task_name: "Risk R-NEW-3: spot-check codex render greens against the images"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-21T13:43:26Z
+completed: 2026-11-21T15:40:58Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-21T16:24:57+01:00
+last_commit: 2026-11-21T16:40:56+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope (option 2: attached-only proof not enough on single-seat render votes), criteria, verification. attached-only image proof cannot carry a render vote in a single-seat run. vendor sync (vote_checker, verdict_ledger, judge_cli). criteria ticked, evolution note
+
+# Key outcomes
+outcomes:
+  - 'In a non-panel run, a render-criterion vote whose only view proof is attached-at-launch is reported not-checkable with a named reason; the same vote in a rung-5 panel still counts; a seat with a logged view still counts in both'
+  - 'The judge reassigns such a criterion to another seat kind (existing not-checkable path), shown by a test through judge_cli''s reassignment logic'
+  - 'Existing vote_checker / verdict / judge tests stay green; vendored copy synced'
+  - 'Option 1 (spot-check) filed as a follow-up task in arc risk'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.agentic-framework/lib/vote_checker.py'
+  - '.fabric/components/tests-unit-test_t5327_attached_only.yaml'
+  - '.tasks/active/T-5327-risk-r-new-3-spot-check-codex-render-gre.md'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/verdict_ledger.py'
+  - 'lib/vote_checker.py'
+  - 'tests/unit/test_t5327_attached_only.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-21T16:24:57'
+    action: 'T-5327: scope (option 2: attached-only proof not enough on single-seat render votes), criteria, verification'
+  - time: '2026-11-21T16:34:03'
+    action: 'T-5327: attached-only image proof cannot carry a render vote in a single-seat run'
+  - time: '2026-11-21T16:34:24'
+    action: 'T-5327: vendor sync (vote_checker, verdict_ledger, judge_cli)'
+  - time: '2026-11-21T16:40:56'
+    action: 'T-5327: criteria ticked, evolution note'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 117 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:risk, risk-mitigation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 117
+  commits: 5
+  files_changed: 12
+  lines_added: 532
+  lines_removed: 46
+  footprint_refreshed_at: '2026-11-21T15:45:45Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5327-risk-r-new-3-spot-check-codex-render-gre.md
+generated_by: context-agent-hybrid
