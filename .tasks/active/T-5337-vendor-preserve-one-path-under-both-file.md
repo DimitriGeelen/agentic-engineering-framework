@@ -11,10 +11,10 @@ description: >
   the IN-FILE line say that a files: entry for the same path is being ignored. Test
   with that exact config.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-5335]
@@ -46,7 +46,7 @@ origin: {kind: "peer", source: "1023-portable-encrypted-chromium-vault", ref: "5
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T15:08:29Z
-last_update: '2026-11-21T15:15:52Z'
+last_update: 2026-11-21T16:56:05Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,20 +92,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 1023 field report (msgs bdb4fd8d, 5e923dc4, be.60 upgrade): their vendor-preserve manifest listed `.secret-scan-allowlist` under `files:` (keep my copy) and `in_file:` (check my marker); the dry run printed "IN-FILE ... (takes upstream; 1 marker(s) checked after the copy)". Checked on bleeding-edge before building: still present.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** lib/vendor_preserve.py checks `in_file:` first in its per-file loop (around line 366) and `continue`s, so a matching `files:` entry is never consulted: the consumer's copy is replaced by upstream and the lines the marker protects are lost, with no warning.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A path under both keys keeps the consumer's copy (`files:` wins, matching the consumer's intent "keep my copy and check my line"), its `in_file:` markers are still checked against the kept copy, and a WARN line names the double listing. A path under `in_file:` only behaves as before.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** With 1023's exact manifest, the dry run prints a WARN naming the file and "files: wins", and after a real run the consumer's lines are still in the file.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Checked on bleeding-edge first: the defect is present (lib/vendor_preserve.py in_file branch runs before preserved())
+- [ ] A path listed under both keys is kept (restored after the copy), its markers are checked against the kept copy, and the plan prints a WARN naming the file and that files: wins; in_file-only paths unchanged
+- [ ] Test with 1023's manifest shape: both-listed file keeps the consumer's content and passes its marker; in_file-only file still takes upstream and is marker-checked
+- [ ] Existing vendor-preserve tests stay green; vendored copy synced; 1023 told
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -292,6 +294,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 900 bats tests/unit/t3850_vendor_preserve_locals.bats > /tmp/.t5337 2>&1 && ! grep -q "^not ok" /tmp/.t5337
+test "$(grep -c '# skip' /tmp/.t5337)" -eq 0
+grep -q "T-5337" /tmp/.t5337
+bin/fw vendor self --check --task T-5337
 
 ## RCA
 
@@ -389,3 +395,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5337-vendor-preserve-one-path-under-both-file.md
 - **Context:** Initial task creation
+
+### 2026-11-21T16:56:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
