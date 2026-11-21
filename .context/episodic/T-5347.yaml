@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5347: RCA: agents propose handover/stop at 200-500K although bands are Amber 825K+
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T21:30:11Z
+# ============================================================================
+
+task_id: T-5347
+task_name: "RCA: agents propose handover/stop at 200-500K although bands are Amber 825K+"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-21T21:25:55Z
+completed: 2026-11-21T21:29:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-21T22:29:34+01:00
+last_commit: 2026-11-21T22:29:34+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RCA — agents recommend handover far below the bands (stale 300K memory, stop carried through compaction, check-in slot); rule in CLAUDE.md + consumer template; G-139
+
+# Key outcomes
+outcomes:
+  - 'The RCA is written in this task, with evidence for A, B and C, and why the existing T-1728 post-compact stanza did not cover B'
+  - 'This project''s saved memory no longer states a 300K window, 225K/255K thresholds, or "don''t suggest 1M"; it states the 975K ruling and "read the gauge before recommending a stop"'
+  - 'CLAUDE.md and `lib/templates/claude-project.md` carry one rule: a stop or handover recommendation names the live band and free tokens; in Green and Amber, length of session or number of tasks closed is not a reason to stop; a recommendation from before a compaction is re-derived from the live gauge'
+  - 'The gap is registered in concerns.yaml'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/templates/claude-project.md'
+  - '.context/project/concerns.yaml'
+  - '.tasks/active/T-5347-rca-agents-propose-handoverstop-at-200-5.md'
+  - 'CLAUDE.md'
+  - 'lib/templates/claude-project.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-21T22:29:34'
+    action: 'T-5347: RCA — agents recommend handover far below the bands (stale 300K memory, stop carried through compaction, check-in slot); rule in CLAUDE.md + consumer template; G-139'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 8
+  lines_added: 529
+  lines_removed: 4
+  footprint_refreshed_at: '2026-11-21T21:30:35Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5347-rca-agents-propose-handoverstop-at-200-5.md
+generated_by: context-agent-hybrid

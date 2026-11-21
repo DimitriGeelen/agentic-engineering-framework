@@ -4,10 +4,10 @@ name: "RCA: agents propose handover/stop at 200-500K although bands are Amber 82
 description: >
   Operator 2026-11-21: agents across projects push toward handover at 200-500K tokens, far below the configured bands. Root-cause and fix.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T21:25:55Z
-last_update: 2026-11-21T21:25:55Z
-date_finished: null
+last_update: 2026-11-21T21:29:41Z
+date_finished: 2026-11-21T21:29:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -392,3 +392,16 @@ bin/fw vendor self --check --task T-5347
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5347-rca-agents-propose-handoverstop-at-200-5.md
 - **Context:** Initial task creation
+
+### 2026-11-21T21:29:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a3d50089
+- **Timestamp:** 2026-11-21T21:29:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
