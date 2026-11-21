@@ -73,6 +73,12 @@ date_finished: null
 - [x] The config-registry parity lint tests pass; Watchtower restarted and current; vendored copy synced
 
 ### Human
+- [ ] [REVIEW] The /config page shows the new PREPUSH_RANGE_TEST_BUDGET row like its neighbours
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find the row PREPUSH_RANGE_TEST_BUDGET (next to UNIT_SUITE_FLAKE_RETRY_MAX)
+  **Expected:** One row, default 120, the description readable and laid out like the rows around it; no broken table
+  **If not:** Screenshot the row and note what is wrong
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
