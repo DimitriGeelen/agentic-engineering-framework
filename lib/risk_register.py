@@ -33,6 +33,17 @@ CLI:  python3 lib/risk_register.py [--path FILE] [--root DIR] [--json]
       --root is the project whose .tasks/ resolves mitigation_task; default:
       derived from a .context/project/concerns.yaml path, else PROJECT_ROOT/cwd.
 Exit: 0 valid (warnings allowed), 1 errors, 2 register unreadable.
+
+Matrix mode (T-5315):  python3 lib/risk_register.py --matrix FILE [--json]
+      Checks a filled risk matrix (.tasks/templates/risk-matrix.md): the Summary
+      table and one "### Risk N" actor-split table per risk. ERRORs for values
+      outside 1-5, a score that is not L x I, a mitigated score that is not
+      mitigated L x I, an unknown actor, a summary risk with no filled actor
+      table. Lists the risks that need operator acceptance: introduced (NEW or
+      PARTLY NEW) with worst mitigated score >= 6, or any score >= 15. An actor
+      row with no mitigated values keeps its unmitigated score. Blank template
+      rows are skipped. Exit 0 clean (the acceptance list may be non-empty),
+      1 errors, 2 file unreadable.
 """
 
 from __future__ import annotations
@@ -207,6 +218,226 @@ def validate_register(data: Any,
     return errors, warnings, count
 
 
+# ── Matrix mode (T-5315) ─────────────────────────────────────────────────────
+
+ACCEPTANCE_THRESHOLD = 6      # introduced risk still at 6+ after mitigation
+HIGH_THRESHOLD = 15           # any risk at 15+ (band "high")
+_RISK_HEAD_RE = re.compile(r"^#{2,4}\s+Risk\s+(\d+)\b", re.IGNORECASE)
+_PRODUCT_RE = re.compile(r"^\s*(\d+)\s*[x×*]\s*(\d+)\s*$", re.IGNORECASE)
+_PRODUCTS = {a * b for a in range(1, 6) for b in range(1, 6)}
+
+
+def _cells(line: str) -> Optional[List[str]]:
+    s = line.strip()
+    if not s.startswith("|"):
+        return None
+    s = s[1:]
+    if s.endswith("|"):
+        s = s[:-1]
+    return [c.strip() for c in s.split("|")]
+
+
+def _is_rule(cells: List[str]) -> bool:
+    return any(cells) and all(re.fullmatch(r":?-{2,}:?", c) for c in cells if c)
+
+
+def _tables(lines: List[str]) -> List[Tuple[int, List[str], List[Tuple[int, List[str]]]]]:
+    """Every markdown table: (header line index, lower-cased header cells, [(line no, cells)])."""
+    out = []
+    i = 0
+    while i < len(lines):
+        head = _cells(lines[i])
+        rule = _cells(lines[i + 1]) if i + 1 < len(lines) else None
+        if head and rule and _is_rule(rule):
+            rows = []
+            j = i + 2
+            while j < len(lines) and _cells(lines[j]) is not None:
+                rows.append((j + 1, _cells(lines[j])))
+                j += 1
+            out.append((i, [h.lower() for h in head], rows))
+            i = j
+        else:
+            i += 1
+    return out
+
+
+def _col(header: List[str], name: str, exact: bool = False) -> Optional[int]:
+    for n, h in enumerate(header):
+        if (h == name) if exact else h.startswith(name):
+            return n
+    return None
+
+
+def _get(row: List[str], idx: Optional[int]) -> str:
+    return row[idx] if idx is not None and idx < len(row) else ""
+
+
+def _scale(where: str, label: str, raw: str, errors: List[str]) -> Optional[int]:
+    if raw == "":
+        return None
+    if re.fullmatch(r"\d+", raw) and 1 <= int(raw) <= 5:
+        return int(raw)
+    errors.append(f"{where}: {label} must be an integer 1-5, got {raw!r}")
+    return None
+
+
+def _introduced(raw: str) -> Optional[str]:
+    """'NEW' / 'PARTLY NEW' when the change introduces the risk, else None."""
+    v = raw.strip().strip("*").strip().lower()
+    if v.startswith("partly new"):
+        return "PARTLY NEW"
+    if v.startswith("new"):
+        return "NEW"
+    return None
+
+
+def _actor_rows(rn: int, header: List[str], rows, errors: List[str]) -> List[Dict[str, Any]]:
+    c_actor = _col(header, "actor", exact=True)
+    c_l, c_i = _col(header, "l", exact=True), _col(header, "i", exact=True)
+    c_s = _col(header, "score", exact=True)
+    c_ml, c_ms = _col(header, "mitigated l"), _col(header, "mitigated score")
+    filled = []
+    for ln, row in rows:
+        raw = {k: _get(row, c) for k, c in
+               (("l", c_l), ("i", c_i), ("s", c_s), ("ml", c_ml), ("ms", c_ms))}
+        if not any(raw.values()):
+            continue                              # blank template row
+        name = _get(row, c_actor).strip("` ")
+        where = f"line {ln} (risk {rn}, {name or 'no actor'})"
+        if name not in ACTORS:
+            errors.append(f"{where}: actor {name!r} is not one of {', '.join(ACTORS)}")
+        lv = _scale(where, "L", raw["l"], errors)
+        iv = _scale(where, "I", raw["i"], errors)
+        score = None
+        if raw["l"] == "" or raw["i"] == "":
+            errors.append(f"{where}: needs both L and I")
+        elif lv is not None and iv is not None:
+            score = lv * iv
+            if raw["s"] and raw["s"] != str(score):
+                errors.append(f"{where}: score {raw['s']!r} is not L x I = {score}")
+        mitigated = None
+        if raw["ml"]:
+            m = _PRODUCT_RE.match(raw["ml"])
+            if not m:
+                errors.append(f"{where}: mitigated L x I must read like '2 x 3', got {raw['ml']!r}")
+            else:
+                ml = _scale(where, "mitigated L", m.group(1), errors)
+                mi = _scale(where, "mitigated I", m.group(2), errors)
+                if ml is not None and mi is not None:
+                    mitigated = ml * mi
+                    if raw["ms"] and raw["ms"] != str(mitigated):
+                        errors.append(f"{where}: mitigated score {raw['ms']!r} is not "
+                                      f"mitigated L x I = {mitigated}")
+        elif raw["ms"]:
+            if re.fullmatch(r"\d+", raw["ms"]) and int(raw["ms"]) in _PRODUCTS:
+                mitigated = int(raw["ms"])
+            else:
+                errors.append(f"{where}: mitigated score {raw['ms']!r} is not an L x I product (1-25)")
+        if mitigated is None:
+            mitigated = score                     # no mitigation given: the risk stands
+        filled.append({"actor": name, "score": score, "mitigated": mitigated})
+    return filled
+
+
+def parse_matrix(text: str) -> Dict[str, Any]:
+    """Check a filled risk matrix. Return {risks, errors, needs_operator_acceptance}."""
+    lines = text.splitlines()
+    errors: List[str] = []
+    summary: Dict[int, Dict[str, Any]] = {}
+    actor_tables: Dict[int, List[Dict[str, Any]]] = {}
+    headings = [(n, int(m.group(1))) for n, l in enumerate(lines)
+                for m in [_RISK_HEAD_RE.match(l.strip())] if m]
+
+    for hidx, header, rows in _tables(lines):
+        if _col(header, "actor", exact=True) is not None:
+            above = [rn for n, rn in headings if n < hidx]
+            if not above:
+                errors.append(f"line {hidx + 1}: actor table with no '### Risk N' heading above it")
+                continue
+            rn = above[-1]
+            actor_tables.setdefault(rn, []).extend(_actor_rows(rn, header, rows, errors))
+        elif _col(header, "risk", exact=True) is not None and _col(header, "introduced") is not None:
+            c_n, c_risk = _col(header, "#", exact=True), _col(header, "risk", exact=True)
+            c_l, c_i = _col(header, "likelihood"), _col(header, "impact")
+            c_s, c_int = _col(header, "score", exact=True), _col(header, "introduced")
+            for ln, row in rows:
+                name = _get(row, c_risk)
+                rl, ri, rs = _get(row, c_l), _get(row, c_i), _get(row, c_s)
+                if not (name or rl or ri or rs):
+                    continue                      # blank template row
+                num = _get(row, c_n)
+                if not re.fullmatch(r"\d+", num):
+                    errors.append(f"line {ln}: summary row needs a risk number in '#', got {num!r}")
+                    continue
+                rn = int(num)
+                where = f"line {ln} (summary risk {rn})"
+                lv = _scale(where, "likelihood", rl, errors)
+                iv = _scale(where, "impact", ri, errors)
+                if (rl == "") != (ri == ""):
+                    errors.append(f"{where}: likelihood and impact must be given together")
+                score = lv * iv if lv is not None and iv is not None else None
+                if score is not None and rs and rs != str(score):
+                    errors.append(f"{where}: score {rs!r} is not likelihood x impact = {score}")
+                summary[rn] = {"name": name, "score": score,
+                               "introduced": _introduced(_get(row, c_int))}
+
+    for rn in sorted(summary):
+        if not actor_tables.get(rn):
+            errors.append(f"summary risk {rn} ({summary[rn]['name'] or 'unnamed'}) has no filled "
+                          f"'### Risk {rn}' actor table")
+    for rn in sorted(actor_tables):
+        if actor_tables[rn] and rn not in summary:
+            errors.append(f"actor table for risk {rn} has no row in the Summary table")
+
+    risks: List[Dict[str, Any]] = []
+    needs: List[Dict[str, Any]] = []
+    for rn in sorted(summary):
+        s = summary[rn]
+        acts = actor_tables.get(rn, [])
+        scores = [a["score"] for a in acts if a["score"] is not None]
+        if s["score"] is not None:
+            scores.append(s["score"])
+        mits = [a["mitigated"] for a in acts if a["mitigated"] is not None]
+        worst = max(scores) if scores else None
+        worst_mit = max(mits) if mits else None
+        rec = {"risk": rn, "name": s["name"], "introduced": s["introduced"],
+               "worst_score": worst, "worst_band": band(worst) if worst else None,
+               "worst_mitigated": worst_mit,
+               "mitigated_band": band(worst_mit) if worst_mit else None}
+        risks.append(rec)
+        reasons = []
+        if s["introduced"] and worst_mit is not None and worst_mit >= ACCEPTANCE_THRESHOLD:
+            reasons.append(f"{s['introduced']} and still {worst_mit} after mitigation")
+        if worst is not None and worst >= HIGH_THRESHOLD:
+            reasons.append(f"scores {worst} (high)")
+        if reasons:
+            needs.append({**rec, "reasons": reasons})
+    return {"risks": risks, "errors": errors, "needs_operator_acceptance": needs}
+
+
+def matrix_main(path: str, as_json: bool) -> int:
+    try:
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+    except OSError as exc:
+        print(f"cannot read {path}: {exc}", file=sys.stderr)
+        return 2
+    res = parse_matrix(text)
+    if as_json:
+        print(json.dumps(res))
+    else:
+        for e in res["errors"]:
+            print(f"ERROR {e}")
+        print(f"{len(res['risks'])} risk(s), {len(res['errors'])} error(s)")
+        if res["needs_operator_acceptance"]:
+            print("needs operator acceptance:")
+            for r in res["needs_operator_acceptance"]:
+                print(f"  risk {r['risk']} — {r['name']}: {'; '.join(r['reasons'])}")
+        else:
+            print("needs operator acceptance: none")
+    return 1 if res["errors"] else 0
+
+
 def _default_path() -> str:
     root = os.environ.get("PROJECT_ROOT") or os.getcwd()
     return os.path.join(root, ".context", "project", "concerns.yaml")
@@ -227,7 +458,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     ap.add_argument("--root", default=None,
                     help="project root whose .tasks/ resolves mitigation_task")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--matrix", default=None,
+                    help="check a filled risk matrix file instead of the register (T-5315)")
     args = ap.parse_args(argv)
+    if args.matrix:
+        return matrix_main(args.matrix, args.json)
     path = args.path or _default_path()
     try:
         import yaml

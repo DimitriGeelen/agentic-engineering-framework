@@ -98,6 +98,46 @@ Every risk with **any actor scoring 6 or more** gets a mitigation task in the st
 open assessed risk at 6 or more without a `mitigation_task`. Check by hand:
 `python3 lib/risk_register.py` (consumer projects: `.agentic-framework/lib/risk_register.py`).
 
+## Machine check
+
+`python3 lib/risk_register.py --matrix docs/reports/T-XXXX-risk-matrix.md`
+(consumer projects: `.agentic-framework/lib/risk_register.py`; add `--json` for machine output).
+It reports an ERROR for a value outside 1-5, a score that is not L × I, a mitigated score that
+is not mitigated L × I, an unknown actor, or a summary risk with no filled actor table, and
+lists the risks that **need operator acceptance**: introduced (NEW or PARTLY NEW) and still 6
+or more after mitigation, or any score of 15 or more. An actor row with no mitigated values
+keeps its unmitigated score. Blank template rows are skipped. Exit 0 clean (the list may
+still name risks), 1 errors, 2 file unreadable.
+
+## Criteria to copy into the task
+
+Copy both under `### Human` in the task that makes the change, replacing `T-XXXX` and the
+risk names. The first has no prefix on purpose: it is reviewer-judged, so an independent
+agent reviewer closes it through `fw reviewer judge` (check with `fw task delegate T-XXXX --dry-run`:
+it must say REVIEWER-JUDGES). The second carries `[OPERATOR]`, so only the operator closes it.
+
+**Omit the second criterion when the check prints `needs operator acceptance: none`.**
+Otherwise name every risk the check lists, and only those.
+
+```markdown
+- [ ] Risk matrix scores, actor split and "introduced?" column are sound (docs/reports/T-XXXX-risk-matrix.md)
+  **Steps:**
+  1. Run `python3 lib/risk_register.py --matrix docs/reports/T-XXXX-risk-matrix.md` from the project root.
+  2. Read each risk in the Summary table and its actor-split table.
+  3. Check every L and I against the Scales table, each actor's "how" against its score, and each mitigated value against the mitigation it names.
+  4. Check the "Exists anyway?" and "Introduced by the change?" columns against the Baseline in the header.
+  **Expected:** the check prints 0 error(s); every score fits the scales; every actor that can plausibly cause the risk is scored; no risk the change adds is marked "no", and none it does not add is marked NEW.
+  **If not:** name the risk and row, state what the score or column should be and why, and return the matrix to the drafting agent; the operator-acceptance list may change after the fix.
+
+- [ ] [OPERATOR] Accept the remaining risk of risk N (<name>) and risk M (<name>), as listed by the --matrix check
+  **Steps:**
+  1. Run `python3 lib/risk_register.py --matrix docs/reports/T-XXXX-risk-matrix.md` from the project root and read the "needs operator acceptance" list.
+  2. For each listed risk, read its actor-split table in docs/reports/T-XXXX-risk-matrix.md: who, how, the mitigation and the mitigated score.
+  3. Decide for each: accept it as it stands, or ask for more mitigation.
+  **Expected:** every listed risk is accepted as it stands, and the list matches the risks named in this criterion.
+  **If not:** name the risk and the mitigation you want; the agent files a task in the standing arc `risk`, updates the matrix and re-runs the check.
+```
+
 ## Net
 
 <What the change adds, what it reduces, and the controls it needs. Name each risk that needs
