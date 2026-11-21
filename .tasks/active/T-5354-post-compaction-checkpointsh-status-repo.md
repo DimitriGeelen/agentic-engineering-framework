@@ -105,8 +105,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `checkpoint.sh status` reads `lib/context_tokens.py --with-status`. For `young` it prints one line saying the session has not been measured since it (re)started, with the newest provisional reading if any, that budget figures from before the restart (handover, compaction summary) must not be used, and to check again after the next tool call. `measured` output is unchanged. A truly empty or failed scan still says unavailable.
-- [ ] A bats test feeds a transcript (via FW_TRANSCRIPT_PATH) holding only a compact_boundary plus one usage entry and asserts the young line. A measured transcript gives the same lines as before. The existing checkpoint/budget tests stay green, and the vendored copy is synced.
+- [x] `checkpoint.sh status` reads `lib/context_tokens.py --with-status`. For `young` it prints one line saying the session has not been measured since it (re)started, with the newest provisional reading if any, that budget figures from before the restart (handover, compaction summary) must not be used, and to check again after the next tool call. `measured` output is unchanged. A truly empty or failed scan still says unavailable.
+- [x] A bats test feeds a transcript (via FW_TRANSCRIPT_PATH) holding only a compact_boundary plus one usage entry and asserts the young line. A measured transcript gives the same lines as before. The existing checkpoint/budget tests stay green, and the vendored copy is synced.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -293,6 +293,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 bats tests/unit/t5354_status_young_after_compaction.bats > /tmp/.t5354 2>&1 && ! grep -q "^not ok" /tmp/.t5354
+timeout 600 bats tests/unit/t4174_budget_young_session.bats > /tmp/.t5354b 2>&1 && ! grep -q "^not ok" /tmp/.t5354b
+bash -n agents/context/checkpoint.sh
+bin/fw vendor self --check --task T-5354
 
 ## RCA
 
@@ -309,6 +313,11 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** After compaction, `checkpoint.sh status` printed "Context tokens: unavailable (no usage data)". 0506's agent then used the compaction summary's "~81% of 800k" and proposed only small work at a real ~15%.
+**Root cause:** The counter correctly discards everything before the `compact_boundary` and reports `young` until 2 new usage entries exist (T-4174). `status` asked only `--with-model`, so it could not tell young from a failed scan, and printed a bare "unavailable" with no instruction.
+**Why structurally allowed:** T-4174 taught `budget-gate.sh` the young state but not `status`, the verb agents read. A bare "unavailable" leaves a gap that the nearest stale number fills.
+**Prevention:** `status` uses `--with-status` and, when young, prints "not yet measured since this session (re)started … Do NOT use budget figures from before the restart (handover, compaction summary); check again after your next tool call", with the provisional reading when there is one (a80b934b4). `tests/unit/t5354_status_young_after_compaction.bats` pins the young case, the empty case, and an unchanged measured case. Together with T-5348 (the budget note at the top of the injection), both legs of G-139 cause B are covered.
 
 ## Evolution
 
