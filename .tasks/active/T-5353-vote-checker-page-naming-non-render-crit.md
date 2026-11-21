@@ -109,15 +109,15 @@ So a page-naming non-render criterion closes on attached-only proof, the very ca
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `verdict_ledger` and `vote_checker` decide "needs a proven view" with the same predicate as `judge_cli.needs_screenshots` (imported or moved to one shared place, never copied). A page-naming non-render criterion is then treated like a render one, in `_run_fault` (captures) and in `checkable` (attached-only in a non-panel run is not checkable).
-- [ ] Unit tests:
+- [x] `verdict_ledger` and `vote_checker` decide "needs a proven view" with the same predicate as `judge_cli.needs_screenshots` (imported or moved to one shared place, never copied). A page-naming non-render criterion is then treated like a render one, in `_run_fault` (captures) and in `checkable` (attached-only in a non-panel run is not checkable).
+- [x] Unit tests:
   1. A page-naming unclassified criterion with an attached-only single-seat green is not checkable.
   2. The same with a logged view is checkable.
   3. Render criteria are unchanged.
   4. A criterion naming no page and no image is unchanged.
   Existing reviewer, verdict and vote tests stay green, and the vendored copy is synced.
-- [ ] The claude-code seat's missing logged views are diagnosed from a real run record (e.g. `.context/dispatch/judge-t-5350-r3-8122f0683a86/`). The finding (prompt not telling it to Read, tool not available, or the view not logged) is written in the RCA, and a follow-up task is filed if it needs a separate fix.
-- [ ] Re-checking the ledger shows how T-5350's closing verdict grades under the new rule. It is reported here, not rewritten; ledger rows are append-only.
+- [x] The claude-code seat's missing logged views are diagnosed from a real run record (e.g. `.context/dispatch/judge-t-5350-r3-8122f0683a86/`). The finding (prompt not telling it to Read, tool not available, or the view not logged) is written in the RCA, and a follow-up task is filed if it needs a separate fix.
+- [x] Re-checking the ledger shows how T-5350's closing verdict grades under the new rule. It is reported here, not rewritten; ledger rows are append-only.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -322,6 +322,24 @@ bin/fw vendor self --check --task T-5353
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** Two problems.
+- A page-naming non-render green (T-5350, codex V-20261121-791073b7) closed a criterion on attached-only image proof.
+- claude-code was graded "seat did not open image" four times in a row on T-5350.
+
+**Root cause:**
+- (1) Three separate checks for "needs screenshots / a proven view". T-5352 widened only the judge's; the ledger (`_run_fault`, `checkable` calls) still asked render only.
+- (2) The brief let the seat rename the copies it cited. claude-code did open the images: 12 Read calls in `.context/dispatch/judge-t-5350-r3-8122f0683a86/result.jsonl`, including `.context/visual/T-5350/designer@1920.png`. But it copied them as `designer-1920-<id>.png`, `@` replaced by `-`. `vote_checker.image_viewed` (~620) links a copy to its viewed original only when it is named `<original>-<dispatch id>`.
+
+**Why structurally allowed:** The T-5352 widening touched only the judge, and no test held the judge and the ledger to one predicate. The copy-name rule lived in the checker but was never stated in the brief.
+
+**Prevention:** Worker commit 94805e0e4:
+- `lib/evidence_need.py` (`names_page`, `needs_view`) is the single predicate. The judge delegates to it, and `verdict_ledger._needs_view` uses it in `_run_fault` and both `checkable` calls. The Visual Verification checklist stays render-only, so a designer re-pin with no checklist can still close.
+- The brief (`judge_cli.py:959`) now tells the seat to keep the source file's name when it copies.
+- `tests/unit/test_t5353_page_criterion_view_proof.py` (8 tests) pins the four cases and judge/ledger agreement.
+- One existing test (`test_t5327_attached_only.py`) was given a real criterion text where it passed a blank one; it checks the same thing.
+
+**Effect on T-5350 (closed earlier the same night):** under the new rule its closing verdict V-20261121-791073b7 is not checkable (attached-only), so the criterion would be reassigned. The ledger audit does not flag it: its walk has no criterion context, the same limit noted in T-5341. No ledger row was changed. T-5350 is a closed task, so whether to re-review it is the operator's call.
 
 ## Evolution
 
