@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5345: doctor_hook_counters tests 2-4 red: fixture doctor --quick prints no 'Hook configuration valid' line
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T21:08:02Z
+# ============================================================================
+
+task_id: T-5345
+task_name: "doctor_hook_counters tests 2-4 red: fixture doctor --quick prints no 'Hook configuration valid' line"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-21T19:05:53Z
+completed: 2026-11-21T21:07:11Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-21T20:06:08+01:00
+last_commit: 2026-11-21T22:07:09+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — doctor_hook_counters fixture red. doctor_hook_counters fixture links every hook-named dir; path-line label branch-agnostic
+
+# Key outcomes
+outcomes:
+  - 'The cause is found and written in the RCA: what the fixture''s doctor prints instead of the OK line, and why'
+  - '`doctor_hook_counters.bats` passes 7/7 with no skips, including tests 2–4. The fix does not weaken the T-2714 assertions: the counts are still derived from the fixture, and entries are still not equal to commands.'
+  - 'If doctor itself changed, the vendored copy is synced (doctor did not change; only the test changed)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'doctor_hook_counters fixture links every hook-named dir; path-line label branch-agnostic'
+    source: git-mined
+  - description: 'capture — doctor_hook_counters fixture red'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5345-doctorhookcounters-tests-2-4-red-fixture.md'
+  - 'tests/unit/doctor_hook_counters.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-21T20:06:08'
+    action: 'T-5345: capture — doctor_hook_counters fixture red'
+  - time: '2026-11-21T22:07:09'
+    action: 'T-5345: doctor_hook_counters fixture links every hook-named dir; path-line label branch-agnostic'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 121 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 121
+  commits: 3
+  files_changed: 5
+  lines_added: 515
+  lines_removed: 15
+  footprint_refreshed_at: '2026-11-21T21:08:30Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5345-doctorhookcounters-tests-2-4-red-fixture.md
+generated_by: context-agent-hybrid
