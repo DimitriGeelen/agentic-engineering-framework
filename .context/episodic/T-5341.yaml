@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5341: Risk R-NEW-3 slice 2: spot-check codex render greens against the images
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T19:48:21Z
+# ============================================================================
+
+task_id: T-5341
+task_name: "Risk R-NEW-3 slice 2: spot-check codex render greens against the images"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-21T15:40:20Z
+completed: 2026-11-21T19:47:48Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-21T16:40:21+01:00
+last_commit: 2026-11-21T20:47:22+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file T-5327 option 1 (spot-check codex render greens). context + measurement (0 of 8 codex panel render greens disagree with viewing peers). scope — audit line for codex render greens (operator chose option 1). fw audit line — codex render greens backed by a viewing peer. votes T-5327 already refuses are reported, not WARNed; live test host-independent
+
+# Key outcomes
+outcomes:
+  - 'A read-only check lists every committed codex green on a render-surface criterion. For each one it finds the other seats in the same run, voting on the same criterion. A green counts as "backed" when at least one of those seats also voted green with a logged view of the images (reusing `lib/vote_checker.py` view logic; no new view rules).'
+  - '`fw audit` prints one line: N codex render greens, M backed. It PASSes when every one is backed and WARNs, naming task and AC, for each unbacked one. It never FAILs and never starts a review dispatch.'
+  - 'Unit tests: backed by a logged-view peer (PASS); peer green with attached-only proof (unbacked, WARN); peer amber (unbacked); single-seat run (unbacked); no codex render greens (PASS, count 0). The live ledger gives 9 greens, with the 8 rung-5 ones backed. The vendored copy is synced.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/codex_render_backing.py'
+  - '.fabric/components/lib-codex_render_backing.yaml'
+  - '.fabric/components/tests-unit-test_t5341_codex_render_backing.yaml'
+  - '.tasks/active/T-5341-risk-r-new-3-slice-2-spot-check-codex-re.md'
+  - 'agents/audit/audit.sh'
+  - 'lib/codex_render_backing.py'
+  - 'tests/unit/test_t5341_codex_render_backing.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-21T16:40:21'
+    action: 'T-5341: file T-5327 option 1 (spot-check codex render greens)'
+  - time: '2026-11-21T20:30:05'
+    action: 'T-5341: context + measurement (0 of 8 codex panel render greens disagree with viewing peers)'
+  - time: '2026-11-21T20:31:55'
+    action: 'T-5341: scope — audit line for codex render greens (operator chose option 1)'
+  - time: '2026-11-21T20:42:46'
+    action: 'T-5341: fw audit line — codex render greens backed by a viewing peer'
+  - time: '2026-11-21T20:47:22'
+    action: 'T-5341: votes T-5327 already refuses are reported, not WARNed; live test host-independent'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 247 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:risk, risk-mitigation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 247
+  commits: 6
+  files_changed: 11
+  lines_added: 1221
+  lines_removed: 28
+  footprint_refreshed_at: '2026-11-21T19:48:33Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5341-risk-r-new-3-slice-2-spot-check-codex-re.md
+generated_by: context-agent-hybrid

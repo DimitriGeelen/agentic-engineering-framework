@@ -9,12 +9,12 @@ description: >
   covers the gap T-5327 left: fw audit cannot apply the attached-only rule because
   its ledger walk has no criterion context.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
+horizon: null
 tags: [arc:risk, risk-mitigation]
-components: []
+components: [agents/audit/audit.sh, lib/codex_render_backing.py, tests/unit/test_t5341_codex_render_backing.py]
 related_tasks: [T-5327, T-5309, T-5316]
 origin: {kind: "agent", source: "T-5327"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -44,8 +44,8 @@ origin: {kind: "agent", source: "T-5327"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T15:40:20Z
-last_update: '2026-11-21T15:46:03Z'
-date_finished:
+last_update: 2026-11-21T19:47:48Z
+date_finished: 2026-11-21T19:47:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -83,6 +83,23 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-21T19:32:01Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 4
+      D3: 3
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=4 (body:fw-audit-or-doctor); D3=3 
+      (body:component-discoverability); D4=0 (no-signal); F-RECALL=0 
+      (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
+      F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5341: Risk R-NEW-3 slice 2: spot-check codex render greens against the images
@@ -107,9 +124,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A read-only check lists every committed codex green on a render-surface criterion. For each one it finds the other seats in the same run, voting on the same criterion. A green counts as "backed" when at least one of those seats also voted green with a logged view of the images (reusing `lib/vote_checker.py` view logic; no new view rules).
-- [ ] `fw audit` prints one line: N codex render greens, M backed. It PASSes when every one is backed and WARNs, naming task and AC, for each unbacked one. It never FAILs and never starts a review dispatch.
-- [ ] Unit tests: backed by a logged-view peer (PASS); peer green with attached-only proof (unbacked, WARN); peer amber (unbacked); single-seat run (unbacked); no codex render greens (PASS, count 0). The live ledger gives 9 greens, with the 8 rung-5 ones backed. The vendored copy is synced.
+- [x] A read-only check lists every committed codex green on a render-surface criterion. For each one it finds the other seats in the same run, voting on the same criterion. A green counts as "backed" when at least one of those seats also voted green with a logged view of the images (reusing `lib/vote_checker.py` view logic; no new view rules).
+- [x] `fw audit` prints one line: N codex render greens, M backed. It PASSes when every one is backed and WARNs, naming task and AC, for each unbacked one. It never FAILs and never starts a review dispatch.
+- [x] Unit tests: backed by a logged-view peer (PASS); peer green with attached-only proof (unbacked, WARN); peer amber (unbacked); single-seat run (unbacked); no codex render greens (PASS, count 0). The live ledger gives 9 greens, with the 8 rung-5 ones backed. The vendored copy is synced.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -340,6 +357,13 @@ bin/fw vendor self --check --task T-5341
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-11-21 — audit line instead of re-judging
+- **What changed:** The measurement (0 of 8 panel disagreements) replaced the plan to re-judge samples. The operator chose option 1: a free audit line (worker 0cd65bd8a, parent 72604e917).
+  - A green that T-5327 already refuses to count (the attached-only rule) is reported as "not counted", not WARNed. Only that exact reason qualifies, so other check failures still WARN.
+  - Live result: 9 greens, 8 backed, 1 not counted (T-5344). The audit grade is PASS.
+- **Plan impact:** 5 of the 8 backed greens are older rows. Their backing comes from `.context/dispatch/` run records, which are not committed, so a host without them reports those rows as unbacked (WARN). That errs on the cautious side. The live unit test therefore asserts only committed facts.
+- **Triggered:** Nothing new. R-NEW-3's other slice (T-5327) is done.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -396,3 +420,20 @@ bin/fw vendor self --check --task T-5341
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5341-risk-r-new-3-slice-2-spot-check-codex-re.md
 - **Context:** Initial task creation
+
+### 2026-11-21T19:31:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-21T19:47:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9452f37b
+- **Timestamp:** 2026-11-21T19:48:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
