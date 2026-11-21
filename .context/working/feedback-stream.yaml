@@ -58462,3 +58462,21 @@ scan_id: R-3c51ff54
 task_id: T-5352
 payload:
   task_file: .tasks/active/T-5352-judge-a-page-naming-criterion-that-is-no.md
+---
+kind: scan_emitted
+timestamp: '2026-11-21T23:13:04Z'
+scan_id: R-163968fa
+task_id: T-5350
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-21T23:13:04Z'
+scan_id: R-163968fa
+task_id: T-5350
+payload:
+  task_file: .tasks/active/T-5350-take-designer-0460-832-pin-bump-verify-t.md

@@ -1,0 +1,189 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5350: Take designer 0.46.0 (832): pin bump; verify T-1471 Save on first toolbar row at 1920 and T-1472 starter map readable at 1024
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T23:13:39Z
+# ============================================================================
+
+task_id: T-5350
+task_name: "Take designer 0.46.0 (832): pin bump; verify T-1471 Save on first toolbar row at 1920 and T-1472 starter map readable at 1024"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-21T22:10:21Z
+completed: 2026-11-21T23:12:19Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-21T23:10:30+01:00
+last_commit: 2026-11-22T00:11:51+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — take designer 0.46.0 from 832. scope, criteria. re-pin Workflow Designer 0.45.0 -> 0.46.0 (832 msg d7048659, tag designer-v0.46.0) via pull-at-tag — artifact, validator and kit verified against 832's MANIFEST at the tag; /designer serves APP_VERSION 0.46.0. agent criteria done (pinned, served, 832 told); reviewer judging the visual fixes. record 832's T-1472 intent (readable from top-left, Fit available) — accepted as default. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (antigravity seat antigravity, recorded by the runtime). criterion states 832's starter-map design (operator chose after codex red); 1440 table row corrected
+
+# Key outcomes
+outcomes:
+  - '`fw designer sync --from-tag designer-v0.46.0` verifies the artifact (sha256 7f5f41f5…, 1439884 bytes) against 832''s MANIFEST at the tag and against the pin, and installs it. Validator and kit are verified the same way.'
+  - '`policy/designer-pin.yaml` pins 0.46.0. `fw designer status` reports the pin valid. `/designer/app` serves APP_VERSION 0.46.0 after a Watchtower restart, the designer tests pass, and the vendored copy is synced.'
+  - '832 is told the result on its thread (conversation 832-designer-release-0.46.0)'
+  - '[REVIEW] Designer 0.46.0 shows both fixes we asked for (T-1471, T-1472)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'agent criteria done (pinned, served, 832 told); reviewer judging the visual fixes'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-22 — starter map at 1024: accept 832''s design (operator)'
+    chose: 'The review criterion now states 832''s design: readable from the top-left, the rest reached by scrolling or Fit. The operator chose "Accept 832''s design" when asked after codex''s red verdict (2026-11-22; codex verdict for dispatch judge-t-5350-r3-c5de13c5aa5b).'
+    rationale: 'Fitting the whole map at 1024 draws its smallest text at 2.7 px, below 832''s 9 px floor (msg 76a8c928). Every map opened by `?load=` already behaves this way. The old wording "labels not clipped" was my paraphrase of T-1472 and did not match it. codex''s red was correct for that wording.'
+    alternatives_rejected: ['Asking 832 for fit-to-frame (two of their reviewer rounds found fit-size text unreadable at 1024). Leaving it red (the Save fix works and the build is already live).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/designer-pin.yaml'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.46.0.html'
+  - '.agentic-framework/vendor/designer/validate-workflow-0.46.0.py'
+  - '.context/reviews/applied.jsonl'
+  - '.context/reviews/evidence/T-5350/01-designer-0_0_1280_900-crop.png'
+  - '.context/reviews/evidence/T-5350/01-designer-280_81_720_738-crop.png'
+  - '.context/reviews/evidence/T-5350/01-designer-judge-t-5350-r3-4200b4c3ef5a.png'
+  - '.context/reviews/evidence/T-5350/01-designer-judge-t-5350-r3-8122f0683a86.png'
+  - '.context/reviews/evidence/T-5350/01-designer-judge-t-5350-r3-ca1e3491a6d8.png'
+  - '.context/reviews/evidence/T-5350/02-designer-app-249_104_711_614-crop.png'
+  - '.context/reviews/evidence/T-5350/02-designer-app-249_104_713_646-crop.png'
+  - '.context/reviews/evidence/T-5350/02-designer-app-judge-t-5350-r3-4200b4c3ef5a.png'
+  - '.context/reviews/evidence/T-5350/02-designer-app-judge-t-5350-r3-8122f0683a86.png'
+  - '.context/reviews/evidence/T-5350/02-designer-app-judge-t-5350-r3-ca1e3491a6d8.png'
+  - '.context/reviews/evidence/T-5350/AC1-judge-t-5350-r3-0db56c115541.md'
+  - '.context/reviews/evidence/T-5350/AC1-judge-t-5350-r3-1e3b04203fe2.md'
+  - '.context/reviews/evidence/T-5350/AC1-judge-t-5350-r3-4200b4c3ef5a.md'
+  - '.context/reviews/evidence/T-5350/AC1-judge-t-5350-r3-49e170cb9185.md'
+  - '.context/reviews/evidence/T-5350/AC1-judge-t-5350-r3-8122f0683a86.md'
+  - '.context/reviews/evidence/T-5350/AC1-judge-t-5350-r3-917cc4e88c60.md'
+  - '.context/reviews/evidence/T-5350/AC1-judge-t-5350-r3-c5de13c5aa5b.md'
+  - '.context/reviews/evidence/T-5350/AC1-judge-t-5350-r3-ca1e3491a6d8.md'
+  - '.context/reviews/evidence/T-5350/AC1-judge-t-5350-r3-e375d328ad14.md'
+  - '.context/reviews/evidence/T-5350/AC1-judge-t-5350-r3-f246f89a17c8.md'
+  - '.context/reviews/evidence/T-5350/app-1024-judge-t-5350-r3-4200b4c3ef5a-250_104_455_612-crop.png'
+  - '.context/reviews/evidence/T-5350/app-1024-judge-t-5350-r3-4200b4c3ef5a.png'
+  - '.context/reviews/evidence/T-5350/app-1024-judge-t-5350-r3-8122f0683a86-250_104_455_612-crop.png'
+  - '.context/reviews/evidence/T-5350/app-1024-judge-t-5350-r3-8122f0683a86-310_300_400_310-crop.png'
+  - '.context/reviews/evidence/T-5350/app-1024-judge-t-5350-r3-8122f0683a86.png'
+  - '.context/reviews/evidence/T-5350/app-1024-judge-t-5350-r3-917cc4e88c60-250_104_455_612-crop.png'
+  - '.context/reviews/evidence/T-5350/app-1024-judge-t-5350-r3-917cc4e88c60.png'
+  - '.context/reviews/evidence/T-5350/app-1024-judge-t-5350-r3-f246f89a17c8-250_104_454_612-crop.png'
+  - '.context/reviews/evidence/T-5350/app-1024-judge-t-5350-r3-f246f89a17c8.png'
+  - '.context/reviews/evidence/T-5350/app-1440-judge-t-5350-r3-4200b4c3ef5a.png'
+  - '.context/reviews/evidence/T-5350/app-1440-judge-t-5350-r3-8122f0683a86.png'
+  - '.context/reviews/evidence/T-5350/app-1920-judge-t-5350-r3-4200b4c3ef5a.png'
+  - '.context/reviews/evidence/T-5350/app-1920-judge-t-5350-r3-8122f0683a86.png'
+  - '.context/reviews/evidence/T-5350/app@1024-249_104_455_614-crop.png'
+  - '.context/reviews/evidence/T-5350/app@1024-570_510_150_210-crop.png'
+  - '.context/reviews/evidence/T-5350/app@1024-judge-t-5350-r3-ca1e3491a6d8.png'
+  - '.context/reviews/evidence/T-5350/app@1440-1065_510_80_100-crop.png'
+  - '.context/reviews/evidence/T-5350/app@1440-249_104_871_614-crop.png'
+  - '.context/reviews/evidence/T-5350/app@1440-judge-t-5350-r3-ca1e3491a6d8.png'
+  - '.context/reviews/evidence/T-5350/app@1920-249_77_1351_614-crop.png'
+  - '.context/reviews/evidence/T-5350/app@1920-250_78_1350_645-crop.png'
+  - '.context/reviews/evidence/T-5350/app@1920-judge-t-5350-r3-ca1e3491a6d8.png'
+  - '.context/reviews/evidence/T-5350/designer-1024-judge-t-5350-r3-4200b4c3ef5a.png'
+  - '.context/reviews/evidence/T-5350/designer-1024-judge-t-5350-r3-8122f0683a86.png'
+  - '.context/reviews/evidence/T-5350/designer-1440-judge-t-5350-r3-4200b4c3ef5a.png'
+  - '.context/reviews/evidence/T-5350/designer-1440-judge-t-5350-r3-8122f0683a86.png'
+  - '.context/reviews/evidence/T-5350/designer-1920-judge-t-5350-r3-4200b4c3ef5a-1858_10_48_28-crop.png'
+  - '.context/reviews/evidence/T-5350/designer-1920-judge-t-5350-r3-4200b4c3ef5a-236_14_62_20-crop.png'
+  - '.context/reviews/evidence/T-5350/designer-1920-judge-t-5350-r3-4200b4c3ef5a.png'
+  - '.context/reviews/evidence/T-5350/designer-1920-judge-t-5350-r3-8122f0683a86-1858_10_48_28-crop.png'
+  - '.context/reviews/evidence/T-5350/designer-1920-judge-t-5350-r3-8122f0683a86-236_14_62_20-crop.png'
+  - '.context/reviews/evidence/T-5350/designer-1920-judge-t-5350-r3-8122f0683a86.png'
+  - '.context/reviews/evidence/T-5350/designer-1920-judge-t-5350-r3-917cc4e88c60-1858_10_48_28-crop.png'
+  - '.context/reviews/evidence/T-5350/designer-1920-judge-t-5350-r3-917cc4e88c60.png'
+  - '.context/reviews/evidence/T-5350/designer-1920-judge-t-5350-r3-f246f89a17c8-1858_10_48_28-crop.png'
+  - '.context/reviews/evidence/T-5350/designer-1920-judge-t-5350-r3-f246f89a17c8.png'
+  - '.context/reviews/evidence/T-5350/designer@1024-0_0_1024_75-crop.png'
+  - '.context/reviews/evidence/T-5350/designer@1024-judge-t-5350-r3-ca1e3491a6d8.png'
+  - '.context/reviews/evidence/T-5350/designer@1440-0_0_1440_75-crop.png'
+  - '.context/reviews/evidence/T-5350/designer@1440-judge-t-5350-r3-ca1e3491a6d8.png'
+  - '.context/reviews/evidence/T-5350/designer@1920-1855_7_55_35-crop.png'
+  - '.context/reviews/evidence/T-5350/designer@1920-1858_9_48_29-crop.png'
+  - '.context/reviews/evidence/T-5350/designer@1920-judge-t-5350-r3-ca1e3491a6d8.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-5350-take-designer-0460-832-pin-bump-verify-t.md'
+  - 'policy/designer-pin.yaml'
+  - 'vendor/designer/aef-workflow-designer-0.46.0.html'
+  - 'vendor/designer/validate-workflow-0.46.0.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-21T23:10:30'
+    action: 'T-5350: capture — take designer 0.46.0 from 832'
+  - time: '2026-11-21T23:11:40'
+    action: 'T-5350: scope, criteria'
+  - time: '2026-11-21T23:23:18'
+    action: 'T-5350: re-pin Workflow Designer 0.45.0 -> 0.46.0 (832 msg d7048659, tag designer-v0.46.0) via pull-at-tag — artifact, validator and kit verified against 832''s MANIFEST at the tag; /designer serves APP_VERSION 0.46.0'
+  - time: '2026-11-21T23:24:20'
+    action: 'T-5350: agent criteria done (pinned, served, 832 told); reviewer judging the visual fixes'
+  - time: '2026-11-21T23:24:57'
+    action: 'T-5350: record 832''s T-1472 intent (readable from top-left, Fit available) — accepted as default'
+  - time: '2026-11-21T23:25:31'
+    action: 'T-5350: reviewer verdict'
+  - time: '2026-11-21T23:26:42'
+    action: 'T-5350: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-21T23:32:05'
+    action: 'T-5350: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-21T23:36:18'
+    action: 'T-5350: reviewer verdict'
+  - time: '2026-11-21T23:37:31'
+    action: 'T-5350: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-21T23:41:16'
+    action: 'T-5350: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-22T00:03:21'
+    action: 'T-5350: reviewer verdict'
+  - time: '2026-11-22T00:04:52'
+    action: 'T-5350: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-22T00:08:15'
+    action: 'T-5350: criterion states 832''s starter-map design (operator chose after codex red); 1440 table row corrected'
+  - time: '2026-11-22T00:09:58'
+    action: 'T-5350: reviewer verdict'
+  - time: '2026-11-22T00:11:51'
+    action: 'T-5350: reviewer verdict (codex seat codex, recorded by the runtime)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 16 commit(s), 61 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 61
+  commits: 17
+  files_changed: 80
+  lines_added: 1429
+  lines_removed: 58
+  footprint_refreshed_at: '2026-11-21T23:14:05Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5350-take-designer-0460-832-pin-bump-verify-t.md
+generated_by: context-agent-hybrid

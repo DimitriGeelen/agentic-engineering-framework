@@ -10,12 +10,12 @@ description: >
   the artifact hash ourselves, bump policy/designer-pin.yaml + vendor/designer, and
   check both fixes by screenshot (reviewer-judged).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [policy/designer-pin.yaml]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T22:10:21Z
-last_update: '2026-11-21T22:15:35Z'
-date_finished:
+last_update: 2026-11-21T23:12:19Z
+date_finished: 2026-11-21T23:12:19Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -110,7 +110,7 @@ cost_estimate_proposed:
 - [x] 832 is told the result on its thread (conversation 832-designer-release-0.46.0)
 
 ### Human
-- [ ] [REVIEW] Designer 0.46.0 shows both fixes we asked for (T-1471, T-1472)
+- [x] [REVIEW] Designer 0.46.0 shows both fixes we asked for (T-1471, T-1472)
   **Steps:**
   1. Open http://192.168.10.107:3000/designer at a 1920 px wide window: the Save button is on the first toolbar row, inside the frame
   2. Open http://192.168.10.107:3000/designer/app at a 1024 px wide window: the starter map opens readable from its top-left corner (start event and first steps in view, labels sharp and not overlapping). The rest of the map lies beyond the canvas edge and is reached by scrolling or the toolbar's Fit. This is 832's design (msg 76a8c928), accepted by the operator on 2026-11-22 (see Decisions).
@@ -160,6 +160,7 @@ cost_estimate_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261121-791073b7 — reviewer-judge-t-5350-r3-ca1e3491a6d8:codex (rung rung-3-termlink-single-reviewer), digest e920acc295be; dispatch judge-t-5350-r3-ca1e3491a6d8; evidence: .context/reviews/evidence/T-5350/AC1-judge-t-5350-r3-ca1e3491a6d8.md, .context/reviews/evidence/T-5350/01-designer-judge-t-5350-r3-ca1e3491a6d8.png, .context/reviews/evidence/T-5350/02-designer-app-judge-t-5350-r3-ca1e3491a6d8.png, .context/reviews/evidence/T-5350/designer@1024-judge-t-5350-r3-ca1e3491a6d8.png, .context/reviews/evidence/T-5350/designer@1440-judge-t-5350-r3-ca1e3491a6d8.png, .context/reviews/evidence/T-5350/designer@1920-judge-t-5350-r3-ca1e3491a6d8.png, .context/reviews/evidence/T-5350/app@1024-judge-t-5350-r3-ca1e3491a6d8.png, .context/reviews/evidence/T-5350/app@1440-judge-t-5350-r3-ca1e3491a6d8.png, .context/reviews/evidence/T-5350/app@1920-judge-t-5350-r3-ca1e3491a6d8.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
@@ -427,3 +428,21 @@ Captures (`fw ux shots T-5350`, full page):
 
 ### 2026-11-21T22:11:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-21T23:12:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-163968fa
+- **Timestamp:** 2026-11-21T23:13:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `policy/designer-pin.yaml` pins 0.46.0. `fw designer status` reports the pin valid. `/designer/app` serves APP_VERSION 0.46.0 after a Watchtower restart, the designer tests pass, and the vendored copy
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/designer-pin.yaml in: `policy/designer-pin.yaml` pins 0.46.0. `fw designer status` reports the pin valid. `/designer/app` serves APP_VERSION 0.46.0 after a Watchtower resta`
