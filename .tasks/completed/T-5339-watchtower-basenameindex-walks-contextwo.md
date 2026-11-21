@@ -11,10 +11,10 @@ description: >
   git worktrees (a dir with a .git file) and scratch/ in the walk, cap the walk, or
   build off the request thread.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [watchtower, performance]
 components: []
 related_tasks: []
@@ -46,8 +46,8 @@ origin: {kind: "peer", source: "1409-sprind", ref: "P-011"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T15:09:17Z
-last_update: 2026-11-21T16:18:20Z
-date_finished:
+last_update: 2026-11-21T16:21:08Z
+date_finished: 2026-11-21T16:21:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -404,3 +404,21 @@ grep -q '_WALK_SHALLOW = (".context/working",)' web/shared.py
 ### 2026-11-21T16:18:20Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-21T16:21:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-976ad487
+- **Timestamp:** 2026-11-21T16:21:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Coverage exists: tests/unit/test_t5106_bounded_index_walks.py (5 tests, incl. `.context/working/scratch/deep.yaml` excluded and fail-open truncation) passes.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/working/scratch/deep.yaml in: Coverage exists: tests/unit/test_t5106_bounded_index_walks.py (5 tests, incl. `.context/working/scratch/deep.yaml` excluded and fail-open truncation) `

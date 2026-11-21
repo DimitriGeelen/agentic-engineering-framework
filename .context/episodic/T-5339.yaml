@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5339: Watchtower _basename_index walks .context/working including review worktrees (3.8M files in 1409, rebuilt every 30 s)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T16:21:26Z
+# ============================================================================
+
+task_id: T-5339
+task_name: "Watchtower _basename_index walks .context/working including review worktrees (3.8M files in 1409, rebuilt every 30 s)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-21T15:09:17Z
+completed: 2026-11-21T16:21:08Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-21T17:19:36+01:00
+last_commit: 2026-11-21T17:21:06+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope, criteria (incl. reviewer-judged link check), verification. already fixed by T-5106 (be.49+); 1409 told to upgrade; RCA
+
+# Key outcomes
+outcomes:
+  - 'Checked whether bleeding-edge still has the defect: no. T-5106 (dc4af9756, 2026-11-13, first in v1.8.16-be.49; itself from an earlier 1409 report at 2.58M files) walks `.context/working` top level only (`_WALK_SHALLOW`, web/shared.py:835) within a 200k-file / 10 s budget, so `.context/working/scratch/review-wt/` is never walked. 1409 runs 1.8.15, which predates it.'
+  - 'Coverage exists: tests/unit/test_t5106_bounded_index_walks.py (5 tests, incl. `.context/working/scratch/deep.yaml` excluded and fail-open truncation) passes.'
+  - '1409 told: fixed in v1.8.16-be.49+ by T-5106; upgrade to the current be-tag; no AEF code change under this task'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'already fixed by T-5106 (be.49+); 1409 told to upgrade; RCA'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5339-watchtower-basenameindex-walks-contextwo.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-21T17:19:36'
+    action: 'T-5339: scope, criteria (incl. reviewer-judged link check), verification'
+  - time: '2026-11-21T17:21:06'
+    action: 'T-5339: already fixed by T-5106 (be.49+); 1409 told to upgrade; RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 71 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, performance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 71
+  commits: 4
+  files_changed: 5
+  lines_added: 875
+  lines_removed: 29
+  footprint_refreshed_at: '2026-11-21T16:21:45Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5339-watchtower-basenameindex-walks-contextwo.md
+generated_by: context-agent-hybrid
