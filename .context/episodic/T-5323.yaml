@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5323: Fix 12 unit reds introduced 2026-11-20 (T-5298 restart gate, T-5303/T-5304 printed-command builder): tests pin old spellings
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T13:23:38Z
+# ============================================================================
+
+task_id: T-5323
+task_name: "Fix 12 unit reds introduced 2026-11-20 (T-5298 restart gate, T-5303/T-5304 printed-command builder): tests pin old spellings"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-21T13:02:56Z
+completed: 2026-11-21T13:22:32Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-21T14:03:43+01:00
+last_commit: 2026-11-21T14:22:30+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope, criteria, verification. 12 unit reds from T-5298/T-5304 — pins follow the builder, runme.sh loads it. vendor lib/runme.sh (builder load). RCA, criteria ticked; register G-138 (pre-push grades a stale nightly)
+
+# Key outcomes
+outcomes:
+  - 'Each of the 12 failing tests is classified (test pin outdated by an intended change / real regression) with the evidence, recorded in the RCA'
+  - 'Outdated pins assert the builder spelling at least as strictly as before (positive and negative legs kept); real regressions fixed in code'
+  - 'All 8 files pass with no skips; the commands touched by T-5303/T-5304/T-5298 still behave as the tests describe; vendored copy synced'
+  - 'RCA says why the 2026-11-20 push passed with these reds and whether a gap needs registering'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/runme.sh'
+  - '.context/project/concerns.yaml'
+  - '.tasks/active/T-5323-fix-12-unit-reds-introduced-2026-11-20-t.md'
+  - 'docs/reports/T-5323-unit-reds.md'
+  - 'lib/runme.sh'
+  - 'tests/unit/focus_drift_remedy_scope.bats'
+  - 'tests/unit/restart_sentinel_ttl.bats'
+  - 'tests/unit/t2461_doctor_mcp_consumer_path.bats'
+  - 'tests/unit/t2987_bootstrap_shape_hint.bats'
+  - 'tests/unit/t3050_b005_block_message.bats'
+  - 'tests/unit/t3878_runme_pending.bats'
+  - 'tests/unit/t4075_inception_decide_tick_provenance.bats'
+  - 'tests/unit/t4265_onboarding_remedy_passes_gate.bats'
+  - 'tests/unit/t4768_cli_decide_commits_tick_provenance.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-21T14:03:43'
+    action: 'T-5323: scope, criteria, verification'
+  - time: '2026-11-21T14:18:52'
+    action: 'T-5323: 12 unit reds from T-5298/T-5304 — pins follow the builder, runme.sh loads it'
+  - time: '2026-11-21T14:19:10'
+    action: 'T-5323: vendor lib/runme.sh (builder load)'
+  - time: '2026-11-21T14:22:30'
+    action: 'T-5323: RCA, criteria ticked; register G-138 (pre-push grades a stale nightly)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 19 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 19
+  commits: 5
+  files_changed: 17
+  lines_added: 706
+  lines_removed: 26
+  footprint_refreshed_at: '2026-11-21T13:23:53Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5323-fix-12-unit-reds-introduced-2026-11-20-t.md
+generated_by: context-agent-hybrid

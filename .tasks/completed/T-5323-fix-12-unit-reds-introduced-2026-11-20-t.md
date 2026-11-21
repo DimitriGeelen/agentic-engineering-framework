@@ -6,12 +6,12 @@ description: >
   Fix 12 unit reds introduced 2026-11-20 (T-5298 restart gate, T-5303/T-5304 printed-command
   builder): tests pin old spellings
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/runme.sh, tests/unit/t2461_doctor_mcp_consumer_path.bats, tests/unit/t2987_bootstrap_shape_hint.bats, tests/unit/t3050_b005_block_message.bats, tests/unit/t3878_runme_pending.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T13:02:56Z
-last_update: '2026-11-21T13:16:18Z'
-date_finished:
+last_update: 2026-11-21T13:22:32Z
+date_finished: 2026-11-21T13:22:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -396,3 +396,16 @@ bin/fw vendor self --check --task T-5323
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5323-fix-12-unit-reds-introduced-2026-11-20-t.md
 - **Context:** Initial task creation
+
+### 2026-11-21T13:22:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-503fc80c
+- **Timestamp:** 2026-11-21T13:23:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
