@@ -8,10 +8,10 @@ description: >
   output printed bin/fw), and §Copy-Pasteable Commands in CLAUDE.md (still says bare
   fw may resolve to a stale global; update to the T-5302 rule). Depends on slice 1.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T13:49:55Z
-last_update: '2026-11-20T14:01:19Z'
+last_update: 2026-11-21T23:44:42Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,20 +88,25 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5302 GO (2026-11-20) set one rule for every command printed for someone to run: `cd <absolute project root> && <this project's fw> <args>`, where that is `bin/fw` in the framework repo and `.agentic-framework/bin/fw` in a vendored project, never bare `fw`. Slices 1–4 (builder, code printers, lint) are done. Three texts that agents read still carry the old wording:
+- the `/resume` skill's `bin/fw config get PORT` (832 and 1409 hit it);
+- the consumer CLAUDE.md template, where 055 T-615 found the template saying there is no `bin/fw` at a consumer root while the output printed `bin/fw`;
+- CLAUDE.md §Copy-Pasteable Commands item 3, which still allows "bare `fw` only when the shim … works".
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Agents copy what these texts show. While they show the old forms, agents in vendored projects keep handing out commands that fail there.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** All three texts state and use T-5302's rule, in the copies that ship: `lib/templates/resume-md.md`, `.claude/commands/resume.md`, the resume text inside `lib/init.sh` if it has its own copy, `lib/templates/claude-project.md`, and `CLAUDE.md`.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A vendored project's agent that reads `/resume` or its CLAUDE.md sees `.agentic-framework/bin/fw` with a `cd` prefix, never bare `fw` or a root `bin/fw`. The text reaches consumers with `fw upgrade`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The `/resume` skill sources (`lib/templates/resume-md.md`, `.claude/commands/resume.md`, and any copy in `lib/init.sh`) print commands per T-5302: in a consumer `.agentic-framework/bin/fw`, in the framework repo `bin/fw`, always with `cd <root> &&`, never bare `fw`. The skill says how to tell which one applies, or points to the builder's output.
+- [ ] `lib/templates/claude-project.md` no longer contradicts what output prints, and its command examples follow T-5302.
+- [ ] CLAUDE.md §Copy-Pasteable Commands item 3 and §Human AC "Full-path commands" no longer allow bare `fw`; they state T-5302's rule and name the builder (`_emit_user_command` / `_fw_cmd`).
+- [ ] The printed-commands lint ratchet (`tests/lint/printed-fw-commands-ratchet.bats`) is green and its baseline is not raised; the config/claude parity lints and the template tests (`grep -l "claude-project.md\|resume-md" tests/unit/*`) stay green; the vendored copies are synced.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,6 +293,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 bats tests/lint/printed-fw-commands-ratchet.bats > /tmp/.t5307 2>&1 && ! grep -q "^not ok" /tmp/.t5307
+! grep -n "config get PORT" lib/templates/resume-md.md .claude/commands/resume.md | grep -v "agentic-framework/bin/fw\|bin/fw"
+! grep -q "Bare \`fw\` only when you know the shim" CLAUDE.md
+bin/fw vendor self --check --task T-5307
 
 ## RCA
 
@@ -385,3 +394,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5307-printed-fw-commands-slice-5-skills-hando.md
 - **Context:** Initial task creation
+
+### 2026-11-21T23:44:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
