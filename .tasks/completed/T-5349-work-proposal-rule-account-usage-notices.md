@@ -4,10 +4,10 @@ name: "Work Proposal Rule: account-usage notices are reported to the operator, n
 description: >
   100-video (msg bf7246d9, 2026-11-21) proposed a handover at ~600K Green because a peer notice said the Claude account weekly usage was at 94%. Add to CLAUDE.md + consumer template: report account-quota notices to the operator; the agent does not stop or hand over on them.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T21:59:08Z
-last_update: 2026-11-21T21:59:08Z
-date_finished: null
+last_update: 2026-11-21T22:00:17Z
+date_finished: 2026-11-21T22:00:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -359,3 +359,16 @@ bin/fw vendor self --check --task T-5349
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5349-work-proposal-rule-account-usage-notices.md
 - **Context:** Initial task creation
+
+### 2026-11-21T22:00:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cbcc5496
+- **Timestamp:** 2026-11-21T22:00:32Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

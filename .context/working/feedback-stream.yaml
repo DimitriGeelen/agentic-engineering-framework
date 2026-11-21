@@ -58408,3 +58408,21 @@ scan_id: R-d417799b
 task_id: T-5348
 payload:
   task_file: .tasks/active/T-5348-post-compact-budget-note-sits-past-the-2.md
+---
+kind: scan_emitted
+timestamp: '2026-11-21T22:00:32Z'
+scan_id: R-cbcc5496
+task_id: T-5349
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-21T22:00:32Z'
+scan_id: R-cbcc5496
+task_id: T-5349
+payload:
+  task_file: .tasks/active/T-5349-work-proposal-rule-account-usage-notices.md
