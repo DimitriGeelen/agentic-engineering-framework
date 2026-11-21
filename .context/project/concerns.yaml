@@ -6090,7 +6090,7 @@ concerns:
     likelihood: 1
     impact: 3
     mitigated_likelihood: 1
-    mitigated_impact: 2
+    mitigated_impact: 3
   introduced_by: T-5300
   exists_anyway: false
   mitigation_task: T-5330
