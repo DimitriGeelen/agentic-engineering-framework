@@ -106,7 +106,10 @@ It reports an ERROR for a value outside 1-5, a score that is not L × I, a mitig
 is not mitigated L × I, an unknown actor, or a summary risk with no filled actor table, and
 lists the risks that **need operator acceptance**: introduced (NEW or PARTLY NEW) and still 6
 or more after mitigation, or any score of 15 or more. An actor row with no mitigated values
-keeps its unmitigated score. Blank template rows are skipped. Exit 0 clean (the list may
+keeps its unmitigated score. Blank template rows are skipped.
+An actor table may add a column `Introduced` (yes / no) saying whether the change adds that
+row. For a PARTLY NEW risk the check then counts only the `yes` rows toward operator
+acceptance (a row that exists anyway does not), and at least one row must be `yes`. Exit 0 clean (the list may
 still name risks), 1 errors, 2 file unreadable.
 
 ## Criteria to copy into the task

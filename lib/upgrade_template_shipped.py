@@ -69,6 +69,7 @@ SHIPPED = {
  ],
  ".tasks/templates/risk-matrix.md": [
   "725db21918b08c53ab910a899c79f5dda183da253e5f3d9748af377b8bada88b",
+  "cba07e7a3432e2d12c8555073c29454612d4e83e34307e0516f01f7a78fbf5d0",
   "dce7c33c81844535a037daaaf7a44387e467ca5f0808e4fb0cfeb72dab0cb021"
  ]
 }

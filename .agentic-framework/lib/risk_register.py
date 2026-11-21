@@ -41,7 +41,10 @@ Matrix mode (T-5315):  python3 lib/risk_register.py --matrix FILE [--json]
       mitigated L x I, an unknown actor, a summary risk with no filled actor
       table. Lists the risks that need operator acceptance: introduced (NEW or
       PARTLY NEW) with worst mitigated score >= 6, or any score >= 15. An actor
-      row with no mitigated values keeps its unmitigated score. Blank template
+      row with no mitigated values keeps its unmitigated score. An actor table
+      may carry an optional "introduced" column (yes/no) saying whether the
+      change adds that row; for a PARTLY NEW risk, acceptance then uses the
+      worst mitigated score of the "yes" rows only (T-5334). Blank template
       rows are skipped. Exit 0 clean (the acceptance list may be non-empty),
       1 errors, 2 file unreadable.
 """
@@ -296,6 +299,7 @@ def _actor_rows(rn: int, header: List[str], rows, errors: List[str]) -> List[Dic
     c_l, c_i = _col(header, "l", exact=True), _col(header, "i", exact=True)
     c_s = _col(header, "score", exact=True)
     c_ml, c_ms = _col(header, "mitigated l"), _col(header, "mitigated score")
+    c_intro = _col(header, "introduced")           # T-5334: optional yes/no per row
     filled = []
     for ln, row in rows:
         raw = {k: _get(row, c) for k, c in
@@ -335,7 +339,15 @@ def _actor_rows(rn: int, header: List[str], rows, errors: List[str]) -> List[Dic
                 errors.append(f"{where}: mitigated score {raw['ms']!r} is not an L x I product (1-25)")
         if mitigated is None:
             mitigated = score                     # no mitigation given: the risk stands
-        filled.append({"actor": name, "score": score, "mitigated": mitigated})
+        row_intro = None
+        if c_intro is not None:
+            v = _get(row, c_intro).strip("*` ").lower()
+            if v in ("yes", "no"):
+                row_intro = v == "yes"
+            else:
+                errors.append(f"{where}: introduced must be yes or no, got {_get(row, c_intro)!r}")
+        filled.append({"actor": name, "score": score, "mitigated": mitigated,
+                       "introduced": row_intro})
     return filled
 
 
@@ -345,6 +357,7 @@ def parse_matrix(text: str) -> Dict[str, Any]:
     errors: List[str] = []
     summary: Dict[int, Dict[str, Any]] = {}
     actor_tables: Dict[int, List[Dict[str, Any]]] = {}
+    intro_col: set = set()                        # risks whose actor table has "introduced"
     headings = [(n, int(m.group(1))) for n, l in enumerate(lines)
                 for m in [_RISK_HEAD_RE.match(l.strip())] if m]
 
@@ -355,6 +368,8 @@ def parse_matrix(text: str) -> Dict[str, Any]:
                 errors.append(f"line {hidx + 1}: actor table with no '### Risk N' heading above it")
                 continue
             rn = above[-1]
+            if _col(header, "introduced") is not None:
+                intro_col.add(rn)
             actor_tables.setdefault(rn, []).extend(_actor_rows(rn, header, rows, errors))
         elif _col(header, "risk", exact=True) is not None and _col(header, "introduced") is not None:
             c_n, c_risk = _col(header, "#", exact=True), _col(header, "risk", exact=True)
@@ -404,10 +419,20 @@ def parse_matrix(text: str) -> Dict[str, Any]:
                "worst_score": worst, "worst_band": band(worst) if worst else None,
                "worst_mitigated": worst_mit,
                "mitigated_band": band(worst_mit) if worst_mit else None}
+        accept_mit, accept_what = worst_mit, ""
+        if s["introduced"] == "PARTLY NEW" and rn in intro_col:
+            # T-5334: only the rows the change adds count toward acceptance.
+            intro_mits = [a["mitigated"] for a in acts
+                          if a.get("introduced") is True and a["mitigated"] is not None]
+            accept_mit = max(intro_mits) if intro_mits else None
+            rec["introduced_mitigated"] = accept_mit
+            accept_what = " (introduced rows)"
+            if not any(a.get("introduced") is True for a in acts):
+                errors.append(f"PARTLY NEW risk {rn} names no introduced actor row")
         risks.append(rec)
         reasons = []
-        if s["introduced"] and worst_mit is not None and worst_mit >= ACCEPTANCE_THRESHOLD:
-            reasons.append(f"{s['introduced']} and still {worst_mit} after mitigation")
+        if s["introduced"] and accept_mit is not None and accept_mit >= ACCEPTANCE_THRESHOLD:
+            reasons.append(f"{s['introduced']} and still {accept_mit}{accept_what} after mitigation")
         if worst is not None and worst >= HIGH_THRESHOLD:
             reasons.append(f"scores {worst} (high)")
         if reasons:
