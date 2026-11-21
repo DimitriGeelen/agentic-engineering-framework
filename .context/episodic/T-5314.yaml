@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5314: Risk practice slice 2: fw audit reports any risk scoring 6+ without a mitigation task (T-5310)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T13:00:14Z
+# ============================================================================
+
+task_id: T-5314
+task_name: "Risk practice slice 2: fw audit reports any risk scoring 6+ without a mitigation task (T-5310)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-20T16:31:29Z
+completed: 2026-11-21T12:58:51Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-20T17:31:38+01:00
+last_commit: 2026-11-21T13:58:48+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed (T-5310 GO). scope, criteria, verification. audit WARNs when a risk's mitigation_task is missing or outside the standing arc 'risk'. criteria ticked
+
+# Key outcomes
+outcomes:
+  - 'lib/risk_register.py reports a WARN for a `mitigation_task` that is not a task in .tasks/active or .tasks/completed, and one for a task whose `arc_id` is not `risk`/`arc-028` (arc identity read via the canonical arc-membership helper, not a new scan), each naming the risk id and task id'
+  - 'The audit section shows these WARNs through the existing risk-register block (no second block), with an accurate message for each kind'
+  - 'Unit tests cover: in-arc task (no warn), task outside the arc, missing task, slug and arc-NNN forms; the live register still passes; vendored copy synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/arc_membership.py'
+  - '.agentic-framework/lib/risk_register.py'
+  - '.fabric/components/tests-unit-test_t5314_risk_mitigation_arc.yaml'
+  - '.tasks/active/T-5314-risk-practice-slice-2-fw-audit-reports-a.md'
+  - 'agents/audit/audit.sh'
+  - 'lib/arc_membership.py'
+  - 'lib/risk_register.py'
+  - 'tests/unit/test_t5314_risk_mitigation_arc.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T17:31:38'
+    action: 'T-5314: filed (T-5310 GO)'
+  - time: '2026-11-21T13:41:10'
+    action: 'T-5314: scope, criteria, verification'
+  - time: '2026-11-21T13:46:48'
+    action: 'T-5314: audit WARNs when a risk''s mitigation_task is missing or outside the standing arc ''risk'''
+  - time: '2026-11-21T13:58:48'
+    action: 'T-5314: criteria ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 1227 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1227
+  commits: 5
+  files_changed: 12
+  lines_added: 810
+  lines_removed: 41
+  footprint_refreshed_at: '2026-11-21T13:01:02Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5314-risk-practice-slice-2-fw-audit-reports-a.md
+generated_by: context-agent-hybrid

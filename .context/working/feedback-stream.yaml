@@ -58030,3 +58030,21 @@ scan_id: R-92a945c1
 task_id: T-5306
 payload:
   task_file: .tasks/active/T-5306-printed-fw-commands-slice-4-lint-fails-o.md
+---
+kind: scan_emitted
+timestamp: '2026-11-21T12:59:35Z'
+scan_id: R-cd83c8e0
+task_id: T-5314
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-21T12:59:35Z'
+scan_id: R-cd83c8e0
+task_id: T-5314
+payload:
+  task_file: .tasks/active/T-5314-risk-practice-slice-2-fw-audit-reports-a.md
