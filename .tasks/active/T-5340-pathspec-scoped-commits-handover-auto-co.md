@@ -6,9 +6,9 @@ description: >
   055 report (msg 448c2b31, their T-759): agents/git/lib/commit.sh ~222-227 bumps
   last_update AFTER a pathspec-scoped commit (T-3090 order), so every handover auto-commit
   (agents/handover/handover.sh ~1807) leaves .tasks/active/<handover task>.md modified.
-  Confirmed in AEF: T-4648 is dirty after the latest handover. Cost in consumers:
-  a deploy gate hashing the working tree is refused when a handover lands in the deploy
-  window. Options: skip the bump for the handover commit, or bump before and include
+  Confirmed in AEF: T-4648 is dirty after the latest handover. Cost in consumers
+  (corrected by 055, msg 989cb3f0): their deploy gate excludes .tasks/, so it is not
+  refused; a --check in flight fails with 'tree changed' and costs a full e2e rerun. Options: skip the bump for the handover commit, or bump before and include
   the task file in the pathspec when the caller is the handover; keep T-3090's rule
   that a scoped caller's path set is never silently widened.
 
