@@ -117,6 +117,12 @@ bvp_scores_proposed:
 - [x] 010-termlink is told the task id and, when done, the commit and the flag name
 
 ### Human
+- [ ] [REVIEW] The /config page shows the new SIDECAR_W1_PROMPT_ORIGIN row like its neighbours
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find the row SIDECAR_W1_PROMPT_ORIGIN
+  **Expected:** One row, default 0, the description readable and laid out like the rows around it; no broken table
+  **If not:** Screenshot the row and note what is wrong
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -304,6 +310,17 @@ bvp_scores_proposed:
 timeout 300 python3 -m pytest tests/unit/test_t5351_w1_prompt_origin.py -q
 timeout 300 bats tests/lint/config-registry-parity.bats > /tmp/.t5351 2>&1 && ! grep -q "^not ok" /tmp/.t5351
 bin/fw vendor self --check --task T-5351
+
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| config | SIDECAR_W1_PROMPT_ORIGIN row | ok | ok | ok | full-page shots |
+
+Captures (`fw ux shots T-5351`, full page):
+- .context/visual/T-5351/config@1024.png
+- .context/visual/T-5351/config@1440.png
+- .context/visual/T-5351/config@1920.png
 
 ## RCA
 
