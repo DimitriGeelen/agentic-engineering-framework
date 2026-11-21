@@ -1,0 +1,21 @@
+id: tests/unit/t5340_handover_no_dirty_task.bats
+name: t5340_handover_no_dirty_task
+type: script
+subsystem: tests
+location: tests/unit/t5340_handover_no_dirty_task.bats
+tags: []
+
+purpose: "T-5340 — the handover auto-commit must not leave the handover task file dirty."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-21
+created_by: unknown
