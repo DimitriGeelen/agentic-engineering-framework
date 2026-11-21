@@ -497,7 +497,7 @@ Each component has a YAML card in `.fabric/components/` with: id, name, type, su
 - Amber: propose only small, bounded tasks and small workers; commit first
 - Red: propose only wrap-up actions (commit, learnings, handover); spawn none
 - Stop: handover immediately, no new work
-- **A stop or handover recommendation names the live band and free tokens.** In Green and Amber, a long session, many tasks closed, or "the next session starts clean" is not a reason to stop: propose the next valuable work. A recommendation made before a compaction is stale; re-derive it from `checkpoint.sh budget` (T-5347).
+- **A stop or handover recommendation names the live band and free tokens.** In Green and Amber, a long session, many tasks closed, or "the next session starts clean" is not a reason to stop: propose the next valuable work. A recommendation made before a compaction is stale; re-derive it from `checkpoint.sh budget` (T-5347). An account or subscription usage notice (weekly or 5-hour limit, "94% used") is a different limit: report it to the operator with the figure and reset time, and do not stop or hand over on it yourself (T-5349).
 - The bands are one ladder from the spawn reserve R, not fixed percentages: at the 800K default they sit at 650K / 700K / 750K used (Amber / Red / Stop); at 975K, 825K / 875K / 925K. Absolute token counts move with `FW_CONTEXT_WINDOW` and must not be written down as if fixed.
 - **This applies especially in autonomous mode** — without a human to catch the mistake, proposing work that can't complete in remaining context risks losing all uncommitted work
 
