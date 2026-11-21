@@ -100,8 +100,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A runme is handed to the operator. It replaces exactly that one command in `.claude/settings.json`, leaves every other hook unchanged, and refreshes the enforcement baseline.
-- [ ] After the operator's run: `fw doctor` no longer prints `Hook path isolation`, `stop_driver.bats` stays green, and the settings change is committed.
+- [x] A runme is handed to the operator. It replaces exactly that one command in `.claude/settings.json`, leaves every other hook unchanged, and refreshes the enforcement baseline.
+- [x] After the operator's run: `fw doctor` no longer prints `Hook path isolation`, `stop_driver.bats` stays green, and the settings change is committed.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,6 +288,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+grep -q '"${CLAUDE_PROJECT_DIR}/bin/fw hook stop-driver"' .claude/settings.json
+! grep -q 'agents/context/stop-driver.sh' .claude/settings.json
+timeout 600 bats tests/unit/stop_driver.bats > /tmp/.t5346 2>&1 && ! grep -q "^not ok" /tmp/.t5346
 
 ## RCA
 
@@ -304,6 +307,15 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** The live `fw doctor` WARNed `Hook path isolation: 1/41 hooks use hardcoded paths`.
+**Root cause:** This repo's Stop hook was wired by hand in T-3164 as a direct `agents/context/stop-driver.sh` call. Later, the generator for consumers (`lib/init.sh:1416`) moved to `fw hook stop-driver`, but this repo's own `settings.json` was never migrated.
+**Why structurally allowed:** Doctor did report it, but only as a WARN on an on-demand check, and among many other WARNs it went unnoticed. It surfaced only when `doctor_hook_counters.bats` went red because of it (T-5345).
+**Prevention:** Fixed by the operator's runme t5346-stop-hook (exit 0, 2026-11-21 22:11):
+- One command replaced; the enforcement baseline was refreshed.
+- Doctor: `OK Hook path validation: 41 hooks, all portable`.
+- Probe: `bin/fw hook stop-driver` returns `{}`, rc 0. `stop_driver.bats` 23/23 and `doctor_hook_counters.bats` 7/7 pass.
+- The T-5345 test now catches a hook pointing outside `bin/` instead of going red unexplained.
 
 ## Evolution
 
