@@ -98,10 +98,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Each of the 12 failing tests is classified (test pin outdated by an intended change / real regression) with the evidence, recorded in the RCA
-- [ ] Outdated pins assert the builder spelling at least as strictly as before (positive and negative legs kept); real regressions fixed in code
-- [ ] All 8 files pass with no skips; the commands touched by T-5303/T-5304/T-5298 still behave as the tests describe; vendored copy synced
-- [ ] RCA says why the 2026-11-20 push passed with these reds and whether a gap needs registering
+- [x] Each of the 12 failing tests is classified (test pin outdated by an intended change / real regression) with the evidence, recorded in the RCA
+- [x] Outdated pins assert the builder spelling at least as strictly as before (positive and negative legs kept); real regressions fixed in code
+- [x] All 8 files pass with no skips; the commands touched by T-5303/T-5304/T-5298 still behave as the tests describe; vendored copy synced
+- [x] RCA says why the 2026-11-20 push passed with these reds and whether a gap needs registering
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -307,6 +307,14 @@ bin/fw vendor self --check --task T-5323
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** the 2026-11-21 push was refused for 12 NEW unit reds; all had entered with the 2026-11-20 session (nightly green at 6c97f8ad8, red at ff5d9412a).
+
+**Root cause:** T-5304 changed printed commands to the builder spelling and T-5298 added a RESTART_BY block to the session hook. 11 of the 12 were tests left behind: old spellings pinned (t2461, t2987, t4265, t3878 text), a gate extractor that stopped at the new block's `fi` (restart_sentinel_ttl), fixtures missing `lib/fw_command.py` that the audit now needs (t4075, also t4768), and mutation tests that copied hooks out of the tree so their libraries did not load (focus_drift_remedy_scope, t3050; this made the t3050 mutation leg vacuous). One was a real regression: `lib/runme.sh` is sourced alone by the session-start hook and printed "re-arm:" with no command because the builder was not loaded. Classification and evidence: docs/reports/T-5323-unit-reds.md.
+
+**Why structurally allowed:** the pre-push unit ratchet does not run tests; it grades the last nightly report. All 48 audits on 2026-11-20 graded a report older than every commit that day (and a partial run grades WARN), so a day's commits pushed without their unit tests running. Registered as G-138.
+
+**Prevention:** pins now assert the builder spelling and refuse the old one; mutants run in a framework-shaped tree and refuse a degraded run; a new test runs the hook's exact `runme.sh` invocation (red without the fix). The blind pre-push window is G-138, with prevention options (a) run touched tests at pre-push, (b) WARN/refuse when the report is behind the pushed range, (c) a mid-day run, for a follow-up.
 
 ## Evolution
 

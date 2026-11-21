@@ -5914,3 +5914,18 @@ concerns:
   status: watching
   created: 2026-11-21
   last_reviewed: 2026-11-21
+- id: G-138
+  type: gap
+  title: "Pre-push unit ratchet grades the previous nightly report, so a day's commits push without their unit tests ever running"
+  description: "Found 2026-11-21 (T-5323). The pre-push audit does not run unit tests; it grades .context/audits/unit-suite/LATEST.yaml from the last nightly. All 48 audits on 2026-11-20 graded the 02:03Z report at 6c97f8ad8, older than all 262 commits that day, so 12 reds introduced that day (T-5298, T-5304) pushed unseen and blocked the next day's push instead; one was a real regression (runme WATCH LOST banner printed 're-arm:' with no command). Second weakness: a partial run (10 files undetermined by per-file timeout) grades WARN, so even a stale report never blocks."
+  spec_reference: "T-5323, T-3621 (pre-push ratchet); docs/reports/T-5323-unit-reds.md; agents/audit/unit-suite.sh"
+  severity: medium
+  trigger_fired: true
+  trigger_event: "2026-11-21: push refused for 12 NEW reds that entered 2026-11-20 and were pushed that day"
+  detection_lag_days: 1
+  what_works_now: "The next nightly catches the reds and the next push is refused; full-suite runs are available on demand."
+  what_remains: "Choose prevention: (a) at pre-push run the test files touched by or referencing the pushed range; (b) WARN or refuse when LATEST.yaml revision is behind the pushed range by more than N source commits; (c) a mid-day suite run."
+  mitigation_candidate: "(b) is cheapest and closes the blind window honestly; (a) is the strongest."
+  status: watching
+  created: 2026-11-21
+  last_reviewed: 2026-11-21
