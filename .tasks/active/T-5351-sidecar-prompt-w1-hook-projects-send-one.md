@@ -1,8 +1,17 @@
 ---
 id: T-5351
-name: "Sidecar prompt(): W1-hook projects send one adapter/2 prompt_submit to get a checked origin for the main claim (TermLink T-3694, flag default off)"
+name: "Sidecar prompt(): W1-hook projects send one adapter/2 prompt_submit to get
+  a checked origin for the main claim (TermLink T-3694, flag default off)"
 description: >
-  010-termlink msg 6745a655 (2026-11-21, operator ruling A on their T-3694): in a project running TermLink's W1 sidecar hooks our adapter/2 stays off (w1-guard), so prompt() claims main with no origin; once origin reporting is switched on, an origin-less claim is ignored (FCW-53) and such a project can never be switched. Proposal: behind a config flag (default off), only when adapter2.w1_hook_files() is non-empty and TERMLINK_SIDECAR_SOCKET is set, send exactly one prompt_submit report (~250 ms timeout), pass origin_checked/basis_checked to main_session.claim as origin/basis/kind=prompt; on any failure claim with origin unknown + a basis naming the failure.
+  010-termlink msg 6745a655 (2026-11-21, operator ruling A on their T-3694): in a
+  project running TermLink's W1 sidecar hooks our adapter/2 stays off (w1-guard),
+  so prompt() claims main with no origin; once origin reporting is switched on, an
+  origin-less claim is ignored (FCW-53) and such a project can never be switched.
+  Proposal: behind a config flag (default off), only when adapter2.w1_hook_files()
+  is non-empty and TERMLINK_SIDECAR_SOCKET is set, send exactly one prompt_submit
+  report (~250 ms timeout), pass origin_checked/basis_checked to main_session.claim
+  as origin/basis/kind=prompt; on any failure claim with origin unknown + a basis
+  naming the failure.
 
 status: started-work
 workflow_type: build
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T22:27:14Z
-last_update: 2026-11-21T22:27:14Z
-date_finished: null
+last_update: '2026-11-21T22:30:28Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-21T22:30:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=314,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5351: Sidecar prompt(): W1-hook projects send one adapter/2 prompt_submit to get a checked origin for the main claim (TermLink T-3694, flag default off)
