@@ -115,6 +115,10 @@ _record_names() {
     proj="$TEST_TEMP_DIR/fresh"
     mkdir -p "$proj"
     git -C "$proj" init -q
+    # T-5343: no background `git gc --auto` after fw init's commits — it kept
+    # writing .git while teardown's rm -rf ran ("Directory not empty").
+    git -C "$proj" config gc.auto 0
+    git -C "$proj" config gc.autoDetach false
     run timeout 300 "$FRAMEWORK_ROOT/bin/fw" init "$proj" --provider claude --no-first-run
     [ -f "$proj/.context/working/.gitignore" ] || { echo "$output" | tail -20; false; }
     run git -C "$proj" ls-files -ci --exclude-standard -- .context/working
