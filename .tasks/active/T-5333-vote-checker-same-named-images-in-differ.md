@@ -104,10 +104,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `image_viewed` / `seat_viewed_images` match a cited image by path identity or content hash (plus the seat's own dispatch-id copy), never by basename alone across directories
-- [ ] A regression test reproduces the codex case (21 PNGs, first and last same basename, different directories and hashes): the last is not viewed; plus a test that the same file viewed by path still counts
-- [ ] Existing vote_checker / verdict / judge tests stay green; vendored copy synced
-- [ ] RCA filled; G-137 resolved (or its remainder named); R-041 updated
+- [x] `image_viewed` / `seat_viewed_images` match a cited image by path identity or content hash (plus the seat's own dispatch-id copy), never by basename alone across directories
+- [x] A regression test reproduces the codex case (21 PNGs, first and last same basename, different directories and hashes): the last is not viewed; plus a test that the same file viewed by path still counts
+- [x] Existing vote_checker / verdict / judge tests stay green; vendored copy synced
+- [x] RCA filled; G-137 resolved (or its remainder named); R-041 updated
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -312,6 +312,14 @@ bin/fw vendor self --check --task T-5333
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** an unattached `.context/working/judge-evidence/b/screen.png` was reported as viewed because a different file, `a/screen.png`, was attached (codex reviewer reproduction on T-5316, 21 PNGs; confirmed by the agent before the fix).
+
+**Root cause:** `seat_viewed_images` in lib/vote_checker.py reduced every attached or viewed path to its file name (`out[Path(path).name] = True`), so two different evidence files with the same name were one image to the checker.
+
+**Why structurally allowed:** T-5324 tightened the name-suffix rule only; no test cited two images with the same name in different directories. The risk matrix for T-5309 found the class (G-137); the second-vendor review found this remaining route, which a single review had passed.
+
+**Prevention:** views are keyed by full path and hash; a seat's own copy matches only with its dispatch id; a name-only view counts only when the name is unique among the cited images, else None (cannot tell). tests/unit/test_t5333_path_identity.py pins the codex case, path match, other-path, ambiguous name and own copy. Fix be7b8e0c5; 389 related tests pass; repro prints False.
 
 ## Evolution
 
