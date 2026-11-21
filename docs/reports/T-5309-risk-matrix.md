@@ -29,7 +29,7 @@
 | 1 | Screenshot content sent to an outside provider (OpenAI) | data leaving | `attached-images.json` in a codex dispatch dir lists files; review-backends.yaml codex `vision: true` | a cited screenshot shows a secret, a token or internal addresses (for example a `/config` or settings page) | 4 | 2 | yes (claude-code and antigravity seats already receive the same screenshots, so Anthropic and Google see them) | PARTLY NEW (one more provider receives every cited screenshot, pushed at launch rather than on the seat's choice) | only files under `.context/working/judge-evidence/` and `.context/visual/` are copied (lib/review_seat_evidence.py AREAS); no redaction of what a page shows |
 | 2 | Reviewer seat prompt-injected by text inside a screenshot | review integrity | a rendered page shows text an outsider wrote (task names from issue intake, peer messages) | a seat's verdict quotes or obeys instructions that appear only in an image | 3 | 2 | yes (the same text reaches codex as text in the export, and the claude seat already views the images) | no (same text, new medium; the seat is sandboxed: network off, writes only to the disposable export) | three-vendor panel at rung 5; structured verdicts checked by lib/vote_checker.py; seat sandbox |
 | 3 | An attached image is counted as viewed although the model did not examine it | review integrity | vote_checker `seat_viewed_how: attached at launch (T-5309)` on a codex vote | a codex green on a render criterion that the screenshot refutes (the G-136 pattern, now counted) | 3 | 3 | no (in the baseline a codex render vote did not count at all) | NEW (attachment is taken as proof of viewing; the panel's third seat was the operator or a paid seat) | rung-5 needs a three-vendor unanimous green, so a codex error alone cannot close a criterion; a codex red blocks (fail-safe direction) |
-| 4 | A cited image that was NOT attached is counted as viewed (cap of 20, or a stem match on the name) | review integrity | `attached-images.json` has a non-empty `not_attached` list, or two cited images share a stem prefix (`x.png` and `x-foo.png`) | a vote_checker report marks an image viewed that is in `not_attached` | 3 | 2 | no (before T-5309 a view had to appear in the seat's own log) | NEW (lib/vote_checker.py `image_viewed`: `_stem_match` on attached names, added for copies) | none yet: match attached images by content hash only, and treat over-cap images as not viewed |
+| 4 | A cited image that was NOT attached is counted as viewed (cap of 20, or a stem match on the name) | review integrity | `attached-images.json` has a non-empty `not_attached` list, or two cited images share a stem prefix (`x.png` and `x-foo.png`) | a vote_checker report marks an image viewed that is in `not_attached` | 3 | 2 | yes (the T-5294 checker, a57af26c1, already matched logged views by stem, so a stem collision was already counted against a logged view) | PARTLY NEW (attached names now enter `_stem_match` in lib/vote_checker.py `image_viewed`, so a collision counts with no view at all) | none yet: match attached images by content hash only, and treat over-cap images as not viewed |
 | 5 | A forged `attached-images.json` makes a vote count | review integrity | the manifest is a plain file in the dispatch dir, readable and writable by the same user | a manifest whose sha256 list does not match the files in the export | 3 | 1 | yes (same-user forgery of the review ledgers is the T-3581 residual) | no (the codex sandbox cannot write the dispatch dir; only a same-user process can, as for every other ledger) | codex sandbox `workspace-write` limited to the export and its temp dir; `fw audit` provenance checks |
 
 ## Actor split (one table per risk)
@@ -65,7 +65,7 @@ Mitigation for 2.3: a rung-5 render criterion needs unanimous green from three v
 | 3.1 | own-agent-unintentional | the codex model has the image in its prompt but answers from the brief text, or misreads a downscaled image, and votes green on a broken render; the checker counts it because it was attached | 3 | 3 | 9 | 2 × 3 | 6 |
 | 3.2 | human-unintentional | the human does not take part in a seat's vote | 1 | 1 | 1 | | |
 | 3.3 | outsider-intentional | an outsider cannot steer whether codex reads the image (beyond risk 2) | 1 | 1 | 1 | | |
-| 3.4 | provider-host | OpenAI changes how `-i` images are passed or downscaled, silently, and the model sees less than the file | 2 | 3 | 6 | 2 × 2 | 4 |
+| 3.4 | provider-host | OpenAI changes how `-i` images are passed or downscaled, silently, and the model sees less than the file | 2 | 3 | 6 | 1 × 3 | 3 |
 | 3.5 | intruder | no added path beyond what an intruder can already write to the ledger | 1 | 1 | 1 | | |
 
 Mitigation for 3.1 and 3.4: a wrong close needs the other two vendors' seats to be wrong green on the same criterion as well; a codex red keeps the criterion open. It is still likely enough to stay at 6 for 3.1: the panel this replaces had the operator or a paid seat as the third vote, and G-136 showed codex asserting what it had not seen.
@@ -80,7 +80,7 @@ Mitigation for 3.1 and 3.4: a wrong close needs the other two vendors' seats to 
 | 4.4 | provider-host | not involved: the match happens in our checker | 1 | 1 | 1 | | |
 | 4.5 | intruder | an intruder can forge the vote record directly; a name collision gives them nothing new | 1 | 1 | 1 | | |
 
-No mitigation exists yet: the content-hash match is exact, but the stem match runs for attached names too.
+No mitigation exists yet: the content-hash match is exact, but the stem match runs for attached names too. The stem collision itself predates T-5309 (T-5294 checker); T-5309 widens it from logged views to attached names (PARTLY NEW). Fix filed as T-5324 (G-137).
 
 ### Risk 5 — A forged `attached-images.json` makes a vote count
 
@@ -94,7 +94,7 @@ No mitigation exists yet: the content-hash match is exact, but the stem match ru
 
 ## Net
 
-**Adds:** one more outside provider (OpenAI) receives every cited screenshot, pushed at launch (risk 1, PARTLY NEW); the checker now treats "attached" as "viewed" for codex, which turns codex render votes back into countable votes (risk 3, NEW), and its stem match can count an unattached image as viewed (risk 4, NEW).
+**Adds:** one more outside provider (OpenAI) receives every cited screenshot, pushed at launch (risk 1, PARTLY NEW); the checker now treats "attached" as "viewed" for codex, which turns codex render votes back into countable votes (risk 3, NEW), and its stem match, already in the T-5294 checker for logged views, now also runs on attached names, so it can count an unattached image as viewed (risk 4, PARTLY NEW; fix T-5324).
 
 **Reduces:** against the state before T-5289, it removes the worst case (codex votes counted on images it never opened, G-136): now every counted codex render vote had the pixels in its prompt. Against the T-5289 baseline it removes the operator from rung-5 render checks and the need for a paid OpenRouter seat, which is the goal.
 
@@ -196,8 +196,8 @@ Risks with any actor at 6 or more (unmitigated): 1, 2, 3, 4. The parent files th
     likelihood: 2
     impact: 3
   introduced_by: T-5309
-  exists_anyway: false
-  mitigation_task: T-YYYY
+  exists_anyway: true
+  mitigation_task: T-5324
   created: 2026-11-21
 ```
 

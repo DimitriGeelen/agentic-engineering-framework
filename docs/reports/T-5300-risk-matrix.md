@@ -75,11 +75,11 @@ Mitigation for 3.1 and 3.4: in AEF's store both writes run under the dispatch lo
 
 | # | Actor | How | L | I | Score | Mitigated L × I | Mitigated score |
 |---|-------|-----|--:|--:|------:|-----------------|----------------:|
-| 4.1 | own-agent-unintentional | an agent building the withdraw request path sends nonce and token in a bus or chat message, logs them, or persists them in a readable file so a later withdraw can be honoured | 2 | 4 | 8 | 1 × 4 | 4 |
+| 4.1 | own-agent-unintentional | an agent building the withdraw request path sends nonce and token in a bus or chat message, logs them, or persists them in a readable file so a later withdraw can be honoured (the spec rule that keeps the credential on the Execute-scope connection binds only the hub route; other backends such as ring20's pool use their own channel, and nothing yet forbids logging or persisting it) | 2 | 4 | 8 | 2 × 4 | 8 |
 | 4.2 | human-unintentional | the operator pastes a withdraw command, with its credential, into a shared channel | 1 | 4 | 4 | | |
 | 4.3 | outsider-intentional | an outsider reading a channel the credential was sent on withdraws or completes that attempt | 1 | 4 | 4 | | |
 | 4.4 | provider-host | the hub host sees the credential in transit on the Execute-scope connection, as it already does for allocate and T2 | 1 | 4 | 4 | | |
-| 4.5 | intruder | an intruder reads a persisted credential; the supervisor's copy was already readable on that host | 2 | 3 | 6 | | |
+| 4.5 | intruder | an intruder reads a persisted credential and withdraws or completes that attempt (same stolen credential as 4.1, so the same impact); the supervisor's copy was already readable on that host | 2 | 4 | 8 | | |
 
 Mitigation for 4.1: the spec names the Execute-scope connection as the only hub route for the credential; the hub stores only sha256; the credential is valid for one attempt, so a leak is contained to that attempt (it can end or complete only that job).
 
@@ -117,7 +117,7 @@ Mitigation for 6.1 and 6.2: T3w itself; the submitter releases the job and the n
 
 **Controls it needs:** (a) a supervisor conformance check that the agent child is launched only after T2 is accepted (the vectors test the store, not the supervisor); (b) withdraw requests that carry the credential only on the Execute-scope connection, never on a bus topic or in a log, checked when ring20 and TermLink build their paths; (c) an audit or status line that counts `withdrawn` per submitter, so a mass withdrawal is visible without an operator notice.
 
-**Needs operator acceptance:** risk 4 (attempt credential kept longer and carried on a new request path), PARTLY NEW and still 6 after mitigation through its intruder row (4.5: an intruder on the submitter's host reads a persisted credential). That row mostly exists anyway, since the allocating caller already received the credential in the baseline; what is new is that it must now be kept until the job starts. It drops below 6 if control (b) and the R-NEW-5 file-mode check ship. No risk reaches 15.
+**Needs operator acceptance:** risk 4 (attempt credential kept longer and carried on a new request path), PARTLY NEW and still 8 after mitigation: row 4.1 (an agent logs or persists the credential; the Execute-scope rule binds only the hub route, and control (b) is not built) and row 4.5 (an intruder on the submitter's host reads a persisted credential). That row mostly exists anyway, since the allocating caller already received the credential in the baseline; what is new is that it must now be kept until the job starts. It drops below 6 only when control (b) is built on every backend's withdraw path and the R-NEW-5 file-mode check ships. No risk reaches 15.
 
 ## Register entries to file
 
@@ -202,12 +202,10 @@ Risks with any actor at 6 or more (unmitigated): 1, 2, 3, 4, 5, 6. The parent fi
     how: "withdraw request path sends or logs the credential outside the Execute-scope connection"
     likelihood: 2
     impact: 4
-    mitigated_likelihood: 1
-    mitigated_impact: 4
   - actor: intruder
     how: "reads a persisted credential on the submitter's host"
     likelihood: 2
-    impact: 3
+    impact: 4
   introduced_by: T-5300
   exists_anyway: true
   mitigation_task: T-YYYY
