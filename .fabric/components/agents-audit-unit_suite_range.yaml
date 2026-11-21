@@ -1,0 +1,21 @@
+id: agents/audit/unit_suite_range.py
+name: unit_suite_range
+type: script
+subsystem: audit
+location: agents/audit/unit_suite_range.py
+tags: []
+
+purpose: "T-5342 (G-138): run the unit test files a pushed commit range touches."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-21
+created_by: unknown

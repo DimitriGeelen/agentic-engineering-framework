@@ -4338,7 +4338,11 @@ PY
     # graded on its own (fields 19-21: fallback state, graded-run label, note).
     local _us_prepush=0
     _audit_is_prepush_scope && _us_prepush=1
-    _parsed=$(python3 - "$_report" "$_baseline" "${PROJECT_ROOT:-}" "$_us_prepush" <<'PYEOF' 2>/dev/null
+    # T-5342: argv[5] = files that passed at this pre-push (check_prepush_range_tests);
+    # their reds in the graded report are stale and do not count for this push.
+    local _us_passed=""
+    [ "$_us_prepush" = 1 ] && [ "${FW_UNIT_SUITE_KIND:-unit}" = unit ] && _us_passed="${_FW_RANGE_PASSED:-}"
+    _parsed=$(python3 - "$_report" "$_baseline" "${PROJECT_ROOT:-}" "$_us_prepush" "$_us_passed" <<'PYEOF' 2>/dev/null
 import sys, os, glob, yaml, datetime
 def _incomplete(r):
     # T-3794: why a run is no basis for a pre-push grade ("" = complete enough).
@@ -4404,6 +4408,32 @@ try:
             break
         if fb_state == "missing":
             fb_note += "; no complete run on record (LAST-COMPLETE.yaml or a dated report in %s)" % rdir
+    # T-5342: drop reds whose file passed at this pre-push, in the graded run
+    # and in LATEST (whose recorded reds are otherwise merged in above).
+    passed_now = set(x for x in (sys.argv[5] if len(sys.argv) > 5 else "").split(",") if x)
+    cleared, cleared_files = 0, set()
+    def _red_file(leg, n):
+        n = str(n)
+        if leg == "bats":
+            return n.split(": ", 1)[0]
+        return os.path.basename(n.split("::", 1)[0].split(": ", 1)[0])
+    if passed_now:
+        for rep_ in ([d] if d is latest else [d, latest]):
+            for g in ("bats", "pytest"):
+                lg = (rep_.get("legs") or {}).get(g) or {}
+                keep = []
+                for n in lg.get("failed") or []:
+                    if _red_file(g, n) in passed_now:
+                        if rep_ is d:
+                            cleared += 1
+                            cleared_files.add(_red_file(g, n))
+                    else:
+                        keep.append(n)
+                if "failed" in lg:
+                    lg["failed"], lg["failed_count"] = keep, len(keep)
+        if cleared and not any(((d.get("legs") or {}).get(g) or {}).get("failed") for g in ("bats", "pytest")) \
+                and not any(((d.get("legs") or {}).get(g) or {}).get("error") for g in ("bats", "pytest")):
+            d["runner_exit"] = 0
     # T-4875: reds whose file passed its one retry in the graded run. A red the
     # (incomplete) LATEST recorded again is not a flake: it failed twice.
     flaky = set()
@@ -4508,14 +4538,16 @@ try:
         fd = os.path.join(os.path.dirname(sys.argv[1]), fd)
         if root and fd.startswith(root + "/"):
             fd = fd[len(root) + 1:]
-    print("%d|%d|%d|%d|%d|%d|%s|%s|%s|%d|%s|%d|%d|%d|%s|%s|%s|%s|%s|%s|%s|%d|%s" % (
+    rcommit = str((d.get("revision") or {}).get("commit") or "") if isinstance(d.get("revision"), dict) else ""
+    print("%d|%d|%d|%d|%d|%d|%s|%s|%s|%d|%s|%d|%d|%d|%s|%s|%s|%s|%s|%s|%s|%d|%s|%d|%s|%s" % (
         total, failed, rc, age_h, to, tos,
         "; ".join(shown).replace("|", "/"), ran,
         ", ".join(ftimed).replace("|", "/"), partial,
         bl_state, n_base, len(new), len(expired), _bound(new), _bound(expired),
         sd.replace("|", "/"), fd.replace("|", "/"),
         fb_state, fb_label.replace("|", "/"), fb_note.replace("|", "/"),
-        len(flaked), _bound(flaked)))
+        len(flaked), _bound(flaked), cleared, ", ".join(sorted(cleared_files)).replace("|", "/"),
+        rcommit))
 except Exception:
     pass
 PYEOF
@@ -4531,11 +4563,29 @@ PYEOF
     local _us_total _us_failed _us_rc _us_age _us_timedout _us_timeout_s _us_names
     local _us_ran _us_ftimed _us_partial
     local _us_bl _us_nbase _us_nnew _us_nexp _us_new _us_exp _us_dir _us_fdir
-    local _us_fb _us_fblabel _us_fbnote _us_nflaky _us_flaky
+    local _us_fb _us_fblabel _us_fbnote _us_nflaky _us_flaky _us_ncleared _us_cleared _us_commit
     IFS='|' read -r _us_total _us_failed _us_rc _us_age _us_timedout _us_timeout_s _us_names \
         _us_ran _us_ftimed _us_partial _us_bl _us_nbase _us_nnew _us_nexp _us_new _us_exp _us_dir _us_fdir \
-        _us_fb _us_fblabel _us_fbnote _us_nflaky _us_flaky <<< "$_parsed"
+        _us_fb _us_fblabel _us_fbnote _us_nflaky _us_flaky _us_ncleared _us_cleared _us_commit <<< "$_parsed"
     local _us_label="$_us_name${_us_dir:+ ($_us_dir)}"
+    # T-5342 (G-138 option b): at pre-push with a known range, every line names
+    # the graded report's commit and how many pushed commits are newer than it.
+    if [ "$_us_prepush" = 1 ] && [ "${FW_UNIT_SUITE_KIND:-unit}" = unit ] && [ -n "${_FW_RANGE_SPEC:-}" ]; then
+        local _us_newer=0 _us_r _us_c _us_stale
+        if [ -n "$_us_commit" ] && git -C "$PROJECT_ROOT" cat-file -e "${_us_commit}^{commit}" 2>/dev/null; then
+            for _us_r in $_FW_RANGE_SPEC; do
+                _us_c=$(git -C "$PROJECT_ROOT" rev-list --count "$_us_r" "^$_us_commit" 2>/dev/null) || _us_c=0
+                _us_newer=$(( _us_newer + ${_us_c:-0} ))
+            done
+            _us_stale="report commit ${_us_commit:0:9}, ${_us_newer} pushed commit(s) newer than it"
+        else
+            _us_stale="report commit ${_us_commit:-unknown}${_us_commit:+ (not in this repo)}, pushed commits newer than it: unknown"
+        fi
+        _us_label="$_us_label [$_us_stale]"
+    fi
+    if [ "${_us_ncleared:-0}" -gt 0 ]; then
+        info "$_us_label: ${_us_ncleared} stale red(s) not counted for this push — their file(s) passed at pre-push: ${_us_cleared} (T-5342)"
+    fi
 
     # T-3794: pre-push, incomplete LATEST, nothing complete to grade instead.
     # WARN would let the push through on a run that measured almost nothing.
@@ -4643,6 +4693,98 @@ PYEOF
          "report parsed but recorded zero tests across both legs — a harness error, not a green corpus (T-3302)" \
          "Run manually and read the output: $_us_rerun"
 }
+
+# T-5342 (G-138): at pre-push, RUN the unit test files the pushed range touches.
+# The ratchet above grades the last nightly report and runs nothing, so commits
+# made after it pushed with their tests never run (2026-11-20: 12 reds, one a
+# real regression), and a stale red then blocked the fix's push. Selection and
+# runner: agents/audit/unit_suite_range.py. The range comes from the pre-push
+# hook (FW_PUSH_RANGE, space-separated A..B); an older installed hook passes
+# none, so it falls back to @{upstream}..HEAD — except inside a test harness,
+# where an audit run must not start running the real suite. Budget:
+# PREPUSH_RANGE_TEST_BUDGET seconds (0 = off; the runner sets 0 in every test it
+# starts, so a test that runs the pre-push audit cannot recurse).
+# Sets _FW_RANGE_SPEC and _FW_RANGE_PASSED for check_unit_suite_report.
+_FW_RANGE_SPEC="" _FW_RANGE_PASSED=""
+check_prepush_range_tests() {
+    _audit_is_prepush_scope || return 0
+    local _rt_budget _rt_range="${FW_PUSH_RANGE:-}" _rt_src="pushed range (pre-push hook)"
+    _rt_budget="$(fw_config PREPUSH_RANGE_TEST_BUDGET 120 2>/dev/null)"
+    [[ "$_rt_budget" =~ ^[0-9]+$ ]] || _rt_budget=120
+    if [ "$_rt_budget" -eq 0 ]; then
+        info "Range unit tests off at pre-push (PREPUSH_RANGE_TEST_BUDGET=0) (T-5342)"
+        return 0
+    fi
+    if [ -z "$_rt_range" ]; then
+        if [ -n "${BATS_TEST_FILENAME:-}${PYTEST_CURRENT_TEST:-}" ]; then
+            info "Range unit tests not run — no FW_PUSH_RANGE, and inside a test harness (T-5342)"
+            return 0
+        fi
+        _rt_range="@{upstream}..HEAD"
+        _rt_src="fallback @{upstream}..HEAD — the installed pre-push hook passed no FW_PUSH_RANGE (fw git install-hooks updates it)"
+    fi
+    local _rt_suite="${FW_UNIT_SUITE_DIR:-$PROJECT_ROOT/tests/unit}"
+    if [ ! -d "$_rt_suite" ]; then
+        info "Range unit tests: no suite directory at $_rt_suite (T-5342)"
+        return 0
+    fi
+    _FW_RANGE_SPEC="$_rt_range"
+    local _rt_out _rt_args=() _r
+    _rt_out=$(mktemp -t fw-rangetest-XXXXXX.json 2>/dev/null) || {
+        warn "Range unit tests NOT RUN — mktemp failed (T-5342)" "No result file could be created" "Check TMPDIR, re-push"
+        return 0
+    }
+    for _r in $_rt_range; do _rt_args+=(--range "$_r"); done
+    local _rt_t0=$SECONDS
+    python3 "$FRAMEWORK_ROOT/agents/audit/unit_suite_range.py" run --root "$PROJECT_ROOT" \
+        --suite-dir "$_rt_suite" --budget "$_rt_budget" \
+        --file-timeout "${FW_UNIT_SUITE_FILE_TIMEOUT:-900}" "${_rt_args[@]}" --out "$_rt_out" \
+        < /dev/null 2>/dev/null
+    local _rt_secs=$(( SECONDS - _rt_t0 ))
+    local _rt_bl="${FW_UNIT_SUITE_BASELINE:-$CONTEXT_DIR/audits/unit-suite/baseline.yaml}"
+    local _g
+    _g=$(python3 "$FRAMEWORK_ROOT/agents/audit/unit_suite_range.py" grade --result "$_rt_out" --baseline "$_rt_bl" 2>/dev/null)
+    rm -f "$_rt_out"
+    local _st _nsel _nran _npass _nnew _new _nbase _base _nfl _fl _nun _un _ncut _cut _err _passed _nchg _blok
+    IFS='|' read -r _st _nsel _nran _npass _nnew _new _nbase _base _nfl _fl _nun _un _ncut _cut _err _passed _nchg _blok <<< "$_g"
+    if [ -z "$_g" ] || [ "${_st:-}" = error ]; then
+        warn "Range unit tests NOT RUN — ${_err:-the selector produced no result} (T-5342)" \
+             "Range: $_rt_range ($_rt_src). The pushed commits' tests are unmeasured, not green" \
+             "Run by hand: python3 agents/audit/unit_suite_range.py run --range '$_rt_range'"
+        return 0
+    fi
+    local _rt_head="Range unit tests ($_rt_range: $_nchg changed file(s), $_nsel test file(s) selected, ${_rt_secs}s, budget ${_rt_budget}s)"
+    local _rt_cutnote=""
+    [ "${_ncut:-0}" -gt 0 ] && _rt_cutnote=" $_ncut more matched over the cap and were not selected: $_cut."
+    if [ "${_nsel:-0}" -eq 0 ]; then
+        info "$_rt_head — no unit test file is changed by or names a file changed in the range (T-5342)"
+        return 0
+    fi
+    _FW_RANGE_PASSED="$_passed"
+    if [ "${_nnew:-0}" -gt 0 ]; then
+        fail "$_rt_head: ${_nnew} red(s) not in the ratchet baseline — graded like a NEW red (T-5342)" \
+             "Measured on the working tree at push. Red: $_new.${_rt_cutnote}" \
+             "Fix the red before pushing, or file a task for it (one bug = one task); re-run one file: bats <file> / python3 -m pytest <file>"
+    fi
+    if [ "${_nfl:-0}" -gt 0 ]; then
+        warn "$_rt_head: ${_nfl} red(s) passed on the one retry — suspected flaky (T-5342, T-4875)" \
+             "Suspected flaky: $_fl" "Investigate each (T-4866); file a task per flaky test"
+    fi
+    if [ "${_nbase:-0}" -gt 0 ]; then
+        warn "$_rt_head: ${_nbase} BASELINED red(s) still red (T-5342, T-3621)" \
+             "Baselined: $_base" "Fix them via their owning tasks (owner: in the baseline)"
+    fi
+    if [ "${_nun:-0}" -gt 0 ]; then
+        warn "$_rt_head: ${_nun} selected file(s) NOT RUN or not finished within the budget (T-5342)" \
+             "Not determined, not green: $_un.${_rt_cutnote}" \
+             "Run them by hand before relying on this push, or raise PREPUSH_RANGE_TEST_BUDGET (bin/fw config set PREPUSH_RANGE_TEST_BUDGET <seconds>)"
+    fi
+    if [ "${_nnew:-0}" -eq 0 ] && [ "${_nfl:-0}" -eq 0 ] && [ "${_nbase:-0}" -eq 0 ] && [ "${_nun:-0}" -eq 0 ]; then
+        pass "$_rt_head: all $_npass green (T-5342)${_rt_cutnote:+ —$_rt_cutnote}"
+    fi
+    return 0
+}
+check_prepush_range_tests
 check_unit_suite_report
 
 # T-4634: tests/integration ran in no gate — not at commit, not at pre-push, not
