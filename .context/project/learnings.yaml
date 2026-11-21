@@ -5305,3 +5305,9 @@ X'` returning empty group."
   task: T-4649
   date: 2026-11-19
   context: Added via context agent
+- id: L-725
+  learning: "A check that grades a saved report must say how old the report is versus what is being pushed; otherwise graded reads as tested. Run the tests the change touches, and grade partial coverage WARN, never PASS."
+  source: P-001
+  task: T-5342
+  date: 2026-11-21
+  context: Added via context agent
