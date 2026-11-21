@@ -58210,3 +58210,21 @@ scan_id: R-3a98496d
 task_id: T-5336
 payload:
   task_file: .tasks/active/T-5336-unattended-re-run-of-stored-verification.md
+---
+kind: scan_emitted
+timestamp: '2026-11-21T16:59:50Z'
+scan_id: R-dd478e29
+task_id: T-5337
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-21T16:59:50Z'
+scan_id: R-dd478e29
+task_id: T-5337
+payload:
+  task_file: .tasks/active/T-5337-vendor-preserve-one-path-under-both-file.md
