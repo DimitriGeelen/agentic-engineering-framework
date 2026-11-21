@@ -88,20 +88,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5310 GO (operator 2026-11-20): the agent drafts and scores a risk matrix; an independent reviewer agent checks the scores, the actor split and the "introduced?" column; the operator is asked only for risk acceptance (an INTRODUCED risk still at 6+ after mitigation, or any risk at 15+). The operator pushed back on rubber-stamping (T-5309), so the split must be real. The template (.tasks/templates/risk-matrix.md, T-5313) names `fw reviewer judge` but nothing wires it.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Today a matrix has no criterion that sends it to the reviewer, nothing checks its arithmetic, and nothing tells which risks need the operator. So either the operator is asked about every score, or nobody checks.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** (1) a machine check of a matrix file: arithmetic, bands, actor names, and a list of the risks that need operator acceptance; (2) two ready-to-copy criteria in the template: a reviewer-judged one (scores, actor split, "introduced?" sound; uses the machine check) and an `[OPERATOR]` risk-acceptance one, included only when the machine check lists a risk; (3) the delegation classifier routes them that way.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A task that changes a trust boundary carries its matrix through `fw reviewer judge` like any reviewer-judged criterion, and reaches the operator only for named risk acceptances.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `python3 lib/risk_register.py --matrix <file>` parses a filled matrix (summary and actor-split tables): reports arithmetic, band and actor-name errors, and lists each risk needing operator acceptance (introduced/partly new with mitigated score >= 6, or any score >= 15); exit 0 clean, 1 errors
+- [ ] .tasks/templates/risk-matrix.md carries the two criteria to copy (reviewer-judged check with Steps/Expected/If-not that run the machine check; `[OPERATOR]` acceptance naming the risks), and says when to omit the second
+- [ ] `fw task delegate --dry-run` on a fixture task with both criteria classes the first REVIEWER-JUDGES and the second OPERATOR-ONLY
+- [ ] Unit tests cover the parser (clean, arithmetic error, acceptance list) and the routing; vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,6 +290,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/test_t5315_risk_matrix_review.py tests/unit/test_t5313_risk_fields.py -q > /tmp/.t5315 2>&1 && grep -q passed /tmp/.t5315
+grep -q "\[OPERATOR\]" .tasks/templates/risk-matrix.md && grep -q -- "--matrix" .tasks/templates/risk-matrix.md
+bin/fw vendor self --check --task T-5315
 
 ## RCA
 
