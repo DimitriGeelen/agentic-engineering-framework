@@ -5311,3 +5311,9 @@ X'` returning empty group."
   task: T-5342
   date: 2026-11-21
   context: Added via context agent
+- id: L-726
+  learning: "Worker briefs that add a config key must ask for tests/lint/config-registry-parity.bats: lib/config.sh and web/blueprints/config.py must list the same keys, and the lint runs only at push"
+  source: P-001
+  task: T-5344
+  date: 2026-11-21
+  context: Added via context agent
