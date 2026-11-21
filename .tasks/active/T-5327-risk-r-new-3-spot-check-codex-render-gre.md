@@ -7,10 +7,10 @@ description: >
   render greens, re-judge with a seat whose log shows a view, report the disagreement
   rate in fw audit. Source: docs/reports/T-5309-risk-matrix.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [arc:risk, risk-mitigation]
 components: []
 related_tasks: [T-5316, T-5309]
@@ -42,7 +42,7 @@ origin: {kind: "agent", source: "T-5316"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T13:43:26Z
-last_update: '2026-11-21T13:46:12Z'
+last_update: 2026-11-21T15:01:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,20 +88,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** T-5309 risk matrix (T-5316, reviewed green): risk 3 (R-040), "an attached image is counted as viewed although codex did not examine it", NEW, 9 after mitigation, worst in a single-seat run where codex is the only seat. Operator, 2026-11-21, on the options (1 spot-check after, 2 codex cannot close a render criterion alone, 3 both): "proceed as you see fit"; agent chose 3, building 2 first.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** In a single-seat run (rung 1/3) a codex green on a render criterion closes it on the strength of "attached at launch" (lib/vote_checker.py, T-5309) alone; nothing shows the model looked. G-136 showed codex asserting what it had not seen.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** (2) In a run that is not a rung-5 panel, a render-criterion vote whose only view proof is "attached at launch" is not-checkable ("attached-only proof: needs a seat that logged a view, T-5327"), so the judge's existing reassignment hands the criterion to another seat kind (claude, antigravity) whose log shows a view. Panels unchanged. (1, later slice) a spot-check of codex render greens.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A single-seat codex green on a render criterion no longer closes it alone; the reassigned seat judges it. R-040's single-seat residual drops; the matrix can be updated in a later pass.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] In a non-panel run, a render-criterion vote whose only view proof is attached-at-launch is reported not-checkable with a named reason; the same vote in a rung-5 panel still counts; a seat with a logged view still counts in both
+- [ ] The judge reassigns such a criterion to another seat kind (existing not-checkable path), shown by a test through judge_cli's reassignment logic
+- [ ] Existing vote_checker / verdict / judge tests stay green; vendored copy synced
+- [ ] Option 1 (spot-check) filed as a follow-up task in arc risk
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,6 +290,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/ -q -k "vote_checker or verdict or judge or t5327 or t5333 or t5324 or t5309" > /tmp/.t5327 2>&1 && grep -q passed /tmp/.t5327 && ! grep -q failed /tmp/.t5327
+bin/fw vendor self --check --task T-5327
 
 ## RCA
 
@@ -385,3 +389,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5327-risk-r-new-3-spot-check-codex-render-gre.md
 - **Context:** Initial task creation
+
+### 2026-11-21T15:01:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
