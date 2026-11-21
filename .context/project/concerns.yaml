@@ -5937,6 +5937,7 @@ concerns:
   description: T-5309 attaches every screenshot a judge brief cites to the codex seat (codex exec -i). A screenshot of a page that shows a secret, token or internal addresses goes to one more outside provider;
     nothing checks what the page shows.
   status: watching
+  accepted_by: operator 2026-11-21 (T-5316 Human AC3, via Watchtower) until its mitigation task lands
   likelihood: 2
   impact: 4
   score: 8
@@ -5965,6 +5966,7 @@ concerns:
   description: Outsider text (issue intake, peer messages) rendered on a Watchtower page reaches review seats as pixels and may sway a render vote. Image-borne injection existed for the other seats; T-5309
     exposes codex to it and makes codex render votes count, where in the baseline codex could not sit render criteria. In a single-seat run (rung 1/3) a swayed codex green closes the criterion alone.
   status: watching
+  accepted_by: operator 2026-11-21 (T-5316 Human AC3, via Watchtower) until its mitigation task lands
   likelihood: 2
   impact: 3
   score: 6
@@ -5987,6 +5989,7 @@ concerns:
   description: 'lib/vote_checker.py treats an image attached at launch as viewed. Codex can still answer from the text (the G-136 pattern) and its green now counts on render criteria: alone in a single-seat
     run (rung 1/3), with one other vendor in a rung-5 panel closing on two.'
   status: watching
+  accepted_by: operator 2026-11-21 (T-5316 Human AC3, via Watchtower) until its mitigation task lands
   likelihood: 3
   impact: 3
   score: 9
@@ -6034,6 +6037,7 @@ concerns:
   title: Forged withdrawal of another submitter's pool job
   description: \"T3w ends a dispatched attempt for whoever presents its nonce, supervisor token and supervisor_gen. An intruder controlling the submitter's host can withdraw its jobs (it could already stop them with that host control); a party holding only the credential can now withdraw a never-started job, which is new with T3w.\"
   status: watching
+  accepted_by: operator 2026-11-21 (T-5316 Human AC3, via Watchtower) until its mitigation task lands
   likelihood: 2
   impact: 3
   score: 6
@@ -6054,6 +6058,7 @@ concerns:
   title: Submitter withdraws a wanted job, unseen
   description: T3w raises no operator notice; a cleanup loop or a batch withdraw can end jobs still wanted, visible only in history.
   status: watching
+  accepted_by: operator 2026-11-21 (T-5316 Human AC3, via Watchtower) until its mitigation task lands
   likelihood: 2
   impact: 3
   score: 6
@@ -6076,6 +6081,7 @@ concerns:
   description: The T2/T3w race is safe only if a supervisor launches after its T2 is accepted. A non-conforming supervisor runs a withdrawn job; its completion is refused as done_conflict, so the run is
     wasted.
   status: watching
+  accepted_by: operator 2026-11-21 (T-5316 Human AC3, via Watchtower) until its mitigation task lands
   likelihood: 2
   impact: 3
   score: 6
@@ -6104,6 +6110,7 @@ concerns:
   description: To withdraw, the submitter must keep nonce and supervisor token until the job starts and send them with the request (ring20.pool.withdraw/1). A request sent on a bus topic, logged or persisted
     readable leaks the attempt's credential.
   status: watching
+  accepted_by: operator 2026-11-21 (T-5316 Human AC3, via Watchtower) until its mitigation task lands
   likelihood: 2
   impact: 4
   score: 8
