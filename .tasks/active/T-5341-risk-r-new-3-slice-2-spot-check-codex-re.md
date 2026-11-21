@@ -107,8 +107,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A read-only check lists every committed codex green on a render-surface criterion. For each one it finds the other seats in the same run, voting on the same criterion. A green counts as "backed" when at least one of those seats also voted green with a logged view of the images (reusing `lib/vote_checker.py` view logic; no new view rules).
+- [ ] `fw audit` prints one line: N codex render greens, M backed. It PASSes when every one is backed and WARNs, naming task and AC, for each unbacked one. It never FAILs and never starts a review dispatch.
+- [ ] Unit tests: backed by a logged-view peer (PASS); peer green with attached-only proof (unbacked, WARN); peer amber (unbacked); single-seat run (unbacked); no codex render greens (PASS, count 0). The live ledger gives 9 greens, with the 8 rung-5 ones backed. The vendored copy is synced.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -295,6 +296,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 python3 -m pytest tests/unit/test_t5341_codex_render_backing.py -q
+bash -n agents/audit/audit.sh
+bin/fw vendor self --check --task T-5341
 
 ## RCA
 
