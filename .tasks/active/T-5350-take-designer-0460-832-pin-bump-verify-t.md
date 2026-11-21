@@ -312,6 +312,8 @@ bin/fw vendor self --check --task T-5350
 | designer | Save button (T-1471) | ok | ok | ok | 1920: Save on the first toolbar row at the right end, inside the frame. 1024: the toolbar wraps to two rows, Save on row 2 (T-1471 is about 1920) |
 | app | starter map (T-1472) | clipped | ok | ok | 1024: opens at 100%, labels sharp and not overlapping, but only the left part of the map is in view; the rest is under the properties panel and needs scrolling. Reviewer to judge whether this meets T-1472 |
 
+**T-1472 intent, from 832 (msg 76a8c928, 2026-11-21):** at 1024, fitting the whole map draws its smallest text at 2.7 px, and 832's floor is 9 px. So the starter map opens at the zoom where the smallest text is 9 px, from the top-left: the start event and first steps are in view, and the rest is reached by scrolling. The toolbar's Fit still shows the whole map. Maps opened by `?load=` have behaved this way since 832's T-1256/T-1278; T-1472 gave the starter map the same rule. AEF accepted this as the right default (no host setting). So "clipped" at 1024 above means "scroll for the rest", by design.
+
 Captures (`fw ux shots T-5350`, full page):
 - .context/visual/T-5350/designer@1024.png
 - .context/visual/T-5350/designer@1440.png
