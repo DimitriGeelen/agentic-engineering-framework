@@ -1,0 +1,195 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5316: Risk practice slice 4: first two matrices — T-5309 (codex screenshot attachment) and T-5300 (job withdrawal) (T-5310)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T17:14:20Z
+# ============================================================================
+
+task_id: T-5316
+task_name: "Risk practice slice 4: first two matrices — T-5309 (codex screenshot attachment) and T-5300 (job withdrawal) (T-5310)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-20T16:31:30Z
+completed: 2026-11-21T14:26:17Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-20T17:31:47+01:00
+last_commit: 2026-11-21T15:26:52+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed (T-5310 GO). scope, criteria (two reviewer-judged matrix checks), verification. risk matrices for T-5309 (codex screenshot attachment) and T-5300 (job withdrawal). reviewer verdict. matrices corrected per reviewer amber (V on AC1/AC2): T-5309 risk 4 PARTLY NEW, row 3.4 1x3; T-5300 row 4.1 stays 8, acceptance at 8. reviewer verdict (codex seat codex, recorded by the runtime). T-5309 matrix revised per reviewer red (review modes, row 3.4 impact, risk 2 PARTLY NEW). T-5309 matrix risk 4 mitigated by T-5324 (shipped after review); register R-038..R-047 and mitigation tasks T-5325..T-5332 in arc risk. agent criteria ticked; operator risk-acceptance criterion added (4 risks). matrices corrected per codex review (T-5309 risk 4 reopened: same-basename collision, T-5333; T-5300 risk 2 stays 6); G-137 reopened; R-041/R-043 updated; acceptance now 6 risks. T-5300 matrix per review amber — risk 2 wording, risk 3 impact stays 3 (joins acceptance); R-044 updated; acceptance now 7 risks. T-5300 matrix row 3.4 impact stays 3, risk 3 summary reworded, R-044 provider-host mitigated impact 3 (review amber). T-5300 risk 1 PARTLY NEW (credential-only withdrawal), rows 1.3-1.5 and 4.3 clarified per codex amber; R-042 noted; acceptance now 8 risks. T-5300 matrix wording per review (rows 1.4, 4.3, R-NEW-5/R-042 PARTLY NEW). file T-5334 (acceptance from the introduced part). recommendation (GO, accept 8 medium risks). reviewer greens applied (AC1, AC2); partial-complete, operator risk acceptance remains
+
+# Key outcomes
+outcomes:
+  - 'docs/reports/T-5309-risk-matrix.md and docs/reports/T-5300-risk-matrix.md filled from the template (header, summary, actor split per risk, Net); `python3 lib/risk_register.py --matrix <file>` prints 0 error(s) for both'
+  - 'Every risk with any actor scoring 6+ has an R-NNN entry in .context/project/concerns.yaml (type risk, scores, actors, introduced_by, exists_anyway, mitigation_task) and its mitigation task carries arc_id: risk; `python3 lib/risk_register.py` reports 0 errors and 0 warnings'
+  - 'The operator-acceptance list from both checks is recorded under ### Human as one [OPERATOR] criterion naming exactly those risks, or noted as "none" here'
+  - 'Risk matrix scores, actor split and "introduced?" column are sound (docs/reports/T-5309-risk-matrix.md)'
+  - 'Risk matrix scores, actor split and "introduced?" column are sound (docs/reports/T-5300-risk-matrix.md)'
+  - '[OPERATOR] Accept the remaining risk of T-5309 risk 1 (screenshot content sent to OpenAI, 8), risk 2 (seat prompt-injected by text inside a screenshot, 6), risk 3 (attached image counted as viewed though codex did not examine it, 9) and risk 4 (unattached image counted as viewed through a same-name collision, 6), and T-5300 risk 1 (forged withdrawal of someone else''s job, 6; the part T3w adds scores 3, the 6 is full host compromise that exists anyway), risk 2 (wanted job withdrawn unseen, 6), risk 3 (withdrawn job runs anyway, 6) and risk 4 (attempt credential kept longer and carried on a new path, 8), as listed by the --matrix check'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/concerns.yaml'
+  - '.context/reviews/applied.jsonl'
+  - '.context/reviews/evidence/T-5316/AC1-judge-t-5316-r3-0b1025f81dcf.md'
+  - '.context/reviews/evidence/T-5316/AC1-judge-t-5316-r3-22da5927c143.md'
+  - '.context/reviews/evidence/T-5316/AC1-judge-t-5316-r3-4bca74fc9fa4.md'
+  - '.context/reviews/evidence/T-5316/AC1-judge-t-5316-r3-5d23083a1e03.md'
+  - '.context/reviews/evidence/T-5316/AC1-judge-t-5316-r3-63c3a5c253d3.md'
+  - '.context/reviews/evidence/T-5316/AC1-judge-t-5316-r3-7811c5bc49f8.md'
+  - '.context/reviews/evidence/T-5316/AC1-judge-t-5316-r3-897b160f9d7f.md'
+  - '.context/reviews/evidence/T-5316/AC1-judge-t-5316-r3-a6e91a336533.md'
+  - '.context/reviews/evidence/T-5316/AC1-judge-t-5316-r3-af3065cef16a.md'
+  - '.context/reviews/evidence/T-5316/AC1-judge-t-5316-r3-c775eb569c5d.md'
+  - '.context/reviews/evidence/T-5316/AC1-judge-t-5316-r3-d92969704723.md'
+  - '.context/reviews/evidence/T-5316/AC2-judge-t-5316-r3-22da5927c143.md'
+  - '.context/reviews/evidence/T-5316/AC2-judge-t-5316-r3-37642c7b6100.md'
+  - '.context/reviews/evidence/T-5316/AC2-judge-t-5316-r3-5d23083a1e03.md'
+  - '.context/reviews/evidence/T-5316/AC2-judge-t-5316-r3-63c3a5c253d3.md'
+  - '.context/reviews/evidence/T-5316/AC2-judge-t-5316-r3-7811c5bc49f8.md'
+  - '.context/reviews/evidence/T-5316/AC2-judge-t-5316-r3-897b160f9d7f.md'
+  - '.context/reviews/evidence/T-5316/AC2-judge-t-5316-r3-a6e91a336533.md'
+  - '.context/reviews/evidence/T-5316/AC2-judge-t-5316-r3-af3065cef16a.md'
+  - '.context/reviews/evidence/T-5316/AC2-judge-t-5316-r3-c775eb569c5d.md'
+  - '.context/reviews/evidence/T-5316/AC2-judge-t-5316-r3-d92969704723.md'
+  - '.context/reviews/evidence/T-5316/AC2-judge-t-5316-r3-e49c0dd0f805.md'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-5316-risk-practice-slice-4-first-two-matrices.md'
+  - '.tasks/active/T-5325-risk-r-new-1-screenshot-sensitivity-gate.md'
+  - '.tasks/active/T-5326-risk-r-new-2-image-borne-instruction-che.md'
+  - '.tasks/active/T-5327-risk-r-new-3-spot-check-codex-render-gre.md'
+  - '.tasks/active/T-5328-risk-r-new-5-keep-attempt-credentials-ou.md'
+  - '.tasks/active/T-5329-risk-r-new-6-count-withdrawals-in-status.md'
+  - '.tasks/active/T-5330-risk-r-new-7-supervisor-launch-after-t2-.md'
+  - '.tasks/active/T-5331-risk-r-new-8-withdraw-request-carries-th.md'
+  - '.tasks/active/T-5332-risk-r-new-9-reader-rule-for-unknown-out.md'
+  - '.tasks/active/T-5333-vote-checker-same-named-images-in-differ.md'
+  - '.tasks/active/T-5334-risk-matrix-check-compute-operator-accep.md'
+  - 'docs/reports/T-5300-risk-matrix.md'
+  - 'docs/reports/T-5309-risk-matrix.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T17:31:47'
+    action: 'T-5316: filed (T-5310 GO)'
+  - time: '2026-11-21T14:08:43'
+    action: 'T-5316: scope, criteria (two reviewer-judged matrix checks), verification'
+  - time: '2026-11-21T14:15:48'
+    action: 'T-5316: risk matrices for T-5309 (codex screenshot attachment) and T-5300 (job withdrawal)'
+  - time: '2026-11-21T14:20:26'
+    action: 'T-5316: reviewer verdict'
+  - time: '2026-11-21T14:20:36'
+    action: 'T-5316: reviewer verdict'
+  - time: '2026-11-21T14:25:24'
+    action: 'T-5316: matrices corrected per reviewer amber (V on AC1/AC2): T-5309 risk 4 PARTLY NEW, row 3.4 1x3; T-5300 row 4.1 stays 8, acceptance at 8'
+  - time: '2026-11-21T14:27:42'
+    action: 'T-5316: reviewer verdict'
+  - time: '2026-11-21T14:27:54'
+    action: 'T-5316: reviewer verdict'
+  - time: '2026-11-21T14:30:10'
+    action: 'T-5316: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-21T14:33:16'
+    action: 'T-5316: T-5309 matrix revised per reviewer red (review modes, row 3.4 impact, risk 2 PARTLY NEW)'
+  - time: '2026-11-21T14:36:09'
+    action: 'T-5316: reviewer verdict'
+  - time: '2026-11-21T14:36:24'
+    action: 'T-5316: reviewer verdict'
+  - time: '2026-11-21T14:44:32'
+    action: 'T-5316: T-5309 matrix risk 4 mitigated by T-5324 (shipped after review); register R-038..R-047 and mitigation tasks T-5325..T-5332 in arc risk'
+  - time: '2026-11-21T14:45:21'
+    action: 'T-5316: agent criteria ticked; operator risk-acceptance criterion added (4 risks)'
+  - time: '2026-11-21T14:48:36'
+    action: 'T-5316: reviewer verdict'
+  - time: '2026-11-21T14:48:55'
+    action: 'T-5316: reviewer verdict'
+  - time: '2026-11-21T14:51:26'
+    action: 'T-5316: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-21T14:53:34'
+    action: 'T-5316: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-21T14:55:38'
+    action: 'T-5316: matrices corrected per codex review (T-5309 risk 4 reopened: same-basename collision, T-5333; T-5300 risk 2 stays 6); G-137 reopened; R-041/R-043 updated; acceptance now 6 risks'
+  - time: '2026-11-21T15:01:12'
+    action: 'T-5316: reviewer verdict'
+  - time: '2026-11-21T15:01:21'
+    action: 'T-5316: reviewer verdict'
+  - time: '2026-11-21T15:09:48'
+    action: 'T-5316: T-5300 matrix per review amber — risk 2 wording, risk 3 impact stays 3 (joins acceptance); R-044 updated; acceptance now 7 risks'
+  - time: '2026-11-21T15:12:10'
+    action: 'T-5316: reviewer verdict'
+  - time: '2026-11-21T15:12:18'
+    action: 'T-5316: reviewer verdict'
+  - time: '2026-11-21T15:13:14'
+    action: 'T-5316: T-5300 matrix row 3.4 impact stays 3, risk 3 summary reworded, R-044 provider-host mitigated impact 3 (review amber)'
+  - time: '2026-11-21T15:15:09'
+    action: 'T-5316: reviewer verdict'
+  - time: '2026-11-21T15:15:18'
+    action: 'T-5316: reviewer verdict'
+  - time: '2026-11-21T15:17:37'
+    action: 'T-5316: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-21T15:18:46'
+    action: 'T-5316: T-5300 risk 1 PARTLY NEW (credential-only withdrawal), rows 1.3-1.5 and 4.3 clarified per codex amber; R-042 noted; acceptance now 8 risks'
+  - time: '2026-11-21T15:21:27'
+    action: 'T-5316: reviewer verdict'
+  - time: '2026-11-21T15:21:40'
+    action: 'T-5316: reviewer verdict'
+  - time: '2026-11-21T15:22:34'
+    action: 'T-5316: T-5300 matrix wording per review (rows 1.4, 4.3, R-NEW-5/R-042 PARTLY NEW)'
+  - time: '2026-11-21T15:22:48'
+    action: 'T-5316: file T-5334 (acceptance from the introduced part)'
+  - time: '2026-11-21T15:25:11'
+    action: 'T-5316: reviewer verdict'
+  - time: '2026-11-21T15:25:20'
+    action: 'T-5316: reviewer verdict'
+  - time: '2026-11-21T15:26:15'
+    action: 'T-5316: recommendation (GO, accept 8 medium risks)'
+  - time: '2026-11-21T15:26:52'
+    action: 'T-5316: reviewer greens applied (AC1, AC2); partial-complete, operator risk acceptance remains'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 37 commit(s), 1314 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1314
+  commits: 38
+  files_changed: 45
+  lines_added: 6011
+  lines_removed: 102
+  footprint_refreshed_at: '2026-11-21T17:14:34Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5316-risk-practice-slice-4-first-two-matrices.md
+generated_by: context-agent-hybrid

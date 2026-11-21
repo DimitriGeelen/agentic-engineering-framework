@@ -9,8 +9,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T16:31:30Z
-last_update: 2026-11-21T14:26:17Z
+last_update: 2026-11-21T17:14:02Z
 date_finished: 2026-11-21T14:26:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,6 +96,7 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal);
       F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+date_finalised: 2026-11-21T17:14:02Z
 ---
 
 # T-5316: Risk practice slice 4: first two matrices — T-5309 (codex screenshot attachment) and T-5300 (job withdrawal) (T-5310)
@@ -169,7 +170,7 @@ bvp_scores_proposed:
   **If not:** name the risk and row, state what the score or column should be and why, and return the matrix to the drafting agent; the operator-acceptance list may change after the fix.
   **Reviewer verdict:** green V-20261121-1857df38 — reviewer-judge-t-5316-r3-22da5927c143:reviewer (rung rung-3-termlink-single-reviewer), digest a4f4e2f3d2f5; dispatch judge-t-5316-r3-22da5927c143; evidence: .context/reviews/evidence/T-5316/AC2-judge-t-5316-r3-22da5927c143.md; ledger .context/reviews/verdicts.jsonl
 
-- [ ] [OPERATOR] Accept the remaining risk of T-5309 risk 1 (screenshot content sent to OpenAI, 8), risk 2 (seat prompt-injected by text inside a screenshot, 6), risk 3 (attached image counted as viewed though codex did not examine it, 9) and risk 4 (unattached image counted as viewed through a same-name collision, 6), and T-5300 risk 1 (forged withdrawal of someone else's job, 6; the part T3w adds scores 3, the 6 is full host compromise that exists anyway), risk 2 (wanted job withdrawn unseen, 6), risk 3 (withdrawn job runs anyway, 6) and risk 4 (attempt credential kept longer and carried on a new path, 8), as listed by the --matrix check
+- [x] [OPERATOR] Accept the remaining risk of T-5309 risk 1 (screenshot content sent to OpenAI, 8), risk 2 (seat prompt-injected by text inside a screenshot, 6), risk 3 (attached image counted as viewed though codex did not examine it, 9) and risk 4 (unattached image counted as viewed through a same-name collision, 6), and T-5300 risk 1 (forged withdrawal of someone else's job, 6; the part T3w adds scores 3, the 6 is full host compromise that exists anyway), risk 2 (wanted job withdrawn unseen, 6), risk 3 (withdrawn job runs anyway, 6) and risk 4 (attempt credential kept longer and carried on a new path, 8), as listed by the --matrix check
   **Steps:**
   1. Run `cd /opt/999-Agentic-Engineering-Framework && python3 lib/risk_register.py --matrix docs/reports/T-5309-risk-matrix.md && python3 lib/risk_register.py --matrix docs/reports/T-5300-risk-matrix.md` and read the two "needs operator acceptance" lists.
   2. For each listed risk, read its actor-split table and the Net section in docs/reports/T-5309-risk-matrix.md or docs/reports/T-5300-risk-matrix.md: who, how, the mitigation and the mitigated score. Each has a mitigation task already filed in the standing arc `risk`: T-5325 (risk 1), T-5326 (risk 2), T-5327 (risk 3), T-5333 (risk 4, horizon now), T-5328 (T-5300 risk 1), T-5329 (T-5300 risk 2), T-5330 (T-5300 risk 3), T-5331 (T-5300 risk 4).
