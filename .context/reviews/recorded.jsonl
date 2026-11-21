@@ -242,3 +242,4 @@
 {"ac":1,"outcome":"green","task":"T-5344","ts":"2026-11-21T19:11:13Z","verdict_id":"V-20261121-b5203aa7"}
 {"ac":1,"outcome":"green","task":"T-5344","ts":"2026-11-21T19:14:52Z","verdict_id":"V-20261121-31732452"}
 {"ac":1,"outcome":"green","task":"T-5350","ts":"2026-11-21T22:25:31Z","verdict_id":"V-20261121-db192d36"}
+{"ac":1,"outcome":"not-evaluated","task":"T-5350","ts":"2026-11-21T22:26:42Z","verdict_id":"V-20261121-d812c93f"}
