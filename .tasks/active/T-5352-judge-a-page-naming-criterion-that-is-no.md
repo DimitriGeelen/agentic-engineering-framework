@@ -112,14 +112,14 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `_gather_evidence` treats a criterion with `page` true like a `render` one: its named pages are captured, and the Visual Verification captures are gathered and listed. One predicate decides "needs screenshots" for both the brief's image section and the capture, so they cannot disagree again.
-- [ ] Unit tests:
+- [x] `_gather_evidence` treats a criterion with `page` true like a `render` one: its named pages are captured, and the Visual Verification captures are gathered and listed. One predicate decides "needs screenshots" for both the brief's image section and the capture, so they cannot disagree again.
+- [x] Unit tests:
   1. An unclassified criterion naming a page gets pages and visual evidence (non-dry-run capture mocked).
   2. Render-class criteria are unchanged.
   3. A criterion naming no page and no image still gets no image section.
   4. The brief for a page-naming criterion cites the screenshot paths in backticks, so `review_seat_evidence.cited()` finds them.
   The existing reviewer and judge tests stay green, and the vendored copy is synced.
-- [ ] The ledger accepts a green on such a criterion when the seat logged a view. If the ledger (`verdict_ledger` / `vote_checker`) asks only render criteria for captures, that is stated here, and the decision point stays single.
+- [x] The ledger accepts a green on such a criterion when the seat logged a view. If the ledger (`verdict_ledger` / `vote_checker`) asks only render criteria for captures, that is stated here, and the decision point stays single.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -324,6 +324,15 @@ bin/fw vendor self --check --task T-5352
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** T-5350 was judged twice with no verdict. The brief promised screenshots and listed none, so codex and antigravity returned not-evaluated ("No such file") and claude-code voted without viewing.
+**Root cause:** The brief's image section tested `image`/`page` (the criterion names a page), but `_gather_evidence` tested only `render` (class render-surface, which needs a changed `web/` file). For a non-web task they disagreed, so nothing was captured or cited, and nothing was copied into the harness exports.
+**Why structurally allowed:** Two separate tests answered one question ("does this criterion's evidence need screenshots?"), and no test compared them. Every page check before this was on a `web/` task, where the two agree.
+**Prevention:**
+- `needs_screenshots(c)` (`lib/reviewer/judge_cli.py:183`) is the single predicate, used by the brief, the capture and `register_run` (worker 9488fddce, c512b8748).
+- Pinned by `tests/unit/test_t5352_page_criterion_evidence.py` (5 tests).
+- The T-5350 dry run now plans /designer and /designer/app and lists all six captures.
+- **Left as is, filed as T-5353:** the ledger and vote checker still ask only render criteria for captures, and refuse attached-only proof only for render. So a page-naming non-render green counts on attached-at-launch proof (the T-5327 rule does not reach it).
 
 ## Evolution
 
