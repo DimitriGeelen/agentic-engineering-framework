@@ -5926,7 +5926,7 @@ concerns:
   trigger_event: "2026-11-21: operator reported it across agents; this session recommended a stop 5 times in Green"
   detection_lag_days: 150
   what_works_now: "The gauge is correct (checkpoint.sh status/budget). This project's memory is corrected. CLAUDE.md and the consumer template carry the rule that a stop names the live band and is not taken in Green/Amber for volume reasons."
-  what_remains: "(1) Move the T-1728 budget note to the top of the SessionStart injection so it survives truncation (T-5348). (2) Other projects' saved memories may hold the same 300K-era thresholds; they are not read from here (each project's own files). (3) No measurement exists of stop recommendations by band; a prose rule binds on discipline only."
+  what_remains: "(1) DONE in T-5348: a short budget note now goes first in the SessionStart injection, pinned by tests/unit/t5348_budget_note_visible.bats. (2) Other projects' saved memories may hold the same 300K-era thresholds; they are not read from here (each project's own files). (3) No measurement exists of stop recommendations by band; a prose rule binds on discipline only."
   status: watching
   created: 2026-11-21
   last_reviewed: 2026-11-21
