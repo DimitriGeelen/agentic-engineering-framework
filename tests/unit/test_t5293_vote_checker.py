@@ -186,7 +186,7 @@ def test_codex_image_view_item_is_viewed(tmp_path):
 
 
 def test_claude_read_of_the_png_or_its_copy_is_viewed(tmp_path):
-    d = _claude_record(tmp_path / "cl", [f"/x/.context/reviews/evidence/{TASK}/02-page-judge-abc.png"])
+    d = _claude_record(tmp_path / "cl", [f"/x/.context/reviews/evidence/{TASK}/02-page-judge-t-9200-r3-0123456789ab.png"])
     views = vc.seat_viewed_images(d)
     assert vc.image_viewed(views, SHOT) is True                 # matched by stem, copy name
     assert vc.image_viewed(views, "03-other.png") is False

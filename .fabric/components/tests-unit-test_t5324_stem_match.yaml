@@ -1,0 +1,21 @@
+id: tests/unit/test_t5324_stem_match.py
+name: test_t5324_stem_match
+type: script
+subsystem: tests
+location: tests/unit/test_t5324_stem_match.py
+tags: []
+
+purpose: "T-5324 (G-137): a seat's view of one evidence image must not count as a view of another."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-21
+created_by: unknown

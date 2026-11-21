@@ -337,7 +337,13 @@ def attached_images(record) -> list[dict] | None:
         return None
     if not isinstance(m, dict) or not isinstance(m.get("attached"), list):
         return None
-    return [a for a in m["attached"] if isinstance(a, dict)]
+    # T-5324: an image the manifest lists as not attached (over the cap, comma in path) is never
+    # counted attached, even when a malformed manifest also lists it under `attached`.
+    na = [a for a in (m.get("not_attached") or []) if isinstance(a, dict)]
+    na_paths = {str(a.get("path")) for a in na if a.get("path")}
+    na_shas = {str(a.get("sha256")) for a in na if a.get("sha256")}
+    return [a for a in m["attached"] if isinstance(a, dict)
+            and str(a.get("path")) not in na_paths and str(a.get("sha256")) not in na_shas]
 
 
 def seat_viewed_images(record) -> dict | None:
@@ -364,6 +370,9 @@ def seat_viewed_images(record) -> dict | None:
             if attached is None:
                 return None
     out: dict = {}
+    did = dispatch_id_of(record)
+    if did:
+        out["__dispatch_id__"] = did
     named: set[str] = set()
     known = attached is not None
     if attached is not None:                 # T-5309: in the initial prompt by construction
@@ -457,21 +466,53 @@ def seat_viewed_images(record) -> dict | None:
     return out
 
 
-def _stem_match(a: str, b: str) -> bool:
+#: T-5324: a review dispatch id. `fw termlink dispatch --task-type review` appends 12 lowercase hex
+#: (`od -An -N6 -tx1 /dev/urandom`, agents/termlink/termlink.sh) to the caller's name, e.g.
+#: `judge-t-5316-r3-5d23083a1e03`. A seat's copy of a cited screenshot is `<stem>-<dispatch id>`
+#: (judge brief: `<name>-$FW_SIDECAR_AGENT_ID.png`; verdict_ledger._freeze_seat_evidence).
+DISPATCH_ID_RE = re.compile(r"[a-z0-9][a-z0-9._-]*-[0-9a-f]{12}")
+
+
+def dispatch_id_of(record) -> str | None:
+    """The dispatch id a seat record belongs to: its dispatch dir's name, when it has the shape."""
+    if not record:
+        return None
+    p = Path(record)
+    d = p if p.is_dir() else p.parent
+    n = d.name.lower()
+    return n if DISPATCH_ID_RE.fullmatch(n) else None
+
+
+def _stem_match(a: str, b: str, dispatch_id: str | None = None) -> bool:
+    """Same image: equal stems, or one is the other plus `-<dispatch id>` (a seat's copy), in
+    either direction. T-5324 (G-137): any other suffix is a different image — `01-x-listeners`
+    is not `01-x`. With the seat's own dispatch id known, the suffix must be exactly that id;
+    otherwise it must have the dispatch-id shape (DISPATCH_ID_RE)."""
     a, b = Path(a).stem.lower(), Path(b).stem.lower()
-    return a == b or a.startswith(b + "-") or b.startswith(a + "-")
+    if a == b:
+        return True
+    long, short = (a, b) if len(a) > len(b) else (b, a)
+    if not long.startswith(short + "-"):
+        return False
+    suffix = long[len(short) + 1:]
+    if dispatch_id:
+        return suffix == dispatch_id.lower()
+    return bool(DISPATCH_ID_RE.fullmatch(suffix))
 
 
 def image_viewed(views: dict | None, image: str, sha256: str | None = None) -> bool | None:
     """True / False / None (cannot tell) for one cited image, matched by stem: a seat's copy is
-    `<stem>-<dispatch>.png`, and a cited copy may be the other way round. T-5309: also True when
-    the cited image's content hash is one the runtime attached at launch (a copy has a new name
-    but the same bytes)."""
+    `<stem>-<dispatch id>.png`, and a cited copy may be the other way round (T-5324: no other
+    suffix matches; the seat's own id when the record names it, key '__dispatch_id__'). T-5309:
+    also True when the cited image's content hash is one the runtime attached at launch (a copy
+    has a new name but the same bytes)."""
     if views is None:
         return None
     if sha256 and sha256 in (views.get("__attached_sha256__") or ()):
         return True
-    hits = [v for k, v in views.items() if not k.startswith("__") and _stem_match(k, image)]
+    did = views.get("__dispatch_id__")
+    hits = [v for k, v in views.items()
+            if not k.startswith("__") and _stem_match(k, image, did)]
     if True in hits:
         return True
     if None in hits:
