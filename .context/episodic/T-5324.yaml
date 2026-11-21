@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5324: Vote checker: image stem match counts a different prefix-sharing image as viewed (G-137)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T13:42:30Z
+# ============================================================================
+
+task_id: T-5324
+task_name: "Vote checker: image stem match counts a different prefix-sharing image as viewed (G-137)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-21T13:18:24Z
+completed: 2026-11-21T13:39:28Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-21T14:18:30+01:00
+last_commit: 2026-11-21T14:39:26+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  register G-137 (vote checker prefix match) and file the fix task. scope, criteria, verification. vote checker — a seat copy matches only <stem>-<dispatch id>; not_attached images never attached (G-137). RCA, criteria ticked; G-137 resolved
+
+# Key outcomes
+outcomes:
+  - '`_stem_match` accepts `<stem>-<suffix>` only when the suffix matches the dispatch-id shape the runtime writes (derived from the code that names seat copies, not guessed), in both directions'
+  - 'Tests: prefix-sharing evidence images do not match; a real seat copy matches; a content-hash match still counts; an image beyond the attachment cap is not reported attached'
+  - 'Existing vote_checker / verdict ledger / judge tests stay green; vendored copy synced'
+  - 'RCA filled; G-137 updated with the fix'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'register G-137 (vote checker prefix match) and file the fix task'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/vote_checker.py'
+  - '.context/project/concerns.yaml'
+  - '.fabric/components/tests-unit-test_t5324_stem_match.yaml'
+  - '.tasks/active/T-5324-vote-checker-image-stem-match-counts-a-d.md'
+  - 'lib/vote_checker.py'
+  - 'tests/unit/test_t5293_vote_checker.py'
+  - 'tests/unit/test_t5324_stem_match.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-21T14:18:30'
+    action: 'T-5324: register G-137 (vote checker prefix match) and file the fix task'
+  - time: '2026-11-21T14:20:52'
+    action: 'T-5324: scope, criteria, verification'
+  - time: '2026-11-21T14:34:55'
+    action: 'T-5324: vote checker — a seat copy matches only <stem>-<dispatch id>; not_attached images never attached (G-137)'
+  - time: '2026-11-21T14:39:26'
+    action: 'T-5324: RCA, criteria ticked; G-137 resolved'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 21 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 21
+  commits: 5
+  files_changed: 10
+  lines_added: 791
+  lines_removed: 36
+  footprint_refreshed_at: '2026-11-21T13:42:46Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5324-vote-checker-image-stem-match-counts-a-d.md
+generated_by: context-agent-hybrid
