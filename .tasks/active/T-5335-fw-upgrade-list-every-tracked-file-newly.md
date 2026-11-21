@@ -11,10 +11,10 @@ description: >
   tracked-but-ignored path with the untrack command, without untracking anything (consumer's
   choice).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: [T-4231, T-4701]
@@ -46,7 +46,7 @@ origin: {kind: "peer", source: "1023-portable-encrypted-chromium-vault", ref: "b
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T15:07:54Z
-last_update: '2026-11-21T15:15:51Z'
+last_update: 2026-11-21T17:05:42Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,20 +92,21 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 1023 field report (msg bdb4fd8d, upgrade 1.8.12 -> be.60): after upgrade 184 tracked files fall under ignore rules (`.context/working/` episodic-gen/ 138, decide/ 16, .reviewed-* 15, session-metrics, some watchtower files), so `git ls-files -ci` is non-empty, and "fw upgrade did not mention it".
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Checked on bleeding-edge first (lesson from T-5339): those rules live in lib/working-gitignore.sh, and `fw upgrade` already lists tracked files under `.context/working` that the rules ignore (T-4701 `fw_working_tracked_runtime`, T-4754 grouping), present in be.60. So either the listing misses these paths (a real defect), or 1023 missed or did not get the NOTE (e.g. the upgrade ran an older vendored copy of the lib). Unknown until reproduced.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Reproduce with 1023's path shapes; fix the listing only if it misses them; otherwise answer 1023 with where the NOTE appears and close without code.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Either a fixed and tested listing, or a confirmed "already listed" with the evidence, told to 1023.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduced in a temp git repo with 1023's shapes (episodic-gen/, decide/, .reviewed-*, .session-metrics.yaml under .context/working): result of `fw_working_tracked_runtime` recorded here
+- [ ] If any path is missed: fix plus a bats test; if none: no code change, evidence recorded
+- [ ] 1023 told the outcome (and asked for their upgrade output if the listing works here)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -389,3 +390,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5335-fw-upgrade-list-every-tracked-file-newly.md
 - **Context:** Initial task creation
+
+### 2026-11-21T17:05:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
