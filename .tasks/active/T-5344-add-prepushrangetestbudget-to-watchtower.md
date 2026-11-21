@@ -297,6 +297,12 @@ grep -q '"PREPUSH_RANGE_TEST_BUDGET", "120"' web/blueprints/config.py
 bin/fw watchtower current
 bin/fw vendor self --check --task T-5344
 
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| config | PREPUSH_RANGE_TEST_BUDGET row | ok | ok | ok | full-page shots, .context/visual/T-5344/config@*.png |
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
