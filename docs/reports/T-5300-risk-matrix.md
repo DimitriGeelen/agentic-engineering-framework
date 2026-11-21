@@ -57,19 +57,19 @@ Actors (fixed list): `own-agent-unintentional`, `human-unintentional`, `outsider
 | 2.4 | provider-host | not involved: the decision is the submitter's | 1 | 1 | 1 | | |
 | 2.5 | intruder | covered by risk 1.5 | 1 | 1 | 1 | | |
 
-Mitigation for 2.1: `withdrawn` is terminal and not finished work, so the job is not reported as done; a new T1 can allocate a fresh attempt (A2) and the history entry names actor and reason. The harm drops to a delay (minor), not a wrong result.
+Mitigation for 2.1: `withdrawn` is terminal and not finished work, so the job is not reported as done; a new T1 can allocate a fresh attempt (A2) and the history entry names actor and reason. These lower nothing yet: until a detection control exists (T-5329 counts withdrawals per submitter), a wanted job lost this way is still a moderate harm (impact 3), so 2.1 stays at 2 × 3 = 6.
 
 ### Risk 3 — Race between withdrawal and launch: a withdrawn job runs anyway
 
 | # | Actor | How | L | I | Score | Mitigated L × I | Mitigated score |
 |---|-------|-----|--:|--:|------:|-----------------|----------------:|
-| 3.1 | own-agent-unintentional | an agent writing a supervisor (AEF, TermLink or ring20) launches the agent child before its T2 is accepted; the job is withdrawn in between and runs anyway, spending a subscription seat and producing a result nobody records | 2 | 3 | 6 | 2 × 2 | 4 |
+| 3.1 | own-agent-unintentional | an agent writing a supervisor (AEF, TermLink or ring20) launches the agent child before its T2 is accepted; the job is withdrawn in between and runs anyway, spending a subscription seat; the run can still act on its own (an AEF judge seat records its verdict rows itself, and the verdict ledger does not consult dispatch records), so impact stays 3 | 2 | 3 | 6 | 2 × 3 | 6 |
 | 3.2 | human-unintentional | the human does not write T2 or T3w | 1 | 1 | 1 | | |
 | 3.3 | outsider-intentional | an outsider cannot time a T2 without the attempt credentials | 1 | 1 | 1 | | |
 | 3.4 | provider-host | a backend store that does not run T2 and T3w as one atomic compare-and-set lets both succeed | 1 | 3 | 3 | 1 × 2 | 2 |
 | 3.5 | intruder | no gain over ending the job directly (risk 1.5) | 1 | 1 | 1 | | |
 
-Mitigation for 3.1 and 3.4: in AEF's store both writes run under the dispatch lock and CAS on `dispatched`, exactly one wins (CC-27; 20-round threaded race test, T-5312); CC-26..CC-29 are in the conformance vectors (T-5317), so a backend store that breaks the CAS fails them. A late completion of a withdrawn attempt is `done_conflict`, so no wrong result is recorded; what remains is a wasted run (minor). The vectors test the store, not a supervisor's launch order, so 3.1 stays at likelihood 2.
+Mitigation for 3.1 and 3.4: in AEF's store both writes run under the dispatch lock and CAS on `dispatched`, exactly one wins (CC-27; 20-round threaded race test, T-5312); CC-26..CC-29 are in the conformance vectors (T-5317), so a backend store that breaks the CAS fails them. A late completion of a withdrawn attempt is `done_conflict` in the dispatch store, but a run that goes ahead can still write elsewhere on its own (an AEF judge seat records verdict rows itself), so the impact of 3.1 is not lowered. The vectors test the store, not a supervisor's launch order, so 3.1 stays at likelihood 2: 2 × 3 = 6 until a supervisor launch-after-T2 case exists (T-5330).
 
 ### Risk 4 — The attempt credential is kept longer and carried on a new request path
 
@@ -117,7 +117,7 @@ Mitigation for 6.1 and 6.2: T3w itself; the submitter releases the job and the n
 
 **Controls it needs:** (a) a supervisor conformance check that the agent child is launched only after T2 is accepted (the vectors test the store, not the supervisor); (b) withdraw requests that carry the credential only on the Execute-scope connection, never on a bus topic or in a log, checked when ring20 and TermLink build their paths; (c) an audit or status line that counts `withdrawn` per submitter, so a mass withdrawal is visible without an operator notice.
 
-**Needs operator acceptance:** risk 2 (a wanted job withdrawn unseen), NEW and still 6 after mitigation: no detection-and-recovery control exists yet (T-5329 adds the count); and risk 4 (attempt credential kept longer and carried on a new request path), PARTLY NEW and still 8 after mitigation: row 4.1 (an agent logs or persists the credential; the Execute-scope rule binds only the hub route, and control (b) is not built) and row 4.5 (an intruder on the submitter's host reads a persisted credential). That row mostly exists anyway, since the allocating caller already received the credential in the baseline; what is new is that it must now be kept until the job starts. It drops below 6 only when control (b) is built on every backend's withdraw path and the R-NEW-5 file-mode check ships. No risk reaches 15.
+**Needs operator acceptance:** risk 2 (a wanted job withdrawn unseen), NEW and still 6 after mitigation: no detection-and-recovery control exists yet (T-5329 adds the count); risk 3 (a withdrawn job runs anyway), NEW and still 6: the run can act on its own and no supervisor launch-order case exists yet (T-5330); and risk 4 (attempt credential kept longer and carried on a new request path), PARTLY NEW and still 8 after mitigation: row 4.1 (an agent logs or persists the credential; the Execute-scope rule binds only the hub route, and control (b) is not built) and row 4.5 (an intruder on the submitter's host reads a persisted credential). That row mostly exists anyway, since the allocating caller already received the credential in the baseline; what is new is that it must now be kept until the job starts. It drops below 6 only when control (b) is built on every backend's withdraw path and the R-NEW-5 file-mode check ships. No risk reaches 15.
 
 ## Register entries to file
 
@@ -177,7 +177,7 @@ Risks with any actor at 6 or more (unmitigated): 1, 2, 3, 4, 5, 6. The parent fi
     likelihood: 2
     impact: 3
     mitigated_likelihood: 2
-    mitigated_impact: 2
+    mitigated_impact: 3
   - actor: provider-host
     how: "a backend store does not run T2 and T3w as one atomic CAS"
     likelihood: 1

@@ -6084,7 +6084,7 @@ concerns:
     likelihood: 2
     impact: 3
     mitigated_likelihood: 2
-    mitigated_impact: 2
+    mitigated_impact: 3
   - actor: provider-host
     how: a backend store does not run T2 and T3w as one atomic CAS
     likelihood: 1
