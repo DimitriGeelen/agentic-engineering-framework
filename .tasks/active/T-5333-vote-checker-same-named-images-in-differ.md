@@ -1,8 +1,15 @@
 ---
 id: T-5333
-name: "Vote checker: same-named images in different directories still collide (G-137 follow-up)"
+name: "Vote checker: same-named images in different directories still collide (G-137
+  follow-up)"
 description: >
-  Codex reviewer on T-5316 (2026-11-21) reproduced it after T-5324: 21 valid PNGs under allowed evidence paths, the first and last with the same basename in different directories and different content hashes; the last is counted as viewed with no logged image view. lib/vote_checker.py matches by basename (Path.stem), not path identity. Fix: keep path identity (or content hash) in image_viewed/seat_viewed_images; add the 21-image same-basename regression case. Mitigates R-041 (T-5309 matrix risk 4).
+  Codex reviewer on T-5316 (2026-11-21) reproduced it after T-5324: 21 valid PNGs
+  under allowed evidence paths, the first and last with the same basename in different
+  directories and different content hashes; the last is counted as viewed with no
+  logged image view. lib/vote_checker.py matches by basename (Path.stem), not path
+  identity. Fix: keep path identity (or content hash) in image_viewed/seat_viewed_images;
+  add the 21-image same-basename regression case. Mitigates R-041 (T-5309 matrix risk
+  4).
 
 status: captured
 workflow_type: build
@@ -39,8 +46,8 @@ origin: {kind: "agent", source: "T-5316"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T13:55:07Z
-last_update: 2026-11-21T13:55:07Z
-date_finished: null
+last_update: '2026-11-21T14:00:29Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +58,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-21T14:00:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5333: Vote checker: same-named images in different directories still collide (G-137 follow-up)
