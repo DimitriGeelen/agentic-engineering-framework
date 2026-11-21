@@ -1,0 +1,139 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5344: Add PREPUSH_RANGE_TEST_BUDGET to Watchtower config registry (parity lint red after T-5342)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T19:17:21Z
+# ============================================================================
+
+task_id: T-5344
+task_name: "Add PREPUSH_RANGE_TEST_BUDGET to Watchtower config registry (parity lint red after T-5342)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-21T18:29:07Z
+completed: 2026-11-21T19:16:36Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-21T19:30:08+01:00
+last_commit: 2026-11-21T20:14:52+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  add PREPUSH_RANGE_TEST_BUDGET to the Watchtower config registry (parity lint). render-review criterion for the /config row. learning — config-key briefs run the parity lint. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (antigravity seat antigravity, recorded by the runtime). visual verification — /config captures at 1024/1440/1920
+
+# Key outcomes
+outcomes:
+  - '`web/blueprints/config.py` has a `PREPUSH_RANGE_TEST_BUDGET` row, default 120, in the same position as in `lib/config.sh`'
+  - 'The config-registry parity lint tests pass; Watchtower restarted and current; vendored copy synced'
+  - '[REVIEW] The /config page shows the new PREPUSH_RANGE_TEST_BUDGET row like its neighbours'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/config.py'
+  - '.context/project/learnings.yaml'
+  - '.context/reviews/evidence/T-5344/01-config-0_0_249_2048-crop.png'
+  - '.context/reviews/evidence/T-5344/01-config-40_3834_1200_137-crop.png'
+  - '.context/reviews/evidence/T-5344/01-config-40_3834_1200_138-crop.png'
+  - '.context/reviews/evidence/T-5344/01-config-40_3835_1200_226-crop.png'
+  - '.context/reviews/evidence/T-5344/01-config-judge-t-5344-r3-11fe750356e1.png'
+  - '.context/reviews/evidence/T-5344/01-config-judge-t-5344-r3-49586d83e219-0_3835_1280_135-crop.png'
+  - '.context/reviews/evidence/T-5344/01-config-judge-t-5344-r3-49586d83e219.png'
+  - '.context/reviews/evidence/T-5344/01-config-judge-t-5344-r3-96f4d83be0df-40_3835_1200_137-crop.png'
+  - '.context/reviews/evidence/T-5344/01-config-judge-t-5344-r3-96f4d83be0df.png'
+  - '.context/reviews/evidence/T-5344/01-config-judge-t-5344-r3-b856e4904491.png'
+  - '.context/reviews/evidence/T-5344/AC1-judge-t-5344-r3-11fe750356e1.md'
+  - '.context/reviews/evidence/T-5344/AC1-judge-t-5344-r3-49586d83e219.md'
+  - '.context/reviews/evidence/T-5344/AC1-judge-t-5344-r3-85ef8ceda528.md'
+  - '.context/reviews/evidence/T-5344/AC1-judge-t-5344-r3-96f4d83be0df.md'
+  - '.context/reviews/evidence/T-5344/AC1-judge-t-5344-r3-b856e4904491.md'
+  - '.context/reviews/evidence/T-5344/AC1-judge-t-5344-r3-ea08604d1a6f.md'
+  - '.context/reviews/evidence/T-5344/config@1024-37_4784_950_162-crop.png'
+  - '.context/reviews/evidence/T-5344/config@1024-37_4784_950_298-crop.png'
+  - '.context/reviews/evidence/T-5344/config@1024-judge-t-5344-r3-11fe750356e1.png'
+  - '.context/reviews/evidence/T-5344/config@1024-judge-t-5344-r3-96f4d83be0df-40_4788_950_157-crop.png'
+  - '.context/reviews/evidence/T-5344/config@1024-judge-t-5344-r3-96f4d83be0df.png'
+  - '.context/reviews/evidence/T-5344/config@1024-judge-t-5344-r3-b856e4904491.png'
+  - '.context/reviews/evidence/T-5344/config@1440-120_3834_1200_138-crop.png'
+  - '.context/reviews/evidence/T-5344/config@1440-120_3835_1200_226-crop.png'
+  - '.context/reviews/evidence/T-5344/config@1440-judge-t-5344-r3-11fe750356e1.png'
+  - '.context/reviews/evidence/T-5344/config@1440-judge-t-5344-r3-96f4d83be0df-120_3835_1200_137-crop.png'
+  - '.context/reviews/evidence/T-5344/config@1440-judge-t-5344-r3-96f4d83be0df.png'
+  - '.context/reviews/evidence/T-5344/config@1440-judge-t-5344-r3-b856e4904491.png'
+  - '.context/reviews/evidence/T-5344/config@1920-235_3474_1450_114-crop.png'
+  - '.context/reviews/evidence/T-5344/config@1920-235_3474_1450_203-crop.png'
+  - '.context/reviews/evidence/T-5344/config@1920-judge-t-5344-r3-11fe750356e1.png'
+  - '.context/reviews/evidence/T-5344/config@1920-judge-t-5344-r3-96f4d83be0df-235_3475_1450_112-crop.png'
+  - '.context/reviews/evidence/T-5344/config@1920-judge-t-5344-r3-96f4d83be0df.png'
+  - '.context/reviews/evidence/T-5344/config@1920-judge-t-5344-r3-b856e4904491.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-5344-add-prepushrangetestbudget-to-watchtower.md'
+  - 'web/blueprints/config.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-21T19:30:08'
+    action: 'T-5344: add PREPUSH_RANGE_TEST_BUDGET to the Watchtower config registry (parity lint)'
+  - time: '2026-11-21T19:30:44'
+    action: 'T-5344: render-review criterion for the /config row'
+  - time: '2026-11-21T19:36:39'
+    action: 'T-5344: learning — config-key briefs run the parity lint'
+  - time: '2026-11-21T20:02:20'
+    action: 'T-5344: reviewer verdict'
+  - time: '2026-11-21T20:03:35'
+    action: 'T-5344: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-21T20:06:24'
+    action: 'T-5344: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-21T20:07:33'
+    action: 'T-5344: visual verification — /config captures at 1024/1440/1920'
+  - time: '2026-11-21T20:09:25'
+    action: 'T-5344: reviewer verdict'
+  - time: '2026-11-21T20:11:14'
+    action: 'T-5344: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-21T20:14:52'
+    action: 'T-5344: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 10 commit(s), 47 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 47
+  commits: 11
+  files_changed: 47
+  lines_added: 908
+  lines_removed: 6
+  footprint_refreshed_at: '2026-11-21T19:17:37Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5344-add-prepushrangetestbudget-to-watchtower.md
+generated_by: context-agent-hybrid
