@@ -58012,3 +58012,21 @@ scan_id: R-8537e500
 task_id: T-5273
 payload:
   task_file: .tasks/active/T-5273-pick-up-workflow-designer-0440-from-832-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-21T12:37:47Z'
+scan_id: R-92a945c1
+task_id: T-5306
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-21T12:37:47Z'
+scan_id: R-92a945c1
+task_id: T-5306
+payload:
+  task_file: .tasks/active/T-5306-printed-fw-commands-slice-4-lint-fails-o.md

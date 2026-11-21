@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5306: Printed fw commands slice 4: lint fails on a new hand-written bin/fw or bin/watchtower.sh in printed text, ratchet for the rest (T-5302)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-21T12:38:13Z
+# ============================================================================
+
+task_id: T-5306
+task_name: "Printed fw commands slice 4: lint fails on a new hand-written bin/fw or bin/watchtower.sh in printed text, ratchet for the rest (T-5302)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-20T13:49:54Z
+completed: 2026-11-21T12:37:24Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-20T14:50:26+01:00
+last_commit: 2026-11-21T13:37:21+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed (T-5302 GO slice). scope, criteria, verification. printed-fw-commands lint + ratchet baseline (40 in 21 files). vendor the printed-fw-commands lint. criteria ticked (baseline 40 in 21 files)
+
+# Key outcomes
+outcomes:
+  - 'A detector finds printed hand-written `bin/fw <verb>` and `bin/watchtower.sh` commands in emitted text (shell echo/printf strings, Python print/f-string/message literals, Jinja templates) under bin/, lib/, agents/, web/, skipping comments, the builder implementations, internal exec/dispatch code that runs a path rather than printing it, and tests/docs'
+  - 'A committed baseline (file -> count) records today''s instances; the lint fails when a file''s count rises or a new file appears, and on a fall tells the author to regenerate the baseline (never auto-grows)'
+  - 'The lint has a control test: an injected new printed `bin/fw doctor` line turns it red, and the clean tree is green'
+  - 'The lint lives in tests/lint/ (run by the audit invariant suite, `bats tests/lint/`), is green there with no skips, and the vendored copy is synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/tools/printed-fw-commands-lint.py'
+  - '.fabric/components/tests-lint-printed-fw-commands-ratchet.yaml'
+  - '.fabric/components/tools-printed-fw-commands-lint.yaml'
+  - '.tasks/active/T-5306-printed-fw-commands-slice-4-lint-fails-o.md'
+  - 'tests/lint/fixtures/printed-fw-commands-baseline.json'
+  - 'tests/lint/printed-fw-commands-ratchet.bats'
+  - 'tools/printed-fw-commands-lint.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T14:50:26'
+    action: 'T-5306: filed (T-5302 GO slice)'
+  - time: '2026-11-21T13:12:00'
+    action: 'T-5306: scope, criteria, verification'
+  - time: '2026-11-21T13:28:32'
+    action: 'T-5306: printed-fw-commands lint + ratchet baseline (40 in 21 files)'
+  - time: '2026-11-21T13:29:11'
+    action: 'T-5306: vendor the printed-fw-commands lint'
+  - time: '2026-11-21T13:37:21'
+    action: 'T-5306: criteria ticked (baseline 40 in 21 files)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 1367 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1367
+  commits: 6
+  files_changed: 10
+  lines_added: 1415
+  lines_removed: 18
+  footprint_refreshed_at: '2026-11-21T12:38:27Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5306-printed-fw-commands-slice-4-lint-fails-o.md
+generated_by: context-agent-hybrid
