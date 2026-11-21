@@ -1260,7 +1260,7 @@ def _collect(root: Path, task_id: str, dispatch_id: str, criteria: list[dict],
                 res.update(source="ledger-row-invalid", why="criterion gone")
             else:
                 f = vl._fault(ctx, row, crit, intro)
-                nc = vl.not_checkable_reasons(row) if f is None else []
+                nc = vl.not_checkable_reasons(row, ctx, crit) if f is None else []
                 if f is None and nc:
                     # T-5294: the seat's verdict/1 vote fails its own check: it counts neither
                     # green nor red. Report what it voted and why it does not count.
