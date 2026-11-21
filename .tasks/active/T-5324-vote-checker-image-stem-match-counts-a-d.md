@@ -1,10 +1,14 @@
 ---
 id: T-5324
-name: "Vote checker: image stem match counts a different prefix-sharing image as viewed (G-137)"
+name: "Vote checker: image stem match counts a different prefix-sharing image as viewed
+  (G-137)"
 description: >
-  G-137, found by the T-5309 risk matrix (T-5316): lib/vote_checker.py _stem_match treats <stem>-<anything> as the same image, so viewing 01-x-listeners.png counts as viewing 01-x.png. Restrict the suffix to the dispatch-id shape; test prefix-sharing images; check images over the codex attachment cap are not counted.
+  G-137, found by the T-5309 risk matrix (T-5316): lib/vote_checker.py _stem_match
+  treats <stem>-<anything> as the same image, so viewing 01-x-listeners.png counts
+  as viewing 01-x.png. Restrict the suffix to the dispatch-id shape; test prefix-sharing
+  images; check images over the codex attachment cap are not counted.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T13:18:24Z
-last_update: 2026-11-21T13:18:24Z
-date_finished: null
+last_update: '2026-11-21T13:26:13Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-21T13:26:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=2 (body:concern-ref); D2=0 (no-signal); D3=0 (no-signal); D4=0
+      (no-signal); F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal);
+      F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5324: Vote checker: image stem match counts a different prefix-sharing image as viewed (G-137)
@@ -69,10 +90,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `_stem_match` accepts `<stem>-<suffix>` only when the suffix matches the dispatch-id shape the runtime writes (derived from the code that names seat copies, not guessed), in both directions
-- [ ] Tests: prefix-sharing evidence images do not match; a real seat copy matches; a content-hash match still counts; an image beyond the attachment cap is not reported attached
-- [ ] Existing vote_checker / verdict ledger / judge tests stay green; vendored copy synced
-- [ ] RCA filled; G-137 updated with the fix
+- [x] `_stem_match` accepts `<stem>-<suffix>` only when the suffix matches the dispatch-id shape the runtime writes (derived from the code that names seat copies, not guessed), in both directions
+- [x] Tests: prefix-sharing evidence images do not match; a real seat copy matches; a content-hash match still counts; an image beyond the attachment cap is not reported attached
+- [x] Existing vote_checker / verdict ledger / judge tests stay green; vendored copy synced
+- [x] RCA filled; G-137 updated with the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,6 +299,14 @@ bin/fw vendor self --check --task T-5324
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** viewing `01-file-scripts-agent-listeners.png` counted as viewing `01-file-scripts-agent.png`, so a render vote could count without its evidence being seen (G-137; found by the T-5309 risk matrix, T-5316).
+
+**Root cause:** `_stem_match` in lib/vote_checker.py accepted any `-<suffix>` after a stem, instead of only the dispatch-id suffix the runtime writes on a seat's copy (`<stem>-<name>-<12 hex>`, agents/termlink/termlink.sh:1399, lib/reviewer/judge_cli.py:962).
+
+**Why structurally allowed:** the match rule was written from the idea of a copy, not from the code that names copies, and no test used two evidence images that share a prefix. The predecessor checker (T-5294) had the same rule; T-5309 widened it to attached names.
+
+**Prevention:** the suffix is now bound to the seat's own dispatch id (or the runtime's id shape when unknown), and images listed `not_attached` never count as attached; tests/unit/test_t5324_stem_match.py pins prefix-sharing images, real copies, hash matches and the cap. Fix commit 3900dfbbf; 384 related tests pass.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -358,3 +387,6 @@ bin/fw vendor self --check --task T-5324
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5324-vote-checker-image-stem-match-counts-a-d.md
 - **Context:** Initial task creation
+
+### 2026-11-21T13:26:11Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

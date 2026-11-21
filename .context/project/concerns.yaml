@@ -5911,7 +5911,8 @@ concerns:
   what_works_now: "Exact-name and content-hash (__attached_sha256__) matches are correct; most evidence sets have no shared prefixes."
   what_remains: "Match a seat copy only as <stem>-<dispatch id suffix>, never a longer evidence stem; test with prefix-sharing images; check the attachment cap path."
   mitigation_candidate: "Restrict the suffix after '<stem>-' to the dispatch-id shape; a test that viewing x-foo.png does not count x.png."
-  status: watching
+  status: resolved
+  resolved_by: "T-5324 (3900dfbbf): suffix bound to the seat dispatch id; not_attached images never count; test_t5324_stem_match.py"
   created: 2026-11-21
   last_reviewed: 2026-11-21
 - id: G-138
