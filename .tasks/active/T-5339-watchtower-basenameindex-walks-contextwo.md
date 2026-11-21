@@ -1,8 +1,15 @@
 ---
 id: T-5339
-name: "Watchtower _basename_index walks .context/working including review worktrees (3.8M files in 1409, rebuilt every 30 s)"
+name: "Watchtower _basename_index walks .context/working including review worktrees
+  (3.8M files in 1409, rebuilt every 30 s)"
 description: >
-  1409 pickup P-011 (msg 016f8e0b, their T-7929): web/shared.py _auto_link_files -> _resolve_bare_name -> _basename_index 5 calls 79.2 s; it walks every VIEWABLE_DIR_PREFIXES dir including .context/working/, which in 1409 holds 3.85M files (73 review worktrees under .context/working/scratch/review-wt/, each a full repo copy). The code comment assumes ~14.5K files / 0.14 s; the 30 s TTL rebuilds it under use. Directions: skip git worktrees (a dir with a .git file) and scratch/ in the walk, cap the walk, or build off the request thread.
+  1409 pickup P-011 (msg 016f8e0b, their T-7929): web/shared.py _auto_link_files ->
+  _resolve_bare_name -> _basename_index 5 calls 79.2 s; it walks every VIEWABLE_DIR_PREFIXES
+  dir including .context/working/, which in 1409 holds 3.85M files (73 review worktrees
+  under .context/working/scratch/review-wt/, each a full repo copy). The code comment
+  assumes ~14.5K files / 0.14 s; the 30 s TTL rebuilds it under use. Directions: skip
+  git worktrees (a dir with a .git file) and scratch/ in the walk, cap the walk, or
+  build off the request thread.
 
 status: captured
 workflow_type: build
@@ -39,8 +46,8 @@ origin: {kind: "peer", source: "1409-sprind", ref: "P-011"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T15:09:17Z
-last_update: 2026-11-21T15:09:17Z
-date_finished: null
+last_update: '2026-11-21T15:15:23Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +58,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-21T15:15:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5339: Watchtower _basename_index walks .context/working including review worktrees (3.8M files in 1409, rebuilt every 30 s)

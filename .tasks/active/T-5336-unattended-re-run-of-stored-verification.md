@@ -1,8 +1,13 @@
 ---
 id: T-5336
-name: "Unattended re-run of stored Verification lines must refuse lines that mutate the repo (git add/commit/reset, writes into .context)"
+name: "Unattended re-run of stored Verification lines must refuse lines that mutate
+  the repo (git add/commit/reset, writes into .context)"
 description: >
-  1023 field report (msg bdb4fd8d): a stored Verification line (their T-058) ran git add -A .context, so every census/audit re-run staged the real .context. AEF re-runs stored lines unattended (fw audit CTL-013, verify-queue); lib/unattended_verification.py has no pattern for repo-mutating git commands. Add git add/commit/reset/checkout/stash and redirects into .context or .tasks to the skip patterns, logged like the others.
+  1023 field report (msg bdb4fd8d): a stored Verification line (their T-058) ran git
+  add -A .context, so every census/audit re-run staged the real .context. AEF re-runs
+  stored lines unattended (fw audit CTL-013, verify-queue); lib/unattended_verification.py
+  has no pattern for repo-mutating git commands. Add git add/commit/reset/checkout/stash
+  and redirects into .context or .tasks to the skip patterns, logged like the others.
 
 status: captured
 workflow_type: build
@@ -39,8 +44,8 @@ origin: {kind: "peer", source: "1023-portable-encrypted-chromium-vault", ref: "b
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T15:07:54Z
-last_update: 2026-11-21T15:07:54Z
-date_finished: null
+last_update: '2026-11-21T15:15:23Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +56,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-21T15:15:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5336: Unattended re-run of stored Verification lines must refuse lines that mutate the repo (git add/commit/reset, writes into .context)
