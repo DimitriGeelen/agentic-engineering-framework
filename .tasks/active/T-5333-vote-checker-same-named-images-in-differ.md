@@ -11,7 +11,7 @@ description: >
   add the 21-image same-basename regression case. Mitigates R-041 (T-5309 matrix risk
   4).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ origin: {kind: "agent", source: "T-5316"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T13:55:07Z
-last_update: '2026-11-21T14:01:10Z'
+last_update: 2026-11-21T14:44:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,20 +92,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** The codex reviewer on T-5316 (2026-11-21, verdict red on the T-5309 matrix, dispatch judge-t-5316-r3-4bca74fc9fa4) reproduced a case T-5324 missed: 21 valid PNGs under allowed evidence paths, the first and last with the same file name in different directories and different content hashes; the last is counted as viewed with no logged image view. G-137 reopened; risk R-041 (T-5309 matrix risk 4) points here.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** lib/vote_checker.py keys views and cited images by basename/stem (Path(..).stem), not by path identity, so two different evidence files with the same name are one image to the checker. The 21st image is also past the codex attachment cap, so it is not attached, yet the name match makes it count.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A cited image counts as viewed only when the seat viewed THAT file: same path (relative to the evidence root) or same content hash, or the seat's own copy of it (`<stem>-<own dispatch id>`). Same name in another directory never counts.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** The codex reproduction (21 PNGs, same basename in two directories) reports the last image not viewed; all existing vote_checker and verdict tests keep their results.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `image_viewed` / `seat_viewed_images` match a cited image by path identity or content hash (plus the seat's own dispatch-id copy), never by basename alone across directories
+- [ ] A regression test reproduces the codex case (21 PNGs, first and last same basename, different directories and hashes): the last is not viewed; plus a test that the same file viewed by path still counts
+- [ ] Existing vote_checker / verdict / judge tests stay green; vendored copy synced
+- [ ] RCA filled; G-137 resolved (or its remainder named); R-041 updated
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -292,6 +294,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest tests/unit/ -q -k "vote_checker or verdict or t5324 or t5333 or t5309 or t5308 or t5293 or t5294" > /tmp/.t5333 2>&1 && grep -q passed /tmp/.t5333
+bin/fw vendor self --check --task T-5333
 
 ## RCA
 
@@ -389,3 +393,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5333-vote-checker-same-named-images-in-differ.md
 - **Context:** Initial task creation
+
+### 2026-11-21T14:44:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
