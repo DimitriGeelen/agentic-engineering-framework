@@ -8,10 +8,10 @@ description: >
   unknown fence reason as a non-retryable typed refusal. Conformance: the CC-15a/19a
   'no closure record' arrangement passes on the local run. Depends on the spec task.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T19:53:27Z
-last_update: '2026-11-20T20:01:52Z'
+last_update: 2026-11-21T12:04:15Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,10 +100,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] lib/dispatch_records.py declares `closure: never` and a close request returns the typed refusal `closure_not_supported` without changing or appending anything; a later allocate succeeds
-- [ ] An unknown `fence_reject` reason is reported as a non-retryable typed refusal naming the reason (no exception, no retry)
-- [ ] The local adapter declares `closure = "never"`, `LOCAL_PENDING` no longer lists CC-35, and run_local.py shows CC-35 pass with 0 fail
-- [ ] Unit tests cover both behaviours; existing dispatch_records and worker-contract tests stay green; vendored copy synced
+- [x] lib/dispatch_records.py declares `closure: never` and a close request returns the typed refusal `closure_not_supported` without changing or appending anything; a later allocate succeeds
+- [x] An unknown `fence_reject` reason is reported as a non-retryable typed refusal naming the reason (no exception, no retry)
+- [x] The local adapter declares `closure = "never"`, `LOCAL_PENDING` no longer lists CC-35, and run_local.py shows CC-35 pass with 0 fail
+- [x] Unit tests cover both behaviours; existing dispatch_records and worker-contract tests stay green; vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -390,3 +390,7 @@ bin/fw vendor self --check --task T-5321
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5321-aef-backend-declares-closure-never-and-a.md
 - **Context:** Initial task creation
+
+### 2026-11-21T12:04:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
