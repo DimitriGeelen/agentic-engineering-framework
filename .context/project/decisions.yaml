@@ -6617,3 +6617,724 @@ decisions:
     date: 2026-10-29
     task: T-4895
     rationale: "Operator, 2026-10-29, verbatim: 'So then we can lift the freeze, right?' after confirming the exit condition was met (every active tester on be.48+ reported, no open failure; v1.8.15 released). First post-freeze work: T-4788 and T-4792."
+
+  - id: D-946
+    decision: "option 1, refuse without a card. Operator, verbatim: \"Okay, proceed as advice suggested.\" The advice was option 1 with three conditions: (1) the refusal stays unconditional, only the card is suppressed; (2) whole-command classification, fail closed: the left side is exactly a plain read-only form, the right side one inert filter (`grep`/`head`/`tail`/`wc` with plain words, no further pipe, redirect, substitution, `;`, `&`, newline or quote), and anything else keeps its card; (3) an audit line for every suppressed refusal."
+    scope: project
+    date: 2026-11-01
+    task: T-4953
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-947
+    decision: "\"Vision-gated (Recommended)\", the operator's answer in chat:"
+    scope: project
+    date: 2026-11-01
+    task: T-4944
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-948
+    decision: "serialize every ledger and register append with every verdict commit (one re-entrant lock). This removes the torn-line risk. A negative control without the lock committed a torn completions line in 1 of 3 runs, and `history_fault` then refused the whole file."
+    scope: project
+    date: 2026-11-01
+    task: T-4966
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-949
+    decision: "\"Step 1 + refinements (Recommended)\", the operator's answer after the external review (`docs/reports/T-4969-ownership-ruleset-review.md`). One gate in `update-task.sh` with three doors, each logged in `.context/working/owner-handover.jsonl` with how the claim was made:"
+    scope: project
+    date: 2026-11-01
+    task: T-4969
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-950
+    decision: "rename the one clash between directories that are run together (tests/unit + tests/web), and add a lint that keeps tests/unit, web, integration and lint unique. tests/playwright stays out of scope; it runs on its own."
+    scope: project
+    date: 2026-11-01
+    task: T-4974
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-951
+    decision: "keep 0 / 3 / 2 and print the meaning on the summary line (`exit 3: warnings only …; nothing fails`)."
+    scope: project
+    date: 2026-11-01
+    task: T-4979
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-952
+    decision: "re-estimate missing drivers for a task under a named set, or one carrying scores made under another set. A default-set task whose scores all came from the live file behaves exactly as before."
+    scope: project
+    date: 2026-11-01
+    task: T-4985
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-953
+    decision: "an optional `arcs_dir` on `resolve_set_name`, `load_for_task` and the internal resolver. The resolution rule is unchanged."
+    scope: project
+    date: 2026-11-01
+    task: T-4985
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-954
+    decision: "a separate key, not the literal `driver_set`."
+    scope: project
+    date: 2026-11-01
+    task: T-4986
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-955
+    decision: "`_ArcIndex.uses_sets()`. When it is False, every task resolves to the live file before any arc-reference check."
+    scope: project
+    date: 2026-11-01
+    task: T-4986
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-956
+    decision: "inverse list — any author email not matching `policy/internal-identities.yaml` is outside; only commits after a recorded baseline are judged; an outside commit is accepted only when `gh` confirms the operator merged its PR, and an unreachable `gh` is WARN \"unverified\", never a pass."
+    scope: project
+    date: 2026-11-03
+    task: T-5049
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-957
+    decision: "3600 s"
+    scope: project
+    date: 2026-11-09
+    task: T-5068
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-958
+    decision: "D1, the agent resets the drifted task files to 0664 after the fix, listing every file in the commit. Operator answered \"Start\" to the recommendation (2026-11-11 ~17:05Z)."
+    scope: project
+    date: 2026-11-11
+    task: T-5077
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-959
+    decision: "keep the atomic temp-file-and-`mv`, and copy the original's mode, owner (as root) and ACL onto the temp file first."
+    scope: project
+    date: 2026-11-11
+    task: T-5077
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-960
+    decision: "option 1, one declaration list (`ABSENT_COMPONENTS`): doctor prints OK \"absent by choice\" for listed optional components; an unrecognised name WARNs. Operator: asked \"What's the best solution?\", got A1 recommended, answered \"Start\" (2026-11-11 ~17:05Z)."
+    scope: project
+    date: 2026-11-11
+    task: T-4355
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-961
+    decision: "option 1, a language-neutral author marker `[OPERATOR]` that pins a Human criterion OPERATOR-ONLY before any keyword test. Operator: asked \"What's the best solution?\", got B1 recommended, answered \"Start\" (2026-11-11 ~17:05Z)."
+    scope: project
+    date: 2026-11-11
+    task: T-4359
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-962
+    decision: "default `HOST` becomes `127.0.0.1` (this machine only); this framework repo sets `HOST 0.0.0.0` in the same change so http://192.168.10.107:3000 keeps working; release notes and an `fw doctor` hint tell consumers who reach Watchtower from other machines the one command to restore it. Operator: asked \"What's the best solution?\", got C-local recommended, answered \"Start\" (2026-11-11 ~17:05Z)."
+    scope: project
+    date: 2026-11-11
+    task: T-4239
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-963
+    decision: "hand the task back to the agent (owner: agent), the same rule a reviewer's green already applies; unticking again hands it back to the operator. Operator picked \"Hand back to agent (Recommended)\" in the question of 2026-11-11."
+    scope: project
+    date: 2026-11-11
+    task: T-5081
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-964
+    decision: "remove an uncollected result after `TERMLINK_DISPATCH_UNCOLLECTED_DAYS` (30), operator's answer \"Yes, after 30 days\"."
+    scope: project
+    date: 2026-11-13
+    task: T-5120
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-965
+    decision: "a new `fw termlink prune` that only deletes, beside the existing `cleanup`."
+    scope: project
+    date: 2026-11-13
+    task: T-5120
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-966
+    decision: "SSH-signed commits, checked against a committed allowed-signers list kept as a signed chain (operator's answer: \"Signed commit\")."
+    scope: project
+    date: 2026-11-14
+    task: T-5031
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-967
+    decision: "at commit time (pre-commit and pre-merge-commit), under `CLAUDECODE=1`."
+    scope: project
+    date: 2026-11-14
+    task: T-5031
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-968
+    decision: "EWCR S1: AEF fetches 832's two 0503 review documents as input (file transfer or raw bytes only, never the 3001 HTML viewer, G-086; verified against 832's published sha256) and authors the per-finding disposition tables"
+    scope: project
+    date: 2026-11-14
+    task: T-5135
+    rationale: "Operator answer 2026-11-14: 'Authorise both (Recommended)'. The documents exist and their hashes are published, so an exclusion would be evidence of nothing; unblocks the arc-019 Arc 0 exit gate."
+
+  - id: D-969
+    decision: "every test file is its own job in a parallel pool (`xargs -P`, default nproc/2 capped at 12 = 12 here), each with its own `timeout` (default 900s). Files go longest-first using the previous report's `file_durations`. The two-leg reserve split (T-3359) is kept."
+    scope: project
+    date: 2026-11-15
+    task: T-3602
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-970
+    decision: "FAIL on every recorded failure, whether or not the run completed. WARN \"COULD NOT DETERMINE\" only when nothing was recorded red and part of the corpus did not run. The line names \"N of M file(s) ran\" and the per-file timeouts."
+    scope: project
+    date: 2026-11-15
+    task: T-3602
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-971
+    decision: "`_project_config_fault` now covers only what each kind's pinned launch reads"
+    scope: project
+    date: 2026-11-15
+    task: T-3582
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-972
+    decision: "codex, opencode and antigravity run read-only and PRINT their verdicts. run.sh then"
+    scope: project
+    date: 2026-11-15
+    task: T-3582
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-973
+    decision: "`sudo -n -u dimitri-mint-dev -H <registry binary> -p … --mode plan --sandbox`."
+    scope: project
+    date: 2026-11-15
+    task: T-3582
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-974
+    decision: "`SECTIONS` exactly equal to `structure` (`_audit_is_prepush_scope`), which is the scope the pre-push hook passes and nothing else uses on its own. The */30 cron's multi-section run and the unscoped daily run both keep FAILing."
+    scope: project
+    date: 2026-11-15
+    task: T-3621
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-975
+    decision: "per test FILE, parsed from the verdict tables in docs/reports/*-triage.md. Owner = first task id in the Action column, else the triage task itself."
+    scope: project
+    date: 2026-11-15
+    task: T-3621
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-976
+    decision: "a local push ledger `.context/working/estate-push-state.json` (chunk_key → content_hash); deletions are tombstone points (`op: delete`) in staging for the ingest worker to apply."
+    scope: project
+    date: 2026-11-15
+    task: T-4162
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-977
+    decision: "stable key `project|path|chunk_index`; content hash (of the redacted text) in the payload; point id = uuid5(key, hash, op) so re-staging is idempotent."
+    scope: project
+    date: 2026-11-15
+    task: T-4162
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-978
+    decision: "a sort/rg word that begins with a quoted expansion (`rg \"$P\" x`) is refused, as T-4512 does for sed/sort/curl."
+    scope: project
+    date: 2026-11-15
+    task: T-4626
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-979
+    decision: "refuse any short bundle holding `u` on fetch too, and extend the check to push `--receive-pack` / `--exec`."
+    scope: project
+    date: 2026-11-15
+    task: T-4627
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-980
+    decision: "Operator delegates the maintainer's pull-request steps to the agent: the agent reviews, merges into bleeding-edge after its own review and green relevant checks, and owns the GitHub ruleset changes of the pilot plan"
+    scope: project
+    date: 2026-11-15
+    task: T-5006
+    rationale: "Operator, 2026-11-15, on PR #115: 'can you do that? You own the workflow, right? And you own the reviews and the steps and the security.' Amends the signed-off pilot plan line 'the maintainer alone merges'. First use: PR #115 (documentation only)."
+
+  - id: D-981
+    decision: "a committed fixture under `tests/fixtures/arc-close-panel/` (one in-progress arc, an anchor inception recommending GO, a close-out task recommending CLOSE), copied at run time into a temporary directory laid out as a project and served by a second Watchtower on a free port with `PROJECT_ROOT` set to that copy (`tests/playwright/arc_fixture.py`; conftest fixtures `arc_fixture_server`, `arc_fixture_url`, `close_rec_arc`, `fixture_page`). The server is accepted only when `/api/_identity` reports the temporary directory and the pid we started; it is terminated and the directory removed at session end."
+    scope: project
+    date: 2026-11-16
+    task: T-5168
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-982
+    decision: "a new code, `privilege_exceeds_profile`, with a required `privilege_excess` record (node, capability profile, binding, non-empty list of excess privileges)."
+    scope: project
+    date: 2026-11-16
+    task: T-5179
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-983
+    decision: "ids `N-1` / `N-2`, accepted in `scenario_refs` beside the §13 numbers 1–20; scenarios live in a new v2 document `accepted-scenarios.md`."
+    scope: project
+    date: 2026-11-16
+    task: T-5179
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-984
+    decision: "the six unchanged schemas stay byte-identical to v1 (version 1, v1 `$id`); only `refusal.schema.json` becomes version 2 with a `/v2/` `$id`. The checker compares against v1 and refuses anything in between."
+    scope: project
+    date: 2026-11-16
+    task: T-5179
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-985
+    decision: "a new `lib/delegation_widening.py` with one function, `active_widening`. verdict_ledger (`_Ctx.widening` / `_Ctx.judged`) and judge_cli both call it. `delegation.classify` is unchanged, so act-in-the-world still routes to OPERATOR-ONLY, and the risk classes ahead of it still win."
+    scope: project
+    date: 2026-11-16
+    task: T-5180
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-986
+    decision: "`verdict_ledger.py audit` emits `WARN widened: <task> AC#N <verdict>: widened by SD-x (ruling R): \"<criterion>\"`. A new `_audit_review_widened` in audit.sh turns each of those lines into its own `warn`, next to the green-degraded block."
+    scope: project
+    date: 2026-11-16
+    task: T-5180
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-987
+    decision: "the green-degraded panel path still refuses any criterion that is not REVIEWER-JUDGES, widened ones included."
+    scope: project
+    date: 2026-11-16
+    task: T-5180
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-988
+    decision: "update the counters that decide a close or an archive move: P-010 (`update-task.sh` check_acceptance_criteria, Agent + Human + un-split), the partial-complete recheck (`update-task.sh` ALL_TOTAL/ALL_CHECKED), the inception-decide Agent preflight (`lib/inception.sh` ~709), and the inception sweep's Human recount before `mv` to completed/ (`lib/inception.sh` ~1309). All count any one-character box; met = `[x]`/`[X]`; a valid accepted miss (Agent only) is subtracted as resolved; everything else is unchecked. Episodic `ac_total_count` also counts any box."
+    scope: project
+    date: 2026-11-16
+    task: T-5181
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-989
+    decision: "`[X]` counts as met (every other counter already reads `[xX]`; P-010 used to ignore it entirely, so no task that closed before is now refused). The one `[~]` already committed before this module (T-2535's DESCOPED line) is grandfathered by the audit: boxes present at the parent of the commit that added `lib/accepted_miss.py` are reported as grandfathered, not FAILed (forward-looking, same as human_ac_ticks). Fixtures and repos without that commit grandfather nothing."
+    scope: project
+    date: 2026-11-16
+    task: T-5181
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-990
+    decision: "the shell gates pipe the exact text they counted (comment-stripped Agent block or section) into `accepted_miss.py gate FILE --stdin [--agent]`; Python judges only those boxes. `accept` is refused under agent control even with `--i-am-human`, and a `by: agent-override` row never resolves. A `[~]` resolves only when the file's `id:` equals its basename's T-NNNN. Only the annotation line directly under the title is outside the digest."
+    scope: project
+    date: 2026-11-16
+    task: T-5181
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-991
+    decision: "migrate the three update-task.sh sites (P-010 count, `### Human` placement check, partial-complete recheck) to lib/comment_strip.py. The two count sites refuse on an unclosed span inside the AC section. The whole-file placement check does not, because a comment left open in another section is not its business."
+    scope: project
+    date: 2026-11-16
+    task: T-5188
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-992
+    decision: "a line names every `T-NNNN` in it AND every task another ledger line ties to one of its ids (`id`/`dispatch_id`/`run_id`/`verdict_id`). Global (invalidates all): lines naming no task, torn or unterminated lines, a row id repeated within a file, and any non-append change to a file (prefix hash mismatch) or a file that disappears. If the files move while being read, or the stamp does not match the files, the key falls back to the whole stamp (pre-T-5194 behaviour)."
+    scope: project
+    date: 2026-11-16
+    task: T-5194
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-993
+    decision: "a waiter whose wait (30 s) expires computes on its own without registering, and does not remove or signal the other caller's in-flight entry."
+    scope: project
+    date: 2026-11-16
+    task: T-5195
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-994
+    decision: "revert ee89a5c73 (commit 95e10c8d2) and take the reviewer's cheaper design. The measured gain came mostly from 1,900 process spawns (~17 s), and one long-lived `git cat-file --batch` reader removes those with no disk store and no stale-answer class."
+    scope: project
+    date: 2026-11-17
+    task: T-5196
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-995
+    decision: "only `show <40-hex>:<path>` and `ls-tree [-r] [--name-only] <40-hex> -- <paths>` (lower-case full id, plain repo-relative paths, no pathspec magic, no other flags). Every key also carries a context hash: memo format version, the output text encoding, `.git/config` contents and the stats of the global/system git config files, and every replace ref (loose and packed, name → target). The memo is not used at all when the state token cannot be taken, refs move while the context is read, or a `GIT_*` variable outside a harmless list (author/committer identity, editor, pager, ssh, askpass) is set."
+    scope: project
+    date: 2026-11-17
+    task: T-5196
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-996
+    decision: "sqlite at `.context/working/git-object-memo.db` (WAL, synchronous=NORMAL), gitignored by the existing `.context/working/*.db` / `*.db-wal` / `*.db-shm` rules. Used only when `git check-ignore` confirms it is ignored in that repo. Each row carries its args (compared on read) and a sha256 of its output (verified on read; a mismatch runs git). A file that is not a database is deleted and started again; a locked/unwritable one turns the memo off for the process. Bound 512 MiB / 100,000 rows, least-recently-used eviction to 80% (last use refreshed at most hourly), checked on a process's first write and every 256 writes. Entries over 4 MiB are not kept. Non-zero exits are never kept."
+    scope: project
+    date: 2026-11-17
+    task: T-5196
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-997
+    decision: "keep `.context/reviews/` in `_GLOBAL_GIT_INPUTS`; a commit touching it still moves the global generation."
+    scope: project
+    date: 2026-11-17
+    task: T-5196
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-998
+    decision: "a change from node A to node B maps to the one chain of map edges from A to B whose intermediate nodes are not state carriers (gateways, tl_start, tl_verify). No chain or more than one → `unmapped`. Horizon-only changes count when they move the node (tl_create → tl_parked); the horizon in force is reconstructed backwards from the current frontmatter."
+    scope: project
+    date: 2026-11-17
+    task: T-5193
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-999
+    decision: "`--help`/`-h` passes only when it is the only option on the command. argparse exits on `-h` before acting, but restricting to help-only keeps the rule obvious and leaves every real call refused."
+    scope: project
+    date: 2026-11-17
+    task: T-5205
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1000
+    decision: "add the new records to both existing lists (Bash scanner and Write/Edit hook) in this task, with tests on both legs."
+    scope: project
+    date: 2026-11-17
+    task: T-5205
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1001
+    decision: "compute in-process (`_handoff_blockers_from_text`), guarded by a sha256 of the three"
+    scope: project
+    date: 2026-11-17
+    task: T-5198
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1002
+    decision: "(a) the dispatch that raised an unknown-reset limit does not clear it (same dispatch_id; run.sh writes its dispatch row just after the limit row's ts); (b) an unknown reset cleared by a later dispatch inside its window reads **tight** (it is \"a limit inside the current window that has reset\"); (c) zero counted tokens before the 5h limit = no estimate (unknown is not zero); (d) besides registry ids, any other id with a ledger row in the last 7 days is listed (`registered: false`), which is how unassigned/unknown show; (e) exit 3 for a usage error (unknown `--subscription`, negative `--need`), since 2 means \"at limit\"; (f) `--now ISO` for replay and tests."
+    scope: project
+    date: 2026-11-17
+    task: T-5204
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1003
+    decision: "ship a copy of T-4947's arc-closure@1440 capture as `docs/screenshots/T-5209-probe-vision-default.png`, resolved against FRAMEWORK_ROOT. `docs/` is in `fw vendor`'s include list, and `docs/screenshots/*.png` is the existing .gitignore exception, so it is tracked here and copied to consumers."
+    scope: project
+    date: 2026-11-17
+    task: T-5209
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1004
+    decision: "when rung 5 cannot reach two vision vendors, the judge result carries `vision_shortfall` (printed): the count of vision kinds, the kinds, and `fw reviewer probe-vision <kind>`. Dispatch still follows the existing degraded path; the ledger still keeps the criterion open."
+    scope: project
+    date: 2026-11-17
+    task: T-5209
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1005
+    decision: "shell (`lib/idalloc.sh`) for allocation; Python (`lib/idalloc_reconcile.py`) for reconcile."
+    scope: project
+    date: 2026-11-18
+    task: T-5217
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1006
+    decision: "the check walks from the bottom over files, every view's mark and ledger ranges; a counter the walk cannot reach (more than the gap above everything the ledger and files explain) is treated like the band and reset, with a `heal` row `counter-in-quarantine`."
+    scope: project
+    date: 2026-11-18
+    task: T-5217
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1007
+    decision: "keep it non-final (stored, retryable), as that path always was."
+    scope: project
+    date: 2026-11-18
+    task: T-5141
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1008
+    decision: "run the authenticated version read anyway; when it clears the floor the hub is a valid target and the probe failure travels as `ProbeResult.note`."
+    scope: project
+    date: 2026-11-18
+    task: T-5141
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1009
+    decision: "the verdict is the FIRST stdout line (existing `delivered: STATE  ->  …` shape kept); detail stays as unindented `label: value` lines beneath it; a NOT-delivered state says what happens next (`(kept in the outbox; retried)` / `(final; not retried)`)."
+    scope: project
+    date: 2026-11-18
+    task: T-5142
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1010
+    decision: "drop the inherited value and resolve exactly as in a clean environment (T-4453 for `upgrade`, then resolve_framework); warn only when that changes which tree runs. Marker name `FW_FRAMEWORK_ROOT_HANDOFF=1`, taken and unset at the top of bin/fw (before any child process), so it never leaks."
+    scope: project
+    date: 2026-11-18
+    task: T-5214
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1011
+    decision: "lift create-task's three inline writers (inception template, default template, inline heredoc fallback) verbatim into `lib/render_task.py` (`write-one` for create-task, `write-batch` for create-batch); lift the name/type/horizon/owner/recursion checks into `lib/task-create-rules.sh` (functions return 1 instead of exiting, messages byte-identical). Every file is written to `<tasks>/.writing/<pid>-<rand>.<name>` and hard-linked into `active/`: link(2) is exclusive and atomic, so a kill leaves only complete files. Pinned by goldens written by the pre-change create-task (commit 7ef993ddc): `tests/fixtures/t5221/golden/` (default, refactor+start, inception, inline fallback; frozen templates in `tests/fixtures/t5221/templates/`, generator `gen.sh`)."
+    scope: project
+    date: 2026-11-18
+    task: T-5221
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1012
+    decision: "spec keys name, description, type, owner (required), horizon, tags, related, arc_id. `arc_id` is the only addition over create-task and adds one `arc_id:` line after `related_tasks:` (T-1849 membership); entries without it are byte-identical to create-task. Refused: inception type, keys start/status/focus/origin/recommendation/rationale/id, flags --start/--origin. Once per batch: library loading, the lock and the union-scan check (one `fw_id_allocate N`), template reads, one python start for rendering, one ledger append of the created rows (`fw_id_ledger_created` now takes several ids). Max 100 entries (FW_ID_BLOCK_MAX)."
+    scope: project
+    date: 2026-11-18
+    task: T-5221
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1013
+    decision: "a YAML file, `.context/arcs/templates/<name>.yaml` or any path (arc readers glob `arcs/*.yaml`, so the subdirectory is never read as an arc):"
+    scope: project
+    date: 2026-11-18
+    task: T-5221
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1014
+    decision: "`lib/agent_notice.post()` skips (logged \"skipped\") under pytest or bats unless `FW_AGENT_NOTICES=1`; `FW_AGENT_NOTICES=0` switches notices off anywhere. The decide chain keeps its own flow and only shares the sender."
+    scope: project
+    date: 2026-11-18
+    task: T-5222
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1015
+    decision: "toggle-ac posts on a daemon thread (`wait=False`); restatement and paid-review approve post inline with a 10 s timeout."
+    scope: project
+    date: 2026-11-18
+    task: T-5222
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1016
+    decision: "Operator ruling 2026-11-18 (question 2 of 5, options A and 1): a newly filed inception starts as 'EXPLORING, not ready for decision' instead of GO/NO-GO/DEFER; every EXPLORING inception names what it waits for (agent / peer / operator) and a revisit date (default 7 days); a daily check routes overdue ones (handover for agent work, a reminder for peers, fw operator pending and Watchtower approvals as 'questions waiting for you' for the operator); once every IW question is disposed the agent writes the real recommendation and only then does the decide link work; the existing open inceptions are triaged once; and the written workflow (050-Inceptions.md, CLAUDE.md, FRAMEWORK.md, the inception template, the retrofit cron) is aligned to it."
+    scope: project
+    date: 2026-11-18
+    task: unknown
+    rationale: "Origin: T-5215 RCA (G-133) — a filing-time GO read as a finished verdict, to the agent too; and 71 open inceptions had no mechanism that moves an undecided one forward."
+
+  - id: D-1017
+    decision: "`SendMessage`, `SendToProject`, `SendToProjectContext` (matcher `SendMessage|SendToProject|SendToProjectContext`, hook `block-cross-session-messages`)."
+    scope: project
+    date: 2026-11-18
+    task: T-5225
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1018
+    decision: "fail CLOSED (exit 2). The settings matcher routes only the three tools to this hook, so an unreadable payload here is almost certainly one of them; a parseable payload naming any other tool exits 0 (so the hook is safe under a broader matcher too)."
+    scope: project
+    date: 2026-11-18
+    task: T-5225
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1019
+    decision: "runme around `bin/fw hook-enable` (the existing idempotent verb for this repo's settings.json; T-2911 parity test keys on hook name) plus `bin/fw enforcement baseline` (L-398)."
+    scope: project
+    date: 2026-11-18
+    task: T-5225
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1020
+    decision: "Operator ruling 2026-11-18 (question 2, follow-up, option 1): EXPLORING inceptions are tracked as instances of an inception lifecycle map (class) in the workflow designer; each instance records its current step and when it entered it; revisit dates on waiting steps are the triggers for the daily routing, and time-in-step per inception is the measurement."
+    scope: project
+    date: 2026-11-18
+    task: unknown
+    rationale: "Operator: 'instantiated workflows ... see the instance, copy from the class and see where it is and how it steps through each step ... set the dates there and use those as triggers and measurable items.' Extends the existing aef-task-lifecycle instance projection (GET /api/instances, T-4831/T-5185) to inceptions."
+
+  - id: D-1021
+    decision: "two new kinds in the one shared predicate `inception_handoff_blockers` (`exploring`, `ready-for-recommendation`), transcribed into `web/shared.py` (digest updated). Review, review-batch, decide, audit C-006b, the handover and the page all read it. EXPLORING has no bypass at the handoff or at decide: the remedy is writing the verdict. Existing bypasses (`--i-am-human`, `FW_ALLOW_EMPTY_RECOMMENDATION`, `FW_INCEPTION_PRE_GATED`, `FW_ALLOW_UNREADY_HANDOFF` for the other blockers) are unchanged and still logged."
+    scope: project
+    date: 2026-11-18
+    task: T-5226
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1022
+    decision: "an `## Open Questions` section with no IW entries reads \"not ready, no Open Questions filed yet\"; an inception with no section at all (grandfathered, T-2190) reads \"ready for a recommendation\"."
+    scope: project
+    date: 2026-11-18
+    task: T-5226
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1023
+    decision: "the probe attaches a structured `profile_gap` to its ProbeResult; `delivery.deliver` (the one path both `fw sidecar send` and the watcher's retries take) records it and resolves on delivery. Ledger `.context/sidecar/hub-profile-notices.jsonl`, one row per (user, hub), rewritten under a flock; gitignored because it holds user and host names."
+    scope: project
+    date: 2026-11-18
+    task: T-5236
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1024
+    decision: "only the broken-profile case (`termlink fleet reauth <profile>`) gets a prepared runme. A missing profile shows the hubs.toml lines (plus the existing `termlink remote profile add` hint): it needs the hub's secret placed by the operator, so it is never one command."
+    scope: project
+    date: 2026-11-18
+    task: T-5236
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1025
+    decision: "Operator ruling 2026-11-18 (question 6 of 6, option A): a criterion classed operator-only (act-in-the-world etc.) whose operator ruling is RECORDED becomes reviewer-judgeable — the reviewer checks the box matches the recorded ruling; criteria without a recorded ruling stay as strict as before. A ruling counts only when the operator recorded it through an operator-only verb (refused under agent control), never from free text an agent could write."
+    scope: project
+    date: 2026-11-18
+    task: unknown
+    rationale: "832 T-676 AC1 (sidecar e106c38e): a ruling question naming 'git push' in a list was classed act-in-the-world, so the operator was asked to rubber-stamp a ruling already made. Option B (relax act-in-the-world detection) was declined: it would loosen the safety class for criteria nobody ruled on."
+
+  - id: D-1026
+    decision: "Close T-5227 with the agent criteria met, and move its [REVIEW] criterion to T-5240."
+    scope: project
+    date: 2026-11-18
+    task: T-5227
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1027
+    decision: "`/api/instances` keeps the v2 instance shape. Only the `lifecycle_node` enum gains the seven inception uids. The dates come from `fw inception lifecycle --json` and the overlay tooltip."
+    scope: project
+    date: 2026-11-18
+    task: T-5227
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1028
+    decision: "No `waiting_on` means agent, and no `revisit_at` means created + 7. The ~71 existing inceptions are therefore placed now and are not NO-POSITION. T-5228 still writes the values into the files."
+    scope: project
+    date: 2026-11-18
+    task: T-5227
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1029
+    decision: "exclusive flock on the journal file's own O_APPEND descriptor."
+    scope: project
+    date: 2026-11-19
+    task: T-5250
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1030
+    decision: "new `lib/arc_owner.py` (line-based YAML edit, state, brief); `lib/arc.sh` verbs are thin wrappers; journal writes go through `lib/arc_journal.py append` unchanged."
+    scope: project
+    date: 2026-11-19
+    task: T-5251
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1031
+    decision: "`off` writes `journal: false` and `role: \"off\"`, keeping `wake` so a later `on` without `--wake` restores it. `role` is quoted because YAML 1.1 reads bare `on`/`off` as booleans."
+    scope: project
+    date: 2026-11-19
+    task: T-5251
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1032
+    decision: "`/inbox/files/` in the nested `.context/.gitignore`, the file lib/dispatch-gitignore.sh (T-4684) already writes."
+    scope: project
+    date: 2026-11-19
+    task: T-5271
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1033
+    decision: "a `fw arc wake-sweep` verb wrapping `lib/arc_wake.py sweep`."
+    scope: project
+    date: 2026-11-19
+    task: T-5252
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1034
+    decision: "`sent`, `dispatch-refused` and `error` count toward `owner.wake_limit`; `refused-limit` and `skipped` (FW_ARC_WAKE=0 / test run) do not. A deadline is used up by any ledger row with its key except `skipped`, so a deadline refused by the limit is not retried the next day (the operator was told)."
+    scope: project
+    date: 2026-11-19
+    task: T-5252
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1035
+    decision: "one `fw_notify` push per arc per UTC day (recorded as `operator_notified` on the first `refused-limit` row) AND a live `fw operator pending` section \"Arcs at their daily wake limit\", read from today's ledger rows."
+    scope: project
+    date: 2026-11-19
+    task: T-5252
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1036
+    decision: "an operator approval (`--words`) counts whatever `decision_review` says; the setting only governs whether a reviewer approval counts."
+    scope: project
+    date: 2026-11-19
+    task: T-5253
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1037
+    decision: "`fw arc approve … --dispatch-id D --outcome green` is not operator-gated (the evidence is the signed review dispatch, read through `verdict_ledger.dispatch_record`); a dispatch already used for one decision is refused for another."
+    scope: project
+    date: 2026-11-19
+    task: T-5253
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1038
+    decision: "the register entry's `paths:` names a YAML file in the project (`group:`, optional `section:`, `items:` of `{label, endpoint | path}`), read with the register's own YAML loader."
+    scope: project
+    date: 2026-11-20
+    task: T-5261
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1039
+    decision: "project items go under their own sub-heading at the end of the group (`section:`, default \"Project\")."
+    scope: project
+    date: 2026-11-20
+    task: T-5261
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1040
+    decision: "Watchtower writes a load report (`.context/working/watchtower-extensions.json`: loaded, skipped with reason) at start; `lib/extensions.py web-status` turns it into rows for `fw doctor`, and `audit` includes the same rows. The report is written only when the register has a page or nav entry (or a report already exists), so projects without extensions get no new file."
+    scope: project
+    date: 2026-11-20
+    task: T-5260
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1041
+    decision: "a blueprint's own `static_folder` is used as written; one that sets none and has `static/` beside its module gets it at `/ext/<blueprint name>/static/`."
+    scope: project
+    date: 2026-11-20
+    task: T-5260
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1042
+    decision: "(1) now: codex not seated on screenshot criteria (`vision: false` in policy/review-backends.yaml); (3) later: T-5290's checker counts a render vote only when the seat's log shows it viewed the evidence; (a) re-judge the render criteria of T-5260, T-5226 and T-5236 without codex."
+    scope: project
+    date: 2026-11-20
+    task: T-5289
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1043
+    decision: "acknowledge (T-5149, deletes nothing) the 90 test inboxes and our own old `aef-greenfield-test`; ask 010, 1409 and ring20 about the rest (msgs 9c8fcc9e, 19b55f16, e30eb816)."
+    scope: project
+    date: 2026-11-20
+    task: T-5288
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1044
+    decision: "a live startup probe (no credential, then a wrong random credential; both must answer 401/403), run last in create_app; probe requests pass csrf_protect via a per-startup secret in a WSGI environ key that no client header can set, compared with hmac.compare_digest and deleted after startup."
+    scope: project
+    date: 2026-11-20
+    task: T-5262
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1045
+    decision: "`PREPUSH_RANGE_TEST_BUDGET` is set to 120s, not the 240s in the brief."
+    scope: project
+    date: 2026-11-21
+    task: T-5342
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1046
+    decision: "WARN when matching files were over the cap (parent change c909d3c0c)."
+    scope: project
+    date: 2026-11-21
+    task: T-5342
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1047
+    decision: "The review criterion now states 832's design: readable from the top-left, the rest reached by scrolling or Fit. The operator chose \"Accept 832's design\" when asked after codex's red verdict (2026-11-22; codex verdict for dispatch judge-t-5350-r3-c5de13c5aa5b)."
+    scope: project
+    date: 2026-11-21
+    task: T-5350
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-1048
+    decision: "T-5350 stays closed although its closing verdict (codex V-20261121-791073b7, attached-only proof) would not count under T-5353's rule"
+    scope: project
+    date: 2026-11-21
+    task: T-5353
+    rationale: "Operator chose option 1 (2026-11-22): the 1920 Save fix is plainly visible, codex's earlier red cited exact image regions, and the starter-map wording was the operator's own decision; recorded in T-5353's RCA"
