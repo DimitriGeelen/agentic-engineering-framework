@@ -104,20 +104,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `_bounded_walk` (or the basename index walk) prunes any subdirectory that contains a `.git` entry (worktree or nested repo) and `.context/working/scratch/`, for every walk that uses it
-- [ ] Test: a temp project with a fake worktree copy (with `.git` file) and a scratch dir holding many files: the index excludes them, includes a real `.context/working/` file, and does not truncate
-- [ ] Existing web/shared tests stay green; Watchtower restarted and `bin/fw watchtower current` passes; vendored copy synced
-- [ ] 1409 told the task id and fix commit
+- [x] Checked whether bleeding-edge still has the defect: no. T-5106 (dc4af9756, 2026-11-13, first in v1.8.16-be.49; itself from an earlier 1409 report at 2.58M files) walks `.context/working` top level only (`_WALK_SHALLOW`, web/shared.py:835) within a 200k-file / 10 s budget, so `.context/working/scratch/review-wt/` is never walked. 1409 runs 1.8.15, which predates it.
+- [x] Coverage exists: tests/unit/test_t5106_bounded_index_walks.py (5 tests, incl. `.context/working/scratch/deep.yaml` excluded and fail-open truncation) passes.
+- [x] 1409 told: fixed in v1.8.16-be.49+ by T-5106; upgrade to the current be-tag; no AEF code change under this task
 
 ### Human
-- [ ] File names in task text still render as working links after the index change (http://192.168.10.107:3000/tasks/T-5339)
-  **Steps:**
-  1. Open http://192.168.10.107:3000/tasks/T-5339 (Watchtower restarted after the change; `bin/fw watchtower current` passes).
-  2. In the Context section, find the file names `web/shared.py` and `.context/working/scratch/review-wt/`.
-  3. Click the `web/shared.py` link.
-  **Expected:** `web/shared.py` renders as a link and opens the file viewer for that file; the scratch path renders as plain text or a link that resolves, never a broken link; the page loads in a few seconds.
-  **If not:** note which name rendered wrong and what the link pointed to; the index walk pruned too much or the page fell back to plain text.
-
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -302,10 +293,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
-python3 -m pytest tests/unit/test_t5339_index_skips_worktrees.py -q > /tmp/.t5339 2>&1 && grep -q passed /tmp/.t5339 && ! grep -q failed /tmp/.t5339
-bin/fw watchtower current
-U="$(bin/fw watchtower url)"; curl -sf "$U/tasks/T-5339" -o /tmp/.t5339.html && grep -q 'href="/file/web/shared.py"' /tmp/.t5339.html
-bin/fw vendor self --check --task T-5339
+python3 -m pytest tests/unit/test_t5106_bounded_index_walks.py -q > /tmp/.t5339 2>&1 && grep -q passed /tmp/.t5339 && ! grep -q failed /tmp/.t5339
+grep -q '_WALK_SHALLOW = (".context/working",)' web/shared.py
 
 ## RCA
 
@@ -322,6 +311,14 @@ bin/fw vendor self --check --task T-5339
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 1409 (framework 1.8.15) measured 79 s in `_basename_index` for one start page, walking 3.85M files under `.context/working/scratch/review-wt/`.
+
+**Root cause:** in 1.8.15 the basename index walked every viewable directory in full, including `.context/working/` and the worktree copies under it.
+
+**Why structurally allowed:** already found and fixed: T-5106 (2026-11-13, from an earlier 1409 report) bounded the walk; 1409 still runs 1.8.15, which predates it. This report reached us as a new defect because the reporter measured an old release; the filing step did not first check bleeding-edge.
+
+**Prevention:** no new code: tests/unit/test_t5106_bounded_index_walks.py pins the shallow `.context/working` walk, the scratch exclusion and fail-open truncation. Lesson for filing peer bug reports: check the reporter's version against bleeding-edge before building.
 
 ## Evolution
 
