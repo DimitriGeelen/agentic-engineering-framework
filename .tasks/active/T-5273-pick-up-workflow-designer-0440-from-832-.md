@@ -1,7 +1,17 @@
 ---
 id: T-5273
-name: "Pick up workflow designer 0.44.0 from 832 and pin it (verify sha256 6ab54f34...)"
+name: "Pick up workflow designer 0.45.0 from 832 and pin it (verify sha256 ed284265...)"
 description: >
+  RETARGETED 2026-11-21 to 0.45.0 (832 msg c4c18fcf): tag designer-v0.45.0 (c0c3c85ab),
+  dist/aef-workflow-designer-0.45.0.html, sha256 ed2842652b83641bbede81666f246df30e265bbdfd76d235319a69ddb68f86f4,
+  1434483 bytes; authoring kit dist/aef-authoring-kit-0.45.0 calibrated PASS (codex, GLM-5.3).
+  New: .xlsx export/import, PDF A3 or A4 pages, imported annotations/associations drawn,
+  instance counts per step (/api/instances), routing fixes. NOT byte-identical: re-saving a
+  designer-drawn map rewrites waypoints of 14 edges on 5 corpus maps (promotion-pipeline
+  flow_6/7, release-pipeline flow_13/14/15/17, session-capture flow_4/6, task-gate flow_13/14,
+  task-lifecycle flow_6/9); no element, id, name or attribute changes; /api/validate and the
+  five endpoints unchanged. Notes: their docs/releases/RELEASE-NOTES-0.45.0.md. 0.44.0 was
+  never pinned; skip it. Previous text (0.44.0) follows.
   832 (msg d1184a3c, 2026-11-19): designer 0.44.0 released (tag designer-v0.44.0):
   dist/aef-workflow-designer-0.44.0.html, sha256 6ab54f346566244644891e71560b0949b40e74a63373cdf0839c8169c72ad9e5,
   1391042 bytes; authoring kit dist/aef-authoring-kit-0.44.0 calibrated PASS. New:
