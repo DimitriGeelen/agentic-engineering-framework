@@ -222,8 +222,15 @@ do_commit() {
     # point by construction (the block above skips it when pathspec is
     # non-empty) — fall back to the pre-fix ORDER (bump after, per the T-3090
     # scope note above) so a scoped caller's exact path set is never widened.
+    #
+    # T-5340: that post-commit bump leaves the task file dirty after every
+    # scoped commit. A scoped caller that must leave the tree clean (the
+    # handover auto-commit, agents/handover/handover.sh _commit_handover_files)
+    # sets FW_COMMIT_SKIP_TASK_BUMP=1 to skip the bump for that one call. The
+    # pathspec is never widened either way; other callers keep the default.
     if git -C "$PROJECT_ROOT" commit "${commit_argv[@]}"; then
-        if [ ${#pathspec[@]} -gt 0 ] && [ -n "$found_task" ]; then
+        if [ ${#pathspec[@]} -gt 0 ] && [ -n "$found_task" ] \
+            && [ "${FW_COMMIT_SKIP_TASK_BUMP:-0}" != 1 ]; then
             commit_task_file=$(find "$TASKS_DIR/active" -name "${found_task}-*.md" -type f 2>/dev/null | head -1)
             [ -n "$commit_task_file" ] && update_task_timestamp "$found_task"
         fi

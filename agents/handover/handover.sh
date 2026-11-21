@@ -155,7 +155,9 @@ _commit_handover_files() {
         echo "  The handovers directory is gitignored and holds no tracked handover. To track handovers, force-add one once: git add -f $HANDOVER_DIR/LATEST.md"
         return 1
     fi
-    if PROJECT_ROOT="$PROJECT_ROOT" "$GIT_AGENT" commit -m "$_msg" -- "$@"; then
+    # T-5340: skip the post-commit last_update bump so the handover task file
+    # is not left modified by the handover's own commit.
+    if PROJECT_ROOT="$PROJECT_ROOT" FW_COMMIT_SKIP_TASK_BUMP=1 "$GIT_AGENT" commit -m "$_msg" -- "$@"; then
         HANDOVER_COMMIT_STATUS=ok
     else
         HANDOVER_COMMIT_STATUS=failed
