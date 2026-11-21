@@ -7,9 +7,9 @@ description: >
   to codex review seats (T-5309) and letting a submitter withdraw a pool job (T-5300
   / T-5311 / T-5312). Depends on slices 1-3.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T16:31:30Z
-last_update: '2026-11-21T13:08:53Z'
-date_finished:
+last_update: 2026-11-21T14:26:17Z
+date_finished: 2026-11-21T14:26:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -149,7 +149,7 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
-- [ ] Risk matrix scores, actor split and "introduced?" column are sound (docs/reports/T-5309-risk-matrix.md)
+- [x] Risk matrix scores, actor split and "introduced?" column are sound (docs/reports/T-5309-risk-matrix.md)
   **Steps:**
   1. Run `python3 lib/risk_register.py --matrix docs/reports/T-5309-risk-matrix.md` from the project root.
   2. Read each risk in the Summary table and its actor-split table.
@@ -157,8 +157,9 @@ bvp_scores_proposed:
   4. Check the "Exists anyway?" and "Introduced by the change?" columns against the Baseline in the header.
   **Expected:** the check prints 0 error(s); every score fits the scales; every actor that can plausibly cause the risk is scored; no risk the change adds is marked "no", and none it does not add is marked NEW.
   **If not:** name the risk and row, state what the score or column should be and why, and return the matrix to the drafting agent; the operator-acceptance list may change after the fix.
+  **Reviewer verdict:** green V-20261121-fa5b63e4 — reviewer-judge-t-5316-r3-22da5927c143:reviewer (rung rung-3-termlink-single-reviewer), digest 880505b1ab92; dispatch judge-t-5316-r3-22da5927c143; evidence: .context/reviews/evidence/T-5316/AC1-judge-t-5316-r3-22da5927c143.md; ledger .context/reviews/verdicts.jsonl
 
-- [ ] Risk matrix scores, actor split and "introduced?" column are sound (docs/reports/T-5300-risk-matrix.md)
+- [x] Risk matrix scores, actor split and "introduced?" column are sound (docs/reports/T-5300-risk-matrix.md)
   **Steps:**
   1. Run `python3 lib/risk_register.py --matrix docs/reports/T-5300-risk-matrix.md` from the project root.
   2. Read each risk in the Summary table and its actor-split table.
@@ -166,6 +167,7 @@ bvp_scores_proposed:
   4. Check the "Exists anyway?" and "Introduced by the change?" columns against the Baseline in the header.
   **Expected:** the check prints 0 error(s); every score fits the scales; every actor that can plausibly cause the risk is scored; no risk the change adds is marked "no", and none it does not add is marked NEW.
   **If not:** name the risk and row, state what the score or column should be and why, and return the matrix to the drafting agent; the operator-acceptance list may change after the fix.
+  **Reviewer verdict:** green V-20261121-1857df38 — reviewer-judge-t-5316-r3-22da5927c143:reviewer (rung rung-3-termlink-single-reviewer), digest a4f4e2f3d2f5; dispatch judge-t-5316-r3-22da5927c143; evidence: .context/reviews/evidence/T-5316/AC2-judge-t-5316-r3-22da5927c143.md; ledger .context/reviews/verdicts.jsonl
 
 - [ ] [OPERATOR] Accept the remaining risk of T-5309 risk 1 (screenshot content sent to OpenAI, 8), risk 2 (seat prompt-injected by text inside a screenshot, 6), risk 3 (attached image counted as viewed though codex did not examine it, 9) and risk 4 (unattached image counted as viewed through a same-name collision, 6), and T-5300 risk 1 (forged withdrawal of someone else's job, 6; the part T3w adds scores 3, the 6 is full host compromise that exists anyway), risk 2 (wanted job withdrawn unseen, 6), risk 3 (withdrawn job runs anyway, 6) and risk 4 (attempt credential kept longer and carried on a new path, 8), as listed by the --matrix check
   **Steps:**
@@ -443,3 +445,21 @@ python3 lib/risk_register.py > /tmp/.t5316c 2>&1 && grep -q "0 error(s), 0 warni
 ### 2026-11-21T13:08:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-21T14:26:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-92475cc2
+- **Timestamp:** 2026-11-21T14:26:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Every risk with any actor scoring 6+ has an R-NNN entry in .context/project/concerns.yaml (type risk, scores, actors, introduced_by, exists_anyway, mitigation_task) and its mitigation task carries arc
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/concerns.yaml in: Every risk with any actor scoring 6+ has an R-NNN entry in .context/project/concerns.yaml (type risk, scores, actors, introduced_by, exists_anyway, mi`
