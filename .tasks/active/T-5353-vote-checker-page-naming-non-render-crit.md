@@ -1,13 +1,19 @@
 ---
 id: T-5353
-name: "Vote checker: page-naming non-render criteria still accept attached-only image proof (T-5327 rule reaches render class only)"
+name: "Vote checker: page-naming non-render criteria still accept attached-only image
+  proof (T-5327 rule reaches render class only)"
 description: >
-  Found in T-5352 (2026-11-22): verdict_ledger._run_fault asks captures only when _is_render_review, and vote_checker.checkable(render=...) refuses attached-only proof only for render criteria. Since T-5352 a page-naming unclassified criterion gets screenshots, but a single-seat green on it still counts with only attached-at-launch proof. Decide whether the ledger should use judge_cli.needs_screenshots too (one decision point).
+  Found in T-5352 (2026-11-22): verdict_ledger._run_fault asks captures only when
+  _is_render_review, and vote_checker.checkable(render=...) refuses attached-only
+  proof only for render criteria. Since T-5352 a page-naming unclassified criterion
+  gets screenshots, but a single-seat green on it still counts with only attached-at-launch
+  proof. Decide whether the ledger should use judge_cli.needs_screenshots too (one
+  decision point).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T23:00:57Z
-last_update: 2026-11-21T23:00:57Z
-date_finished: null
+last_update: '2026-11-21T23:14:35Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-21T23:14:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5353: Vote checker: page-naming non-render criteria still accept attached-only image proof (T-5327 rule reaches render class only)
@@ -57,20 +80,34 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:**
+- T-5352 (2026-11-22) made page-naming non-render criteria get screenshots, and left the vote side as is.
+- T-5350 then closed on a single-seat codex green (V-20261121-791073b7, rung 3) whose 8 image items all have `view_proof: attached`. There is no logged view. On a render criterion that vote would be not-checkable (T-5327).
+- On the same task, claude-code voted green four times in a row without opening the images: every vote not-checkable, "seat did not open image".
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** "Does this criterion's evidence need a proven view of the screenshots?" is answered in three places with two different tests:
+- `judge_cli.needs_screenshots` (render, or names a page), since T-5352;
+- `verdict_ledger._run_fault` (captures required only when `_is_render_review`);
+- `vote_checker.checkable(render=…)`: attached-only refused only for render.
+So a page-naming non-render criterion closes on attached-only proof, the very case T-5327 refuses for render.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** One decision point. The ledger and the vote checker treat a criterion that needs screenshots (as `needs_screenshots` decides) like a render criterion: captures required, attached-only proof not checkable in a non-panel run.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A single-seat attached-only green on a page-naming criterion is not-checkable and gets reassigned. Render criteria behave exactly as today. The claude-code pattern is diagnosed: why its seat cites images without a logged Read.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `verdict_ledger` and `vote_checker` decide "needs a proven view" with the same predicate as `judge_cli.needs_screenshots` (imported or moved to one shared place, never copied). A page-naming non-render criterion is then treated like a render one, in `_run_fault` (captures) and in `checkable` (attached-only in a non-panel run is not checkable).
+- [ ] Unit tests:
+  1. A page-naming unclassified criterion with an attached-only single-seat green is not checkable.
+  2. The same with a logged view is checkable.
+  3. Render criteria are unchanged.
+  4. A criterion naming no page and no image is unchanged.
+  Existing reviewer, verdict and vote tests stay green, and the vendored copy is synced.
+- [ ] The claude-code seat's missing logged views are diagnosed from a real run record (e.g. `.context/dispatch/judge-t-5350-r3-8122f0683a86/`). The finding (prompt not telling it to Read, tool not available, or the view not logged) is written in the RCA, and a follow-up task is filed if it needs a separate fix.
+- [ ] Re-checking the ledger shows how T-5350's closing verdict grades under the new rule. It is reported here, not rewritten; ledger rows are append-only.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,6 +294,8 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 python3 -m pytest tests/unit/test_t5353_page_criterion_view_proof.py -q
+bin/fw vendor self --check --task T-5353
 
 ## RCA
 
@@ -354,3 +393,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5353-vote-checker-page-naming-non-render-crit.md
 - **Context:** Initial task creation
+
+### 2026-11-21T23:14:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now
