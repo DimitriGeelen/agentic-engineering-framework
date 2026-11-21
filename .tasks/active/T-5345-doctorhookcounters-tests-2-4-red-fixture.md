@@ -1,8 +1,12 @@
 ---
 id: T-5345
-name: "doctor_hook_counters tests 2-4 red: fixture doctor --quick prints no 'Hook configuration valid' line"
+name: "doctor_hook_counters tests 2-4 red: fixture doctor --quick prints no 'Hook
+  configuration valid' line"
 description: >
-  Found by the T-5342 worker 2026-11-21; red before T-5342 (still red with its config.sh line removed). In the live repo doctor --quick prints the line (41 hooks in 26 matchers across 7 events); inside the bats fixture it does not. Localise why the fixture path skips or changes the hook check, then fix.
+  Found by the T-5342 worker 2026-11-21; red before T-5342 (still red with its config.sh
+  line removed). In the live repo doctor --quick prints the line (41 hooks in 26 matchers
+  across 7 events); inside the bats fixture it does not. Localise why the fixture
+  path skips or changes the hook check, then fix.
 
 status: captured
 workflow_type: build
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T19:05:53Z
-last_update: 2026-11-21T19:05:53Z
-date_finished: null
+last_update: '2026-11-21T19:15:24Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-21T19:15:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5345: doctor_hook_counters tests 2-4 red: fixture doctor --quick prints no 'Hook configuration valid' line
