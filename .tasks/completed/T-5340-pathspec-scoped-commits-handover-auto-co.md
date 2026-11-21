@@ -12,12 +12,12 @@ description: >
   the task file in the pathspec when the caller is the handover; keep T-3090's rule
   that a scoped caller's path set is never silently widened.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/git/lib/commit.sh, agents/handover/handover.sh, tests/unit/t5340_handover_no_dirty_task.bats]
 related_tasks: [T-3090, T-3466]
 origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "448c2b31"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -47,8 +47,8 @@ origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "448c2b31"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T15:29:03Z
-last_update: 2026-11-21T15:50:05Z
-date_finished:
+last_update: 2026-11-21T16:14:25Z
+date_finished: 2026-11-21T16:14:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -406,3 +406,16 @@ bin/fw vendor self --check --task T-5340
 ### 2026-11-21T15:50:05Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-21T16:14:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a45e6f0b
+- **Timestamp:** 2026-11-21T16:14:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
