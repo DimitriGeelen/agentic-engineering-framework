@@ -126,6 +126,7 @@ from lib import task_commits  # noqa: E402
 from lib import verdict_format  # noqa: E402
 from lib import vote_checker  # noqa: E402
 from lib import delegation_widening  # noqa: E402
+from lib import evidence_need  # noqa: E402
 from lib.delegation import (  # noqa: E402
     GENERATED_ANNOTATION_RE,
     REVIEWER_JUDGES,
@@ -2956,12 +2957,21 @@ def _is_render_review(ctx: "_Ctx", crit) -> bool:
             and bool(_RENDER_REVIEW_RE.search(criterion_body(crit))))
 
 
+def _needs_view(ctx: "_Ctx", crit) -> bool:
+    """T-5353: does this criterion's evidence need a proven view of screenshots of pages? The
+    judge's own test (`evidence_need.needs_view`: render, or names a page whatever its class), so
+    the judge, `_run_fault` and the vote checker never disagree on which criteria it covers."""
+    return evidence_need.needs_view(_is_render_review(ctx, crit), crit.title, criterion_body(crit))
+
+
 def _run_fault(ctx: "_Ctx", row: dict, crit, recording: bool) -> tuple[str, str] | None:
-    """A green's run requirements (T-3580 round 2): a panel-rung claim and a render criterion
-    both need a signed run; a render green needs every required page seen (verified screenshot
-    evidence cited)."""
+    """A green's run requirements (T-3580 round 2): a panel-rung claim and a criterion that needs
+    screenshots (T-5353 `_needs_view`: render, or names a page) both need a signed run, and such a
+    green needs every required page seen (verified screenshot evidence cited). The T-4202 Visual
+    Verification checklist stays a render-only requirement: it is a render-task artefact."""
     root = ctx.root
     render = _is_render_review(ctx, crit)
+    view = render or _needs_view(ctx, crit)
     claimed = str(row.get("run_id") or "")
     run, _bind, why = run_for_dispatch(root, str(row["dispatch_id"]))
     if why:
@@ -2971,18 +2981,21 @@ def _run_fault(ctx: "_Ctx", row: dict, crit, recording: bool) -> tuple[str, str]
             return "run-unbound", f"the row claims run {claimed!r} but its dispatch is not bound to it"
         if str(row["rung"]).startswith("rung-5"):
             return "panel-needs-run", "a rung-5 panel verdict must belong to a registered review run"
-        if render:
-            return "render-needs-run", ("a render criterion needs a review run that recorded the "
+        if view:
+            return "render-needs-run", (("a render criterion" if render else
+                                         "a criterion that names a page")
+                                        + " needs a review run that recorded the "
                                         "pages required and their capture results")
         return None
     if run.get("task") != ctx.task_id or row["ac"] not in (run.get("acs") or []):
         return "run", f"run {run.get('run_id')!r} does not cover {ctx.task_id} AC#{row['ac']}"
     if claimed != run["run_id"]:
         return "run-unbound", f"the row names run {claimed!r}, its dispatch is bound to {run['run_id']!r}"
-    if render:
+    if view:
         pages = (run.get("pages") or {}).get(str(row["ac"])) or []
         if not pages:
-            return "unseen-page", "no required page was recorded for this render criterion"
+            return "unseen-page", ("no required page was recorded for this "
+                                   + ("render criterion" if render else "page-naming criterion"))
         caps = {c.get("page"): c for c in run.get("captures") or []}
         cited = set((row.get("evidence_sha256") or {}).values())
         for p in pages:
@@ -2994,7 +3007,8 @@ def _run_fault(ctx: "_Ctx", row: dict, crit, recording: bool) -> tuple[str, str]
                 return "unseen-page", f"the screenshot of {p!r} is not cited as evidence"
         # T-4214: the T-4202 evidence. Every checklist state at every configured width must have a
         # verified shot, the Visual Verification checklist must pass, and each shot must be cited.
-        return _visual_fault(run.get("visual"), cited)
+        if render:
+            return _visual_fault(run.get("visual"), cited)
     return None
 
 
@@ -3587,7 +3601,7 @@ def satisfying_verdict(ctx: _Ctx, crit) -> tuple[dict | None, str]:
     if last.get("outcome") == NOT_EVALUATED:
         return None, (f"not-evaluated: no reviewer has evaluated this criterion ({last.get('id')}: "
                       f"{last.get('guidance', '')}) — reassign it to a seat kind that can")
-    ok, reasons = vote_checker.checkable(last, render=_is_render_review(ctx, crit))
+    ok, reasons = vote_checker.checkable(last, render=_needs_view(ctx, crit))
     if not ok:
         return None, (f"{NOT_CHECKABLE}: the latest vote {last.get('id')} ({last.get('outcome')}) "
                       f"fails its check and counts neither green nor red — "
@@ -3608,11 +3622,12 @@ def _counts(row: dict, ctx: "_Ctx | None" = None, crit=None) -> bool:
 
 def not_checkable_reasons(row: dict, ctx: "_Ctx | None" = None, crit=None) -> list[str]:
     """T-5294: why a verdict/1 row does not count ([] when it does, or for an old-format row).
-    T-5327: given the task `ctx` and the row's criterion `crit`, a render criterion (the same
-    `_is_render_review` the run/page rules use) in a non-panel row also needs a logged view —
-    attached-at-launch alone is not checkable. Without them the render rule is not applied."""
-    render = bool(ctx is not None and crit is not None and _is_render_review(ctx, crit))
-    return vote_checker.checkable(row, render=render)[1]
+    T-5327: given the task `ctx` and the row's criterion `crit`, a criterion that needs screenshots
+    (T-5353 `_needs_view`, the test the judge and the run/page rules use: render, or names a page)
+    in a non-panel row also needs a logged view — attached-at-launch alone is not checkable.
+    Without them the rule is not applied."""
+    view = bool(ctx is not None and crit is not None and _needs_view(ctx, crit))
+    return vote_checker.checkable(row, render=view)[1]
 
 
 def _panel_fault(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> str:

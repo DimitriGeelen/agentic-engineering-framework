@@ -1,0 +1,21 @@
+id: tests/unit/test_t5353_page_criterion_view_proof.py
+name: test_t5353_page_criterion_view_proof
+type: script
+subsystem: tests
+location: tests/unit/test_t5353_page_criterion_view_proof.py
+tags: []
+
+purpose: "T-5353: one decision point for \"this criterion's evidence needs a proven view of screenshots\"."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-21
+created_by: unknown

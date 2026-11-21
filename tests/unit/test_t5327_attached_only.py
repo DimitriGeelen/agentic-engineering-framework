@@ -145,13 +145,18 @@ def test_pre_t5327_check_without_view_proof_reads_attached_from_seat_viewed_how(
 # ── the ledger applies it where it knows the criterion ──────────────────────────────────────
 
 def test_ledger_reasons_apply_the_render_rule_from_the_criterion(codex_check, monkeypatch):
+    # T-5353: the ledger now asks `_needs_view` (render, or names a page), which reads the
+    # criterion's text, so the criterion is a real one that names no page.
+    from lib.delegation import human_criteria
+    crit = human_criteria("## Acceptance Criteria\n\n### Human\n"
+                          "- [ ] [REVIEW] The notes read clearly\n")[0]
     row = _row(codex_check, SINGLE)
     monkeypatch.setattr(vl, "_is_render_review", lambda ctx, crit: True)
-    assert vl.not_checkable_reasons(row, object(), object()) == [f"AC2: {vc.ATTACHED_ONLY}"]
-    assert not vl._counts(row, object(), object())
+    assert vl.not_checkable_reasons(row, object(), crit) == [f"AC2: {vc.ATTACHED_ONLY}"]
+    assert not vl._counts(row, object(), crit)
     monkeypatch.setattr(vl, "_is_render_review", lambda ctx, crit: False)
-    assert vl.not_checkable_reasons(row, object(), object()) == []
-    assert vl._counts(row, object(), object())
+    assert vl.not_checkable_reasons(row, object(), crit) == []
+    assert vl._counts(row, object(), crit)
 
 
 # ── the judge reassigns to another kind ─────────────────────────────────────────────────────

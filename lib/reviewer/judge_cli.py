@@ -59,6 +59,7 @@ if str(_HERE.parent) not in sys.path:
     sys.path.insert(0, str(_HERE.parent))
 
 from lib import dispatch_tokens  # noqa: E402
+from lib import evidence_need  # noqa: E402
 from lib import large_file_limit  # noqa: E402
 from lib import review_model_preflight  # noqa: E402
 from lib import review_policy  # noqa: E402
@@ -151,22 +152,9 @@ def _load_task(task_id: str, root: Path) -> dict | None:
         return None
 
 
-# T-4978 (ring20): a criterion that describes what an app page shows ("[REVIEW] /classic SSL
-# Certificates widget shows 4 tiles ...") classifies taste or unclassified when its task does not
-# touch AEF's own web/ layout, so `render` stays False and a seat that cannot see images sat it.
-# `page` is the judge's own, wider question: does the criterion name a route of the app? It only
-# decides who may sit the criterion (vision); the ledger's render rules still key on `render`.
-_PAGE_ROUTE_RE = re.compile(r"(?<![\w/.:~-])/([a-z][\w-]*)(?:/[\w-]+)*(?![\w/.-])", re.IGNORECASE)
-_NOT_A_PAGE = {"tmp", "opt", "etc", "usr", "var", "root", "home", "dev", "proc", "bin", "srv", "mnt",
-               "api"}
-
-
-def names_page(text: str) -> bool:
-    """True when `text` names an app route (`/classic`, `/cicd/builds`) or a URL with a path.
-    Filesystem roots and /api/ endpoints are not pages; neither is a token with a file suffix."""
-    if re.search(r"https?://[\w.<>-]+(?::\d+)?/[a-z]", text, re.IGNORECASE):
-        return True
-    return any(m.group(1).lower() not in _NOT_A_PAGE for m in _PAGE_ROUTE_RE.finditer(text))
+# T-4978 (ring20) / T-5353: `names_page` (does the criterion name a route of the app?) lives in
+# lib/evidence_need.py, the one decision point the judge, the ledger and the vote checker share.
+names_page = evidence_need.names_page
 
 
 # T-5209 (T-5199 GO): a criterion whose evidence is images — an image file or a screenshot — is
@@ -180,14 +168,12 @@ def names_image(text: str) -> bool:
     return bool(_IMAGE_EVIDENCE_RE.search(text))
 
 
-def needs_screenshots(c: dict) -> bool:
-    """T-5352: the ONE test for "this criterion is judged on screenshots of pages": a render
-    criterion, or any criterion that names a page whatever its class (a designer re-pin names
-    /designer but changes no web/ file, so it is `unclassified`). `_gather_evidence` captures the
-    pages and gathers the Visual Verification shots for exactly these, the brief lists them, and
-    `is_image_evidence` (the brief's image section) builds on this test, so the section can never
-    again promise screenshots the capture did not take."""
-    return bool(c.get("render") or c.get("page"))
+# T-5352: the ONE test for "this criterion is judged on screenshots of pages" (render, or names a
+# page whatever its class). `_gather_evidence` captures the pages and gathers the Visual
+# Verification shots for exactly these, the brief lists them, and `is_image_evidence` builds on it.
+# T-5353: it lives in lib/evidence_need.py so the ledger (`_run_fault`) and the vote checker
+# (`checkable`, ATTACHED_ONLY) ask the same question; this name delegates, it does not copy.
+needs_screenshots = evidence_need.needs_screenshots
 
 
 def is_image_evidence(c: dict) -> bool:
@@ -971,7 +957,10 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
         "your vote in the verdict/1 format below (section `## AC<N>`, whose Vote is the outcome "
         "you record), then any free notes after `===END===`. `record` reads it strictly and "
         "refuses a report that is not a valid vote, writing the reason into it. Copy (`cp`) any screenshot you cite into the same directory "
-        "as `<name>-$FW_SIDECAR_AGENT_ID.png` and cite that copy. Files already in that directory "
+        "as `<name>-$FW_SIDECAR_AGENT_ID.png` and cite that copy, where `<name>` is the source "
+        "file's name unchanged (`designer@1920.png` → `designer@1920-$FW_SIDECAR_AGENT_ID.png`, "
+        "never `designer-1920-…`): your view of the source counts for the copy only under that "
+        "name (T-5353). Files already in that directory "
         "are other runs' recorded evidence: never move, rename, overwrite or delete them (T-4514).",
         f"2. Compute the digest you read: `{_fwc('reviewer verdict digest ' + str(task_id) + ' --ac <N>')}`",
         "3. Record it (replace <N>, <OUTCOME>, <DIGEST>, <REPORT>; run it exactly as written, so "

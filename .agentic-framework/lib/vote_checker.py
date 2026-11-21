@@ -907,9 +907,10 @@ def checkable(row, *, render: bool = False) -> tuple[bool, list[str]]:
     """(True, []) when a recorded ledger row's vote holds up to its own mechanical check, else
     (False, reasons). Rows without `format: verdict/1` (old free-text rows) are always (True, [])
     — they are counted exactly as before. A not-evaluated row has no vote to check.
-    `render` (T-5327): the row's criterion is a render criterion; then, unless the row is a rung-5
-    panel seat, a vote whose every cited image is proven only by "attached at launch" is not
-    checkable (ATTACHED_ONLY)."""
+    `render` (T-5327): the row's criterion needs a proven view of screenshots; then, unless the
+    row is a rung-5 panel seat, a vote whose every cited image is proven only by "attached at
+    launch" is not checkable (ATTACHED_ONLY). T-5353: callers pass `lib/evidence_need.py`'s test
+    (render, or names a page), the one the judge uses, via `verdict_ledger._needs_view`."""
     if not isinstance(row, dict) or row.get("format") != FORMAT:
         return True, []
     if row.get("outcome") == "not-evaluated":
