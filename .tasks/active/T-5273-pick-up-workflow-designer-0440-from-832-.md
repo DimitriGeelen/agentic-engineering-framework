@@ -103,20 +103,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 832 released Workflow Designer 0.45.0 (msg c4c18fcf, 2026-11-21; tag designer-v0.45.0, sha256 ed2842652b83641bbede81666f246df30e265bbdfd76d235319a69ddb68f86f4, 1434483 bytes) and asked us to take it and name the task (told: T-5273). We pin 0.43.0; 0.44.0 (msg d1184a3c) was never pinned.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** /designer serves 0.43.0, two releases behind (no .xlsx, A3/A4 PDF, instance counts, routing fixes). 0.45.0 is not byte-identical on re-save: 14 edges on 5 corpus maps get new waypoints, nothing else.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Pin and serve 0.45.0 through the pull-at-tag intake (`fw designer sync --from-tag`), verified against 832's MANIFEST at the tag, the message and the pin, the way T-5101 took 0.43.0.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `fw designer status` reports 0.45.0 with the sha256 matching the pin, /designer serves APP_VERSION 0.45.0, designer tests pass, and 832 is told the result.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw designer sync --from-tag designer-v0.45.0 --dry-run` verifies the tag (sha256 ed2842652b83641bbede81666f246df30e265bbdfd76d235319a69ddb68f86f4, 1434483 bytes, matching 832's MANIFEST at the tag and msg c4c18fcf)
+- [ ] policy/designer-pin.yaml pins 0.45.0 (artifact and validator fields), build and validator installed under vendor/designer/, `fw designer status` reports the pin valid
+- [ ] /designer serves 0.45.0 after a Watchtower restart; the designer tests pass; the vendored copy carries 0.45.0
+- [ ] 832 told the result (pinned, or the exact mismatch)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -303,6 +305,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bin/fw designer status > /tmp/.t5273.out 2>&1 && grep -q "sha256 matches pin" /tmp/.t5273.out && grep -q "0.45.0" /tmp/.t5273.out
+U="$(bin/fw watchtower url)"; curl -sfL "$U/designer/app" -o /tmp/.t5273.html && grep -q "const APP_VERSION = '0.45.0'" /tmp/.t5273.html
+bin/fw vendor self --check --task T-5273
 
 ## RCA
 
