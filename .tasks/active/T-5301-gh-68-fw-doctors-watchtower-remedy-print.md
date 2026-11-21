@@ -108,7 +108,7 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Contributor reminded on #68 of the helper, the rebase and this task id (operator runme gh68-nudge, run.log EXIT 0)
+- [x] Contributor reminded on #68 of the helper, the rebase and this task id (operator runme gh68-nudge, run.log EXIT 0)
 - [ ] PR from the contributor against bleeding-edge reviewed by an independent reviewer: both lines use `_emit_user_command`, the new bats test fails on the parent commit and passes on the PR, tests/unit/test_t5303_fw_command_builder.py green
 - [ ] After merge: `grep -c "bin/watchtower.sh stop\|bin/watchtower.sh restart" bin/fw` is 0 and the vendored copy matches (`bin/fw vendor self --check`)
 
