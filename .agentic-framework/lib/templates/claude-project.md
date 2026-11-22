@@ -247,17 +247,17 @@ Not all improvement comes from failures. When you notice a practice repeating ad
 The `fw` command is the single entry point for all framework operations. It resolves paths, sets environment variables, and routes to agents.
 
 ```bash
-fw help              # Show all commands
-fw version           # Show version and paths
-fw doctor            # Check framework health
-fw audit             # Run compliance audit
-fw context init      # Initialize session
-fw git commit -m "T-XXX: description"
-fw handover --commit # Generate and commit handover
-fw task create --name "Fix bug" --type build --owner human
+.agentic-framework/bin/fw help              # Show all commands
+.agentic-framework/bin/fw version           # Show version and paths
+.agentic-framework/bin/fw doctor            # Check framework health
+.agentic-framework/bin/fw audit             # Run compliance audit
+.agentic-framework/bin/fw context init      # Initialize session
+.agentic-framework/bin/fw git commit -m "T-XXX: description"
+.agentic-framework/bin/fw handover --commit # Generate and commit handover
+.agentic-framework/bin/fw task create --name "Fix bug" --type build --owner human
 ```
 
-**Path resolution:** in this project the launcher is `.agentic-framework/bin/fw` (the vendored copy — there is no `bin/fw` at the project root). It finds the framework via its own location and `.framework.yaml` in the project root. The `fw …` lines in this file are shorthand for that launcher: a command you run or print is `cd <absolute project root> && .agentic-framework/bin/fw <args>`, never bare `fw` (T-5302 — the framework's own output prints the same form).
+**Path resolution:** in this project the launcher is `.agentic-framework/bin/fw` (the vendored copy — there is no `bin/fw` at the project root). It finds the framework via its own location and `.framework.yaml` in the project root. The code blocks in this file use that launcher. Where a sentence only names a command (`fw task update`), that is shorthand for it: a command you run or print is `cd <absolute project root> && .agentic-framework/bin/fw <args>`, never bare `fw` (T-5302 — the framework's own output prints the same form).
 
 ## Agents
 
@@ -285,13 +285,13 @@ The framework includes agents for common operations. Each agent has a bash scrip
 
 ```bash
 # Change status (auto-triggers healing if issues)
-fw task update T-015 --status issues --reason "API timeout"
+.agentic-framework/bin/fw task update T-015 --status issues --reason "API timeout"
 
 # Complete a task (auto: date_finished, move to completed/, generate episodic)
-fw task update T-015 --status work-completed
+.agentic-framework/bin/fw task update T-015 --status work-completed
 
 # Change owner
-fw task update T-015 --owner human
+.agentic-framework/bin/fw task update T-015 --owner human
 ```
 
 ### Audit Agent
@@ -566,17 +566,17 @@ The result ledger formalizes the "write to disk, return path + summary" conventi
 
 ```bash
 # Sub-agent posts result (instead of returning full content)
-fw bus post --task T-XXX --agent explore --summary "Found 3 issues" --result "inline data"
-fw bus post --task T-XXX --agent code --summary "Wrote file" --blob /path/to/output
+.agentic-framework/bin/fw bus post --task T-XXX --agent explore --summary "Found 3 issues" --result "inline data"
+.agentic-framework/bin/fw bus post --task T-XXX --agent code --summary "Wrote file" --blob /path/to/output
 
 # Orchestrator reads manifest (5 lines instead of 25KB)
-fw bus manifest T-XXX
+.agentic-framework/bin/fw bus manifest T-XXX
 
 # Orchestrator reads specific result if needed
-fw bus read T-XXX R-001
+.agentic-framework/bin/fw bus read T-XXX R-001
 
 # Cleanup after task completion
-fw bus clear T-XXX
+.agentic-framework/bin/fw bus clear T-XXX
 ```
 
 **Size gating:** Payloads < 2KB are inline. Payloads >= 2KB are auto-moved to `.context/bus/blobs/` and referenced.
