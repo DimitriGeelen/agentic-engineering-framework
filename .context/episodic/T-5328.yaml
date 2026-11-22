@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5328: Risk R-NEW-5: keep attempt credentials out of readable files on the submitter host
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-22T00:18:40Z
+# ============================================================================
+
+task_id: T-5328
+task_name: "Risk R-NEW-5: keep attempt credentials out of readable files on the submitter host"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-21T13:43:26Z
+completed: 2026-11-22T00:17:55Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-22T01:17:18+01:00
+last_commit: 2026-11-22T01:17:53+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  spec §6.5a — attempt credentials at rest (hash-only records, 0600 files, holder rule); pinned by test. criteria, evolution, verification
+
+# Key outcomes
+outcomes:
+  - 'Spec §6.5a (local backend) states: records keep only sha256 of nonce and token; record and lock files are mode 0600; a holder of the plain values keeps them in process memory or a mode-0600 file of its own uid, never in a log, `dispatches.jsonl`, the agent child''s environment or its prompt; and no AEF process holds them in live use today. The same-uid limit of §6.5 is referenced, not restated.'
+  - 'A test (`tests/unit/test_t5328_credentials_at_rest.py`) allocates attempts through the real Store and asserts the plain nonce and token appear nowhere in the record file. It also asserts record and lock files have mode 0600 (no group or other bits), including after a further write.'
+  - 'TermLink is asked, on the worker-contract thread, to state its holder rule for the plain `supervisor_token` in its §6.6 mapping. ring20 is recorded here as not reachable from this host, for the operator to relay.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/components/tests-unit-test_t5328_credentials_at_rest.yaml'
+  - '.tasks/active/T-5328-risk-r-new-5-keep-attempt-credentials-ou.md'
+  - 'docs/specs/shared-worker-contract-transitions.md'
+  - 'tests/unit/test_t5328_credentials_at_rest.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-22T01:17:18'
+    action: 'T-5328: spec §6.5a — attempt credentials at rest (hash-only records, 0600 files, holder rule); pinned by test'
+  - time: '2026-11-22T01:17:53'
+    action: 'T-5328: criteria, evolution, verification'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 634 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:risk, risk-mitigation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 634
+  commits: 3
+  files_changed: 7
+  lines_added: 263
+  lines_removed: 17
+  footprint_refreshed_at: '2026-11-22T00:18:50Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5328-risk-r-new-5-keep-attempt-credentials-ou.md
+generated_by: context-agent-hybrid
