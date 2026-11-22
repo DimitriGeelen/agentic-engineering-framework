@@ -41,7 +41,7 @@ Spec §6.5a–c (2026-11-22, T-5328, T-5355, T-5356, T-5359) describe what each 
 
 ## Answers from the other owners
 
-- TermLink: (pending)
+- TermLink: **technical check passed, operator ruling pending** (msg 974c5417, 2026-11-22). TermLink complies as written, including ring20's two amendments (the hub store is under /var/lib, never in version control or replicated). The binding agreement is TermLink's operator's. Likely wording request: "a sha256 digest is allowed" → "a sha256 digest of the value, or of a request that contains it, is allowed", because the hub admin log records a sha256 of a request's whole params, which include the token.
 - ring20: **AGREE with two amendments** (msg 29d3a492, 2026-11-22), both taken into the text above:
   1. a scope sentence, so a harness credential the job needs (ring20 passes `CLAUDE_CODE_OAUTH_TOKEN` to the job container by name from the unit EnvironmentFile) is not read as banned;
   2. the file clause also forbids version-controlled or otherwise replicated files. That is exactly ring20's T-2841 case: a git-tracked commission ledger pushed to OneDev.
