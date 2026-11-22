@@ -105,6 +105,16 @@ def impact(fm: dict, bodies: list[str]) -> dict:
     if len(comps) >= 3:
         medium.append(f"components={len(comps)}")
     tier = "high" if high else "medium" if medium else "low"
+    # T-5364: CONTRIBUTING.md "Pull Request Process" step 6 - a change from outside is
+    # reviewed one risk level higher than the same change made internally. Declared at
+    # intake as the task tag `outside-contributor`.
+    inputs["outside_contributor"] = "outside-contributor" in tags
+    if inputs["outside_contributor"]:
+        reason = "outside contributor (CONTRIBUTING step 6): one level higher"
+        if tier == "low":
+            tier, medium = "medium", medium + [reason]
+        else:
+            tier, high = "high", high + [reason]
     return {"tier": tier, "inputs": inputs, "reasons": high if high else medium}
 
 

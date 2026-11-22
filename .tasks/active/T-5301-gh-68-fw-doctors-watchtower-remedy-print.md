@@ -18,7 +18,7 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [github, mikeechovoid, bug]
+tags: [github, mikeechovoid, bug, outside-contributor]
 github_issue: 68
 origin: {kind: "peer", source: "github#68"}
 components: []
@@ -50,7 +50,7 @@ related_tasks: [T-5006]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T13:09:24Z
-last_update: 2026-11-21T12:02:34Z
+last_update: 2026-11-22T18:51:41Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -397,3 +397,6 @@ bvp_scores_proposed:
 
 ### 2026-11-21T12:02:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-22T18:51:41Z — status-update [task-update-agent]
+- **Change:** tags: +outside-contributor
