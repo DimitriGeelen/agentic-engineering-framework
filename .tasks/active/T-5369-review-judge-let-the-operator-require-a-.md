@@ -101,8 +101,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `required_rung` (or `impact`) reads frontmatter `review_rung_min` and returns max(computed rung, declared rung), with the reason "review_rung_min: N (declared)" when it raises. Values below the computed rung, or invalid values, never lower it; an invalid value is ignored with a reason.
-- [ ] Unit tests:
+- [x] `required_rung` (or `impact`) reads frontmatter `review_rung_min` and returns max(computed rung, declared rung), with the reason "review_rung_min: N (declared)" when it raises. Values below the computed rung, or invalid values, never lower it; an invalid value is ignored with a reason.
+- [x] Unit tests:
   1. Computed 3 with declared 5 gives 5, with the reason.
   2. Computed 5 with declared 1 gives 5.
   3. Declared 3 on a low task gives 3.
@@ -313,6 +313,15 @@ bin/fw vendor self --check --task T-5369
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** The operator asked the AEF-ontology-agent project for a three-vendor review panel; its judge computed rung 3 and offered no way to ask for more.
+**Root cause:** `lib/review_policy.required_rung` took the rung only from the computed impact (plus T-5364's outside-contributor step); no declared input existed for a stricter review.
+**Why structurally allowed:** Rungs were designed as minimums the framework enforces against cheaper reviews; asking for MORE was never a use case until an operator did it.
+**Prevention:**
+- Worker commit c7bdc42be (`lib/review_policy.py:121-145`): frontmatter `review_rung_min` is a floor, rung = max(computed, declared), with the reason "review_rung_min: N (declared)".
+- Only 1, 3 or 5 are accepted; anything else is ignored, with a reason. It can never lower the rung.
+- One function is used by the judge, run registration and the ledger.
+- `tests/unit/test_t5369_review_rung_min.py` (6 tests); 566 related tests pass.
 
 ## Evolution
 
