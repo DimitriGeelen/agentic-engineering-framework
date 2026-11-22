@@ -58570,3 +58570,21 @@ scan_id: R-70f6671c
 task_id: T-5332
 payload:
   task_file: .tasks/active/T-5332-risk-r-new-9-reader-rule-for-unknown-out.md
+---
+kind: scan_emitted
+timestamp: '2026-11-22T10:47:49Z'
+scan_id: R-113a6a7e
+task_id: T-5355
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-22T10:47:49Z'
+scan_id: R-113a6a7e
+task_id: T-5355
+payload:
+  task_file: .tasks/active/T-5355-spec-66-record-termlinks-holder-rule-for.md

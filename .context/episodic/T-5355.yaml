@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5355: Spec §6.6: record TermLink's holder rule for attempt credentials (R-042, their msg 4eb7d06d)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-22T10:48:04Z
+# ============================================================================
+
+task_id: T-5355
+task_name: "Spec §6.6: record TermLink's holder rule for attempt credentials (R-042, their msg 4eb7d06d)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-22T10:45:52Z
+completed: 2026-11-22T10:47:26Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-22T11:47:24+01:00
+last_commit: 2026-11-22T11:47:24+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  spec §6.5b — TermLink's holder rule for attempt credentials (their msg 4eb7d06d); R-042 now open only for ring20
+
+# Key outcomes
+outcomes:
+  - 'Spec §6.5b states TermLink''s holder rule in its proposed words, attributed `[termlink 4eb7d06d]`, and notes ring20 `poold` as pending. The worker-contract vector and mapping tests stay green.'
+  - 'R-042''s mitigation progress records TermLink''s half as stated and ring20''s as open. The risk register validates.'
+  - 'TermLink is thanked on its thread, and its T-3849 `dispatch stats` shape is accepted (on the T-5329 side).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/concerns.yaml'
+  - '.tasks/active/T-5355-spec-66-record-termlinks-holder-rule-for.md'
+  - 'docs/specs/shared-worker-contract-transitions.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-22T11:47:24'
+    action: 'T-5355: spec §6.5b — TermLink''s holder rule for attempt credentials (their msg 4eb7d06d); R-042 now open only for ring20'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 1 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1
+  commits: 2
+  files_changed: 6
+  lines_added: 488
+  lines_removed: 5
+  footprint_refreshed_at: '2026-11-22T10:48:20Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5355-spec-66-record-termlinks-holder-rule-for.md
+generated_by: context-agent-hybrid
