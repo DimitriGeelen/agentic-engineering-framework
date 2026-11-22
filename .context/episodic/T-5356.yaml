@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5356: Spec §6.5c: record ring20's credential holder state (not yet compliant; their T-2840) for R-042
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-22T10:59:02Z
+# ============================================================================
+
+task_id: T-5356
+task_name: "Spec §6.5c: record ring20's credential holder state (not yet compliant; their T-2840) for R-042"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-22T10:54:56Z
+completed: 2026-11-22T10:58:09Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-22T11:58:07+01:00
+last_commit: 2026-11-22T11:58:07+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  spec §6.5c — ring20's credential holder state (not yet compliant, ring20 T-2840); R-042 waits on it
+
+# Key outcomes
+outcomes:
+  - 'Spec §6.5c records ring20''s state as ring20 measured it (store hashes only; plain values in the retained root-only state ledger; not in journal, feed or hub topics), marked not yet compliant, with the fix named as ring20 T-2840. §6.5b''s "ring20 poold: pending" points to §6.5c. The contract tests stay green.'
+  - 'R-042 records ring20''s finding and that it closes when ring20 reports T-2840 shipped. The risk register validates.'
+  - 'ring20 is thanked on its thread.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/concerns.yaml'
+  - '.tasks/active/T-5356-spec-65c-record-ring20s-credential-holde.md'
+  - 'docs/specs/shared-worker-contract-transitions.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-22T11:58:07'
+    action: 'T-5356: spec §6.5c — ring20''s credential holder state (not yet compliant, ring20 T-2840); R-042 waits on it'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 2
+  files_changed: 6
+  lines_added: 489
+  lines_removed: 6
+  footprint_refreshed_at: '2026-11-22T10:59:16Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5356-spec-65c-record-ring20s-credential-holde.md
+generated_by: context-agent-hybrid
