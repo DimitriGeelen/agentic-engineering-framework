@@ -101,8 +101,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `check_vote` (or wherever `cited` is built) adds each image once, by its resolved path. A bare Evidence name that T-5357 resolved through its Location is not added a second time.
-- [ ] Unit tests:
+- [x] `check_vote` (or wherever `cited` is built) adds each image once, by its resolved path. A bare Evidence name that T-5357 resolved through its Location is not added a second time.
+- [x] Unit tests:
   1. Bare Evidence plus an agreeing Location gives one `cited` entry.
   2. The name rule (`<stem>-<dispatch id>`) on such a copy decides viewed/not viewed without the T-5358 content fallback.
   3. Two genuinely different images stay two entries.
@@ -311,6 +311,14 @@ bin/fw vendor self --check --task T-5360
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** One cited image, given as a bare Evidence name with an agreeing full-path Location, appeared twice in `cited`. The `<stem>-<dispatch id>` name rule then answered "cannot tell" (seen on claude-code's T-5329 vote; T-5358's content match covered it).
+**Root cause:** T-5357 resolved the bare name inside `check_image`, but `check_vote` built `cited` earlier from the raw Evidence text. `image_viewed` then also saw the resolved path, so one image counted as two.
+**Why structurally allowed:** The two places each resolved image names on their own, and no test asked for exactly one `cited` entry per image.
+**Prevention:**
+- Worker commit 77b3261c2: one resolver, `_resolve_image` (`lib/vote_checker.py:239`), used by both `check_image` and the new `cited_image_path` (:247). `cited` is built through it, deduplicated, order kept (:799).
+- `tests/unit/test_t5360_cited_dedupe.py` (5 tests, 4 fail on the old code; the name-rule case uses a copy with different bytes, so the content match cannot decide it); 216 related tests pass.
+- Live: claude-code's T-5329 vote is still `(True, [])`, now decided by the name rule.
 
 ## Evolution
 
