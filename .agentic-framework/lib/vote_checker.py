@@ -248,6 +248,13 @@ def check_image(evidence: str, location: str, root: Path, revision: str, *, task
     lm = _IMG_LOC_RE.match(location.strip())
     res["location_agrees"] = bool(lm and Path(lm.group(1)).name == Path(img).name
                                   and _ws(lm.group(2)) == _ws(spec))
+    if "/" not in img and lm and res["location_agrees"] and Path(lm.group(1)).name == img:
+        # T-5357: a bare file name in Evidence is read through the agreeing Location's path
+        # (same file name, same region/selector); reads, crops and the seat-viewed check use it.
+        res["cited_name"] = img
+        img = lm.group(1)
+        res["image"] = img
+        res["resolved_via"] = "location"
     data, src = read_cited(root, revision, img, extra_roots)
     res["image_exists"], res["source"] = data is not None, src
     rm, sm = _REGION_RE.search(spec), _SELECTOR_RE.search(spec)

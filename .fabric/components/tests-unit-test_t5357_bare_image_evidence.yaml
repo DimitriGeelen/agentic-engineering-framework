@@ -1,0 +1,21 @@
+id: tests/unit/test_t5357_bare_image_evidence.py
+name: test_t5357_bare_image_evidence
+type: script
+subsystem: tests
+location: tests/unit/test_t5357_bare_image_evidence.py
+tags: []
+
+purpose: "T-5357 — an image cited by a bare file name in Evidence is read through the paired Location's full path when the Location agrees (same file name, same region/selector)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-22
+created_by: unknown
