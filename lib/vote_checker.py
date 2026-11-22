@@ -232,6 +232,26 @@ def write_crop(data: bytes, region: tuple[int, int, int, int], image_name: str, 
         return str(dst), ""
 
 
+def _location_agrees(img: str, spec: str, lm) -> bool:
+    return bool(lm and Path(lm.group(1)).name == Path(img).name and _ws(lm.group(2)) == _ws(spec))
+
+
+def _resolve_image(img: str, spec: str, lm) -> str:
+    """T-5357: the path an Evidence image is read from — a bare file name resolves through an
+    agreeing Location's path; anything else is itself."""
+    if "/" not in img and _location_agrees(img, spec, lm) and Path(lm.group(1)).name == img:
+        return lm.group(1)
+    return img
+
+
+def cited_image_path(evidence: str, location: str) -> str | None:
+    """T-5360: the resolved path an `image:` Evidence (with its Location) cites; None if malformed."""
+    em = _IMG_EVIDENCE_RE.match(str(evidence).strip())
+    if not em:
+        return None
+    return _resolve_image(em.group(1), em.group(2).strip(), _IMG_LOC_RE.match(str(location).strip()))
+
+
 def check_image(evidence: str, location: str, root: Path, revision: str, *, task: str,
                 extra_roots: list[Path] | None = None, views: dict | None = None,
                 views_known: bool = False, write_crops: bool = True,
@@ -246,13 +266,13 @@ def check_image(evidence: str, location: str, root: Path, revision: str, *, task
     img, spec = em.group(1), em.group(2).strip()
     res["image"] = img
     lm = _IMG_LOC_RE.match(location.strip())
-    res["location_agrees"] = bool(lm and Path(lm.group(1)).name == Path(img).name
-                                  and _ws(lm.group(2)) == _ws(spec))
-    if "/" not in img and lm and res["location_agrees"] and Path(lm.group(1)).name == img:
+    res["location_agrees"] = _location_agrees(img, spec, lm)
+    resolved = _resolve_image(img, spec, lm)
+    if resolved != img:
         # T-5357: a bare file name in Evidence is read through the agreeing Location's path
         # (same file name, same region/selector); reads, crops and the seat-viewed check use it.
         res["cited_name"] = img
-        img = lm.group(1)
+        img = resolved
         res["image"] = img
         res["resolved_via"] = "location"
     data, src = read_cited(root, revision, img, extra_roots)
@@ -777,11 +797,12 @@ def check_vote(parsed_vote: dict, root, revision: str, seat_record=None, *, task
 
     any_image = False
     cited_images = []                         # T-5333: every image the vote cites
-    for c in crits.values():
-        for e in c.get("evidence") or []:
-            m = _IMG_EVIDENCE_RE.match(str(e).strip())
-            if m:
-                cited_images.append(m.group(1))
+    for c in crits.values():                  # T-5360: once each, by its resolved path
+        ev, loc = list(c.get("evidence") or []), list(c.get("location") or [])
+        for i, e in enumerate(ev):
+            p = cited_image_path(e, str(loc[i]) if i < len(loc) else "")
+            if p is not None and _norm_path(p) not in {_norm_path(x) for x in cited_images}:
+                cited_images.append(p)
     for ac, c in crits.items():
         items = []
         ev, loc = list(c.get("evidence") or []), list(c.get("location") or [])
