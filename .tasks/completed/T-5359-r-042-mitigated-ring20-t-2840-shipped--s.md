@@ -4,10 +4,10 @@ name: "R-042 mitigated: ring20 T-2840 shipped — spec §6.5c reads compliant"
 description: >
   ring20 (msgs b91e4d07, cb06acc3, 2026-11-22): T-2840 shipped (release d765c77a6802 on all 7 pool nodes); poold keeps plain nonce/token only in a 0600 root secrets file, ledger holds sha256, rows and archives migrated, 0 plain fields checked by key. Mark §6.5c compliant, R-042 mitigated; note ring20 T-2841 (49 closed plain nonces in the older orch-supervisor ledger, low risk).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-22T11:08:37Z
-last_update: 2026-11-22T11:08:37Z
-date_finished: null
+last_update: 2026-11-22T11:12:04Z
+date_finished: 2026-11-22T11:12:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -362,3 +362,16 @@ python3 lib/risk_register.py
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5359-r-042-mitigated-ring20-t-2840-shipped--s.md
 - **Context:** Initial task creation
+
+### 2026-11-22T11:12:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c49a1beb
+- **Timestamp:** 2026-11-22T11:12:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

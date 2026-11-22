@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5359: R-042 mitigated: ring20 T-2840 shipped — spec §6.5c reads compliant
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-22T11:12:42Z
+# ============================================================================
+
+task_id: T-5359
+task_name: "R-042 mitigated: ring20 T-2840 shipped — spec §6.5c reads compliant"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-22T11:08:37Z
+completed: 2026-11-22T11:12:04Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-22T12:10:52+01:00
+last_commit: 2026-11-22T12:12:02+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  R-042 mitigated — ring20 T-2840 shipped; spec §6.5c reads compliant (all three backends meet the at-rest rule). name ring20's follow-up as theirs (not an AEF task id)
+
+# Key outcomes
+outcomes:
+  - 'Spec §6.5c states ring20''s fixed state (secrets file 0600 root, ledger sha256 only, migrated, verified on 7 nodes by key) as compliant, attributed `[ring20 b91e4d07, cb06acc3]`, and notes ring20''s own separate low-risk follow-up (their task 2841, in ring20''s repo, not an AEF task). The contract tests stay green.'
+  - 'R-042 is status `mitigated`, with `mitigated_by` naming T-5328, T-5355, T-5356 and ring20 T-2840. The risk register validates with 0 errors.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/concerns.yaml'
+  - '.tasks/active/T-5359-r-042-mitigated-ring20-t-2840-shipped--s.md'
+  - 'docs/specs/shared-worker-contract-transitions.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-22T12:10:52'
+    action: 'T-5359: R-042 mitigated — ring20 T-2840 shipped; spec §6.5c reads compliant (all three backends meet the at-rest rule)'
+  - time: '2026-11-22T12:12:02'
+    action: 'T-5359: name ring20''s follow-up as theirs (not an AEF task id)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 5
+  files_changed: 6
+  lines_added: 494
+  lines_removed: 14
+  footprint_refreshed_at: '2026-11-22T11:12:55Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5359-r-042-mitigated-ring20-t-2840-shipped--s.md
+generated_by: context-agent-hybrid
