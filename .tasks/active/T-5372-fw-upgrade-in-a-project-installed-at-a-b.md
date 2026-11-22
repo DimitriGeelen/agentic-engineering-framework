@@ -20,7 +20,7 @@ description: >
   scope: the dry run must read the same source as the real run, and an upgrade must
   never silently go backwards.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -54,7 +54,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-22T22:27:50Z
-last_update: '2026-11-22T22:31:35Z'
+last_update: '2026-11-22T23:35:51Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,6 +93,22 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-22T23:35:51Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 1
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=1 (body:fix-without-learning); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5372: fw upgrade in a project installed at a be-tag pulls from master (v1.8.15) and would downgrade it — designer 0.46.0 -> 0.31.0 and every be-tag fix
@@ -100,20 +116,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 2026-11-22 the operator saw `fw upgrade --dry-run` in /opt/AEF-ontology-agent (installed at v1.8.16-be.61, designer 0.46.0) report "WOULD INSTALL Workflow Designer 0.31.0" — master's pin. The ontology agent (msg 0c46aa38) confirmed its real upgrade used a bleeding-edge source, so nothing was rolled back that time.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis (confirmed 2026-11-23):** be-tags keep VERSION at the last release (1.8.15), the same string master has. `lib/version-relation.sh` `fw_version_relation` returns `same` the moment the two version strings are equal (line ~112) and never compares the recorded `version_sha`. And `lib/upgrade.sh` direct-path precheck (~1866) only runs when `project_version != fw_version`. So from a master source (auto-clone default branch, or a stale global fw on master) both downgrade guards are blind: be.61's commit a32434f9 is NOT in master, yet `fw_version_relation 1.8.15 1.8.15 a32434f9 .` prints `same`. A plain `fw upgrade` in a be-tag project can silently roll back the framework, designer 0.46 -> 0.31 included. The dry-run "0.31" was the honest preview of exactly that.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** an upgrade never silently goes backwards: equal version strings are decided by commit ancestry when the consumer recorded a `version_sha`.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** a be-tag consumer upgraded from an older source (master) is REFUSED with the existing downgrade message and `--force-downgrade` remedy, on both the auto-clone and the direct path, dry run included; same-commit and genuinely newer sources still pass. Following the install channel automatically (clone the branch the project came from) is a follow-up task, not this one.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw_version_relation` with equal version strings and a resolvable consumer `version_sha` decides by ancestry: sha == HEAD -> same; sha ancestor of HEAD -> behind; HEAD ancestor of sha -> ahead; neither -> diverged. With no sha, or a sha the source cannot resolve, equal strings still return `same` (no new refusals for old consumers).
+- [ ] The direct-path precheck in `lib/upgrade.sh` runs when the version strings are equal (the `project_version != fw_version` condition no longer skips it), so the ahead/diverged refusal fires on both the direct and auto-clone paths, dry run included.
+- [ ] New hermetic test `tests/unit/test_t5372_equal_version_downgrade.bats` (temp git repos, no network) covers: the five relation cases above, and a direct `fw upgrade --dry-run` from an older same-VERSION source that is REFUSED with `--force-downgrade` named, plus the same source with `--force-downgrade` proceeding.
+- [ ] `tests/unit/upgrade_fresh_machine_simulation.bats` and the existing version-relation / upgrade-guard tests keep their results.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -300,6 +318,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+bats tests/unit/test_t5372_equal_version_downgrade.bats
+bash -c 'cd /opt/999-Agentic-Engineering-Framework && source lib/version-relation.sh && be=$(git rev-list -n1 v1.8.16-be.61) && test "$(fw_version_relation 1.8.15 1.8.15 "$be" . )" != same'
+bin/fw vendor self --check --task T-5372
 
 ## RCA
 
@@ -316,6 +337,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw upgrade --dry-run` in a be.61 project previewed designer 0.31.0 (master's pin); a real run from the same source would have rolled the whole framework back without a refusal.
+
+**Root cause:** the version relation treats equal version strings as proof of the same code (`fw_version_relation` early `same` return), and the direct-path precheck is skipped on equal strings. Since T-3821 be-tags never change VERSION, so every be-tag consumer shares 1.8.15 with master and the commit check is never reached.
+
+**Why structurally allowed:** the guard was built (T-2713, T-1912) when every published state bumped VERSION; the be-tag channel broke that assumption and no test pinned "equal string, different commit".
+
+**Prevention:** the new bats test pins equal-string/different-commit for both paths; the relation now consults `version_sha` whenever it exists, so any future channel that keeps VERSION constant is still guarded.
 
 ## Evolution
 
@@ -397,3 +426,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5372-fw-upgrade-in-a-project-installed-at-a-b.md
 - **Context:** Initial task creation
+
+### 2026-11-22T23:35:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
