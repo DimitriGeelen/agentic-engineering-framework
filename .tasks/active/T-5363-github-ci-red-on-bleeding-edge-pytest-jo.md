@@ -11,7 +11,7 @@ description: >
   hits the 6h limit and is cancelled. Nobody watches GitHub CI; the local pre-push
   audit is the working gate.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-22T18:26:47Z
-last_update: '2026-11-22T18:30:51Z'
+last_update: 2026-11-22T18:45:39Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,20 +91,28 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Reviewing outside PR #116 (2026-11-22), the same three GitHub Actions jobs failed on the PR as on our own bleeding-edge pushes (runs 45021379424, 45017568009, 44965621848 and earlier):
+- **Pytest Unit Tests:** 8 files error at import with `ModuleNotFoundError: No module named 'PIL'` (test_t5293, t5294, t5309, t5327, t5353, t5357, t5358, t5360). The tests build PNG fixtures with Pillow; `lib/vote_checker.py` itself imports PIL lazily and works without it. `.github/workflows/test.yml` line 32 installs only `pyyaml pytest`.
+- **Playwright UI Tests (Tier 3):** fails (cause not yet read).
+- **Bash Tests (bats-core):** runs into the 6 h job limit and is cancelled.
+The operator said to fix it ("yes, please fix that").
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Nobody watches GitHub CI; the local pre-push audit is the working gate. But CONTRIBUTING.md step 5 and the T-5006 plan make GitHub checks part of the outside-PR protocol. While they are red for reasons unrelated to a PR, they tell a contributor and the maintainer nothing.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** CI's red jobs either pass or fail only for real reasons:
+- the Pytest job installs what the tests import;
+- the Playwright and bats failures are diagnosed and fixed, or, where a fix is large, split into named follow-up tasks with the cause.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** The next bleeding-edge push shows the Pytest job green. For Playwright and bats, the cause is known and either fixed or tracked, so a PR's red check means something.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The Pytest job in `.github/workflows/test.yml` installs Pillow, and so does any other job that runs those tests. A local check shows the 8 files import and pass with the CI's install set.
+- [ ] The Playwright job's failure is diagnosed from a real run log (`gh run view <id> --log`), with the cause written here, and fixed or filed as its own task.
+- [ ] The bats job's 6 h overrun is diagnosed (which file or test hangs, from the run log), with the cause written here, and fixed or filed as its own task.
+- [ ] After the change is pushed, a bleeding-edge run is checked and its job results are recorded here.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,6 +299,7 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+grep -qi "pillow" .github/workflows/test.yml
 
 ## RCA
 
@@ -388,3 +397,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5363-github-ci-red-on-bleeding-edge-pytest-jo.md
 - **Context:** Initial task creation
+
+### 2026-11-22T18:45:39Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
