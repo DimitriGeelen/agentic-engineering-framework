@@ -1,8 +1,17 @@
 ---
 id: T-5366
-name: "Pre-push: verdict-ledger audit takes ~85s (history_fault re-walks every row's task history each run); cache per row or skip at pre-push when range touches neither ledger nor .tasks"
+name: "Pre-push: verdict-ledger audit takes ~85s (history_fault re-walks every row's
+  task history each run); cache per row or skip at pre-push when range touches neither
+  ledger nor .tasks"
 description: >
-  832 measured (msg fefb2041, their T-1487, 2026-11-22; framework 1.8.15+1953): audit.sh --section structure 131s, of which the verdict-ledger check waits 93s on lib/verdict_ledger.py audit = 84.9s for 285 rows (human_ac_ticks.py audit 15.1s; rest <=4s). cProfile: history_fault x286 = 91.8s; _git_out 56,151 calls; _catfile_show 43,578 calls; only cache (_HISTORY_FM) is in-process. Proposals: (1) persistent per-row cache keyed by (row hash, last commit touching the task file); (2) at pre-push skip the walk when the pushed range touches neither the ledger nor .tasks/, full walk stays in cron. Same for human_ac_ticks. Full measurement: 832 docs/reports/T-1487-prepush-audit-timing.md.
+  832 measured (msg fefb2041, their T-1487, 2026-11-22; framework 1.8.15+1953): audit.sh
+  --section structure 131s, of which the verdict-ledger check waits 93s on lib/verdict_ledger.py
+  audit = 84.9s for 285 rows (human_ac_ticks.py audit 15.1s; rest <=4s). cProfile:
+  history_fault x286 = 91.8s; _git_out 56,151 calls; _catfile_show 43,578 calls; only
+  cache (_HISTORY_FM) is in-process. Proposals: (1) persistent per-row cache keyed
+  by (row hash, last commit touching the task file); (2) at pre-push skip the walk
+  when the pushed range touches neither the ledger nor .tasks/, full walk stays in
+  cron. Same for human_ac_ticks. Full measurement: 832 docs/reports/T-1487-prepush-audit-timing.md.
 
 status: captured
 workflow_type: build
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-22T18:53:03Z
-last_update: 2026-11-22T18:53:03Z
-date_finished: null
+last_update: '2026-11-22T19:00:31Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-22T19:00:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5366: Pre-push: verdict-ledger audit takes ~85s (history_fault re-walks every row's task history each run); cache per row or skip at pre-push when range touches neither ledger nor .tasks
