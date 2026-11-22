@@ -58588,3 +58588,21 @@ scan_id: R-113a6a7e
 task_id: T-5355
 payload:
   task_file: .tasks/active/T-5355-spec-66-record-termlinks-holder-rule-for.md
+---
+kind: scan_emitted
+timestamp: '2026-11-22T10:56:05Z'
+scan_id: R-72902e19
+task_id: T-5329
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-22T10:56:05Z'
+scan_id: R-72902e19
+task_id: T-5329
+payload:
+  task_file: .tasks/active/T-5329-risk-r-new-6-count-withdrawals-in-status.md

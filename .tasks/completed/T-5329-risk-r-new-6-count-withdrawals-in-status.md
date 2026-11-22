@@ -6,12 +6,12 @@ description: >
   worker status and fw audit report withdrawn per submitter and day and WARN above
   a threshold. Source: docs/reports/T-5300-risk-matrix.md.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:risk, risk-mitigation]
-components: []
+components: [agents/audit/audit.sh, lib/config.sh, lib/dispatch_records.py, tests/unit/test_t5329_withdrawal_counts.py, web/blueprints/config.py]
 related_tasks: [T-5316, T-5300]
 origin: {kind: "agent", source: "T-5316"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -41,8 +41,8 @@ origin: {kind: "agent", source: "T-5316"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T13:43:27Z
-last_update: 2026-11-22T10:39:34Z
-date_finished:
+last_update: 2026-11-22T10:55:19Z
+date_finished: 2026-11-22T10:55:19Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -111,7 +111,7 @@ bvp_scores_proposed:
 - [x] TermLink is asked whether its hub can report withdrawn attempts per submitter per day (the live source today).
 
 ### Human
-- [ ] [REVIEW] The /config page shows the new WITHDRAWALS_WARN_PER_DAY row like its neighbours
+- [x] [REVIEW] The /config page shows the new WITHDRAWALS_WARN_PER_DAY row like its neighbours
   **Steps:**
   1. Open http://192.168.10.107:3000/config
   2. Find the row WITHDRAWALS_WARN_PER_DAY
@@ -161,6 +161,7 @@ bvp_scores_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261122-3063a869 — reviewer-judge-t-5329-r5-antigravity-6eb0a265c7fb:antigravity (rung rung-5-panel:antigravity), digest 6418f69175a7; dispatch judge-t-5329-r5-antigravity-6eb0a265c7fb; evidence: .context/reviews/evidence/T-5329/AC1-judge-t-5329-r5-antigravity-6eb0a265c7fb.md, .context/reviews/evidence/T-5329/01-config-judge-t-5329-r5-antigravity-6eb0a265c7fb.png, .context/reviews/evidence/T-5329/config@1024-judge-t-5329-r5-antigravity-6eb0a265c7fb.png, .context/reviews/evidence/T-5329/config@1440-judge-t-5329-r5-antigravity-6eb0a265c7fb.png, .context/reviews/evidence/T-5329/config@1920-judge-t-5329-r5-antigravity-6eb0a265c7fb.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
@@ -422,3 +423,21 @@ Captures (`fw ux shots T-5329`, full page):
 ### 2026-11-22T10:39:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-22T10:55:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-72902e19
+- **Timestamp:** 2026-11-22T10:56:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `fw audit` prints one line. It is INFO "no local dispatch records (local backend not wired)" when the store is absent, PASS with the count when every (submitter, day) is under the threshold, and WARN 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/config.py in: `fw audit` prints one line. It is INFO "no local dispatch records (local backend not wired)" when the store is absent, PASS with the count when every `

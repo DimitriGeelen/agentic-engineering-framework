@@ -1,0 +1,132 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5329: Risk R-NEW-6: count withdrawals in status and audit
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-22T10:56:34Z
+# ============================================================================
+
+task_id: T-5329
+task_name: "Risk R-NEW-6: count withdrawals in status and audit"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-21T13:43:27Z
+completed: 2026-11-22T10:55:19Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-22T11:40:01+01:00
+last_commit: 2026-11-22T11:54:21+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope — withdrawal counts per submitter/day in fw audit (local store); hub side asked of TermLink. withdrawals per submitter/UTC day from the local dispatch-records store, graded in fw audit. criteria, evolution, render-review criterion and /config captures. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (antigravity seat antigravity, recorded by the runtime)
+
+# Key outcomes
+outcomes:
+  - '`lib/dispatch_records.py` has a read-only function returning withdrawals per (submitter, UTC day) from the store''s records (T3w history entries / `outcome: withdrawn`), never writing or locking for write.'
+  - '`fw audit` prints one line. It is INFO "no local dispatch records (local backend not wired)" when the store is absent, PASS with the count when every (submitter, day) is under the threshold, and WARN naming each one above it. The threshold is a registry config key with a description (default 5), mirrored in `web/blueprints/config.py`. It never FAILs.'
+  - 'Unit tests: no store means INFO; under the threshold means PASS; above it means WARN with names; a non-withdrawn done is not counted; records from two days are counted per day. The config parity lint passes, the existing dispatch-record tests stay green, and the vendored copy is synced.'
+  - 'TermLink is asked whether its hub can report withdrawn attempts per submitter per day (the live source today).'
+  - '[REVIEW] The /config page shows the new WITHDRAWALS_WARN_PER_DAY row like its neighbours'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/dispatch_records.py'
+  - '.agentic-framework/web/blueprints/config.py'
+  - '.context/reviews/applied.jsonl'
+  - '.context/reviews/evidence/T-5329/01-config-40_6285_1200_89-crop.png'
+  - '.context/reviews/evidence/T-5329/01-config-40_6285_1200_90-crop.png'
+  - '.context/reviews/evidence/T-5329/01-config-judge-t-5329-r5-antigravity-6eb0a265c7fb.png'
+  - '.context/reviews/evidence/T-5329/01-config-judge-t-5329-r5-claude-code-965d85e59717.png'
+  - '.context/reviews/evidence/T-5329/01-config-judge-t-5329-r5-codex-c36538354208.png'
+  - '.context/reviews/evidence/T-5329/AC1-judge-t-5329-r5-antigravity-6eb0a265c7fb.md'
+  - '.context/reviews/evidence/T-5329/AC1-judge-t-5329-r5-claude-code-965d85e59717.md'
+  - '.context/reviews/evidence/T-5329/AC1-judge-t-5329-r5-codex-c36538354208.md'
+  - '.context/reviews/evidence/T-5329/config@1024-37_7883_950_137-crop.png'
+  - '.context/reviews/evidence/T-5329/config@1024-37_7884_950_137-crop.png'
+  - '.context/reviews/evidence/T-5329/config@1024-judge-t-5329-r5-antigravity-6eb0a265c7fb.png'
+  - '.context/reviews/evidence/T-5329/config@1024-judge-t-5329-r5-claude-code-965d85e59717.png'
+  - '.context/reviews/evidence/T-5329/config@1024-judge-t-5329-r5-codex-c36538354208.png'
+  - '.context/reviews/evidence/T-5329/config@1440-120_6285_1200_89-crop.png'
+  - '.context/reviews/evidence/T-5329/config@1440-120_6285_1200_90-crop.png'
+  - '.context/reviews/evidence/T-5329/config@1440-judge-t-5329-r5-antigravity-6eb0a265c7fb.png'
+  - '.context/reviews/evidence/T-5329/config@1440-judge-t-5329-r5-claude-code-965d85e59717.png'
+  - '.context/reviews/evidence/T-5329/config@1440-judge-t-5329-r5-codex-c36538354208.png'
+  - '.context/reviews/evidence/T-5329/config@1920-235_5613_1450_89-crop.png'
+  - '.context/reviews/evidence/T-5329/config@1920-235_5613_1450_90-crop.png'
+  - '.context/reviews/evidence/T-5329/config@1920-judge-t-5329-r5-antigravity-6eb0a265c7fb.png'
+  - '.context/reviews/evidence/T-5329/config@1920-judge-t-5329-r5-claude-code-965d85e59717.png'
+  - '.context/reviews/evidence/T-5329/config@1920-judge-t-5329-r5-codex-c36538354208.png'
+  - '.context/reviews/evidence/T-5329/crop-1024-row-judge-t-5329-r5-claude-code-965d85e59717.png'
+  - '.context/reviews/evidence/T-5329/crop-1440-row-judge-t-5329-r5-claude-code-965d85e59717.png'
+  - '.context/reviews/evidence/T-5329/crop-1920-row-judge-t-5329-r5-claude-code-965d85e59717.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.fabric/components/tests-unit-test_t5329_withdrawal_counts.yaml'
+  - '.tasks/active/T-5329-risk-r-new-6-count-withdrawals-in-status.md'
+  - 'agents/audit/audit.sh'
+  - 'lib/config.sh'
+  - 'lib/dispatch_records.py'
+  - 'tests/unit/test_t5329_withdrawal_counts.py'
+  - 'web/blueprints/config.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-22T11:40:01'
+    action: 'T-5329: scope — withdrawal counts per submitter/day in fw audit (local store); hub side asked of TermLink'
+  - time: '2026-11-22T11:43:57'
+    action: 'T-5329: withdrawals per submitter/UTC day from the local dispatch-records store, graded in fw audit'
+  - time: '2026-11-22T11:45:16'
+    action: 'T-5329: criteria, evolution, render-review criterion and /config captures'
+  - time: '2026-11-22T11:49:33'
+    action: 'T-5329: reviewer verdict'
+  - time: '2026-11-22T11:51:02'
+    action: 'T-5329: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-22T11:54:21'
+    action: 'T-5329: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 1271 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:risk, risk-mitigation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1271
+  commits: 7
+  files_changed: 46
+  lines_added: 795
+  lines_removed: 19
+  footprint_refreshed_at: '2026-11-22T10:56:50Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5329-risk-r-new-6-count-withdrawals-in-status.md
+generated_by: context-agent-hybrid
