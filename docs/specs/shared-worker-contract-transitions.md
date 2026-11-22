@@ -743,7 +743,15 @@ sha256(supervisor_token) only; the plain values leave the hub once, in the alloc
 params (digest only); the holder after allocate is the caller, under the caller's own rule. TermLink pins the
 hash-only store with a test (`crates/termlink-bus/src/worker_contract.rs`) and has no client of its own that calls
 `dispatch.allocate`. [termlink 4eb7d06d] An external backend states its own holder rule as a row of its §6.6 mapping
-(ring20 `poold`: pending).
+(ring20 `poold`: see 6.5c).
+
+6.5c **Attempt credentials at rest (ring20, as ring20 measured it on 2026-11-22; not yet compliant).** The dispatch store
+holds sha256(nonce) and sha256(supervisor_token) only. `poold`, the supervisor, also writes the plain nonce and
+supervisor_token into its own long-lived state ledger, one row per attempt, so that it can call start/complete after a
+restart. That file is mode 0644 root:root in a 0700 root directory: readable by root only, not by the slot uids that
+run jobs, but plain at rest and retained. The values are not in the systemd journal, the published pool feed or any
+hub topic. Fix: ring20 T-2840 moves the plain values to a dedicated 0600 root-owned file, keeps sha256 only in the
+ledger and migrates existing rows; this row then reads compliant. [ring20 af48b39a]
 
 ### 6.6 External backends
 
