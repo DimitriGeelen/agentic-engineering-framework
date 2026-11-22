@@ -9,10 +9,10 @@ description: >
   content match settles that case, but the duplicate can still make other name-rule
   matches ambiguous. Dedupe cited images by resolved path (keep the bare name as metadata).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-22T11:24:55Z
-last_update: '2026-11-22T11:31:01Z'
+last_update: 2026-11-22T12:05:22Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,20 +89,24 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** The T-5358 worker (2026-11-22) found that after T-5357, `check_vote` in `lib/vote_checker.py` collects both the bare Evidence name and the resolved Location path of one image as two cited images. On claude-code's T-5329 vote this made the `<stem>-<dispatch id>` name rule see a copy as ambiguous ("cannot tell"). T-5358's content match settles that case, but the duplicate stays.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** The `cited` list holds the same image twice under two spellings. Any rule that counts or matches candidates in `cited` (ambiguity checks, "every cited image viewed" checks) can mis-decide on a duplicate.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** `cited` holds each image once, keyed by its resolved path; the bare name is kept as metadata only.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** One image cited by a bare Evidence name plus an agreeing Location is one cited image. Name-rule matches are not made ambiguous by the duplicate, and nothing else changes.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `check_vote` (or wherever `cited` is built) adds each image once, by its resolved path. A bare Evidence name that T-5357 resolved through its Location is not added a second time.
+- [ ] Unit tests:
+  1. Bare Evidence plus an agreeing Location gives one `cited` entry.
+  2. The name rule (`<stem>-<dispatch id>`) on such a copy decides viewed/not viewed without the T-5358 content fallback.
+  3. Two genuinely different images stay two entries.
+  Existing vote-checker and ledger tests (including `test_t5357*` and `test_t5358*`) stay green, and the vendored copy is synced.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -289,6 +293,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 python3 -m pytest tests/unit/test_t5360_cited_dedupe.py tests/unit/test_t5357_bare_image_evidence.py tests/unit/test_t5358_view_by_content.py -q
+bin/fw vendor self --check --task T-5360
 
 ## RCA
 
@@ -386,3 +392,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5360-vote-checker-checkvote-lists-one-cited-i.md
 - **Context:** Initial task creation
+
+### 2026-11-22T12:05:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
