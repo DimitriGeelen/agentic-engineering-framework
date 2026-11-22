@@ -4,12 +4,12 @@ name: "Vote checker: an image cited by bare file name in Evidence reads as 'miss
 description: >
   T-5329 panel (2026-11-22): claude-code's report cited 'Evidence: image: config@1920-judge-...png region ...' (bare name) with 'Location: .context/reviews/evidence/T-5329/config@1920-judge-...png region ...' (full path). The copies exist. lib/vote_checker.check_image (~250) reads the Evidence name from the project root -> image_exists False -> 'image ... missing' -> not-checkable, while location_agrees already compares by file name. A seat that looked is graded as not having evidence.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/vote_checker.py, tests/unit/test_t5357_bare_image_evidence.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-22T11:00:04Z
-last_update: 2026-11-22T11:00:04Z
-date_finished: null
+last_update: 2026-11-22T11:06:08Z
+date_finished: 2026-11-22T11:06:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -374,3 +374,16 @@ bin/fw vendor self --check --task T-5357
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5357-vote-checker-an-image-cited-by-bare-file.md
 - **Context:** Initial task creation
+
+### 2026-11-22T11:06:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-bc9ea5b1
+- **Timestamp:** 2026-11-22T11:06:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none
