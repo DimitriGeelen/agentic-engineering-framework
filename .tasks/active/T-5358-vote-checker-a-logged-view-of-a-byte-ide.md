@@ -107,14 +107,14 @@ It never compares contents. A logged view of a file with the same bytes is a vie
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `image_viewed` (or its caller) counts a logged view of any file whose sha256 equals the cited image's sha256 as a view of the cited image. Hashes come from the files as read for the check. An attached-at-launch hash alone does not satisfy it (T-5327 holds).
-- [ ] Unit tests:
+- [x] `image_viewed` (or its caller) counts a logged view of any file whose sha256 equals the cited image's sha256 as a view of the cited image. Hashes come from the files as read for the check. An attached-at-launch hash alone does not satisfy it (T-5327 holds).
+- [x] Unit tests:
   1. A logged view of the original plus a cited byte-identical copy elsewhere: viewed.
   2. A logged view of a different image plus a cited copy: not viewed.
   3. Attached-only with identical bytes: not a logged view (unchanged).
   4. The exact-path and `<stem>-<dispatch id>` cases: unchanged.
   Existing vote-checker and ledger tests stay green, and the vendored copy is synced.
-- [ ] The live re-check of claude-code's T-5329 vote (dispatch judge-t-5329-r5-claude-code-965d85e59717) is reported. No ledger row is edited.
+- [x] The live re-check of claude-code's T-5329 vote (dispatch judge-t-5329-r5-claude-code-965d85e59717) is reported. No ledger row is edited.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -319,6 +319,15 @@ bin/fw vendor self --check --task T-5358
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** claude-code Read the original images and cited byte-identical copies, yet its T-5329 vote was graded "cannot tell whether the seat opened image".
+**Root cause:** View decisions matched by name and path only. After T-5357, `check_vote` also lists the bare Evidence name and the resolved Location path as two cited images, so the `<stem>-<dispatch id>` name rule saw the copy as ambiguous and answered "cannot tell".
+**Why structurally allowed:** Each fix this week (T-5353 renamed copies, T-5357 bare names) added a name shape; none asked the content question that all the shapes stand for. No test had "viewed the original, cited a copy elsewhere".
+**Prevention:**
+- ded4f193c: `_content_view` (`lib/vote_checker.py:637`) hashes only LOGGED views, read the same way `read_cited` reads cited files, never a seat-written hash. `image_viewed` (:693) applies it after the unchanged name rules; attached-only proof is unchanged (T-5327).
+- `tests/unit/test_t5358_view_by_content.py` (7 tests, 3 fail on the old code); 209 related tests pass.
+- Live re-check: claude-code's T-5329 vote is now checkable `(True, [])`.
+- The duplicate entry in the cited list is filed as its own task.
 
 ## Evolution
 
