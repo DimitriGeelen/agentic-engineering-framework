@@ -7,10 +7,10 @@ description: >
   hard-coded, so docs/design/ is not searchable by fw recall/ask. Need a per-project
   scope list (config key), default unchanged.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [consumer, peer-request, recall]
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-22T23:33:13Z
-last_update: '2026-11-22T23:46:04Z'
+last_update: '2026-11-22T23:58:39Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -80,6 +80,23 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 (no-signal); 
       F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-22T23:58:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 5
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=5 (body/components:retrieval-layer); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=1 
+      (body/components:context-fabric-incidental); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5374: Vector index scope is fixed to .tasks and .context/episodic; projects cannot add design documents
@@ -87,20 +104,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** AEF-ontology-agent (msgs 63c992ab, a8aa31c0, 2026-11-22/23, escalated by its operator as a major flaw): 12 design documents in docs/design/ontology-module/ are not found by content; plain `fw search` finds only task files mentioning the term.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis (checked 2026-11-23):** the semantic index is NOT the gap — web/search_utils.py AUTHORED_DIRS already embeds docs/design, docs/specs, docs/adr, docs/architecture, docs/reports, policy (`fw search --semantic` returns docs/design/task-corpus-concurrency-model.md here). Two real gaps: (1) keyword `fw search` (bin/fw `search)` PYSEARCH block, search_areas) greps only .tasks and .context, a different scope from the index; (2) lib/index_reconcile.py SCOPE (.tasks, .context/episodic) drives the freshness/lag check, so a new authored document outside those is never reported missing. Three scope lists that should be one.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** one definition of "authored and durable" content drives keyword search, the embedding index and the freshness check, so every retrieval path finds project design documents.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `fw search reasoner` lists a matching docs/design file; the freshness check counts docs/ authored files; a project can add extra authored dirs through one config key (default unchanged).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Keyword `fw search` greps the same AUTHORED_DIRS set as web/search_utils.py (imported or exported from one place, not a copy), plus the existing .context areas it searches today, same exclusions (docs/generated stays out).
+- [ ] lib/index_reconcile.py's freshness/lag scope comes from the same definition, so an authored docs/design file missing from the index counts as lag; lib/vector_index_health.py stays consistent with it.
+- [ ] One config key (e.g. INDEX_EXTRA_DIRS, colon-separated, project-relative) adds directories to that set for all three paths; registered in lib/config.sh with description, config parity lint (tests/lint/config-registry-parity.bats and web/blueprints/config.py if required) green; default empty = unchanged behaviour.
+- [ ] Hermetic tests (tests/unit/test_t5374_authored_scope.py): temp project with docs/design/x.md containing a unique word — keyword fw search finds it; reconcile reports it as unindexed before reindex; the extra-dirs key adds a custom dir.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,6 +306,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_t5374_authored_scope.py
+bin/fw search "concurrency model" 2>&1 | grep -q "docs/design/task-corpus-concurrency-model.md"
+bats tests/lint/config-registry-parity.bats
+bin/fw vendor self --check --task T-5374
 
 ## RCA
 
@@ -384,3 +407,9 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5374-vector-index-scope-is-fixed-to-tasks-and.md
 - **Context:** Initial task creation
+
+### 2026-11-22T23:57:38Z — status-update [task-update-agent]
+- **Change:** horizon: next → now
+
+### 2026-11-22T23:58:37Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
