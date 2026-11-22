@@ -1,8 +1,15 @@
 ---
 id: T-5358
-name: "Vote checker: a logged view of a byte-identical image counts as viewing the cited copy (match by content hash)"
+name: "Vote checker: a logged view of a byte-identical image counts as viewing the
+  cited copy (match by content hash)"
 description: >
-  After T-5357, claude-code's T-5329 vote resolves its cited copies but stays not-checkable: it opened .context/visual/T-5329/config@{1920,1440,1024}.png and cited byte-identical copies .context/reviews/evidence/T-5329/config@*-judge-...png. vote_checker.image_viewed matches only the cited path, a <stem>-<dispatch id> copy, or attached-at-launch hashes. Count a logged view of any file whose sha256 equals the cited image's as a view (same pixels). Fourth fix in the T-5353/T-5357 chain where a seat that looked was graded as not looking.
+  After T-5357, claude-code's T-5329 vote resolves its cited copies but stays not-checkable:
+  it opened .context/visual/T-5329/config@{1920,1440,1024}.png and cited byte-identical
+  copies .context/reviews/evidence/T-5329/config@*-judge-...png. vote_checker.image_viewed
+  matches only the cited path, a <stem>-<dispatch id> copy, or attached-at-launch
+  hashes. Count a logged view of any file whose sha256 equals the cited image's as
+  a view (same pixels). Fourth fix in the T-5353/T-5357 chain where a seat that looked
+  was graded as not looking.
 
 status: started-work
 workflow_type: build
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-22T11:06:57Z
-last_update: 2026-11-22T11:06:57Z
-date_finished: null
+last_update: '2026-11-22T11:15:21Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-22T11:15:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=315,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5358: Vote checker: a logged view of a byte-identical image counts as viewing the cited copy (match by content hash)
