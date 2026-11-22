@@ -2961,7 +2961,9 @@ def _needs_view(ctx: "_Ctx", crit) -> bool:
     """T-5353: does this criterion's evidence need a proven view of screenshots of pages? The
     judge's own test (`evidence_need.needs_view`: render, or names a page whatever its class), so
     the judge, `_run_fault` and the vote checker never disagree on which criteria it covers."""
-    return evidence_need.needs_view(_is_render_review(ctx, crit), crit.title, criterion_body(crit))
+    root = getattr(ctx, "root", None)   # T-5367: only this project's Watchtower URLs are pages
+    return evidence_need.needs_view(_is_render_review(ctx, crit), crit.title, criterion_body(crit),
+                                    evidence_need.own_origin(root))
 
 
 def _run_fault(ctx: "_Ctx", row: dict, crit, recording: bool) -> tuple[str, str] | None:

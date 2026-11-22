@@ -193,6 +193,7 @@ def _partition(task_data: dict, root: Path, task_id: str,
     ctx = vl._Ctx(root, task_id, task_data["path"], task_data["text"])
     judged: list[dict] = []
     operator: list[dict] = []
+    origin = evidence_need.own_origin(root)   # T-5367: only this project's Watchtower URLs are pages
     for crit in human_criteria(task_data["text"]):
         if crit.ticked or (criterion_n is not None and crit.index != criterion_n):
             continue
@@ -200,7 +201,7 @@ def _partition(task_data: dict, root: Path, task_id: str,
         item = {"index": len(judged) + 1, "ac_index": crit.index, "text": crit.title.strip(),
                 "body": vl.criterion_body(crit), "class": cl.cls,
                 "render": cl.cls == "render-surface" and bool(vl._RENDER_REVIEW_RE.search(vl.criterion_body(crit)))}
-        item["page"] = item["render"] or names_page(f"{crit.title}\n{item['body']}")
+        item["page"] = item["render"] or names_page(f"{crit.title}\n{item['body']}", origin)
         item["image"] = item["page"] or names_image(f"{crit.title}\n{item['body']}")
         if cl.delegation_class == REVIEWER_JUDGES:
             judged.append(item)
@@ -365,7 +366,7 @@ def _get_routes(src: str) -> list[str]:
 _BACKTICK_RE = re.compile(r"`([^`\n]+)`")
 _PATH_QUERY_RE = re.compile(r"/[a-z][\w/.-]*(?:\?.*)?")
 _FULL_URL_RE = re.compile(r"https?://(?:<watchtower>|[\w.-]+)(?::\d+)?(?:/[^\s`<>()\[\]'\"]*)?")
-_LOCAL_HOSTS = {"localhost", "127.0.0.1", "<watchtower>"}
+_LOCAL_HOSTS = evidence_need.LOCAL_HOSTS
 
 
 def _page_of(path: str, query: str) -> str:
@@ -382,17 +383,14 @@ def _own_page(url: str, own_netloc: str, own_port: str) -> str | None:
     if not m:
         return None
     host, port, path, query = m.group(1), m.group(2) or "", m.group(3) or "/", m.group(4) or ""
-    netloc = f"{host}:{port}" if port else host
-    if not (netloc == own_netloc or (host in _LOCAL_HOSTS and port == own_port)):
+    # T-5367: the same origin test `names_page` uses (lib/evidence_need.py), never a copy.
+    if not evidence_need.is_own_url(host, port, (own_netloc, own_port)):
         return None
     return _page_of(path, query)
 
 
 def _criterion_pages(root: Path, body: str) -> list[str]:
-    from urllib.parse import urlsplit
-    own = urlsplit(_watchtower_url(root))
-    own_netloc = own.netloc
-    own_port = str(own.port) if own.port else review_policy.config_value(root, "PORT", "3000")
+    own_netloc, own_port = evidence_need.own_origin(root)
     pages: list[str] = []
     for span in _BACKTICK_RE.findall(body):
         span = span.strip()

@@ -29,12 +29,59 @@ _NOT_A_PAGE = {"tmp", "opt", "etc", "usr", "var", "root", "home", "dev", "proc",
                "api"}
 
 
-def names_page(text: str) -> bool:
-    """True when `text` names an app route (`/classic`, `/cicd/builds`) or a URL with a path.
-    Filesystem roots and /api/ endpoints are not pages; neither is a token with a file suffix."""
-    if re.search(r"https?://[\w.<>-]+(?::\d+)?/[a-z]", text, re.IGNORECASE):
+# T-5367: a URL names a page only on THIS project's Watchtower. A GitHub PR link or a docs URL
+# cited as a reference is not a page to capture: counting it made the judge try to screenshot
+# GitHub and the ledger refuse every green ("no required page was recorded"). `<watchtower>` is
+# the placeholder criteria use for the project's own host.
+LOCAL_HOSTS = {"localhost", "127.0.0.1", "<watchtower>"}
+_URL_RE = re.compile(r"https?://((?:<watchtower>|[\w.-]+))(?::(\d+))?(/[^\s?#`<>()\[\]'\"]*)?",
+                     re.IGNORECASE)
+
+
+def own_origin(root) -> tuple[str, str | None]:
+    """(netloc, port) of this project's Watchtower: `.context/working/watchtower.url`, the port
+    falling back to the PORT config (default 3000). `root=None` gives ("", None): only the local
+    hosts count, on any port. Callers resolve it once and pass it to `names_page`/`is_own_url`."""
+    if root is None:
+        return "", None
+    from pathlib import Path
+    from urllib.parse import urlsplit
+    f = Path(root) / ".context/working/watchtower.url"
+    try:
+        own = urlsplit(f.read_text().strip()) if f.exists() else urlsplit("")
+        port = str(own.port) if own.port else None
+    except (OSError, ValueError):
+        own, port = urlsplit(""), None
+    if port is None:
+        from lib import review_policy
+        port = review_policy.config_value(Path(root), "PORT", "3000")
+    return own.netloc.lower(), port
+
+
+def is_own_url(host: str, port: str, origin: tuple[str, str | None]) -> bool:
+    """True when host[:port] is the project's Watchtower (`origin` from `own_origin`), or a local
+    host on its port (any port when the origin is unknown)."""
+    own_netloc, own_port = origin
+    host, port = host.lower(), port or ""
+    netloc = f"{host}:{port}" if port else host
+    if own_netloc and netloc == own_netloc:
         return True
-    return any(m.group(1).lower() not in _NOT_A_PAGE for m in _PAGE_ROUTE_RE.finditer(text))
+    return host in LOCAL_HOSTS and (own_port is None or port == own_port)
+
+
+def names_page(text: str, origin: tuple[str, str | None] | None = None) -> bool:
+    """True when `text` names an app route (`/classic`, `/cicd/builds`) or a URL with a path on
+    this project's Watchtower (`origin`, from `own_origin(root)`; None = local hosts only).
+    Outside URLs, filesystem roots and /api/ endpoints are not pages; neither is a token with a
+    file suffix."""
+    origin = origin or ("", None)
+    for m in _URL_RE.finditer(text):
+        if re.match(r"/[a-z]", m.group(3) or "", re.IGNORECASE) and \
+                is_own_url(m.group(1), m.group(2) or "", origin):
+            return True
+    # URLs are not bare routes: blank them so an outside URL's path is never read as one.
+    bare = _URL_RE.sub(" ", text)
+    return any(m.group(1).lower() not in _NOT_A_PAGE for m in _PAGE_ROUTE_RE.finditer(bare))
 
 
 def needs_screenshots(c: dict) -> bool:
@@ -44,9 +91,11 @@ def needs_screenshots(c: dict) -> bool:
     return bool(c.get("render") or c.get("page"))
 
 
-def needs_view(render: bool, title: str, body: str) -> bool:
+def needs_view(render: bool, title: str, body: str,
+               origin: tuple[str, str | None] | None = None) -> bool:
     """`needs_screenshots` for a criterion given its render flag and its text — the form the
     ledger has to hand. The page flag is derived exactly as the judge derives it
-    (`judge_cli._partition`: render, or `names_page` over title and body)."""
+    (`judge_cli._partition`: render, or `names_page` over title and body, against the project's
+    Watchtower `origin`)."""
     return needs_screenshots({"render": render,
-                              "page": bool(render) or names_page(f"{title}\n{body}")})
+                              "page": bool(render) or names_page(f"{title}\n{body}", origin)})
