@@ -6,10 +6,10 @@ description: >
   worker status and fw audit report withdrawn per submitter and day and WARN above
   a threshold. Source: docs/reports/T-5300-risk-matrix.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [arc:risk, risk-mitigation]
 components: []
 related_tasks: [T-5316, T-5300]
@@ -41,7 +41,7 @@ origin: {kind: "agent", source: "T-5316"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T13:43:27Z
-last_update: '2026-11-21T13:46:12Z'
+last_update: 2026-11-22T10:39:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,20 +87,28 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** The T-5300 risk matrix, risk 2 (R-043, "submitter withdraws a wanted job, unseen", NEW, score 6), names this mitigation: report withdrawals per submitter per day and WARN above a threshold. T3w raises no operator notice, so a cleanup loop or a batch withdraw can end wanted jobs, visible only in history.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Checked 2026-11-22:
+- The planned surface `fw worker status` does not exist.
+- AEF's local store (`lib/dispatch_records.py`) implements T3w, but nothing writes records in live use: there is no `.context/dispatch-records/`.
+- Live withdrawals happen on TermLink's hub (wc v0.3.4 live, withdraw on). TermLink's CLI exposes no withdrawal reporting (`termlink dispatch-status` covers manifest branches only).
+- So the counting that catches today's withdrawals belongs to TermLink (gap homing), and AEF's part is the reader for its own store, ready when the store is wired.
 
-**Goal:** <what we are trying to achieve>
+**Goal:**
+- AEF: a counter of T3w withdrawals per submitter (record's `dispatcher.session`, else `withdraw` actor) per UTC day, read from the local store, and one `fw audit` line. The line is INFO when there is no store, PASS when under the threshold, and WARN naming submitter, day and count above it.
+- TermLink: asked whether its hub can report the same.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A burst of withdrawals in the local store is visible in the daily audit, not only in record history. TermLink has the request for its hub.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `lib/dispatch_records.py` has a read-only function returning withdrawals per (submitter, UTC day) from the store's records (T3w history entries / `outcome: withdrawn`), never writing or locking for write.
+- [ ] `fw audit` prints one line. It is INFO "no local dispatch records (local backend not wired)" when the store is absent, PASS with the count when every (submitter, day) is under the threshold, and WARN naming each one above it. The threshold is a registry config key with a description (default 5), mirrored in `web/blueprints/config.py`. It never FAILs.
+- [ ] Unit tests: no store means INFO; under the threshold means PASS; above it means WARN with names; a non-withdrawn done is not counted; records from two days are counted per day. The config parity lint passes, the existing dispatch-record tests stay green, and the vendored copy is synced.
+- [ ] TermLink is asked whether its hub can report withdrawn attempts per submitter per day (the live source today).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,6 +295,10 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 python3 -m pytest tests/unit/test_t5329_withdrawal_counts.py -q
+timeout 300 bats tests/lint/config-registry-parity.bats > /tmp/.t5329 2>&1 && ! grep -q "^not ok" /tmp/.t5329
+bash -n agents/audit/audit.sh
+bin/fw vendor self --check --task T-5329
 
 ## RCA
 
@@ -384,3 +396,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5329-risk-r-new-6-count-withdrawals-in-status.md
 - **Context:** Initial task creation
+
+### 2026-11-22T10:39:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
