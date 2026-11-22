@@ -1,0 +1,21 @@
+id: tests/unit/test_t5329_withdrawal_counts.py
+name: test_t5329_withdrawal_counts
+type: script
+subsystem: tests
+location: tests/unit/test_t5329_withdrawal_counts.py
+tags: []
+
+purpose: "T-5329 (R-043) — withdrawals per submitter per UTC day from the local dispatch-records store."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-22
+created_by: unknown

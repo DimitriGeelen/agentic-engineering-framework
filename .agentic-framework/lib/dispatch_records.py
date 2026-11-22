@@ -1083,9 +1083,91 @@ class _Adapter:
         }
 
 
+
+# ── T-5329: withdrawals per submitter per UTC day (read-only) ─────────
+def _submitter(record: dict, entry: dict) -> str:
+    """Submitter of a T3w: the record's dispatcher.session, else the withdraw actor, else "unknown"."""
+    session = ((record.get("dispatcher") or {}).get("session"))
+    if isinstance(session, str) and session:
+        return session
+    actor = entry.get("actor")
+    return actor if isinstance(actor, str) and actor else "unknown"
+
+
+def withdrawal_counts(root: str | Path = ".context/dispatch-records") -> dict | None:
+    """Count T3w withdrawals per (submitter, UTC day YYYY-MM-DD) in a local store (T-5329, R-043).
+
+    Read-only: does not construct a Store (its constructor creates the directory), takes
+    no lock and writes nothing. A plain read of a record file is safe because every write
+    is a whole-file rename. Returns None when the directory does not exist. Counted: every
+    history entry with transition "T3w"; an attempt whose outcome is "withdrawn" with no
+    T3w entry (a record from a writer that kept no history) counts once, dated by its last
+    history entry or the record's created_at. Unreadable records raise ValueError."""
+    import datetime
+    base = Path(root)
+    if not base.is_dir():
+        return None
+    counts: dict = {}
+
+    def day(ts):
+        return datetime.datetime.fromtimestamp(int(ts), tz=datetime.timezone.utc).strftime("%Y-%m-%d")
+
+    for path in sorted(base.glob("D-*.json")):
+        try:
+            record = json.loads(path.read_text())
+        except (OSError, ValueError) as exc:
+            raise ValueError(f"unreadable record {path.name}: {exc}") from exc
+        for att in record.get("attempts") or []:
+            history = att.get("history") or []
+            t3w = [e for e in history if e.get("transition") == "T3w"]
+            if not t3w and att.get("outcome") == "withdrawn":
+                ts = history[-1].get("ts") if history else record.get("created_at")
+                t3w = [{"ts": ts if ts is not None else 0}]
+            for entry in t3w:
+                key = (_submitter(record, entry), day(entry.get("ts") or 0))
+                counts[key] = counts.get(key, 0) + 1
+    return counts
+
+
+def _withdrawals_cli(argv) -> int:
+    """`withdrawals --root DIR --threshold N`: exit 0 none over, 1 some over, 2 error."""
+    import argparse
+    ap = argparse.ArgumentParser(prog="dispatch_records.py withdrawals")
+    ap.add_argument("--root", default=".context/dispatch-records")
+    ap.add_argument("--threshold", type=int, default=5)
+    try:
+        args = ap.parse_args(argv)
+        counts = withdrawal_counts(args.root)
+    except SystemExit:
+        return 2
+    except Exception as exc:                                   # noqa: BLE001 — graded by the audit
+        print(f"ERROR {exc}")
+        return 2
+    if counts is None:
+        print(f"INFO no local dispatch records at {args.root} (local backend not wired)")
+        return 0
+    over = sorted((k, n) for k, n in counts.items() if n > args.threshold)
+    for (sub, d), n in sorted(counts.items()):
+        print(f"COUNT {sub} {d} {n}")
+    for (sub, d), n in over:
+        print(f"OVER {sub} {d} {n}")
+    total = sum(counts.values())
+    print(f"withdrawals: {total} in {len(counts)} submitter-day(s), {len(over)} over {args.threshold}/day")
+    return 1 if over else 0
+
+
+
 def conformance_adapter(params: dict | None = None):
     """Entry point for tests/conformance/worker-contract/run_local.py."""
     import atexit
     adapter = _Adapter(params)
     atexit.register(lambda: adapter._tmp and shutil.rmtree(adapter._tmp, ignore_errors=True))
     return adapter
+
+
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "withdrawals":
+        sys.exit(_withdrawals_cli(sys.argv[2:]))
+    print("usage: dispatch_records.py withdrawals [--root DIR] [--threshold N]", file=sys.stderr)
+    sys.exit(2)

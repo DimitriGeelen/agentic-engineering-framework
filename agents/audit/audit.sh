@@ -3382,6 +3382,31 @@ else
          "Restore it: bin/fw vendor self (or fw upgrade)"
 fi
 
+# T-5329 (Risk R-043): a T3w withdrawal raises no operator notice, so a cleanup loop or a
+# batch withdraw can end wanted jobs, visible only in record history. Count withdrawals per
+# submitter per UTC day in AEF's local dispatch-records store and WARN above the threshold.
+# Read-only, never FAILs. Live withdrawals happen on TermLink's hub; this reads the local store.
+if [ -f "$FRAMEWORK_ROOT/lib/dispatch_records.py" ]; then
+    _wd_thr="$(fw_config WITHDRAWALS_WARN_PER_DAY 5 2>/dev/null)"
+    case "$_wd_thr" in ''|*[!0-9]*) _wd_thr=5 ;; esac
+    _wd_rc=0
+    _wd_out=$(python3 "$FRAMEWORK_ROOT/lib/dispatch_records.py" withdrawals \
+        --root "$PROJECT_ROOT/.context/dispatch-records" --threshold "$_wd_thr" 2>&1) || _wd_rc=$?
+    if [ "$_wd_rc" -eq 0 ] && echo "$_wd_out" | grep -q '^INFO '; then
+        info "Withdrawals per submitter/day: no local dispatch records (local backend not wired) (T-5329)"
+    elif [ "$_wd_rc" -eq 0 ]; then
+        pass "Withdrawals per submitter/day: $(echo "$_wd_out" | tail -1 | sed 's/^withdrawals: //') (T-5329)"
+    elif [ "$_wd_rc" -eq 1 ]; then
+        warn "Withdrawals per submitter/day: $(echo "$_wd_out" | grep -c '^OVER') submitter-day(s) over ${_wd_thr} — $(echo "$_wd_out" | grep '^OVER' | sed 's/^OVER //' | paste -sd ';' -) (T-5329)" \
+             "T3w raises no operator notice; a burst may be a cleanup loop ending wanted jobs" \
+             "Inspect: python3 lib/dispatch_records.py withdrawals --root .context/dispatch-records --threshold ${_wd_thr}"
+    else
+        warn "Withdrawals per submitter/day: not checked (rc=$_wd_rc) (T-5329)" \
+             "$(echo "$_wd_out" | tail -2 | tr '\n' ';')" \
+             "Run: python3 lib/dispatch_records.py withdrawals --root .context/dispatch-records"
+    fi
+fi
+
 # T-3695: the PreToolUse Human-AC tick guard is a TEXT gate (Write|Edit diffed, Bash shell
 # writes to .tasks/ refused); a script file or a run-time-built path is outside it (T-2742
 # boundary). This is the after-the-fact half: every commit since the cutoff that ticks a
