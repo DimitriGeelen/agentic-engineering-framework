@@ -6066,7 +6066,7 @@ concerns:
   introduced_by: T-5300
   introduced_note: PARTLY NEW (review 2026-11-21) - withdrawal by a party holding only the credential, without host control, is new with T3w (row 1.3, score 3); the 6 is full host compromise (row 1.5), which exists anyway
   mitigation_task: T-5328
-  mitigation_progress: "T-5328 (2026-11-22) done for AEF: the local store keeps only sha256 of nonce and token, files are mode 0600, the holder rule is spec §6.5a, pinned by tests/unit/test_t5328_credentials_at_rest.py; no AEF process holds the plain values in live use. TermLink stated its rule (msg 4eb7d06d, 2026-11-22: hashes only, plain values leave the hub once in the allocate reply, logs carry a params digest only), recorded as spec §6.5b in T-5355. Open: ring20 poold, not reachable from this host, needs relaying by the operator. Status stays watching until ring20 states its rule."
+  mitigation_progress: "T-5328 (2026-11-22) done for AEF: the local store keeps only sha256 of nonce and token, files are mode 0600, the holder rule is spec §6.5a, pinned by tests/unit/test_t5328_credentials_at_rest.py; no AEF process holds the plain values in live use. TermLink stated its rule (msg 4eb7d06d, 2026-11-22: hashes only, plain values leave the hub once in the allocate reply, logs carry a params digest only), recorded as spec §6.5b in T-5355. Open: ring20 poold; asked directly on 2026-11-22 via its reply address 22c19fedafd73da2/proxmox-ring20-management (conversation pool-capacity, msg 511c0453). Status stays watching until ring20 states its rule."
   created: 2026-11-21
   last_reviewed: '2026-11-22'
 - id: R-043
