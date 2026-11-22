@@ -745,13 +745,16 @@ hash-only store with a test (`crates/termlink-bus/src/worker_contract.rs`) and h
 `dispatch.allocate`. [termlink 4eb7d06d] An external backend states its own holder rule as a row of its §6.6 mapping
 (ring20 `poold`: see 6.5c).
 
-6.5c **Attempt credentials at rest (ring20, as ring20 measured it on 2026-11-22; not yet compliant).** The dispatch store
-holds sha256(nonce) and sha256(supervisor_token) only. `poold`, the supervisor, also writes the plain nonce and
-supervisor_token into its own long-lived state ledger, one row per attempt, so that it can call start/complete after a
-restart. That file is mode 0644 root:root in a 0700 root directory: readable by root only, not by the slot uids that
-run jobs, but plain at rest and retained. The values are not in the systemd journal, the published pool feed or any
-hub topic. Fix: ring20 T-2840 moves the plain values to a dedicated 0600 root-owned file, keeps sha256 only in the
-ledger and migrates existing rows; this row then reads compliant. [ring20 af48b39a]
+6.5c **Attempt credentials at rest (ring20, as ring20 measured it; compliant since ring20 T-2840, 2026-11-22).** The
+dispatch store holds sha256(nonce) and sha256(supervisor_token) only. `poold`, the supervisor, keeps the plain nonce and
+supervisor_token only in a dedicated secrets file, mode 0600 root, written atomically and pruned when attempts are
+compacted away, because it needs them to call start/complete after a restart. Its state ledger carries sha256 only;
+earlier rows and every ledger archive were migrated and are 0600. Verified on all 7 pool nodes by key, values never
+printed: no plain field left. The values were never in the systemd journal, the published pool feed or any hub topic.
+[ring20 af48b39a, b91e4d07, cb06acc3] Before T-2840 the plain values sat in the retained state ledger (root-only, 0644 in
+a 0700 directory). Separate and lower risk: ring20's older orch-supervisor commission ledger holds plain nonces, no
+tokens, of commissions closed by 2026-10-20 (a nonce alone cannot complete an attempt); ring20 T-2841 hashes them going
+forward.
 
 ### 6.6 External backends
 

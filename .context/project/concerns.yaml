@@ -6051,7 +6051,7 @@ concerns:
   type: risk
   title: Forged withdrawal of another submitter's pool job
   description: \"T3w ends a dispatched attempt for whoever presents its nonce, supervisor token and supervisor_gen. An intruder controlling the submitter's host can withdraw its jobs (it could already stop them with that host control); a party holding only the credential can now withdraw a never-started job, which is new with T3w.\"
-  status: watching
+  status: mitigated
   accepted_by: operator 2026-11-21 (T-5316 Human AC3, via Watchtower) until its mitigation task lands
   likelihood: 2
   impact: 3
@@ -6066,7 +6066,8 @@ concerns:
   introduced_by: T-5300
   introduced_note: PARTLY NEW (review 2026-11-21) - withdrawal by a party holding only the credential, without host control, is new with T3w (row 1.3, score 3); the 6 is full host compromise (row 1.5), which exists anyway
   mitigation_task: T-5328
-  mitigation_progress: "T-5328 (2026-11-22) done for AEF: the local store keeps only sha256 of nonce and token, files are mode 0600, the holder rule is spec §6.5a, pinned by tests/unit/test_t5328_credentials_at_rest.py; no AEF process holds the plain values in live use. TermLink stated its rule (msg 4eb7d06d, 2026-11-22: hashes only, plain values leave the hub once in the allocate reply, logs carry a params digest only), recorded as spec §6.5b in T-5355. ring20 answered (msg af48b39a): store hashes only, but poold keeps the plain nonce and token in its long-lived state ledger (root-only, 0644 in a 0700 root dir, retained); not in journal, feed or hub topics. Recorded as spec §6.5c (T-5356), not yet compliant. Open: ring20 T-2840 (dedicated 0600 file, ledger keeps hashes, rows migrated); R-042 can be marked mitigated when ring20 reports it shipped. Status stays watching until ring20 states its rule."
+  mitigation_progress: "T-5328 (2026-11-22) done for AEF: the local store keeps only sha256 of nonce and token, files are mode 0600, the holder rule is spec §6.5a, pinned by tests/unit/test_t5328_credentials_at_rest.py; no AEF process holds the plain values in live use. TermLink stated its rule (msg 4eb7d06d, 2026-11-22: hashes only, plain values leave the hub once in the allocate reply, logs carry a params digest only), recorded as spec §6.5b in T-5355. ring20 answered (msg af48b39a): store hashes only, but poold keeps the plain nonce and token in its long-lived state ledger (root-only, 0644 in a 0700 root dir, retained); not in journal, feed or hub topics. Recorded as spec §6.5c (T-5356). ring20 T-2840 shipped 2026-11-22 (release d765c77a6802, all 7 pool nodes; msgs b91e4d07, cb06acc3): plain values only in a 0600 root secrets file, ledger sha256 only, rows and archives migrated, 0 plain fields checked by key; §6.5c reads compliant (T-5359). All three backends meet the at-rest rule. Left with ring20: T-2841, plain nonces (no tokens) of commissions closed by 2026-10-20 in its older orch-supervisor ledger, low risk since a nonce alone cannot complete an attempt."
+  mitigated_by: T-5328 (AEF), T-5355 (TermLink stated), T-5356 + ring20 T-2840 (ring20)
   created: 2026-11-21
   last_reviewed: '2026-11-22'
 - id: R-043
