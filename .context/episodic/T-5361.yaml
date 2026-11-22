@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5361: checkpoint.sh budget answers 'unknown' when its cache is >90s old mid-session; measure from the transcript instead (G-139 rule points at it)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-22T11:38:42Z
+# ============================================================================
+
+task_id: T-5361
+task_name: "checkpoint.sh budget answers 'unknown' when its cache is >90s old mid-session; measure from the transcript instead (G-139 rule points at it)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-22T11:30:05Z
+completed: 2026-11-22T11:37:58Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-22T12:30:53+01:00
+last_commit: 2026-11-22T12:37:55+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope — budget verb goes 'unknown' mid-session on a stale cache. budget cache stays fresh while tools run; budget measures own transcript when cache is only stale. criteria, RCA
+
+# Key outcomes
+outcomes:
+  - 'The cause of the stale cache during active work is found and written in the RCA (with file:line).'
+  - 'Fix, preferring the writer: the cache stays within `BUDGET_STATUS_MAX_AGE` while tools are called. Where that cannot hold, `budget` measures live from this session''s own transcript (matched by Claude session id; no "newest file" guess) using `lib/context_tokens.py --with-status`, prints the band with a `source: transcript` line, and reports `young` per T-5354. A cache or transcript from another session still yields unknown.'
+  - 'Tests:'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/budget-gate.sh'
+  - '.agentic-framework/agents/context/checkpoint.sh'
+  - '.fabric/components/tests-unit-t5361_budget_stale_cache.yaml'
+  - '.tasks/active/T-5361-checkpointsh-budget-answers-unknown-when.md'
+  - 'agents/context/budget-gate.sh'
+  - 'agents/context/checkpoint.sh'
+  - 'tests/unit/t5361_budget_stale_cache.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-22T12:30:53'
+    action: 'T-5361: scope — budget verb goes ''unknown'' mid-session on a stale cache'
+  - time: '2026-11-22T12:36:43'
+    action: 'T-5361: budget cache stays fresh while tools run; budget measures own transcript when cache is only stale'
+  - time: '2026-11-22T12:37:55'
+    action: 'T-5361: criteria, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 7
+  commits: 4
+  files_changed: 10
+  lines_added: 810
+  lines_removed: 12
+  footprint_refreshed_at: '2026-11-22T11:38:56Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5361-checkpointsh-budget-answers-unknown-when.md
+generated_by: context-agent-hybrid
