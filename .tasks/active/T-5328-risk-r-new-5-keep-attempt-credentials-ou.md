@@ -108,9 +108,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Spec §6.5a (local backend) states: records keep only sha256 of nonce and token; record and lock files are mode 0600; a holder of the plain values keeps them in process memory or a mode-0600 file of its own uid, never in a log, `dispatches.jsonl`, the agent child's environment or its prompt; and no AEF process holds them in live use today. The same-uid limit of §6.5 is referenced, not restated.
-- [ ] A test (`tests/unit/test_t5328_credentials_at_rest.py`) allocates attempts through the real Store and asserts the plain nonce and token appear nowhere in the record file. It also asserts record and lock files have mode 0600 (no group or other bits), including after a further write.
-- [ ] TermLink is asked, on the worker-contract thread, to state its holder rule for the plain `supervisor_token` in its §6.6 mapping. ring20 is recorded here as not reachable from this host, for the operator to relay.
+- [x] Spec §6.5a (local backend) states: records keep only sha256 of nonce and token; record and lock files are mode 0600; a holder of the plain values keeps them in process memory or a mode-0600 file of its own uid, never in a log, `dispatches.jsonl`, the agent child's environment or its prompt; and no AEF process holds them in live use today. The same-uid limit of §6.5 is referenced, not restated.
+- [x] A test (`tests/unit/test_t5328_credentials_at_rest.py`) allocates attempts through the real Store and asserts the plain nonce and token appear nowhere in the record file. It also asserts record and lock files have mode 0600 (no group or other bits), including after a further write.
+- [x] TermLink is asked, on the worker-contract thread, to state its holder rule for the plain `supervisor_token` in its §6.6 mapping. ring20 is recorded here as not reachable from this host, for the operator to relay.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -297,6 +297,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 python3 -m pytest tests/unit/test_t5328_credentials_at_rest.py -q
+grep -q "6.5a \*\*Attempt credentials at rest" docs/specs/shared-worker-contract-transitions.md
+timeout 600 python3 -m pytest -q tests/unit/test_worker_contract_vectors.py tests/unit/test_worker_contract_mapping.py
 
 ## RCA
 
@@ -337,6 +340,14 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-22 — the AEF half was already safe; the gap was unstated
+- **What changed:** The plan expected to find credentials to move out of readable files. Instead, the local store already keeps only hashes and writes owner-only (0600) files, and no live AEF process holds the plain values yet (`fw termlink dispatch` and `run.sh` do not write records). The risk on AEF's side was a future wiring that writes the token somewhere readable, unnoticed.
+- **Plan impact:** The mitigation became stating the holder rule (spec §6.5a) and pinning the hash-only and 0600 properties with a test (cab8a817c), rather than moving data.
+- **Triggered:**
+  - TermLink was asked to state its holder rule in its §6.6 mapping (sidecar conversation wc-v034-credentials-at-rest, msg 7ec97a81).
+  - ring20 (`poold`) is not reachable from this host; the same question needs relaying by the operator.
+  - No new task: the residual is the same-uid limit already stated in §6.5 (TermLink T-3477).
 
 ## Recommendation
 
