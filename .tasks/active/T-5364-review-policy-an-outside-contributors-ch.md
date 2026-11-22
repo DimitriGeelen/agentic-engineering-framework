@@ -69,9 +69,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/review_policy.impact()` reads one declared input, the task tag `outside-contributor`, and raises the tier one step, adding a reason "outside contributor (CONTRIBUTING step 6): one level higher". Tasks without it get the same tier as today.
-- [ ] Unit tests: low becomes medium, medium becomes high, high stays high with the reason added; a task without the tag is unchanged. The existing review-policy, judge and verdict-ledger tests stay green, and the vendored copy is synced.
-- [ ] T-5301 carries the tag, and `bin/fw reviewer judge T-5301 --dry-run` plans rung 5 with the reason (output pasted in the task).
+- [x] `lib/review_policy.impact()` reads one declared input, the task tag `outside-contributor`, and raises the tier one step, adding a reason "outside contributor (CONTRIBUTING step 6): one level higher". Tasks without it get the same tier as today.
+- [x] Unit tests: low becomes medium, medium becomes high, high stays high with the reason added; a task without the tag is unchanged. The existing review-policy, judge and verdict-ledger tests stay green, and the vendored copy is synced.
+- [x] T-5301 carries the tag, and `bin/fw reviewer judge T-5301 --dry-run` plans rung 5 with the reason (output pasted in the task).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -276,6 +276,14 @@ bin/fw vendor self --check --task T-5364
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** The review of outside PR #116 (T-5301) would have run at rung 3 (single reviewer), though CONTRIBUTING.md step 6 promises outside changes a review one risk level higher.
+**Root cause:** `lib/review_policy.impact()` had no input for who wrote a change; the published rule lived only in prose.
+**Why structurally allowed:** The rule was written for contributors (CONTRIBUTING, T-5006 plan) while the review tier was built from internal criteria (T-3557/T-3580); no test tied the two, and PR #116 was the first outside PR to reach the read-review step.
+**Prevention:**
+- Worker commit bb2c2d5de: the task tag `outside-contributor` raises the tier one step, with the reason "outside contributor (CONTRIBUTING step 6): one level higher" (`lib/review_policy.py:108-118`). It is pinned by `tests/unit/test_t5364_outside_contributor_tier.py` (5 tests); 755 related tests pass.
+- T-5301 is tagged. After its read-review criterion was added (14e4fef29), `bin/fw reviewer judge T-5301 --dry-run` printed `Rung: 5 (not undone by git revert; outside contributor (CONTRIBUTING step 6): one level higher)`.
+- Noted, not built: when the tier is raised the medium reasons are dropped from the list; the judge dry run says nothing for a task with no Human criteria; there is no read-only "rung of one task" verb.
 
 ## Evolution
 
