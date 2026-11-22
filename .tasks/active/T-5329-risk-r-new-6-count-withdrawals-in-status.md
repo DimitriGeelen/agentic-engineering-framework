@@ -105,12 +105,18 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/dispatch_records.py` has a read-only function returning withdrawals per (submitter, UTC day) from the store's records (T3w history entries / `outcome: withdrawn`), never writing or locking for write.
-- [ ] `fw audit` prints one line. It is INFO "no local dispatch records (local backend not wired)" when the store is absent, PASS with the count when every (submitter, day) is under the threshold, and WARN naming each one above it. The threshold is a registry config key with a description (default 5), mirrored in `web/blueprints/config.py`. It never FAILs.
-- [ ] Unit tests: no store means INFO; under the threshold means PASS; above it means WARN with names; a non-withdrawn done is not counted; records from two days are counted per day. The config parity lint passes, the existing dispatch-record tests stay green, and the vendored copy is synced.
-- [ ] TermLink is asked whether its hub can report withdrawn attempts per submitter per day (the live source today).
+- [x] `lib/dispatch_records.py` has a read-only function returning withdrawals per (submitter, UTC day) from the store's records (T3w history entries / `outcome: withdrawn`), never writing or locking for write.
+- [x] `fw audit` prints one line. It is INFO "no local dispatch records (local backend not wired)" when the store is absent, PASS with the count when every (submitter, day) is under the threshold, and WARN naming each one above it. The threshold is a registry config key with a description (default 5), mirrored in `web/blueprints/config.py`. It never FAILs.
+- [x] Unit tests: no store means INFO; under the threshold means PASS; above it means WARN with names; a non-withdrawn done is not counted; records from two days are counted per day. The config parity lint passes, the existing dispatch-record tests stay green, and the vendored copy is synced.
+- [x] TermLink is asked whether its hub can report withdrawn attempts per submitter per day (the live source today).
 
 ### Human
+- [ ] [REVIEW] The /config page shows the new WITHDRAWALS_WARN_PER_DAY row like its neighbours
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find the row WITHDRAWALS_WARN_PER_DAY
+  **Expected:** One row, default 5, the description readable and laid out like the rows around it; no broken table
+  **If not:** Screenshot the row and note what is wrong
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -300,6 +306,17 @@ timeout 300 bats tests/lint/config-registry-parity.bats > /tmp/.t5329 2>&1 && ! 
 bash -n agents/audit/audit.sh
 bin/fw vendor self --check --task T-5329
 
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| config | WITHDRAWALS_WARN_PER_DAY row | ok | ok | ok | full-page shots; the row is in the served page (curl) and Watchtower is current; its layout is the reviewer's judgement |
+
+Captures (`fw ux shots T-5329`, full page):
+- .context/visual/T-5329/config@1024.png
+- .context/visual/T-5329/config@1440.png
+- .context/visual/T-5329/config@1920.png
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -339,6 +356,11 @@ bin/fw vendor self --check --task T-5329
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-22 — the surface named in the plan did not exist; the live source is the hub
+- **What changed:** `fw worker status` does not exist, and AEF's local store has no live writer. The withdrawals that happen today are on TermLink's hub, whose CLI does not report them.
+- **Plan impact:** AEF built the reader and audit line for its own store (b4811b82f: `withdrawal_counts` at `lib/dispatch_records.py:1097`, CLI `withdrawals`, config key `WITHDRAWALS_WARN_PER_DAY` default 5). On this host it is INFO until the store is wired. `Store()` creates its root, so the counter reads record files directly to stay read-only. Attempts with `outcome: withdrawn` but no T3w history entry are counted too.
+- **Triggered:** TermLink asked whether its hub can report withdrawn attempts per submitter per day (sidecar msg 928d36cb). R-043 stays watching until a live source reports.
 
 ## Recommendation
 
