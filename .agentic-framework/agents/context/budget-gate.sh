@@ -498,6 +498,15 @@ fi
 if [ "$CACHE_OWNER" = "foreign" ]; then
     FORCE_RECHECK=1
 fi
+# T-5361: a cache past STATUS_MAX_AGE is the ONLY way to reach this point with a
+# measured level (the fast path above took every fresh one), so the every-Nth
+# throttle below skipped 4 of 5 refreshes of exactly the caches that needed one:
+# with tool calls spaced >18s apart the cache stayed stale for minutes (362s seen)
+# and `checkpoint.sh budget` answered unknown. Re-read once it is stale; the write
+# makes it fresh again, so this costs at most one scan per STATUS_MAX_AGE.
+if [ -f "$STATUS_FILE" ] && [ "${STATUS_AGE}" -ge "$STATUS_MAX_AGE" ]; then
+    FORCE_RECHECK=1
+fi
 
 mkdir -p "$(dirname "$GATE_COUNTER_FILE")"
 GATE_COUNT=0

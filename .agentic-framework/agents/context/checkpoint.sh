@@ -385,6 +385,64 @@ _tokens_to_go() {
     echo "$to_go"
 }
 
+# T-5361: `budget` found a cache whose ONLY fault is age. Measure live from THIS
+# Claude session's own transcript, found by its session id (CLAUDE_CODE_SESSION_ID,
+# or the stem of FW_TRANSCRIPT_PATH) — never "the newest transcript", which in a
+# TermLink worker is the parent's. No id, no own transcript, or a failed scan:
+# print the cache's unknown answer ($1) with one more reason, as before.
+_budget_live() {
+    local cached="$1" sid="$2" age transcript="" d detail tokens model mstate prov level
+    age=$(printf '%s\n' "$cached" | sed -n 's/^stale_age: //p')
+    cached=$(printf '%s\n' "$cached" | grep -v '^stale_age: ')
+    _budget_live_fail() { printf '%s\n' "$cached"; echo "reason: $1"; }
+    if [ -z "$sid" ]; then
+        _budget_live_fail "no Claude session id (CLAUDE_CODE_SESSION_ID / FW_TRANSCRIPT_PATH) to find this session's own transcript"
+        return 0
+    fi
+    case "$sid" in *[!A-Za-z0-9._-]*|.*)
+        _budget_live_fail "Claude session id is not a plain id; not used as a path"
+        return 0 ;;
+    esac
+    if [ -n "${FW_TRANSCRIPT_PATH:-}" ] && [ -f "$FW_TRANSCRIPT_PATH" ] \
+            && [ "$(basename "$FW_TRANSCRIPT_PATH" .jsonl)" = "$sid" ]; then
+        transcript="$FW_TRANSCRIPT_PATH"
+    else
+        while IFS= read -r d; do
+            if [ -f "$d/$sid.jsonl" ]; then transcript="$d/$sid.jsonl"; break; fi
+        done < <(fw_claude_project_dirs)
+    fi
+    if [ -z "$transcript" ]; then
+        _budget_live_fail "no transcript for this Claude session ($sid) under the project's ~/.claude/projects dir"
+        return 0
+    fi
+    detail=$(tail -c 10000000 "$transcript" 2>/dev/null \
+        | python3 "$FRAMEWORK_ROOT/lib/context_tokens.py" "$(cat "$CONTEXT_DIR/working/.session-start-ts" 2>/dev/null | tr -d '[:space:]')" --with-status 2>/dev/null) || detail=""
+    tokens=$(printf '%s' "$detail" | cut -f1)
+    model=$(printf '%s' "$detail" | cut -sf2)
+    mstate=$(printf '%s' "$detail" | cut -sf3)
+    prov=$(printf '%s' "$detail" | cut -sf4)
+    if [[ "$tokens" =~ ^[0-9]+$ ]] && [ -n "$model" ] && [ "$mstate" = "measured" ]; then
+        level=ok
+        if [ "$tokens" -ge "$TOKEN_CRITICAL" ]; then level=critical
+        elif [ "$tokens" -ge "$TOKEN_URGENT" ]; then level=urgent
+        elif [ "$tokens" -ge "$TOKEN_WARN" ]; then level=warn
+        fi
+        echo "level: $level"
+        echo "tokens: $tokens"
+        echo "source: transcript (cache was ${age}s old)"
+        echo "free_tokens: $((CONTEXT_WINDOW - tokens))"
+        echo "band: $(_budget_band "$tokens")"
+    elif [ "$mstate" = "young" ]; then
+        local _prov=""
+        [ "${prov:-0}" -gt 0 ] 2>/dev/null && _prov=" (newest provisional reading: ${prov})"
+        echo "level: unknown"
+        echo "reason: Context tokens: not yet measured since this session (re)started${_prov}. Do NOT use budget figures from before the restart (handover, compaction summary); check again after your next tool call."
+        echo "source: transcript (cache was ${age}s old)"
+    else
+        _budget_live_fail "live scan of this session's transcript gave no measurement"
+    fi
+}
+
 warn_by_tokens() {
     local tokens="$1"
     local pct=$((tokens * 100 / CONTEXT_WINDOW))
@@ -726,7 +784,8 @@ except Exception: print('')
         if [ -z "$MY_CLAUDE_SID" ] && [ -n "${FW_TRANSCRIPT_PATH:-}" ]; then
             MY_CLAUDE_SID=$(basename "$FW_TRANSCRIPT_PATH" .jsonl)
         fi
-        BUDGET_FILE="$BUDGET_FILE" MY_SESSION_ID="$MY_SESSION_ID" MY_CLAUDE_SID="$MY_CLAUDE_SID" CONTEXT_WINDOW="$CONTEXT_WINDOW" STATUS_MAX_AGE="$(fw_config_int "BUDGET_STATUS_MAX_AGE" 90)" python3 -c "
+        _budget_rc=0
+        _budget_out=$(BUDGET_FILE="$BUDGET_FILE" MY_SESSION_ID="$MY_SESSION_ID" MY_CLAUDE_SID="$MY_CLAUDE_SID" CONTEXT_WINDOW="$CONTEXT_WINDOW" STATUS_MAX_AGE="$(fw_config_int "BUDGET_STATUS_MAX_AGE" 90)" python3 -c "
 import json, os, time, sys
 
 budget_file = os.environ['BUDGET_FILE']
@@ -765,6 +824,12 @@ if reasons:
         print(f'reason: {r}')
     print(f'raw_level: {level}')
     print(f'raw_tokens: {tokens}')
+    # T-5361: age is the ONLY reason -> the caller may measure live from this
+    # session's own transcript. Exit 3 signals that; the lines above are kept
+    # as the answer if the live measurement fails too.
+    if len(reasons) == 1 and age > max_age:
+        print(f'stale_age: {age}')
+        sys.exit(3)
 else:
     print(f'level: {level}')
     print(f'tokens: {tokens}')
@@ -783,7 +848,12 @@ else:
         print(f\"baseline_tokens: {s['baseline_tokens']}\")
         print(f\"headroom_tokens: {s.get('headroom_tokens')}\")
         print(f\"headroom_ratio: {s.get('headroom_ratio')}\")
-"
+") || _budget_rc=$?
+        if [ "$_budget_rc" -eq 3 ]; then
+            _budget_live "$_budget_out" "$MY_CLAUDE_SID"
+        else
+            printf '%s\n' "$_budget_out"
+        fi
         ;;
     *)
         # T-4227: usage error, not a hook crash. T-4667: the message goes to stderr.
