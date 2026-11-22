@@ -75,14 +75,14 @@ This is the third way this week that a seat which did look was graded as not hav
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `check_image` resolves a bare Evidence file name through the paired Location's path when the location agrees (same file name and same region or selector), and only then. Path-like Evidence (containing `/`) is read as today.
-- [ ] Unit tests:
+- [x] `check_image` resolves a bare Evidence file name through the paired Location's path when the location agrees (same file name and same region or selector), and only then. Path-like Evidence (containing `/`) is read as today.
+- [x] Unit tests:
   1. Bare Evidence plus an agreeing full-path Location, with the file present: image exists.
   2. Bare Evidence plus a Location naming a different file: missing, as today.
   3. Bare Evidence with no Location path: missing.
   4. Full-path Evidence: unchanged.
   The existing vote-checker and verdict-ledger tests stay green, and the vendored copy is synced.
-- [ ] The live re-check of claude-code's T-5329 vote (V-row for dispatch judge-t-5329-r5-claude-code-965d85e59717) is reported: checkable now, or the real remaining reason. No ledger row is edited.
+- [x] The live re-check of claude-code's T-5329 vote (V-row for dispatch judge-t-5329-r5-claude-code-965d85e59717) is reported: checkable now, or the real remaining reason. No ledger row is edited.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,6 +287,12 @@ bin/fw vendor self --check --task T-5357
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** claude-code's T-5329 vote was graded "image … missing" although the cited copies existed.
+**Root cause:** `check_image` read the image from the Evidence text (a bare file name, so from the project root), while `location_agrees` already treated the bare Evidence and the full-path Location as the same image.
+**Why structurally allowed:** No test had a bare name in Evidence with a full path in Location; the format example always shows a full path, so the case never appeared in fixtures.
+**Prevention:** 3a8c0b208 (`lib/vote_checker.py:249-255`). A bare Evidence name is read through its agreeing Location for the read, the crops and the seat-viewed check; `res["cited_name"]` keeps the bare name. Pinned by `tests/unit/test_t5357_bare_image_evidence.py` (5 tests); 209 related tests pass.
+**Live re-check:** claude-code's T-5329 vote now resolves all three images (regions inside, locations agree). The remaining reason is "cannot tell whether the seat opened image": it opened the byte-identical originals in `.context/visual/T-5329/`, not the copies it cited, and `image_viewed` does not match by content. Filed as T-5358.
 
 ## Evolution
 
