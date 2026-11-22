@@ -58768,3 +58768,21 @@ scan_id: R-881817e6
 task_id: T-5367
 payload:
   task_file: .tasks/active/T-5367-namespage-treats-any-url-eg-a-github-pr-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-22T20:23:52Z'
+scan_id: R-0b8b88d8
+task_id: T-5369
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-22T20:23:52Z'
+scan_id: R-0b8b88d8
+task_id: T-5369
+payload:
+  task_file: .tasks/active/T-5369-review-judge-let-the-operator-require-a-.md

@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5369: Review judge: let the operator require a higher review rung than the computed minimum (raise only)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-22T20:24:06Z
+# ============================================================================
+
+task_id: T-5369
+task_name: "Review judge: let the operator require a higher review rung than the computed minimum (raise only)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-22T20:12:47Z
+completed: 2026-11-22T20:23:41Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-22T21:14:13+01:00
+last_commit: 2026-11-22T21:23:40+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope — review_rung_min raises the review rung, never lowers. review_rung_min frontmatter raises the review rung, never lowers it. criteria, RCA
+
+# Key outcomes
+outcomes:
+  - '`required_rung` (or `impact`) reads frontmatter `review_rung_min` and returns max(computed rung, declared rung), with the reason "review_rung_min: N (declared)" when it raises. Values below the computed rung, or invalid values, never lower it; an invalid value is ignored with a reason.'
+  - 'Unit tests:'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/review_policy.py'
+  - '.fabric/components/tests-unit-test_t5369_review_rung_min.yaml'
+  - '.tasks/active/T-5369-review-judge-let-the-operator-require-a-.md'
+  - 'lib/review_policy.py'
+  - 'tests/unit/test_t5369_review_rung_min.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-22T21:14:13'
+    action: 'T-5369: scope — review_rung_min raises the review rung, never lowers'
+  - time: '2026-11-22T21:22:55'
+    action: 'T-5369: review_rung_min frontmatter raises the review rung, never lowers it'
+  - time: '2026-11-22T21:23:40'
+    action: 'T-5369: criteria, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 10
+  commits: 4
+  files_changed: 8
+  lines_added: 293
+  lines_removed: 20
+  footprint_refreshed_at: '2026-11-22T20:24:47Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5369-review-judge-let-the-operator-require-a-.md
+generated_by: context-agent-hybrid
