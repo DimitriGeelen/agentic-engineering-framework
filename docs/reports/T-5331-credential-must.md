@@ -10,12 +10,16 @@ Spec §6.5a–c (2026-11-22, T-5328, T-5355, T-5356, T-5359) describe what each 
 
 ## Proposed text (to be inserted in §3.2 after "Writer authentication")
 
-> **Credential handling (MUST, every backend and every holder).** The attempt nonce and the supervisor
+> **Credential handling (MUST, every backend and every holder).** This rule covers the attempt nonce and the
+> supervisor credential only; a model or harness credential the job itself needs (for example a token passed to the
+> job by name from a unit EnvironmentFile) is governed separately. The attempt nonce and the supervisor
 > credential (hub: `supervisor_token`) MUST travel only on the route the backend declares for lifecycle writes
 > (hub: the Execute-scope connection; `local`: the store's own API in the holder's process; an external backend:
 > its declared channel or lease, §6.6). They MUST NOT appear in a bus, chat, sidecar or other message; in a log,
 > journal, ledger, feed or audit row (a sha256 digest is allowed); in the agent child's environment or prompt; or
-> in any file readable by another uid than the holder's. A store keeps only their sha256. A holder that must keep
+> in any file readable by another uid than the holder's, or tracked in version control or otherwise replicated off the
+> holder (backup, push, sync). The nonce inside the signed completion evidence of §6.5, presented through the store's
+> completion write, travels on the declared route and is allowed. A store keeps only their sha256. A holder that must keep
 > the plain values across a restart keeps them in a file of mode 0600 owned by its own uid, and removes them when
 > the attempt is terminal and compacted. §6.5a–c record how each backend meets this. [T-5331, risk R-NEW-8]
 
@@ -38,7 +42,10 @@ Spec §6.5a–c (2026-11-22, T-5328, T-5355, T-5356, T-5359) describe what each 
 ## Answers from the other owners
 
 - TermLink: (pending)
-- ring20: (pending)
+- ring20: **AGREE with two amendments** (msg 29d3a492, 2026-11-22), both taken into the text above:
+  1. a scope sentence, so a harness credential the job needs (ring20 passes `CLAUDE_CODE_OAUTH_TOKEN` to the job container by name from the unit EnvironmentFile) is not read as banned;
+  2. the file clause also forbids version-controlled or otherwise replicated files. That is exactly ring20's T-2841 case: a git-tracked commission ledger pushed to OneDev.
+  ring20 read "travel only on the declared route" as allowing the nonce inside the signed completion evidence sent through `store.complete`; confirmed and written into the text. ring20 accepts that "removes them when terminal" makes its T-2841 required, and moved it from later to next.
 
 ## Operator decision
 
