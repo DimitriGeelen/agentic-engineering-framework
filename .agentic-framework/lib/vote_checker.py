@@ -280,14 +280,24 @@ def check_image(evidence: str, location: str, root: Path, revision: str, *, task
         res["selector"] = sm.group(1).strip()
         res["selector_named"] = bool(res["selector"])
     sha = hashlib.sha256(data).hexdigest() if data is not None else None
-    res["seat_viewed"] = image_viewed(views, img, sha, cited) if views_known else None
+    _bytes: dict = {}
+
+    def read(p):                             # T-5358: a logged view's file, as read for this check
+        if p not in _bytes:
+            _bytes[p] = read_cited(root, revision, p, extra_roots)[0]
+        return _bytes[p]
+
+    res["seat_viewed"] = image_viewed(views, img, sha, cited, read=read) if views_known else None
     if views_known and views and sha and sha in (views.get("__attached_sha256__") or ()):
         res["seat_viewed_how"] = "attached at launch (T-5309)"
     if res["seat_viewed"] is True:
         # T-5327: which proof shows the view — a logged view event (Read / read_file / codex's
         # image tool) or only the attached-images.json manifest (in the prompt, not proof the
         # model looked).
-        res["view_proof"] = "logged" if image_viewed(logged_views(views), img, None, cited) else "attached"
+        logged = logged_views(views)
+        res["view_proof"] = "logged" if image_viewed(logged, img, sha, cited, read=read) else "attached"
+        if res["view_proof"] == "logged" and image_viewed(logged, img, None, cited) is not True:
+            res["viewed_same_bytes_as"] = _content_view(logged, sha, read)
     if views_known and views is None:
         res["seat_viewed_why"] = "the seat's run record cannot tell"
     elif not views_known:
@@ -624,8 +634,27 @@ def _view_hit(key: str, image: str, cited: list[str], did: str | None):
     return True, False
 
 
+def _content_view(views: dict | None, sha256: str | None, read) -> str | None:
+    """T-5358: the first LOGGED view (views['__logged__'], via logged_views) whose file, as
+    `read(path)` returns it for this check, has sha256 `sha256`; None when there is none. Only
+    logged view events count: attached-at-launch entries are never hashed here (T-5327), and no
+    hash the seat itself wrote is trusted."""
+    if not sha256 or read is None:
+        return None
+    for k, v in (logged_views(views) or {}).items():
+        if k.startswith("__") or v is not True:
+            continue
+        try:
+            data = read(k)
+        except Exception:  # noqa: BLE001 — an unreadable view is simply no match
+            data = None
+        if data is not None and hashlib.sha256(data).hexdigest() == sha256:
+            return k
+    return None
+
+
 def image_viewed(views: dict | None, image: str, sha256: str | None = None,
-                 cited: list[str] | None = None) -> bool | None:
+                 cited: list[str] | None = None, read=None) -> bool | None:
     """True / False / None (cannot tell) for one cited image.
 
     T-5309: True when the cited image's content hash is one the runtime attached at launch (a
@@ -635,7 +664,9 @@ def image_viewed(views: dict | None, image: str, sha256: str | None = None,
     basename in another directory never counts. A view that gives only a basename (a bare name,
     a copy, a path outside `.context`) counts when that basename is unique among the cited
     images (`cited`, plus the manifest's '__cited_paths__'); when two cited images share it,
-    the answer is None (cannot tell which), never True."""
+    the answer is None (cannot tell which), never True. T-5358: with `read` (path -> bytes, the
+    file as read for the check), a LOGGED view of any file whose sha256 equals the cited
+    image's (`sha256`) is a view of it — same bytes, same pixels — whatever the names say."""
     if views is None:
         return None
     if sha256 and sha256 in (views.get("__attached_sha256__") or ()):
@@ -658,6 +689,8 @@ def image_viewed(views: dict | None, image: str, sha256: str | None = None,
         could = {c.lower() for c in all_cited if _view_hit(k, c, all_cited, did)[0]}
         hits.append(v if len(could) <= 1 else (None if v is not False else v))
     if True in hits:
+        return True
+    if _content_view(views, sha256, read) is not None:
         return True
     if None in hits:
         return None

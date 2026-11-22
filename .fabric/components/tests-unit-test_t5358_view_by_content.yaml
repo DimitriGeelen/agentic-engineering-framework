@@ -1,0 +1,21 @@
+id: tests/unit/test_t5358_view_by_content.py
+name: test_t5358_view_by_content
+type: script
+subsystem: tests
+location: tests/unit/test_t5358_view_by_content.py
+tags: []
+
+purpose: "T-5358 — a LOGGED view of any file whose sha256 equals the cited image's counts as a view of the cited image (same bytes, same pixels)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-22
+created_by: unknown
