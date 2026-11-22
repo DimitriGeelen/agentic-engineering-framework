@@ -74,9 +74,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The cause of the stale cache during active work is found and written in the RCA (with file:line).
-- [ ] Fix, preferring the writer: the cache stays within `BUDGET_STATUS_MAX_AGE` while tools are called. Where that cannot hold, `budget` measures live from this session's own transcript (matched by Claude session id; no "newest file" guess) using `lib/context_tokens.py --with-status`, prints the band with a `source: transcript` line, and reports `young` per T-5354. A cache or transcript from another session still yields unknown.
-- [ ] Tests:
+- [x] The cause of the stale cache during active work is found and written in the RCA (with file:line).
+- [x] Fix, preferring the writer: the cache stays within `BUDGET_STATUS_MAX_AGE` while tools are called. Where that cannot hold, `budget` measures live from this session's own transcript (matched by Claude session id; no "newest file" guess) using `lib/context_tokens.py --with-status`, prints the band with a `source: transcript` line, and reports `young` per T-5354. A cache or transcript from another session still yields unknown.
+- [x] Tests:
   1. Stale cache plus own-session transcript gives a band.
   2. Stale cache plus only another session's transcript gives unknown.
   3. A young transcript gives the young line.
@@ -288,6 +288,15 @@ bin/fw vendor self --check --task T-5361
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** During an active session, `checkpoint.sh budget` printed `level: unknown / reason: cache is 362s old (max 90s)` with no band, while the CLAUDE.md Work Proposal Rule, the T-5347 stop rule and the T-5348 note all send agents to it.
+**Root cause:** The writer's re-read throttle in `agents/context/budget-gate.sh` (~501) skipped 4 of every 5 refreshes, and that skipping applied even when the cache was already older than `BUDGET_STATUS_MAX_AGE`. So a busy session's cache aged past 90s, and the T-3241 reader correctly refused it.
+**Why structurally allowed:** The tests reset the throttle counter to 0, so the re-read always ran in tests. No test made an off-interval gate call against a stale cache. The reader and the writer were each right alone, and wrong together.
+**Prevention:** Worker commit 584a7ccbb.
+- Writer: a cache older than `BUDGET_STATUS_MAX_AGE` forces the re-read (at most one scan per 90s). Because `budget` runs through Bash, the gate refreshes the cache just before `budget` reads it.
+- Reader: when age is the cache's only fault, `budget` measures from this session's own transcript, found by Claude session id, never "newest file". It prints the band plus `source: transcript (cache was Ns old)`. Young gives the T-5354 line. A foreign cache, a missing own transcript or a failed scan still gives unknown.
+- `tests/unit/t5361_budget_stale_cache.bats` (6 tests; the writer case fails against the old gate). The 15 budget/checkpoint suites and `test-budget-gate.sh` pass.
+- Live in this session after the fix: `level: ok, tokens: 690883, age_seconds: 8, band: Green`.
 
 ## Evolution
 
