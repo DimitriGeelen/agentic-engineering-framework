@@ -113,14 +113,6 @@ bvp_scores_proposed:
 - [ ] After merge: `grep -c "bin/watchtower.sh stop\|bin/watchtower.sh restart" bin/fw` is 0 and the vendored copy matches (`bin/fw vendor self --check`)
 
 ### Human
-- [ ] [REVIEW] Outside PR #116 is fit to merge into bleeding-edge (CONTRIBUTING step 6 read review)
-  **Steps:**
-  1. Read the PR's description `.context/working/judge-evidence/T-5301/pr116-description.md` and its full diff `.context/working/judge-evidence/T-5301/pr116.diff` (PR https://github.com/DimitriGeelen/agentic-engineering-framework/pull/116, head 0cc9951d8).
-  2. Check the diff changes only the two Watchtower remedy lines in `bin/fw` and its identical vendored copy `.agentic-framework/bin/fw` to `Run: $(_emit_user_command "watchtower restart")`, and adds `tests/unit/issue68_doctor_watchtower_remedy.bats`. Check there are no other changes, no secrets and no new commands run at doctor time.
-  3. Read the isolated test-host result `.context/working/judge-evidence/T-5301/pr116-testhost.log` (run 20261122T184536Z-pr-116-cdbd: passed; it includes the 3 #68 tests).
-  4. Compare with `bin/fw` at the reviewed revision: the two lines it replaces still print `bin/watchtower.sh …`, which does not exist in a vendored project (#68).
-  **Expected:** The change does exactly what #68 needs and nothing else, its test pins the defect, and it is safe to merge.
-  **If not:** Name each problem; it goes back to the contributor on the PR as "change requested".
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -165,6 +157,15 @@ bvp_scores_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+
+- [ ] [REVIEW] Outside PR #116 is fit to merge into bleeding-edge (CONTRIBUTING step 6 read review)
+  **Steps:**
+  1. Read the PR's description `.context/working/judge-evidence/T-5301/pr116-description.md` and its full diff `.context/working/judge-evidence/T-5301/pr116.diff` (PR https://github.com/DimitriGeelen/agentic-engineering-framework/pull/116, head 0cc9951d8).
+  2. Check the diff changes only the two Watchtower remedy lines in `bin/fw` and its identical vendored copy `.agentic-framework/bin/fw` to `Run: $(_emit_user_command "watchtower restart")`, and adds `tests/unit/issue68_doctor_watchtower_remedy.bats`. Check there are no other changes, no secrets and no new commands run at doctor time.
+  3. Read the isolated test-host result `.context/working/judge-evidence/T-5301/pr116-testhost.log` (run 20261122T184536Z-pr-116-cdbd: passed; it includes the 3 #68 tests).
+  4. Compare with `bin/fw` at the reviewed revision: the two lines it replaces still print `bin/watchtower.sh …`, which does not exist in a vendored project (#68).
+  **Expected:** The change does exactly what #68 needs and nothing else, its test pins the defect, and it is safe to merge.
+  **If not:** Name each problem; it goes back to the contributor on the PR as "change requested".
 
 ## Verification
 
