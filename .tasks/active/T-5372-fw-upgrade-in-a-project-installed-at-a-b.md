@@ -1,8 +1,24 @@
 ---
 id: T-5372
-name: "fw upgrade in a project installed at a be-tag pulls from master (v1.8.15) and would downgrade it — designer 0.46.0 -> 0.31.0 and every be-tag fix"
+name: "fw upgrade in a project installed at a be-tag pulls from master (v1.8.15) and
+  would downgrade it — designer 0.46.0 -> 0.31.0 and every be-tag fix"
 description: >
-  2026-11-22: /opt/AEF-ontology-agent was installed at v1.8.16-be.61 (designer pin 0.46.0). Its fw upgrade --dry-run listed 'WOULD INSTALL Workflow Designer 0.31.0' (operator saw 0.31). lib/upgrade.sh _t4672_sync_designer (~1001) reads the incoming pin from the upgrade source; the source is master = v1.8.15, whose policy/designer-pin.yaml pins 0.31.0. So a plain fw upgrade in a project installed from a be-tag rolls the whole framework back to the last release. Fix: the upgrade must refuse (or warn and require a flag) when the source is older than the installed framework, and should follow the channel/tag the project was installed from (record it at install). CORRECTION (ontology agent msg 0c46aa38, 2026-11-22 22:28): its real upgrade (22:11) ran with --from-upstream from bleeding-edge at fbd1854 (newer than be.61), so no rollback happened; VERSION 1.8.15 is normal on be-tags. The 0.31 came from the DRY RUN: _t4672_sync_designer reads the pin from $FRAMEWORK_ROOT (the framework executing the command, e.g. a stale global fw or master v1.8.15) instead of the source the real run uses, so the preview reports a different designer than the run installs. Both halves stay in scope: the dry run must read the same source as the real run, and an upgrade must never silently go backwards.
+  2026-11-22: /opt/AEF-ontology-agent was installed at v1.8.16-be.61 (designer pin
+  0.46.0). Its fw upgrade --dry-run listed 'WOULD INSTALL Workflow Designer 0.31.0'
+  (operator saw 0.31). lib/upgrade.sh _t4672_sync_designer (~1001) reads the incoming
+  pin from the upgrade source; the source is master = v1.8.15, whose policy/designer-pin.yaml
+  pins 0.31.0. So a plain fw upgrade in a project installed from a be-tag rolls the
+  whole framework back to the last release. Fix: the upgrade must refuse (or warn
+  and require a flag) when the source is older than the installed framework, and should
+  follow the channel/tag the project was installed from (record it at install). CORRECTION
+  (ontology agent msg 0c46aa38, 2026-11-22 22:28): its real upgrade (22:11) ran with
+  --from-upstream from bleeding-edge at fbd1854 (newer than be.61), so no rollback
+  happened; VERSION 1.8.15 is normal on be-tags. The 0.31 came from the DRY RUN: _t4672_sync_designer
+  reads the pin from $FRAMEWORK_ROOT (the framework executing the command, e.g. a
+  stale global fw or master v1.8.15) instead of the source the real run uses, so the
+  preview reports a different designer than the run installs. Both halves stay in
+  scope: the dry run must read the same source as the real run, and an upgrade must
+  never silently go backwards.
 
 status: captured
 workflow_type: build
@@ -38,8 +54,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-22T22:27:50Z
-last_update: 2026-11-22T22:27:50Z
-date_finished: null
+last_update: '2026-11-22T22:30:49Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +66,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-22T22:30:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5372: fw upgrade in a project installed at a be-tag pulls from master (v1.8.15) and would downgrade it — designer 0.46.0 -> 0.31.0 and every be-tag fix
