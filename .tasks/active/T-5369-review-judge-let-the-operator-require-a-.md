@@ -1,10 +1,15 @@
 ---
 id: T-5369
-name: "Review judge: let the operator require a higher review rung than the computed minimum (raise only)"
+name: "Review judge: let the operator require a higher review rung than the computed
+  minimum (raise only)"
 description: >
-  AEF-ontology-agent (msg 17f451f4): its operator asked for a three-vendor panel, but fw reviewer judge computes rung 3 for its T-002 and there is no way to ask for more. Raising a rung is always safe. Add a declared input (e.g. task frontmatter review_rung_min: 5) read by lib/review_policy.required_rung that can only raise the rung, named in the reasons; never lowers it.
+  AEF-ontology-agent (msg 17f451f4): its operator asked for a three-vendor panel,
+  but fw reviewer judge computes rung 3 for its T-002 and there is no way to ask for
+  more. Raising a rung is always safe. Add a declared input (e.g. task frontmatter
+  review_rung_min: 5) read by lib/review_policy.required_rung that can only raise
+  the rung, named in the reasons; never lowers it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-22T20:12:47Z
-last_update: 2026-11-22T20:12:47Z
-date_finished: null
+last_update: '2026-11-22T20:13:48Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,23 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-11-22T20:13:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 0
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
+      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5369: Review judge: let the operator require a higher review rung than the computed minimum (raise only)
@@ -57,20 +79,26 @@ date_finished: null
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** On 2026-11-22 the operator asked the new AEF-ontology-agent project to get its external reviews from a three-vendor panel. Its `fw reviewer judge T-002 --dry-run` computes rung 3 (one seat), and there is no way to ask for more (msg 17f451f4).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** `lib/review_policy.required_rung` takes the rung only from the computed impact, plus T-5364's outside-contributor step. An operator who wants a stricter review than the minimum has no input for it. Raising a rung is always safe: it only adds independent reviewers.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** One declared task input, frontmatter `review_rung_min: <1|3|5>`, which `required_rung` uses as a floor: rung = max(computed, declared). It can never lower the rung, is named in the reasons, and is honoured by everything that uses `required_rung` (judge plan, run registration, ledger).
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** A task with `review_rung_min: 5` gets a three-vendor panel in any project after `fw upgrade`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `required_rung` (or `impact`) reads frontmatter `review_rung_min` and returns max(computed rung, declared rung), with the reason "review_rung_min: N (declared)" when it raises. Values below the computed rung, or invalid values, never lower it; an invalid value is ignored with a reason.
+- [ ] Unit tests:
+  1. Computed 3 with declared 5 gives 5, with the reason.
+  2. Computed 5 with declared 1 gives 5.
+  3. Declared 3 on a low task gives 3.
+  4. An invalid value (`7`, `"high"`) leaves the rung unchanged.
+  5. No field means unchanged.
+  The existing review-policy, judge and ledger tests stay green, and the vendored copy is synced.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,6 +285,8 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 600 python3 -m pytest tests/unit/test_t5369_review_rung_min.py -q
+bin/fw vendor self --check --task T-5369
 
 ## RCA
 
@@ -354,3 +384,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5369-review-judge-let-the-operator-require-a-.md
 - **Context:** Initial task creation
+
+### 2026-11-22T20:13:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
