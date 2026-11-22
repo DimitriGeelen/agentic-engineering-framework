@@ -6066,8 +6066,9 @@ concerns:
   introduced_by: T-5300
   introduced_note: PARTLY NEW (review 2026-11-21) - withdrawal by a party holding only the credential, without host control, is new with T3w (row 1.3, score 3); the 6 is full host compromise (row 1.5), which exists anyway
   mitigation_task: T-5328
+  mitigation_progress: "T-5328 (2026-11-22) done for AEF: the local store keeps only sha256 of nonce and token, files are mode 0600, the holder rule is spec §6.5a, pinned by tests/unit/test_t5328_credentials_at_rest.py; no AEF process holds the plain values in live use. Open: TermLink asked to state its holder rule (msg 7ec97a81); ring20 poold not reachable from this host, needs relaying by the operator. Status stays watching until the other two backends state theirs."
   created: 2026-11-21
-  last_reviewed: '2026-11-21'
+  last_reviewed: '2026-11-22'
 - id: R-043
   type: risk
   title: Submitter withdraws a wanted job, unseen
