@@ -1,0 +1,21 @@
+id: tests/unit/test_t5369_review_rung_min.py
+name: test_t5369_review_rung_min
+type: script
+subsystem: tests
+location: tests/unit/test_t5369_review_rung_min.py
+tags: []
+
+purpose: "T-5369: frontmatter `review_rung_min` raises the review rung; it never lowers it."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-22
+created_by: unknown

@@ -121,7 +121,28 @@ def impact(fm: dict, bodies: list[str]) -> dict:
 def required_rung(fm: dict, bodies: list[str]) -> tuple[int, str]:
     """(rung, reason) IW-7 demands for these criteria of a task with frontmatter `fm`."""
     imp = impact(fm, bodies)
-    return TIER_RUNG[imp["tier"]], "; ".join(imp["reasons"]) if imp["reasons"] else "default"
+    rung = TIER_RUNG[imp["tier"]]
+    reasons = list(imp["reasons"]) or ["default"]
+    # T-5369: frontmatter `review_rung_min: 1|3|5` is an operator-declared floor. It can only
+    # raise the rung (more independent reviewers is always safe); it never lowers it.
+    declared = (fm or {}).get("review_rung_min")
+    if declared is not None:
+        floor = _declared_rung(declared)
+        if floor is None:
+            reasons.append(f"review_rung_min: {declared!r} ignored (must be 1, 3 or 5)")
+        elif floor > rung:
+            rung = floor
+            reasons.append(f"review_rung_min: {floor} (declared)")
+    return rung, "; ".join(reasons)
+
+
+def _declared_rung(v) -> int | None:
+    """1, 3 or 5 from an int or numeric string; None for anything else (bools included)."""
+    if isinstance(v, bool):
+        return None
+    if isinstance(v, str) and v.strip().isdigit():
+        v = int(v.strip())
+    return v if isinstance(v, int) and v in (1, 3, 5) else None
 
 
 def rung_label(rung: int, seat: str = "") -> str:
