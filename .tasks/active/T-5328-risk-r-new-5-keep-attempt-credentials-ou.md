@@ -7,10 +7,10 @@ description: >
   dispatcher and ring20 poold hold nonce and token; require mode 0600 or memory only;
   record in spec section 3.2. Source: docs/reports/T-5300-risk-matrix.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [arc:risk, risk-mitigation]
 components: []
 related_tasks: [T-5316, T-5300]
@@ -42,7 +42,7 @@ origin: {kind: "agent", source: "T-5316"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T13:43:26Z
-last_update: '2026-11-21T13:46:12Z'
+last_update: 2026-11-22T00:15:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,20 +88,29 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** The T-5300 risk matrix, risk 1 (a forged withdrawal, scored 6; R-NEW-5 in T-5316), names this mitigation: keep the attempt nonce and the `supervisor_token`, which together authorise a withdrawal (T3w), out of readable files.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Checked 2026-11-22:
+- `lib/dispatch_records.py` stores only `nonce_sha256` and `token_sha256` (~312, ~888).
+- Record files are written through `tempfile.mkstemp` (mode 0600), and lock files with `os.open(..., 0o600)`.
+- Its header says nothing in `fw termlink dispatch` or `run.sh` writes these records yet, so no AEF process holds the plain values in live use.
+- The gap is unstated, not unsafe: the spec (§3.2 hub carrier; §6 local backend) does not say how a holder keeps its plain copy at rest, and nothing pins the hash-only and 0600 properties. A future wiring of `run.sh` could write the token to a log or a world-readable file unnoticed.
+- ring20's `poold` is ring20's code. TermLink's hub keeps hashes per §3.2.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** The AEF local backend's at-rest rule is written down and pinned by a test, and the other two backends are asked to state theirs.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:**
+- The spec's §6 states the AEF rule.
+- A test fails if a record ever contains a plain nonce or token, or if a record or lock file is readable beyond its owner.
+- TermLink is asked to state its holder rule. ring20 is noted as not reachable from this host.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Spec §6.5a (local backend) states: records keep only sha256 of nonce and token; record and lock files are mode 0600; a holder of the plain values keeps them in process memory or a mode-0600 file of its own uid, never in a log, `dispatches.jsonl`, the agent child's environment or its prompt; and no AEF process holds them in live use today. The same-uid limit of §6.5 is referenced, not restated.
+- [ ] A test (`tests/unit/test_t5328_credentials_at_rest.py`) allocates attempts through the real Store and asserts the plain nonce and token appear nowhere in the record file. It also asserts record and lock files have mode 0600 (no group or other bits), including after a further write.
+- [ ] TermLink is asked, on the worker-contract thread, to state its holder rule for the plain `supervisor_token` in its §6.6 mapping. ring20 is recorded here as not reachable from this host, for the operator to relay.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -385,3 +394,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5328-risk-r-new-5-keep-attempt-credentials-ou.md
 - **Context:** Initial task creation
+
+### 2026-11-22T00:15:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

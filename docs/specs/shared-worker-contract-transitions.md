@@ -730,6 +730,14 @@ unchanged. [codex Q5, claude Q2] [ring20 v0.2 review §S4] [ring20 v0.3 check N3
 **Honest limit:** when supervisor and worker run as the same uid (AEF local today), a `supervisor_token` on disk is a
 speed bump, not a boundary; real separation needs a different uid or a container (TermLink T-3477). [termlink v0.3 agree]
 
+6.5a **Attempt credentials at rest (local backend; AEF T-5328, risk R-NEW-5).** The record keeps only the sha256 of the
+attempt nonce and of the `supervisor_token`, as the hub does (§3.2). Record files are written through a temp file
+created mode 0600 and lock files are opened mode 0600, so neither is readable beyond the owning uid. A holder of the
+plain values (the submitter or supervisor that received them at T1) keeps them in process memory or in a file of mode
+0600 owned by its own uid, and never in a log, `dispatches.jsonl`, the agent child's environment or its prompt. Today
+no AEF process holds them: `fw termlink dispatch` and `run.sh` do not write these records yet; the wiring that does
+inherits this rule. The same-uid limit of 6.5 applies unchanged. Pinned by `tests/unit/test_t5328_credentials_at_rest.py`.
+
 ### 6.6 External backends
 
 *Sources: [ring20 v0.2 review §1, §2, §7, §11].*
