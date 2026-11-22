@@ -58696,3 +58696,21 @@ scan_id: R-bee2147a
 task_id: T-5361
 payload:
   task_file: .tasks/active/T-5361-checkpointsh-budget-answers-unknown-when.md
+---
+kind: scan_emitted
+timestamp: '2026-11-22T12:11:36Z'
+scan_id: R-70948e1f
+task_id: T-5360
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-22T12:11:36Z'
+scan_id: R-70948e1f
+task_id: T-5360
+payload:
+  task_file: .tasks/active/T-5360-vote-checker-checkvote-lists-one-cited-i.md
