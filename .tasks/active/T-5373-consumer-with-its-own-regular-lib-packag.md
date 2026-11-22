@@ -7,7 +7,7 @@ description: >
   a consumer's regular lib/__init__.py wins regardless of sys.path order, so stdin-python
   blocks fail with ModuleNotFoundError.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-22T23:21:30Z
-last_update: '2026-11-22T23:31:14Z'
+last_update: '2026-11-22T23:36:50Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -80,6 +80,22 @@ bvp_scores_proposed:
       (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
       (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-22T23:36:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 3
+      D2: 0
+      D3: 0
+      D4: 0
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=3 (body:test-or-audit-check); D2=0 (no-signal); D3=0 
+      (no-signal); D4=0 (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5373: Consumer with its own regular lib package breaks framework 'from lib.X import' (inception decide aborts)
@@ -87,20 +103,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Peer bug report from skills-manager (/opt/150-skills-manager, their concern C-010, task T-489; DM thread dm:3bba15e681b3a078:9219671e28054458, 2026-11-21). `fw inception decide T-486 go` printed "recorded" and then died with `ModuleNotFoundError: No module named 'lib.inception_decisions'` in `agents/task-create/update-task.sh` check_inception_scope_trace (stdin python, ~line 641). The task stayed in active/. Workaround: run from a CWD without a `lib` package. Side note: `.context/locks/T-486.lock` was left behind.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** the framework's `lib/` has no `__init__.py`, so it is a namespace package. A consumer with its own regular `lib/__init__.py` wins the import whatever the sys.path order (Python prefers a regular package over a namespace portion), so T-2734's sys.path[0] insertion cannot help. Any framework python that does `from lib.X import` while the consumer root is on sys.path (stdin `python3 -`, `-c`, CWD) is exposed.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** framework python always imports the framework's own `lib`, in any consumer, whatever that consumer ships as `lib`.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** `fw inception decide` and every other framework helper work from the root of a consumer that has a regular `lib/__init__.py`; a regression test pins it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Framework `lib/` is a regular package (`lib/__init__.py`, empty or docstring only), and every framework python entry that imports `lib.` from a shell heredoc / `-c` / stdin puts the framework root at sys.path[0] first (audit all of them under agents/ lib/ bin/; list the ones changed).
+- [ ] New hermetic test `tests/unit/test_t5373_consumer_lib_shadow.py`: a temp consumer with a regular `lib/__init__.py` (and a decoy `lib/inception_decisions.py`-free tree); from that CWD, the framework's check_inception_scope_trace python path and at least two other stdin/`-c` helpers import the framework modules. Fails before the fix, passes after.
+- [ ] Existing unit tests that import `lib` (pytest tests/unit, web import smoke) keep their results; `upgrade_fresh_machine_simulation.bats` stays green.
+- [ ] Check whether `fw inception decide` / update-task leaves `.context/locks/T-XXX.lock` behind after a successful completion; fix if it is ours, or record why not.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,8 +305,19 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_t5373_consumer_lib_shadow.py
+test -f lib/__init__.py
+bin/fw vendor self --check --task T-5373
 
 ## RCA
+
+**Symptom:** `fw inception decide` in skills-manager recorded the decision, then aborted with ModuleNotFoundError for `lib.inception_decisions`; the inception stayed in active/.
+
+**Root cause:** framework `lib/` is a namespace package; the consumer's regular `lib/__init__.py` takes precedence regardless of sys.path order.
+
+**Why structurally allowed:** every test fixture consumer lacks a top-level `lib` package, and T-2734 fixed path order only, which cannot beat regular-vs-namespace precedence.
+
+**Prevention:** the new test builds a consumer with a colliding regular `lib` and runs framework helpers from its root.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -384,3 +413,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5373-consumer-with-its-own-regular-lib-packag.md
 - **Context:** Initial task creation
+
+### 2026-11-22T23:36:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
