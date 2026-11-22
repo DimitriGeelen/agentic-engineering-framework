@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5362: Set up /opt/AEF-ontology-agent via the greenfield prompt (be.61, claude) for an AEF ontology capability
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-22T13:13:41Z
+# ============================================================================
+
+task_id: T-5362
+task_name: "Set up /opt/AEF-ontology-agent via the greenfield prompt (be.61, claude) for an AEF ontology capability"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-22T13:05:35Z
+completed: 2026-11-22T13:13:25Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-11-22T14:06:00+01:00
+last_commit: 2026-11-22T14:13:24+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope — greenfield setup of /opt/AEF-ontology-agent (be.61, claude, inception). /opt/AEF-ontology-agent set up (be.61, claude); inception T-006 filed there
+
+# Key outcomes
+outcomes:
+  - 'An operator runme performs greenfield steps 1–3 and the inception filing (the operator chose to have it run by the agent in a TermLink shell session started in `/opt`, the route T-559 allows, instead of running it themselves; run id 20261122T130613Z, exit 0): `git init`, the installer from the be.61 tag with `--branch v1.8.16-be.61 --provider claude`, a check that `.framework.yaml` and `.agentic-framework/bin/fw` exist, `fw doctor`, and `fw inception start` with the purpose as rationale. It is handed over as one line and watched.'
+  - 'After the run, the log shows `.framework.yaml` and the `fw` launcher present, the doctor''s result, and the inception''s task id. Result: install verified; `fw doctor` exit 0 (WARNs: no git identity, since fixed with the operator''s existing identity; cron not installed, which is the operator''s step; 2 UFW rules for ports nothing listens on); inception T-006 filed and focused; be.61 content confirmed (`lib/evidence_need.py`, `unit_suite_range.py`, the T-5347 rule in CLAUDE.md); `fw version` reads 1.8.15 because be-tags do not change VERSION (T-4431). These are reported to the operator, with the next step (open `claude-fw` in the new folder; start Watchtower there, greenfield step 4).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-5362-set-up-optaef-ontology-agent-via-the-gre.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-22T14:06:00'
+    action: 'T-5362: scope — greenfield setup of /opt/AEF-ontology-agent (be.61, claude, inception)'
+  - time: '2026-11-22T14:13:24'
+    action: 'T-5362: /opt/AEF-ontology-agent set up (be.61, claude); inception T-006 filed there'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 7
+  commits: 3
+  files_changed: 4
+  lines_added: 482
+  lines_removed: 6
+  footprint_refreshed_at: '2026-11-22T13:13:58Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5362-set-up-optaef-ontology-agent-via-the-gre.md
+generated_by: context-agent-hybrid
