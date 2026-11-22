@@ -738,6 +738,13 @@ plain values (the submitter or supervisor that received them at T1) keeps them i
 no AEF process holds them: `fw termlink dispatch` and `run.sh` do not write these records yet; the wiring that does
 inherits this rule. The same-uid limit of 6.5 applies unchanged. Pinned by `tests/unit/test_t5328_credentials_at_rest.py`.
 
+6.5b **Attempt credentials at rest (hub, as TermLink states it).** TermLink hub: stores sha256(nonce) and
+sha256(supervisor_token) only; the plain values leave the hub once, in the allocate reply; no hub log records RPC
+params (digest only); the holder after allocate is the caller, under the caller's own rule. TermLink pins the
+hash-only store with a test (`crates/termlink-bus/src/worker_contract.rs`) and has no client of its own that calls
+`dispatch.allocate`. [termlink 4eb7d06d] An external backend states its own holder rule as a row of its §6.6 mapping
+(ring20 `poold`: pending).
+
 ### 6.6 External backends
 
 *Sources: [ring20 v0.2 review §1, §2, §7, §11].*
