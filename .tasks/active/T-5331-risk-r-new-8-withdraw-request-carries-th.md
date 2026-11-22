@@ -7,10 +7,10 @@ description: >
   on a new path, PARTLY NEW, 8). State it as a MUST in wc v0.3.4 section 3.2 for every
   backend and check ring20 and TermLink withdraw handlers against it. Source: docs/reports/T-5300-risk-matrix.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [arc:risk, risk-mitigation]
 components: []
 related_tasks: [T-5316, T-5300]
@@ -42,7 +42,7 @@ origin: {kind: "agent", source: "T-5316"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T13:43:28Z
-last_update: '2026-11-21T13:46:12Z'
+last_update: 2026-11-22T12:16:21Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,22 +88,30 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** The T-5300 risk matrix, risk 4 (R-NEW-8, "the attempt credential is kept longer and carried on a new request path", PARTLY NEW, score 8) names this mitigation: state as a MUST in wc v0.3.4 §3.2, for every backend, how the credential may travel and rest, and check the ring20 and TermLink withdraw handlers against it. The worst rows are:
+- 4.1: an agent sends the nonce and token in a bus or chat message, logs them, or persists them readably;
+- 4.5: an intruder reads a persisted credential.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** Since T-5328/T-5355/T-5356/T-5359 (2026-11-22), spec §6.5a–c describe each backend's current practice, and all three comply. But a description is not a rule: a new caller (for example AEF wiring `run.sh` to the store, or a withdraw CLI) is bound by nothing normative. Changing §3.2 is a contract change, so it needs agreement from TermLink and ring20 and adoption by the AEF operator.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** A short normative paragraph for §3.2: where the credential may travel (hub: only the Execute-scope connection; other backends: their declared lifecycle channel), and where it must never appear (bus or chat messages, logs, ledgers or feeds, the agent child's environment or prompt, any file readable beyond its holder's uid). It is drafted, sent to TermLink and ring20 for agreement, and then put to the operator for adoption.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Every current and future backend and caller is bound by one rule. §6.5a–c become the evidence that each backend meets it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A draft of the §3.2 MUST paragraph is written in `docs/reports/T-5331-credential-must.md`, with the rows of risk 4 it addresses and how each backend's §6.5a–c meets it.
+- [ ] TermLink and ring20 are sent the draft and asked to agree, amend or object. Their answers are recorded in the draft.
 
 ### Human
+- [ ] [OPERATOR] Adopt the §3.2 credential MUST into the shared worker contract (wc v0.3.4)
+  **Steps:**
+  1. Read the draft at http://192.168.10.107:3000/tasks/T-5331 (Recommendation) and `docs/reports/T-5331-credential-must.md`
+  2. If TermLink and ring20 agreed, tell the agent "adopt T-5331"
+  **Expected:** The agent writes the paragraph into §3.2 and records your adoption
+  **If not:** Say what to change; the agent revises and re-asks the other two owners
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -288,6 +296,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+test -f docs/reports/T-5331-credential-must.md
+grep -q "Credential handling (MUST, every backend and every holder)" docs/reports/T-5331-credential-must.md
 
 ## RCA
 
@@ -385,3 +395,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5331-risk-r-new-8-withdraw-request-carries-th.md
 - **Context:** Initial task creation
+
+### 2026-11-22T12:16:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
