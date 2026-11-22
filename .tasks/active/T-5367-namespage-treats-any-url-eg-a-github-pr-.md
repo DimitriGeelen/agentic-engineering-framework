@@ -72,15 +72,15 @@ Both seats said the local evidence (the diff, the description, the test-host log
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `names_page` (or a thin wrapper all callers use) counts a URL only when its host:port is the project's Watchtower host or localhost/127.0.0.1. Bare `/route` matching is unchanged. Judge (`needs_screenshots`, `_partition`) and ledger (`_needs_view`) agree through the one function.
-- [ ] Unit tests:
+- [x] `names_page` (or a thin wrapper all callers use) counts a URL only when its host:port is the project's Watchtower host or localhost/127.0.0.1. Bare `/route` matching is unchanged. Judge (`needs_screenshots`, `_partition`) and ledger (`_needs_view`) agree through the one function.
+- [x] Unit tests:
   1. A GitHub PR URL is not a page.
   2. The project's Watchtower URL with a path is a page.
   3. `http://localhost:3000/x` is a page.
   4. A bare `/designer` is a page.
   5. A criterion with only an outside URL plus `.context/...` evidence paths needs no screenshots.
   The existing judge, vote and ledger tests stay green (including `test_t5352*`, `test_t5353*`), and the vendored copy is synced.
-- [ ] `bin/fw reviewer judge T-5301 --dry-run` shows no pages planned for T-5301, and still plans `/designer` and `/designer/app` for a T-5350-shaped criterion (unit test or dry run on a fixture).
+- [x] `bin/fw reviewer judge T-5301 --dry-run` shows no pages planned for T-5301, and still plans `/designer` and `/designer/app` for a T-5350-shaped criterion (unit test or dry run on a fixture).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -285,6 +285,15 @@ bin/fw vendor self --check --task T-5367
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** The rung-5 read review of outside PR #116 (T-5301) gave no verdict: claude-code returned not-evaluated, and codex's green was refused, "no required page was recorded for this page-naming criterion". The criterion only cited the GitHub PR link as a reference.
+**Root cause:** `lib/evidence_need.names_page` counted a URL on any host as a page. T-5352/T-5353 (this week) then made that flag decide screenshot captures in the judge and refusals in the ledger, so any outside link made a criterion unjudgeable.
+**Why structurally allowed:** The correct host check already existed as a separate copy (`judge_cli._own_page`), and no test had a criterion with an outside URL. The T-5352/T-5353 fixtures all used Watchtower routes.
+**Prevention:**
+- Worker commit: one host check. A URL is a page only on the project's Watchtower host or localhost/127.0.0.1. It is used by `names_page`, `_partition`, `_own_page`, `_criterion_pages` and `verdict_ledger._needs_view` (~2960).
+- `tests/unit/test_t5367_outside_url_not_page.py` (7 tests, including a T-5350-shaped criterion that still plans `/designer` and `/designer/app`); 817 related tests pass.
+- T-5301 now plans no pages.
+- Not fixed here: a criterion's text includes the template's HTML guidance comment below it (which contains "Screenshot"), so the brief still shows an image-evidence section. Stripping comments in `criterion_body` would change criterion digests and void existing greens, so T-5301's criterion is instead moved below the comment block.
 
 ## Evolution
 
