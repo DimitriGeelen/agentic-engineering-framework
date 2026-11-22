@@ -6,10 +6,10 @@ description: >
   AEF dispatch-record readers that treat done as finished work and make each honour
   the section 2 reader rule; test with an unknown outcome. Source: docs/reports/T-5300-risk-matrix.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [arc:risk, risk-mitigation]
 components: []
 related_tasks: [T-5316, T-5300]
@@ -41,7 +41,7 @@ origin: {kind: "agent", source: "T-5316"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-21T13:43:28Z
-last_update: '2026-11-21T13:46:12Z'
+last_update: 2026-11-22T10:43:03Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,20 +87,28 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** The T-5300 risk matrix, risk 5 (R-NEW-9, "a reader misreads `withdrawn`", NEW, 6), names this mitigation: find every AEF reader of dispatch records that treats `done` as finished work, and make each honour the §2 reader rule. That rule says an unknown outcome is terminal and never finished work (spec line ~360).
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** A reader that equates `state: done` with success, or uses a blocklist of bad outcomes, would count a withdrawn attempt, or a future outcome value, as finished work.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** Every AEF reader is checked, and the compliant ones are pinned by a test with an unknown outcome.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** Evidence that no AEF reader can count `withdrawn` or an unknown outcome as finished work, or a fix where one can.
+
+**Finding (2026-11-22):**
+- The only AEF reader that decides "finished work" from dispatch records is `Store.result()` (`lib/dispatch_records.py` ~745). It uses an allowlist, `FINISHED_OUTCOMES` (succeeded, failed, refused, handback-malformed), so `paused`, `withdrawn`, attested and any unknown value are refused `not_finished_work`.
+- That is already pinned by `tests/unit/test_t5312_withdraw.py::test_reader_rule_unknown_outcome_is_not_finished_work` (passes).
+- The other readers in the store (`wait`, the T3w checks at ~462/~573, the seed at ~1123) only report or compare against `withdrawn` explicitly.
+- Outside the store, nothing in lib/agents/bin/web reads dispatch records. The only exception is the T-5329 withdrawal counter now being built, which counts `withdrawn` only and so cannot count an unknown value as work.
+- `fw termlink` decides done from the worker's own exit code in its run folder (`agents/termlink/termlink.sh` ~2371), not from a hub outcome. A withdrawn job is stopped before T2, never runs, and has no exit code.
+- `lib/arc_wake.py` reads a different ledger.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Every AEF reader of dispatch records is listed with how it treats `withdrawn` and an unknown outcome (Finding above). None counts either as finished work.
+- [x] The compliant evaluation reader is pinned by a test with an unknown outcome (`test_reader_rule_unknown_outcome_is_not_finished_work`, passing). No code change was needed.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -287,6 +295,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+timeout 300 python3 -m pytest -q "tests/unit/test_t5312_withdraw.py::test_reader_rule_unknown_outcome_is_not_finished_work"
+grep -q '^FINISHED_OUTCOMES = ("succeeded", "failed", "refused", "handback-malformed")' lib/dispatch_records.py
 
 ## RCA
 
@@ -327,6 +337,11 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-22 — already compliant
+- **What changed:** The plan expected readers to fix. The one evaluation reader already uses an allowlist, and T-5312 pinned the unknown-outcome case when T3w was built.
+- **Plan impact:** The task became a reader inventory with evidence. No code change.
+- **Triggered:** Nothing new. When `fw termlink dispatch` or `run.sh` start writing these records, a new reader must use `FINISHED_OUTCOMES` (or `Store.result()`), never `state == "done"` alone.
 
 ## Recommendation
 
@@ -384,3 +399,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5332-risk-r-new-9-reader-rule-for-unknown-out.md
 - **Context:** Initial task creation
+
+### 2026-11-22T10:43:03Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
