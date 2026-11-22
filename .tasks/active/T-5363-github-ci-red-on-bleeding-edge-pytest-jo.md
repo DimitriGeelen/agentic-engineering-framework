@@ -1,8 +1,15 @@
 ---
 id: T-5363
-name: "GitHub CI red on bleeding-edge: Pytest job lacks Pillow; Playwright fails; bats job cancelled at 6h"
+name: "GitHub CI red on bleeding-edge: Pytest job lacks Pillow; Playwright fails;
+  bats job cancelled at 6h"
 description: >
-  Found reviewing PR #116 (2026-11-22): the same three jobs fail on bleeding-edge pushes as on the PR. Pytest: tests/unit/test_t5293/t5294/t5309/t5327/t5353/t5357/t5358/t5360 error at import, 'No module named PIL' (the tests build PNG fixtures with Pillow; lib/vote_checker.py itself imports PIL lazily) — .github/workflows/test.yml line 32 installs only pyyaml pytest. Playwright Tier 3 fails; Bash Tests (bats-core) hits the 6h limit and is cancelled. Nobody watches GitHub CI; the local pre-push audit is the working gate.
+  Found reviewing PR #116 (2026-11-22): the same three jobs fail on bleeding-edge
+  pushes as on the PR. Pytest: tests/unit/test_t5293/t5294/t5309/t5327/t5353/t5357/t5358/t5360
+  error at import, 'No module named PIL' (the tests build PNG fixtures with Pillow;
+  lib/vote_checker.py itself imports PIL lazily) — .github/workflows/test.yml line
+  32 installs only pyyaml pytest. Playwright Tier 3 fails; Bash Tests (bats-core)
+  hits the 6h limit and is cancelled. Nobody watches GitHub CI; the local pre-push
+  audit is the working gate.
 
 status: captured
 workflow_type: build
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-22T18:26:47Z
-last_update: 2026-11-22T18:26:47Z
-date_finished: null
+last_update: '2026-11-22T18:30:23Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-22T18:30:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5363: GitHub CI red on bleeding-edge: Pytest job lacks Pillow; Playwright fails; bats job cancelled at 6h
