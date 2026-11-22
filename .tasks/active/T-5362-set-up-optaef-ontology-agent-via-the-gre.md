@@ -71,8 +71,8 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] An operator runme performs greenfield steps 1–3 and the inception filing: `git init`, the installer from the be.61 tag with `--branch v1.8.16-be.61 --provider claude`, a check that `.framework.yaml` and `.agentic-framework/bin/fw` exist, `fw doctor`, and `fw inception start` with the purpose as rationale. It is handed over as one line and watched.
-- [ ] After the operator's run, the log shows `.framework.yaml` and the `fw` launcher present, the doctor's result, and the inception's task id. These are reported to the operator, with the next step (open `claude-fw` in the new folder; start Watchtower there, greenfield step 4).
+- [x] An operator runme performs greenfield steps 1–3 and the inception filing (the operator chose to have it run by the agent in a TermLink shell session started in `/opt`, the route T-559 allows, instead of running it themselves; run id 20261122T130613Z, exit 0): `git init`, the installer from the be.61 tag with `--branch v1.8.16-be.61 --provider claude`, a check that `.framework.yaml` and `.agentic-framework/bin/fw` exist, `fw doctor`, and `fw inception start` with the purpose as rationale. It is handed over as one line and watched.
+- [x] After the run, the log shows `.framework.yaml` and the `fw` launcher present, the doctor's result, and the inception's task id. Result: install verified; `fw doctor` exit 0 (WARNs: no git identity, since fixed with the operator's existing identity; cron not installed, which is the operator's step; 2 UFW rules for ports nothing listens on); inception T-006 filed and focused; be.61 content confirmed (`lib/evidence_need.py`, `unit_suite_range.py`, the T-5347 rule in CLAUDE.md); `fw version` reads 1.8.15 because be-tags do not change VERSION (T-4431). These are reported to the operator, with the next step (open `claude-fw` in the new folder; start Watchtower there, greenfield step 4).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -259,6 +259,9 @@ date_finished: null
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+grep -q "RUNME EXIT 0" .context/runme/aef-ontology-setup/run.log  # needs: fixture
+grep -q "install verified: .framework.yaml and fw launcher present" .context/runme/aef-ontology-setup/run.log  # needs: fixture
+grep -q "doctor exit: 0" .context/runme/aef-ontology-setup/run.log  # needs: fixture
 
 ## RCA
 
