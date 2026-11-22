@@ -8,12 +8,12 @@ description: >
   output printed bin/fw), and §Copy-Pasteable Commands in CLAUDE.md (still says bare
   fw may resolve to a stale global; update to the T-5302 rule). Depends on slice 1.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/init.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-20T13:49:55Z
-last_update: '2026-11-22T00:01:01Z'
-date_finished:
+last_update: 2026-11-22T00:07:49Z
+date_finished: 2026-11-22T00:07:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -420,3 +420,21 @@ bin/fw vendor self --check --task T-5307
 ### 2026-11-21T23:44:42Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-22T00:07:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0124d028
+- **Timestamp:** 2026-11-22T00:08:02Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — The `/resume` skill sources (`lib/templates/resume-md.md`, `.claude/commands/resume.md`, and any copy in `lib/init.sh`) print commands per T-5302: in a consumer `.agentic-framework/bin/fw`, in the fra
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/init.sh in: The `/resume` skill sources (`lib/templates/resume-md.md`, `.claude/commands/resume.md`, and any copy in `lib/init.sh`) print commands per T-5302: in `

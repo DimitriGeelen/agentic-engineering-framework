@@ -1,0 +1,100 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5307: Printed fw commands slice 5: skills, handover text and the consumer CLAUDE.md template use the builder's spelling (T-5302)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-22T00:08:16Z
+# ============================================================================
+
+task_id: T-5307
+task_name: "Printed fw commands slice 5: skills, handover text and the consumer CLAUDE.md template use the builder's spelling (T-5302)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-11-20T13:49:55Z
+completed: 2026-11-22T00:07:49Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-11-20T14:50:32+01:00
+last_commit: 2026-11-22T01:07:48+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed (T-5302 GO slice). scope — /resume skill, consumer CLAUDE.md template and §Copy-Pasteable Commands follow T-5302. /resume skill, consumer CLAUDE.md template and CLAUDE.md §Copy-Pasteable Commands state T-5302's printed-command rule (never bare fw; builder _emit_user_command/_fw_cmd). vendor sync — init.sh, resume and claude-project templates. template code blocks use .agentic-framework/bin/fw (16 lines); shorthand note covers prose mentions only. criteria and decision (copyable lines vs prose mentions)
+
+# Key outcomes
+outcomes:
+  - 'The `/resume` skill sources (`lib/templates/resume-md.md`, `.claude/commands/resume.md`, and any copy in `lib/init.sh`) print commands per T-5302: in a consumer `.agentic-framework/bin/fw`, in the framework repo `bin/fw`, always with `cd <root> &&`, never bare `fw`. The skill says how to tell which one applies, or points to the builder''s output.'
+  - '`lib/templates/claude-project.md` no longer contradicts what output prints, and its command examples follow T-5302.'
+  - 'CLAUDE.md §Copy-Pasteable Commands item 3 and §Human AC "Full-path commands" no longer allow bare `fw`; they state T-5302''s rule and name the builder (`_emit_user_command` / `_fw_cmd`).'
+  - 'The printed-commands lint ratchet (`tests/lint/printed-fw-commands-ratchet.bats`) is green and its baseline is not raised; the config/claude parity lints and the template tests (`grep -l "claude-project.md\|resume-md" tests/unit/*`) stay green; the vendored copies are synced.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-11-22 — template: copyable lines vs prose mentions'
+    chose: 'The 16 code-block lines in `lib/templates/claude-project.md` use `.agentic-framework/bin/fw` (ce7e95427). The ~100 prose mentions of a command ("use `fw task update` to …") stay as names, with one sentence saying they are shorthand for the launcher. The worker''s commits are 6c7753e36 and 4ecc06bbe.'
+    rationale: 'T-5302''s rule is about commands handed to someone to run. Lines in code blocks are copied, so they must be runnable in a consumer. Prose names a verb, the same convention CLAUDE.md uses.'
+    alternatives_rejected: ['The worker''s first form (a shorthand note covering everything, code blocks included), because agents copy code blocks and miss notes. Rewriting all ~100 prose mentions, because it bloats the template without changing what anyone runs.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/templates/claude-project.md'
+  - '.agentic-framework/lib/templates/resume-md.md'
+  - '.claude/commands/resume.md'
+  - '.tasks/active/T-5307-printed-fw-commands-slice-5-skills-hando.md'
+  - 'CLAUDE.md'
+  - 'lib/init.sh'
+  - 'lib/templates/claude-project.md'
+  - 'lib/templates/resume-md.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-20T14:50:32'
+    action: 'T-5307: filed (T-5302 GO slice)'
+  - time: '2026-11-22T00:45:04'
+    action: 'T-5307: scope — /resume skill, consumer CLAUDE.md template and §Copy-Pasteable Commands follow T-5302'
+  - time: '2026-11-22T00:57:59'
+    action: 'T-5307: /resume skill, consumer CLAUDE.md template and CLAUDE.md §Copy-Pasteable Commands state T-5302''s printed-command rule (never bare fw; builder _emit_user_command/_fw_cmd)'
+  - time: '2026-11-22T00:58:15'
+    action: 'T-5307: vendor sync — init.sh, resume and claude-project templates'
+  - time: '2026-11-22T01:07:16'
+    action: 'T-5307: template code blocks use .agentic-framework/bin/fw (16 lines); shorthand note covers prose mentions only'
+  - time: '2026-11-22T01:07:48'
+    action: 'T-5307: criteria and decision (copyable lines vs prose mentions)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 2057 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2057
+  commits: 7
+  files_changed: 12
+  lines_added: 579
+  lines_removed: 64
+  footprint_refreshed_at: '2026-11-22T00:08:33Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5307-printed-fw-commands-slice-5-skills-hando.md
+generated_by: context-agent-hybrid
