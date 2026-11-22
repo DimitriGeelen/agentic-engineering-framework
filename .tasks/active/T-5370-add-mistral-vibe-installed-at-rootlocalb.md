@@ -10,10 +10,10 @@ description: >
   worker kind the dispatcher can launch read-only, an isolation block, a vision probe,
   a format check. Cost class (subscription internal vs paid) is the operator's call.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-22T20:12:48Z
-last_update: '2026-11-22T20:16:39Z'
+last_update: 2026-11-22T23:54:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,20 +90,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** 2026-11-22 the operator asked "Don't we already have Mistral?" while PR #116's rung-5 panel kept failing on its third seat (opencode format refusals). Mistral Vibe is installed at /root/.local/bin/vibe but is not in policy/review-backends.yaml. 2026-11-23 operator: Mistral is a true subscription.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** without a registered, isolated Mistral seat a rung-5 panel has only claude-code, codex and opencode (antigravity has no isolation block, T-5368), so one flaky seat blocks every high-impact review.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** a fourth vendor seat (mistral) that `fw review isolated-run` and `fw reviewer judge` can use, internal cost class, tools off.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** policy/review-backends.yaml has a `mistral-vibe` entry (internal, subscription, cli-login, vendor mistral) with an isolation block running vibe headless (`-p`, `--workdir {seat_dir}`, no tools enabled); a seat probe returns a verdict-shaped answer with no tool use.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] policy/review-backends.yaml has backend `mistral-vibe`: cost_class internal, harness_class subscription, approval_required false, cost_estimate_method unmetered, vendor mistral, credential cli-login, binary /root/.local/bin/vibe, worker_kind wired the same way as opencode (lib/worker_kinds_parity.py and every place a kind must be listed stay in parity), and an isolation block (argv, stdin closed, tools off, tool_markers).
+- [ ] Tools are off in the seat: the isolation argv enables no tool (vibe `--enabled-tools` in headless mode disables all others) and a probe asking the seat to read a file shows no tool call and no file content.
+- [ ] A real isolated probe run (`fw review isolated-run` or the seat probe used for opencode) returns a parseable answer; its cost is logged with `bin/fw review cost log` as unmetered.
+- [ ] Registry loads (`bin/fw review cost report` exits 0), worker-kind parity and review-backend tests keep their results; new hermetic test for the mistral isolation argv.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,6 +292,9 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -c "import yaml; d=yaml.safe_load(open('policy/review-backends.yaml')); b=d.get('backends', d); bs=b if isinstance(b, list) else list(b.values()); m=[x for x in bs if x.get('id')=='mistral-vibe'][0]; assert m['cost_class']=='internal' and m.get('isolation')"
+bin/fw review cost report --weeks 1 >/dev/null
+bin/fw vendor self --check --task T-5370
 
 ## RCA
 
@@ -387,3 +392,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5370-add-mistral-vibe-installed-at-rootlocalb.md
 - **Context:** Initial task creation
+
+### 2026-11-22T23:54:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
