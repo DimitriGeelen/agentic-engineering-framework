@@ -120,10 +120,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The `/resume` skill sources (`lib/templates/resume-md.md`, `.claude/commands/resume.md`, and any copy in `lib/init.sh`) print commands per T-5302: in a consumer `.agentic-framework/bin/fw`, in the framework repo `bin/fw`, always with `cd <root> &&`, never bare `fw`. The skill says how to tell which one applies, or points to the builder's output.
-- [ ] `lib/templates/claude-project.md` no longer contradicts what output prints, and its command examples follow T-5302.
-- [ ] CLAUDE.md §Copy-Pasteable Commands item 3 and §Human AC "Full-path commands" no longer allow bare `fw`; they state T-5302's rule and name the builder (`_emit_user_command` / `_fw_cmd`).
-- [ ] The printed-commands lint ratchet (`tests/lint/printed-fw-commands-ratchet.bats`) is green and its baseline is not raised; the config/claude parity lints and the template tests (`grep -l "claude-project.md\|resume-md" tests/unit/*`) stay green; the vendored copies are synced.
+- [x] The `/resume` skill sources (`lib/templates/resume-md.md`, `.claude/commands/resume.md`, and any copy in `lib/init.sh`) print commands per T-5302: in a consumer `.agentic-framework/bin/fw`, in the framework repo `bin/fw`, always with `cd <root> &&`, never bare `fw`. The skill says how to tell which one applies, or points to the builder's output.
+- [x] `lib/templates/claude-project.md` no longer contradicts what output prints, and its command examples follow T-5302.
+- [x] CLAUDE.md §Copy-Pasteable Commands item 3 and §Human AC "Full-path commands" no longer allow bare `fw`; they state T-5302's rule and name the builder (`_emit_user_command` / `_fw_cmd`).
+- [x] The printed-commands lint ratchet (`tests/lint/printed-fw-commands-ratchet.bats`) is green and its baseline is not raised; the config/claude parity lints and the template tests (`grep -l "claude-project.md\|resume-md" tests/unit/*`) stay green; the vendored copies are synced.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -394,6 +394,11 @@ bin/fw vendor self --check --task T-5307
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-11-22 — template: copyable lines vs prose mentions
+- **Chose:** The 16 code-block lines in `lib/templates/claude-project.md` use `.agentic-framework/bin/fw` (ce7e95427). The ~100 prose mentions of a command ("use `fw task update` to …") stay as names, with one sentence saying they are shorthand for the launcher. The worker's commits are 6c7753e36 and 4ecc06bbe.
+- **Why:** T-5302's rule is about commands handed to someone to run. Lines in code blocks are copied, so they must be runnable in a consumer. Prose names a verb, the same convention CLAUDE.md uses.
+- **Rejected:** The worker's first form (a shorthand note covering everything, code blocks included), because agents copy code blocks and miss notes. Rewriting all ~100 prose mentions, because it bloats the template without changing what anyone runs.
 
 ## Decision
 
