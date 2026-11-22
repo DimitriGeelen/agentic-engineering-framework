@@ -74,7 +74,7 @@ Separately it found that its older orch-supervisor commission ledger holds 49 pl
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Spec §6.5c states ring20's fixed state (secrets file 0600 root, ledger sha256 only, migrated, verified on 7 nodes by key) as compliant, attributed `[ring20 b91e4d07, cb06acc3]`, and notes T-2841 as ring20's separate low-risk follow-up. The contract tests stay green.
+- [x] Spec §6.5c states ring20's fixed state (secrets file 0600 root, ledger sha256 only, migrated, verified on 7 nodes by key) as compliant, attributed `[ring20 b91e4d07, cb06acc3]`, and notes ring20's own separate low-risk follow-up (their task 2841, in ring20's repo, not an AEF task). The contract tests stay green.
 - [x] R-042 is status `mitigated`, with `mitigated_by` naming T-5328, T-5355, T-5356 and ring20 T-2840. The risk register validates with 0 errors.
 
 ### Human
