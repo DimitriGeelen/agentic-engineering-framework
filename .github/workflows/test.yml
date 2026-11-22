@@ -29,7 +29,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pyyaml pytest
+          pip install pyyaml pytest pillow  # T-5363: lib/vote_checker.py and its tests import PIL
           git clone --depth 1 https://github.com/bats-core/bats-core.git /tmp/bats
           sudo /tmp/bats/install.sh /usr/local
           git config --global user.email "ci@example.invalid"
@@ -68,7 +68,7 @@ jobs:
         # playwright helpers; with pyyaml alone 21 cases failed on "No module named 'flask'",
         # 5 on ruamel, and the contract checker on jsonschema.
         run: |
-          pip install pyyaml pytest jsonschema playwright beautifulsoup4
+          pip install pyyaml pytest jsonschema playwright beautifulsoup4 pillow
           if [ -f web/requirements.txt ]; then
             pip install -r web/requirements.txt
           fi
@@ -102,7 +102,39 @@ jobs:
           sudo /tmp/bats/install.sh /usr/local
 
       - name: Run tests
-        run: bats tests/integration/ tests/unit/
+        # T-5363: every run reported all tests (1..10652, "ok 10652") and then bats never
+        # exited, so the job was cancelled at the 6 h limit: a test leaves a background
+        # process holding bats' output pipe. Once the TAP plan is complete, give bats 60 s,
+        # then print the leftover processes (names the leaking test) and stop it.
+        # The exit status is the test result, not the hang.
+        timeout-minutes: 240
+        run: |
+          out="$RUNNER_TEMP/bats.tap"
+          : > "$out"
+          setsid bats --tap tests/integration/ tests/unit/ > "$out" 2>&1 &
+          pid=$!
+          tail -n +1 -f "$out" & tailpid=$!
+          plan=""; leaked=0
+          while kill -0 "$pid" 2>/dev/null; do
+            sleep 20
+            [ -n "$plan" ] || plan=$(grep -m1 -oE '^1\.\.[0-9]+' "$out" | cut -d. -f3)
+            if [ -n "$plan" ] && grep -qE "^(not )?ok $plan( |$)" "$out"; then
+              sleep 60
+              kill -0 "$pid" 2>/dev/null || break
+              leaked=1
+              echo "::warning::all $plan bats tests reported but bats did not exit: a test left a background process holding its output. Leftover processes:"
+              ps -eo pid,ppid,pgid,sid,etime,args --forest
+              kill -TERM -- "-$pid" 2>/dev/null || true
+              break
+            fi
+          done
+          rc=0; wait "$pid" || rc=$?
+          sleep 1; kill "$tailpid" 2>/dev/null || true
+          if [ "$leaked" = 1 ]; then
+            if grep -q '^not ok ' "$out"; then rc=1; else rc=0; fi
+          fi
+          echo "bats: $(grep -c '^not ok ' "$out" || true) failed of ${plan:-?}; exit $rc"
+          exit "$rc"
 
   pytest-unit:
     name: Pytest Unit Tests (tests/unit/*.py)
@@ -143,7 +175,7 @@ jobs:
         run: |
           # T-5153: playwright (python package only, no browser) and bs4 are imported at
           # collection by tests/unit/test_playwright_server_adoption.py and friends.
-          pip install pytest flask markupsafe pyyaml playwright beautifulsoup4
+          pip install pytest flask markupsafe pyyaml playwright beautifulsoup4 pillow  # T-5363: PIL
           if [ -f web/requirements.txt ]; then
             pip install -r web/requirements.txt
           fi
@@ -219,7 +251,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           # T-5153: bs4 is imported at collection by tests/playwright/test_review_htmx_target_inheritance.py
-          pip install pyyaml flask markupsafe pytest playwright beautifulsoup4
+          pip install pyyaml flask markupsafe pytest playwright beautifulsoup4 pillow
           if [ -f web/requirements.txt ]; then
             pip install -r web/requirements.txt
           fi
