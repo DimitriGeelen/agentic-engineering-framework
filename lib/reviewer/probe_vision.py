@@ -29,7 +29,7 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-HARNESS_KINDS = ("codex", "opencode", "antigravity")
+HARNESS_KINDS = ("codex", "opencode", "antigravity", "vibe")
 #: the review runtime runs antigravity as this user (termlink.sh: the operator-approved form, 2026-09-30)
 ANTIGRAVITY_USER = "dimitri-mint-dev"
 
@@ -86,6 +86,9 @@ def launch_argv(kind: str, binary: str, prompt: str, workdir: Path) -> tuple[lis
     if kind == "antigravity":
         return (["/usr/bin/sudo", "-n", "-u", ANTIGRAVITY_USER, "-H", binary, "-p", prompt,
                  "--mode", "plan", "--sandbox"], {})
+    if kind == "vibe":   # T-5370: termlink.sh vibe arm, pointed at the probe folder
+        return ([binary, "--workdir", str(workdir), "--agent", "plan", "--output", "streaming",
+                 "-p", prompt], {})
     raise ValueError(f"{kind!r} is not a harness review kind ({', '.join(HARNESS_KINDS)})")
 
 
@@ -107,6 +110,18 @@ def _answer_text(kind: str, stdout: str, workdir: Path) -> str:
     """The seat's final text: codex writes result.md; opencode prints JSON events."""
     if kind == "codex" and (workdir / "result.md").is_file():
         return (workdir / "result.md").read_text(errors="replace")
+    if kind == "vibe":   # T-5370: streaming JSONL; assistant message text parts
+        texts = []
+        for line in stdout.splitlines():
+            try:
+                ev = json.loads(line)
+            except ValueError:
+                continue
+            if isinstance(ev, dict) and ev.get("type") == "message" and ev.get("role") == "assistant":
+                texts += [c["text"] for c in ev.get("content") or []
+                          if isinstance(c, dict) and c.get("type") == "text" and isinstance(c.get("text"), str)]
+        if texts:
+            return "\n".join(texts)
     if kind == "opencode":
         texts = []
         for line in stdout.splitlines():
