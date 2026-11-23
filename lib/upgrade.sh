@@ -1129,15 +1129,21 @@ fw_upgrade_render_pin_line() {
         fi
     fi
 
+    # T-5372: equal strings with a non-`same` relation were decided by the
+    # recorded commit (be-tags keep VERSION); say so, or "behind v1.8.15" next
+    # to "v1.8.15" reads as a contradiction.
+    local same_str=""
+    [ "$cversion" = "$fversion" ] && same_str=" by commit; same version string"
+
     case "$relation" in
         same)
             echo -e "  Pinned:    v${cversion} ${GREEN}(current)${NC}" ;;
         behind)
-            echo -e "  Pinned:    v${cversion} ${YELLOW}(behind v${fversion})${NC}" ;;
+            echo -e "  Pinned:    v${cversion} ${YELLOW}(behind v${fversion}${same_str})${NC}" ;;
         ahead)
-            echo -e "  Pinned:    v${cversion} ${RED}(AHEAD of v${fversion}${note})${NC}" ;;
+            echo -e "  Pinned:    v${cversion} ${RED}(AHEAD of v${fversion}${same_str}${note})${NC}" ;;
         diverged)
-            echo -e "  Pinned:    v${cversion} ${RED}(diverged from v${fversion}${note})${NC}" ;;
+            echo -e "  Pinned:    v${cversion} ${RED}(diverged from v${fversion}${same_str}${note})${NC}" ;;
         foreign-source)
             # T-2762: the fault is the SOURCE, not the consumer's pin — so the line
             # names the source. Rendering this as "undecidable" (the old fallthrough)
@@ -1892,8 +1898,9 @@ do_upgrade() {
     # example: 2026-05-18 dimitri-mint-dev consumer at v1.6.260 against
     # framework at v1.6.225. T-1839 closed the pin door; T-1912 closes
     # the runtime door at the same checkpoint so the guard is complete.
+    # T-5372: no `project_version != fw_version` condition — be-tags share
+    # VERSION with master, so equal strings must still be decided by ancestry.
     if [ -n "$project_version" ] \
-       && [ "$project_version" != "$fw_version" ] \
        && [ "$fw_version" != "unknown" ] \
        && [ "$force_downgrade" != true ]; then
         # T-2713: relation via git ancestry, not `sort -V`. The guard below is

@@ -109,9 +109,16 @@ fw_version_relation() {
         return 0
     fi
 
+    # T-5372: equal strings are NOT proof of equal code. be-tags keep VERSION at
+    # the last release (T-3821), so a be-tag consumer and master share one string.
+    # When the consumer recorded a version_sha this source can resolve, fall
+    # through and decide by ancestry. No sha, or one this source cannot see,
+    # keeps the old answer (`same`) so legacy consumers gain no new refusals.
     if [ "$cversion" = "$fversion" ]; then
-        _vr_set same "pinned version matches framework"
-        return 0
+        if [ -z "$csha" ] || ! git -C "$froot" rev-parse -q --verify "${csha}^{commit}" >/dev/null 2>&1; then
+            _vr_set same "pinned version matches framework"
+            return 0
+        fi
     fi
 
     # Resolve a commit for the consumer: recorded sha first, then the version tag.

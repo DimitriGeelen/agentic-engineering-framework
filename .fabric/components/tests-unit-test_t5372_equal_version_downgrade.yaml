@@ -1,0 +1,21 @@
+id: tests/unit/test_t5372_equal_version_downgrade.bats
+name: test_t5372_equal_version_downgrade
+type: script
+subsystem: tests
+location: tests/unit/test_t5372_equal_version_downgrade.bats
+tags: []
+
+purpose: "T-5372 — equal version strings are decided by commit ancestry."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-22
+created_by: unknown
