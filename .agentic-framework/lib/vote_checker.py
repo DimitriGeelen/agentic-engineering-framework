@@ -236,26 +236,61 @@ def _location_agrees(img: str, spec: str, lm) -> bool:
     return bool(lm and Path(lm.group(1)).name == Path(img).name and _ws(lm.group(2)) == _ws(spec))
 
 
-def _resolve_image(img: str, spec: str, lm) -> str:
+_TASK_ID_RE = re.compile(r"T-\d+")
+
+
+def seat_copy_path(name: str, task: str, root, dispatch_id: str | None = None) -> str | None:
+    """T-5375: `.context/reviews/evidence/<task>/<name>` for a BARE image name that is a seat's
+    per-seat screenshot copy the judge placed there (`<stem>-<dispatch id>.<ext>`; with the
+    seat's dispatch id known, exactly that id) and that exists inside that directory. None for
+    anything else: a name with a directory part or `..`, a non-image, another task's directory,
+    a missing file, or a symlink leading out of the directory."""
+    if (not root or not name or "/" in name or "\\" in name or name in (".", "..")
+            or not _TASK_ID_RE.fullmatch(str(task or "")) or not _is_image(name)):
+        return None
+    stem = Path(name).stem.lower()
+    if dispatch_id:
+        if not stem.endswith("-" + dispatch_id.lower()) or len(stem) <= len(dispatch_id) + 1:
+            return None
+    elif not any(DISPATCH_ID_RE.fullmatch(stem[i + 1:]) for i, ch in enumerate(stem) if ch == "-"):
+        return None
+    base = Path(root) / REPORT_DIR / task
+    f = base / name
+    try:
+        if not f.is_file() or f.resolve().parent != base.resolve():
+            return None
+    except OSError:
+        return None
+    return f"{REPORT_DIR}/{task}/{name}"
+
+
+def _resolve_image(img: str, spec: str, lm, *, task: str = "", root=None,
+                   dispatch_id: str | None = None) -> str:
     """T-5357: the path an Evidence image is read from — a bare file name resolves through an
-    agreeing Location's path; anything else is itself."""
-    if "/" not in img and _location_agrees(img, spec, lm) and Path(lm.group(1)).name == img:
+    agreeing Location's path; T-5375: a bare name whose Location is bare too (or absent) resolves
+    to the seat's copy in the task's evidence directory when it is there (seat_copy_path);
+    anything else is itself."""
+    if "/" in img:
+        return img
+    if _location_agrees(img, spec, lm) and Path(lm.group(1)).name == img and lm.group(1) != img:
         return lm.group(1)
-    return img
+    return seat_copy_path(img, task, root, dispatch_id) or img
 
 
-def cited_image_path(evidence: str, location: str) -> str | None:
+def cited_image_path(evidence: str, location: str, *, task: str = "", root=None,
+                     dispatch_id: str | None = None) -> str | None:
     """T-5360: the resolved path an `image:` Evidence (with its Location) cites; None if malformed."""
     em = _IMG_EVIDENCE_RE.match(str(evidence).strip())
     if not em:
         return None
-    return _resolve_image(em.group(1), em.group(2).strip(), _IMG_LOC_RE.match(str(location).strip()))
+    return _resolve_image(em.group(1), em.group(2).strip(), _IMG_LOC_RE.match(str(location).strip()),
+                          task=task, root=root, dispatch_id=dispatch_id)
 
 
 def check_image(evidence: str, location: str, root: Path, revision: str, *, task: str,
                 extra_roots: list[Path] | None = None, views: dict | None = None,
                 views_known: bool = False, write_crops: bool = True,
-                cited: list[str] | None = None) -> dict:
+                cited: list[str] | None = None, dispatch_id: str | None = None) -> dict:
     """An `image:` Evidence paired with its Location: image exists; region inside it (and crop
     written) or selector named; location names the same image and region; seat viewed it."""
     em = _IMG_EVIDENCE_RE.match(evidence.strip())
@@ -267,14 +302,16 @@ def check_image(evidence: str, location: str, root: Path, revision: str, *, task
     res["image"] = img
     lm = _IMG_LOC_RE.match(location.strip())
     res["location_agrees"] = _location_agrees(img, spec, lm)
-    resolved = _resolve_image(img, spec, lm)
+    resolved = _resolve_image(img, spec, lm, task=task, root=root, dispatch_id=dispatch_id)
     if resolved != img:
         # T-5357: a bare file name in Evidence is read through the agreeing Location's path
         # (same file name, same region/selector); reads, crops and the seat-viewed check use it.
+        # T-5375: or, with a bare Location, from the seat's copy in the task's evidence dir.
         res["cited_name"] = img
+        res["resolved_via"] = ("seat-copy" if resolved == seat_copy_path(img, task, root, dispatch_id)
+                               else "location")
         img = resolved
         res["image"] = img
-        res["resolved_via"] = "location"
     data, src = read_cited(root, revision, img, extra_roots)
     res["image_exists"], res["source"] = data is not None, src
     rm, sm = _REGION_RE.search(spec), _SELECTOR_RE.search(spec)
@@ -738,6 +775,37 @@ def _rule_check(rule: str, criterion_text: str | None) -> dict:
     return r
 
 
+def _image_location(quote: str, location: str, ev: list, loc: list, root: Path, revision: str, *,
+                    task: str, extra_roots: list[Path], dispatch_id: str | None) -> dict | None:
+    """T-5375: a quote whose Location is `<image> region|selector …` — text read off a screenshot.
+    Counted as an image location only when the same criterion also cites that image with the same
+    region/selector as an `image:` Evidence (so the image, its region and the seat's view are
+    checked there) and the image is there; the text itself is not checkable (no OCR). None when the
+    Location is not of that shape or no `image:` Evidence agrees: check_quote then refuses it as
+    today."""
+    lm = _IMG_LOC_RE.match(location.strip())
+    if not lm or not _is_image(lm.group(1)) or _FILE_LINE_RE.match(location.strip()):
+        return None
+    agreeing = None
+    for i, e in enumerate(ev):
+        em = _IMG_EVIDENCE_RE.match(str(e).strip())
+        if em and _location_agrees(em.group(1), em.group(2).strip(), lm):
+            agreeing = cited_image_path(e, str(loc[i]) if i < len(loc) else "", task=task,
+                                        root=root, dispatch_id=dispatch_id)
+            break
+    if agreeing is None:
+        return None
+    data, src = read_cited(root, revision, agreeing, extra_roots)
+    res: dict = {"kind": "quote", "quote": quote[:200], "location": location, "path": agreeing,
+                 "source": src, "image_location": True, "location_exists": data is not None,
+                 "result": "not-checkable",
+                 "why": "text read from an image region: the checker reads no text from pixels; "
+                        "the image, region and seat view are checked by its image: evidence"}
+    if data is None:
+        res["why"] = src
+    return res
+
+
 def check_vote(parsed_vote: dict, root, revision: str, seat_record=None, *, task: str = "",
                criterion_text: str | None = None, extra_roots: list | None = None,
                write_crops: bool = True) -> dict:
@@ -755,6 +823,7 @@ def check_vote(parsed_vote: dict, root, revision: str, seat_record=None, *, task
         if (d / "tree").is_dir():
             extra.append(d / "tree")
     views = seat_viewed_images(seat_record) if seat_record else None
+    did = dispatch_id_of(seat_record)
     out: dict = {"checker": CHECKER, "revision": revision, "criteria": {}}
     if seat_record:
         out["seat_record"] = str(seat_record)
@@ -800,7 +869,8 @@ def check_vote(parsed_vote: dict, root, revision: str, seat_record=None, *, task
     for c in crits.values():                  # T-5360: once each, by its resolved path
         ev, loc = list(c.get("evidence") or []), list(c.get("location") or [])
         for i, e in enumerate(ev):
-            p = cited_image_path(e, str(loc[i]) if i < len(loc) else "")
+            p = cited_image_path(e, str(loc[i]) if i < len(loc) else "", task=task, root=root,
+                                 dispatch_id=did)
             if p is not None and _norm_path(p) not in {_norm_path(x) for x in cited_images}:
                 cited_images.append(p)
     for ac, c in crits.items():
@@ -813,12 +883,15 @@ def check_vote(parsed_vote: dict, root, revision: str, seat_record=None, *, task
                 qm = _QUOTE_RE.match(e)
                 if qm:
                     q = next(g for g in qm.groups() if g is not None)
-                    items.append(check_quote(q, l_, root, revision, extra))
+                    img_loc = _image_location(q, l_, ev, loc, root, revision, task=task,
+                                              extra_roots=extra, dispatch_id=did)
+                    items.append(img_loc or check_quote(q, l_, root, revision, extra))
                 elif e.startswith("image:"):
                     any_image = True
                     items.append(check_image(e, l_, root, revision, task=task, extra_roots=extra,
                                              views=views, views_known=bool(seat_record),
-                                             write_crops=write_crops, cited=cited_images))
+                                             write_crops=write_crops, cited=cited_images,
+                                             dispatch_id=did))
                 else:
                     items.append({"kind": "unknown", "evidence": e[:200], "result": "malformed"})
             except Exception as exc:  # noqa: BLE001 — one item's fault never sinks the check

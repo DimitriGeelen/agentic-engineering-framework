@@ -1,0 +1,21 @@
+id: tests/unit/test_t5375_bare_seat_image.py
+name: test_t5375_bare_seat_image
+type: script
+subsystem: tests
+location: tests/unit/test_t5375_bare_seat_image.py
+tags: []
+
+purpose: "T-5375 — a seat that cites the judge's per-seat screenshot copy by BARE file name, in Evidence and in a bare `<name> region …` Location, is checked against `.context/reviews/evidence/<task>/<name>` instead of being graded not-checkable."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-23
+created_by: unknown
