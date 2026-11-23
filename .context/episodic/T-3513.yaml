@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3513: derive blast_radius from the fabric when nothing is declared — unknown never zero
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-23T15:11:09Z
+# ============================================================================
+
+task_id: T-3513
+task_name: "derive blast_radius from the fabric when nothing is declared — unknown never zero"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-26T22:33:50Z
+completed: 2026-11-23T15:10:38Z
+duration_days: 58
+updates_count: 3
+first_commit: 2026-11-23T15:54:31+01:00
+last_commit: 2026-11-23T16:10:35+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  spec — fabric-paths fallback for blast_radius (T-3471 leg B, operator-ruled); arc-006; selected in autonomous run. blast_radius falls back to body-named paths resolved through the fabric; unknown stays None. criteria verified (known cost 64->185/590; estimator tests 994/994 before and after; new test 7/7); saturation finding left as Sovereign question
+
+# Key outcomes
+outcomes:
+  - '`score_blast_radius` gains a fabric-paths fallback, reached ONLY when components and write_set both give nothing: extract repo-relative paths named in the task body (Context, criteria, Verification), keep those that exist and have a fabric card, count cards + transitive `depended_by` (each card once, cycles safe), map to the 1/3/5/7/9 ladder; evidence token `→N (K-fabric-paths, M-dependents)`.'
+  - 'No path resolves to a card → returns None with evidence `→? (no-components-no-fabric-paths-UNMEASURED-not-zero)`; never 0. Tasks that already score via components or write_set score exactly as before. (Token restated 2026-11-23: the build keeps the `no-components-` prefix because three existing tests assert on it; the rule is unchanged.)'
+  - 'Hermetic test tests/unit/t3513_fabric_blast_radius.bats (or .py): fixture fabric with a small depended_by graph incl. a cycle; cases: named path with dependents, named path without card → None, no paths → None, components present → unchanged, write_set present → unchanged.'
+  - 'Live measurement: `bin/fw bvp estimate-cost all --dry-run` (or the sweep) on this repo; report how many open tasks gain a known blast radius, before/after; existing estimator tests keep their results.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/bvp-estimator/estimator.py'
+  - '.fabric/components/tests-unit-t3513_fabric_blast_radius.yaml'
+  - '.tasks/active/T-3513-derive-blastradius-from-the-fabric-when-.md'
+  - 'agents/termlink/bvp-estimator/estimator.py'
+  - 'tests/unit/t3513_fabric_blast_radius.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-23T15:54:31'
+    action: 'T-3513: spec — fabric-paths fallback for blast_radius (T-3471 leg B, operator-ruled); arc-006; selected in autonomous run'
+  - time: '2026-11-23T15:59:37'
+    action: 'T-3513: blast_radius falls back to body-named paths resolved through the fabric; unknown stays None'
+  - time: '2026-11-23T16:10:35'
+    action: 'T-3513: criteria verified (known cost 64->185/590; estimator tests 994/994 before and after; new test 7/7); saturation finding left as Sovereign question'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 83076 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bvp, cost-axis, fabric]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 83076
+  commits: 4
+  files_changed: 8
+  lines_added: 599
+  lines_removed: 27
+  footprint_refreshed_at: '2026-11-23T15:11:27Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3513-derive-blastradius-from-the-fabric-when-.md
+generated_by: context-agent-hybrid
