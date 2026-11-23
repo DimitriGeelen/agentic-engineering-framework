@@ -1,0 +1,21 @@
+id: lib/__init__.py
+name: __init__
+type: script
+subsystem: framework-core
+location: lib/__init__.py
+tags: []
+
+purpose: "Framework library package. Regular (not namespace) so a consumer's own regular `lib` package cannot shadow it (T-5373)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-23
+created_by: unknown

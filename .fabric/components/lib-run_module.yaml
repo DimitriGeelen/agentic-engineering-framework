@@ -1,0 +1,21 @@
+id: lib/run_module.py
+name: run_module
+type: script
+subsystem: framework-core
+location: lib/run_module.py
+tags: []
+
+purpose: "Run a framework module the way ``python3 -m lib.X`` would, from any CWD (T-5373)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-23
+created_by: unknown
