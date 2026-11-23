@@ -105,7 +105,7 @@ YAML
 @test "T-3636: fw init (existing project) seeds T-007 and no objectives file" {
     local proj="$TEST_TEMP_DIR/existing"
     mkdir -p "$proj/src"; echo 'print(1)' > "$proj/src/main.py"
-    git init -q "$proj"
+    git init -q "$proj" && git -C "$proj" config gc.auto 0  # T-5373: no detached auto-gc racing teardown (T-5343 class)
     (cd "$proj" && env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$TEST_TEMP_DIR/home" \
         "$FRAMEWORK_ROOT/bin/fw" init . --provider claude >/dev/null 2>&1)
     [ -f "$proj/.tasks/active/T-007-define-project-objectives.md" ]

@@ -76,7 +76,7 @@ with keylock.exclusive(keylock.lock_path_for(sys.argv[2] + "/.context/dispatches
 @test "end-to-end: fresh fw init keeps keylock files out of git status" {
     proj="$TEST_TEMP_DIR/fresh"
     mkdir -p "$proj"
-    git -C "$proj" init -q
+    git -C "$proj" init -q && git -C "$proj" config gc.auto 0  # T-5373: no detached auto-gc racing teardown (T-5343 class)
     run timeout 300 "$FRAMEWORK_ROOT/bin/fw" init "$proj" --provider claude --no-first-run
     [ "$status" -eq 0 ] || { echo "$output" | tail -20; false; }
     grep -qx '/locks/' "$proj/.context/.gitignore"
@@ -88,7 +88,7 @@ with keylock.exclusive(keylock.lock_path_for(sys.argv[2] + "/.context/dispatches
 @test "end-to-end: fw upgrade adds the rule to an old consumer; a second upgrade changes nothing" {
     proj="$TEST_TEMP_DIR/old"
     mkdir -p "$proj"
-    git -C "$proj" init -q
+    git -C "$proj" init -q && git -C "$proj" config gc.auto 0  # T-5373: no detached auto-gc racing teardown (T-5343 class)
     run timeout 300 "$FRAMEWORK_ROOT/bin/fw" init "$proj" --provider claude --no-first-run
     [ "$status" -eq 0 ] || { echo "$output" | tail -20; false; }
     # simulate a pre-T-5373 consumer: the nested ignore has no locks rule
