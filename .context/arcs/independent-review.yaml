@@ -2,7 +2,7 @@ id: arc-029
 slug: independent-review
 name: "Independent review: verdicts the operator can trust without re-checking"
 description: ""
-status: draft
+status: in-progress
 anchor_task: 
 # close_task: T-XXX  # T-3843: the arc's close-out task. Its ## Recommendation (CLOSE|KEEP-OPEN,
 #                    # Rationale, Evidence) is the close recommendation on /arcs/<slug>/close and
@@ -11,6 +11,7 @@ headline_mechanic: "an agent's finished criterion is judged by an independent re
   \ its risk requires, and the operator sees a recorded green or a named escalation\
   \ instead of a Human box to tick"
 demo_evidence: null
+supports: [O-3, O-6]  # operator 2026-11-23: "4 yes"
 created: 2026-11-23T17:34:56Z
 closed_at: null
 decision: null
