@@ -7,12 +7,12 @@ description: >
   hard-coded, so docs/design/ is not searchable by fw recall/ask. Need a per-project
   scope list (config key), default unchanged.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [consumer, peer-request, recall]
-components: []
+components: [bin/fw, lib/authored_scope.py, lib/config.sh, lib/vector_index_health.py, tests/unit/test_t5374_authored_scope.py, web/blueprints/config.py, web/search_utils.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-22T23:33:13Z
-last_update: '2026-11-22T23:58:39Z'
-date_finished:
+last_update: 2026-11-23T12:31:49Z
+date_finished: 2026-11-23T12:31:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -166,6 +166,14 @@ bvp_scores_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+
+- [ ] [REVIEW] The new INDEX_EXTRA_DIRS row on the Watchtower config page reads like its neighbours
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find the row `INDEX_EXTRA_DIRS` (use the browser's find, Ctrl+F)
+  3. Compare it with the rows above and below it
+  **Expected:** same columns and wrapping as the other rows; the description is readable and does not push the table wider; no overlap at your window width.
+  **If not:** note which column clips or overlaps; screenshots at 1024/1440/1920 are in .context/visual/T-5374/.
 
 ## Verification
 
@@ -310,6 +318,14 @@ python3 -m pytest -q tests/unit/test_t5374_authored_scope.py
 bin/fw search "concurrency model" 2>&1 | grep -q "docs/design/task-corpus-concurrency-model.md"
 bats tests/lint/config-registry-parity.bats
 bin/fw vendor self --check --task T-5374
+bin/fw watchtower current
+curl -sf "$(bin/fw watchtower url)/config" | grep -q "INDEX_EXTRA_DIRS"
+
+## Visual Verification
+
+| state | control | 1024 | 1440 | 1920 | note |
+|-------|---------|------|------|------|------|
+| config | INDEX_EXTRA_DIRS row | ok | ok | ok | one new table row; same template as every other config key |
 
 ## RCA
 
@@ -326,6 +342,14 @@ bin/fw vendor self --check --task T-5374
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** plain `fw search reasoner` in the ontology project found task files but none of its docs/design documents; the index freshness check never reported docs/ files as missing.
+
+**Root cause:** three hand-kept scope lists for "what is searchable": web/search_utils.py AUTHORED_DIRS (embedding index, correct), the keyword search's search_areas in bin/fw (.tasks and .context only), and vector_index_health DRIFT_DIRS (a four-dir subset). T-3024 widened only the first.
+
+**Why structurally allowed:** no single definition and no test asserting the three agree; the keyword path is an inline heredoc no index test exercises.
+
+**Prevention:** lib/authored_scope.py is now the one definition all three read; tests/unit/test_t5374_authored_scope.py asserts a docs/design file is found by keyword search and counted by the freshness check.
 
 ## Evolution
 
@@ -380,6 +404,14 @@ bin/fw vendor self --check --task T-5374
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** The only visible change is one new row (INDEX_EXTRA_DIRS) in the existing config table, rendered by the same template as every other key; the search and index work behind it is tested and live. Released in v1.8.16-be.62.
+**Evidence:**
+- `fw search "concurrency model"` now lists docs/design/task-corpus-concurrency-model.md (keyword search previously skipped docs/).
+- tests/unit/test_t5374_authored_scope.py 11/11; config parity lint 3/3; full unit suite shows no new red.
+- Watchtower restarted and current; the row is served at http://192.168.10.107:3000/config; screenshots at 1024/1440/1920 in .context/visual/T-5374/.
+- The ontology agent confirmed semantic search finds its design documents after `fw index reindex`.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -413,3 +445,32 @@ bin/fw vendor self --check --task T-5374
 
 ### 2026-11-22T23:58:37Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-23T12:31:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-53bd955d
+- **Timestamp:** 2026-11-23T12:32:12Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 5
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Keyword `fw search` greps the same AUTHORED_DIRS set as web/search_utils.py (imported or exported from one place, not a copy), plus the existing .context areas it searches today, same exclusions (docs
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/search_utils.py in: Keyword `fw search` greps the same AUTHORED_DIRS set as web/search_utils.py (imported or exported from one place, not a copy), plus the existing .cont`
+- **AC#2 (Agent)** — The index freshness/lag scope (`DRIFT_DIRS` in lib/vector_index_health.py) comes from the same definition, so an authored docs/design file missing from the index counts as lag. (Restated 2026-11-23: l
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/vector_index_health.py in: The index freshness/lag scope (`DRIFT_DIRS` in lib/vector_index_health.py) comes from the same definition, so an authored docs/design file missing fro`
+- **AC#3 (Agent)** — One config key (e.g. INDEX_EXTRA_DIRS, colon-separated, project-relative) adds directories to that set for all three paths; registered in lib/config.sh with description, config parity lint (tests/lint
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/config.sh in: One config key (e.g. INDEX_EXTRA_DIRS, colon-separated, project-relative) adds directories to that set for all three paths; registered in lib/config.s`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 139
+     - evidence: `bin/fw search "concurrency model" 2>&1 | grep -q "docs/design/task-corpus-concurrency-model.md"`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 143
+     - evidence: `curl -sf "$(bin/fw watchtower url)/config" | grep -q "INDEX_EXTRA_DIRS"`
