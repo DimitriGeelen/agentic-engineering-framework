@@ -11438,6 +11438,19 @@ search_areas = [
     (os.path.join(project_root, '.tasks'), 'Tasks'),
     (os.path.join(project_root, '.context'), 'Context'),
 ]
+# T-5374: plus every authored dir the semantic index embeds (lib/authored_scope.py,
+# the one definition) and the project's INDEX_EXTRA_DIRS; docs/generated stays out.
+import importlib.util
+_spec = importlib.util.spec_from_file_location(
+    'fw_authored_scope', os.path.join(os.environ['FRAMEWORK_ROOT'], 'lib', 'authored_scope.py'))
+_scope = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_scope)
+_covered = [a for a, _ in search_areas]
+for _parts in _scope.authored_dirs(project_root):
+    _d = os.path.join(project_root, *_parts)
+    if not any(_d == c or _d.startswith(c + os.sep) for c in _covered):
+        search_areas.append((_d, os.path.join(*_parts)))
+        _covered.append(_d)
+_excluded = tuple(os.path.join(project_root, *x) + os.sep for x in _scope.EXCLUDED_DIRS)
 
 spec_docs = []
 for fn in os.listdir(project_root):

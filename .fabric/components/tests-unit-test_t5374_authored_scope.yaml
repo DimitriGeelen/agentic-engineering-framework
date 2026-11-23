@@ -1,0 +1,21 @@
+id: tests/unit/test_t5374_authored_scope.py
+name: test_t5374_authored_scope
+type: script
+subsystem: tests
+location: tests/unit/test_t5374_authored_scope.py
+tags: []
+
+purpose: "T-5374: one definition of authored content drives keyword search, the embedding index and the index freshness check, plus INDEX_EXTRA_DIRS."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-23
+created_by: unknown

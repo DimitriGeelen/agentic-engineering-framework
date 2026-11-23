@@ -98,6 +98,7 @@ SETTINGS = [
     ("INDEX_MAX_LAG", "50", "Task ids or learning ids on disk the vector index has never seen before the vector-index health check FAILs; T-3783"),
     ("RECALL_FAIL_PCT_WARN", "10", "Percent of recall queries in 7 days that could not run above which the vector-index health check WARNs; T-3783"),
     ("INDEX_HANDOVERS", "1", "Include .context/handovers/ in the semantic index (web/search_utils.py:collect_files). 0 excludes them: ~90MB / 1,710 files leave fw ask, fw recall, /search and the RAG path. Reversible; deletes nothing. T-3024"),
+    ("INDEX_EXTRA_DIRS", "", "Extra project-relative directories (colon- or comma-separated) treated as authored content for the semantic index, keyword fw search and the vector-index freshness check (lib/authored_scope.py). Empty = built-in set only; absolute paths, .., .git and docs/generated are ignored. T-5374"),
     ("HANDOVER_DIGEST", "1", "Digest the three handover state dumps (Observation Inbox, Work in Progress, Awaiting Your Action) to count + regenerating command + top-N. 0 emits the full dumps as before. Narrative sections are unaffected either way. T-3028"),
     ("HANDOVER_DIGEST_TOP_N", "5", "How many entries each digested handover section retains in full before referring the reader to the regenerating command. T-3028"),
     ("HANDOVER_PUSH", "1", "0 = handover commits locally and never pushes; for projects where a push deploys (050, T-5051)"),

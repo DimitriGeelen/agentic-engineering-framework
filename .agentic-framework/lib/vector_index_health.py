@@ -242,11 +242,33 @@ def check_lag(path: Path, project_root: Path, max_lag: int):
     return _check("lag", "OK", detail)
 
 
-# The authored sources recall is for: tasks, learnings/decisions/patterns,
-# episodics, reports. A subset of web/search_utils.py AUTHORED_DIRS with the
-# same INDEXED_SUFFIXES, so a file counted here is one the reindex would index.
-DRIFT_DIRS = ((".tasks",), (".context", "episodic"), (".context", "project"), ("docs", "reports"))
-DRIFT_SUFFIXES = (".md", ".yaml", ".yml")
+# T-5374: the authored sources come from lib/authored_scope.py — the same set the
+# reindex embeds (web/search_utils.py) and keyword `fw search` greps, plus the
+# project's INDEX_EXTRA_DIRS. It used to be a four-dir subset, so a new
+# docs/design file the index had never seen was never counted. Loaded by file
+# path (stdlib only, and a consumer's own `lib` package cannot shadow it).
+def _load_authored_scope():
+    import importlib.util
+
+    name = "fw_authored_scope"
+    if name in sys.modules:
+        return sys.modules[name]
+    spec = importlib.util.spec_from_file_location(
+        name, Path(__file__).resolve().parent / "authored_scope.py")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+_SCOPE = _load_authored_scope()
+DRIFT_DIRS = _SCOPE.AUTHORED_DIRS  # without the project's extras; see drift_dirs()
+DRIFT_SUFFIXES = _SCOPE.INDEXED_SUFFIXES
+
+
+def drift_dirs(project_root: Path) -> tuple:
+    """Every directory the reindex embeds for this project (handovers aside)."""
+    return _SCOPE.authored_dirs(project_root)
 
 
 def _source_drift(project_root: Path, state: dict) -> int:
@@ -260,12 +282,16 @@ def _source_drift(project_root: Path, state: dict) -> int:
     """
     n = 0
     root_prefix = len(str(project_root).rstrip("/")) + 1
-    for parts in DRIFT_DIRS:
+    dirs = drift_dirs(project_root)
+    excluded = tuple(str(project_root.joinpath(*x)) + "/" for x in _SCOPE.EXCLUDED_DIRS)
+    for parts in dirs:
         d = project_root.joinpath(*parts)
         if not d.is_dir():
             continue
         for f in d.rglob("*"):
             if f.suffix not in DRIFT_SUFFIXES or not f.is_file():
+                continue
+            if str(f).startswith(excluded):
                 continue
             # == f.relative_to(project_root).as_posix(): f comes from rglob under
             # project_root (T-4386 — pathlib's relative_to cost ~2 s here).
@@ -282,7 +308,7 @@ def _source_drift(project_root: Path, state: dict) -> int:
             n += h != seen[0]
     # Deleted sources the index still serves are drift too (review round 3):
     # recall would keep answering from content that no longer exists.
-    prefixes = tuple("/".join(parts) + "/" for parts in DRIFT_DIRS)
+    prefixes = tuple("/".join(parts) + "/" for parts in dirs)
     for rel in state:
         if (rel.startswith(prefixes) and rel.endswith(DRIFT_SUFFIXES)
                 and not (project_root / rel).is_file()):

@@ -89,34 +89,32 @@ def extract_task_id(path: Path, content: str) -> str:
 # from re-committing the original mistake by bulk-adding docs/generated's 1,068
 # generated files.
 
-INDEXED_SUFFIXES = (".md", ".yaml", ".yml")
+# T-5374: the lists live in lib/authored_scope.py, the ONE definition shared with
+# keyword `fw search` (bin/fw) and the index freshness check
+# (lib/vector_index_health.py). Loaded by file path so a consumer's own `lib`
+# package can never shadow it. Names re-exported here for existing importers.
+def _load_authored_scope():
+    import importlib.util
+    import sys
 
+    name = "fw_authored_scope"
+    if name in sys.modules:
+        return sys.modules[name]
+    path = Path(__file__).resolve().parent.parent / "lib" / "authored_scope.py"
+    spec = importlib.util.spec_from_file_location(name, path)
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[name] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+_scope = _load_authored_scope()
+INDEXED_SUFFIXES = _scope.INDEXED_SUFFIXES
 # Class: AUTHORED_AND_DURABLE.
-AUTHORED_DIRS = (
-    (".tasks",),
-    (".context", "episodic"),
-    (".context", "project"),
-    (".context", "qa"),
-    (".fabric", "components"),
-    ("docs", "reports"),
-    # T-3022 spike 8 — authored and previously unreachable.
-    ("policy",),
-    ("docs", "adr"),
-    ("docs", "architecture"),
-    ("docs", "design"),
-    ("docs", "specs"),
-    ("docs", "proposals"),
-    ("docs", "upstream-patterns"),
-    ("docs", "walkthrough"),
-    ("docs", "dispatch-templates"),
-    ("docs", "articles"),
-)
-
+AUTHORED_DIRS = _scope.AUTHORED_DIRS
 # Class: GENERATED_OR_RESTATED. Named explicitly so the exclusion is auditable
 # rather than being an accident of what nobody added.
-EXCLUDED_DIRS = (
-    ("docs", "generated"),
-)
+EXCLUDED_DIRS = _scope.EXCLUDED_DIRS
 
 # The one deliberate exception: handovers are GENERATED_OR_RESTATED by content, but
 # semantic retrieval is their only consumer (spike 7 — zero executable readers), so
@@ -124,7 +122,7 @@ EXCLUDED_DIRS = (
 # about what the corpus is for, not a cleanup, and therefore the operator's call.
 # Resolution order matches the framework's 4-tier contract: env > .framework.yaml >
 # default. Ships at ON, i.e. behaviour is unchanged until someone decides otherwise.
-HANDOVER_DIR = (".context", "handovers")
+HANDOVER_DIR = _scope.HANDOVER_DIR
 
 
 def _index_handovers() -> bool:
@@ -156,7 +154,8 @@ def collect_files() -> list[Path]:
     """
     files: list[Path] = []
 
-    dirs = list(AUTHORED_DIRS)
+    # T-5374: plus the project's INDEX_EXTRA_DIRS (lib/authored_scope.py).
+    dirs = list(_scope.authored_dirs(PROJECT_ROOT))
     if _index_handovers():
         dirs.append(HANDOVER_DIR)
 
