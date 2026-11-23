@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3940: URGENT: concurrent reviewer workers commit each other's verdict rows (shared verdicts.jsonl swept by 'git commit -- .context/reviews') — rows then fail provenance forever; ring20 needs --no-verify on every push since 2026-10-01
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-23T17:47:06Z
+# ============================================================================
+
+task_id: T-3940
+task_name: "URGENT: concurrent reviewer workers commit each other's verdict rows (shared verdicts.jsonl swept by 'git commit -- .context/reviews') — rows then fail provenance forever; ring20 needs --no-verify on every push since 2026-10-01"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-06T10:46:13Z
+completed: 2026-11-23T17:46:04Z
+duration_days: 48
+updates_count: 4
+first_commit: 2026-10-06T13:08:11+02:00
+last_commit: 2026-11-23T18:46:01+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  verdict rows are appended and committed under ONE ledger lock (verdict record --commit, default inside a review worker; runtime record_for_worker too) — a worker can no longer commit another worker's row from the shared verdicts.jsonl (ring20's permanent 'introduced by other' FAILs, --no-verify on every push since 10-01). Parallel regression test + control leg; brief has no separate commit step. vendor-sync verdict_ledger.py + judge_cli.py. ring20 told the sanctioned acknowledge path (sidecar msg 01921787, conversation aef-t3940-swept-verdict-rows). four-part Context backfilled from the task record (T-4907 gate). Evolution entry (arc-011 link, close-out)
+
+# Key outcomes
+outcomes:
+  - 'One ledger lock (lib/keylock) is held from append to commit by every writer that commits verdict rows: `verdict record --commit` (CLI) and `record_for_worker` (runtime for harness kinds)'
+  - 'Inside a review worker (FW_SIDECAR_AGENT_ID set) `verdict record` commits by default; the brief tells Claude workers to record with `--commit` and no longer prints a separate `git add .context/reviews … git commit` step'
+  - 'Regression test: two workers record concurrently (two threads, each opening its own lock fd — flock is per open file description, so they contend exactly as two processes do) — each commit contains only its own verdict row, authored by its own identity; control leg: the old append-then-commit sequence does sweep the other row'
+  - 'Existing T-3580 judge/round-3 tests updated to the new contract and green; verdict-ledger tests green (667 passed across 18 reviewer/ledger test files; t3579/t3580 bats green)'
+  - 'ring20 told the sanctioned path for their 3 swept rows: `fw reviewer verdict acknowledge <row> --fixed-by <THEIR completed task that upgrades to the release carrying AEF T-3940> --reason …` (acknowledge resolves --fixed-by in the consumer''s own .tasks/completed)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/unit-suite.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.tasks/active/T-3940-urgent-concurrent-reviewer-workers-commi.md'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/verdict_ledger.py'
+  - 'tests/unit/t3580_judge_cli_test.py'
+  - 'tests/unit/t3580_round3_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T13:08:11'
+    action: 'T-3940: verdict rows are appended and committed under ONE ledger lock (verdict record --commit, default inside a review worker; runtime record_for_worker too) — a worker can no longer commit another worker''s row from the shared verdicts.jsonl (ring20''s permanent ''introduced by other'' FAILs, --no-verify on every push since 10-01). Parallel regression test + control leg; brief has no separate commit step'
+  - time: '2026-10-06T13:08:38'
+    action: 'T-3940: vendor-sync verdict_ledger.py + judge_cli.py'
+  - time: '2026-11-23T18:43:31'
+    action: 'T-3940: ring20 told the sanctioned acknowledge path (sidecar msg 01921787, conversation aef-t3940-swept-verdict-rows)'
+  - time: '2026-11-23T18:45:00'
+    action: 'T-3940: four-part Context backfilled from the task record (T-4907 gate)'
+  - time: '2026-11-23T18:46:01'
+    action: 'T-3940: Evolution entry (arc-011 link, close-out)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 69539 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:parallel-execution-aef]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 69539
+  commits: 6
+  files_changed: 12
+  lines_added: 504
+  lines_removed: 113
+  footprint_refreshed_at: '2026-11-23T17:47:19Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3940-urgent-concurrent-reviewer-workers-commi.md
+generated_by: context-agent-hybrid
