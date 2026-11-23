@@ -1,0 +1,173 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5378: Link the 90 unarced high-value tasks to arcs (operator 2026-11-23)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-23T17:39:45Z
+# ============================================================================
+
+task_id: T-5378
+task_name: "Link the 90 unarced high-value tasks to arcs (operator 2026-11-23)"
+workflow_type: refactor
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-23T17:33:39Z
+completed: 2026-11-23T17:39:03Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-23T18:38:05+01:00
+last_commit: 2026-11-23T18:39:00+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  link 91 unarced high-value tasks to arcs via fw arc tag (operator 2026-11-23); new arc independent-review (arc-029, no objective link). criteria verified (91/91 tagged, 0 unarced high-value tasks remain, arc-029 created without objective link)
+
+# Key outcomes
+outcomes:
+  - 'docs/reports/T-5378-arc-linking.tsv maps each of the 90 tasks to one arc with a one-line reason; every arc named exists (or is the new `independent-review`).'
+  - 'Every mapping applied with `bin/fw arc tag <arc> T-XXXX` (no hand edits of task frontmatter); the unarced high-value check (scratchpad unarced_hv.py) returns 0 rows afterwards.'
+  - '`independent-review` created with `bin/fw arc create` and no `supports:`; listed as an open operator question in the handback.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/arcs/independent-review.yaml'
+  - '.tasks/active/T-100201-reconcile-t-100196-session-on-master-wit.md'
+  - '.tasks/active/T-1062-wezterm-task-aware-terminal-chrome-via-t.md'
+  - '.tasks/active/T-1274-memory-writes-claude-auto-memory-blocked.md'
+  - '.tasks/active/T-2200-dispatch-aef-setup-worker-on-optfan-dash.md'
+  - '.tasks/active/T-2202-dispatch-aef-setup-worker-on-opt832-work.md'
+  - '.tasks/active/T-2219-t-2217-slice-1--widen-inception-decide-s.md'
+  - '.tasks/active/T-2306-t-2305-go-implement-3-bvp-drivers-vpromp.md'
+  - '.tasks/active/T-2309-watchtower-inceptiontdecide-returns-opaq.md'
+  - '.tasks/active/T-2353-auditsh-post-emit-hook--convert-warnfail.md'
+  - '.tasks/active/T-2354-bvp-estimator-scoreauditseverity-handler.md'
+  - '.tasks/active/T-2410-check-active-task-hook-false-positives-b.md'
+  - '.tasks/active/T-2420-pretooluse-hook-detect--human-outside--a.md'
+  - '.tasks/active/T-2768-fix-not-synced-guidance-to-name-a-source.md'
+  - '.tasks/active/T-2801-fw-init-is-not-atomic-and-its-debris-is-.md'
+  - '.tasks/active/T-2977-designer-inspector-shows-no-per-node-not.md'
+  - '.tasks/active/T-3128-the-framework-has-a-canonical-list-of-it.md'
+  - '.tasks/active/T-3156-vendored-agentic-frameworkbinfw-is-commi.md'
+  - '.tasks/active/T-3183-human-ac-markdown-double-escapes-on-appr.md'
+  - '.tasks/active/T-3214-68-verification-lines-pipe-curl-into-gre.md'
+  - '.tasks/active/T-3264-g-087-budget-gate-fabricates-ok0-cache-o.md'
+  - '.tasks/active/T-3297-pre-push-audit-gate-can-deadlock-against.md'
+  - '.tasks/active/T-3298-auditsh-unlinks-the-flockd-lock-file-in-.md'
+  - '.tasks/active/T-3299-g-020-scope-gate-blocks-both-escape-rout.md'
+  - '.tasks/active/T-3300-testsunitaccountersedrangeonelinecomment.md'
+  - '.tasks/active/T-3301-testsunitinceptiondecideemitreviewpostmo.md'
+  - '.tasks/active/T-3302-structural-nothing-runs-testsunit-on-a-s.md'
+  - '.tasks/active/T-3306-close-gate-self-reentry-deadlock-fw-task.md'
+  - '.tasks/active/T-3316-testsunitcreatetaskbats-test-3-t-2832---.md'
+  - '.tasks/active/T-3317-a-workers-rewrite-of-agentsauditauditsh-.md'
+  - '.tasks/active/T-3324-fw-doctor-spends-79s-of-every-run-on-bat.md'
+  - '.tasks/active/T-3328-testsunitauditbats-asserts--status--le-1.md'
+  - '.tasks/active/T-3335-arc-020-s8-termlink-wiring--connect-aef-.md'
+  - '.tasks/active/T-3358-claude-fw---termlink-exit-detection-miss.md'
+  - '.tasks/active/T-3378-config-registry-drift-branchaheadwarn-mi.md'
+  - '.tasks/active/T-3541-t-3534-slice-2-swap-the-project-id-into-.md'
+  - '.tasks/active/T-3555-refusal-ledger---every-gate-refusal-reco.md'
+  - '.tasks/active/T-3556-three-handoverpushtimeout-tests-pin-impl.md'
+  - '.tasks/active/T-3580-t-3557-slice-3-fw-reviewer-judge---dispa.md'
+  - '.tasks/active/T-3593-t-3576-build-a-tier-0-approvals-keyed-to.md'
+  - '.tasks/active/T-3594-t-3576-build-b-git-pre-push-refuses-a-no.md'
+  - '.tasks/active/T-3604-obs-587-triage-b-red-unit-suites-noroott.md'
+  - '.tasks/active/T-3609-fwallowemptyrecommendation-no-longer-byp.md'
+  - '.tasks/active/T-3610-a-test-still-writes-to-filesystem-root-g.md'
+  - '.tasks/active/T-3623-obs-587-triage-c-17-untriaged-baselined-.md'
+  - '.tasks/active/T-3624-obs-587-triage-d-17-untriaged-baselined-.md'
+  - '.tasks/active/T-3630-fw-doctor-dies-rc-128-in-a-project-that-.md'
+  - '.tasks/active/T-3695-check-human-ac-tick-guards-only-writeedi.md'
+  - '.tasks/active/T-3731-revise-the-configuration-engine-auto-dis.md'
+  - '.tasks/active/T-3734-unexplained-pushes-to-originbleeding-edg.md'
+  - '.tasks/active/T-3747-auditbats-audit-runs-structure-section-a.md'
+  - '.tasks/active/T-3749-watchtower-inception-decide-times-out-at.md'
+  - '.tasks/active/T-3773-review-backends-are-not-estate-scoped-a-.md'
+  - '.tasks/active/T-3785-release-lag-master-consumer-install-surf.md'
+  - '.tasks/active/T-3811-t3459metricsqualitycache-an-expired-time.md'
+  - '.tasks/active/T-3862-fw-upgrade-completes-without-checking-th.md'
+  - '.tasks/active/T-3874-running-clonebinfw-upgrade-from-inside-a.md'
+  - '.tasks/active/T-3893-arc-close-page-the-close-arc-button-is-g.md'
+  - '.tasks/active/T-3896-approvals-queue-offers-a-go-on-inception.md'
+  - '.tasks/active/T-3920-approvals-takes-27-s-on-every-load-opera.md'
+  - '.tasks/active/T-3933-unit-tests-that-run-full-fw-doctor-sweep.md'
+  - '.tasks/active/T-3940-urgent-concurrent-reviewer-workers-commi.md'
+  - '.tasks/active/T-4092-hotfix-v1810-emergency-lane-t-4035-t-408.md'
+  - '.tasks/active/T-4096-approvals-and-fw-review-queue-classify-r.md'
+  - '.tasks/active/T-4112-t-4081-index-refresh-fails-silently-a-he.md'
+  - '.tasks/active/T-4114-security-project-boundary-hook-misses-te.md'
+  - '.tasks/active/T-4118-claude-fw-wrapper-started-before-an-upgr.md'
+  - '.tasks/active/T-4119-terminators-180-s-handover-limit-is-shor.md'
+  - '.tasks/active/T-4124-sidecar-send-to-a-local-peer-fails-http-.md'
+  - '.tasks/active/T-4127-watchtower-decision-commit-races-ordinar.md'
+  - '.tasks/active/T-4163-t-4091-slice-2-estate-ingest-worker-on-t.md'
+  - '.tasks/active/T-4190-inception-decide-name-the-filtered-refus.md'
+  - '.tasks/active/T-4220-pre-push-blocked-9-new-unit-reds-after-t.md'
+  - '.tasks/active/T-4295-test-fixtures-that-point-frameworkroot-a.md'
+  - '.tasks/active/T-4363-cold-watchtower-first-get-approvals-take.md'
+  - '.tasks/active/T-4402-one-lens-definition-businesslogicaltechn.md'
+  - '.tasks/active/T-4407-testoperatorfacingstderr-flags-approvals.md'
+  - '.tasks/active/T-4458-watchtower-semantichybrid-search-takes-3.md'
+  - '.tasks/active/T-4468-watchtower-ask-streaming-answer-fails-wi.md'
+  - '.tasks/active/T-4475-adapt-termlink-proposal-344-webembedding.md'
+  - '.tasks/active/T-4490-green-degraded-closes-a-rung-5-review-pa.md'
+  - '.tasks/active/T-4516-stop-shipping-and-writing-lan-addresses-.md'
+  - '.tasks/active/T-4526-tests-and-tools-leave-about-406-tmpaef--.md'
+  - '.tasks/active/T-4527-fw-task-review-and-fw-inception-decide-j.md'
+  - '.tasks/active/T-4574-triage-the-41-50-playwright-failures-fro.md'
+  - '.tasks/active/T-4590-push-blocker-human-ac-tick-audit-fails-t.md'
+  - '.tasks/active/T-4607-designer-shows-no-map-thumbnails-server-.md'
+  - '.tasks/active/T-4632-make-11-finished-tasks-closable-gates-re.md'
+  - '.tasks/active/T-4657-apiv1health-search-ask-askstream-return-.md'
+  - '.tasks/active/T-4783-destructive-command-gate-refuse-tmux-kil.md'
+  - '.tasks/active/T-4786---text-structural-gap-found-while-recove.md'
+  - '.tasks/active/T-4788---text-obs-python3--c-write-forms-skip-t.md'
+  - '.tasks/active/T-5378-link-the-90-unarced-high-value-tasks-to-.md'
+  - 'docs/reports/T-5378-arc-linking.tsv'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-23T18:38:05'
+    action: 'T-5378: link 91 unarced high-value tasks to arcs via fw arc tag (operator 2026-11-23); new arc independent-review (arc-029, no objective link)'
+  - time: '2026-11-23T18:39:00'
+    action: 'T-5378: criteria verified (91/91 tagged, 0 unarced high-value tasks remain, arc-029 created without objective link)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arcs, backlog-grooming, operator-request]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 3
+  files_changed: 97
+  lines_added: 1305
+  lines_removed: 190
+  footprint_refreshed_at: '2026-11-23T17:40:04Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5378-link-the-90-unarced-high-value-tasks-to-.md
+generated_by: context-agent-hybrid
