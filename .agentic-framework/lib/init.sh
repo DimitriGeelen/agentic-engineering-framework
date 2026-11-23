@@ -417,6 +417,10 @@ WGIT
     # shellcheck source=lib/dispatch-gitignore.sh
     source "$FRAMEWORK_ROOT/lib/dispatch-gitignore.sh"
     fw_dispatch_ensure_ignored "$target_dir" >/dev/null
+    # T-5373: flock anchors (.context/locks/*.lock) — one list shared with fw upgrade.
+    # shellcheck source=lib/locks-gitignore.sh
+    source "$FRAMEWORK_ROOT/lib/locks-gitignore.sh"
+    fw_locks_ensure_ignored "$target_dir" >/dev/null
     # T-5271: operator-dropped files (.context/inbox/files/) — one list shared with fw upgrade, doctor, audit.
     # shellcheck source=lib/inbox-files-gitignore.sh
     source "$FRAMEWORK_ROOT/lib/inbox-files-gitignore.sh"

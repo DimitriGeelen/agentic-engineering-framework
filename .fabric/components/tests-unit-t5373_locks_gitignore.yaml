@@ -1,0 +1,21 @@
+id: tests/unit/t5373_locks_gitignore.bats
+name: t5373_locks_gitignore
+type: script
+subsystem: tests
+location: tests/unit/t5373_locks_gitignore.bats
+tags: []
+
+purpose: "T-5373 — keylock's flock anchors (.context/locks/*.lock) persist by design. Only the framework repo's root .gitignore ignored .context/locks/, so a consumer saw `.context/locks/T-486.lock` untracked after `fw inception decide`."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-23
+created_by: unknown

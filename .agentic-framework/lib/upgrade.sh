@@ -3424,6 +3424,34 @@ MCPJSON
         echo -e "        git -C \"$target_dir\" rm -r --cached -- .context/dispatch"
     fi
 
+    # T-5373: keylock's flock anchors persist under .context/locks/ by design,
+    # ignored only by the framework's own root .gitignore.
+    # shellcheck source=lib/locks-gitignore.sh
+    source "$FRAMEWORK_ROOT/lib/locks-gitignore.sh"
+    local _lk_added _lk_tracked
+    if [ "$dry_run" = true ]; then
+        _lk_added=$(fw_locks_ensure_ignored "$target_dir" --dry-run)
+    else
+        _lk_added=$(fw_locks_ensure_ignored "$target_dir")
+    fi
+    if [ "${_lk_added:-0}" -gt 0 ]; then
+        changes=$((changes + 1))
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${CYAN}WOULD ADD${NC}  lock-file ignore rule to .context/.gitignore"
+            [ -e "$target_dir/.context/.gitignore" ] || _t4692_would+=(".context/.gitignore")
+        else
+            _t4697_wrote .context/.gitignore
+            echo -e "  ${GREEN}ADDED${NC}  lock-file ignore rule to .context/.gitignore"
+        fi
+    else
+        echo -e "  ${GREEN}OK${NC}  Lock files (.context/locks/) gitignored"
+    fi
+    _lk_tracked=$(fw_locks_tracked "$target_dir" | wc -l | tr -d ' ')
+    if [ "${_lk_tracked:-0}" -gt 0 ]; then
+        echo -e "  ${YELLOW}NOTE${NC}  $_lk_tracked file(s) under .context/locks are already tracked; untrack with:"
+        echo -e "        git -C \"$target_dir\" rm -r --cached -- .context/locks"
+    fi
+
     # T-5271: the fleet cockpit's /drop page writes operator files (possibly
     # sensitive) into .context/inbox/files/, ignored by no project until now.
     # shellcheck source=lib/inbox-files-gitignore.sh

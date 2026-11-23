@@ -1,0 +1,21 @@
+id: lib/locks-gitignore.sh
+name: locks-gitignore
+type: script
+subsystem: framework-core
+location: lib/locks-gitignore.sh
+tags: []
+
+purpose: "T-5373 — keep flock anchors under .context/locks/ out of a consumer's git."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-11-23
+created_by: unknown
