@@ -100,10 +100,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] lib/vote_checker.py resolves a bare image name (no "/") in Evidence and in a bare `image region` Location to `.context/reviews/evidence/<task>/<name>` when that file exists; one resolution function used by check_image, cited_image_path and the Location check (no second copy).
-- [ ] A bare name that does not exist there, or a name with `..`/a path outside the evidence directory, is still refused exactly as today.
-- [ ] Hermetic test tests/unit/test_t5375_bare_seat_image.py reproduces the T-5376 claude-code evidence lines (bare Evidence + bare Location with region) and shows not-checkable before / checked after; plus the refusal cases.
-- [ ] Existing vote-checker / judge / verdict tests (test_t5352*, test_t5353*, test_t5357*, test_t5358*, test_t5360*, *vote*, *judge*, *verdict*) keep their results.
+- [x] lib/vote_checker.py resolves a bare image name (no "/") in Evidence and in a bare `image region` Location to `.context/reviews/evidence/<task>/<name>` when that file exists; one resolution function used by check_image, cited_image_path and the Location check (no second copy).
+- [x] A bare name that does not exist there, or a name with `..`/a path outside the evidence directory, is still refused exactly as today.
+- [x] Hermetic test tests/unit/test_t5375_bare_seat_image.py reproduces the T-5376 claude-code evidence lines (bare Evidence + bare Location with region) and shows not-checkable before / checked after; plus the refusal cases.
+- [x] Existing vote-checker / judge / verdict tests (test_t5352*, test_t5353*, test_t5357*, test_t5358*, test_t5360*, *vote*, *judge*, *verdict*) keep their results.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -308,6 +308,14 @@ bin/fw vendor self --check --task T-5375
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** two consecutive rung-5 panels (T-5374, T-5376) graded the claude-code seat's green vote not-checkable: "image ... missing" and "location ... is neither path:line nor command:", though the cited screenshot existed in .context/reviews/evidence/<task>/.
+
+**Root cause:** the vote checker resolved a bare image name only through a Location that carried a path (T-5357); the claude-code seat writes bare names in BOTH Evidence and Location, so there was no path to resolve through, and the Location classifier did not recognise a bare `<image> region …` form.
+
+**Why structurally allowed:** each earlier fix (T-5353, T-5357, T-5358, T-5360) pinned the citation shape observed that day; no test enumerated the shapes a seat may emit for a file the judge itself placed.
+
+**Prevention:** one resolver that also maps a bare name into the task's own evidence directory (and nowhere else), used by every citation path; tests/unit/test_t5375_bare_seat_image.py replays the two real claude-code votes verbatim plus the refusal cases.
 
 ## Evolution
 
