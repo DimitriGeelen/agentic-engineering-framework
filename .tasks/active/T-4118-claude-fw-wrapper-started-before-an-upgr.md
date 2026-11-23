@@ -135,9 +135,14 @@ bvp_scores_proposed:
 
 ## Context
 
-Field reports 832 T-1140 and ring20-dashboard T-2509: a claude-fw wrapper started before
-an upgrade kept its old bash functions (`_terminator_watch`) across its own restart loop, so
-the T-4032 "wait for the turn to end" fix never ran and both sessions were killed mid-turn.
+**Background / trigger:** field reports 832 T-1140 and ring20-dashboard T-2509: both sessions were killed mid-turn after an upgrade.
+
+**Problem / hypothesis:** a claude-fw wrapper started before an upgrade kept its old bash functions (`_terminator_watch`) across its own restart loop, so the T-4032 "wait for the turn to end" fix never ran.
+
+**Goal:** a running wrapper picks up its new code at the next restart boundary, without losing restart state.
+
+**Expected outcome:** after an upgrade, the next restart runs the new wrapper; restart counters and the TermLink session carry over.
+
 Fix: `bin/claude-fw` records its own identity (path + content hash) at start and, at the
 restart boundary only, re-execs itself when the file on disk changed — carrying restart
 state forward.
@@ -152,7 +157,7 @@ state forward.
 - [x] No re-exec when the script is unchanged; never re-exec mid-turn (check only runs between claude runs, after the old terminator has been reaped)
 - [x] Script missing/unreadable or new script failing `bash -n` → loud WARNING on stderr + `.compact-log`, loop continues on the in-memory code
 - [x] New `tests/unit/t4118_claude_fw_reexec_on_change.bats` passes and fails on HEAD's `bin/claude-fw`; existing claude-fw / terminator suites stay green
-- [ ] `bin/fw vendor self --check` clean; `bin/fw test lint` and `bin/fw audit --section structure` introduce no new failures
+- [x] `bin/fw vendor self --check` clean; `bin/fw test lint` and `bin/fw audit --section structure` introduce no new failures
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -383,6 +388,11 @@ once, after its next manual restart — T-4069's notice remains the route for th
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-23 — last criterion checked in the autonomous run (arc-012)
+- **What changed:** checked 2026-11-23: `bin/fw vendor self --check` clean; `bin/fw audit --section structure` 0 FAIL; `bin/fw test lint` exits 1 on 153 pre-existing ShellCheck warnings (0 errors), none in the files T-4118 changed (bin/claude-fw, its vendored copy, tests/unit/t4118_claude_fw_reexec_on_change.bats), so T-4118 adds no new lint failure. Linked to arc-012 by T-5378.
+- **Plan impact:** none.
+- **Triggered:** finding, not filed as a task: `fw test lint` also lints throw-away scripts under .context/working/, which keeps the whole lint red.
 
 ## Recommendation
 
