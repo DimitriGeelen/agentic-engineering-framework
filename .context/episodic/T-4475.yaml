@@ -1,0 +1,208 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4475: Adapt termlink proposal 344: web/embeddings.py concurrent embed batches (FW_EMBED_WORKERS)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-23T18:30:50Z
+# ============================================================================
+
+task_id: T-4475
+task_name: "Adapt termlink proposal 344: web/embeddings.py concurrent embed batches (FW_EMBED_WORKERS)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-20T14:07:46Z
+completed: 2026-11-23T18:29:52Z
+duration_days: 34
+updates_count: 4
+first_commit: 2026-10-20T17:16:34+02:00
+last_commit: 2026-11-23T19:29:49+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  reindex embeds batches through FW_EMBED_WORKERS threads (order preserved; default 1, serial), key registered in lib/config.sh + web config and resolved via fw_config in fw index reindex; regression pytest (adapts 010-termlink proposal 344). Human review criterion, Visual Verification and Recommendation GO for the /config row. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (antigravity seat antigravity, recorded by the runtime). /config cells wrap long tokens (overflow-wrap: anywhere) so the EMBED_WORKERS row no longer overflows the table at 1024 (judge amber V-20261020-46d0002b). /config keeps Env Var names and Source badges on one line; only value/default/description columns wrap anywhere (antigravity amber 2026-11-23); measured 0 split names, table fits at 1024/1440/1920. vendor-sync web/templates/config.html. panel green (3/3), Evolution entry
+
+# Key outcomes
+outcomes:
+  - '`web/embeddings.py` embeds batches through a `FW_EMBED_WORKERS`-sized thread pool (`map`, order preserved); `FW_EMBED_WORKERS=1` (the default) keeps the serial loop, so no consumer''s embedding server load changes unless they opt in'
+  - '`FW_EMBED_WORKERS` registered in `lib/config.sh` `FW_CONFIG_REGISTRY` AND `web/blueprints/config.py` (parity lint green); invalid values (non-int, <1) fall back to 1, never crash a reindex'
+  - 'Regression test proves vectors stay aligned with input order when batches complete out of order under >1 workers, and that the default is serial'
+  - '`bin/fw vendor self --check --task T-4475` clean'
+  - '[REVIEW] The new EMBED_WORKERS row on /config reads clearly next to its neighbours'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-20 — default worker count'
+    chose: 'default 1 (serial), opt in via `fw config set EMBED_WORKERS N` / `FW_EMBED_WORKERS`.'
+    rationale: 'the right value is the embedding server''s `OLLAMA_NUM_PARALLEL`, which the framework cannot see; 3 would triple concurrent load on every consumer''s server on upgrade.'
+    alternatives_rejected: ['proposal''s default 3 (unasked behaviour change fleet-wide); env-only knob (not in registry, `fw config set` inert).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/web/blueprints/config.py'
+  - '.agentic-framework/web/embeddings.py'
+  - '.agentic-framework/web/templates/config.html'
+  - '.context/reviews/applied.jsonl'
+  - '.context/reviews/evidence/T-4475/01-config-40_7062_1200_90-crop.png'
+  - '.context/reviews/evidence/T-4475/01-config-40_7730_1200_364-crop.png'
+  - '.context/reviews/evidence/T-4475/01-config-40_7843_1200_137-crop.png'
+  - '.context/reviews/evidence/T-4475/01-config-56_7062_1124_89-crop.png'
+  - '.context/reviews/evidence/T-4475/01-config-judge-t-4475-r5-antigravity-ef4f3fa999a2.png'
+  - '.context/reviews/evidence/T-4475/01-config-judge-t-4475-r5-claude-code-87afc379f16c.png'
+  - '.context/reviews/evidence/T-4475/01-config-judge-t-4475-r5-claude-code-99ad6ce6b7dc.png'
+  - '.context/reviews/evidence/T-4475/01-config-judge-t-4475-r5-claude-code-9e576f7ad315.png'
+  - '.context/reviews/evidence/T-4475/01-config-judge-t-4475-r5-claude-code-a21c42d5c347.png'
+  - '.context/reviews/evidence/T-4475/01-config-judge-t-4475-r5-codex-66f50917adfd.png'
+  - '.context/reviews/evidence/T-4475/01-config-judge-t-4475-r5-codex-9d6921b9f44b.png'
+  - '.context/reviews/evidence/T-4475/01-config.png'
+  - '.context/reviews/evidence/T-4475/AC1-judge-t-4475-r5-antigravity-2b607bd320fc.md'
+  - '.context/reviews/evidence/T-4475/AC1-judge-t-4475-r5-antigravity-38ec672a8cbf.md'
+  - '.context/reviews/evidence/T-4475/AC1-judge-t-4475-r5-antigravity-d780d1578a5d.md'
+  - '.context/reviews/evidence/T-4475/AC1-judge-t-4475-r5-antigravity-ef4f3fa999a2.md'
+  - '.context/reviews/evidence/T-4475/AC1-judge-t-4475-r5-claude-code-40dcab326ef3.md'
+  - '.context/reviews/evidence/T-4475/AC1-judge-t-4475-r5-claude-code-84512ea2501d.md'
+  - '.context/reviews/evidence/T-4475/AC1-judge-t-4475-r5-claude-code-87afc379f16c.md'
+  - '.context/reviews/evidence/T-4475/AC1-judge-t-4475-r5-claude-code-99ad6ce6b7dc.md'
+  - '.context/reviews/evidence/T-4475/AC1-judge-t-4475-r5-claude-code-9e576f7ad315.md'
+  - '.context/reviews/evidence/T-4475/AC1-judge-t-4475-r5-claude-code-a21c42d5c347.md'
+  - '.context/reviews/evidence/T-4475/AC1-judge-t-4475-r5-codex-1f43f84a3838.md'
+  - '.context/reviews/evidence/T-4475/AC1-judge-t-4475-r5-codex-4241bb3e2eb6.md'
+  - '.context/reviews/evidence/T-4475/AC1-judge-t-4475-r5-codex-66f50917adfd.md'
+  - '.context/reviews/evidence/T-4475/AC1-judge-t-4475-r5-codex-9d6921b9f44b.md'
+  - '.context/reviews/evidence/T-4475/config@1024-37_12532_950_568-crop.png'
+  - '.context/reviews/evidence/T-4475/config@1024-37_12741_950_233-crop.png'
+  - '.context/reviews/evidence/T-4475/config@1024-37_5855_950_138-crop.png'
+  - '.context/reviews/evidence/T-4475/config@1024-53_5855_902_137-crop.png'
+  - '.context/reviews/evidence/T-4475/config@1024-judge-t-4475-r5-antigravity-ef4f3fa999a2.png'
+  - '.context/reviews/evidence/T-4475/config@1024-judge-t-4475-r5-claude-code-87afc379f16c.png'
+  - '.context/reviews/evidence/T-4475/config@1024-judge-t-4475-r5-claude-code-99ad6ce6b7dc-35_5855_955_135-crop.png'
+  - '.context/reviews/evidence/T-4475/config@1024-judge-t-4475-r5-claude-code-99ad6ce6b7dc.png'
+  - '.context/reviews/evidence/T-4475/config@1024-judge-t-4475-r5-claude-code-9e576f7ad315.png'
+  - '.context/reviews/evidence/T-4475/config@1024-judge-t-4475-r5-claude-code-a21c42d5c347-40_12820_960_135-crop.png'
+  - '.context/reviews/evidence/T-4475/config@1024-judge-t-4475-r5-claude-code-a21c42d5c347.png'
+  - '.context/reviews/evidence/T-4475/config@1024-judge-t-4475-r5-codex-66f50917adfd.png'
+  - '.context/reviews/evidence/T-4475/config@1024-judge-t-4475-r5-codex-9d6921b9f44b.png'
+  - '.context/reviews/evidence/T-4475/config@1024.png'
+  - '.context/reviews/evidence/T-4475/config@1440-120_4905_1200_90-crop.png'
+  - '.context/reviews/evidence/T-4475/config@1440-120_7730_1200_364-crop.png'
+  - '.context/reviews/evidence/T-4475/config@1440-120_7843_1200_137-crop.png'
+  - '.context/reviews/evidence/T-4475/config@1440-136_4905_1102_89-crop.png'
+  - '.context/reviews/evidence/T-4475/config@1440-judge-t-4475-r5-antigravity-ef4f3fa999a2.png'
+  - '.context/reviews/evidence/T-4475/config@1440-judge-t-4475-r5-claude-code-87afc379f16c.png'
+  - '.context/reviews/evidence/T-4475/config@1440-judge-t-4475-r5-claude-code-99ad6ce6b7dc-120_4910_1200_90-crop.png'
+  - '.context/reviews/evidence/T-4475/config@1440-judge-t-4475-r5-claude-code-99ad6ce6b7dc.png'
+  - '.context/reviews/evidence/T-4475/config@1440-judge-t-4475-r5-claude-code-9e576f7ad315.png'
+  - '.context/reviews/evidence/T-4475/config@1440-judge-t-4475-r5-claude-code-a21c42d5c347-140_7880_1200_100-crop.png'
+  - '.context/reviews/evidence/T-4475/config@1440-judge-t-4475-r5-claude-code-a21c42d5c347.png'
+  - '.context/reviews/evidence/T-4475/config@1440-judge-t-4475-r5-codex-66f50917adfd.png'
+  - '.context/reviews/evidence/T-4475/config@1440-judge-t-4475-r5-codex-9d6921b9f44b.png'
+  - '.context/reviews/evidence/T-4475/config@1440.png'
+  - '.context/reviews/evidence/T-4475/config@1920-235_4240_1450_90-crop.png'
+  - '.context/reviews/evidence/T-4475/config@1920-235_6099_1450_268-crop.png'
+  - '.context/reviews/evidence/T-4475/config@1920-235_6188_1450_89-crop.png'
+  - '.context/reviews/evidence/T-4475/config@1920-251_4240_1394_89-crop.png'
+  - '.context/reviews/evidence/T-4475/config@1920-judge-t-4475-r5-antigravity-ef4f3fa999a2.png'
+  - '.context/reviews/evidence/T-4475/config@1920-judge-t-4475-r5-claude-code-87afc379f16c.png'
+  - '.context/reviews/evidence/T-4475/config@1920-judge-t-4475-r5-claude-code-99ad6ce6b7dc-240_4245_1450_90-crop.png'
+  - '.context/reviews/evidence/T-4475/config@1920-judge-t-4475-r5-claude-code-99ad6ce6b7dc.png'
+  - '.context/reviews/evidence/T-4475/config@1920-judge-t-4475-r5-claude-code-9e576f7ad315.png'
+  - '.context/reviews/evidence/T-4475/config@1920-judge-t-4475-r5-claude-code-a21c42d5c347-200_6200_1500_80-crop.png'
+  - '.context/reviews/evidence/T-4475/config@1920-judge-t-4475-r5-claude-code-a21c42d5c347.png'
+  - '.context/reviews/evidence/T-4475/config@1920-judge-t-4475-r5-codex-66f50917adfd.png'
+  - '.context/reviews/evidence/T-4475/config@1920-judge-t-4475-r5-codex-9d6921b9f44b.png'
+  - '.context/reviews/evidence/T-4475/config@1920.png'
+  - '.context/reviews/evidence/T-4475/embed-row-1024-crop-judge-t-4475-r5-claude-code-9e576f7ad315.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-4475-adapt-termlink-proposal-344-webembedding.md'
+  - 'bin/fw'
+  - 'lib/config.sh'
+  - 'tests/unit/test_t4475_embed_workers.py'
+  - 'web/blueprints/config.py'
+  - 'web/embeddings.py'
+  - 'web/templates/config.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-20T17:16:34'
+    action: 'T-4475: reindex embeds batches through FW_EMBED_WORKERS threads (order preserved; default 1, serial), key registered in lib/config.sh + web config and resolved via fw_config in fw index reindex; regression pytest (adapts 010-termlink proposal 344)'
+  - time: '2026-10-20T21:26:11'
+    action: 'T-4475: Human review criterion, Visual Verification and Recommendation GO for the /config row'
+  - time: '2026-10-20T21:27:45'
+    action: 'T-4475: reviewer verdict'
+  - time: '2026-10-20T21:28:48'
+    action: 'T-4475: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-10-20T21:30:43'
+    action: 'T-4475: reviewer verdict'
+  - time: '2026-10-20T21:33:43'
+    action: 'T-4475: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-10-20T21:43:47'
+    action: 'T-4475: reviewer verdict'
+  - time: '2026-10-20T22:00:33'
+    action: 'T-4475: /config cells wrap long tokens (overflow-wrap: anywhere) so the EMBED_WORKERS row no longer overflows the table at 1024 (judge amber V-20261020-46d0002b)'
+  - time: '2026-10-20T22:16:12'
+    action: 'T-4475: reviewer verdict'
+  - time: '2026-10-20T22:17:57'
+    action: 'T-4475: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-10-20T22:23:58'
+    action: 'T-4475: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-23T18:54:40'
+    action: 'T-4475: reviewer verdict'
+  - time: '2026-11-23T18:56:25'
+    action: 'T-4475: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-23T19:00:08'
+    action: 'T-4475: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-23T19:21:35'
+    action: 'T-4475: /config keeps Env Var names and Source badges on one line; only value/default/description columns wrap anywhere (antigravity amber 2026-11-23); measured 0 split names, table fits at 1024/1440/1920'
+  - time: '2026-11-23T19:21:47'
+    action: 'T-4475: vendor-sync web/templates/config.html'
+  - time: '2026-11-23T19:24:43'
+    action: 'T-4475: reviewer verdict'
+  - time: '2026-11-23T19:26:13'
+    action: 'T-4475: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-23T19:29:04'
+    action: 'T-4475: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-23T19:29:49'
+    action: 'T-4475: panel green (3/3), Evolution entry'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 20 commit(s), 49222 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:embeddings-strategy]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 49222
+  commits: 21
+  files_changed: 91
+  lines_added: 1174
+  lines_removed: 24
+  footprint_refreshed_at: '2026-11-23T18:31:03Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4475-adapt-termlink-proposal-344-webembedding.md
+generated_by: context-agent-hybrid
