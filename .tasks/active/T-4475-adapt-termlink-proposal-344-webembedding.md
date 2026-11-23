@@ -135,7 +135,13 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Background / trigger:** 010-termlink pickup offset 344 (their T-3336), triaged in docs/reports/T-4472-termlink-proposals-triage.md: concurrent embedding batches measured 70 → 107 chunks/s at 3 workers on Ollama NUM_PARALLEL=3.
+
+**Problem / hypothesis:** web/embeddings.py embeds batches serially, so reindex time is bounded by one request at a time even when the embedding server can serve several.
+
+**Goal:** embed batches concurrently (order preserved) behind a registered config key FW_EMBED_WORKERS, with a default that does not change behaviour on consumers whose server parallelism is unknown; the new key's /config row reads cleanly.
+
+**Expected outcome:** reindex throughput scales with FW_EMBED_WORKERS where the server allows; result order is unchanged; the /config row is legible at 1024/1440/1920 (2026-11-23 antigravity amber: the Source badge and Env Var name must not split mid-word).
 
 ## Acceptance Criteria
 

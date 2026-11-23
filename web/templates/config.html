@@ -28,6 +28,7 @@
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.03em;
+        white-space: nowrap;
     }
     .source-default {
         background: var(--pico-muted-border-color);
@@ -49,8 +50,19 @@
     .config-table code {
         font-size: 0.85rem;
     }
+    /* T-4475 (judge amber V-20261020-46d0002b, then antigravity amber 2026-11-23):
+       long values may break anywhere so the table fits at 1024 px, but Env Var
+       names and Source badges must not split mid-word. */
     .config-table td {
+        overflow-wrap: break-word;
+    }
+    .config-table td:nth-child(2),
+    .config-table td:nth-child(3),
+    .config-table td:nth-child(5) {
         overflow-wrap: anywhere;
+    }
+    .config-table td:nth-child(1) code {
+        white-space: nowrap;
     }
     .config-help {
         margin-top: 1.5rem;
