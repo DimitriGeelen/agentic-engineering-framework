@@ -133,6 +133,14 @@ bvp_scores_proposed:
 
 ## Context
 
+**Background / trigger:** T-3557 GO: render reviews and an escalation spike were run by hand on 2026-09-29/30 and proved an interpreting reviewer can judge criteria the operator was ticking.
+
+**Problem / hypothesis:** without a verb, every independent review was hand-assembled, so criteria routed to "reviewer-judged" had no close path and fell back to the operator.
+
+**Goal:** `fw reviewer judge` dispatches a non-producer reviewer at the rung the task's risk requires (IW-7), hands it the criterion and evidence (screenshots for render criteria), and writes a verified verdict record, under a weekly spend ceiling.
+
+**Expected outcome:** a reviewer-judged criterion closes through a recorded green verdict with no bypass flag (live proof criterion).
+
 Build slice 3 of T-3557. Depends on T-3578 (routing) and T-3579 (verdict records). It turns
 the manual reviews of 2026-09-29/30 into a verb: render reviews (docs/reports/T-3557-render-
 review-2026-09-29.md, T-3564-render-review.md, T-3574-T-3575-render-review.md) and the
@@ -390,6 +398,11 @@ bin/fw vendor self --check
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-23 — closed out in the autonomous run (arc-029)
+- **What changed:** all seven criteria were ticked in its own rounds; the task stayed open because it predates the T-4907 Context rule. The verb is in daily use: on 2026-11-23 alone it ran rung-5 panels that closed T-5374, T-5376 and T-4475 through recorded greens. Linked to arc-029 (independent review, O-3/O-6) by T-5378.
+- **Plan impact:** none.
+- **Triggered:** none.
 
 ## Recommendation
 
