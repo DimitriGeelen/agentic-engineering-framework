@@ -6,12 +6,12 @@ description: >
   vendored .agentic-framework/bin/fw is committed non-executable — consumers get exit
   126
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [arc:project-shape-resilience]
-components: []
+components: [lib/upgrade.sh, tests/unit/test_t3156_vendored_modes.py]
 related_tasks: []
 arc_id: project-shape-resilience
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
@@ -25,8 +25,8 @@ arc_id: project-shape-resilience
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T11:05:49Z
-last_update: '2026-11-23T19:08:27Z'
-date_finished:
+last_update: 2026-11-23T19:25:52Z
+date_finished: 2026-11-23T19:25:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -382,3 +382,16 @@ bin/fw vendor self --check
 - **Fix:** a6869d1bc — `_sv_mode_differs` / `_sv_sync_mode` in six helpers (libs, shim, agents, web, tools, root_data) + `_sv_scope_skip`; `fw vendor self` then synced the file to 100755.
 - **Test (AC3):** `tests/unit/test_t3156_vendored_modes.py` — before the fix 9 failed / 5 passed (8 helper cases + repo-state mode check); after: 17 passed.
 - **Consumer position (AC4):** fresh `git clone` of bleeding-edge: vendored `bin/fw version` exit 0, vendored `discard-manifest.sh --help` exit 0; same clone at fa1ac888e (pre-fix): discard-manifest exit **126**. Fresh `bin/fw vendor --target <tmp>` consumer: both exit 0 (mode 775).
+
+### 2026-11-23T19:25:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1be35bc8
+- **Timestamp:** 2026-11-23T19:26:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** none

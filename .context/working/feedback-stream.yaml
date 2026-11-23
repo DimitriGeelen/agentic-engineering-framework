@@ -59056,3 +59056,21 @@ scan_id: R-dff16efc
 task_id: T-4490
 payload:
   task_file: .tasks/active/T-4490-green-degraded-closes-a-rung-5-review-pa.md
+---
+kind: scan_emitted
+timestamp: '2026-11-23T19:26:01Z'
+scan_id: R-1be35bc8
+task_id: T-3156
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-23T19:26:01Z'
+scan_id: R-1be35bc8
+task_id: T-3156
+payload:
+  task_file: .tasks/active/T-3156-vendored-agentic-frameworkbinfw-is-commi.md
