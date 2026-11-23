@@ -153,7 +153,7 @@ bvp_scores_proposed:
 - [x] `bin/fw vendor self --check --task T-4475` clean
 
 ### Human
-- [ ] [REVIEW] The new EMBED_WORKERS row on /config reads clearly next to its neighbours
+- [x] [REVIEW] The new EMBED_WORKERS row on /config reads clearly next to its neighbours
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url`
   2. Open `<that URL>/config` and find the row `EMBED_WORKERS`
@@ -204,6 +204,7 @@ bvp_scores_proposed:
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261123-4616881c — reviewer-judge-t-4475-r5-antigravity-ef4f3fa999a2:antigravity (rung rung-5-panel:antigravity), digest ca0a58443763; dispatch judge-t-4475-r5-antigravity-ef4f3fa999a2; evidence: .context/reviews/evidence/T-4475/AC1-judge-t-4475-r5-antigravity-ef4f3fa999a2.md, .context/reviews/evidence/T-4475/01-config-judge-t-4475-r5-antigravity-ef4f3fa999a2.png, .context/reviews/evidence/T-4475/config@1024-judge-t-4475-r5-antigravity-ef4f3fa999a2.png, .context/reviews/evidence/T-4475/config@1440-judge-t-4475-r5-antigravity-ef4f3fa999a2.png, .context/reviews/evidence/T-4475/config@1920-judge-t-4475-r5-antigravity-ef4f3fa999a2.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
@@ -399,6 +400,11 @@ bin/fw vendor self --check --task T-4475
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-23 — /config legibility fixed through the review panel
+- **What changed:** the October fix (`overflow-wrap: anywhere` on every cell) made the table fit at 1024 px but split Env Var names and Source badges mid-word (antigravity amber, rung-5 panel 2026-11-23). Measured in a browser: 108 split names at every width. Narrowed `anywhere` to the value/default/description columns and kept Env Var names and badges on one line: 0 split names, table width equals its container at 1024/1440/1920.
+- **Plan impact:** none to the embedding work; the fix also covers the T-5374/T-5376 config rows on the same page.
+- **Triggered:** none. Second panel: green from claude-code, codex and antigravity (V-20261123-4616881c).
 
 ## Recommendation
 
