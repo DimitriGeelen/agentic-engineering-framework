@@ -10,7 +10,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [consumer, peer-request, recall]
 components: [bin/fw, lib/authored_scope.py, lib/config.sh, lib/vector_index_health.py, tests/unit/test_t5374_authored_scope.py, web/blueprints/config.py, web/search_utils.py]
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-22T23:33:13Z
-last_update: 2026-11-23T12:31:49Z
+last_update: 2026-11-23T12:44:35Z
 date_finished: 2026-11-23T12:31:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,6 +97,7 @@ bvp_scores_proposed:
       (no-signal); F3=0 (no-signal); F1=1 
       (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+date_finalised: 2026-11-23T12:44:35Z
 ---
 
 # T-5374: Vector index scope is fixed to .tasks and .context/episodic; projects cannot add design documents

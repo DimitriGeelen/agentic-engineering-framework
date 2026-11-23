@@ -58822,3 +58822,21 @@ scan_id: R-e3134353
 task_id: T-5373
 payload:
   task_file: .tasks/active/T-5373-consumer-with-its-own-regular-lib-packag.md
+---
+kind: scan_emitted
+timestamp: '2026-11-23T12:32:12Z'
+scan_id: R-53bd955d
+task_id: T-5374
+payload:
+  overall: CONCERN
+  finding_count: 5
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-23T12:32:12Z'
+scan_id: R-53bd955d
+task_id: T-5374
+payload:
+  task_file: .tasks/active/T-5374-vector-index-scope-is-fixed-to-tasks-and.md

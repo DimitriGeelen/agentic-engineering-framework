@@ -1,0 +1,141 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5374: Vector index scope is fixed to .tasks and .context/episodic; projects cannot add design documents
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-23T12:45:23Z
+# ============================================================================
+
+task_id: T-5374
+task_name: "Vector index scope is fixed to .tasks and .context/episodic; projects cannot add design documents"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-22T23:33:13Z
+completed: 2026-11-23T12:31:49Z
+duration_days: 1
+updates_count: 4
+first_commit: 2026-11-23T00:33:27+01:00
+last_commit: 2026-11-23T13:44:33+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — vector index scope fixed; projects cannot add design docs (ontology-agent request). spec corrected — semantic index already covers docs/design; real gaps are keyword search and freshness scope. one authored-content scope for keyword search, the index and its freshness check. restate criterion 2 — freshness scope is vector_index_health DRIFT_DIRS, not index_reconcile. visual verification, REVIEW criterion, RCA, recommendation; partial-complete. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (antigravity seat antigravity, recorded by the runtime). rung-5 panel green (claude-code, codex, antigravity); verdict applied
+
+# Key outcomes
+outcomes:
+  - 'Keyword `fw search` greps the same AUTHORED_DIRS set as web/search_utils.py (imported or exported from one place, not a copy), plus the existing .context areas it searches today, same exclusions (docs/generated stays out).'
+  - 'The index freshness/lag scope (`DRIFT_DIRS` in lib/vector_index_health.py) comes from the same definition, so an authored docs/design file missing from the index counts as lag. (Restated 2026-11-23: lib/index_reconcile.py SCOPE turned out to be the T-4166 git-staging reconciler, not the index; correctly left unchanged.)'
+  - 'One config key (e.g. INDEX_EXTRA_DIRS, colon-separated, project-relative) adds directories to that set for all three paths; registered in lib/config.sh with description, config parity lint (tests/lint/config-registry-parity.bats and web/blueprints/config.py if required) green; default empty = unchanged behaviour.'
+  - 'Hermetic tests (tests/unit/test_t5374_authored_scope.py): temp project with docs/design/x.md containing a unique word — keyword fw search finds it; reconcile reports it as unindexed before reindex; the extra-dirs key adds a custom dir.'
+  - '[REVIEW] The new INDEX_EXTRA_DIRS row on the Watchtower config page reads like its neighbours'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'capture — vector index scope fixed; projects cannot add design docs (ontology-agent request)'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/authored_scope.py'
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/vector_index_health.py'
+  - '.agentic-framework/web/blueprints/config.py'
+  - '.agentic-framework/web/search_utils.py'
+  - '.context/reviews/evidence/T-5374/01-config-40_7394_1200_292-crop.png'
+  - '.context/reviews/evidence/T-5374/01-config-40_7483_1200_113-crop.png'
+  - '.context/reviews/evidence/T-5374/01-config-judge-t-5374-r5-antigravity-bca26e618a4c.png'
+  - '.context/reviews/evidence/T-5374/01-config-judge-t-5374-r5-claude-code-4e83d08832f3.png'
+  - '.context/reviews/evidence/T-5374/01-config-judge-t-5374-r5-codex-81587a39cc82.png'
+  - '.context/reviews/evidence/T-5374/AC1-judge-t-5374-r5-antigravity-bca26e618a4c.md'
+  - '.context/reviews/evidence/T-5374/AC1-judge-t-5374-r5-claude-code-4e83d08832f3.md'
+  - '.context/reviews/evidence/T-5374/AC1-judge-t-5374-r5-codex-81587a39cc82.md'
+  - '.context/reviews/evidence/T-5374/config@1024-37_9328_950_388-crop.png'
+  - '.context/reviews/evidence/T-5374/config@1024-37_9441_950_161-crop.png'
+  - '.context/reviews/evidence/T-5374/config@1024-judge-t-5374-r5-antigravity-bca26e618a4c.png'
+  - '.context/reviews/evidence/T-5374/config@1024-judge-t-5374-r5-claude-code-4e83d08832f3.png'
+  - '.context/reviews/evidence/T-5374/config@1024-judge-t-5374-r5-codex-81587a39cc82.png'
+  - '.context/reviews/evidence/T-5374/config@1440-120_7394_1200_292-crop.png'
+  - '.context/reviews/evidence/T-5374/config@1440-120_7483_1200_113-crop.png'
+  - '.context/reviews/evidence/T-5374/config@1440-judge-t-5374-r5-antigravity-bca26e618a4c.png'
+  - '.context/reviews/evidence/T-5374/config@1440-judge-t-5374-r5-claude-code-4e83d08832f3.png'
+  - '.context/reviews/evidence/T-5374/config@1440-judge-t-5374-r5-codex-81587a39cc82.png'
+  - '.context/reviews/evidence/T-5374/config@1920-235_6603_1450_242-crop.png'
+  - '.context/reviews/evidence/T-5374/config@1920-235_6667_1450_89-crop.png'
+  - '.context/reviews/evidence/T-5374/config@1920-judge-t-5374-r5-antigravity-bca26e618a4c.png'
+  - '.context/reviews/evidence/T-5374/config@1920-judge-t-5374-r5-claude-code-4e83d08832f3.png'
+  - '.context/reviews/evidence/T-5374/config@1920-judge-t-5374-r5-codex-81587a39cc82.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.fabric/components/lib-authored_scope.yaml'
+  - '.fabric/components/tests-unit-test_t5374_authored_scope.yaml'
+  - '.tasks/active/T-5374-vector-index-scope-is-fixed-to-tasks-and.md'
+  - 'bin/fw'
+  - 'lib/authored_scope.py'
+  - 'lib/config.sh'
+  - 'lib/vector_index_health.py'
+  - 'tests/unit/test_t5374_authored_scope.py'
+  - 'web/blueprints/config.py'
+  - 'web/search_utils.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-23T00:33:27'
+    action: 'T-5374: capture — vector index scope fixed; projects cannot add design docs (ontology-agent request)'
+  - time: '2026-11-23T00:58:53'
+    action: 'T-5374: spec corrected — semantic index already covers docs/design; real gaps are keyword search and freshness scope'
+  - time: '2026-11-23T01:10:20'
+    action: 'T-5374: one authored-content scope for keyword search, the index and its freshness check'
+  - time: '2026-11-23T01:31:32'
+    action: 'T-5374: restate criterion 2 — freshness scope is vector_index_health DRIFT_DIRS, not index_reconcile'
+  - time: '2026-11-23T13:32:31'
+    action: 'T-5374: visual verification, REVIEW criterion, RCA, recommendation; partial-complete'
+  - time: '2026-11-23T13:37:19'
+    action: 'T-5374: reviewer verdict'
+  - time: '2026-11-23T13:39:25'
+    action: 'T-5374: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-23T13:42:37'
+    action: 'T-5374: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-23T13:44:33'
+    action: 'T-5374: rung-5 panel green (claude-code, codex, antigravity); verdict applied'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 9 commit(s), 778 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [consumer, peer-request, recall]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 778
+  commits: 10
+  files_changed: 48
+  lines_added: 1374
+  lines_removed: 87
+  footprint_refreshed_at: '2026-11-23T12:45:41Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5374-vector-index-scope-is-fixed-to-tasks-and.md
+generated_by: context-agent-hybrid
