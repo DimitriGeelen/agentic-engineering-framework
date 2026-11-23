@@ -147,7 +147,7 @@ cost_estimate_proposed:
 - [x] Inside a review worker (FW_SIDECAR_AGENT_ID set) `verdict record` commits by default; the brief tells Claude workers to record with `--commit` and no longer prints a separate `git add .context/reviews … git commit` step
 - [x] Regression test: two workers record concurrently (two threads, each opening its own lock fd — flock is per open file description, so they contend exactly as two processes do) — each commit contains only its own verdict row, authored by its own identity; control leg: the old append-then-commit sequence does sweep the other row
 - [x] Existing T-3580 judge/round-3 tests updated to the new contract and green; verdict-ledger tests green (667 passed across 18 reviewer/ledger test files; t3579/t3580 bats green)
-- [ ] ring20 told the sanctioned path for their 3 swept rows: `fw reviewer verdict acknowledge <row> --fixed-by <THEIR completed task that upgrades to the release carrying AEF T-3940> --reason …` (acknowledge resolves --fixed-by in the consumer's own .tasks/completed)
+- [x] ring20 told the sanctioned path for their 3 swept rows: `fw reviewer verdict acknowledge <row> --fixed-by <THEIR completed task that upgrades to the release carrying AEF T-3940> --reason …` (acknowledge resolves --fixed-by in the consumer's own .tasks/completed)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
