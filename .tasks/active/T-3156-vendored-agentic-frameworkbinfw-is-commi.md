@@ -6,10 +6,10 @@ description: >
   vendored .agentic-framework/bin/fw is committed non-executable — consumers get exit
   126
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [arc:project-shape-resilience]
 components: []
 related_tasks: []
@@ -25,7 +25,7 @@ arc_id: project-shape-resilience
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T11:05:49Z
-last_update: 2026-11-23T17:36:16Z
+last_update: '2026-11-23T19:08:27Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -109,13 +109,36 @@ bvp_scores_proposed:
       (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 (no-signal);
       F2=1 (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
+  - ts: '2026-11-23T19:08:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 3
+      D4: 0
+      F-RECALL: 1
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=2 (body:learning-ref); D2=2 (body:telemetry-or-audit-entry); 
+      D3=3 (body:component-discoverability); D4=0 (no-signal); F-RECALL=1 
+      (body:episodic-only); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=1 (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3156: vendored .agentic-framework/bin/fw is committed non-executable — consumers get exit 126
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Background / trigger:** 2026-08-26: `.agentic-framework/bin/fw` in this repo was committed `100644` and failed to exec (exit 126); 213 vendored files had a mode different from their source. Re-measured 2026-11-23 in the autonomous run: `bin/fw` is now 100755; ONE vendored file still differs (`.agentic-framework/agents/handover/discard-manifest.sh` 100644, source 100755).
+
+**Problem / hypothesis:** something in the vendor/commit path records a vendored executable as 644 (vendor self copy, a historical commit, or a umask), and nothing checks executability, so `git status` stays clean while the file cannot run.
+
+**Goal:** find the producer, fix the remaining file, and pin executability with a test so the class cannot return silently.
+
+**Expected outcome:** a test fails when any vendored file's mode differs from its source (or a vendored executable is not executable) and passes after the fix; the fix is checked by executing the vendored path.
 
 ## Acceptance Criteria
 
@@ -331,3 +354,7 @@ bvp_scores_proposed:
 
 ### 2026-11-23T17:36:16Z — status-update [task-update-agent]
 - **Change:** tags: +arc:project-shape-resilience
+
+### 2026-11-23T19:08:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
