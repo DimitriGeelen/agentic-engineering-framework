@@ -88,9 +88,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] docs/reports/T-5378-arc-linking.tsv maps each of the 90 tasks to one arc with a one-line reason; every arc named exists (or is the new `independent-review`).
-- [ ] Every mapping applied with `bin/fw arc tag <arc> T-XXXX` (no hand edits of task frontmatter); the unarced high-value check (scratchpad unarced_hv.py) returns 0 rows afterwards.
-- [ ] `independent-review` created with `bin/fw arc create` and no `supports:`; listed as an open operator question in the handback.
+- [x] docs/reports/T-5378-arc-linking.tsv maps each of the 90 tasks to one arc with a one-line reason; every arc named exists (or is the new `independent-review`).
+- [x] Every mapping applied with `bin/fw arc tag <arc> T-XXXX` (no hand edits of task frontmatter); the unarced high-value check (scratchpad unarced_hv.py) returns 0 rows afterwards.
+- [x] `independent-review` created with `bin/fw arc create` and no `supports:`; listed as an open operator question in the handback.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
