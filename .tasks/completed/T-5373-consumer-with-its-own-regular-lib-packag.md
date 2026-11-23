@@ -7,12 +7,12 @@ description: >
   a consumer's regular lib/__init__.py wins regardless of sys.path order, so stdin-python
   blocks fail with ModuleNotFoundError.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, consumer, peer-report]
-components: []
+components: [agents/audit/audit.sh, agents/context/check-active-completed-dup.py, agents/context/check-arc-id.py, agents/context/check-inception-decisions.py, agents/context/check-inception-recommendation.py, agents/context/check-inception-schema.py, agents/context/check-onboarding-gate.py, agents/context/check-review-links.py, agents/context/consolidate.py, agents/context/inject-next-directive.py, agents/context/sidecar-inbox.sh, agents/task-create/update-task.sh, bin/fw, lib/__init__.py, lib/arc.sh, lib/bvp.sh, lib/init.sh, lib/locks-gitignore.sh, lib/run_module.py, lib/upgrade.sh, tests/unit/t3636_objectives_seed.bats, tests/unit/t5373_locks_gitignore.bats, tests/unit/test_t5373_consumer_lib_shadow.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-22T23:21:30Z
-last_update: '2026-11-22T23:36:50Z'
-date_finished:
+last_update: 2026-11-23T03:17:23Z
+date_finished: 2026-11-23T03:17:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -416,3 +416,23 @@ bin/fw vendor self --check --task T-5373
 
 ### 2026-11-22T23:36:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-11-23T03:17:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e3134353
+- **Timestamp:** 2026-11-23T03:17:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — New hermetic test `tests/unit/test_t5373_consumer_lib_shadow.py`: a temp consumer with a regular `lib/__init__.py` (and a decoy `lib/inception_decisions.py`-free tree); from that CWD, the framework's 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/inception_decisions.py in: New hermetic test `tests/unit/test_t5373_consumer_lib_shadow.py`: a temp consumer with a regular `lib/__init__.py` (and a decoy `lib/inception_decisio`
+- **AC#4 (Agent)** — Check whether `fw inception decide` / update-task leaves `.context/locks/T-XXX.lock` behind after a successful completion; fix if it is ours, or record why not.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/locks/T-XXX.lock in: Check whether `fw inception decide` / update-task leaves `.context/locks/T-XXX.lock` behind after a successful completion; fix if it is ours, or recor`

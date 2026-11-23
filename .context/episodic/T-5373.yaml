@@ -1,0 +1,147 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5373: Consumer with its own regular lib package breaks framework 'from lib.X import' (inception decide aborts)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-23T03:17:48Z
+# ============================================================================
+
+task_id: T-5373
+task_name: "Consumer with its own regular lib package breaks framework 'from lib.X import' (inception decide aborts)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-22T23:21:30Z
+completed: 2026-11-23T03:17:23Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-11-23T00:22:20+01:00
+last_commit: 2026-11-23T04:11:08+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture — peer bug: consumer regular lib package shadows framework lib namespace. spec — Context, criteria, RCA for consumer lib shadowing. framework lib is a regular package; framework python puts the framework root first in consumers. fabric cards for lib/__init__.py, lib/run_module.py and the consumer-lib-shadow test. fw init and fw upgrade gitignore .context/locks/ in consumers. scripts with a sibling lib/ dir put the framework root first before any lib import. test fixtures disable git auto-gc so a detached gc cannot race teardown. learning — fixtures must disable git auto-gc (second instance after T-5343)
+
+# Key outcomes
+outcomes:
+  - 'Framework `lib/` is a regular package (`lib/__init__.py`, empty or docstring only), and every framework python entry that imports `lib.` from a shell heredoc / `-c` / stdin puts the framework root at sys.path[0] first (audit all of them under agents/ lib/ bin/; list the ones changed).'
+  - 'New hermetic test `tests/unit/test_t5373_consumer_lib_shadow.py`: a temp consumer with a regular `lib/__init__.py` (and a decoy `lib/inception_decisions.py`-free tree); from that CWD, the framework''s check_inception_scope_trace python path and at least two other stdin/`-c` helpers import the framework modules. Fails before the fix, passes after.'
+  - 'Existing unit tests that import `lib` (pytest tests/unit, web import smoke) keep their results; `upgrade_fresh_machine_simulation.bats` stays green.'
+  - 'Check whether `fw inception decide` / update-task leaves `.context/locks/T-XXX.lock` behind after a successful completion; fix if it is ours, or record why not.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'learning — fixtures must disable git auto-gc (second instance after T-5343)'
+    source: git-mined
+  - description: 'test fixtures disable git auto-gc so a detached gc cannot race teardown'
+    source: git-mined
+  - description: 'capture — peer bug: consumer regular lib package shadows framework lib namespace'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/context/check-active-completed-dup.py'
+  - '.agentic-framework/agents/context/check-arc-id.py'
+  - '.agentic-framework/agents/context/check-inception-decisions.py'
+  - '.agentic-framework/agents/context/check-inception-recommendation.py'
+  - '.agentic-framework/agents/context/check-inception-schema.py'
+  - '.agentic-framework/agents/context/check-onboarding-gate.py'
+  - '.agentic-framework/agents/context/check-review-links.py'
+  - '.agentic-framework/agents/context/consolidate.py'
+  - '.agentic-framework/agents/context/inject-next-directive.py'
+  - '.agentic-framework/agents/context/sidecar-inbox.sh'
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/__init__.py'
+  - '.agentic-framework/lib/arc.sh'
+  - '.agentic-framework/lib/bvp.sh'
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/locks-gitignore.sh'
+  - '.agentic-framework/lib/run_module.py'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.context/project/learnings.yaml'
+  - '.fabric/components/lib-__init__.yaml'
+  - '.fabric/components/lib-locks-gitignore.yaml'
+  - '.fabric/components/lib-run_module.yaml'
+  - '.fabric/components/tests-unit-t5373_locks_gitignore.yaml'
+  - '.fabric/components/tests-unit-test_t5373_consumer_lib_shadow.yaml'
+  - '.tasks/active/T-5373-consumer-with-its-own-regular-lib-packag.md'
+  - 'agents/audit/audit.sh'
+  - 'agents/context/check-active-completed-dup.py'
+  - 'agents/context/check-arc-id.py'
+  - 'agents/context/check-inception-decisions.py'
+  - 'agents/context/check-inception-recommendation.py'
+  - 'agents/context/check-inception-schema.py'
+  - 'agents/context/check-onboarding-gate.py'
+  - 'agents/context/check-review-links.py'
+  - 'agents/context/consolidate.py'
+  - 'agents/context/inject-next-directive.py'
+  - 'agents/context/sidecar-inbox.sh'
+  - 'agents/task-create/update-task.sh'
+  - 'bin/fw'
+  - 'lib/__init__.py'
+  - 'lib/arc.sh'
+  - 'lib/bvp.sh'
+  - 'lib/init.sh'
+  - 'lib/locks-gitignore.sh'
+  - 'lib/run_module.py'
+  - 'lib/upgrade.sh'
+  - 'tests/unit/t3636_objectives_seed.bats'
+  - 'tests/unit/t5373_locks_gitignore.bats'
+  - 'tests/unit/test_t5373_consumer_lib_shadow.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-23T00:22:20'
+    action: 'T-5373: capture — peer bug: consumer regular lib package shadows framework lib namespace'
+  - time: '2026-11-23T00:36:50'
+    action: 'T-5373: spec — Context, criteria, RCA for consumer lib shadowing'
+  - time: '2026-11-23T01:06:28'
+    action: 'T-5373: framework lib is a regular package; framework python puts the framework root first in consumers'
+  - time: '2026-11-23T01:06:45'
+    action: 'T-5373: fabric cards for lib/__init__.py, lib/run_module.py and the consumer-lib-shadow test'
+  - time: '2026-11-23T01:54:23'
+    action: 'T-5373: fw init and fw upgrade gitignore .context/locks/ in consumers'
+  - time: '2026-11-23T02:57:31'
+    action: 'T-5373: scripts with a sibling lib/ dir put the framework root first before any lib import'
+  - time: '2026-11-23T04:10:59'
+    action: 'T-5373: test fixtures disable git auto-gc so a detached gc cannot race teardown'
+  - time: '2026-11-23T04:11:08'
+    action: 'T-5373: learning — fixtures must disable git auto-gc (second instance after T-5343)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 235 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, consumer, peer-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 235
+  commits: 9
+  files_changed: 53
+  lines_added: 1447
+  lines_removed: 110
+  footprint_refreshed_at: '2026-11-23T03:18:01Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5373-consumer-with-its-own-regular-lib-packag.md
+generated_by: context-agent-hybrid

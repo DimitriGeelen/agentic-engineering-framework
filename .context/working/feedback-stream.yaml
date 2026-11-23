@@ -58804,3 +58804,21 @@ scan_id: R-81a4b6d2
 task_id: T-5372
 payload:
   task_file: .tasks/active/T-5372-fw-upgrade-in-a-project-installed-at-a-b.md
+---
+kind: scan_emitted
+timestamp: '2026-11-23T03:17:34Z'
+scan_id: R-e3134353
+task_id: T-5373
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-23T03:17:34Z'
+scan_id: R-e3134353
+task_id: T-5373
+payload:
+  task_file: .tasks/active/T-5373-consumer-with-its-own-regular-lib-packag.md
