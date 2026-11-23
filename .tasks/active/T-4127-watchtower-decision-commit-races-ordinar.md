@@ -138,7 +138,13 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Background / trigger:** codex review round 2 of hotfix/v1.8.10 returned DO-NOT-SHIP on the Watchtower decision commit (T-4081 fix): a HIGH race, a MEDIUM plain-move failure and a LOW false timing claim (web/blueprints/inception.py).
+
+**Problem / hypothesis:** Watchtower committed operator decisions through a scratch GIT_INDEX_FILE and refreshed the real index afterwards; an ordinary commit landing between the two consumed the stale real index and silently reverted the operator's decision, and the refresh then reported success.
+
+**Goal:** operator decisions are committed through git's real index under git's own lock (`git commit --only`), so no window exists by construction, without sweeping or losing other staged changes (operator's chosen root fix, 2026-10-12).
+
+**Expected outcome:** a competing commit can no longer revert a Watchtower decision (regression test fails pre-fix, passes after); plain move and git mv both work; a held index.lock fails visibly.
 
 ## Acceptance Criteria
 
@@ -359,6 +365,11 @@ bin/fw watchtower current
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-23 — linked to arc-011 and closed out in the autonomous run
+- **What changed:** the build and codex round-3 follow-up (pathspec rebuilt after `git add`) were done in October with all four criteria ticked; the task stayed open only because it predates the T-4907 Context gate. Linked to arc-011 (O-5: concurrent writers never corrupt governed state) by T-5378.
+- **Plan impact:** the "then the hotfix question" step of the operator's 2026-10-12 plan is moot: v1.8.15 has since been released from bleeding-edge, which carries this fix.
+- **Triggered:** none.
 
 ## Recommendation
 
