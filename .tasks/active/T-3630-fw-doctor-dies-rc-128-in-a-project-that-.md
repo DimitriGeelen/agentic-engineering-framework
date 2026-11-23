@@ -138,14 +138,22 @@ bvp_scores_proposed:
 
 ## Context
 
+**Background / trigger:** OBS-587 triage (T-3624), 2026-10-01: `fw doctor` died with rc 128 right after "OK Context directory" in a project that is not a git repository; filed in parallel with T-3625 by two triage workers.
+
+**Problem / hypothesis:** `hooks_dir=$(git -C "$PROJECT_ROOT" rev-parse --git-path hooks)` under `set -euo pipefail` exits the whole doctor when git returns 128.
+
+**Goal:** confirm the fix that shipped under the owner task T-3625 and close this duplicate on evidence.
+
+**Expected outcome:** doctor runs to completion outside a git repo; the two witnesses this task named pass.
+
 **DUPLICATE of T-3625** (same bug: `fw doctor` exits 128 outside a git repo, from 176445c64 / T-2812). The parallel triage workers T-3623 and T-3624 filed it independently on 2026-10-01. Keep T-3625 as the owner. This file adds its witnesses: t3161_empty_registry_does_not_wipe_live_cron and test_cron_registry_generated_drift (bin/fw:1755). Shelved; fix in T-3625.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The T-3625 fix is present (bin/fw:2346 `... rev-parse --git-path hooks 2>/dev/null) || hooks_dir=""`, commit e04f49993) and `fw doctor` in a non-git project runs to its summary instead of dying with rc 128 (2026-11-23: 326 lines of output, ends "8 failure(s), 120 warning(s)", rc 2 for the bare fixture's findings).
+- [x] The witnesses this task named pass at HEAD: tests/unit/t3161_empty_registry_does_not_wipe_live_cron.bats 6/6, tests/unit/test_cron_registry_generated_drift.bats 3/3 (2026-11-23).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -305,6 +313,9 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+grep -q 'rev-parse --git-path hooks 2>/dev/null) || hooks_dir=""' bin/fw
+timeout 900 bats tests/unit/t3161_empty_registry_does_not_wipe_live_cron.bats > /tmp/.t3630a.out 2>&1; ! grep -q "^not ok" /tmp/.t3630a.out
+timeout 900 bats tests/unit/test_cron_registry_generated_drift.bats > /tmp/.t3630b.out 2>&1; ! grep -q "^not ok" /tmp/.t3630b.out
 
 ## RCA
 
@@ -321,6 +332,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw doctor` exited 128 right after "OK Context directory" in a project that is not a git repository; every later check silently never ran.
+
+**Root cause:** an unguarded `$(git rev-parse ...)` assignment under `set -euo pipefail` (introduced by 176445c64 / T-2812); git returns 128 outside a repo and the shell exits.
+
+**Why structurally allowed:** every doctor test fixture is a git repository, so the non-git shape was never executed.
+
+**Prevention:** fixed and owned by T-3625 (e04f49993); this duplicate's witnesses (t3161, test_cron_registry_generated_drift) run in its Verification. Gap left: no test runs `fw doctor` itself outside a git repo (noted, not filed here).
 
 ## Evolution
 
@@ -345,6 +364,11 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-23 — closed as duplicate in the autonomous run (arc-004)
+- **What changed:** selected as unit 10 (O-4 → arc-004 → Q1); found already fixed by its owner T-3625. Reproduced the fixed behaviour from a non-git project and ran both witnesses.
+- **Plan impact:** none; no code change under this task.
+- **Triggered:** none filed. Gap noted in RCA: no test runs `fw doctor` outside a git repo.
 
 ## Recommendation
 
