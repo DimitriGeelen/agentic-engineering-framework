@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3594: T-3576 build B: git pre-push refuses a non-fast-forward (forced) ref update without a matching Tier 0 action approval, however the push was launched
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-23T22:07:34Z
+# ============================================================================
+
+task_id: T-3594
+task_name: "T-3576 build B: git pre-push refuses a non-fast-forward (forced) ref update without a matching Tier 0 action approval, however the push was launched"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-30T15:42:01Z
+completed: 2026-11-23T21:48:05Z
+duration_days: 54
+updates_count: 7
+first_commit: 2026-09-30T18:19:46+02:00
+last_commit: 2026-09-30T20:17:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pre-push refuses non-fast-forward updates and ref deletions without a matching Tier 0 action approval (consumed once); works however the push is launched; --no-verify limit stated. criteria ticked (proving tests named) and Verification commands recorded. review fixes — a moved tag (refs/tags/*, remote value exists) is a forced update needing approval (A1); limit wording corrected in hook, block message, CLAUDE.md and FRAMEWORK.md to every hook-skipping path (A2); A3/A4 registered as OBS-568/OBS-569
+
+# Key outcomes
+outcomes:
+  - 'The pre-push hook (installed by `fw git install-hooks`) reads git''s ref-update lines on stdin and detects, per ref: a non-fast-forward update (the remote sha is not an ancestor of the local sha) and a branch delete (local sha all zeros)'
+  - 'Such an update is refused unless a matching T-3593 action approval exists (force-push or branch-delete, same ref and same remote), which is then consumed and logged; the refusal names the ref and remote and how to request approval'
+  - 'It works regardless of how the push was launched: a test pushes via a script (`bash push.sh` containing `git push --force`) to a fixture bare remote and is refused; the same with an approval succeeds'
+  - 'Normal fast-forward pushes, `fw handover --commit` pushes, tag pushes and the mirror sync are unaffected (tests or verified runs); new-branch creation (remote sha all zeros) is allowed'
+  - '`--no-verify` still skips the hook (a git limitation); this is stated honestly in the block message and CLAUDE.md, and the server-side protection option (OneDev branch protection) is named as the stronger control for the operator to decide on'
+  - 'Consumer projects receive the hook through `fw upgrade`/`fw git install-hooks` (tests/unit/upgrade_fresh_machine_simulation.bats stays green)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'review fixes — a moved tag (refs/tags/*, remote value exists) is a forced update needing approval (A1); limit wording corrected in hook, block message, CLAUDE.md and FRAMEWORK.md to every hook-skipping path (A2); A3/A4 registered as OBS-568/OBS-569'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/lib/tier0_action.py'
+  - 'agents/git/lib/hooks.sh'
+  - 'CLAUDE.md'
+  - '.context/concerns.yaml'
+  - 'FRAMEWORK.md'
+  - 'lib/tier0_action.py'
+  - '.tasks/active/T-3594-t-3576-build-b-git-pre-push-refuses-a-no.md'
+  - 'tests/unit/t3594_prepush_forced_update_guard.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-30T18:19:46'
+    action: 'T-3594: pre-push refuses non-fast-forward updates and ref deletions without a matching Tier 0 action approval (consumed once); works however the push is launched; --no-verify limit stated'
+  - time: '2026-09-30T18:21:16'
+    action: 'T-3594: criteria ticked (proving tests named) and Verification commands recorded'
+  - time: '2026-09-30T20:17:30'
+    action: 'T-3594: review fixes — a moved tag (refs/tags/*, remote value exists) is a forced update needing approval (A1); limit wording corrected in hook, block message, CLAUDE.md and FRAMEWORK.md to every hook-skipping path (A2); A3/A4 registered as OBS-568/OBS-569'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 78126 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:payload-mediation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 78126
+  commits: 4
+  files_changed: 16
+  lines_added: 1242
+  lines_removed: 76
+  footprint_refreshed_at: '2026-11-23T22:08:46Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3594-t-3576-build-b-git-pre-push-refuses-a-no.md
+generated_by: context-agent-hybrid

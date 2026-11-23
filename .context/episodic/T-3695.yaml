@@ -1,0 +1,133 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3695: check-human-ac-tick guards only Write|Edit: a Bash sed -i / tee / cp can tick a ### Human acceptance criterion (sovereignty bypass)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-23T21:39:03Z
+# ============================================================================
+
+task_id: T-3695
+task_name: "check-human-ac-tick guards only Write|Edit: a Bash sed -i / tee / cp can tick a ### Human acceptance criterion (sovereignty bypass)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-01T23:37:22Z
+completed: 2026-11-23T21:35:03Z
+duration_days: 53
+updates_count: 8
+first_commit: 2026-10-02T14:44:07+02:00
+last_commit: 2026-11-23T18:41:39+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Human-AC tick guard covers Bash; fw audit FAILs on unprovenanced Human ticks. review round 1 fixes — sed -e/w parsing, merges, verdict-backed annotations, one ack per tick, all Human sections, quoted-operator FPs. review round 2 fixes — long-option prefixes, verdict bound to criterion + one applied event per tick, bash-style tokenizer. review round 3 findings fixed (unreviewed) — substitutions in quotes, title+body criterion identity, -z paths, comment/dry-run FPs. record live false positive of the new Bash guard (redirect to a VAR target + task id in a sed expression); file T-3727. parked — review criterion failed 4 rounds; failure mode and Sovereign question recorded
+
+# Key outcomes
+outcomes:
+  - 'AC1 Reproduction recorded: which shell write paths to a `.tasks/{active,completed}/T-*.md` file were (or were not) already refused by `check-active-task.sh` before this change, in which modes — written into `## RCA`.'
+  - 'AC2 A Bash command whose shell write targets a `.tasks/{active,completed}/T-*.md` file through `sed -i`, `perl -i`, `tee`, a redirect (`>`/`>>`), `cp`/`mv`/`install`/`dd of=` over it, or `python3 -c`/`perl -e` naming it, is refused by a PreToolUse Bash hook before it runs. Verbs are anchored to command position (start of a pipeline segment), not anywhere in the string.'
+  - 'AC3 Legitimate Bash reads of task files (`cat`, `grep`, `sed -n`, `git diff`) and writes to unrelated files pass the new check.'
+  - 'AC4 The block message and CLAUDE.md §Agent/Human AC Split state the residual: a script file or other indirection is not inspected (same scope boundary as Tier 0, T-2742).'
+  - 'AC5 Post-hoc detector: `fw audit` FAILs when a commit flips a `### Human` box `[ ]`→`[x]` and its author is an agent identity or the change did not come through `fw task review`/Watchtower; pinned against a fixture git repo.'
+  - 'AC6 bats suite: one fixture test per write path (sed -i, tee, redirect, cp over, python -c) plus controls (reads, unrelated writes) and audit-detector tests; no mid-test `! cmd`; all green.'
+  - 'AC7 Hook registered in `.claude/settings.json` AND consumer template `lib/init.sh`; enforcement baseline refreshed; vendored copy synced (`bin/fw vendor self --check` clean).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'review round 3 findings fixed (unreviewed) — substitutions in quotes, title+body criterion identity, -z paths, comment/dry-run FPs'
+    source: git-mined
+  - description: 'review round 2 fixes — long-option prefixes, verdict bound to criterion + one applied event per tick, bash-style tokenizer'
+    source: git-mined
+  - description: 'review round 1 fixes — sed -e/w parsing, merges, verdict-backed annotations, one ack per tick, all Human sections, quoted-operator FPs'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-10-02 — Bash leg refuses the write, not the tick'
+    chose: 'refuse ANY shell write to `.tasks/**` under agent control (Edit tool stays open and diffed).'
+    rationale: 'a shell command''s result cannot be computed before it runs; simulating `sed`/`perl`/python is unbounded. The Edit tool already covers every legitimate agent edit.'
+    alternatives_rejected: ['simulating the command to diff old/new (unsound for anything beyond `sed s///`); refusing only commands whose text contains `[x]` (trivially evaded: `s/ \]/x]/`).']
+  - decision: '2026-10-02 — Watchtower provenance split to T-3722'
+    chose: 'ledger + reader + `ack` CLI here; the one-call Watchtower write in T-3722.'
+    rationale: '`web/blueprints/tasks.py` is a render surface — P-013 requires a `[REVIEW]` Human AC, which would leave this security fix un-closable by its own review.'
+    alternatives_rejected: ['`--skip-render-review` (forbidden for this task); reading Watchtower''s access log (rotated, local, and an agent curl is indistinguishable).']
+  - decision: '2026-10-02 — Audit range by ancestry, not date'
+    chose: '`<commit that added lib/human_ac_ticks.py>..HEAD`.'
+    rationale: '`git log --since` trusts committer dates; a backdated commit escapes it (pinned by test 24).'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/context/check-human-ac-tick.py'
+  - '.agentic-framework/lib/human_ac_ticks.py'
+  - '.agentic-framework/lib/inception.sh'
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - '.agentic-framework/lib/verify-acs.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/audit/audit.sh'
+  - 'agents/context/check-human-ac-tick.py'
+  - 'CLAUDE.md'
+  - '.claude/settings.json'
+  - '.context/costs/reviews.jsonl'
+  - '.context/project/enforcement-baseline.sha256'
+  - 'docs/reports/T-3695-review-brief.md'
+  - 'docs/reports/T-3695-review-codex.md'
+  - '.fabric/components/lib-human_ac_ticks.yaml'
+  - '.fabric/components/lib-shell_write_scan.yaml'
+  - 'lib/human_ac_ticks.py'
+  - 'lib/inception.sh'
+  - 'lib/init.sh'
+  - 'lib/shell_write_scan.py'
+  - 'lib/verify-acs.sh'
+  - '.tasks/active/T-3695-check-human-ac-tick-guards-only-writeedi.md'
+  - '.tasks/active/T-3722-watchtower-toggle-ac-writes-a-human-tick.md'
+  - '.tasks/active/T-3727-sidecar-unit-tests-not-hermetic-under-th.md'
+  - 'tests/unit/t3695_human_ac_tick_bash.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-02T14:44:07'
+    action: 'T-3695: Human-AC tick guard covers Bash; fw audit FAILs on unprovenanced Human ticks'
+  - time: '2026-10-02T14:57:39'
+    action: 'T-3695: review round 1 fixes — sed -e/w parsing, merges, verdict-backed annotations, one ack per tick, all Human sections, quoted-operator FPs'
+  - time: '2026-10-02T15:06:58'
+    action: 'T-3695: review round 2 fixes — long-option prefixes, verdict bound to criterion + one applied event per tick, bash-style tokenizer'
+  - time: '2026-10-02T15:16:55'
+    action: 'T-3695: review round 3 findings fixed (unreviewed) — substitutions in quotes, title+body criterion identity, -z paths, comment/dry-run FPs'
+  - time: '2026-10-02T16:42:49'
+    action: 'T-3695: record live false positive of the new Bash guard (redirect to a VAR target + task id in a sed expression); file T-3727'
+  - time: '2026-11-23T18:41:39'
+    action: 'T-3695: parked — review criterion failed 4 rounds; failure mode and Sovereign question recorded'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 76197 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, consult-triage, T-3678, security, sovereignty, arc:payload-mediation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 76197
+  commits: 7
+  files_changed: 34
+  lines_added: 5681
+  lines_removed: 566
+  footprint_refreshed_at: '2026-11-23T22:08:47Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3695-check-human-ac-tick-guards-only-writeedi.md
+generated_by: context-agent-hybrid

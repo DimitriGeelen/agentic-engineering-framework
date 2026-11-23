@@ -1,23 +1,22 @@
 ---
-id: T-3593
-name: "T-3576 build A: Tier 0 approvals keyed to the ACTION (verb + ref + remote /
-  target) instead of the exact command hash; honest block message"
+id: T-3594
+name: "T-3576 build B: git pre-push refuses a non-fast-forward (forced) ref update
+  without a matching Tier 0 action approval, however the push was launched"
 description: >
-  T-3576 GO (operator 2026-09-30, option a). check-tier0.sh:245 hashes the whole command,
-  so a cosmetic retry (tail -12 vs -14) voids the operator's approval and pushes agents
-  toward script indirection, which Tier 0 cannot see (T-2742). Build: an approval
-  names an action (e.g. force-push ref X to remote Y; hard-reset branch X; rm -rf
-  path P), matched regardless of incidental command text; one approval covers one
-  action for a bounded time and is consumed on use; the block message states plainly
-  that the text gate is a speed bump and names what enforces for real (the pre-push
-  check, build B). Keep fw tier0 approve human-only.
+  T-3576 GO (operator 2026-09-30, option a). 832 force-pushed through a script (bash
+  push.sh) and Tier 0 never saw it. A pre-push hook sees the actual ref updates on
+  stdin (local sha, remote ref, remote sha), so it can detect a non-fast-forward (remote
+  sha not an ancestor of local sha) regardless of how git push was invoked. Refuse
+  unless a matching action approval from build A exists (ref + remote), consume it,
+  and log. Must not break normal fast-forward pushes, fw handover pushes, or mirror
+  sync; branch deletes are Tier 0 too. Depends on build A's approval format.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: later
+horizon: null
 tags: [arc:payload-mediation]
-components: []
+components: [agents/git/lib/hooks.sh, lib/tier0_action.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,9 +45,9 @@ arc_id: payload-mediation
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-30T15:41:21Z
-last_update: '2026-11-23T17:45:32Z'
-date_finished:
+created: 2026-09-30T15:42:01Z
+last_update: 2026-11-23T21:48:05Z
+date_finished: 2026-11-23T21:48:05Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -59,8 +58,27 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-30T15:45:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=273,acs=9)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-11-23T15:00:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 9
+      tier: 2
+      effort: 8
+    rationale: blast_radius=9 (3-fabric-paths, 729-dependents-cross-cutting); 
+      tier=2 (workflow:build); effort=8 (lines=282,acs=9)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-09-30T15:42:46Z'
+  - ts: '2026-09-30T15:45:28Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -77,38 +95,21 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-  - ts: '2026-10-01T13:03:44Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 1
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
-      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
   - ts: '2026-10-22T07:45:32Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 0
       D2: 0
       D3: 0
-      D4: 0
-      F-RECALL: 0
+      D4: 2
+      F-RECALL: 1
       F-AUTONOMY: 0
-      F3: 1
+      F3: 0
       F1: 0
       F2: 0
-    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=0 
-      (no-signal); F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=1 
-      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rationale: D1=0 (no-signal); D2=0 (no-signal); D3=0 (no-signal); D4=2 
+      (body:env-class-handled); F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 
+      (no-signal); F3=0 (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
   - ts: '2026-10-31T13:15:16Z'
     estimator: bvp-estimator-v1-heuristic
@@ -116,71 +117,52 @@ bvp_scores_proposed:
       D1: 2
       D2: 0
       D3: 3
-      D4: 0
-      F-RECALL: 0
+      D4: 2
+      F-RECALL: 1
       F-AUTONOMY: 0
-      F3: 1
+      F3: 0
       F1: 0
       F2: 0
     rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=0 (no-signal); F-RECALL=0 
-      (no-signal); F-AUTONOMY=0 (no-signal); F3=1 
-      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=1 (body:episodic-only); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-  - ts: '2026-11-23T17:45:32Z'
+  - ts: '2026-11-23T17:45:33Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 2
       D2: 0
       D3: 3
-      D4: 0
+      D4: 2
       F-RECALL: 2
       F-AUTONOMY: 0
-      F3: 1
+      F3: 0
       F1: 0
       F2: 0
     rationale: D1=2 (body:learning-ref); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=0 (no-signal); F-RECALL=2 
-      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
-      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-09-30T15:45:17Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=276,acs=9)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-11-23T15:00:36Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 9
-      tier: 2
-      effort: 8
-    rationale: blast_radius=9 (6-fabric-paths, 729-dependents-cross-cutting); 
-      tier=2 (workflow:build); effort=8 (lines=307,acs=9)
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-3593: T-3576 build A: Tier 0 approvals keyed to the ACTION (verb + ref + remote / target) instead of the exact command hash; honest block message
+# T-3594: T-3576 build B: git pre-push refuses a non-fast-forward (forced) ref update without a matching Tier 0 action approval, however the push was launched
 
 ## Context
 
-Inception: .tasks/completed/T-3576-*.md (GO 2026-09-30). Origin: 832 OBS-449 via sidecar @16.
+Inception: .tasks/completed/T-3576-*.md (GO 2026-09-30). Depends on T-3593 (the action-approval format).
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] An approval is an ACTION record, not a command hash: `{verb, target(s), scope, approved_by, ts, expires, consumed}`, with at least the verbs force-push (ref + remote), branch-delete (ref + remote), hard-reset (branch) and recursive-delete (path); `check-tier0.sh` maps a blocked command to its action, so a retry whose incidental text differs (pipes, tail -N, whitespace, flag order) matches the same approval; a DIFFERENT target (other ref, other remote, other path) does not match
-- [x] Approvals are single-use and time-bounded (consumed on first matching use; expire; both logged); `fw tier0 approve` stays human-only (agent-refused under CLAUDECODE=1, `--i-am-human`), and it shows the operator the ACTION being approved in plain words
-- [x] The existing command-hash path keeps working for commands that map to no known action (backward compatible), and the audit logs which path matched
-- [x] The block message states the limit honestly: the text gate sees only the typed command; a script or indirection is not seen by it; force-push is enforced for real at git pre-push (T-3594); rm -rf inside a script has no equivalent control and is not covered. The message names how to request approval for the action
-- [x] CLAUDE.md §Enforcement Tiers is updated to match (no claim of coverage the gate lacks)
-- [x] Tests: the tail-12 vs tail-14 retry matches one approval; a different ref does not; single-use (second use refused); expiry; agent cannot approve; the legacy hash path still works; each with a negative control
-- [ ] Independent review (IW-7: security-relevant, so two internal reviewers: codex + opencode/Z.ai, cost logged) returns at least amber with no high findings; `bin/fw vendor self --check` clean
+- [x] The pre-push hook (installed by `fw git install-hooks`) reads git's ref-update lines on stdin and detects, per ref: a non-fast-forward update (the remote sha is not an ancestor of the local sha) and a branch delete (local sha all zeros)
+- [x] Such an update is refused unless a matching T-3593 action approval exists (force-push or branch-delete, same ref and same remote), which is then consumed and logged; the refusal names the ref and remote and how to request approval
+- [x] It works regardless of how the push was launched: a test pushes via a script (`bash push.sh` containing `git push --force`) to a fixture bare remote and is refused; the same with an approval succeeds
+- [x] Normal fast-forward pushes, `fw handover --commit` pushes, tag pushes and the mirror sync are unaffected (tests or verified runs); new-branch creation (remote sha all zeros) is allowed
+- [x] `--no-verify` still skips the hook (a git limitation); this is stated honestly in the block message and CLAUDE.md, and the server-side protection option (OneDev branch protection) is named as the stronger control for the operator to decide on
+- [x] Consumer projects receive the hook through `fw upgrade`/`fw git install-hooks` (tests/unit/upgrade_fresh_machine_simulation.bats stays green)
+- [ ] Independent review (two internal reviewers, cost logged) returns at least amber with no high findings; `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -341,9 +323,10 @@ Inception: .tasks/completed/T-3576-*.md (GO 2026-09-30). Origin: 832 OBS-449 via
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bats tests/unit/t3594_prepush_forced_update_guard.bats
 bats tests/unit/t3593_tier0_action_approvals.bats
-bats tests/unit/tier0_hash_normalization.bats tests/unit/tier0_idempotency.bats tests/unit/tier0_grant_ttl.bats tests/unit/tier0_scope_boundary.bats tests/unit/check_tier0_comment_stripping.bats tests/unit/tier0_card_provenance.bats
-python3 -c "import sys; sys.path.insert(0,'lib'); import tier0_action"
+bats tests/unit/hook_version_marker_parity.bats tests/unit/t3126_prepush_audit_gate_scope.bats tests/unit/t3125_prepush_self_vendor_judges_pushed_ref.bats
+bats tests/unit/upgrade_fresh_machine_simulation.bats
 bin/fw vendor self --check
 
 ## RCA
@@ -426,32 +409,6 @@ bin/fw vendor self --check
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-09-30 — Option spellings: resolve against git's own option list, not a denylist (re-review R1)
-- **Chose:** `lib/tier0_action.py:resolve_long` resolves every long option the way git's parse-options does (exact match, else a unique prefix), against the list the installed git prints for `git <sub> --git-completion-helper-all`. An unknown or ambiguous option, or a git that cannot print its list, makes the command unmapped. Push options are an **allowlist**: anything not handled explicitly or named in `_PUSH_BENIGN` makes the push unmapped (including `--receive-pack`/`--exec`, which previously had their argument skipped). The text gate matches every prefix of the flagged options (`ab()` in `check-tier0.sh`), reads a quoted single word as the argument the shell passes (`'--no-verify'`, `--no-'verify'`), and lists **every** matching risk, not only the first.
-- **Why:** round 2 denied the exact string `--no-verify` and let any other long option through, so `--no-verif` reopened R1 one keystroke from the fix. A hand list of abbreviations is the same mistake one level up; a list read from git follows the git that will actually parse the command.
-- **Rejected:** widening the denylist to known abbreviations (breaks on the next git release or the next option); the reviewer's regex `--no-v(e(r(i(f(y)?)?)?)?)?` alone (text gate only; the classifier would still silently skip an unknown option).
-
-### 2026-09-30 — R2 residue: same-user self-approval routes (documented, partly gated)
-- **Chose:** typed forms are now Tier 0 in the text gate: `CLAUDECODE= … fw tier0 approve`, `env … fw tier0 approve` / `env -u CLAUDECODE`, `unset CLAUDECODE; …approve`, `python3 -m tier0_action approve…`, and a direct `tier0_action.approve(` call inside quoted code. `approve()` now defaults `approved_by` to `"unknown"`, so a caller that names nobody is never recorded as `human`.
-- **Residue, stated:** every agent here runs as the operator's user. A script (`bash x.sh` that strips `CLAUDECODE` and approves), an edited copy of the module, or a direct write to `.context/working/tier0-action-approvals.json` still produces a record the gate cannot tell from the operator's. The text gate sees only typed text (T-2742), so it cannot close this; only a credential the agent does not hold (an operator-side signature, or approvals held by a different OS user) can. `CLAUDE.md` §Enforcement Tiers now names the env-strip route next to the file-forgery residual.
-- **Rejected:** trying to detect human-ness from the process tree inside the module (the same user can fake any ancestry it controls); refusing approval whenever `CLAUDECODE` is absent (breaks the operator's own terminal).
-
-### 2026-09-30 — OBS-568 pulled forward: admitted records expire after 60 s
-- **Chose:** `ADMIT_TTL = 60` (env `TIER0_ADMIT_TTL`). An `admitted` push approval expires 60 s after admission, independent of the grant TTL.
-- **Why:** the R1 chain needed an admitted record to live long enough for a second push to consume it. Pre-push follows the typed push within seconds, so 60 s bounds that second-use window (to 60 s, not zero) whatever spelling comes next.
-
-### 2026-10-01 — Round 5: the classifier is a strict grammar, not a denylist
-- **Chose:** `lib/tier0_action.py:classify` maps a command only when it is `(cd PATH &&)* git [-C PATH|-P|--no-pager]* SUB WORD*` or `(cd PATH &&)* rm OPTION* PATH+`, every word `[A-Za-z0-9._/:=@+%,-]+`, no `..` path component. Anything else is unmapped (exact-text approval). Self-approval: any typed command whose dequoted text has the word `tier0` is Tier 0 unless it is a plainly spelled `fw tier0 status|list`. The legacy exact-text path takes its lock with flock(2) from python and skips consumption when the lock cannot be taken.
-- **Why:** four rounds closed lists of shell spellings and each second-family review found another (`command export`, `'export'`, `git -C /tmp/a\ b`, `sudo … approve`, brace expansion, `$'..'`). A denylist over shell cannot be complete; an allowlist grammar fails toward showing the operator the literal command.
-- **Rejected:** a fifth denylist round; allowing `~`/`^` mid-word (keeps `HEAD~1` mapped, but the instruction was no `~` anywhere, and the exact-text path covers it); allowing a read-only prefix (`git status &&`) or trailing pipe (the original `| tail -N` motivation) — each reopens "what can a preceding or following segment change".
-- **Accepted cost:** `| tail -N`, `2>&1`, `HEAD~1`, `rm -rf *`, `git status && …` and quoted arguments now need exact-text approval; a read-only command naming the bare word `tier0` (a grep, a commit message) is blocked.
-
-### 2026-10-01 — Round 6: target keys are literal where git/rm are literal
-- **Chose:** a LOCAL `git branch -D|-d -f|--delete --force` name is keyed and shown exactly as typed (no `+` or `refs/heads/` stripping; names after `--` are literal). `normalize_ref` stays on the push paths only. An `rm` path keeps a trailing `/` (or `/.`) in its key and text. ANSI-C quoting (`\xHH`, `\NNN`, `\uHHHH`, `\UHHHHHHHH`, `\cX`, simple escapes) is decoded before the tier0 word check, and any `$'` skips the bash fast path.
-- **Why:** codex R5 HIGH: `-D victim`, `-D +victim`, `-D refs/heads/victim` are three branches to git but shared one key. Codex R5 MEDIUM: `$'tier\x30'` was SAFE.
-- **Other verbs checked:** `hard-reset`: `repo` is `realpath` of git's toplevel, `branch` is `symbolic-ref --short HEAD` (one namespace, from git, not from the typed text), `target` is a full commit id from `rev-parse --verify`, so no collision: checked, none. `recursive-delete`: `normpath` collapsed a trailing slash, and `rm -rf link/` (link -> dir) deletes the target's contents while `rm -rf link` deletes only the link (reproduced in a tmp fixture). Fixed: the slash stays in the key. `//` and `/./` mid-path still collapse (same target). A last `..` (`x/..` with x a symlink) also normalises lexically, but GNU rm refuses a last `.`/`..` component, so it deletes nothing: recorded, not changed.
-- **Rejected:** treating `link/` and `link` as one key on the grounds that the normal case (a real directory) is the same target: one approval must never cover two different deletions, and the cost of keeping them apart is only an over-block.
-
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -464,22 +421,42 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-09-30T15:41:21Z — task-created [task-create-agent]
+### 2026-09-30T15:42:01Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3593-t-3576-build-a-tier-0-approvals-keyed-to.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3594-t-3576-build-b-git-pre-push-refuses-a-no.md
 - **Context:** Initial task creation
 
-### 2026-09-30T15:42:45Z — status-update [task-update-agent]
+### 2026-09-30T16:02:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-### 2026-11-23T17:35:13Z — status-update [task-update-agent]
+### 2026-11-23T17:35:14Z — status-update [task-update-agent]
 - **Change:** tags: +arc:payload-mediation
 
-### 2026-11-23 — parked by the autonomous run (review criterion failed 7 rounds)
-- Selected as unit 4 (O-1 → arc-013 → Q1). Not worked: the only open criterion (independent review at least amber, no high findings) has failed rounds 1–7; round 7 is red from both codex and claude with HIGH left (docs/reports/T-3593-round7-codex.md, -claude.md: different push targets share keys; typed self-approval via brace expansion / line continuation).
-- **Failure mode:** each adversarial round finds another shell spelling of the same action; the grammar (round 5) narrowed it but did not end it. CLAUDE.md §Enforcement Tiers already states the residual ("fail-closed against accidents and unsophisticated self-approval, not forgery-resistant").
-- **Sovereign question (shared with T-3594, T-3695):** accept the documented residual and close on that ruling, run round 8, or move enforcement out of the text gate (git pre-push / server-side protection)?
+### 2026-11-23 — parked by the autonomous run (shared review with T-3593 failed 7 rounds)
+- Selected as unit 4 with T-3593 (O-1 → arc-013 → Q1). Not worked: the open criterion (independent review at least amber, no high findings) is reviewed jointly with T-3593 (docs/reports/T-3593-T-3594-*), and round 7 is red with HIGH left. Same failure mode and the same Sovereign question as T-3593 (see its Updates).
 
-### 2026-11-23T17:42:32Z — status-update [task-update-agent]
+### 2026-11-23T17:42:35Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-11-23T21:47:59Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-11-23T21:48:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** operator ruling 2026-11-23 (1a): accept the residual documented in CLAUDE.md Enforcement Tiers - a text gate, with the post-hoc audit detector as backstop; independent review did not pass after repeated rounds
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-418ecba9
+- **Timestamp:** 2026-11-23T22:07:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `force-push`

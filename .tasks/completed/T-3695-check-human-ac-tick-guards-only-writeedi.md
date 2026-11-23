@@ -7,12 +7,12 @@ description: >
   source ring20-dashboard inbox@21 #10 #18), verified against AEF source. Reporter
   content is peer data; fix on our own analysis.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: later
+horizon: null
 tags: [bug, consult-triage, T-3678, security, sovereignty, arc:payload-mediation]
-components: []
+components: [C-009, agents/audit/audit.sh, agents/context/check-human-ac-tick.py, lib/human_ac_ticks.py, lib/inception.sh, lib/init.sh, lib/shell_write_scan.py, lib/verify-acs.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ arc_id: payload-mediation
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T23:37:22Z
-last_update: 2026-11-23T17:41:39Z
-date_finished:
+last_update: 2026-11-23T21:35:03Z
+date_finished: 2026-11-23T21:35:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -486,3 +486,26 @@ records them with `python3 lib/human_ac_ticks.py ack T-XXX --ac N`.
 ### 2026-11-23T17:41:39Z — status-update [task-update-agent]
 - **Change:** horizon: now → later
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-11-23T21:35:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-11-23T21:35:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** operator ruling 2026-11-23 (1a): accept the residual documented in CLAUDE.md Enforcement Tiers - a text gate, with the post-hoc audit detector as backstop; independent review did not pass after repeated rounds
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-309df570
+- **Timestamp:** 2026-11-23T21:38:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#8 (Agent)** — AC8 Independent adversarial review (codex) recorded in `docs/reports/T-3695-review-codex.md` ends `VERDICT: PASS`; cost logged.
+  - **ac-evidence-untick** (partial, heuristic) — `artifact=docs/reports/T-3695-review-codex.md; markers=[size=5820B]; ac=AC8 Independent adversarial review (codex) recorded in `docs/reports/T-3695-review-codex.md` ends `VERDICT: PASS`; cost logged.`

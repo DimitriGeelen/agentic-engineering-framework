@@ -59092,3 +59092,57 @@ scan_id: R-bc13aa8e
 task_id: T-3630
 payload:
   task_file: .tasks/active/T-3630-fw-doctor-dies-rc-128-in-a-project-that-.md
+---
+kind: scan_emitted
+timestamp: '2026-11-23T21:38:40Z'
+scan_id: R-309df570
+task_id: T-3695
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-23T21:38:40Z'
+scan_id: R-309df570
+task_id: T-3695
+payload:
+  task_file: .tasks/active/T-3695-check-human-ac-tick-guards-only-writeedi.md
+---
+kind: scan_emitted
+timestamp: '2026-11-23T21:46:56Z'
+scan_id: R-d9dd2fcc
+task_id: T-3593
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-23T21:46:56Z'
+scan_id: R-d9dd2fcc
+task_id: T-3593
+payload:
+  task_file: .tasks/active/T-3593-t-3576-build-a-tier-0-approvals-keyed-to.md
+---
+kind: scan_emitted
+timestamp: '2026-11-23T22:07:11Z'
+scan_id: R-418ecba9
+task_id: T-3594
+payload:
+  overall: PASS
+  finding_count: 0
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-23T22:07:11Z'
+scan_id: R-418ecba9
+task_id: T-3594
+payload:
+  task_file: .tasks/active/T-3594-t-3576-build-b-git-pre-push-refuses-a-no.md

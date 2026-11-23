@@ -1,0 +1,216 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3593: T-3576 build A: Tier 0 approvals keyed to the ACTION (verb + ref + remote / target) instead of the exact command hash; honest block message
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-23T21:47:43Z
+# ============================================================================
+
+task_id: T-3593
+task_name: "T-3576 build A: Tier 0 approvals keyed to the ACTION (verb + ref + remote / target) instead of the exact command hash; honest block message"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-30T15:41:21Z
+completed: 2026-11-23T21:39:12Z
+duration_days: 54
+updates_count: 7
+first_commit: 2026-09-30T17:43:37+02:00
+last_commit: 2026-11-23T18:42:35+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-3576 GO → build tasks A (action-keyed approvals) and B (pre-push forced-update guard) with criteria; T-3584 closed. Tier 0 approvals keyed to the ACTION (verb + target), single-use + TTL, human-only approve, honest block message; legacy hash path kept for unmapped commands. Verification commands recorded in the task file. Tier 0 review — T-3593 RED (--no-verify folded into a force-push approval), T-3594 AMBER (forced tag move); fix prompt. review fixes R1-R4 — every flagged pattern must be covered by the action verb (--no-verify / git -c never folded into a force-push approval); human check in the module (approve-pending refuses under CLAUDECODE=1, override recorded as agent-override and carried to the bypass log); cd carries only across &&; hard-reset keyed to the resolved target commit; self-approval text-gate patterns; same-user forgery residual stated. re-review prompt for the Tier 0 fixes; T-3580 round-5 review brief. re-review RED (abbreviated long options reopen R1; || cd); round-3 fix prompt. T-3580 second-family (codex) RED saved. replace two dead negations (bare ! cmd) in t3593 bats with run + status checks; commit handover S-2026-0930-2101. round 3 — long options resolved against git's own option list (abbreviations, --end-of-options), allowlist else unmapped; quoted/abbreviated --no-verify is HOOK BYPASS; cd after ||/|/;/& does not carry; tag key refs/tags/<t>; core.hooksPath any case + --config-env/GIT_CONFIG_*; admitted push approvals expire after 60s; R2 residue documented. T-3594 bats: step past the 5s T-1508 duplicate-fire grace. round-3 independent review brief (Claude review worker + codex second family). round-3 second-family (codex) review — T-3593 RED (multi-setting GIT_CONFIG_PARAMETERS hooksPath, 5s replay window), T-3594 AMBER (tag delete key, git -P). round-3 Claude review (T-3593 RED: env/HOME/XDG/GIT_CONFIG_GLOBAL prefixes, CDPATH, 5s window ran reset twice; T-3594 AMBER) + round-4 fix prompt merging both families. round 4 — env/prefix routes unmapped by one rule, CDPATH, tool-call-bound dedup; T-3594 keys and commit -n. round-4 targeted review brief (both families). round-4 codex review — T-3593 RED (env taint behind command/quoted builtins; escaped-space global options; flock failure proceeds), T-3594 AMBER (unverified end to end). round-4 Claude review — T-3593 AMBER (F1 sudo/su/tmux self-approval unseen; F2 include.path), T-3594 GREEN. round-5 prompt — invert the classifier to a strict grammar (unmapped = exact-text), plus sudo/su/tmux self-approval, include.path, flock fail-closed, real double-reset test. round 5 — invert the classifier to a strict grammar (unmapped = exact text). round-5 targeted review brief (both families) before the operator decision. round-5 codex review RED — HIGH: local branch -D normalises +name / refs/heads/name to the same key (approval shown for one deletes another); MEDIUM: $'tier\x30' self-approval; grammar itself held. round-6 prompt (local branch -D literal names; ANSI-C decoded self-approval; doc precision). Claude round-5 review did not run: review dispatch refused while T-3582 edits termlink.sh (fail-closed). round 6 — local branch -D names keyed literally (+victim, refs/heads/victim are not victim); rm keeps trailing slash in key (symlink link/ deletes target); ANSI-C quoting decoded before self-approval word check; docs: detected-only wording, bare/help forms, same-call lock exception. round-6 final targeted review brief (both families). round-6 codex review RED — normalisation collisions (refs/heads/refs/tags/x vs tag x; fallback hash collapses quoted whitespace), NUL in $'..'; literal keys + grammar held. round-7 prompt — no normalisation anywhere (fully-qualified literal keys, raw-byte fallback hash), NUL truncation, path-order false block. round 7 — no normalisation: full-ref push keys at text gate and pre-push, literal rm operands, raw-byte exact-text hash, ANSI-C NUL truncation, module-exec rule tokenised (FW_VENDOR_ONLY false block). round-7 final review brief (both families). round-7 codex review RED — key serialisation ambiguity ('|remote=' in names; use canonical JSON), backslash-newline self-approval; round-6 findings closed. round-7 Claude review RED — brace-expansion and line-continuation self-approval (HIGH); 3-approval over-block (MEDIUM); repo pre-push lacks T-3594 guard until install-hooks. parked with T-3594 — review criterion failed 7 rounds; failure mode and Sovereign question recorded
+
+# Key outcomes
+outcomes:
+  - 'An approval is an ACTION record, not a command hash: `{verb, target(s), scope, approved_by, ts, expires, consumed}`, with at least the verbs force-push (ref + remote), branch-delete (ref + remote), hard-reset (branch) and recursive-delete (path); `check-tier0.sh` maps a blocked command to its action, so a retry whose incidental text differs (pipes, tail -N, whitespace, flag order) matches the same approval; a DIFFERENT target (other ref, other remote, other path) does not match'
+  - 'Approvals are single-use and time-bounded (consumed on first matching use; expire; both logged); `fw tier0 approve` stays human-only (agent-refused under CLAUDECODE=1, `--i-am-human`), and it shows the operator the ACTION being approved in plain words'
+  - 'The existing command-hash path keeps working for commands that map to no known action (backward compatible), and the audit logs which path matched'
+  - 'The block message states the limit honestly: the text gate sees only the typed command; a script or indirection is not seen by it; force-push is enforced for real at git pre-push (T-3594); rm -rf inside a script has no equivalent control and is not covered. The message names how to request approval for the action'
+  - 'CLAUDE.md §Enforcement Tiers is updated to match (no claim of coverage the gate lacks)'
+  - 'Tests: the tail-12 vs tail-14 retry matches one approval; a different ref does not; single-use (second use refused); expiry; agent cannot approve; the legacy hash path still works; each with a negative control'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'round 4 — env/prefix routes unmapped by one rule, CDPATH, tool-call-bound dedup; T-3594 keys and commit -n'
+    source: git-mined
+  - description: 'round-3 Claude review (T-3593 RED: env/HOME/XDG/GIT_CONFIG_GLOBAL prefixes, CDPATH, 5s window ran reset twice; T-3594 AMBER) + round-4 fix prompt merging both families'
+    source: git-mined
+  - description: 're-review RED (abbreviated long options reopen R1; || cd); round-3 fix prompt. T-3580 second-family (codex) RED saved'
+    source: git-mined
+  - description: 're-review prompt for the Tier 0 fixes; T-3580 round-5 review brief'
+    source: git-mined
+  - description: 'review fixes R1-R4 — every flagged pattern must be covered by the action verb (--no-verify / git -c never folded into a force-push approval); human check in the module (approve-pending refuses under CLAUDECODE=1, override recorded as agent-override and carried to the bypass log); cd carries only across &&; hard-reset keyed to the resolved target commit; self-approval text-gate patterns; same-user forgery residual stated'
+    source: git-mined
+  - description: 'Tier 0 review — T-3593 RED (--no-verify folded into a force-push approval), T-3594 AMBER (forced tag move); fix prompt'
+    source: git-mined
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  - decision: '2026-09-30 — Option spellings: resolve against git''s own option list, not a denylist (re-review R1)'
+    chose: '`lib/tier0_action.py:resolve_long` resolves every long option the way git''s parse-options does (exact match, else a unique prefix), against the list the installed git prints for `git <sub> --git-completion-helper-all`. An unknown or ambiguous option, or a git that cannot print its list, makes the command unmapped. Push options are an **allowlist**: anything not handled explicitly or named in `_PUSH_BENIGN` makes the push unmapped (including `--receive-pack`/`--exec`, which previously had their argument skipped). The text gate matches every prefix of the flagged options (`ab()` in `check-tier0.sh`), reads a quoted single word as the argument the shell passes (`''--no-verify''`, `--no-''verify''`), and lists **every** matching risk, not only the first.'
+    rationale: 'round 2 denied the exact string `--no-verify` and let any other long option through, so `--no-verif` reopened R1 one keystroke from the fix. A hand list of abbreviations is the same mistake one level up; a list read from git follows the git that will actually parse the command.'
+    alternatives_rejected: ['widening the denylist to known abbreviations (breaks on the next git release or the next option); the reviewer''s regex `--no-v(e(r(i(f(y)?)?)?)?)?` alone (text gate only; the classifier would still silently skip an unknown option).']
+  - decision: '2026-09-30 — R2 residue: same-user self-approval routes (documented, partly gated)'
+    chose: 'typed forms are now Tier 0 in the text gate: `CLAUDECODE= … fw tier0 approve`, `env … fw tier0 approve` / `env -u CLAUDECODE`, `unset CLAUDECODE; …approve`, `python3 -m tier0_action approve…`, and a direct `tier0_action.approve(` call inside quoted code. `approve()` now defaults `approved_by` to `"unknown"`, so a caller that names nobody is never recorded as `human`. - **Residue, stated:** every agent here runs as the operator''s user. A script (`bash x.sh` that strips `CLAUDECODE` and approves), an edited copy of the module, or a direct write to `.context/working/tier0-action-approvals.json` still produces a record the gate cannot tell from the operator''s. The text gate sees only typed text (T-2742), so it cannot close this; only a credential the agent does not hold (an operator-side signature, or approvals held by a different OS user) can. `CLAUDE.md` §Enforcement Tiers now names the env-strip route next to the file-forgery residual.'
+    alternatives_rejected: ['trying to detect human-ness from the process tree inside the module (the same user can fake any ancestry it controls); refusing approval whenever `CLAUDECODE` is absent (breaks the operator''s own terminal).']
+  - decision: '2026-09-30 — OBS-568 pulled forward: admitted records expire after 60 s'
+    chose: '`ADMIT_TTL = 60` (env `TIER0_ADMIT_TTL`). An `admitted` push approval expires 60 s after admission, independent of the grant TTL.'
+    rationale: 'the R1 chain needed an admitted record to live long enough for a second push to consume it. Pre-push follows the typed push within seconds, so 60 s bounds that second-use window (to 60 s, not zero) whatever spelling comes next.'
+  - decision: '2026-10-01 — Round 5: the classifier is a strict grammar, not a denylist'
+    chose: '`lib/tier0_action.py:classify` maps a command only when it is `(cd PATH &&)* git [-C PATH|-P|--no-pager]* SUB WORD*` or `(cd PATH &&)* rm OPTION* PATH+`, every word `[A-Za-z0-9._/:=@+%,-]+`, no `..` path component. Anything else is unmapped (exact-text approval). Self-approval: any typed command whose dequoted text has the word `tier0` is Tier 0 unless it is a plainly spelled `fw tier0 status|list`. The legacy exact-text path takes its lock with flock(2) from python and skips consumption when the lock cannot be taken.'
+    rationale: 'four rounds closed lists of shell spellings and each second-family review found another (`command export`, `''export''`, `git -C /tmp/a\ b`, `sudo … approve`, brace expansion, `$''..''`). A denylist over shell cannot be complete; an allowlist grammar fails toward showing the operator the literal command.'
+    alternatives_rejected: ['a fifth denylist round; allowing `~`/`^` mid-word (keeps `HEAD~1` mapped, but the instruction was no `~` anywhere, and the exact-text path covers it); allowing a read-only prefix (`git status &&`) or trailing pipe (the original `| tail -N` motivation) — each reopens "what can a preceding or following segment change". - **Accepted cost:** `| tail -N`, `2>&1`, `HEAD~1`, `rm -rf *`, `git status && …` and quoted arguments now need exact-text approval; a read-only command naming the bare word `tier0` (a grep, a commit message) is blocked.']
+  - decision: '2026-10-01 — Round 6: target keys are literal where git/rm are literal'
+    chose: 'a LOCAL `git branch -D|-d -f|--delete --force` name is keyed and shown exactly as typed (no `+` or `refs/heads/` stripping; names after `--` are literal). `normalize_ref` stays on the push paths only. An `rm` path keeps a trailing `/` (or `/.`) in its key and text. ANSI-C quoting (`\xHH`, `\NNN`, `\uHHHH`, `\UHHHHHHHH`, `\cX`, simple escapes) is decoded before the tier0 word check, and any `$''` skips the bash fast path.'
+    rationale: 'codex R5 HIGH: `-D victim`, `-D +victim`, `-D refs/heads/victim` are three branches to git but shared one key. Codex R5 MEDIUM: `$''tier\x30''` was SAFE. - **Other verbs checked:** `hard-reset`: `repo` is `realpath` of git''s toplevel, `branch` is `symbolic-ref --short HEAD` (one namespace, from git, not from the typed text), `target` is a full commit id from `rev-parse --verify`, so no collision: checked, none. `recursive-delete`: `normpath` collapsed a trailing slash, and `rm -rf link/` (link -> dir) deletes the target''s contents while `rm -rf link` deletes only the link (reproduced in a tmp fixture). Fixed: the slash stays in the key. `//` and `/./` mid-path still collapse (same target). A last `..` (`x/..` with x a symlink) also normalises lexically, but GNU rm refuses a last `.`/`..` component, so it deletes nothing: recorded, not changed.'
+    alternatives_rejected: ['treating `link/` and `link` as one key on the grounds that the normal case (a real directory) is the same target: one approval must never cover two different deletions, and the cost of keeping them apart is only an over-block.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-tier0.sh'
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/tier0_action.py'
+  - 'agents/context/check-tier0.sh'
+  - 'agents/git/lib/hooks.sh'
+  - 'bin/fw'
+  - 'CLAUDE.md'
+  - '.context/episodic/T-3584.yaml'
+  - '.context/handovers/LATEST.md'
+  - '.context/handovers/S-2026-0930-2101.md'
+  - 'docs/reports/T-3580-round5-review-brief.md'
+  - 'docs/reports/T-3580-second-family-codex.md'
+  - 'docs/reports/T-3593-round3-codex.md'
+  - 'docs/reports/T-3593-round3-prompt.md'
+  - 'docs/reports/T-3593-round4-codex.md'
+  - 'docs/reports/T-3593-round4-prompt.md'
+  - 'docs/reports/T-3593-round5-codex.md'
+  - 'docs/reports/T-3593-round5-prompt.md'
+  - 'docs/reports/T-3593-round5-review-brief.md'
+  - 'docs/reports/T-3593-round6-codex.md'
+  - 'docs/reports/T-3593-round6-prompt.md'
+  - 'docs/reports/T-3593-round6-review-brief.md'
+  - 'docs/reports/T-3593-round7-claude.md'
+  - 'docs/reports/T-3593-round7-codex.md'
+  - 'docs/reports/T-3593-round7-prompt.md'
+  - 'docs/reports/T-3593-round7-review-brief.md'
+  - 'docs/reports/T-3593-T-3594-build-prompt.md'
+  - 'docs/reports/T-3593-T-3594-fix-prompt.md'
+  - 'docs/reports/T-3593-T-3594-rereview-prompt.md'
+  - 'docs/reports/T-3593-T-3594-review.md'
+  - 'docs/reports/T-3593-T-3594-round3-review-prompt.md'
+  - 'docs/reports/T-3593-T-3594-round4-review-prompt.md'
+  - '.fabric/components/lib-tier0_action.yaml'
+  - 'FRAMEWORK.md'
+  - 'lib/tier0_action.py'
+  - '.tasks/active/T-3593-t-3576-build-a-tier-0-approvals-keyed-to.md'
+  - '.tasks/active/T-3594-t-3576-build-b-git-pre-push-refuses-a-no.md'
+  - '.tasks/completed/T-3584-re-pin-the-vendored-designer-to-0140-832.md'
+  - 'tests/unit/t3593_round4_prefix_cdpath_dedup.bats'
+  - 'tests/unit/t3593_round5_grammar.bats'
+  - 'tests/unit/t3593_round6_literal_keys.bats'
+  - 'tests/unit/t3593_round7_no_normalisation.bats'
+  - 'tests/unit/t3593_tier0_action_approvals.bats'
+  - 'tests/unit/t3594_prepush_forced_update_guard.bats'
+  - 'tests/unit/t3594_round4_tag_keys_commit_n.bats'
+  - 'tests/unit/tier0_card_provenance.bats'
+  - 'tests/unit/tier0_grant_ttl.bats'
+  - 'tests/unit/tier0_hash_normalization.bats'
+  - 'tests/unit/tier0_idempotency.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-30T17:43:37'
+    action: 'T-3593: T-3576 GO → build tasks A (action-keyed approvals) and B (pre-push forced-update guard) with criteria; T-3584 closed'
+  - time: '2026-09-30T18:01:39'
+    action: 'T-3593: Tier 0 approvals keyed to the ACTION (verb + target), single-use + TTL, human-only approve, honest block message; legacy hash path kept for unmapped commands'
+  - time: '2026-09-30T18:20:55'
+    action: 'T-3593: Verification commands recorded in the task file'
+  - time: '2026-09-30T18:36:40'
+    action: 'T-3593: Tier 0 review — T-3593 RED (--no-verify folded into a force-push approval), T-3594 AMBER (forced tag move); fix prompt'
+  - time: '2026-09-30T20:13:40'
+    action: 'T-3593: review fixes R1-R4 — every flagged pattern must be covered by the action verb (--no-verify / git -c never folded into a force-push approval); human check in the module (approve-pending refuses under CLAUDECODE=1, override recorded as agent-override and carried to the bypass log); cd carries only across &&; hard-reset keyed to the resolved target commit; self-approval text-gate patterns; same-user forgery residual stated'
+  - time: '2026-09-30T20:37:34'
+    action: 'T-3593: re-review prompt for the Tier 0 fixes; T-3580 round-5 review brief'
+  - time: '2026-09-30T20:49:09'
+    action: 'T-3593: re-review RED (abbreviated long options reopen R1; || cd); round-3 fix prompt. T-3580 second-family (codex) RED saved'
+  - time: '2026-09-30T21:51:14'
+    action: 'T-3593: replace two dead negations (bare ! cmd) in t3593 bats with run + status checks; commit handover S-2026-0930-2101'
+  - time: '2026-09-30T22:24:13'
+    action: 'T-3593: round 3 — long options resolved against git''s own option list (abbreviations, --end-of-options), allowlist else unmapped; quoted/abbreviated --no-verify is HOOK BYPASS; cd after ||/|/;/& does not carry; tag key refs/tags/<t>; core.hooksPath any case + --config-env/GIT_CONFIG_*; admitted push approvals expire after 60s; R2 residue documented. T-3594 bats: step past the 5s T-1508 duplicate-fire grace'
+  - time: '2026-09-30T22:24:59'
+    action: 'T-3593: round-3 independent review brief (Claude review worker + codex second family)'
+  - time: '2026-09-30T22:27:20'
+    action: 'T-3593: round-3 second-family (codex) review — T-3593 RED (multi-setting GIT_CONFIG_PARAMETERS hooksPath, 5s replay window), T-3594 AMBER (tag delete key, git -P)'
+  - time: '2026-09-30T22:50:24'
+    action: 'T-3593: round-3 Claude review (T-3593 RED: env/HOME/XDG/GIT_CONFIG_GLOBAL prefixes, CDPATH, 5s window ran reset twice; T-3594 AMBER) + round-4 fix prompt merging both families'
+  - time: '2026-10-01T00:27:24'
+    action: 'T-3593: round 4 — env/prefix routes unmapped by one rule, CDPATH, tool-call-bound dedup; T-3594 keys and commit -n'
+  - time: '2026-10-01T00:30:22'
+    action: 'T-3593: round-4 targeted review brief (both families)'
+  - time: '2026-10-01T00:34:06'
+    action: 'T-3593: round-4 codex review — T-3593 RED (env taint behind command/quoted builtins; escaped-space global options; flock failure proceeds), T-3594 AMBER (unverified end to end)'
+  - time: '2026-10-01T09:10:53'
+    action: 'T-3593: round-4 Claude review — T-3593 AMBER (F1 sudo/su/tmux self-approval unseen; F2 include.path), T-3594 GREEN'
+  - time: '2026-10-01T09:41:50'
+    action: 'T-3593: round-5 prompt — invert the classifier to a strict grammar (unmapped = exact-text), plus sudo/su/tmux self-approval, include.path, flock fail-closed, real double-reset test'
+  - time: '2026-10-01T11:18:50'
+    action: 'T-3593: round 5 — invert the classifier to a strict grammar (unmapped = exact text)'
+  - time: '2026-10-01T14:48:36'
+    action: 'T-3593: round-5 targeted review brief (both families) before the operator decision'
+  - time: '2026-10-01T14:54:15'
+    action: 'T-3593: round-5 codex review RED — HIGH: local branch -D normalises +name / refs/heads/name to the same key (approval shown for one deletes another); MEDIUM: $''tier\x30'' self-approval; grammar itself held'
+  - time: '2026-10-01T14:59:11'
+    action: 'T-3593: round-6 prompt (local branch -D literal names; ANSI-C decoded self-approval; doc precision). Claude round-5 review did not run: review dispatch refused while T-3582 edits termlink.sh (fail-closed)'
+  - time: '2026-10-01T15:42:35'
+    action: 'T-3593: round 6 — local branch -D names keyed literally (+victim, refs/heads/victim are not victim); rm keeps trailing slash in key (symlink link/ deletes target); ANSI-C quoting decoded before self-approval word check; docs: detected-only wording, bare/help forms, same-call lock exception'
+  - time: '2026-10-01T15:44:35'
+    action: 'T-3593: round-6 final targeted review brief (both families)'
+  - time: '2026-10-01T15:46:43'
+    action: 'T-3593: round-6 codex review RED — normalisation collisions (refs/heads/refs/tags/x vs tag x; fallback hash collapses quoted whitespace), NUL in $''..''; literal keys + grammar held'
+  - time: '2026-10-01T16:08:22'
+    action: 'T-3593: round-7 prompt — no normalisation anywhere (fully-qualified literal keys, raw-byte fallback hash), NUL truncation, path-order false block'
+  - time: '2026-10-01T17:06:18'
+    action: 'T-3593: round 7 — no normalisation: full-ref push keys at text gate and pre-push, literal rm operands, raw-byte exact-text hash, ANSI-C NUL truncation, module-exec rule tokenised (FW_VENDOR_ONLY false block)'
+  - time: '2026-10-01T18:53:23'
+    action: 'T-3593: round-7 final review brief (both families)'
+  - time: '2026-10-01T18:56:02'
+    action: 'T-3593: round-7 codex review RED — key serialisation ambiguity (''|remote='' in names; use canonical JSON), backslash-newline self-approval; round-6 findings closed'
+  - time: '2026-10-01T19:24:35'
+    action: 'T-3593: round-7 Claude review RED — brace-expansion and line-continuation self-approval (HIGH); 3-approval over-block (MEDIUM); repo pre-push lacks T-3594 guard until install-hooks'
+  - time: '2026-11-23T18:42:35'
+    action: 'T-3593: parked with T-3594 — review criterion failed 7 rounds; failure mode and Sovereign question recorded'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 30 commit(s), 78117 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc:payload-mediation]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 78117
+  commits: 31
+  files_changed: 57
+  lines_added: 9188
+  lines_removed: 1589
+  footprint_refreshed_at: '2026-11-23T22:08:46Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3593-t-3576-build-a-tier-0-approvals-keyed-to.md
+generated_by: context-agent-hybrid
