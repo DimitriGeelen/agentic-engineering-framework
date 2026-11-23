@@ -137,7 +137,13 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Background / trigger:** a close batch on 2026-10-22 was refused for 11 finished tasks (T-4566, T-4231, T-4567, T-4290, T-4240, T-4568, T-4571, T-4575, T-4198, T-4269, T-4183), each by a different named gate; they have sat in active/ since, inflating the in-flight list.
+
+**Problem / hypothesis:** each refusal names one concrete defect (an unticked Agent criterion whose evidence holds, an empty Recommendation, non-URL review links, a stale Watchtower, a suite that timed out under load, vendor drift in flight), not a defect in the delivered work.
+
+**Goal:** fix only the defect each gate names and close the task through the gate; never tick a Human criterion and never use --force or --skip-*.
+
+**Expected outcome:** each of the 11 is either closed and committed, or stays open with a one-line reason in the Close-out log.
 
 ## Acceptance Criteria
 
