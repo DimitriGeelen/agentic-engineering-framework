@@ -1,8 +1,12 @@
 ---
 id: T-5375
-name: "Vote checker marks a claude-code seat not-checkable when it cites its per-seat screenshot copy by bare name"
+name: "Vote checker marks a claude-code seat not-checkable when it cites its per-seat
+  screenshot copy by bare name"
 description: >
-  T-5374 rung-5 panel: claude-code seat cited image: config@1440-judge-t-5374-r5-claude-code-<id>.png region ... with a bare Location; the file exists at .context/reviews/evidence/T-5374/ but lib/vote_checker.py _resolve_image only resolves bare names through a Location path, so the vote was graded not-checkable (images missing). Same class as T-5353/T-5357/T-5360.
+  T-5374 rung-5 panel: claude-code seat cited image: config@1440-judge-t-5374-r5-claude-code-<id>.png
+  region ... with a bare Location; the file exists at .context/reviews/evidence/T-5374/
+  but lib/vote_checker.py _resolve_image only resolves bare names through a Location
+  path, so the vote was graded not-checkable (images missing). Same class as T-5353/T-5357/T-5360.
 
 status: captured
 workflow_type: build
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-23T12:45:43Z
-last_update: 2026-11-23T12:45:43Z
-date_finished: null
+last_update: '2026-11-23T13:00:45Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-23T13:00:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5375: Vote checker marks a claude-code seat not-checkable when it cites its per-seat screenshot copy by bare name
