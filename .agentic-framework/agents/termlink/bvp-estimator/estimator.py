@@ -3281,13 +3281,161 @@ def score_blast_radius(fm: dict, body: str, tags: list[str]) -> tuple[int | None
             # It would also have been wrong on the merits. A task declaring three
             # files it is about to CREATE has a blast radius of three; "does not
             # exist yet" is a fact about the clock, not missing information.
-        if k == 1: return 1, [f"→1 ({src})"]
-        if k <= 3: return 3, [f"→3 ({src})"]
-        if k <= 6: return 5, [f"→5 ({src})"]
-        if k <= 9: return 7, [f"→7 ({src})"]
-        return 9, [f"→9 ({src}-cross-cutting)"]
+        return _blast_ladder(k, src)
 
-    return None, ["→? (no-components-UNMEASURED-not-zero)"]
+    # ── T-3513: fall back to paths NAMED in the body, resolved via the fabric ──
+    #
+    # Third and last leg, reachable only where components and write_set both gave
+    # nothing — so no task that already scores can change its score. Most open
+    # tasks name the files they will touch in Context / criteria / Verification;
+    # the component fabric turns those into cards plus their transitive
+    # `depended_by`, which is a measured blast radius rather than a guess.
+    #
+    # A path that resolves to no card contributes nothing, and when nothing
+    # resolves the answer is UNKNOWN (None), never 0 — T-3068's rule. Do not
+    # "recover" blast_radius from older cost_estimate_proposed entries instead:
+    # 93 of those are pre-T-3068 fabricated zeros (rejected on measurement, see
+    # T-3513's description).
+    measured = _fabric_blast_radius(body)
+    if measured is not None:
+        named, dependents = measured
+        return _blast_ladder(named + dependents,
+                             f"{named}-fabric-paths, {dependents}-dependents")
+
+    return None, ["→? (no-components-no-fabric-paths-UNMEASURED-not-zero)"]
+
+
+def _blast_ladder(k: int, src: str) -> tuple[int, list[str]]:
+    """Map a positive count onto the 1/3/5/7/9 blast ladder (T-3512, T-3513).
+
+    Shared by the write_set and fabric-paths legs so the two cannot drift apart.
+    Callers guarantee k >= 1 (a zero count is never mapped here — see T-3068).
+    """
+    if k <= 1: return 1, [f"→1 ({src})"]
+    if k <= 3: return 3, [f"→3 ({src})"]
+    if k <= 6: return 5, [f"→5 ({src})"]
+    if k <= 9: return 7, [f"→7 ({src})"]
+    return 9, [f"→9 ({src}-cross-cutting)"]
+
+
+# Card index cache, keyed by the fabric directory so a test that repoints
+# PROJECT_ROOT gets its own fixture graph rather than the live one.
+_FABRIC_CACHE: dict[str, tuple[dict, dict]] = {}
+
+_HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.S)
+# A `# ...` line is a Verification comment (the pre-T-4906 template carried its
+# whole guidance block that way). Markdown headings use `##`+, so they survive.
+_HASH_COMMENT_RE = re.compile(r"^#(?:\s.*)?$", re.M)
+_URL_RE = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://\S+")
+_PATH_TOKEN_RE = re.compile(r"[A-Za-z0-9_.][A-Za-z0-9_./-]*")
+_GLOB_CHARS = set("*?[]{}")
+_EXCLUDED_PREFIXES = (".tasks/", ".context/")
+
+
+def _load_fabric_index(fabric_dir: Path) -> tuple[dict, dict]:
+    """Return (by_location, by_ref) over the component cards in `fabric_dir`.
+
+    by_location: card `location` → card key. by_ref: every name a depended_by
+    target may use (id, name, location) → card key. A card key is the card's
+    filename, so each card counts once however many names point at it.
+    Unreadable cards are skipped — the estimator must never die on the fabric.
+    """
+    key = str(fabric_dir)
+    if key in _FABRIC_CACHE:
+        return _FABRIC_CACHE[key]
+    by_location: dict[str, str] = {}
+    by_ref: dict[str, str] = {}
+    cards: dict[str, dict] = {}
+    for card_path in sorted(fabric_dir.glob("*.yaml")):
+        try:
+            data = yaml.safe_load(card_path.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            continue
+        if not isinstance(data, dict):
+            continue
+        ck = card_path.name
+        cards[ck] = data
+        loc = data.get("location")
+        if isinstance(loc, str) and loc.strip():
+            by_location.setdefault(loc.strip(), ck)
+        for f in ("id", "name", "location"):
+            v = data.get(f)
+            if isinstance(v, str) and v.strip():
+                by_ref.setdefault(v.strip(), ck)
+    # Resolve every card's depended_by targets to card keys once.
+    edges: dict[str, list[str]] = {}
+    for ck, data in cards.items():
+        out = []
+        for dep in data.get("depended_by") or []:
+            t = dep.get("target") if isinstance(dep, dict) else dep
+            if isinstance(t, str) and t.strip() in by_ref:
+                out.append(by_ref[t.strip()])
+        edges[ck] = out
+    _FABRIC_CACHE[key] = (by_location, edges)
+    return by_location, edges
+
+
+def _named_paths(body: str) -> set[str]:
+    """Repo-relative paths named in the task body, before fabric resolution.
+
+    Template guidance (HTML comments, `# ` Verification comments) is stripped so a
+    path quoted by the template itself never scores every task. URLs, globs and
+    framework-state paths (.tasks/, .context/) are ignored. An absolute path under
+    PROJECT_ROOT is made relative.
+    """
+    text = _HTML_COMMENT_RE.sub(" ", body)
+    text = _HASH_COMMENT_RE.sub(" ", text)
+    text = _URL_RE.sub(" ", text)
+    root_prefix = str(PROJECT_ROOT).rstrip("/") + "/"
+    text = text.replace(root_prefix, "")
+    found: set[str] = set()
+    for m in _PATH_TOKEN_RE.finditer(text):
+        tok = m.group(0)
+        # A token touching a glob character is a pattern, not a path.
+        s, e = m.start(), m.end()
+        if (s > 0 and text[s - 1] in _GLOB_CHARS) or (e < len(text) and text[e] in _GLOB_CHARS):
+            continue
+        tok = tok.rstrip(".-/")
+        if tok.startswith("./"):
+            tok = tok[2:]
+        if "/" not in tok or tok.startswith(_EXCLUDED_PREFIXES) or ".." in tok.split("/"):
+            continue
+        found.add(tok)
+    return found
+
+
+def _fabric_blast_radius(body: str) -> tuple[int, int] | None:
+    """(named cards, transitive dependents) for paths the body names, or None.
+
+    None when no named path exists AND maps to a card — the caller turns that into
+    unknown, never 0. Dependents are walked breadth-first over `depended_by`,
+    each card once (cycle-safe), excluding the named cards themselves.
+    """
+    fabric_dir = PROJECT_ROOT / ".fabric" / "components"
+    if not fabric_dir.is_dir():
+        return None
+    try:
+        by_location, edges = _load_fabric_index(fabric_dir)
+    except Exception:  # noqa: BLE001
+        return None
+    named: set[str] = set()
+    for p in _named_paths(body):
+        ck = by_location.get(p)
+        if ck and (PROJECT_ROOT / p).exists():
+            named.add(ck)
+    if not named:
+        return None
+    seen = set(named)
+    frontier = list(named)
+    while frontier:
+        nxt = []
+        for ck in frontier:
+            for d in edges.get(ck, ()):
+                if d not in seen:
+                    seen.add(d)
+                    nxt.append(d)
+        frontier = nxt
+    return len(named), len(seen) - len(named)
 
 
 def score_tier(fm: dict, body: str, tags: list[str]) -> tuple[int, list[str]]:
