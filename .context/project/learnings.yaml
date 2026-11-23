@@ -5317,3 +5317,9 @@ X'` returning empty group."
   task: T-5344
   date: 2026-11-21
   context: Added via context agent
+- id: L-727
+  learning: "Bats fixtures that git init a temp project and then run fw init or many commits must set git config gc.auto 0: git's detached auto-gc keeps writing .git after the command returns and makes teardown rm -rf fail (T-5343, T-5373 — second instance)"
+  source: P-001
+  task: T-5373
+  date: 2026-11-23
+  context: Added via context agent
