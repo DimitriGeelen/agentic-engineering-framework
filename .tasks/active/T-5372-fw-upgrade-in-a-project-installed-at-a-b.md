@@ -128,10 +128,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw_version_relation` with equal version strings and a resolvable consumer `version_sha` decides by ancestry: sha == HEAD -> same; sha ancestor of HEAD -> behind; HEAD ancestor of sha -> ahead; neither -> diverged. With no sha, or a sha the source cannot resolve, equal strings still return `same` (no new refusals for old consumers).
-- [ ] The direct-path precheck in `lib/upgrade.sh` runs when the version strings are equal (the `project_version != fw_version` condition no longer skips it), so the ahead/diverged refusal fires on both the direct and auto-clone paths, dry run included.
-- [ ] New hermetic test `tests/unit/test_t5372_equal_version_downgrade.bats` (temp git repos, no network) covers: the five relation cases above, and a direct `fw upgrade --dry-run` from an older same-VERSION source that is REFUSED with `--force-downgrade` named, plus the same source with `--force-downgrade` proceeding.
-- [ ] `tests/unit/upgrade_fresh_machine_simulation.bats` and the existing version-relation / upgrade-guard tests keep their results.
+- [x] `fw_version_relation` with equal version strings and a resolvable consumer `version_sha` decides by ancestry: sha == HEAD -> same; sha ancestor of HEAD -> behind; HEAD ancestor of sha -> ahead; neither -> diverged. With no sha, or a sha the source cannot resolve, equal strings still return `same` (no new refusals for old consumers).
+- [x] The direct-path precheck in `lib/upgrade.sh` runs when the version strings are equal (the `project_version != fw_version` condition no longer skips it), so the ahead/diverged refusal fires on both the direct and auto-clone paths, dry run included.
+- [x] New hermetic test `tests/unit/test_t5372_equal_version_downgrade.bats` (temp git repos, no network) covers: the five relation cases above, and a direct `fw upgrade --dry-run` from an older same-VERSION source that is REFUSED with `--force-downgrade` named, plus the same source with `--force-downgrade` proceeding.
+- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` and the existing version-relation / upgrade-guard tests keep their results.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

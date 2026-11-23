@@ -115,10 +115,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Framework `lib/` is a regular package (`lib/__init__.py`, empty or docstring only), and every framework python entry that imports `lib.` from a shell heredoc / `-c` / stdin puts the framework root at sys.path[0] first (audit all of them under agents/ lib/ bin/; list the ones changed).
-- [ ] New hermetic test `tests/unit/test_t5373_consumer_lib_shadow.py`: a temp consumer with a regular `lib/__init__.py` (and a decoy `lib/inception_decisions.py`-free tree); from that CWD, the framework's check_inception_scope_trace python path and at least two other stdin/`-c` helpers import the framework modules. Fails before the fix, passes after.
-- [ ] Existing unit tests that import `lib` (pytest tests/unit, web import smoke) keep their results; `upgrade_fresh_machine_simulation.bats` stays green.
-- [ ] Check whether `fw inception decide` / update-task leaves `.context/locks/T-XXX.lock` behind after a successful completion; fix if it is ours, or record why not.
+- [x] Framework `lib/` is a regular package (`lib/__init__.py`, empty or docstring only), and every framework python entry that imports `lib.` from a shell heredoc / `-c` / stdin puts the framework root at sys.path[0] first (audit all of them under agents/ lib/ bin/; list the ones changed).
+- [x] New hermetic test `tests/unit/test_t5373_consumer_lib_shadow.py`: a temp consumer with a regular `lib/__init__.py` (and a decoy `lib/inception_decisions.py`-free tree); from that CWD, the framework's check_inception_scope_trace python path and at least two other stdin/`-c` helpers import the framework modules. Fails before the fix, passes after.
+- [x] Existing unit tests that import `lib` (pytest tests/unit, web import smoke) keep their results; `upgrade_fresh_machine_simulation.bats` stays green.
+- [x] Check whether `fw inception decide` / update-task leaves `.context/locks/T-XXX.lock` behind after a successful completion; fix if it is ours, or record why not.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

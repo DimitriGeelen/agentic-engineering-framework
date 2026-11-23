@@ -116,10 +116,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Keyword `fw search` greps the same AUTHORED_DIRS set as web/search_utils.py (imported or exported from one place, not a copy), plus the existing .context areas it searches today, same exclusions (docs/generated stays out).
-- [ ] The index freshness/lag scope (`DRIFT_DIRS` in lib/vector_index_health.py) comes from the same definition, so an authored docs/design file missing from the index counts as lag. (Restated 2026-11-23: lib/index_reconcile.py SCOPE turned out to be the T-4166 git-staging reconciler, not the index; correctly left unchanged.)
-- [ ] One config key (e.g. INDEX_EXTRA_DIRS, colon-separated, project-relative) adds directories to that set for all three paths; registered in lib/config.sh with description, config parity lint (tests/lint/config-registry-parity.bats and web/blueprints/config.py if required) green; default empty = unchanged behaviour.
-- [ ] Hermetic tests (tests/unit/test_t5374_authored_scope.py): temp project with docs/design/x.md containing a unique word — keyword fw search finds it; reconcile reports it as unindexed before reindex; the extra-dirs key adds a custom dir.
+- [x] Keyword `fw search` greps the same AUTHORED_DIRS set as web/search_utils.py (imported or exported from one place, not a copy), plus the existing .context areas it searches today, same exclusions (docs/generated stays out).
+- [x] The index freshness/lag scope (`DRIFT_DIRS` in lib/vector_index_health.py) comes from the same definition, so an authored docs/design file missing from the index counts as lag. (Restated 2026-11-23: lib/index_reconcile.py SCOPE turned out to be the T-4166 git-staging reconciler, not the index; correctly left unchanged.)
+- [x] One config key (e.g. INDEX_EXTRA_DIRS, colon-separated, project-relative) adds directories to that set for all three paths; registered in lib/config.sh with description, config parity lint (tests/lint/config-registry-parity.bats and web/blueprints/config.py if required) green; default empty = unchanged behaviour.
+- [x] Hermetic tests (tests/unit/test_t5374_authored_scope.py): temp project with docs/design/x.md containing a unique word — keyword fw search finds it; reconcile reports it as unindexed before reindex; the extra-dirs key adds a custom dir.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

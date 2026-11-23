@@ -102,10 +102,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] policy/review-backends.yaml has backend `mistral-vibe`: cost_class internal, harness_class subscription, approval_required false, cost_estimate_method unmetered, vendor mistral, credential cli-login, binary /root/.local/bin/vibe, worker_kind wired the same way as opencode (lib/worker_kinds_parity.py and every place a kind must be listed stay in parity), and an isolation block (argv, stdin closed, tools off, tool_markers).
+- [x] policy/review-backends.yaml has backend `mistral-vibe`: cost_class internal, harness_class subscription, approval_required false, cost_estimate_method unmetered, vendor mistral, credential cli-login, binary /root/.local/bin/vibe, worker_kind wired the same way as opencode (lib/worker_kinds_parity.py and every place a kind must be listed stay in parity), and an isolation block (argv, stdin closed, tools off, tool_markers).
 - [ ] Tools are off in the seat: the isolation argv enables no tool (vibe `--enabled-tools` in headless mode disables all others) and a probe asking the seat to read a file shows no tool call and no file content.
-- [ ] A real isolated probe run (`fw review isolated-run` or the seat probe used for opencode) returns a parseable answer; its cost is logged with `bin/fw review cost log` as unmetered.
-- [ ] Registry loads (`bin/fw review cost report` exits 0), worker-kind parity and review-backend tests keep their results; new hermetic test for the mistral isolation argv.
+- [x] A real isolated probe run (`fw review isolated-run` or the seat probe used for opencode) returns a parseable answer; its cost is logged with `bin/fw review cost log` as unmetered.
+- [x] Registry loads (`bin/fw review cost report` exits 0), worker-kind parity and review-backend tests keep their results; new hermetic test for the mistral isolation argv.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
