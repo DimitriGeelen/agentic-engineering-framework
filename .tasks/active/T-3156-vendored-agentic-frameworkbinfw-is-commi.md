@@ -144,19 +144,19 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Impact established BEFORE any fix. Measured so far: 213 vendored files are committed
+- [x] Impact established BEFORE any fix. Measured so far: 213 vendored files are committed
       `100644` whose source counterpart is `100755` (same blob, different mode).
       `.agentic-framework/bin/fw` fails to exec — verified `exit=126`, Permission denied.
       NOT yet established: whether the other 212 matter. Hooks are invoked as
       `${CLAUDE_PROJECT_DIR}/bin/fw hook <name>`, and `lib/upgrade.sh` does
       `[ -x "$src" ] && chmod +x "$dst"` on copy — so a consumer may well receive correct
       modes regardless. If the blast radius is only `bin/fw`, say so and fix only that.
-- [ ] Whatever produces the 644 is identified — `fw vendor self`, a historical commit, or
+- [x] Whatever produces the 644 is identified — `fw vendor self`, a historical commit, or
       a umask — rather than the mode simply being corrected and left to recur.
-- [ ] A test pins the property that the vendored `bin/fw` is executable, and FAILS against
+- [x] A test pins the property that the vendored `bin/fw` is executable, and FAILS against
       the current tree. `git status` is CLEAN here because 644 is the RECORDED mode, so
       "no change" and "correct" are the same observable — that is why this survived.
-- [ ] Any fix is verified from a consumer's position (exec the vendored path), not from
+- [x] Any fix is verified from a consumer's position (exec the vendored path), not from
       `git ls-files` output, which is what made the defect invisible in the first place.
 
 ### Human
@@ -198,6 +198,10 @@ bvp_scores_proposed:
 #
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
+python3 -m pytest tests/unit/test_t3156_vendored_modes.py -q > /tmp/.t3156.out 2>&1 && grep -q passed /tmp/.t3156.out
+test "$(git ls-files -s .agentic-framework/agents/handover/discard-manifest.sh | cut -d' ' -f1)" = 100755
+test -x .agentic-framework/bin/fw
+bin/fw vendor self --check
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
 #
@@ -267,6 +271,14 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** vendored `.agentic-framework/` files committed `100644` while their source is `100755` (213 in August incl. `bin/fw` → exit 126; 1 on 2026-11-23: `agents/handover/discard-manifest.sh`).
+
+**Root cause:** every `_self_vendor_*` helper in `lib/upgrade.sh` decided whether to copy on CONTENT alone (`diff -q` / `cmp -s`); the `chmod +x` ran only inside that branch and never removed a bit. A source whose only change is its mode is therefore invisible to `fw vendor self` and to `--check`. Concrete instance: T-3051 (49a9ad660, 2026-08-17) chmod'ed `agents/handover/discard-manifest.sh` 644→755 with no content change; the vendored copy (same blob 21789991) stayed 644 for three months. Its siblings in that commit (bvp-estimator.sh, pickup-channel-bridge.sh) only reached 755 because later content edits re-triggered the copy.
+
+**Why structurally allowed:** the wrong mode was the RECORDED mode, so `git status` was clean; `--check` and the audit's drift scan compared content only.
+
+**Prevention:** helpers now treat an exec-bit mismatch as drift (`_sv_mode_differs`) and sync the bit both ways (`_sv_sync_mode`), so `--check` / the pre-push gate report mode-only drift. `tests/unit/test_t3156_vendored_modes.py` pins the helpers hermetically (5 helpers × detect/sync/remove/in-sync) and the repo state (vendored mode == source mode for every tracked pair; vendored bin/fw 100755).
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -290,6 +302,11 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-23 — producer is the copy decision, not a commit or umask
+- **What changed:** filed as "bin/fw committed 644"; the 213→1 drop happened without a fix to the producer (content edits re-copied most files). The producer is `fw vendor self`'s content-only comparison.
+- **Plan impact:** fix moved from "chmod one file" to the six exec-propagating helpers in `lib/upgrade.sh`.
+- **Triggered:** none filed. Not done here: `agents/audit/audit.sh check_self_vendor_drift` is still content-only; `--check` (which the pre-push gate runs) now covers mode drift, so the audit is a second surface, not the only one.
 
 ## Recommendation
 
@@ -358,3 +375,10 @@ bvp_scores_proposed:
 ### 2026-11-23T19:08:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-11-23 — measurement, producer, fix [agent w-t3156]
+- **Impact (AC1):** August: 213 vendored files 644 vs source 755, `bin/fw` exit 126. Today: ONE — `.agentic-framework/agents/handover/discard-manifest.sh` (100644, source 100755, same blob). `bin/fw` already 100755. Blast radius of the one file: nil functionally — its only caller (`agents/handover/handover.sh:887`) runs it as `bash <path>` since T-3051. Consumers are unaffected: `fw vendor` copies from the SOURCE tree (755 since 49a9ad660), not from this repo's `.agentic-framework/`.
+- **Producer (AC2):** `lib/upgrade.sh` `_self_vendor_*` helpers copied on content diff only; T-3051's mode-only change never re-triggered a copy. See ## RCA.
+- **Fix:** a6869d1bc — `_sv_mode_differs` / `_sv_sync_mode` in six helpers (libs, shim, agents, web, tools, root_data) + `_sv_scope_skip`; `fw vendor self` then synced the file to 100755.
+- **Test (AC3):** `tests/unit/test_t3156_vendored_modes.py` — before the fix 9 failed / 5 passed (8 helper cases + repo-state mode check); after: 17 passed.
+- **Consumer position (AC4):** fresh `git clone` of bleeding-edge: vendored `bin/fw version` exit 0, vendored `discard-manifest.sh --help` exit 0; same clone at fa1ac888e (pre-fix): discard-manifest exit **126**. Fresh `bin/fw vendor --target <tmp>` consumer: both exit 0 (mode 775).
