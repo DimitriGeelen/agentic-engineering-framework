@@ -13,7 +13,7 @@ tags: [termlink, wezterm, usability]
 components: []
 related_tasks: [T-1061, T-1641]
 created: 2026-04-08T05:32:02Z
-last_update: '2026-08-17T12:36:03Z'
+last_update: '2026-11-23T15:00:11Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:45Z'
@@ -152,6 +152,15 @@ cost_estimate_proposed:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=146,acs=8)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-11-23T15:00:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (2-fabric-paths, 0-dependents); tier=2 
       (workflow:build); effort=8 (lines=146,acs=8)
     rubric_sha: e4a00f38e801
 ---

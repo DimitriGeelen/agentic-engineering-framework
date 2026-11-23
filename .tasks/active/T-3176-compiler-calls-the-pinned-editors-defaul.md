@@ -36,7 +36,7 @@ tags: [bpmn, compiler, cross-project]
 components: []
 related_tasks: [T-3172, T-3173, T-2717, T-2567]
 created: 2026-08-26T15:52:46Z
-last_update: 2026-08-26T17:59:36Z
+last_update: '2026-11-23T15:00:32Z'
 date_finished: 2026-08-26T17:59:36Z
 cost_estimate_proposed:
   - ts: '2026-08-26T16:00:08Z'
@@ -47,6 +47,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=131,acs=6)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-11-23T15:00:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 9
+      tier: 2
+      effort: 8
+    rationale: blast_radius=9 (3-fabric-paths, 7-dependents-cross-cutting); 
+      tier=2 (workflow:build); effort=8 (lines=198,acs=6)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-26T16:00:16Z'

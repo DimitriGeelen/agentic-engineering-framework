@@ -13,7 +13,7 @@ tags: [onedev, pr]
 components: []
 related_tasks: []
 created: 2026-03-12T18:00:01Z
-last_update: '2026-08-17T12:36:11Z'
+last_update: '2026-11-23T15:00:51Z'
 date_finished:
 bvp_scores_proposed:
   - ts: '2026-05-19T18:27:46Z'
@@ -145,6 +145,15 @@ cost_estimate_proposed:
       tier: 2
       effort: 7
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=7 (lines=79,acs=6)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-11-23T15:00:51Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 7
+    rationale: blast_radius=3 (2-fabric-paths, 1-dependents); tier=2 
       (workflow:build); effort=7 (lines=79,acs=6)
     rubric_sha: e4a00f38e801
 ---
