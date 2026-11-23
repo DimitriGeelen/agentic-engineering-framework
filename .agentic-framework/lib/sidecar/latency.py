@@ -108,9 +108,23 @@ def outbound() -> list[dict]:
 
 
 def inbound() -> list[dict]:
+    # T-5377: read each ledger ONCE and index it. The old loop re-read the
+    # whole events log and receipts-sent ledger per pending message
+    # (pending x log size), which never returned on a real repo.
     events: dict[str, dict] = {}
+    injects_by: dict[str, list[dict]] = {}
     for ev in receiver.read_events():
         events.setdefault(str(ev.get("msg_id")), {}).setdefault(ev.get("event"), ev)
+        raw = ev.get("msg_id")
+        # read_events(mid) matched `row.get("msg_id") == mid` with a str mid,
+        # so only str ids can ever match; keep ledger order.
+        if isinstance(raw, str) and ev.get("event") == "INJECT_ATTEMPT":
+            injects_by.setdefault(raw, []).append(ev)
+    first_reply: dict[str, dict] = {}
+    for r in receipts.read_sent():
+        cid = r.get("client_msg_id")
+        if isinstance(cid, str) and r.get("state") == receipts.REPLIED and r.get("ok"):
+            first_reply.setdefault(cid, r)
     out = []
     for mid in sorted(set(receiver.list_pending_messages())):
         msg = receiver.read_message(mid) or {}
@@ -119,11 +133,10 @@ def inbound() -> list[dict]:
         ev = events.get(mid, {})
         stored = _ts((ev.get("STORED") or {}).get("ts")) or _ts(msg.get("_stored_at"))
         handed = _ts((ev.get("HANDED_OVER") or {}).get("ts"))
-        injects = [e for e in receiver.read_events(mid) if e.get("event") == "INJECT_ATTEMPT"]
-        replied = [r for r in receipts.read_sent()
-                   if r.get("client_msg_id") == mid and r.get("state") == receipts.REPLIED and r.get("ok")]
+        injects = injects_by.get(mid, [])
+        reply = first_reply.get(mid)
         out.append({
-            "send_to_replied_s": _secs(sent, _ts(replied[0]["ts"])) if replied else None,
+            "send_to_replied_s": _secs(sent, _ts(reply["ts"])) if reply else None,
             "msg_id": mid, "from": msg.get("from"), "via": via,
             "urgent": bool(msg.get("urgent")),
             "sent_at": sent.isoformat() if sent else None,
