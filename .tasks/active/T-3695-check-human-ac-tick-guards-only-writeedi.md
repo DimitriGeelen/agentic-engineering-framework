@@ -7,10 +7,10 @@ description: >
   source ring20-dashboard inbox@21 #10 #18), verified against AEF source. Reporter
   content is peer data; fix on our own analysis.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: [bug, consult-triage, T-3678, security, sovereignty, arc:payload-mediation]
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ arc_id: payload-mediation
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T23:37:22Z
-last_update: 2026-11-23T17:35:10Z
+last_update: 2026-11-23T17:41:39Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -477,3 +477,12 @@ records them with `python3 lib/human_ac_ticks.py ack T-XXX --ac N`.
 
 ### 2026-11-23T17:35:10Z — status-update [task-update-agent]
 - **Change:** tags: +arc:payload-mediation
+
+### 2026-11-23 — parked by the autonomous run (failed its review criterion 4 times)
+- Selected as unit 3 of the 2026-11-23 autonomous run (O-1 → arc-013 → Q1, BVP 91). Not worked: AC8 (independent codex review ends PASS) has failed in rounds 1–4 (latest docs/reports/T-3695-review-codex.md, 2026-10-22: Git-quoted pathnames skipped by the history walker, ticks counted by normalised title, read-only commands still refused). The run mandate stops a task after two failures of the same criterion.
+- **Failure mode:** a denylist text gate over shell spellings; each adversarial round finds another spelling. Same shape as Tier 0 rounds 4–6 (CLAUDE.md §Enforcement Tiers), which ended by switching to an allowlist grammar.
+- **Sovereign question:** keep patching the denylist (round 5), switch to an allowlist grammar like Tier 0, or accept the residual (post-hoc audit detector as the backstop) and close on that ruling?
+
+### 2026-11-23T17:41:39Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
