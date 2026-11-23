@@ -8,7 +8,7 @@ description: >
   but lib/vote_checker.py _resolve_image only resolves bare names through a Location
   path, so the vote was graded not-checkable (images missing). Same class as T-5353/T-5357/T-5360.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-23T12:45:43Z
-last_update: '2026-11-23T13:01:34Z'
+last_update: 2026-11-23T13:54:36Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,20 +88,22 @@ bvp_scores_proposed:
 ## Context
 
 <!-- All four parts are required before source edits (T-4907). Plain language; link design docs for substantial tasks. -->
-**Background / trigger:** <what happened, who reported it, evidence (message id, task, log)>
+**Background / trigger:** Two rung-5 panels in a row (T-5374 dispatch judge-t-5374-r5-claude-code-4e83d08832f3, T-5376 judge-t-5376-r5-claude-code-4898f9d85707): the claude-code seat voted green, but the judge graded its vote `not-checkable`: "image config@1440-judge-...-claude-code-<id>.png missing" and "location '<same bare name> region x,y,w,h' is neither path:line nor command:". codex and antigravity were green, so the criteria still closed — but a rung-5 panel with one dead seat is one seat from failing.
 
-**Problem / hypothesis:** <what we think is wrong and why>
+**Problem / hypothesis:** the claude-code seat cites its per-seat screenshot copy by BARE file name in both Evidence and Location. The file exists at .context/reviews/evidence/<task>/<name> (the judge copies it there). lib/vote_checker.py `_resolve_image` (~239) only resolves a bare name through a Location that carries a path; with a bare Location there is nothing to resolve through, and the Location parser rejects a bare image name. The codex/antigravity seats cite paths, so they pass. Same class as T-5353/T-5357/T-5360.
 
-**Goal:** <what we are trying to achieve>
+**Goal:** a seat citing a screenshot the judge itself placed in the task's evidence directory, by bare name, is checked against that file instead of graded not-checkable.
 
-**Expected outcome:** <what will be different when this is done>
+**Expected outcome:** a bare image name (Evidence and/or Location) resolves to .context/reviews/evidence/<task>/<name> when that file exists and is one the run copied for that seat; region checks and the seat-viewed check run on it; anything else is still refused (no widening to arbitrary files).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] lib/vote_checker.py resolves a bare image name (no "/") in Evidence and in a bare `image region` Location to `.context/reviews/evidence/<task>/<name>` when that file exists; one resolution function used by check_image, cited_image_path and the Location check (no second copy).
+- [ ] A bare name that does not exist there, or a name with `..`/a path outside the evidence directory, is still refused exactly as today.
+- [ ] Hermetic test tests/unit/test_t5375_bare_seat_image.py reproduces the T-5376 claude-code evidence lines (bare Evidence + bare Location with region) and shows not-checkable before / checked after; plus the refusal cases.
+- [ ] Existing vote-checker / judge / verdict tests (test_t5352*, test_t5353*, test_t5357*, test_t5358*, test_t5360*, *vote*, *judge*, *verdict*) keep their results.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -288,6 +290,8 @@ bvp_scores_proposed:
 # worker's uncommitted edit does not block your close; that drift is listed as
 # "in flight, not this task". The whole-tree `--check` stays for audit/pre-push.
 -->
+python3 -m pytest -q tests/unit/test_t5375_bare_seat_image.py
+bin/fw vendor self --check --task T-5375
 
 ## RCA
 
@@ -385,3 +389,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-5375-vote-checker-marks-a-claude-code-seat-no.md
 - **Context:** Initial task creation
+
+### 2026-11-23T13:54:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
