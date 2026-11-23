@@ -150,8 +150,8 @@ cost_estimate_proposed:
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] Each of the 11 tasks (T-4566, T-4231, T-4567, T-4290, T-4240, T-4568, T-4571, T-4575, T-4198, T-4269, T-4183) has had its close attempted and the exact refusal recorded in `## Close-out log` below
-- [ ] For each refusal, only the gate-named defect was fixed (no `### Human` tick, no `--force`/`--skip-*`), and the task was closed if its gate then passed; tasks that stay open name why in the log
-- [ ] Every closed task is committed via `git commit -- <completed> <episodic> <old active path>`
+- [x] For each refusal, only the gate-named defect was fixed (no `### Human` tick, no `--force`/`--skip-*`), and the task was closed if its gate then passed; tasks that stay open name why in the log
+- [x] Every closed task is committed via `git commit -- <completed> <episodic> <old active path>`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -348,10 +348,11 @@ for t in T-4566 T-4231 T-4567 T-4290 T-4240 T-4568 T-4571 T-4575 T-4198 T-4269 T
 - **T-4269** — Recommendation was empty; written from the task's evidence, links made literal; partial-complete, owner human (756d53ed3).
 - **T-4571** — `watchtower current` failed after a later web change; Watchtower restarted, [REVIEW] AC + Recommendation added for the render gate; partial-complete, owner human (eb4e018c4).
 - **T-4290** — review links made literal so the partial-complete handoff emits; partial-complete, owner human (df59b14d3).
-- **T-4566** — STILL OPEN. All Agent ACs already ticked (fresh-machine sim re-run green by parent ~00:04, 18/0). Original refusal was the fresh-machine sim timing out under host load. Retry worker w4632b (2026-10-22) was refused by the harness permission classifier on the close command and on test runs, so nothing was changed. Next: rerun `bin/fw task update T-4566 --status work-completed` alone in the foreground on a quiet host.
-- **T-4231** — STILL OPEN. All 4 Agent ACs ticked, RCA and Decisions filled. Refusal reason was never captured. Same blocker as T-4566 (close and its verification lines refused by the permission classifier). Next: run the close and record the refusal.
-- **T-4567** — STILL OPEN. All 4 Agent ACs ticked. Refusal reason was never captured; same blocker. Next: run the close and record the refusal.
-- **T-4568** — STILL OPEN. All 5 Agent ACs ticked (the unticked one from the original refusal is now ticked). Same blocker. Next: run the close.
+- **T-4566** — 2026-10-22 refusal: the fresh-machine sim timed out under load. A later session closed it (date_finished 2026-10-22T19:44:55Z, file in completed/, committed in 4a2f46420). Already closed; nothing for me to do.
+- **T-4231** — closed by a later session (date_finished 2026-10-22T19:17:28Z, committed in dbe16bc19). Already closed.
+- **T-4567** — closed by a later session (date_finished 2026-10-22T19:37:33Z, committed in f901e0bb1). Already closed.
+- **T-4568** — closed by a later session (date_finished 2026-10-22T19:05:09Z, committed in 9610d77ef). Already closed.
+- **2026-11-23 re-check (w-t4632):** retried the close on T-4290, T-4571, T-4198 and T-4269. Each was refused with "Still 1/N ACs unchecked": its only open criterion is a `### Human` [REVIEW] one, so nothing was fixed. All four stay OPEN (partial-complete, owner human) until the operator reviews them. The retries changed only each file's `last_update`.
 
 ## RCA
 
