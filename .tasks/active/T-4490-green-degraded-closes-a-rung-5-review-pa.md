@@ -140,6 +140,14 @@ cost_estimate_proposed:
 
 ## Context
 
+**Background / trigger:** operator GO on inception T-4466 (2026-10-20).
+
+**Problem / hypothesis:** a rung-5 panel whose missing seat was dispatched but could not reach a verdict (usage limit, headless auto-deny, provider error) falls to the operator even when two different vendors judged green.
+
+**Goal:** close such criteria as GREEN-DEGRADED under all six T-4466 conditions, recorded on the criterion and warned by fw audit, with a config opt-out REVIEW_GREEN_DEGRADED.
+
+**Expected outcome:** fewer operator escalations for provably unavailable seats; every degraded close visible; the opt-out row legible on /config next to the spend-ceiling row.
+
 T-4466 GO (operator, 2026-10-20). A rung-5 panel whose missing seat(s) were dispatched but
 could not reach a verdict (T-3852 UNAVAILABLE: a usage limit, a headless auto-deny, a provider
 error) today falls to the operator even when two different vendors judged green. The ledger
