@@ -149,10 +149,14 @@ bvp_scores_proposed:
 
 ## Context
 
-ring20-dashboard T-2462 finding 10: `fw upgrade` reported success on a host with no
-Ollama, then `fw doctor` showed 7 vector-index FAILs. Reproduced at HEAD (2026-10-21):
-`lib/vector_index_health.py:evaluate` has no "deliberately absent" state (every missing
-piece is FAIL), and `lib/upgrade.sh` never probes sqlite-vec or the embed host.
+**Background / trigger:** ring20-dashboard T-2462 finding 10: `fw upgrade` reported success on a host with no Ollama, then `fw doctor` showed 7 vector-index FAILs. Reproduced at HEAD 2026-10-21.
+
+**Problem / hypothesis:** `lib/vector_index_health.py:evaluate` has no "deliberately absent" state (every missing piece is FAIL), and `lib/upgrade.sh` never probes sqlite-vec or the embed host, so a consumer learns about missing prerequisites only after the upgrade claimed success.
+
+**Goal:** an explicit opt-out for hosts without semantic recall, and an upgrade that names missing prerequisites; absence is never inferred.
+
+**Expected outcome:** see the fix below; without the opt-out a missing prerequisite stays a FAIL.
+
 Fix: an explicit opt-out `SEMANTIC_RECALL` (registry default 1). At 0 the health check
 reports one SKIP "semantic recall not configured on this host" (status OK) and
 `fw index reindex` exits 0 without embedding. `fw upgrade` ends with a prerequisite
@@ -404,6 +408,11 @@ now ends with the prerequisite check, so the gap is named at install time.
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-23 — linked to arc-002 and closed out in the autonomous run
+- **What changed:** all nine criteria were ticked in October; the task stayed open because its Context predates the four-part rule (T-4907). Linked to arc-002 (embeddings strategy, O-2) by T-5378.
+- **Plan impact:** none.
+- **Triggered:** none.
 
 ## Recommendation
 
