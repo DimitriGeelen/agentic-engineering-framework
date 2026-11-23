@@ -58840,3 +58840,21 @@ scan_id: R-53bd955d
 task_id: T-5374
 payload:
   task_file: .tasks/active/T-5374-vector-index-scope-is-fixed-to-tasks-and.md
+---
+kind: scan_emitted
+timestamp: '2026-11-23T13:22:09Z'
+scan_id: R-0706cab8
+task_id: T-5376
+payload:
+  overall: CONCERN
+  finding_count: 3
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-23T13:22:09Z'
+scan_id: R-0706cab8
+task_id: T-5376
+payload:
+  task_file: .tasks/active/T-5376-vector-index-covers-every-git-tracked-pr.md

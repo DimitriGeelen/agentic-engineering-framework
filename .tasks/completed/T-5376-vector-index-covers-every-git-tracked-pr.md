@@ -12,7 +12,7 @@ description: >
 status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [consumer, recall, index, operator-request]
 components: [bin/fw, lib/authored_scope.py, lib/config.sh, lib/vector_index_health.py, tests/unit/test_t5376_index_all_documents.py, web/blueprints/config.py, web/search_utils.py]
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-23T12:57:01Z
-last_update: 2026-11-23T13:21:45Z
+last_update: 2026-11-23T13:42:17Z
 date_finished: 2026-11-23T13:21:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -83,6 +83,7 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=312,acs=6)
     rubric_sha: e4a00f38e801
+date_finalised: 2026-11-23T13:42:17Z
 ---
 
 # T-5376: Vector index covers every git-tracked project document by default, not a fixed folder list

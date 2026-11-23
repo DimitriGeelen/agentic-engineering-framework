@@ -1,0 +1,138 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5376: Vector index covers every git-tracked project document by default, not a fixed folder list
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-23T13:43:03Z
+# ============================================================================
+
+task_id: T-5376
+task_name: "Vector index covers every git-tracked project document by default, not a fixed folder list"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-23T12:57:01Z
+completed: 2026-11-23T13:21:45Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-11-23T13:58:09+01:00
+last_commit: 2026-11-23T14:42:12+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  spec — index every git-tracked project document by default (operator requirement). index every git-tracked project document by default; exclude by list. criteria verified, REVIEW criterion, visual verification, RCA, recommendation. partial-complete — awaiting render review of the config row. reviewer verdict. reviewer verdict (codex seat codex, recorded by the runtime). reviewer verdict (antigravity seat antigravity, recorded by the runtime). rung-5 panel green, verdict applied
+
+# Key outcomes
+outcomes:
+  - 'lib/authored_scope.py decides inclusion by rule: git-tracked (`git ls-files`) + document suffix, anywhere in the project, minus the exclusion list; non-git project falls back to the existing AUTHORED_DIRS walk. One function used by web/search_utils.collect_files, keyword `fw search`, and vector_index_health''s freshness scope.'
+  - 'Exclusions configurable through one config key (INDEX_EXCLUDE_DIRS, colon-separated, added to the built-in exclusions); INDEX_EXTRA_DIRS keeps working (adds untracked or non-suffix dirs); config parity lint green.'
+  - 'Hermetic tests (tests/unit/test_t5376_index_all_documents.py): a temp git project with design/x.md, README.md, notes/y.rst, .agentic-framework/z.md, docs/generated/g.md, an untracked scratch.md — first three included, last three excluded; exclusion key works; non-git project falls back.'
+  - 'Live, this repo: the collector now includes README.md, docs/research/*, docs/plans/* and still excludes .context/scratch and .agentic-framework; report file count before/after and the time `fw index reindex` takes; `fw doctor` vector index stays OK after reindex.'
+  - '[REVIEW] The new INDEX_EXCLUDE_DIRS row on the Watchtower config page reads like its neighbours'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/authored_scope.py'
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/vector_index_health.py'
+  - '.agentic-framework/web/blueprints/config.py'
+  - '.agentic-framework/web/search_utils.py'
+  - '.context/reviews/applied.jsonl'
+  - '.context/reviews/evidence/T-5376/01-config-40_7483_1200_340-crop.png'
+  - '.context/reviews/evidence/T-5376/01-config-40_7596_1200_137-crop.png'
+  - '.context/reviews/evidence/T-5376/01-config-judge-t-5376-r5-antigravity-db2e33e86c46.png'
+  - '.context/reviews/evidence/T-5376/01-config-judge-t-5376-r5-claude-code-4898f9d85707.png'
+  - '.context/reviews/evidence/T-5376/01-config-judge-t-5376-r5-codex-57fec5b3cfce.png'
+  - '.context/reviews/evidence/T-5376/AC1-judge-t-5376-r5-antigravity-db2e33e86c46.md'
+  - '.context/reviews/evidence/T-5376/AC1-judge-t-5376-r5-claude-code-4898f9d85707.md'
+  - '.context/reviews/evidence/T-5376/AC1-judge-t-5376-r5-codex-57fec5b3cfce.md'
+  - '.context/reviews/evidence/T-5376/config@1024-37_9441_950_436-crop.png'
+  - '.context/reviews/evidence/T-5376/config@1024-37_9602_950_161-crop.png'
+  - '.context/reviews/evidence/T-5376/config@1024-judge-t-5376-r5-antigravity-db2e33e86c46.png'
+  - '.context/reviews/evidence/T-5376/config@1024-judge-t-5376-r5-claude-code-4898f9d85707.png'
+  - '.context/reviews/evidence/T-5376/config@1024-judge-t-5376-r5-codex-57fec5b3cfce.png'
+  - '.context/reviews/evidence/T-5376/config@1440-120_7483_1200_340-crop.png'
+  - '.context/reviews/evidence/T-5376/config@1440-120_7596_1200_137-crop.png'
+  - '.context/reviews/evidence/T-5376/config@1440-judge-t-5376-r5-antigravity-db2e33e86c46.png'
+  - '.context/reviews/evidence/T-5376/config@1440-judge-t-5376-r5-claude-code-4898f9d85707.png'
+  - '.context/reviews/evidence/T-5376/config@1440-judge-t-5376-r5-codex-57fec5b3cfce.png'
+  - '.context/reviews/evidence/T-5376/config@1920-235_6667_1450_292-crop.png'
+  - '.context/reviews/evidence/T-5376/config@1920-235_6756_1450_113-crop.png'
+  - '.context/reviews/evidence/T-5376/config@1920-judge-t-5376-r5-antigravity-db2e33e86c46.png'
+  - '.context/reviews/evidence/T-5376/config@1920-judge-t-5376-r5-claude-code-4898f9d85707.png'
+  - '.context/reviews/evidence/T-5376/config@1920-judge-t-5376-r5-codex-57fec5b3cfce.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/review-completions.jsonl'
+  - '.context/reviews/review-dispatches.jsonl'
+  - '.context/reviews/review-runs.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.fabric/components/tests-unit-test_t5376_index_all_documents.yaml'
+  - '.tasks/active/T-5376-vector-index-covers-every-git-tracked-pr.md'
+  - 'bin/fw'
+  - 'lib/authored_scope.py'
+  - 'lib/config.sh'
+  - 'lib/vector_index_health.py'
+  - 'tests/unit/test_t5376_index_all_documents.py'
+  - 'web/blueprints/config.py'
+  - 'web/search_utils.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-23T13:58:09'
+    action: 'T-5376: spec — index every git-tracked project document by default (operator requirement)'
+  - time: '2026-11-23T14:18:58'
+    action: 'T-5376: index every git-tracked project document by default; exclude by list'
+  - time: '2026-11-23T14:21:42'
+    action: 'T-5376: criteria verified, REVIEW criterion, visual verification, RCA, recommendation'
+  - time: '2026-11-23T14:22:45'
+    action: 'T-5376: partial-complete — awaiting render review of the config row'
+  - time: '2026-11-23T14:34:49'
+    action: 'T-5376: reviewer verdict'
+  - time: '2026-11-23T14:37:14'
+    action: 'T-5376: reviewer verdict (codex seat codex, recorded by the runtime)'
+  - time: '2026-11-23T14:41:09'
+    action: 'T-5376: reviewer verdict (antigravity seat antigravity, recorded by the runtime)'
+  - time: '2026-11-23T14:42:12'
+    action: 'T-5376: rung-5 panel green, verdict applied'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 24 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [consumer, recall, index, operator-request]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 24
+  commits: 9
+  files_changed: 48
+  lines_added: 1471
+  lines_removed: 189
+  footprint_refreshed_at: '2026-11-23T13:43:25Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5376-vector-index-covers-every-git-tracked-pr.md
+generated_by: context-agent-hybrid
