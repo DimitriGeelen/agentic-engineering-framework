@@ -137,7 +137,13 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Background / trigger:** ring20-manager (msgs 8584a199, e5e4e237; their T-2114/T-2205) reported verdict rows V-20261001-24a58c75, -984b8c92 ("introduced by other") and -9bb12043 ("reviewer is producer") failing pre-push permanently, forcing --no-verify on every push since 2026-10-01. Misrouted to a duplicate session; reached AEF 2026-10-06 (G-111).
+
+**Problem / hypothesis:** concurrent review workers append to one shared .context/reviews/verdicts.jsonl and commit it with a pathspec (lib/reviewer/judge_cli.py commit_command), so one worker's commit sweeps another worker's row; the row's introducing commit then names the wrong author and fails provenance forever.
+
+**Goal:** each verdict row is appended and committed by its own writer under one ledger lock, and consumers with already-swept rows have a sanctioned way to stop them failing pre-push.
+
+**Expected outcome:** no worker's commit can contain another worker's row (regression test with a control leg); ring20 knows the `fw reviewer verdict acknowledge … --fixed-by` path for its 3 historical rows.
 
 ## Acceptance Criteria
 
