@@ -11,10 +11,10 @@ description: >
   and log. Must not break normal fast-forward pushes, fw handover pushes, or mirror
   sync; branch deletes are Tier 0 too. Depends on build A's approval format.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: [arc:payload-mediation]
 components: []
 related_tasks: []
@@ -46,7 +46,7 @@ arc_id: payload-mediation
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T15:42:01Z
-last_update: 2026-11-23T17:35:14Z
+last_update: 2026-11-23T17:42:35Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -414,3 +414,10 @@ bin/fw vendor self --check
 
 ### 2026-11-23T17:35:14Z — status-update [task-update-agent]
 - **Change:** tags: +arc:payload-mediation
+
+### 2026-11-23 — parked by the autonomous run (shared review with T-3593 failed 7 rounds)
+- Selected as unit 4 with T-3593 (O-1 → arc-013 → Q1). Not worked: the open criterion (independent review at least amber, no high findings) is reviewed jointly with T-3593 (docs/reports/T-3593-T-3594-*), and round 7 is red with HIGH left. Same failure mode and the same Sovereign question as T-3593 (see its Updates).
+
+### 2026-11-23T17:42:35Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)

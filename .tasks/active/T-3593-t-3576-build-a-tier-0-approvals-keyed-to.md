@@ -12,10 +12,10 @@ description: >
   that the text gate is a speed bump and names what enforces for real (the pre-push
   check, build B). Keep fw tier0 approve human-only.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: [arc:payload-mediation]
 components: []
 related_tasks: []
@@ -47,7 +47,7 @@ arc_id: payload-mediation
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T15:41:21Z
-last_update: 2026-11-23T17:35:13Z
+last_update: 2026-11-23T17:42:32Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -457,3 +457,12 @@ bin/fw vendor self --check
 
 ### 2026-11-23T17:35:13Z — status-update [task-update-agent]
 - **Change:** tags: +arc:payload-mediation
+
+### 2026-11-23 — parked by the autonomous run (review criterion failed 7 rounds)
+- Selected as unit 4 (O-1 → arc-013 → Q1). Not worked: the only open criterion (independent review at least amber, no high findings) has failed rounds 1–7; round 7 is red from both codex and claude with HIGH left (docs/reports/T-3593-round7-codex.md, -claude.md: different push targets share keys; typed self-approval via brace expansion / line continuation).
+- **Failure mode:** each adversarial round finds another shell spelling of the same action; the grammar (round 5) narrowed it but did not end it. CLAUDE.md §Enforcement Tiers already states the residual ("fail-closed against accidents and unsophisticated self-approval, not forgery-resistant").
+- **Sovereign question (shared with T-3594, T-3695):** accept the documented residual and close on that ruling, run round 8, or move enforcement out of the text gate (git pre-push / server-side protection)?
+
+### 2026-11-23T17:42:32Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Change:** status: started-work → captured (auto-sync)
