@@ -167,7 +167,7 @@ and a signed completion listing no verdict), never from a caller's claim.
 - [x] C7: the judge (`lib/reviewer/judge_cli.py`) continues a panel past an UNAVAILABLE seat when the key is on, and `_final` reports such a panel green when the ledger accepts it — test; the T-3580/T-3986/T-3852 suites stay green
 
 ### Human
-- [ ] [REVIEW] The new REVIEW_GREEN_DEGRADED row on /config reads clearly next to the spend-ceiling row
+- [x] [REVIEW] The new REVIEW_GREEN_DEGRADED row on /config reads clearly next to the spend-ceiling row
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower restart && bin/fw watchtower url`
   2. Open `<that URL>/config` and find the row `REVIEW_GREEN_DEGRADED`
@@ -218,6 +218,7 @@ and a signed completion listing no verdict), never from a caller's claim.
   listed state needs screenshots at every UX_SHOT_WIDTHS width:
   fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
 -->
+  **Reviewer verdict:** green V-20261123-1246d700 — reviewer-judge-t-4490-r5-antigravity-b4ad077ac38f:antigravity (rung rung-5-panel:antigravity), digest 730916b50f6f; dispatch judge-t-4490-r5-antigravity-b4ad077ac38f; evidence: .context/reviews/evidence/T-4490/AC1-judge-t-4490-r5-antigravity-b4ad077ac38f.md, .context/reviews/evidence/T-4490/01-config-judge-t-4490-r5-antigravity-b4ad077ac38f.png, .context/reviews/evidence/T-4490/config@1024-judge-t-4490-r5-antigravity-b4ad077ac38f.png, .context/reviews/evidence/T-4490/config@1440-judge-t-4490-r5-antigravity-b4ad077ac38f.png, .context/reviews/evidence/T-4490/config@1920-judge-t-4490-r5-antigravity-b4ad077ac38f.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
@@ -408,6 +409,11 @@ bin/fw watchtower current
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-11-23 — render criterion closed through the panel (arc-029)
+- **What changed:** first panel: claude-code green, codex amber ("place REVIEW_GREEN_DEGRADED immediately after REVIEWER_JUDGE_WEEKLY_SPEND_CEILING"), third seat not dispatched. Moved the row in web/blueprints/config.py (live /config confirmed adjacency); second panel green 3/3 (V-20261123-1246d700). The /config wrapping fix from T-4475 the same day covers its legibility.
+- **Plan impact:** none.
+- **Triggered:** none.
 
 ## Recommendation
 
