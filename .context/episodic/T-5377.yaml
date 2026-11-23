@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-5377: fw sidecar latency never returns: inbound() re-reads the whole receiver event log and receipts ledger once per pending message
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-23T18:34:40Z
+# ============================================================================
+
+task_id: T-5377
+task_name: "fw sidecar latency never returns: inbound() re-reads the whole receiver event log and receipts ledger once per pending message"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-11-23T15:27:53Z
+completed: 2026-11-23T18:34:15Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-11-23T16:28:53+01:00
+last_commit: 2026-11-23T19:34:12+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture + spec + scored (BVP 23, lv-lc) — parked as low value per run mandate; root cause confirmed. sidecar latency reads each ledger once per report. criteria verified (0.79 s live; 37/37 before+after; new test 2/2), Evolution
+
+# Key outcomes
+outcomes:
+  - 'lib/sidecar/latency.py reads receiver events and the receipts ledger ONCE per report (indexed by msg_id / client_msg_id), not inside the per-message loop; same for any other per-message full-ledger read on the report path (outbound included).'
+  - 'Equivalence: on a hermetic fixture (a few messages, events, receipts, direct-ack rows) the new `report()` returns exactly the old `report()` output (compare against the pre-change function kept in the test or a recorded expected JSON).'
+  - 'Test tests/unit/test_t5377_latency_single_read.py (pytest, hermetic, no skips): equivalence plus a counter/monkeypatch asserting read_events and read_sent are each called at most once per report.'
+  - 'Live: `timeout 60 bin/fw sidecar latency` and `timeout 60 bin/fw sidecar latency --json` both exit 0 on this repo; wall time recorded in Updates; existing sidecar latency/receipts tests keep their results.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/latency.py'
+  - '.fabric/components/tests-unit-test_t5377_latency_single_read.yaml'
+  - '.tasks/active/T-5377-fw-sidecar-latency-never-returns-inbound.md'
+  - 'lib/sidecar/latency.py'
+  - 'tests/unit/test_t5377_latency_single_read.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-11-23T16:28:53'
+    action: 'T-5377: capture + spec + scored (BVP 23, lv-lc) — parked as low value per run mandate; root cause confirmed'
+  - time: '2026-11-23T19:19:11'
+    action: 'T-5377: sidecar latency reads each ledger once per report'
+  - time: '2026-11-23T19:34:12'
+    action: 'T-5377: criteria verified (0.79 s live; 37/37 before+after; new test 2/2), Evolution'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 186 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, sidecar, O-5]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 186
+  commits: 4
+  files_changed: 8
+  lines_added: 766
+  lines_removed: 20
+  footprint_refreshed_at: '2026-11-23T18:34:50Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-5377-fw-sidecar-latency-never-returns-inbound.md
+generated_by: context-agent-hybrid

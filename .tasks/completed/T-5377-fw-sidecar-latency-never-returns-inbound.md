@@ -8,12 +8,12 @@ description: >
   and receipts.read_sent() inside the per-message loop; events.jsonl is 16k lines
   / 3.5 MB.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, sidecar, O-5]
-components: []
+components: [lib/sidecar/latency.py, tests/unit/test_t5377_latency_single_read.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ arc_id: parallel-execution-aef
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-23T15:27:53Z
-last_update: 2026-11-23T18:14:41Z
-date_finished:
+last_update: 2026-11-23T18:34:15Z
+date_finished: 2026-11-23T18:34:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -412,3 +412,26 @@ bin/fw vendor self --check --task T-5377
 ### 2026-11-23T18:14:41Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-11-23T18:34:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b39b91fa
+- **Timestamp:** 2026-11-23T18:34:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Scope:** static anti-pattern scan; PASS means no anti-pattern was found, not that the criteria hold
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — lib/sidecar/latency.py reads receiver events and the receipts ledger ONCE per report (indexed by msg_id / client_msg_id), not inside the per-message loop; same for any other per-message full-ledger re
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/sidecar/latency.py in: lib/sidecar/latency.py reads receiver events and the receipts ledger ONCE per report (indexed by msg_id / client_msg_id), not inside the per-message l`
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 139
+     - evidence: `timeout 60 bin/fw sidecar latency >/dev/null`

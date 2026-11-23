@@ -58984,3 +58984,21 @@ scan_id: R-dcf14d1d
 task_id: T-4475
 payload:
   task_file: .tasks/active/T-4475-adapt-termlink-proposal-344-webembedding.md
+---
+kind: scan_emitted
+timestamp: '2026-11-23T18:34:26Z'
+scan_id: R-b39b91fa
+task_id: T-5377
+payload:
+  overall: CONCERN
+  finding_count: 2
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-23T18:34:26Z'
+scan_id: R-b39b91fa
+task_id: T-5377
+payload:
+  task_file: .tasks/active/T-5377-fw-sidecar-latency-never-returns-inbound.md
