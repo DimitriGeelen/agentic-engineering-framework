@@ -59020,3 +59020,21 @@ scan_id: R-80b3d018
 task_id: T-4118
 payload:
   task_file: .tasks/active/T-4118-claude-fw-wrapper-started-before-an-upgr.md
+---
+kind: scan_emitted
+timestamp: '2026-11-23T18:55:23Z'
+scan_id: R-e990c8ca
+task_id: T-4632
+payload:
+  overall: CONCERN
+  finding_count: 1
+  suppressed_count: 0
+  auto_ticked_count: 0
+  catalogue_version: v1.3-seed
+---
+kind: verdict_recorded
+timestamp: '2026-11-23T18:55:23Z'
+scan_id: R-e990c8ca
+task_id: T-4632
+payload:
+  task_file: .tasks/active/T-4632-make-11-finished-tasks-closable-gates-re.md

@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4632: Make 11 finished tasks closable (gates refused at close 2026-10-22)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-11-23T18:55:38Z
+# ============================================================================
+
+task_id: T-4632
+task_name: "Make 11 finished tasks closable (gates refused at close 2026-10-22)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-22T10:51:09Z
+completed: 2026-11-23T18:55:21Z
+duration_days: 32
+updates_count: 4
+first_commit: 2026-10-22T12:51:44+02:00
+last_commit: 2026-11-23T19:55:18+01:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file close-out of 11 gated tasks. close-out log — 7 of 11 handled, T-4566/T-4231/T-4567/T-4568 remain (close blocked by harness permission classifier). four-part Context backfilled (T-4907 gate). close-out log — 4 already closed elsewhere, 4 partial-complete awaiting operator [REVIEW]; criteria 2-3 ticked. Evolution entry; 7/11 closed, 4 wait for operator review
+
+# Key outcomes
+outcomes:
+  - 'Each of the 11 tasks (T-4566, T-4231, T-4567, T-4290, T-4240, T-4568, T-4571, T-4575, T-4198, T-4269, T-4183) has had its close attempted and the exact refusal recorded in `## Close-out log` below'
+  - 'For each refusal, only the gate-named defect was fixed (no `### Human` tick, no `--force`/`--skip-*`), and the task was closed if its gate then passed; tasks that stay open name why in the log'
+  - 'Every closed task is committed via `git commit -- <completed> <episodic> <old active path>`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (task file Decisions section, joined with decisions.yaml by task id — T-4193)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4632-make-11-finished-tasks-closable-gates-re.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-22T12:51:44'
+    action: 'T-4632: file close-out of 11 gated tasks'
+  - time: '2026-10-22T14:56:48'
+    action: 'T-4632: close-out log — 7 of 11 handled, T-4566/T-4231/T-4567/T-4568 remain (close blocked by harness permission classifier)'
+  - time: '2026-11-23T19:43:13'
+    action: 'T-4632: four-part Context backfilled (T-4907 gate)'
+  - time: '2026-11-23T19:44:13'
+    action: 'T-4632: close-out log — 4 already closed elsewhere, 4 partial-complete awaiting operator [REVIEW]; criteria 2-3 ticked'
+  - time: '2026-11-23T19:55:18'
+    action: 'T-4632: Evolution entry; 7/11 closed, 4 wait for operator review'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 46564 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [chore, close-out, arc:horizon-axis-hardening]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 46564
+  commits: 6
+  files_changed: 4
+  lines_added: 556
+  lines_removed: 18
+  footprint_refreshed_at: '2026-11-23T18:55:47Z'
+  footprint_refreshed_by_commit: pre-commit
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4632-make-11-finished-tasks-closable-gates-re.md
+generated_by: context-agent-hybrid
