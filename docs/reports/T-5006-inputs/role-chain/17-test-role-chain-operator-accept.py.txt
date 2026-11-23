@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+"""T-2353: role-chain.py accepts an operator-confirmed review of a non-green panel — only when the operator ticked the
+criterion, and with the same bindings as a green verdict (ledger, unchanged output, hand-back hash). The accepted
+verdict is named OUTSIDE the criterion (a Decisions line), because the tick's provenance digest covers the criterion."""
+import hashlib
+import importlib.util
+import json
+import os
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+
+SCRIPT = Path(__file__).resolve().parent.parent / "scripts/role-chain.py"
+PASS = FAIL = 0
+
+
+def check(name, cond, detail=""):
+    global PASS, FAIL
+    PASS, FAIL = (PASS + 1, FAIL) if cond else (PASS, FAIL + 1)
+    print(("PASS " if cond else "FAIL ") + name + ("" if cond else f"  {detail}"))
+
+
+def git(root, *a):
+    return subprocess.run(["git", "-C", str(root), *a], capture_output=True, text=True, check=True).stdout.strip()
+
+
+with tempfile.TemporaryDirectory() as td:
+    root = Path(td)
+    os.environ["ROLE_CHAIN_ROOT"] = td
+    spec = importlib.util.spec_from_file_location("rc", SCRIPT)
+    rc = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(rc)
+    tasks = root / ".tasks" / "active"
+    tasks.mkdir(parents=True)
+    git(root, "init", "-q"); git(root, "config", "user.email", "t@t"); git(root, "config", "user.name", "t")
+    out = root / "out6.md"
+    out.write_text("pseudo-code\n")
+    git(root, "add", "-A"); git(root, "commit", "-qm", "step 6")
+    rev = git(root, "rev-parse", "HEAD")
+    led = root / ".context" / "reviews" / "verdicts.jsonl"
+    led.parent.mkdir(parents=True)
+    led.write_text(json.dumps({"id": "V-20261012-d9e7f2b1", "verdict": "red", "revision": rev}) + "\n")
+    hb = root / "handbacks"
+    hb.mkdir()
+    (hb / "step-06-x.json").write_text(json.dumps({"schema": "role-handback/1", "output": {
+        "path": "out6.md", "sha256": hashlib.sha256(out.read_bytes()).hexdigest()}}))
+    step = {"step": 6, "task": "T-0006", "output": "out6.md"}
+
+    def write(box, decision):
+        (tasks / "T-0006-x.md").write_text(
+            f"---\nid: T-0006\n---\n### Human\n- [{box}] [REVIEW] Independent review: step 6 output meets its role card\n"
+            f"- [ ] [REVIEW] Step 6 output approved\n\n## Decisions\n{decision}")
+
+    accept = "- **Operator accepted:** step 6 V-20261012-d9e7f2b1 (red; finding carried to step 7)\n"
+
+    write("x", accept)
+    ok, why = rc.review_binding(step, root)
+    check("ticked + operator-accepted red verdict + unchanged output → accepted", ok and "operator-accepted" in why, why)
+
+    write(" ", accept)
+    ok, why = rc.review_binding(step, root)
+    check("not ticked → refused even with an acceptance line", not ok, why)
+
+    write("x", "")
+    ok, why = rc.review_binding(step, root)
+    check("ticked but no verdict named → refused", not ok and "neither" in why, why)
+
+    write("x", "- **Operator accepted:** step 5 V-20261012-d9e7f2b1 (red)\n")
+    ok, why = rc.review_binding(step, root)
+    check("acceptance naming another step → refused", not ok, why)
+
+    write("x", "- **Operator accepted:** step 6 V-20261012-00000000 (red)\n")
+    ok, why = rc.review_binding(step, root)
+    check("accepted verdict not in the ledger → refused", not ok and "not in the ledger" in why, why)
+
+    write("x", accept)
+    out.write_text("pseudo-code changed after review\n"); git(root, "commit", "-qam", "edit")
+    ok, why = rc.review_binding(step, root)
+    check("output changed after the accepted revision → refused", not ok and "changed after" in why, why)
+
+print(f"\n{PASS} passed, {FAIL} failed")
+sys.exit(1 if FAIL else 0)
