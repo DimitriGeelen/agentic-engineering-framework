@@ -2,7 +2,13 @@
 id: T-5380
 name: "Pick up Workflow Designer 0.47.0 (832 release; pin 0.46.0 -> 0.47.0)"
 description: >
-  832 msg 6e530142 (2026-11-23): tag designer-v0.47.0 (846480a0), artifact dist/aef-workflow-designer-0.47.0.html sha256 15299e56df9aa5f34c281f6396640e4e6926e7651b8291b482cba70ee6a71003 (1451569 bytes), authoring kit dist/aef-authoring-kit-0.47.0; notes docs/releases/RELEASE-NOTES-0.47.0.md. Stored maps unchanged (byte-identity goldens); /api/validate and endpoints unchanged since 0.44.0; maps started from the built-in starter now get starter-derived uids. Bump policy/designer-pin.yaml as in T-5350, verify the hash, vendor, check fw designer status and the upgrade path.
+  832 msg 6e530142 (2026-11-23): tag designer-v0.47.0 (846480a0), artifact dist/aef-workflow-designer-0.47.0.html
+  sha256 15299e56df9aa5f34c281f6396640e4e6926e7651b8291b482cba70ee6a71003 (1451569
+  bytes), authoring kit dist/aef-authoring-kit-0.47.0; notes docs/releases/RELEASE-NOTES-0.47.0.md.
+  Stored maps unchanged (byte-identity goldens); /api/validate and endpoints unchanged
+  since 0.44.0; maps started from the built-in starter now get starter-derived uids.
+  Bump policy/designer-pin.yaml as in T-5350, verify the hash, vendor, check fw designer
+  status and the upgrade path.
 
 status: captured
 workflow_type: build
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-11-23T21:50:54Z
-last_update: 2026-11-23T21:50:54Z
-date_finished: null
+last_update: '2026-11-23T22:00:43Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,17 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-11-23T22:00:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? 
+      (no-components-no-fabric-paths-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=303,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-5380: Pick up Workflow Designer 0.47.0 (832 release; pin 0.46.0 -> 0.47.0)
